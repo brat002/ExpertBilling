@@ -14,6 +14,7 @@ from mikrobill.billing.models import Account, Tarif
 
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
+
 class handle_auth(StreamRequestHandler):
     def handle(self):
         # self.request is the socket object
