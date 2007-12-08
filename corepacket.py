@@ -198,6 +198,7 @@ class CorePacket(UserDict.UserDict):
 		secretlength=len(self.secret)
 		mask="!LBB%dsB%dsB%dsH" % (userlength, passwordlength, secretlength)
 		headerlength=struct.calcsize(mask)
+		#TO-DO: Посмотреть зачем здесь headerlength и длина атрибутов
 		header=struct.pack(mask, headerlength, self.code, userlength, self.username, passwordlength, self.password, secretlength,self.secret, len(attr))
 
 		return header + attr

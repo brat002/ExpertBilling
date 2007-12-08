@@ -14,7 +14,6 @@ from mikrobill.billing.models import Account, Tarif
 
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
-
 class handle_auth(StreamRequestHandler):
     def handle(self):
         # self.request is the socket object
@@ -32,15 +31,15 @@ class handle_auth(StreamRequestHandler):
         ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
         replypacket=corepacket.CorePacket(secret='123', dict=dict)
         try:
-            account=Account.objects.get(username=packetobject['User-Name'][0])
+            account=Account.objects.get(username=packetobject['User-Name'][0], ballance__gt=0)
             if packetobject['User-Name'][0]==account.username:
                replypacket.code=2
-               replypacket.username=account.username
-               replypacket.password=account.password
-               replypacket.AddAttribute('Service-Type',2)
-               replypacket.AddAttribute('Framed-Protocol',1)
-               replypacket.AddAttribute('Framed-IP-Address',account.ipaddress)
-               replypacket.AddAttribute('Framed-Routing',0)
+               replypacket.username=str(account.username) #Нельзя юникод
+               replypacket.password=str(account.password) #Нельзя юникод
+               replypacket.AddAttribute('Service-Type', 2)
+               replypacket.AddAttribute('Framed-Protocol', 1)
+               replypacket.AddAttribute('Framed-IP-Address', account.ipaddress)
+               replypacket.AddAttribute('Framed-Routing', 0)
 
             else:
                 replypacket.username='None'
