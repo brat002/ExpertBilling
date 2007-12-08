@@ -5,7 +5,7 @@ from SocketServer import StreamRequestHandler
 from threading import Thread
 import dictionary
 import packet
-import struct
+import struct, tools
 import corepacket
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 sys.path.append('c:\\Python25\\Scripts')
@@ -17,16 +17,17 @@ t = time.clock()
 class handle_auth(StreamRequestHandler):
     def handle(self):
         # self.request is the socket object
-        print "%s I got an request from ip=%s port=%s" % (
-            time.strftime("%Y-%m-%d %H:%M:%S"),
-            self.client_address[0],
-            self.client_address[1]
-            )
+        #print "%s I got an request from ip=%s port=%s" % (
+        #    time.strftime("%Y-%m-%d %H:%M:%S"),
+        #    self.client_address[0],
+        #    self.client_address[1]
+        #    )
         #self.request.send("What is your name?\n")
         bufsize=4096
         response=self.request.recv(bufsize).strip() # or recv(bufsize, flags)
-        (requestpacketid, code, length)=struct.unpack("!LBH",response[:7])
-        packetobject=packet.Packet(dict=dict,packet=response[7:])
+        (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
+        nasip=tools.DecodeAddress(nasip)
+        packetobject=packet.Packet(dict=dict,packet=response[11:])
         ##Здесь нужно организовать проверку наличия в базе имени пользователя
         ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
         replypacket=corepacket.CorePacket(secret='123', dict=dict)
@@ -66,8 +67,10 @@ class handle_acct(StreamRequestHandler):
             #self.request.send("What is your name?\n")
             bufsize=8096
             response=self.request.recv(bufsize).strip() # or recv(bufsize, flags)
-            (requestpacketid, code, length)=struct.unpack("!LBH",response[:7])
-            packetobject=packet.Packet(dict=dict,packet=response[7:])
+            (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
+            nasip=tools.DecodeAddress(nasip)
+            print nasip
+            packetobject=packet.Packet(dict=dict,packet=response[11:])
             ##Здесь нужно организовать проверку наличия в базе имени пользователя
             ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
             sess=Session()

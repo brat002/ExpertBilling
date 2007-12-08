@@ -80,7 +80,7 @@ class handle_auth(DatagramRequestHandler):
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
         addrport=self.client_address
-        reqpack=RequestPacket(1,('10.20.3.111',2224))
+        reqpack=RequestPacket(1,('10.20.3.111',2224), self.client_address[0])
         #Отправляем ядру копию пакета, полученного от NAS
         #Ядро должно вернуть закодированный объект corepacket.CorePacket c установленными атрибутами
         corereply=reqpack.getreply(data)
@@ -109,7 +109,7 @@ class handle_acct(DatagramRequestHandler):
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
         addrport=self.client_address
-        reqpack=RequestPacket(1,('10.20.3.111',2225))
+        reqpack=RequestPacket(1,('10.20.3.111',2225), self.client_address[0])
         corereply=reqpack.getreply(data)
         requestpacket=packet.AcctPacket(dict=dict,packet=data)
         packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)

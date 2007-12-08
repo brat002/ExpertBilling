@@ -1,7 +1,7 @@
 # coding=utf8
 import socket, struct, select
 from settings import *
-
+import tools
 requestpacketid=1
 
 class RequestPacket:
@@ -9,9 +9,10 @@ class RequestPacket:
     global requestpacketid
 
     #attributes список параметров
-    def __init__(self, code, address):
+    def __init__(self, code, address, nasip):
         requestpacketid=1
         self.reqcode=code
+        self.nasip=nasip
         self.connection=CoreConnection(address)
         self.data=[]
 
@@ -19,9 +20,8 @@ class RequestPacket:
     def getreply(self,pack):
         # requestpacketid | code | lengthpacket
         self.attrlen=len(pack)
-        print "attrlen=%d" % self.attrlen
-        self.lengthpacket=self.attrlen+7
-        header=struct.pack("!LBH",requestpacketid, self.reqcode, self.lengthpacket)
+        self.lengthpacket=self.attrlen+11
+        header=struct.pack("!LB4sH",requestpacketid, self.reqcode, tools.EncodeAddress(self.nasip), self.lengthpacket)
         attr=struct.pack("!%ds" % self.attrlen, pack)
         if self.connection.senddata(header+attr):
             return self.connection.recvdata()
