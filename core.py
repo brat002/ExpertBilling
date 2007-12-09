@@ -11,6 +11,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 sys.path.append('c:\\Python25\\Scripts')
 from mikrobill.radius.models import Session
 from mikrobill.billing.models import Account, Tarif
+from mikrobill.nas.models import Nas
 
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
@@ -28,9 +29,13 @@ class handle_auth(StreamRequestHandler):
         (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
         nasip=tools.DecodeAddress(nasip)
         packetobject=packet.Packet(dict=dict,packet=response[11:])
+        try:
+            nas=Nas.objects.get(ipaddress=nasip)
+        except:
+            pass
         ##Здесь нужно организовать проверку наличия в базе имени пользователя
         ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
-        replypacket=corepacket.CorePacket(secret='123', dict=dict)
+        replypacket=corepacket.CorePacket(secret=str(nas.secret), dict=dict)
         try:
             account=Account.objects.get(username=packetobject['User-Name'][0], ballance__gt=0)
             if packetobject['User-Name'][0]==account.username:
@@ -69,7 +74,6 @@ class handle_acct(StreamRequestHandler):
             response=self.request.recv(bufsize).strip() # or recv(bufsize, flags)
             (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
             nasip=tools.DecodeAddress(nasip)
-            print nasip
             packetobject=packet.Packet(dict=dict,packet=response[11:])
             ##Здесь нужно организовать проверку наличия в базе имени пользователя
             ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
@@ -99,8 +103,15 @@ class handle_acct(StreamRequestHandler):
 
 #            for key,value in packetobject.items():
 #                print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)]
+            try:
+                nas=Nas.objects.get(ipaddress=nasip)
+            except:
+                pass
+            ##Здесь нужно организовать проверку наличия в базе имени пользователя
+            ##Если есть-подставляем в объект и ставим атрибут code=2, наче code=3
 
-            replypacket=corepacket.CorePacket(username="None",secret='123', password="None", dict=dict)
+
+            replypacket=corepacket.CorePacket(username="None",secret=str(nas.secret), password="None", dict=dict)
             replypacket.code=5
             
             data_to_send=replypacket.ReplyPacket()
