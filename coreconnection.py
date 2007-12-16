@@ -34,7 +34,9 @@ class RequestPacket:
 		self.data[key]=item
 
 class CoreConnection:
-
+    """
+    Неудачная попытка реализовать нормальный клиент для работы с ядром.
+    """
     def __init__(self, address):
         self.address=address
         self.CreateConnection()

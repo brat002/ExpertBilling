@@ -22,7 +22,6 @@ class Auth:
         self.typeauth=self._DetectTypeAuth(self.Packet)
         self.plainusername=plainusername
         self.plainpassword=plainpassword
-        self.authusername=self.Packet['User-Name'][0]
         self.ident=''
         self.AccessAccept=False
         self.NTResponse=''
@@ -58,7 +57,7 @@ class Auth:
         """
         if self.code!=3:
            if self.typeauth=='PAP':
-             if self._PwDecrypt(self.Packet['User-Password'][0], self.Packet.authenticator, self.Packet.secret):
+             if self._PwDecrypt(password=self.Packet['User-Password'][0], authenticator=self.Packet.authenticator, secret=self.Packet.secret):
                  print "PAP Authorisation Ok"
                  self.AccessAccept=True
            if self.typeauth=='CHAP':
@@ -81,7 +80,7 @@ class Auth:
         
     def _CHAPDecrypt(self):
         (ident , password)=struct.unpack('!B16s',self.Packet['CHAP-Password'][0])
-        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.Packet['CHAP-Challenge'][0]) 
+        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.Packet['CHAP-Challenge'][0])
         if md5.new(pck).digest()==password:
             return True
         else:
@@ -104,9 +103,11 @@ class Auth:
 		@rtype:          string
 		"""
 		pw=""
+		print password, authenticator, secret
 
 		while password:
 			hash=md5.new(secret+authenticator).digest()
+			print "%s; len=%s" % (hash, str(len(hash)))
 			for i in range(16):
 				pw+=chr(ord(hash[i]) ^ ord(password[i]))
 
@@ -160,7 +161,7 @@ class Auth:
         return chr(ordbyte)
 
     def _ChallengeHash(self, PeerChallenge, AuthenticatorChallenge, username):
-    	return SHA.new(PeerChallenge+AuthenticatorChallenge+username).digest()[0:8]
+    	return SHA.new("%s%s%s" % (PeerChallenge, AuthenticatorChallenge, username)).digest()[0:8]
 
     def _NtPasswordHash(self, password, utf16=True):
     	"""Generate a NT password hash.
@@ -205,9 +206,8 @@ class Auth:
     	return resp
     
     def _MSchapSuccess(self):
-        s=self._GenerateAuthenticatorResponse()
-        packed=struct.pack("!BBB42s", 26,45, self.ident, s)
-        return packed
+        return struct.pack("!BBB42s", 26,45, self.ident, self._GenerateAuthenticatorResponse())
+
 
     def _GenerateAuthenticatorResponse(self):
     	magic1= \
