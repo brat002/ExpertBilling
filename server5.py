@@ -6,6 +6,16 @@ from mikrobill.nas.models import Collector, NetFlowStream
 from django.conf import settings
 import settings
 
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+try:
+    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+except:
+    print "I am unable to connect to the database"
+
+cur = conn.cursor()
+
 class Flow(object):
 	# Virtual base class
 	LENGTH = 0
@@ -49,13 +59,13 @@ class Header5(Header):
 class Flow5(Flow):
 
 
-	LENGTH = struct.calcsize("!4s4s4sHHIIIIHHBBBBHHBBBB")
+	LENGTH = struct.calcsize("!4s4s4sHHIIIIHHBBBBHHBBH")
 	print LENGTH
 	def __init__(self, data):
 		if len(data) != self.LENGTH:
 			raise ValueError, "Short flow"
 
-		_ff = struct.unpack("!4s4s4sHHIIIIHHBBBBHHBBBB", data)
+		_ff = struct.unpack("!4s4s4sHHIIIIHHBBBBHHBBH", data)
 		self.src_addr = self._int_to_ipv4(_ff[0])
 		self.dst_addr = self._int_to_ipv4(_ff[1])
 		self.next_hop = self._int_to_ipv4(_ff[2])
@@ -71,7 +81,10 @@ class Flow5(Flow):
 		self.tcp_flags = _ff[12]
 		self.protocol = _ff[13]
 		self.tos = _ff[14]
-		self.src_mask = _ff[18]
+		self.source_as = _ff[15]
+		self.dst_as = _ff[16]
+		self.src_netmask_length = _ff[17]
+		self.dst_netmask_length = _ff[18]
 
 ##	def __str__(self):
 ##		ret = "src-mask %s proto %d %s:%d > %s:%d %d bytes" % \
@@ -97,31 +110,54 @@ class NetFlowPacket:
         flow_class = self.FLOW_TYPES[self.version][1]
         self.hdr = hdr_class(data[:hdr_class.LENGTH])
 
-        collector=Collector.objects.get(ipaddress=addrport[0])
-
+        #collector=Collector.objects.get(ipaddress=addrport[0])
+        cur.execute("""SELECT id from nas_collector WHERE ipaddress='%s'""" % addrport[0])
+        collector_id = cur.fetchone()[0]
+        flows=[]
         for n in range(self.hdr.num_flows):
-			offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
+   			offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
 			flow_data = data[offset:offset + flow_class.LENGTH]
 			flow=flow_class(flow_data)
-			netflowstream = NetFlowStream()
-			netflowstream.collector = collector
-			netflowstream.date_start = datetime.datetime.now()
-			netflowstream.src_addr = flow.src_addr
-			netflowstream.dst_addr = flow.dst_addr
-			netflowstream.next_hop = flow.next_hop
-			netflowstream.in_index = flow.in_index
-			netflowstream.out_index = flow.out_index
-			netflowstream.packets = flow.packets
-			netflowstream.octets = flow.octets
-			netflowstream.start = flow.start
-			netflowstream.finish = flow.finish
-			netflowstream.src_port = flow.src_port
-			netflowstream.dst_port = flow.dst_port
-			netflowstream.tcp_flags = flow.tcp_flags
-			netflowstream.protocol = flow.protocol
-			netflowstream.tos = flow.tos
-			netflowstream.src_mask = flow.src_mask
-			netflowstream.save()
+			flows.append({'collector_id':collector_id, 'date_start':datetime.datetime.now(),
+              'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
+              'next_hop': flow.next_hop, 'in_index':flow.in_index,
+              'out_index' : flow.out_index, 'packets' : flow.packets,
+              'octets' : flow.octets, 'start' : flow.start,
+              'finish' : flow.finish, 'src_port' : flow.src_port,
+              'dst_port' : flow.dst_port, 'tcp_flags' : flow.tcp_flags,
+              'protocol' : flow.protocol, 'tos' : flow.tos,
+              'source_as' : flow.source_as, 'dst_as' : flow.dst_as,
+              'src_netmask_length' : flow.src_netmask_length,'dst_netmask_length' : flow.dst_netmask_length
+             }
+            )
+
+        cur.executemany("""
+        INSERT INTO nas_netflowstream(collector_id,date_start,src_addr,dst_addr,next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
+        VALUES (%(collector_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)"""
+         , flows)
+
+##			offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
+##			flow_data = data[offset:offset + flow_class.LENGTH]
+##			flow=flow_class(flow_data)
+##			netflowstream.collector = collector
+##			netflowstream.date_start = datetime.datetime.now()
+##			netflowstream.src_addr = flow.src_addr
+##			netflowstream.dst_addr = flow.dst_addr
+##			netflowstream.next_hop = flow.next_hop
+##			netflowstream.in_index = flow.in_index
+##			netflowstream.out_index = flow.out_index
+##			netflowstream.packets = flow.packets
+##			netflowstream.octets = flow.octets
+##			netflowstream.start = flow.start
+##			netflowstream.finish = flow.finish
+##			netflowstream.src_port = flow.src_port
+##			netflowstream.dst_port = flow.dst_port
+##			netflowstream.tcp_flags = flow.tcp_flags
+##			netflowstream.protocol = flow.protocol
+##			netflowstream.tos = flow.tos
+##			netflowstream.src_mask = flow.src_mask
+##			netflowstream.save()
+            
 
 ##	def __str__(self):
 ##		ret = str(self.hdr)
