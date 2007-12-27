@@ -47,7 +47,7 @@ class Account(models.Model):
         list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress','tarif','tarif', 'created')
         #list_filter = ('username')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % self.username
 
 class Pay(models.Model):
