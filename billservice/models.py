@@ -1,6 +1,7 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass
+from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool
+from django.contrib.auth.models import User
 
 # Create your models here.
 PERIOD_CHOISES=(
@@ -23,7 +24,12 @@ ACCESS_TYPE_METHODS=(
                 ('PPTP','PPTP'),
                 ('PPPOE','PPPOE'),
                 )
-                
+
+ACTIVITY_CHOISES=(
+        ("Enabled","Enabled"),
+        ("Disabled","Disabled"),
+        )
+        
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -55,19 +61,7 @@ class TimePeriod(models.Model):
     class Meta:
         pass
 
-class IPAddressPool(models.Model):
-    name     = models.CharField(max_length=255, verbose_name=u'Имя пула')
-    start_IP = models.IPAddressField(verbose_name=u'Начальный адрес')
-    end_IP   = models.IPAddressField(verbose_name=u'Конечный адрес')
 
-    def __unicode__(self):
-        return self.name
-
-    class Admin:
-        pass
-
-    class Meta:
-        pass
     
 class SettlementPeriod(models.Model):
     """
@@ -173,7 +167,6 @@ class AccessParameters(models.Model):
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
     ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     nas               = models.ManyToManyField(to=Nas, blank=True, null=True, verbose_name=u'Сервер доступа')
-    access_time       = models.ManyToManyField(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
 
     def __unicode__(self):
         return self.name
@@ -236,6 +229,9 @@ class Tariff(models.Model):
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость активации тарифного плана', default=0.000 ,help_text=u"Если не указана-предоплаченный трафик и время не учитываются")
     settlement_period       = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Расчётный период')
+    access_time       = models.ManyToManyField(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
+    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
+    reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     
     def __unicode__(self):
         return self.name
@@ -245,3 +241,27 @@ class Tariff(models.Model):
 
     class Meta:
         pass
+
+class Account(models.Model):
+    user=models.ForeignKey(User,verbose_name='Системный пользователь', related_name='user_account2')
+    username=models.CharField(verbose_name='Имя пользователя',max_length=200,unique=True)
+    password=models.CharField(verbose_name='Пароль',max_length=200)
+    firstname=models.CharField(verbose_name='Имя',max_length=200)
+    lastname=models.CharField(verbose_name='Фамилия',max_length=200)
+    address=models.TextField(verbose_name='Домашний адрес')
+    tarif=models.ForeignKey(Tariff,verbose_name='Тарифный план')
+    ipaddress=models.IPAddressField(u'IP адрес')
+    status=models.CharField(verbose_name='Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    banned=models.CharField(verbose_name='Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    created=models.DateTimeField(verbose_name='Создан',auto_now_add=True)
+    ballance=models.FloatField('Балланс', blank=True)
+
+
+
+    class Admin:
+        ordering = ['user']
+        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress','tarif','tarif', 'created')
+        #list_filter = ('username')
+
+    def __str__(self):
+        return u'%s' % self.username

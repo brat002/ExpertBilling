@@ -1,6 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
+from mikrobill.billing.models import Account
 
 # Create your models here.
 
@@ -100,4 +101,18 @@ class TrafficClass(models.Model):
         return self.name
         
     class Admin:
+        pass
+
+class IPAddressPool(models.Model):
+    name     = models.CharField(max_length=255, verbose_name=u'Имя пула')
+    start_IP = models.IPAddressField(verbose_name=u'Начальный адрес')
+    end_IP   = models.IPAddressField(verbose_name=u'Конечный адрес')
+
+    def __unicode__(self):
+        return self.name
+
+    class Admin:
+        pass
+
+    class Meta:
         pass

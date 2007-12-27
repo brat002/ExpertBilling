@@ -17,17 +17,17 @@ class Tarif(models.Model):
     speed=models.CharField(max_length=255, blank=True)
     created=models.DateTimeField(auto_now_add=True)
     status=models.CharField(max_length=32, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
-    
+
     class Admin:
         ordering = ['name']
         list_display = ('name','status','description','summ', 'period','speed','created')
         #list_filter = ('name')
-        
+
     def __unicode__(self):
         return self.name
 
 class Account(models.Model):
-    user=models.ForeignKey(User,verbose_name='Системный пользователь')
+    user=models.ForeignKey(User,verbose_name='Системный пользователь', related_name='user_account1')
     username=models.CharField(verbose_name='Имя пользователя',max_length=200,unique=True)
     password=models.CharField(verbose_name='Пароль',max_length=200)
     firstname=models.CharField(verbose_name='Имя',max_length=200)
