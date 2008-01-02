@@ -97,8 +97,8 @@ class TrafficClass(models.Model):
     color = models.IntegerField()
     trafficnode=models.ManyToManyField(to=TrafficNode)
     
-    def __str__(self):
-        return self.name
+    def __unicode__(self):
+        return u"%s" % self.name
         
     class Admin:
         pass

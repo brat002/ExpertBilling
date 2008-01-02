@@ -2,14 +2,17 @@
 from django.db import models
 from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool
 from django.contrib.auth.models import User
+import datetime, time
+
 
 # Create your models here.
 PERIOD_CHOISES=(
+                ('NOT_REPEAT', 'Не повторять'),
                 ('DAY','День'),
-                ('WEEKDAY','Неделя'),
+                ('WEEK','Неделя'),
                 ('MONTH','Месяц'),
-                ('QUARTER','Квартал'),
-                ('HALF_YEAR','Полугодие'),
+                ('QUARTER','Квартал'), # Не реализовано
+                ('HALF_YEAR','Полугодие'), # Не реализовано
                 ('YEAR','Год'),
                 )
 
@@ -39,6 +42,61 @@ class TimePeriodNode(models.Model):
     length = models.IntegerField(verbose_name=u'Период в секундах')
     repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток')
     
+    def in_period(self):
+        """
+        Если повторение-год = проверяем месяц, число, время
+        Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
+        Если повтроение - квартал   = (текущий месяц - начальный месяц по модулю)/3=1, совпадает число, время
+        Если повторение месяц - смотрим совпадает ли дата, время
+        Если повторение неделя - смотрим совпадает ли день недели, время
+        если повторение день - смотрим совпадает ли время
+        =
+        а=Текущее время - начальное время
+        текущее_начальное_время_нач=начальное время+таймдельта(а[год],а[месяц],a[день])
+        текущее_конечное_время =текущее_начальное_время_нач+таймдельта(self.length)
+        если текущее время >текущее_начальное_время_нач И текущее время < текущее_конечное_время
+             ок
+        иначе
+             вышел за рамки
+        
+        """
+        now=datetime.datetime.now()
+
+        if self.repeat_after=='DAY':
+            delta_days=now - self.time_start
+            #Когда будет начало в текущем периоде. 
+            nums,ost= divmod(delta_days.seconds, 86400)
+            tnc=now-datetime.timedelta(seconds=ost)
+            #Когда это закончится
+            tkc=tnc+datetime.timedelta(seconds=self.length)
+            if now>=tnc and now<=tkc:
+                return True
+            return False
+        elif self.repeat_after=='WEEK':
+            delta_days=now - self.time_start
+            #Когда будет начало в текущем периоде.
+            nums,ost= divmod(delta_days.seconds, 604800)
+            tnc=now-datetime.timedelta(seconds=ost)
+            #Когда это закончится
+            tkc=tnc+datetime.timedelta(seconds=self.length)
+            if now>=tnc and now<=tkc:
+                return True
+            return False
+        elif self.repeat_after=='MONTH':
+            #Февраль!
+            tnc=datetime.datetime(now.year, now.month, self.time_start.day,self.time_start.hour,self.time_start.minute, self.time_start.second)
+            tkc=tnc+datetime.timedelta(seconds=self.length)
+            if now>=tnc and now<=tkc:
+                return True
+            return False
+        elif self.repeat_after=='YEAR':
+            #Февраль!
+            tnc=datetime.datetime(now.year, self.time_start.month, self.time_start.day,self.time_start.hour,self.time_start.minute, self.time_start.second)
+            tkc=tnc+datetime.timedelta(seconds=self.length)
+            if now>=tnc and now<=tkc:
+                return True
+            return False
+        
     def __unicode__(self):
         return self.name
     
@@ -52,6 +110,12 @@ class TimePeriod(models.Model):
     name= models.CharField(max_length=255, verbose_name=u'Название группы временных периодов')
     time_period_nodes = models.ManyToManyField(to=TimePeriodNode, verbose_name=u'Группа временных периодов')
 
+    def in_period(self):
+        for time_period_node in self.time_period_nodes:
+            if time_period_node.in_period()==True:
+                return True
+        return False
+    
     def __unicode__(self):
         return self.name
 
@@ -198,7 +262,7 @@ class TrafficTransmitNodes(models.Model):
     edge_end          = models.FloatField(verbose_name=u'Конечная граница')
 
     def __unicode__(self):
-        return "%s %s" % (self.traffic_class, self.cost)
+        return u"%s %s" % (self.traffic_class, self.cost)
 
     class Admin:
         pass
@@ -229,7 +293,7 @@ class Tariff(models.Model):
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость активации тарифного плана', default=0.000 ,help_text=u"Если не указана-предоплаченный трафик и время не учитываются")
     settlement_period       = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Расчётный период')
-    access_time       = models.ManyToManyField(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
+    access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
     reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     
