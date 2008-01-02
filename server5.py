@@ -1,9 +1,9 @@
-﻿import socket, select, struct, sys,os,datetime
-sys.path.append(os.path.abspath('c:/Python25/Scripts/'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-from mikrobill.nas.models import Collector, NetFlowStream
+﻿import socket, select, struct, datetime
+##sys.path.append(os.path.abspath('c:/Python25/Scripts/'))
+##os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
+##from mikrobill.nas.models import Collector, NetFlowStream
 
-from django.conf import settings
+##from django.conf import settings
 import settings
 
 import psycopg2
@@ -189,5 +189,5 @@ while 1:
 	for sock in rlist:
 		(data, addrport) = sock.recvfrom(8192)
 		print "Received flow packet from %s:%d" % addrport
-		print NetFlowPacket(data, addrport)
+		#print NetFlowPacket(data, addrport)
 

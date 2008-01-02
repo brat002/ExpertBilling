@@ -8,10 +8,13 @@ import sha as SHA
 import md4
 import pyDes as DES
 from pyDes import ECB
+from encodings import utf_16_le,hex_codec
+
+
 
 class Auth:
     """
-    Класс предназначен для реализации механизма проверки авторизации для механизмов
+    Класс предназначен для реализации проверки авторизации для механизмов
     PAP,CHAP,MSCHAP2 и генерации ответного пакета.
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """

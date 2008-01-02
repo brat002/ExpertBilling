@@ -85,8 +85,8 @@ class serve_requests(Thread):
             server.serve_forever()
 
 
-server_auth = serve_requests(("10.20.3.111", 1812), handle_auth)
+server_auth = serve_requests(("0.0.0.0", 1812), handle_auth)
 server_auth.start()
 
-server_acct = serve_requests(("10.20.3.111", 1813), handle_acct)
+server_acct = serve_requests(("0.0.0.0", 1813), handle_acct)
 server_acct.start()

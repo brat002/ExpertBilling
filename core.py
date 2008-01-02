@@ -7,6 +7,8 @@ import dictionary
 import packet
 import struct, tools
 import corepacket
+from utilites import in_period
+
 #os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 #sys.path.append('c:\\Python25\\Scripts')
 #from mikrobill.radius.models import Session
@@ -18,10 +20,11 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 try:
     conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur = conn.cursor()
 except:
     print "I am unable to connect to the database"
     
-cur = conn.cursor()
+
 
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
@@ -40,10 +43,11 @@ class handle_auth(StreamRequestHandler):
         (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
         nasip=tools.DecodeAddress(nasip)
         packetobject=packet.Packet(dict=dict,packet=response[11:])
-        cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
-        rows = cur.fetchall()
-        for row in rows:
-            secret=str(row[0])
+        cur.execute("""SELECT id, secret from nas_nas WHERE ipaddress='%s'""" % nasip)
+        row = cur.fetchone()
+        nas_id=str(row[0])
+        secret=str(row[1])
+        
             
 
         #nassecret=Nas.objects.get(ipaddress=nasip)
@@ -55,17 +59,35 @@ class handle_auth(StreamRequestHandler):
         
         #account=Account.objects.get(username=packetobject['User-Name'][0], ballance__gt=0)
 
-        cur.execute("""SELECT username, password, ipaddress from billing_account WHERE username='%s'""" % packetobject['User-Name'][0])
+        cur.execute("""SELECT username, password, ipaddress, tarif_id, status, banned, ballance from billservice_account WHERE username='%s'""" % packetobject['User-Name'][0])
 
-        rows = cur.fetchall()
+        row = cur.fetchone()
+        username=''
+        password=''
+        ipaddress=''
+        username  = row[0]
+        password  = row[1]
+        ipaddress = row[2]
+        tarif_id  = row[3]
+        status    = row[4]
+        banned    = row[5]
+        ballance  = row[6]
         
+        cur.execute("""SELECT id from nas_nas WHERE id=(SELECT nas_id FROM billservice_accessparameters_nas WHERE accessparameters_id=(SELECT access_type_id FROM billservice_tariff WHERE id=%s))""" % tarif_id)
+        row=cur.fetchone()
+
+        if int(row[0])==int(nas_id):
+            nas_accept=True
+        else:
+            nas_accept=False
+        cur.execute("""SELECT id, name, time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
+        rows = cur.fetchall()
         for row in rows:
-            username  = row[0]
-            password  = row[1]
-            ipaddress = row[2]
-
-
-        if packetobject['User-Name'][0]==username:
+            time_access=in_period(row[2],row[3],row[4])
+            if time_access==True:
+                break
+        #Сделать проверку "как работает пользователь". В кредит или только при положительном баллансе
+        if packetobject['User-Name'][0]==username and time_access==True and nas_accept==True and status=='Enabled' and banned=='Disabled' and ballance>0:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
            replypacket.password=str(password) #Нельзя юникод
@@ -116,7 +138,7 @@ class handle_acct(StreamRequestHandler):
                 account_id, sessionid, date_start,
                 caller_id, called_id, nas_id, framed_protocol
                 )
-                VALUES ((SELECT id FROM billing_account WHERE username=%s), %s, %s, %s, %s, %s, 'PPTP');
+                VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s, 'PPTP');
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
                 
 
@@ -185,8 +207,8 @@ class serve_auth(Thread):
             server.serve_forever()
 
 
-server_auth = serve_auth(("10.20.3.111", 2224), handle_auth)
+server_auth = serve_auth(("0.0.0.0", 2224), handle_auth)
 server_auth.start()
 		    
-server_acct = serve_auth(("10.20.3.111", 2225), handle_acct)
+server_acct = serve_auth(("0.0.0.0", 2225), handle_acct)
 server_acct.start()
