@@ -86,7 +86,7 @@ class handle_auth(StreamRequestHandler):
             time_access=in_period(row[2],row[3],row[4])
             if time_access==True:
                 break
-        #Сделать проверку "как работает пользователь". В кредит или только при положительном баллансе
+        #Сделать проверку "как работает пользователь". В кредит или по предоплате
         if packetobject['User-Name'][0]==username and time_access==True and nas_accept==True and status=='Enabled' and banned=='Disabled' and ballance>0:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
