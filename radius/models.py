@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-from mikrobill.billing.models import Account
+from mikrobill.billservice.models import Account
 SERVICE_TYPES=(
         ("PPTP","PPTP"),
         ("L2TP","PPTP"),

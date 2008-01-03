@@ -104,7 +104,9 @@ class TimePeriodNode(models.Model):
         pass
     
     class Meta:
-        pass
+        verbose_name = "Нода временного периода"
+        verbose_name_plural = "Ноды временных периодов"
+
 
 class TimePeriod(models.Model):
     name= models.CharField(max_length=255, verbose_name=u'Название группы временных периодов')
@@ -123,7 +125,8 @@ class TimePeriod(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Временной период"
+        verbose_name_plural = "Временные периоды"
 
 
     
@@ -133,8 +136,8 @@ class SettlementPeriod(models.Model):
     """
     name = models.CharField(max_length=255, verbose_name=u'Название расчётного периода')
     time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода')
-    length = models.IntegerField(verbose_name=u'Период действия в секундах')
-    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, null=True, verbose_name=u'Повторять через промежуток')
+    length = models.IntegerField(blank=True, default=0,verbose_name=u'Период действия в секундах')
+    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, null=True, verbose_name=u'Длина промежутка')
     autostart = models.BooleanField(verbose_name=u'Начинать при активации', default=False)
     next_settlementtime = models.ForeignKey('SettlementPeriod', verbose_name=u'Следующий расчётный период', blank=True, null=True)
 
@@ -153,7 +156,8 @@ class SettlementPeriod(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Расчётный период"
+        verbose_name_plural = "Расчётные периоды"
 
 class PeriodicalService(models.Model):
     """
@@ -173,7 +177,8 @@ class PeriodicalService(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Периодическая услуга"
+        verbose_name_plural = "Периодические услуги"
 
 class OneTimeService(models.Model):
     """
@@ -190,7 +195,8 @@ class OneTimeService(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Разовый платеж"
+        verbose_name_plural = "Разовые платежи"
 
 class TimeAccessNode(models.Model):
     """
@@ -198,7 +204,7 @@ class TimeAccessNode(models.Model):
     """
     name              = models.CharField(max_length=255, verbose_name=u'Название промежутка')
     time_period       = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток')
-    cost              = models.FloatField(verbose_name=u'Стоимость за секунду в указанном промежутке')
+    cost              = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке')
 
     def __unicode__(self):
         return self.name
@@ -207,13 +213,14 @@ class TimeAccessNode(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Период доступа"
+        verbose_name_plural = "Периоды доступа"
     
 class TimeAccessService(models.Model):
     """
     Доступ с тарификацией по времени
     """
-    name              = models.CharField(max_length=255, verbose_name=u'Название промежутка')
+    name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     time_periods      = models.ManyToManyField(to=TimeAccessNode, verbose_name=u'Промежутки')
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
 
@@ -224,7 +231,8 @@ class TimeAccessService(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Доступ с учётом времени"
+        verbose_name_plural = "Доступ с учётом времени"
     
 class AccessParameters(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
@@ -239,7 +247,8 @@ class AccessParameters(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Параметры доступа"
+        verbose_name_plural = "Параметры доступа"
     
 class PrepaidTraffic(models.Model):
     traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
@@ -252,7 +261,8 @@ class PrepaidTraffic(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Предоплаченный трафик"
+        verbose_name_plural = "Предоплаченный трафик"
     
 class TrafficTransmitNodes(models.Model):
     traffic_class     = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
@@ -282,7 +292,8 @@ class TrafficTransmitService(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Доступ с учётом трафика"
+        verbose_name_plural = "Доступ с учётом трафика"
     
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
@@ -292,7 +303,7 @@ class Tariff(models.Model):
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость активации тарифного плана', default=0.000 ,help_text=u"Если не указана-предоплаченный трафик и время не учитываются")
-    settlement_period       = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Расчётный период')
+    settlement_period       = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
     reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
@@ -304,7 +315,8 @@ class Tariff(models.Model):
         pass
 
     class Meta:
-        pass
+        verbose_name = "Тариф"
+        verbose_name_plural = "Тарифы"
 
 class Account(models.Model):
     user=models.ForeignKey(User,verbose_name='Системный пользователь', related_name='user_account2')
@@ -324,8 +336,12 @@ class Account(models.Model):
 
     class Admin:
         ordering = ['user']
-        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress','tarif','tarif', 'created')
+        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress','tarif', 'created')
         #list_filter = ('username')
 
     def __str__(self):
         return u'%s' % self.username
+    
+    class Meta:
+        verbose_name = "Аккаунт"
+        verbose_name_plural = "Аккаунты"
