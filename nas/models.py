@@ -12,6 +12,10 @@ class Nas(models.Model):
     login = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    user_add_action = models.TextField(verbose_name=u'Действие при создании пользователя',blank=True, null=True)
+    user_enable_action = models.TextField(verbose_name=u'Действие при разрешении работы пользователя',blank=True, null=True)
+    user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True)
+    user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True)
     
     class Admin:
           ordering = ['-name']
