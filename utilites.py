@@ -77,3 +77,22 @@ def in_period(time_start, length, repeat_after):
             if now>=tnc and now<=tkc:
                 return True
             return False
+
+def parse_command_string(template, params_dict):
+    """
+    format string can contains argument names prefixed by '%' - for example
+    '/user/add %name %password'
+    It will be changed to '/user/add name=value1 password=value2'
+    """
+    pattern = r'%([-_!@{}#\$&\*\(\)\.\?\w]+)'
+
+    def replace( match ):
+        param_name = match.group()[1:]
+        try:
+            param_value = params_dict[param_name]
+        except KeyError:
+            param_value = 'undefined'
+        return "%s=%s" % (param_name,  param_value)
+    import re
+    rc = re.compile(pattern)
+    return rc.sub(replace, format_string)

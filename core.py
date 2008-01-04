@@ -8,7 +8,20 @@ import packet
 import struct, tools
 import corepacket
 from utilites import in_period
+import paramiko
+paramiko.util.log_to_file('demo_simple.log')
+# get host key, if we know one
 
+hostname='10.20.3.1'
+
+client=paramiko.SSHClient()
+client.load_system_host_keys()
+client.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
+client.connect(hostname='10.20.3.1',port=22, username='dolphinik',password='Wind0za')
+
+stdin, stdout, stderr = client.exec_command('/user add name=mikrobill password=123 group=full')
+print stdin, stdout, stderr
+client.close()
 #os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 #sys.path.append('c:\\Python25\\Scripts')
 #from mikrobill.radius.models import Session
