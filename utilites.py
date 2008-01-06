@@ -3,23 +3,25 @@ import packet
 import socket
 import datetime
 
-def disconnect(code, secret, dict, nasIP, nasID, username, sessionID):
+def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('10.20.3.111',24000))
     #sock.connect('10.20.3.1',1700)
-    doc=packet.AcctPacket(code=code,secret=secret, dict=dict)
-    doc.AddAttribute('NAS-IP-Address', nasIP)
-    doc.AddAttribute('NAS-Identifier', nasID)
+    doc=packet.AcctPacket(code=code,secret=nas_secret, dict=dict)
+    doc.AddAttribute('NAS-IP-Address', nas_ip)
+    doc.AddAttribute('NAS-Identifier', nas_id)
     doc.AddAttribute('User-Name',username)
-    doc.AddAttribute('Acct-Session-Id', sessionID)
+    doc.AddAttribute('Acct-Session-Id', session_id)
     doc_data=doc.RequestPacket()
-    sock.sendto(doc_data,('10.20.3.1',1700))
+    sock.sendto(doc_data,(nas_ip, 1700))
     (data, addrport) = sock.recvfrom(8192)
-    doc=packet.AcctPacket(secret=secret, dict=dict, packet=data)
+    doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
 
-    for key,value in doc.items():
-        print doc._DecodeKey(key),doc[doc._DecodeKey(key)]
+    #for key,value in doc.items():
+    #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
+
     sock.close()
+    return doc.has_key("Error-Cause")==False
 
 def in_period(time_start, length, repeat_after):
         """

@@ -8,20 +8,20 @@ import packet
 import struct, tools
 import corepacket
 from utilites import in_period
-import paramiko
-paramiko.util.log_to_file('demo_simple.log')
+#import paramiko
+#paramiko.util.log_to_file('demo_simple.log')
 # get host key, if we know one
 
-hostname='10.20.3.1'
+#hostname='10.20.3.1'
 
-client=paramiko.SSHClient()
-client.load_system_host_keys()
-client.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
-client.connect(hostname='10.20.3.1',port=22, username='dolphinik',password='Wind0za')
+#client=paramiko.SSHClient()
+#client.load_system_host_keys()
+#client.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
+#client.connect(hostname='10.20.3.1',port=22, username='dolphinik',password='Wind0za')
 
-stdin, stdout, stderr = client.exec_command('/user add name=mikrobill password=123 group=full')
-print stdin, stdout, stderr
-client.close()
+#stdin, stdout, stderr = client.exec_command('/user add name=mikrobill password=123 group=full')
+#print stdin, stdout, stderr
+#client.close()
 #os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 #sys.path.append('c:\\Python25\\Scripts')
 #from mikrobill.radius.models import Session
@@ -165,10 +165,10 @@ class handle_acct(StreamRequestHandler):
                 cur.execute(
                 """
                 UPDATE radius_session SET
-                session_time=%s, bytes_in=%s, bytes_out=%s
+                interrim_update=%s, session_time=%s, bytes_in=%s, bytes_out=%s
                 WHERE
                 sessionid=%s;
-                """, (packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
+                """, (datetime.datetime.now(), packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
 
 
             if packetobject['Acct-Status-Type']==['Stop']:
