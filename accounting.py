@@ -118,40 +118,40 @@ class periodical_service_bill(Thread):
                 accounts=cur.fetchall()
                 # Получаем параметры каждой перодической услуги в выбранном ТП
                 cur.execute("""
-                SELECT b.id, b.name, b.cost,b.cash_method FROM billservice_tariff_periodical_services as p
+                SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start, c.length_in, c.autostart FROM billservice_tariff_periodical_services as p
                 JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
+		        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                 WHERE p.tariff_id='%s'
                 """ % tariff_id)
                 rows_ps=cur.fetchall()
                 # По каждой периодической услуге делаем списания для каждого аккаунта
                 for row_ps in rows_ps:
-                    ps_id = row[0]
-                    ps_name = row[1]
-                    ps_cost = row[2]
-                    ps_cash_method = row[3]
+                    ps_id = row_ps[0]
+                    ps_name = row_ps[1]
+                    ps_cost = row_ps[2]
+                    ps_cash_method = row_ps[3]
+                    name_sp=row[4]
+                    time_start_ps=row[5]
+                    length_id_sp=row[6]
+                    autostart_sp=row[7]
                     for account in accounts:
                         account_id = account[0]
                         account_datetime = account[1]
                         account_ballance = account[2]
+
                         if ps_cash_method=="GRADUAL":
                             """
-                            TO-DO:
-                            Проверяем вместится ли ещё один временной промежуток снятия до конца
-                            расчётного периода. Если не влезет-смотрим сколько уже денег сняли
-                            и считаем оставшуюся для снятия сумму. Иначе снимает очередную порцию.
+                        # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
+                        # Если закончился один-снимаем всю сумму, указанную в периодической услуге
+                        # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
+                        # а остальные помечаем неактивными и уведомляем администратора
                             """
                             #Получаем данные из расчётного периода
-                            cur.execute("SELECT name, time_start, length, length_in, autostart FROM billservice_settlementperiod WHERE id='%s'" % settlement_period_id)
-                            row_sp=cur.fetchall()
-                            name_sp=row[0]
-                            time_start_ps=row[1]
-                            length_sp=row[2]
-                            length_id_sp=row[3]
-                            autostart_sp=row[4]
                             if autostart_sp==True:
                                 time_start_ps=account_datetime
                             period_start, period_end, delta = settlement_period_info(time_start_ps, length_in)
-
+                            cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s', tarif_id='%s', account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
+                            # Здесь нужно проверить сколько раз прошёл временной период
                             cash_summ=(float(ps_cost)/float(delta))/float()
                             
         
