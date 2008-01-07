@@ -72,7 +72,7 @@ class handle_auth(StreamRequestHandler):
         
         #account=Account.objects.get(username=packetobject['User-Name'][0], ballance__gt=0)
 
-        cur.execute("""SELECT username, password, ipaddress, tarif_id, status, banned, ballance from billservice_account WHERE username='%s'""" % packetobject['User-Name'][0])
+        cur.execute("""SELECT bsa.username, bsa.password, bsa.ipaddress, (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<now() and bat.account_id=bsa.id ORDER BY datetime DESC LIMIT 1) as tarif_id, status, banned, ballance FROM billservice_account as bsa WHERE username='%s'""" % packetobject['User-Name'][0])
 
         row = cur.fetchone()
         username=''

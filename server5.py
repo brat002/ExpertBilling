@@ -8,11 +8,10 @@ import settings
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-try:
-    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-except:
-    print "I am unable to connect to the database"
+
+conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
 
 cur = conn.cursor()
 
@@ -130,12 +129,10 @@ class NetFlowPacket:
               'src_netmask_length' : flow.src_netmask_length,'dst_netmask_length' : flow.dst_netmask_length
              }
             )
-
         cur.executemany("""
         INSERT INTO nas_netflowstream(collector_id,date_start,src_addr,dst_addr,next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
-        VALUES (%(collector_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)"""
-         , flows)
-
+        VALUES (%(collector_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\
+        flows)
 ##			offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
 ##			flow_data = data[offset:offset + flow_class.LENGTH]
 ##			flow=flow_class(flow_data)
@@ -189,5 +186,5 @@ while 1:
 	for sock in rlist:
 		(data, addrport) = sock.recvfrom(8192)
 		print "Received flow packet from %s:%d" % addrport
-		#print NetFlowPacket(data, addrport)
+		print NetFlowPacket(data, addrport)
 
