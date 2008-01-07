@@ -165,10 +165,10 @@ class PeriodicalService(models.Model):
     TO-DO: Сделать справочники валют
     """
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
-#    settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
+    settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
     cost              = models.FloatField(verbose_name=u'Стоимость услуги', null=True, blank=True)
     cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS)
-    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
+#    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
     
     def __unicode__(self):
         return self.name
@@ -180,6 +180,22 @@ class PeriodicalService(models.Model):
         verbose_name = "Периодическая услуга"
         verbose_name_plural = "Периодические услуги"
 
+class PeriodicalServiceHistory(models.Model):
+    service = models.ForeignKey(to=PeriodicalService)
+    tarif   = models.ForeignKey(to='Tariff')
+    account = models.ForeignKey(to='Account')
+    summ    = models.FloatField()
+    datetime  = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return u"%s %s" % (self.service, self.account)
+
+    class Admin:
+        pass
+
+    class Meta:
+        pass
+    
 class OneTimeService(models.Model):
     """
     Справочник разовых услуг
@@ -198,6 +214,7 @@ class OneTimeService(models.Model):
         verbose_name = "Разовый платеж"
         verbose_name_plural = "Разовые платежи"
 
+    
 class TimeAccessNode(models.Model):
     """
     Нода тарификации по времени
@@ -318,30 +335,77 @@ class Tariff(models.Model):
         verbose_name = "Тариф"
         verbose_name_plural = "Тарифы"
 
+
 class Account(models.Model):
-    user=models.ForeignKey(User,verbose_name='Системный пользователь', related_name='user_account2')
-    username=models.CharField(verbose_name='Имя пользователя',max_length=200,unique=True)
-    password=models.CharField(verbose_name='Пароль',max_length=200)
-    firstname=models.CharField(verbose_name='Имя',max_length=200)
-    lastname=models.CharField(verbose_name='Фамилия',max_length=200)
-    address=models.TextField(verbose_name='Домашний адрес')
-    tarif=models.ForeignKey(Tariff,verbose_name='Тарифный план')
+    user=models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
+    username=models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
+    password=models.CharField(verbose_name=u'Пароль',max_length=200)
+    firstname=models.CharField(verbose_name=u'Имя',max_length=200)
+    lastname=models.CharField(verbose_name=u'Фамилия',max_length=200)
+    address=models.TextField(verbose_name=u'Домашний адрес')
+#    tarif=models.ForeignKey(Tariff,verbose_name=u'Тарифный план')
     ipaddress=models.IPAddressField(u'IP адрес')
-    status=models.CharField(verbose_name='Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
-    banned=models.CharField(verbose_name='Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
-    created=models.DateTimeField(verbose_name='Создан',auto_now_add=True)
-    ballance=models.FloatField('Балланс', blank=True)
+    status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    banned=models.CharField(verbose_name=u'Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
+    ballance=models.FloatField(u'Балланс', blank=True)
 
 
 
     class Admin:
         ordering = ['user']
-        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress','tarif', 'created')
+        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress', 'created')
         #list_filter = ('username')
 
     def __str__(self):
         return u'%s' % self.username
     
     class Meta:
-        verbose_name = "Аккаунт"
-        verbose_name_plural = "Аккаунты"
+        verbose_name = u"Аккаунт"
+        verbose_name_plural = u"Аккаунты"
+        
+    def save(self):
+        id=self.id
+        super(Account, self).save()
+        if id==None and self.status=='Active':
+            cost=0
+            for ots in self.tarif.onetime_servies.all():
+                cost+=ots.cost
+            transaction=Transaction()
+            transaction.account=self
+            transaction.tarif=self.select_related().filter(accounttarif__account=self.id, accounttarif__datetimelte=datetime.datetime.now())[:1]
+            transaction.summ = cost
+            transaction.description = u'Снятие за первоначальную услугу'
+            transaction.save()
+
+
+class Transaction(models.Model):
+    account=models.ForeignKey(Account)
+    tarif=models.ForeignKey(Tariff)
+    summ=models.FloatField(blank=True)
+    description = models.TextField()
+    created=models.DateTimeField(auto_now_add=True)
+
+    class Admin:
+        list_display=('account', 'tarif', 'summ', 'description','created')
+
+    class Meta:
+        pass
+
+    def save(self):
+        self.account.ballance-=self.summ
+        self.account.save()
+        super(Transaction, self).save()
+
+    def delete(self):
+        self.account.ballance+=self.summ
+        self.account.save()
+        super(Transaction, self).delete()
+
+class AccountTarif(models.Model):
+    account   = models.ForeignKey(to=Account, edit_inline=models.STACKED)
+    tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True)
+    datetime  = models.DateTimeField()
+    
+    class Admin:
+        pass

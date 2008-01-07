@@ -37,7 +37,7 @@ class Session(models.Model):
 
     class Admin:
         ordering = ['-date_start']
-        list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start','date_end','caller_id','called_id','nas_id','session_time')
+        list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start', 'interrim_update', 'date_end','caller_id','called_id','nas_id','session_time')
     
     class Meta:
         pass

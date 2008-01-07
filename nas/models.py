@@ -45,7 +45,9 @@ class NetFlowStream(models.Model):
     out_index = models.IntegerField()
     packets = models.IntegerField()
     octets = models.IntegerField()
+    #sysuptime start flow aggregate
     start = models.IntegerField()
+    #sysuptime flow send
     finish = models.IntegerField()
     src_port = models.IntegerField()
     dst_port = models.IntegerField()
