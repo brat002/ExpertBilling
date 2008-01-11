@@ -151,7 +151,7 @@ class periodical_service_bill(Thread):
                                 time_start_ps=account_datetime
                             period_start, period_end, delta = settlement_period_info(time_start_ps, length_in)
                             cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s', tarif_id='%s', account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
-                            # Здесь нужно проверить сколько раз прошёл временной период
+                            # Здесь нужно проверить сколько раз прошёл расчётный период
                             cash_summ=(float(ps_cost)/float(delta))/float()
                             
         
