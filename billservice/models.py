@@ -403,7 +403,7 @@ class Transaction(models.Model):
         super(Transaction, self).delete()
 
 class AccountTarif(models.Model):
-    account   = models.ForeignKey(to=Account, edit_inline=models.STACKED)
+    account   = models.ForeignKey(to=Account, edit_inline=models.STACKED, num_in_admin=1)
     tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True)
     datetime  = models.DateTimeField()
     
