@@ -1,4 +1,5 @@
 ﻿import socket, select,struct, md5
+import pickle
 from socket import AF_INET, SOCK_DGRAM
 import dictionary
 import packet
@@ -15,6 +16,29 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
+import logging
+
+auth_logger = logging.getLogger("RADIUS SERVER")
+auth_logger.setLevel(logging.DEBUG)
+#create file handler and set level to debug
+fh = logging.FileHandler("spam.log")
+fh.setLevel(logging.DEBUG)
+#create console handler and set level to error
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+#create formatter
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+#add formatter to fh
+fh.setFormatter(formatter)
+#add formatter to ch
+ch.setFormatter(formatter)
+#add fh to logger
+auth_logger.addHandler(fh)
+#add ch to logger
+auth_logger.addHandler(ch)
+
+
+
 
 
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
@@ -23,13 +47,11 @@ data=''
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):
+        auth_logger = logging.getLogger("RADIUS SERVER")
         t = time.clock()
         # self.request is the socket object
-        print "%s I got an request from ip=%s port=%s" % (
-            time.strftime("%Y-%m-%d %H:%M:%S"),
-            self.client_address[0],
-            self.client_address[1]
-            )
+        print "%s I got an request from ip=%s port=%s" % (time.strftime("%Y-%m-%d %H:%M:%S"), self.client_address[0], self.client_address[1] )
+        auth_logger.info("nanana")
         #self.request.send("What is your name?\n")
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
@@ -45,9 +67,17 @@ class handle_auth(DatagramRequestHandler):
         #А вот таким образом можем взять уже готовую для отправки строку аргументов attrs=packetfromcore._PktEncodeAttributes()
         #
         packetobject=packet.Packet(secret=packetfromcore.secret, dict=dict,packet=data)
+        #f=open('request','w')
+        #x=pickle.Pickler(f)
+        #x.dump(data)
+        #f.close()
         authobject=auth.Auth(Packet=packetobject, plainpassword=packetfromcore.password, plainusername=packetfromcore.username, code=packetfromcore.code, attrs=packetfromcore._PktEncodeAttributes())
         returndata=authobject.ReturnPacket()
         self.socket.sendto(returndata,addrport)
+        del reqpack
+        del corereply
+        del packetfromcore
+        del packetobject
         print "%.20f" % (time.clock()-t)
 
 class handle_acct(DatagramRequestHandler):
@@ -71,6 +101,7 @@ class handle_acct(DatagramRequestHandler):
         returndat=replyobj.ReplyPacket()
         self.socket.sendto(returndat,addrport)
         print "%.20f" % (time.clock()-t)
+
           
 
 class serve_requests(Thread):

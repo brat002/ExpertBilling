@@ -1,4 +1,6 @@
 # coding=utf8
+import psyco
+psyco.full()
 import sys,time,os,datetime
 from SocketServer import ThreadingTCPServer
 from SocketServer import StreamRequestHandler
@@ -43,6 +45,9 @@ dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
 
 class handle_auth(StreamRequestHandler):
+    #def setup(self):
+    #     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
     def handle(self):
         # self.request is the socket object
         #print "%s I got an request from ip=%s port=%s" % (
@@ -90,7 +95,7 @@ class handle_auth(StreamRequestHandler):
         row=cur.fetchone()
 
         if int(row[0])==int(nas_id):
-            nas_accept=True
+           nas_accept=True
         else:
             nas_accept=False
         cur.execute("""SELECT id, name, time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
@@ -119,6 +124,9 @@ class handle_auth(StreamRequestHandler):
         #data_to_send=replypacket._PktEncodeAttributes()
         self.request.sendto(data_to_send,self.client_address) # or send(data, flags)
         #print "%s connection finnished" % self.client_address[0]
+        
+        
+            
         
 class handle_acct(StreamRequestHandler):
         def handle(self):
@@ -153,6 +161,10 @@ class handle_acct(StreamRequestHandler):
                 )
                 VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s, 'PPTP');
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
+                f=open('start','w')
+                x=pickle.Pickler(f)
+                x.dump(response[11:])
+                f.close()
                 
 
             if packetobject['Acct-Status-Type']==['Alive']:
@@ -169,7 +181,10 @@ class handle_acct(StreamRequestHandler):
                 WHERE
                 sessionid=%s;
                 """, (datetime.datetime.now(), packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
-
+                f=open('alive','w')
+                x=pickle.Pickler(f)
+                x.dump(response[11:])
+                f.close()
 
             if packetobject['Acct-Status-Type']==['Stop']:
                 #sess=Session()
@@ -186,7 +201,10 @@ class handle_acct(StreamRequestHandler):
                 WHERE
                 sessionid=%s;
                 """, (packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], datetime.datetime.now(), packetobject['Acct-Session-Id'][0]))
-
+                f=open('stop','w')
+                x=pickle.Pickler(f)
+                x.dump(response[11:])
+                f.close()
 #            for key,value in packetobject.items():
 #                print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)]
             cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
@@ -213,6 +231,7 @@ class serve_auth(Thread):
         def __init__ (self,address, handler):
             self.address=address
             self.handler=handler
+            self.allow_reuse_address=True
             Thread.__init__(self)
 
         def run(self):

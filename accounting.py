@@ -5,6 +5,11 @@ from utilites import disconnect, settlement_period_info
 import dictionary
 from threading import Thread
 from utilites import in_period
+import logging
+import logging.config
+import time
+import os
+
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
@@ -155,6 +160,35 @@ class periodical_service_bill(Thread):
                             cash_summ=(float(ps_cost)/float(delta))/float()
                             
         
+class LoggerThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        #specify logging config file
+        logging.config.fileConfig("logging.conf")
+
+        #create and start listener on port 9999
+        t = logging.config.listen(9999)
+        t.start()
+
+        #create logger
+        logger = logging.getLogger("simpleExample")
+
+        #watch for existence of file named "f"
+        #loop through the code while this file exists
+        
+        while os.path.isfile('f'):
+            logger.debug("debug message")
+            logger.info("info message")
+            logger.warn("warn message")
+            logger.error("error message")
+            logger.critical("critical message")
+            time.sleep(5)
+
+        #cleanup
+        logging.config.stopListening()
+        t.join()
         
         
         
@@ -164,5 +198,8 @@ cas.start()
 
 sess_dog = session_dog()
 sess_dog.start()
+
+logg_thread = LoggerThread()
+logg_thread.start()
 
 #check_access()

@@ -39,19 +39,23 @@ class CoreConnection:
     """
     def __init__(self, address):
         self.address=address
-        self.CreateConnection()
-
-
-    def CreateConnection(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.settimeout(5)
+        #self.sock.bind(('10.20.3.111',2227))
         self.sock.connect(self.address)
 
     def recvdata(self):
               #(rlist, wlist, xlist) = select.select(self.sock, [], self.sock)
-              (data, addrport) = self.sock.recvfrom(8192)
-              return data
+          (data, addrport) = self.sock.recvfrom(8192)
+          #self.sock.close()
+          self.sock.close()
+          return data
 
     def senddata(self,data):
         #(rlist, wlist, xlist) = select.select([] ,self.sock, [])
         return self.sock.send(data)
+
+    def __del__(self):
+        self.sock.close()
+        
