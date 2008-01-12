@@ -1,6 +1,6 @@
-﻿import socket, select,struct, md5
-import pickle
-from socket import AF_INET, SOCK_DGRAM
+﻿#import socket, select,struct, md5
+#import pickle
+#from socket import AF_INET, SOCK_DGRAM
 import dictionary
 import packet
 import auth
@@ -16,42 +16,17 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
-import logging
-
-auth_logger = logging.getLogger("RADIUS SERVER")
-auth_logger.setLevel(logging.DEBUG)
-#create file handler and set level to debug
-fh = logging.FileHandler("spam.log")
-fh.setLevel(logging.DEBUG)
-#create console handler and set level to error
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-#create formatter
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-#add formatter to fh
-fh.setFormatter(formatter)
-#add formatter to ch
-ch.setFormatter(formatter)
-#add fh to logger
-auth_logger.addHandler(fh)
-#add ch to logger
-auth_logger.addHandler(ch)
-
-
-
-
-
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 
 data=''
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):
-        auth_logger = logging.getLogger("RADIUS SERVER")
+        #auth_logger = logging.getLogger("RADIUS SERVER")
         t = time.clock()
         # self.request is the socket object
-        print "%s I got an request from ip=%s port=%s" % (time.strftime("%Y-%m-%d %H:%M:%S"), self.client_address[0], self.client_address[1] )
-        auth_logger.info("nanana")
+        #print "%s I got an request from ip=%s port=%s" % (time.strftime("%Y-%m-%d %H:%M:%S"), self.client_address[0], self.client_address[1] )
+        #auth_logger.info("nanana")
         #self.request.send("What is your name?\n")
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
@@ -78,7 +53,7 @@ class handle_auth(DatagramRequestHandler):
         del corereply
         del packetfromcore
         del packetobject
-        print "%.20f" % (time.clock()-t)
+        #print "%.20f" % (time.clock()-t)
 
 class handle_acct(DatagramRequestHandler):
       def handle(self):

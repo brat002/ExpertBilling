@@ -49,6 +49,7 @@ class CoreConnection:
               #(rlist, wlist, xlist) = select.select(self.sock, [], self.sock)
           (data, addrport) = self.sock.recvfrom(8192)
           #self.sock.close()
+          self.sock.shutdown(1)
           self.sock.close()
           return data
 
@@ -56,6 +57,4 @@ class CoreConnection:
         #(rlist, wlist, xlist) = select.select([] ,self.sock, [])
         return self.sock.send(data)
 
-    def __del__(self):
-        self.sock.close()
         

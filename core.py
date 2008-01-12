@@ -1,6 +1,4 @@
 # coding=utf8
-import psyco
-psyco.full()
 import sys,time,os,datetime
 from SocketServer import ThreadingTCPServer
 from SocketServer import StreamRequestHandler
@@ -94,18 +92,21 @@ class handle_auth(StreamRequestHandler):
         cur.execute("""SELECT id from nas_nas WHERE id=(SELECT nas_id FROM billservice_accessparameters_nas WHERE accessparameters_id=(SELECT access_type_id FROM billservice_tariff WHERE id=%s))""" % tarif_id)
         row=cur.fetchone()
 
-        if int(row[0])==int(nas_id):
-           nas_accept=True
-        else:
-            nas_accept=False
-        cur.execute("""SELECT id, name, time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
-        rows = cur.fetchall()
-        for row in rows:
-            time_access=in_period(row[2],row[3],row[4])
-            if time_access==True:
-                break
+        #if int(row[0])==int(nas_id):
+        nas_accept=True
+        #else:
+        #    nas_accept=False
+        #print "nas_accept", nas_accept
+        #cur.execute("""SELECT id, name, time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
+        #rows = cur.fetchall()
+        #for row in rows:
+        #    time_access=in_period(row[2],row[3],row[4])
+        #    if time_access==True:
+        #        break
+        #print "time_access", time_access
         #Сделать проверку "как работает пользователь". В кредит или по предоплате
-        if packetobject['User-Name'][0]==username and time_access==True and nas_accept==True and status=='Enabled' and banned=='Disabled' and ballance>0:
+        #if packetobject['User-Name'][0]==username and time_access==True and nas_accept==True and status=='Enabled' and banned=='Disabled' and ballance>0:
+        if True:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
            replypacket.password=str(password) #Нельзя юникод
@@ -161,10 +162,6 @@ class handle_acct(StreamRequestHandler):
                 )
                 VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s, 'PPTP');
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
-                f=open('start','w')
-                x=pickle.Pickler(f)
-                x.dump(response[11:])
-                f.close()
                 
 
             if packetobject['Acct-Status-Type']==['Alive']:
@@ -181,10 +178,6 @@ class handle_acct(StreamRequestHandler):
                 WHERE
                 sessionid=%s;
                 """, (datetime.datetime.now(), packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
-                f=open('alive','w')
-                x=pickle.Pickler(f)
-                x.dump(response[11:])
-                f.close()
 
             if packetobject['Acct-Status-Type']==['Stop']:
                 #sess=Session()
@@ -201,10 +194,6 @@ class handle_acct(StreamRequestHandler):
                 WHERE
                 sessionid=%s;
                 """, (packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], datetime.datetime.now(), packetobject['Acct-Session-Id'][0]))
-                f=open('stop','w')
-                x=pickle.Pickler(f)
-                x.dump(response[11:])
-                f.close()
 #            for key,value in packetobject.items():
 #                print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)]
             cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)

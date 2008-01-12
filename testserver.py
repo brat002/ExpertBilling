@@ -9,7 +9,7 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 f=open('request','r')
 u = pickle.Unpickler(f)
 data = u.load()
-
+n=0
 f.close()
 addr=('10.20.3.111',1812)
 class AuthRequest(Thread):
@@ -18,11 +18,25 @@ class AuthRequest(Thread):
 
       def run(self):
           sock.connect(addr)
+          global n
           while True:
                 sock.send(data)
+                n+=1
                 a=sock.recv(8192)
-                time.sleep(0.01)
+                #time.sleep(0.01)
           
           
-a=AuthRequest()
-a.start()
+#a=AuthRequest()
+#a.start()
+
+b=[]
+for i in xrange(5):
+    a=AuthRequest()
+    b.append(a.start())
+
+time.sleep(20)
+print n
+for i in b:
+    i.join()
+    
+print n

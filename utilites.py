@@ -95,7 +95,7 @@ def settlement_period_info(time_start, repeat_after):
             nums,ost= divmod(delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length-1)
+            tkc=tnc+datetime.timedelta(seconds=length)
             return (tnc, tkc, length)
         
         elif repeat_after=='WEEK':
@@ -105,14 +105,15 @@ def settlement_period_info(time_start, repeat_after):
             nums,ost= divmod(delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length-1)
+            tkc=tnc+datetime.timedelta(seconds=length)
             if now>=tnc and now<=tkc:
                 return True
             return (tnc, tkc, length)
         elif repeat_after=='MONTH':
             #Февраль!
+            # DONT WORKING!
             tnc=datetime.datetime(now.year, now.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
-            tkc=tnc+datetime.timedelta(days=calendar.monthrange(tnc.year, tnc.month)[1])-datetime.timedelta(seconds=1)
+            tkc=tnc+datetime.timedelta(days=calendar.monthrange(tnc.year, tnc.month)[1])
             delta=tkc-tnc
             return (tnc, tkc, delta.seconds)
         elif repeat_after=='YEAR':
@@ -144,3 +145,9 @@ def parse_command_string(template, params_dict):
     import re
     rc = re.compile(pattern)
     return rc.sub(replace, format_string)
+
+def Transaction(account, approved, tarif, summ, description):
+    """
+    TO-DO: Сделать из функции класс
+    """
+    return True

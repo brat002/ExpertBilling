@@ -61,15 +61,15 @@ class Auth:
         if self.code!=3:
            if self.typeauth=='PAP':
              if self._PwDecrypt(password=self.Packet['User-Password'][0], authenticator=self.Packet.authenticator, secret=self.Packet.secret):
-                 print "PAP Authorisation Ok"
+                 #print "PAP Authorisation Ok"
                  self.AccessAccept=True
            if self.typeauth=='CHAP':
              if self._CHAPDecrypt():
-                  print "CHAP Authorisation Ok"
+                  #print "CHAP Authorisation Ok"
                   self.AccessAccept=True
            if self.typeauth=='MSCHAP2':
              if self._MSCHAP2Decrypt(self.plainusername, self.plainpassword):
-                print "MSCHAP2 Authorisation Ok"
+                #print "MSCHAP2 Authorisation Ok"
                 self.AccessAccept=True
                
     def _MSCHAP2Decrypt(self, username, plainpassword):
