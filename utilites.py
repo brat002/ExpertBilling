@@ -2,6 +2,8 @@
 import packet
 import socket
 import datetime, calendar
+from dateutil.relativedelta import relativedelta
+
 
 def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -80,12 +82,10 @@ def in_period(time_start, length, repeat_after):
                 return True
             return False
 
-def settlement_period_info(time_start, repeat_after):
+def settlement_period_info(time_start, repeat_after, now=datetime.datetime.now()):
         """
         Функция возвращает дату начала и дату конца текущегопериода
         """
-        now=datetime.datetime.now()
-
         #time_start=time_start.replace(tzinfo='UTC')
         if repeat_after=='DAY':
             delta_days=now - time_start
@@ -112,10 +112,19 @@ def settlement_period_info(time_start, repeat_after):
         elif repeat_after=='MONTH':
             #Февраль!
             # DONT WORKING!
-            tnc=datetime.datetime(now.year, now.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
-            tkc=tnc+datetime.timedelta(days=calendar.monthrange(tnc.year, tnc.month)[1])
+            months=relativedelta(now,time_start).months
+            #print dir(delta_days)
+
+            
+            #tnc=datetime.datetime(now.year, now.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
+            tnc=time_start+relativedelta(months=months)
+            #tkc=tnc+datetime.timedelta(days=calendar.monthrange(tnc.year, tnc.month)[1])
+            tkc=tnc+relativedelta(months=1)
             delta=tkc-tnc
-            return (tnc, tkc, delta.seconds)
+            print tnc
+            print tkc
+            print delta
+            return (tnc, tkc, delta.days*86400)
         elif repeat_after=='YEAR':
             #Февраль!
             tnc=datetime.datetime(now.year, time_start.month, time_start.day,time_start.hour,time_start.minute, time_start.second)

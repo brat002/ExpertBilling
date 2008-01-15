@@ -103,7 +103,7 @@ class periodical_service_bill(Thread):
         
     def run(self):
         while True:
-            # Количество снятий в неделю
+            # Количество снятий в сутки
             transaction_number=24
             n=(24*60*60)/transaction_number
             #time.sleep(n)
@@ -153,7 +153,9 @@ class periodical_service_bill(Thread):
                         if autostart_sp==True:
                            time_start_ps=account_datetime
                         print ps_name, length_in_sp
-                        period_start, period_end, delta = settlement_period_info(time_start_ps, length_in_sp)
+                        period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp)
+
+                        cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
 
                         if ps_cash_method=="GRADUAL":
                             """
@@ -162,16 +164,18 @@ class periodical_service_bill(Thread):
                         # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                         # а остальные помечаем неактивными и уведомляем администратора
                             """
-                            cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
+                            #cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
                             # Здесь нужно проверить сколько раз прошёл расчётный период
                             try:
                                 last_checkout=cur.fetchone()[0]
                             except:
                                 last_checkout=period_start
+                            #Проверяем наступил ли новый период
+                            if datetime.datetime.now()-datetime.timedelta(seconds=n)<=period_start:
+                                # Смотрим сколько сняли за прошлый период
+                                # Находим когда начался прошльый период
+                                period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=datetime.datetime.now()-datetime.timedelta(seconds=n))
                                 
-                            if datetime.datetime.now()+datetime.timedelta(seconds=n)<=period_end:
-                                #посчитать сколько осталось доснять до нужной суммы
-                                pass
                             lc=last_checkout-period_start
                             nums, ost=divmod(lc.seconds,delta)
                             for i in xrange(nums-1):
