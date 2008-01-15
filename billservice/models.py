@@ -372,6 +372,7 @@ class Account(models.Model):
             for ots in self.tarif.onetime_servies.all():
                 cost+=ots.cost
             transaction=Transaction()
+            transaction.approved=True
             transaction.account=self
             transaction.tarif=self.select_related().filter(accounttarif__account=self.id, accounttarif__datetimelte=datetime.datetime.now())[:1]
             transaction.summ = cost
@@ -381,6 +382,7 @@ class Account(models.Model):
 
 class Transaction(models.Model):
     account=models.ForeignKey(Account)
+    approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff)
     summ=models.FloatField(blank=True)
     description = models.TextField()
@@ -393,9 +395,10 @@ class Transaction(models.Model):
         pass
 
     def save(self):
-        self.account.ballance-=self.summ
-        self.account.save()
-        super(Transaction, self).save()
+        if self.approved!=False:
+           self.account.ballance-=self.summ
+           self.account.save()
+           super(Transaction, self).save()
 
     def delete(self):
         self.account.ballance+=self.summ
