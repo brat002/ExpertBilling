@@ -182,9 +182,10 @@ class PeriodicalService(models.Model):
 
 class PeriodicalServiceHistory(models.Model):
     service = models.ForeignKey(to=PeriodicalService)
-    tarif   = models.ForeignKey(to='Tariff')
-    account = models.ForeignKey(to='Account')
-    summ    = models.FloatField()
+    #tarif   = models.ForeignKey(to='Tariff')
+    transaction = models.ForeignKey(to='Transaction')
+    #account = models.ForeignKey(to='Account')
+    #summ    = models.FloatField()
     datetime  = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
