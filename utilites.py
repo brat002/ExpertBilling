@@ -121,9 +121,9 @@ def settlement_period_info(time_start, repeat_after, now=datetime.datetime.now()
             #tkc=tnc+datetime.timedelta(days=calendar.monthrange(tnc.year, tnc.month)[1])
             tkc=tnc+relativedelta(months=1)
             delta=tkc-tnc
-            print tnc
-            print tkc
-            print delta
+            #print tnc
+            #print tkc
+            #print delta
             return (tnc, tkc, delta.days*86400)
         elif repeat_after=='YEAR':
             #Февраль!

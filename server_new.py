@@ -53,7 +53,7 @@ class handle_auth(DatagramRequestHandler):
         del corereply
         del packetfromcore
         del packetobject
-        #print "%.20f" % (time.clock()-t)
+        print "%.20f" % (time.clock()-t)
 
 class handle_acct(DatagramRequestHandler):
       def handle(self):

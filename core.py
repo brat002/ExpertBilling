@@ -157,11 +157,11 @@ class handle_acct(StreamRequestHandler):
                 cur.execute(
                 """
                 INSERT INTO radius_session(
-                account_id, sessionid, date_start,
-                caller_id, called_id, nas_id, framed_protocol
+                account_id, sessionid, date_start, interrim_update,
+                caller_id, called_id, nas_id, framed_protocol, checkouted
                 )
-                VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s, 'PPTP');
-                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
+                VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s,  %s, %s, %s, 'PPTP', %s);
+                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False))
                 
 
             if packetobject['Acct-Status-Type']==['Alive']:
@@ -171,14 +171,29 @@ class handle_acct(StreamRequestHandler):
                 #sess.bytes_in=packetobject['Acct-Input-Packets'][0]
                 #sess.bytes_out=packetobject['Acct-Output-Packets'][0]
                 #sess.save()
+                #cur.execute(
+                #"""
+                #UPDATE radius_session SET
+                #interrim_update=%s, session_time=%s, bytes_in=%s, bytes_out=%s
+                #WHERE
+                #sessionid=%s;
+                #""", (datetime.datetime.now(), packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
+
                 cur.execute(
                 """
-                UPDATE radius_session SET
-                interrim_update=%s, session_time=%s, bytes_in=%s, bytes_out=%s
-                WHERE
-                sessionid=%s;
-                """, (datetime.datetime.now(), packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Id'][0]))
-
+                INSERT INTO radius_session(
+                account_id, sessionid, interrim_update,
+                caller_id, called_id, nas_id, session_time,
+                bytes_in, bytes_out, checkouted)
+                VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s,
+                %s, %s, %s, %s, %s);
+                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
+                      datetime.datetime.now(), packetobject['Calling-Station-Id'][0],
+                      packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
+                      packetobject['Acct-Session-Time'][0],
+                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False)
+                )
+                
             if packetobject['Acct-Status-Type']==['Stop']:
                 #sess=Session()
                 #sess=Session.objects.get(sessionid=packetobject['Acct-Session-Id'][0])
@@ -187,15 +202,29 @@ class handle_acct(StreamRequestHandler):
                 #sess.bytes_out=packetobject['Acct-Output-Packets'][0]
                 #sess.date_end=datetime.datetime.now()
                 #sess.save()
+                #cur.execute(
+                #"""
+                #UPDATE radius_session SET
+                #session_time=%s, bytes_in=%s, bytes_out=%s, date_end=%s
+                #WHERE
+                #sessionid=%s;
+                #""", (packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], datetime.datetime.now(), packetobject['Acct-Session-Id'][0]))
+                now=datetime.datetime.now()
                 cur.execute(
                 """
-                UPDATE radius_session SET
-                session_time=%s, bytes_in=%s, bytes_out=%s, date_end=%s
-                WHERE
-                sessionid=%s;
-                """, (packetobject['Acct-Session-Time'][0],packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], datetime.datetime.now(), packetobject['Acct-Session-Id'][0]))
-#            for key,value in packetobject.items():
-#                print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)]
+                INSERT INTO radius_session(
+                account_id, sessionid, interrim_update, date_end,
+                caller_id, called_id, nas_id, session_time,
+                bytes_in, bytes_out, checkouted)
+                VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s);
+                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
+                      now, now, packetobject['Calling-Station-Id'][0],
+                      packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
+                      packetobject['Acct-Session-Time'][0],
+                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False)
+                )
+
             cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
             rows = cur.fetchall()
             for row in rows:
