@@ -1,5 +1,5 @@
 # coding=utf8
-import socket, struct, select
+import socket, struct
 from settings import *
 import tools
 requestpacketid=1

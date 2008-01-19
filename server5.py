@@ -186,5 +186,6 @@ while 1:
 	for sock in rlist:
 		(data, addrport) = sock.recvfrom(8192)
 		print "Received flow packet from %s:%d" % addrport
-		print NetFlowPacket(data, addrport)
+		#print
+        NetFlowPacket(data, addrport)
 

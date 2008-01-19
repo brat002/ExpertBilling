@@ -6,9 +6,9 @@ import packet
 import auth
 import time
 import settings
-from coreconnection import *
+from coreconnection import RequestPacket
 import corepacket
-import utilites
+#import utilites
 from SocketServer import ThreadingUDPServer, DatagramRequestHandler
 from threading import Thread
 #значения поля code
