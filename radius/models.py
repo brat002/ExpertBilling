@@ -33,7 +33,8 @@ class Session(models.Model):
     #Атрибут радиуса Acct-Output-Packets
     bytes_out=models.IntegerField(null=True,blank=True)
     #Выставляется в случае, если был произведён платёж
-    checkouted = models.BooleanField(default=False, blank=True)
+    checkouted_by_time = models.BooleanField(default=False, blank=True)
+    checkouted_by_trafic = models.BooleanField(default=False, blank=True)
 
     
 

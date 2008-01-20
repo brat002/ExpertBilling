@@ -189,7 +189,7 @@ class PeriodicalServiceHistory(models.Model):
     datetime  = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return u"%s %s" % (self.service, self.account)
+        return u"%s" % (self.service)
 
     class Admin:
         pass
