@@ -158,10 +158,10 @@ class handle_acct(StreamRequestHandler):
                 """
                 INSERT INTO radius_session(
                 account_id, sessionid, date_start, interrim_update,
-                caller_id, called_id, nas_id, framed_protocol, checkouted
+                caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
                 )
-                VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s,  %s, %s, %s, 'PPTP', %s);
-                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False))
+                VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
+                """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
                 
 
             if packetobject['Acct-Status-Type']==['Alive']:
@@ -184,14 +184,14 @@ class handle_acct(StreamRequestHandler):
                 INSERT INTO radius_session(
                 account_id, sessionid, interrim_update,
                 caller_id, called_id, nas_id, session_time,
-                bytes_in, bytes_out, checkouted)
-                VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s,
+                bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic)
+                VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s);
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
                       datetime.datetime.now(), packetobject['Calling-Station-Id'][0],
                       packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                       packetobject['Acct-Session-Time'][0],
-                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False)
+                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
                 )
                 
             if packetobject['Acct-Status-Type']==['Stop']:
@@ -215,14 +215,14 @@ class handle_acct(StreamRequestHandler):
                 INSERT INTO radius_session(
                 account_id, sessionid, interrim_update, date_end,
                 caller_id, called_id, nas_id, session_time,
-                bytes_in, bytes_out, checkouted)
+                bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic)
                 VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s);
+                %s, %s, %s, %s, %s, %s, %s);
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
                       now, now, packetobject['Calling-Station-Id'][0],
                       packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                       packetobject['Acct-Session-Time'][0],
-                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False)
+                      packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
                 )
 
             cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)

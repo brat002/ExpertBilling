@@ -9,7 +9,169 @@ import logging
 import logging.config
 import time
 import os
+"""
+# threads.py -- example of multiple threads using psycopg
+# -*- encoding: latin1 -*-
+#
+# Copyright (C) 2001-2004 Federico Di Gregorio  <fog@debian.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
 
+## put in DSN your DSN string
+
+DSN = 'dbname=test'
+
+## some others parameters
+INSERT_THREADS = ('A', 'B', 'C')
+SELECT_THREADS = ('1', '2')
+
+ROWS = 1000
+
+COMMIT_STEP = 20
+SELECT_SIZE = 10000
+SELECT_STEP = 500
+SELECT_DIV  = 250
+
+# the available modes are:
+# 0 - one connection for all insert and one for all select threads
+# 1 - connections generated using the connection pool
+
+MODE = 1
+
+## don't modify anything below tis line (except for experimenting)
+
+import sys, psycopg2, threading
+from psycopg2.pool import ThreadedConnectionPool
+
+if len(sys.argv) > 1:
+    DSN = sys.argv[1]
+if len(sys.argv) > 2:
+    MODE = int(sys.argv[2])
+
+print "Opening connection using dns:", DSN
+conn = psycopg2.connect(DSN)
+curs = conn.cursor()
+
+try:
+#    curs.execute("l";"CREATE TABLE test_threads (
+                        name text, value1 int4, value2 float)"l"")
+except:
+    conn.rollback()
+    curs.execute("DROP TABLE test_threads")
+    curs.execute(""l"CREATE TABLE test_threads (
+                        name text, value1 int4, value2 float)""l")
+conn.commit()
+
+
+## this function inserts a big number of rows and creates and destroys
+## a large number of cursors
+
+def insert_func(conn_or_pool, rows):
+    name = threading.currentThread().getName()
+
+    if MODE == 0:
+        conn = conn_or_pool
+    else:
+        conn = conn_or_pool.getconn()
+
+    for i in range(rows):
+        if divmod(i, COMMIT_STEP)[1] == 0:
+            conn.commit()
+            if MODE == 1:
+                conn_or_pool.putconn(conn)
+            s = name + ": COMMIT STEP " + str(i)
+            print s
+            if MODE == 1:
+                conn = conn_or_pool.getconn()
+        c = conn.cursor()
+        try:
+            c.execute("INSERT INTO test_threads VALUES (%s, %s, %s)",
+                      (str(i), i, float(i)))
+        except psycopg2.ProgrammingError, err:
+            print name, ": an error occurred; skipping this insert"
+            print err
+    conn.commit()
+
+## a nice select function that prints the current number of rows in the
+## database (and transefer them, putting some pressure on the network)
+
+def select_func(conn_or_pool, z):
+    name = threading.currentThread().getName()
+
+    if MODE == 0:
+        conn = conn_or_pool
+        conn.set_isolation_level(0)
+
+    for i in range(SELECT_SIZE):
+        if divmod(i, SELECT_STEP)[1] == 0:
+            try:
+                if MODE == 1:
+                    conn = conn_or_pool.getconn()
+                    conn.set_isolation_level(0)
+                c = conn.cursor()
+                c.execute("SELECT * FROM test_threads WHERE value2 < %s",
+                          (int(i/z),))
+                l = c.fetchall()
+                if MODE == 1:
+                    conn_or_pool.putconn(conn)
+                s = name + ": number of rows fetched: " + str(len(l))
+                print s
+            except psycopg2.ProgrammingError, err:
+                print name, ": an error occurred; skipping this select"
+                print err
+
+## create the connection pool or the connections
+if MODE == 0:
+    conn_insert = psycopg2.connect(DSN)
+    conn_select = psycopg2.connect(DSN)
+else:
+    m = len(INSERT_THREADS) + len(SELECT_THREADS)
+    n = m/2
+    conn_insert = conn_select = ThreadedConnectionPool(n, m, DSN)
+
+## create the threads
+threads = []
+
+print "Creating INSERT threads:"
+for name in INSERT_THREADS:
+    t = threading.Thread(None, insert_func, 'Thread-'+name,
+                         (conn_insert, ROWS))
+    t.setDaemon(0)
+    threads.append(t)
+
+print "Creating SELECT threads:"
+for name in SELECT_THREADS:
+    t = threading.Thread(None, select_func, 'Thread-'+name,
+                         (conn_select, SELECT_DIV))
+    t.setDaemon(0)
+    threads.append(t)
+
+## really start the threads now
+for t in threads:
+    t.start()
+
+# and wait for them to finish
+for t in threads:
+    t.join()
+    print t.getName(), "exited OK"
+
+
+conn.commit()
+curs.execute("SELECT count(name) FROM test_threads")
+print "Inserted", curs.fetchone()[0], "rows."
+
+curs.execute("DROP TABLE test_threads")
+conn.commit()
+
+"""
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
@@ -318,7 +480,7 @@ class TimeAccessBill(Thread):
         while True:
             cur.execute("""
             SELECT account_id, sessionid, session_time, interrim_update
-            FROM radius_session WHERE checkouted=False and date_start is NUll ORDER BY interrim_update ASC;
+            FROM radius_session WHERE checkouted_by_time=False and date_start is NUll ORDER BY interrim_update ASC;
             """)
             rows=cur.fetchall()
             print "next loop"
@@ -335,7 +497,7 @@ class TimeAccessBill(Thread):
                 # рассчитав соотв снятия.
                 #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                 cur.execute("""
-                SELECT session_time FROM radius_session WHERE sessionid='%s' AND checkouted=True
+                SELECT session_time FROM radius_session WHERE sessionid='%s' AND checkouted_by_time=True
                 ORDER BY interrim_update DESC LIMIT 1
                 """ %session_id)
                 try:
@@ -394,11 +556,137 @@ class TimeAccessBill(Thread):
                             query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (summ, account_id)
                             print u"Снятие денег за время %s" % query
                             cur.execute(query)
-                            query="""UPDATE radius_session SET checkouted=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
+                            query="""UPDATE radius_session SET checkouted_by_time=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
                             """ % (session_id, account_id, interrim_update)
                             print query
                             cur.execute(query)
             time.sleep(30)
+
+class TraficAccessBill(Thread):
+    """
+    Услуга применима только для VPN доступа, когда точно известна дата авторизации
+    и дата отключения пользователя
+    """
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        """
+        По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
+        """
+        while True:
+            cur.execute("""
+            SELECT account_id, sessionid, bytes_in, bytes_out, interrim_update
+            FROM radius_session WHERE checkouted_by_trafic=False and date_start is NUll ORDER BY interrim_update ASC;
+            """)
+            rows=cur.fetchall()
+            print "next loop"
+            for row in rows:
+                print "next row"
+                account_id=row[0]
+                session_id = row[1]
+                session_bytes_in = row[2]
+                session_bytes_out = row[3]
+                interrim_update = row[4]
+                #1. Ищем последнюю запись по которой была произведена оплата
+                #2. Получаем данные из услуги "Доступ по трафику" из текущего ТП пользователя
+                #2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
+                #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
+                # рассчитав соотв снятия.
+                #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
+                cur.execute("""
+                SELECT bytes_in, bytes_out FROM radius_session WHERE sessionid='%s' AND checkouted_by_trafic=True
+                ORDER BY interrim_update DESC LIMIT 1
+                """ % session_id)
+                try:
+                    a=cur.fetchone()
+                    old_bytes_in=a[0]
+                    old_bytes_out=a[1]
+                except:
+                    old_bytes_in=0
+                    old_bytes_out=0
+                total_bytes_in=session_bytes_in-old_bytes_in
+                total_bytes_out=session_bytes_out-old_bytes_out
+                print total_bytes_in,total_bytes_out
+                cur.execute(
+                """
+                SELECT tacc.id, tacc.name
+                FROM billservice_traffictransmitservice as tacc
+                JOIN billservice_tariff as tarif ON tarif.traffic_transmit_service_id=tacc.id
+                WHERE tacc.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() AND tarif_id=%s ORDER BY datetime DESC LIMIT 1)
+                """ % account_id
+                )
+                ps_data=cur.fetchone()
+                ps_id=ps_data[0]
+                ps_name = ps_data[1]
+                # Получаем список временных периодов и их стоимость у периодической услуги
+                cur.execute(
+                """
+                SELECT tc.weight, tn.cost, tnp.timeperiod_id
+                FROM billservice_traffictransmitnodes as tn
+                JOIN nas_trafficclass as tc ON tc.id=tn.traffic_class_id
+                JOIN billservice_traffictransmitnodes_time_period as tnp ON tnp.traffictransmitnodes_id=tn.id
+                JOIN billservice_traffictransmitservice_traffic_nodes as tts ON tts.traffictransmitnodes_id=tn.id
+                WHERE tts.traffictransmitservice_id=%s
+                """ % ps_id
+                )
+                periods=cur.fetchall()
+                for period in periods:
+                    tc_weight=period[0]
+                    traffic_cost=period[1]
+                    period_id=period[2]
+                    
+                    #получаем данные из периода чтобы проверить попала в него сессия или нет
+                    cur.execute(
+                    """
+                    SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
+                    FROM billservice_timeperiodnode as tpn
+                    JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
+                    WHERE tptpn.timeperiod_id=%s
+                    """ % period_id
+                    )
+                    period_nodes_data=cur.fetchall()
+                    for period_node in period_nodes_data:
+                        period_id=period_node[0]
+                        period_name = period_node[1]
+                        period_start = period_node[2]
+                        period_length = period_node[3]
+                        repeat_after = period_node[4]
+                        if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
+                            if tc_weight==100:
+                                #Входяший
+                                summ=(float(total_bytes_in)/(1024*1024))*traffic_cost
+                                print "aa",total_bytes_in, traffic_cost
+                                print "summ=", summ
+                                cur.execute("""
+                                           INSERT INTO billservice_transaction(
+                                           account_id, approved, tarif_id, summ, description, created)
+                                           VALUES (%s, %s, %s, %s, %s, %s);
+                                           """,(account_id, True, ps_id, summ, "TRAFFIC ACCESS", datetime.datetime.now()))
+                                query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (summ, account_id)
+                                print u"Снятие денег за трафик. Класс 100 %s" % query
+                                cur.execute(query)
+                                query="""UPDATE radius_session SET checkouted_by_trafic=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
+                                """ % (session_id, account_id, interrim_update)
+                                print query
+                                cur.execute(query)
+                            elif tc_weight==200:
+                                summ=(float(total_bytes_out)/(1024*1024))*traffic_cost
+                                print "summ=", summ
+                                cur.execute("""
+                                           INSERT INTO billservice_transaction(
+                                           account_id, approved, tarif_id, summ, description, created)
+                                           VALUES (%s, %s, %s, %s, %s, %s);
+                                           """,(account_id, True, ps_id, summ, "TRAFFIC ACCESS", datetime.datetime.now()))
+                                query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (summ, account_id)
+                                print u"Снятие денег за трафик. Класс 200 %s" % query
+                                cur.execute(query)
+                                query="""UPDATE radius_session SET checkouted_by_trafic=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
+                                """ % (session_id, account_id, interrim_update)
+                                print query
+                                cur.execute(query)
+            time.sleep(30)
+
 
         
 class LoggerThread(Thread):
@@ -437,11 +725,11 @@ dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft","dict
 cas = check_access(timeout=10, dict=dict)
 cas.start()
 
-sess_dog = session_dog()
-sess_dog.start()
-psb=periodical_service_bill()
-psb.start()
-time_access_bill = TimeAccessBill()
-time_access_bill.start()
+traficaccessbill = TraficAccessBill()
+traficaccessbill.start()
+#psb=periodical_service_bill()
+#psb.start()
+#time_access_bill = TimeAccessBill()
+#time_access_bill.start()
 
 #check_access()
