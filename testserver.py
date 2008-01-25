@@ -30,7 +30,8 @@ class AuthRequest(Thread):
 #a.start()
 
 b=[]
-for i in xrange(5):
+for i in xrange(1):
+    print
     a=AuthRequest()
     b.append(a.start())
 

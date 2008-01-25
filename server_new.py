@@ -1,6 +1,4 @@
-﻿#import socket, select,struct, md5
-#import pickle
-#from socket import AF_INET, SOCK_DGRAM
+#-*-coding=utf-8-*-
 import dictionary
 import packet
 import auth
@@ -11,7 +9,6 @@ import corepacket
 #import utilites
 from SocketServer import ThreadingUDPServer, DatagramRequestHandler
 from threading import Thread
-#значения поля code
 RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
@@ -32,14 +29,14 @@ class handle_auth(DatagramRequestHandler):
         data,socket=self.request # or recv(bufsize, flags)
         addrport=self.client_address
         reqpack=RequestPacket(1,('10.20.3.111',2224), self.client_address[0])
-        #Отправляем ядру копию пакета, полученного от NAS
-        #Ядро должно вернуть закодированный объект corepacket.CorePacket c установленными атрибутами
+        #РћС‚РїСЂР°РІР»СЏРµРј СЏРґСЂСѓ РєРѕРїРёСЋ РїР°РєРµС‚Р°, РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РѕС‚ NAS
+        #РЇРґСЂРѕ РґРѕР»Р¶РЅРѕ РІРµСЂРЅСѓС‚СЊ Р·Р°РєРѕРґРёСЂРѕРІР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ corepacket.CorePacket c СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹РјРё Р°С‚СЂРёР±СѓС‚Р°РјРё
         corereply=reqpack.getreply(data)
         packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)
         #print " After parsing packet from core %.40f" % (time.time()-t)
-        #Получили объект ответа. Сейчас мы можем изменять или считывать его атрибуты
+        #РџРѕР»СѓС‡РёР»Рё РѕР±СЉРµРєС‚ РѕС‚РІРµС‚Р°. РЎРµР№С‡Р°СЃ РјС‹ РјРѕР¶РµРј РёР·РјРµРЅСЏС‚СЊ РёР»Рё СЃС‡РёС‚С‹РІР°С‚СЊ РµРіРѕ Р°С‚СЂРёР±СѓС‚С‹
         #packetfromcore=packetobject['User-Name']
-        #А вот таким образом можем взять уже готовую для отправки строку аргументов attrs=packetfromcore._PktEncodeAttributes()
+        #Рђ РІРѕС‚ С‚Р°РєРёРј РѕР±СЂР°Р·РѕРј РјРѕР¶РµРј РІР·СЏС‚СЊ СѓР¶Рµ РіРѕС‚РѕРІСѓСЋ РґР»СЏ РѕС‚РїСЂР°РІРєРё СЃС‚СЂРѕРєСѓ Р°СЂРіСѓРјРµРЅС‚РѕРІ attrs=packetfromcore._PktEncodeAttributes()
         #
         packetobject=packet.Packet(secret=packetfromcore.secret, dict=dict,packet=data)
         #f=open('request','w')

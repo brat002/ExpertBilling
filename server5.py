@@ -1,4 +1,4 @@
-﻿import socket, select, struct, datetime
+import socket, select, struct, datetime
 ##sys.path.append(os.path.abspath('c:/Python25/Scripts/'))
 ##os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 ##from mikrobill.nas.models import Collector, NetFlowStream

@@ -30,12 +30,26 @@ from utilites import in_period
 
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-try:
-    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur = conn.cursor()
-except:
-    print "I am unable to connect to the database"
+#from psycopg2.pool import PersistentConnectionPool
+#conn=PersistentConnectionPool(4,200,"dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+from DBUtils.PooledDB import PooledDB
+
+pool = PooledDB(
+     mincached=2,
+     maxcached=60,
+     blocking=True,
+    creator=psycopg2,
+    dsn="dbname='mikrobill' user='mikrobill' host='localhost' password='1234'"
+    
+)
+
+
+#try:
+#    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+#    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+#    cur = conn.cursor()
+#except:
+#    print "I am unable to connect to the database"
     
 
 
@@ -43,9 +57,6 @@ dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 t = time.clock()
 
 class handle_auth(StreamRequestHandler):
-    #def setup(self):
-    #     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    
     def handle(self):
         # self.request is the socket object
         #print "%s I got an request from ip=%s port=%s" % (
@@ -54,6 +65,16 @@ class handle_auth(StreamRequestHandler):
         #    self.client_address[1]
         #    )
         #self.request.send("What is your name?\n")
+        #connection = conn.getconn()
+        
+        #connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        db_connection = pool.connection()
+        
+        cur = db_connection.cursor()
+        #cur.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        
+        #cur=connection.cursor()
+        
         bufsize=4096
         response=self.request.recv(bufsize).strip() # or recv(bufsize, flags)
         (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
@@ -106,6 +127,10 @@ class handle_auth(StreamRequestHandler):
         #print "time_access", time_access
         #Сделать проверку "как работает пользователь". В кредит или по предоплате
         #if packetobject['User-Name'][0]==username and time_access==True and nas_accept==True and status=='Enabled' and banned=='Disabled' and ballance>0:
+        #conn.putconn(conn=connection)
+        cur.close()
+        #selfdb_connection.close()
+        #db_connection.close()
         if True:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
@@ -138,7 +163,8 @@ class handle_acct(StreamRequestHandler):
             #self.client_address[1]
             #)
             #self.request.send("What is your name?\n")
-            
+            db_connection = pool.connection()
+            cur = db_connection.cursor()
             bufsize=8096
             response=self.request.recv(bufsize).strip() # or recv(bufsize, flags)
             (requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
@@ -162,6 +188,7 @@ class handle_acct(StreamRequestHandler):
                 )
                 VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
                 """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
+                db_connection.commit()
                 
 
             if packetobject['Acct-Status-Type']==['Alive']:
@@ -193,6 +220,7 @@ class handle_acct(StreamRequestHandler):
                       packetobject['Acct-Session-Time'][0],
                       packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
                 )
+                db_connection.commit()
                 
             if packetobject['Acct-Status-Type']==['Stop']:
                 #sess=Session()
@@ -224,12 +252,13 @@ class handle_acct(StreamRequestHandler):
                       packetobject['Acct-Session-Time'][0],
                       packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
                 )
+                db_connection.commit()
 
             cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
             rows = cur.fetchall()
             for row in rows:
                 secret=str(row[0])
-
+            cur.close()
             #try:
             #    nas=Nas.objects.get(ipaddress=nasip)
             #except:
@@ -243,6 +272,7 @@ class handle_acct(StreamRequestHandler):
             
             data_to_send=replypacket.ReplyPacket()
             self.request.sendto(data_to_send,self.client_address) # or send(data, flags)
+            
 
     
 class serve_auth(Thread):
