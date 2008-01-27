@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 import psycopg2
-from psycopg2.pool import ThreadedConnectionPool
+from psycopg2.pool import PersistentConnectionPool
 import time, datetime
 from utilites import disconnect, settlement_period_info
 import dictionary
@@ -14,7 +14,7 @@ import os
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-conn=ThreadedConnectionPool(2,10,"dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+conn=PersistentConnectionPool(2,10,"dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
 #conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 #try:
 #    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
@@ -29,6 +29,12 @@ class check_access(Thread):
             self.timeout=timeout
             Thread.__init__(self)
             
+        def check_period(self, rows):
+            for row in rows:
+                if in_period(row[0],row[1],row[2])==False:
+                    return False
+            return True
+                
         def check_acces(self):
             """
             Функция сейчас применима только к поддерживающим POD NAS-ам
@@ -48,7 +54,12 @@ class check_access(Thread):
 
             while True:
                 time.sleep(self.timeout)
-                cur.execute("SELECT account_id, sessionid, nas_id FROM radius_session WHERE date_end is Null;")
+                cur.execute("""
+                SELECT DISTINCT rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end
+                FROM radius_session as rs
+                WHERE rs.disconnect_status is null AND disconnect_status is null AND rs.date_start is null AND date_end not in
+                (SELECT rsess.date_end from radius_session as rsess WHERE rsess.sessionid=rs.sessionid and rsess.date_end is not null);
+                """)
                 rows=cur.fetchall()
                 for row in rows:
                     account_id=row[0]
@@ -59,7 +70,7 @@ class check_access(Thread):
                     row_n=cur.fetchone()
                     nas_name = row_n[0]
                     nas_secret = row_n[1]
-                    
+                    result=''
 
                     cur.execute("SELECT username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() LIMIT 1) as tarif_id, ballance FROM billservice_account WHERE id='%s'" % account_id)
                     rows_u = cur.fetchall()
@@ -69,14 +80,38 @@ class check_access(Thread):
                         ballance=row_u[2]
                         if ballance>0:
                            #Информация для проверки периода
-                           cur.execute("""SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
-                           rows_t=cur.fetchall()
-                           for row_t in rows_t:
-                               if in_period(row_t[0],row_t[1],row_t[2])==False:
-                                  print disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
-                               
+                           cur.execute("""SELECT time_start::timestamp without time zone, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
+                           #rows_t=cur.fetchall()
+                           if check_period(rows=cur.fetchall())==False:
+                                  result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
                         else:
-                               print disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
+                               result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
+                    if result==True:
+                        disconnect_result='ACK'
+                    elif result==False:
+                        disconnect_result='NACK'
+                    else:
+                        disconnect_result=''
+                    if disconnect_result=='ACK':
+                        # Если сбросили сессию, значит она существовала и сервер доступа сам
+                        # Пришлёт STOP пакет
+                        cur.execute(
+                        """
+                        UPDATE radius_session SET disconnect_status=%s WHERE id=(
+                        SELECT id
+                        FROM radius_session WHERE sessionid=%s ORDER BY id DESC LIMIT 1);
+                        """, (disconnect_result, session_id)
+                        )
+                    else:
+                        # Если сессии не было, значит закрываем её
+                        cur.execute(
+                        """
+                        UPDATE radius_session SET date_end=interrim_update, disconnect_status=%s WHERE id=(
+                        SELECT id
+                        FROM radius_session WHERE sessionid=%s ORDER BY id DESC LIMIT 1);
+                        """, (disconnect_result, session_id)
+                        )
+                    
         def run(self):
             self.check_acces()
             
@@ -131,14 +166,14 @@ class periodical_service_bill(Thread):
                 settlement_period_id=row[1]
                 # Получаем список аккаунтов на ТП
                 cur.execute("""
-                SELECT a.account_id, a.datetime, b.ballance FROM billservice_accounttarif as a
+                SELECT a.account_id, a.datetime::timestamp without time zone, b.ballance FROM billservice_accounttarif as a
                 LEFT JOIN billservice_account as b ON b.id=a.account_id
                 WHERE datetime<now() and a.tarif_id='%s'
                 """ % tariff_id)
                 accounts=cur.fetchall()
                 # Получаем параметры каждой перодической услуги в выбранном ТП
                 cur.execute("""
-                SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start, c.length_in, c.autostart FROM billservice_tariff_periodical_services as p
+                SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone, c.length_in, c.autostart FROM billservice_tariff_periodical_services as p
                 JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
 		        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                 WHERE p.tariff_id='%s'
@@ -155,8 +190,6 @@ class periodical_service_bill(Thread):
                     length_in_sp=row_ps[6]
                     autostart_sp=row_ps[7]
 
-
-                    
                     for account in accounts:
                         account_id = account[0]
                         account_datetime = account[1]
@@ -167,7 +200,7 @@ class periodical_service_bill(Thread):
                         #print ps_name, length_in_sp
                         period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp)
 
-                        cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
+                        cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
                         now=datetime.datetime.now()
                         if ps_cash_method=="GRADUAL":
                             """
@@ -176,7 +209,11 @@ class periodical_service_bill(Thread):
                         # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                         # а остальные помечаем неактивными и уведомляем администратора
                             """
-                            #cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
+                            cur.execute("""
+                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
+                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
+                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
+                            """ % (ps_id, tariff_id, account_id))
                             # Здесь нужно проверить сколько раз прошёл расчётный период
                             try:
                                 last_checkout=cur.fetchone()[0]
@@ -216,7 +253,11 @@ class periodical_service_bill(Thread):
                             Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                             не платили-производим снятие.
                             """
-                            #cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
+                            cur.execute("""
+                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
+                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
+                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
+                            """ % (ps_id, tariff_id, account_id))
                             try:
                                 last_checkout=cur.fetchone()[0]
                             except:
@@ -253,7 +294,7 @@ class periodical_service_bill(Thread):
                                 query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (ps_cost, account_id)
                                 #print query
                                 cur.execute(query)
-                                query="SELECT id FROM billservice_transaction WHERE  account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
+                                query="SELECT id FROM billservice_transaction WHERE account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
                                 cur.execute(query)
                                 transaction_id=cur.fetchone()[0]
                                 cur.execute("""
@@ -267,7 +308,11 @@ class periodical_service_bill(Thread):
                            Для последнего делаем проводку со статусом Approved=True
                            для остальных со статусом False
                            """
-                           #cur.execute("SELECT datetime FROM billservice_periodicalservicehistory WHERE service_id='%s' AND tarif_id='%s' AND account_id='%s' ORDER BY datetime DESC LIMIT 1" % (ps_id, tariff_id, account_id))
+                           cur.execute("""
+                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
+                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
+                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
+                            """ % (ps_id, tariff_id, account_id))
                            try:
                                 last_checkout=cur.fetchone()[0]
                            except:
@@ -330,7 +375,7 @@ class TimeAccessBill(Thread):
         cur=connection.cursor()
         while True:
             cur.execute("""
-            SELECT account_id, sessionid, session_time, interrim_update
+            SELECT account_id, sessionid, session_time, interrim_update::timestamp without time zone
             FROM radius_session WHERE checkouted_by_time=False and date_start is NUll ORDER BY interrim_update ASC;
             """)
             rows=cur.fetchall()
@@ -383,7 +428,7 @@ class TimeAccessBill(Thread):
                     #получаем данные из периода чтобы проверить попала в него сессия или нет
                     cur.execute(
                     """
-                    SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
+                    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
                     FROM billservice_timeperiodnode as tpn
                     JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
                     WHERE tptpn.timeperiod_id=%s
@@ -430,8 +475,8 @@ class TraficAccessBill(Thread):
         cur=connection.cursor()
         while True:
             cur.execute("""
-            SELECT account_id, sessionid, bytes_in, bytes_out, interrim_update
-            FROM radius_session WHERE checkouted_by_trafic=False and date_start is NUll ORDER BY interrim_update ASC;
+            SELECT account_id, sessionid, bytes_in, bytes_out, interrim_update::timestamp without time zone
+            FROM radius_session WHERE checkouted_by_trafic=False and date_start is NUll ORDER BY interrim_update ASC
             """)
             rows=cur.fetchall()
             print "next loop"
@@ -493,7 +538,7 @@ class TraficAccessBill(Thread):
                     #получаем данные из периода чтобы проверить попала в него сессия или нет
                     cur.execute(
                     """
-                    SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
+                    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
                     FROM billservice_timeperiodnode as tpn
                     JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
                     WHERE tptpn.timeperiod_id=%s

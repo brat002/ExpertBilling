@@ -1,8 +1,5 @@
 #-*-coding=utf-8-*-
 # packet.py
-#
-# Copyright 2002-2005 Wichert Akkerman <wichert@wiggy.net>
-#
 # A RADIUS packet as defined in RFC 2138
 
 
@@ -12,21 +9,9 @@ RADIUS packet
 
 __docformat__	= "epytext en"
 
-import md5, struct, types, random, UserDict
+import struct, types, random, UserDict
 import tools
 
-# Packet codes
-AccessRequest		= 1
-AccessAccept		= 2
-AccessReject		= 3
-AccountingRequest	= 4
-AccountingResponse	= 5
-AccessChallenge		= 11
-StatusServer		= 12
-StatusClient		= 13
-
-# Current ID
-CurrentID		= random.randrange(1, 255)
 
 class PacketError(Exception):
 	pass
@@ -200,7 +185,6 @@ class CorePacket(UserDict.UserDict):
 		headerlength=struct.calcsize(mask)
 		#TO-DO: Посмотреть зачем здесь headerlength и длина атрибутов
 		header=struct.pack(mask, headerlength, self.code, userlength, self.username, passwordlength, self.password, secretlength,self.secret, len(attr))
-
 		return header + attr
 
 
@@ -251,6 +235,7 @@ class CorePacket(UserDict.UserDict):
 		@type packet:  string"""
 		##headerlength|code|ulength|username|plength|password
 		#тут пиздец. нужно сделать красиво
+		# пиздец получился из-за атрибутов переменной длины в заголовке
 		try:
 		    firstpart=packet[0:6]
 		    (headerlength, self.code, ulength)=struct.unpack("!LBB", firstpart)
@@ -296,187 +281,6 @@ class CorePacket(UserDict.UserDict):
 
 			packet=packet[attrlen:]
 
-
-       
-
-
-##class AuthPacket(CorePacket):
-##	def __init__(self, code=AccessRequest, id=None, secret="", authenticator=None, **attributes):
-##		"""Constructor
-##
-##		@param code:   packet type code
-##		@type code:    integer (8bits)
-##		@param id:     packet identifaction number
-##		@type id:      integer (8 bits)
-##		@param secret: secret needed to communicate with a RADIUS server
-##		@type secret:  string
-##
-##		@param dict:   RADIUS dictionary
-##		@type dict:    pyrad.dictionary.Dictionary class
-##
-##		@param packet: raw packet to decode
-##		@type packet:  string
-##		"""
-##		Packet.__init__(self, code, id, secret, authenticator, **attributes)
-##
-##
-##	def CreateReply(self, **attributes):
-##		return AuthPacket(AccessAccept, self.id,
-##			self.secret, self.authenticator, dict=self.dict,
-##			**attributes)
-##
-##
-##	def RequestPacket(self):
-##		"""Create a ready-to-transmit authentication request packet
-##
-##		Return a RADIUS packet which can be directly transmitted
-##		to a RADIUS server.
-##
-##		@return: raw packet
-##		@rtype:  string
-##		"""
-##
-##		attr=self._PktEncodeAttributes()
-##
-##		if self.authenticator==None:
-##			self.authenticator=self.CreateAuthenticator()
-##
-##		if self.id==None:
-##			self.id=self.CreateID()
-##
-##		header=struct.pack("!BBH16s", self.code, self.id,
-##			(20+len(attr)), self.authenticator)
-##
-##		return header+attr
-##
-##
-##	def PwDecrypt(self, password):
-##		"""Unobfuscate a RADIUS password
-##
-##		RADIUS hides passwords in packets by using an algorithm
-##		based on the MD5 hash of the pacaket authenticator and RADIUS
-##		secret. This function reverses the obfuscation process.
-##
-##		@param password: obfuscated form of password
-##		@type password:  string
-##		@return:         plaintext password
-##		@rtype:          string
-##		"""
-##
-##		buf=password
-##		pw=""
-##
-##		last=self.authenticator
-##		while buf:
-##			hash=md5.new(self.secret+last).digest()
-##			for i in range(16):
-##				pw+=chr(ord(hash[i]) ^ ord(buf[i]))
-##
-##			(last,buf)=(buf[:16], buf[16:])
-##
-##		while pw.endswith("\x00"):
-##			pw=pw[:-1]
-##
-##		return pw
-##
-##
-##	def PwCrypt(self, password):
-##		"""Obfuscate password
-##
-##		RADIUS hides passwords in packets by using an algorithm
-##		based on the MD5 hash of the pacaket authenticator and RADIUS
-##		secret. If no authenticator has been set before calling PwCrypt
-##		one is created automatically. Changing the authenticator after
-##		setting a password that has been encrypted using this function
-##		will not work.
-##
-##		@param password: plaintext password
-##		@type password:  string
-##		@return:         obfuscated version of the password
-##		@rtype:          string
-##		"""
-##		if self.authenticator==None:
-##			self.authenticator=self.CreateAuthenticator()
-##
-##		buf=password
-##		if len(password)%16!=0:
-##			buf+="\x00" * (16-(len(password)%16))
-##
-##		hash=md5.new(self.secret+self.authenticator).digest()
-##		result=""
-##
-##		last=self.authenticator
-##		while buf:
-##			hash=md5.new(self.secret+last).digest()
-##			for i in range(16):
-##				result+=chr(ord(hash[i]) ^ ord(buf[i]))
-##
-##			last=result[-16:]
-##			buf=buf[16:]
-##
-##		return result
-##
-###???, ??? ????,
-####
-##class AcctPacket(CorePacket):
-##	def __init__(self, code=AccountingRequest, id=None, secret="", authenticator=None, **attributes):
-##		"""Constructor
-##
-##		@param dict:   RADIUS dictionary
-##		@type dict:    pyrad.dictionary.Dictionary class
-##		@param secret: secret needed to communicate with a RADIUS server
-##		@type secret:  string
-##		@param id:     packet identifaction number
-##		@type id:      integer (8 bits)
-##		@param code:   packet type code
-##		@type code:    integer (8bits)
-##		@param packet: raw packet to decode
-##		@type packet:  string
-##		"""
-##		Packet.__init__(self, code, id, secret, authenticator, **attributes)
-##		if attributes.has_key("packet"):
-##			self.raw_packet=attributes["packet"]
-##
-##
-##	def CreateReply(self, **attributes):
-##		return AcctPacket(AccountingResponse, self.id,
-##			self.secret, self.authenticator, dict=self.dict,
-##			**attributes)
-##
-##		def VerifyAcctRequest(self):
-##			"""Verify request authenticator
-##
-##			@return: True if verification failed else False
-##			@rtype: boolean
-##			"""
-##			assert(self.raw_packet)
-##			hash=md5.new(self.raw_packet[0:4] + 16*"\x00" +
-##					self.raw_packet[20:] + self.secret).digest()
-##
-##			return hash==self.authenticator
-##
-##	def RequestPacket(self):
-##		"""Create a ready-to-transmit authentication request packet
-##
-##		Return a RADIUS packet which can be directly transmitted
-##		to a RADIUS server.
-##
-##		@return: raw packet
-##		@rtype:  string
-##		"""
-##
-##		attr=self._PktEncodeAttributes()
-##
-##		if self.id==None:
-##			self.id=self.CreateID()
-##
-##		header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
-##
-##		self.authenticator=md5.new(header[0:4] + 16 * "\x00" + attr
-##			+ self.secret).digest()
-##
-##		return header + self.authenticator + attr
-##
 
 def CreateID():
 	"""Generate a packet ID.
