@@ -114,39 +114,50 @@ class handle_acct(StreamRequestHandler):
         rows = cur.fetchone()
         if rows==None:
             return self.acct_NA(replypacket)
+        #Проверяем знаем ли мы такого пользователя
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        cur.execute(
+        """
+        SELECT id FROM billservice_account WHERE username='%s';
+        """ % packetobject['User-Name'][0]
+        )
+        row=cur.fetchone()
+        if row==None:
+            return self.acct_NA(replypacket)
         
         secret=str(rows[0])
         replypacket.secret=str(secret)
         replypacket.code=5
         
         if packetobject['Acct-Status-Type']==['Start']:
-            cur.execute(
-            """
-            INSERT INTO radius_session(
-            account_id, sessionid, date_start, interrim_update,
-            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
-            )
-            VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
-            """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
-            db_connection.commit()
+           cur.execute(
+           """
+           INSERT INTO radius_session(
+           account_id, sessionid, date_start, interrim_update,
+           caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
+           )
+           VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
+           """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
+           db_connection.commit()
             
 
         if packetobject['Acct-Status-Type']==['Alive']:
-            cur.execute(
-            """
-            INSERT INTO radius_session(
-            account_id, sessionid, interrim_update,
-            caller_id, called_id, nas_id, session_time,
-            bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic)
-            VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s);
-            """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
-                  datetime.datetime.now(), packetobject['Calling-Station-Id'][0],
-                  packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
-                  packetobject['Acct-Session-Time'][0],
-                  packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
-            )
-            db_connection.commit()
+           cur.execute(
+           """
+           INSERT INTO radius_session(
+           account_id, sessionid, interrim_update,
+           caller_id, called_id, nas_id, session_time,
+           bytes_out, bytes_in, checkouted_by_time, checkouted_by_trafic)
+           VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s,
+           %s, %s, %s, %s, %s);
+           """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
+                 datetime.datetime.now(), packetobject['Calling-Station-Id'][0],
+                 packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
+                 packetobject['Acct-Session-Time'][0],
+                 packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
+           )
+           db_connection.commit()
             
         if packetobject['Acct-Status-Type']==['Stop']:
             now=datetime.datetime.now()

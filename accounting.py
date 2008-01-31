@@ -10,18 +10,11 @@ import logging
 import logging.config
 import time
 import os
-
+from db import transaction, ps_history, get_last_checkout
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 conn=PersistentConnectionPool(2,10,"dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
-#conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-#try:
-#    conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
-#    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-#    cur = conn.cursor()
-#except:
-#    print "I am unable to connect to the database"
 
 class check_access(Thread):
         def __init__ (self, dict, timeout=30):
@@ -82,13 +75,15 @@ class check_access(Thread):
                            #Информация для проверки периода
                            cur.execute("""SELECT time_start::timestamp without time zone, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
                            #rows_t=cur.fetchall()
-                           if check_period(rows=cur.fetchall())==False:
+                           if self.check_period(rows=cur.fetchall())==False:
                                   result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
                         else:
                                result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id)
                     if result==True:
+                        #Если удалось отключить - пишем в базу
                         disconnect_result='ACK'
                     elif result==False:
+                        #Если не удалось отключить - или сессии не существовало
                         disconnect_result='NACK'
                     else:
                         disconnect_result=''
@@ -166,20 +161,23 @@ class periodical_service_bill(Thread):
                 settlement_period_id=row[1]
                 # Получаем список аккаунтов на ТП
                 cur.execute("""
-                SELECT a.account_id, a.datetime::timestamp without time zone, b.ballance FROM billservice_accounttarif as a
+                SELECT a.account_id, a.datetime::timestamp without time zone, b.ballance
+                FROM billservice_accounttarif as a
                 LEFT JOIN billservice_account as b ON b.id=a.account_id
-                WHERE datetime<now() and a.tarif_id='%s'
+                WHERE datetime<now() and a.tarif_id='%s' and b.suspended=False
                 """ % tariff_id)
                 accounts=cur.fetchall()
                 # Получаем параметры каждой перодической услуги в выбранном ТП
                 cur.execute("""
-                SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone, c.length_in, c.autostart FROM billservice_tariff_periodical_services as p
+                SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone,
+                c.length_in, c.autostart
+                FROM billservice_tariff_periodical_services as p
                 JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
 		        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                 WHERE p.tariff_id='%s'
                 """ % tariff_id)
                 rows_ps=cur.fetchall()
-                # По каждой периодической услуге делаем списания для каждого аккаунта
+                # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                 for row_ps in rows_ps:
                     ps_id = row_ps[0]
                     ps_name = row_ps[1]
@@ -209,98 +207,78 @@ class periodical_service_bill(Thread):
                         # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                         # а остальные помечаем неактивными и уведомляем администратора
                             """
-                            cur.execute("""
-                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
-                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
-                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
-                            """ % (ps_id, tariff_id, account_id))
+                            last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
                             # Здесь нужно проверить сколько раз прошёл расчётный период
-                            try:
-                                last_checkout=cur.fetchone()[0]
-                            except:
+                            if last_checkout==None:
                                 last_checkout=period_start
-                            #Проверяем наступил ли новый период
-                            if now-datetime.timedelta(seconds=n)<=period_start:
-                                # Смотрим сколько сняли за прошлый период
-                                # Находим когда начался прошльый период
-                                period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
                                 
-                            lc=last_checkout-period_start
-                            nums, ost=divmod(lc.seconds,delta)
-                            for i in xrange(nums-1):
-                                #Делаем проводки со статусом Approved=True
-                                pass
-                            #print "delta", delta
-                            cash_summ=(float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number))
-                            # Делаем проводку со статусом Approved
-                            cur.execute("""
-                                   INSERT INTO billservice_transaction(
-                                   account_id, approved, tarif_id, summ, description, created)
-                                   VALUES (%s, %s, %s, %s, %s, %s);
-                                   """,(account_id, True, tariff_id,cash_summ, "AT_START", now))
-                            query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (cash_summ, account_id)
-                            #print query
-                            cur.execute(query)
-                            query="SELECT id FROM billservice_transaction WHERE  account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
-                            cur.execute(query)
-                            transaction_id=cur.fetchone()[0]
-                            cur.execute("""
-                                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                                   """, (ps_id, transaction_id, now))
+                            if (now-last_checkout).seconds>=n:
+                                #Проверяем наступил ли новый период
+                                if now-datetime.timedelta(seconds=n)<=period_start:
+                                    # Если начался новый период
+                                    # Находим когда начался прошльый период
+                                    # Смотрим сколько денег должны были снять за прошлый период и производим корректировку
+                                    #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
+                                    pass
+                                # Смотрим сколько раз уже должны были снять деньги
+                                lc=now - last_checkout
+                                nums, ost=divmod(lc.seconds,delta)
+                                for i in xrange(nums-1):
+                                    #Смотрим на какую сумму должны были снять денег и снимаем её
+                                    pass
+                                #print "delta", delta
+                                cash_summ=(float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number))
+                                # Делаем проводку со статусом Approved
+
+                                transaction_id = transaction(cursor=cur,
+                                account=account_id,
+                                approved=True,
+                                tarif = tariff_id,
+                                summ=cash_summ,
+                                description=u"Проводка по периодической услуге со нятием суммы в течении периода",
+                                created = now)
+
+                                ps_history(cursor=cur, ps_id=ps_id, transaction=transaction_id, created=now)
 
                         if ps_cash_method=="AT_START":
                             """
                             Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                             не платили-производим снятие.
                             """
-                            cur.execute("""
-                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
-                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
-                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
-                            """ % (ps_id, tariff_id, account_id))
-                            try:
-                                last_checkout=cur.fetchone()[0]
-                            except:
+                            last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                            # Здесь нужно проверить сколько раз прошёл расчётный период
+                            if last_checkout==None:
                                 last_checkout=period_start
                             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                             # Для последней проводки ставим статус Approved=True
                             # для всех сотальных False
+                            # Если последняя проводка меньше или равно дате начала периода-делаем снятие
                             if last_checkout<=period_start:
                                 
                                 lc=last_checkout-period_start
-                                nums, ost=divmod(lc.seconds,delta)
+                                nums, ost=divmod(lc.seconds, delta)
                                 for i in xrange(nums-1):
-                                   cur.execute("""
-                                   INSERT INTO billservice_transaction(
-                                   account_id, approved, tarif_id, summ, description, created)
-                                   VALUES (%s, %s, %s, %s, %s, %s);
-                                   """,(account_id, False, tariff_id,ps_cost, "AT_START", datetime.datetime.now()))
-                                   query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (ps_cost, account_id)
-                                   #print "1 %s" % query
-                                   cur.execute(query)
-                                   query="SELECT id FROM billservice_transaction WHERE  account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
-                                   cur.execute(query)
-                                   transaction_id=cur.fetchone()[0]
-                                   cur.execute("""
-                                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                                   """, (ps_id, transaction_id, now))
-                                   
-                                # Делаем проводку со статусом Approved
-                                cur.execute("""
-                                   INSERT INTO billservice_transaction(
-                                   account_id, approved, tarif_id, summ, description, created)
-                                   VALUES (%s, %s, %s, %s, %s, %s);
-                                   """,(account_id, True, tariff_id,ps_cost, "AT_START", datetime.datetime.now()))
-                                query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (ps_cost, account_id)
-                                #print query
-                                cur.execute(query)
-                                query="SELECT id FROM billservice_transaction WHERE account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
-                                cur.execute(query)
-                                transaction_id=cur.fetchone()[0]
-                                cur.execute("""
-                                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                                   """, (ps_id, transaction_id, now))
+                                    transaction_id = transaction(
+                                    cursor=cur,
+                                    account=account_id,
+                                    approved=False,
+                                    tarif = tariff_id,
+                                    summ=ps_cost,
+                                    description=u"Проводка по периодической услуге со нятием суммы в в начале периода",
+                                    created = now)
 
+                                    ps_history(cur, ps_id, transaction=transaction_id, created=now)
+                                   
+                                transaction_id = transaction(cursor=cur,
+                                account=account_id,
+                                approved=True,
+                                tarif = tariff_id,
+                                summ=ps_cost,
+                                description=u"Проводка по периодической услуге со нятием суммы в начале периода",
+                                created = now)
+
+                                ps_history(cur, ps_id, transaction=transaction_id, created=now)
+                                
                         if ps_cash_method=="AT_END":
                            """
                            Смотрим завершился ли хотя бы один расчётный период.
@@ -308,54 +286,41 @@ class periodical_service_bill(Thread):
                            Для последнего делаем проводку со статусом Approved=True
                            для остальных со статусом False
                            """
-                           cur.execute("""
-                            SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
-                            JOIN billservice_transaction as t ON t.id=psh.transaction_id
-                            WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
-                            """ % (ps_id, tariff_id, account_id))
-                           try:
-                                last_checkout=cur.fetchone()[0]
-                           except:
-                                last_checkout=period_start
+                           last_checkout=get_last_checkout(ps_id = ps_id, tarif = tariff_id, account = account_id)
+                           # Здесь нужно проверить сколько раз прошёл расчётный период
+                           if last_checkout==None:
+                               last_checkout=period_start
                            # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                            # Для последней проводки ставим статус Approved=True
                            # для всех сотальных False
                            now=datetime.datetime.now()
-                           if (now-period_start).seconds>=delta:
+                           # Если дата начала периода больше последнего снятия - делаем проводки
+                           # Выражение верно т.к. новая проводка совершится каждый раз только после после перехода
+                           #в новый период.
+                           if period_start>last_checkout:
 
                                 lc=last_checkout-period_start
                                 nums, ost=divmod((period_end-last_checkout).seconds, delta)
                                 for i in xrange(nums-1):
-                                   cur.execute("""
-                                   INSERT INTO billservice_transaction(
-                                   account_id, approved, tarif_id, summ, description, created)
-                                   VALUES (%s, %s, %s, %s, %s, %s);
-                                   """,(account_id, False, tariff_id,ps_cost, "AT_END", datetime.datetime.now()))
-                                   #делаем проводки со статусом Approved=False
-                                   cur.execute("""
-                                   UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s;
-                                   """ % (ps_cost, account_id))
-                                   query="SELECT id FROM billservice_transaction WHERE  account_id=%s AND tarif_id=%s AND created='%s'" % (account_id,tariff_id, now)
-                                   cur.execute(query)
-                                   transaction_id=cur.fetchone()[0]
-                                   cur.execute("""
-                                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                                   """, (ps_id, transaction_id, now))
+                                    transaction_id = transaction(cursor=cur,
+                                    account=account_id,
+                                    approved=False,
+                                    tarif = tariff_id,
+                                    summ=cash_summ,
+                                    description=u"Проводка по периодической услуге со нятием суммы в конце периода",
+                                    created = now)
 
-                                cur.execute("""
-                                   INSERT INTO billservice_transaction(
-                                   account_id, approved, tarif_id, summ, description, created)
-                                   VALUES (%s, %s, %s, %s, %s, %s);
-                                   """,(account_id, True, tariff_id,ps_cost, "AT_END", datetime.datetime.now()))
-                                cur.execute("""
-                                   UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s;
-                                   """ % (ps_cost, account_id))
-                                query="SELECT id FROM billservice_transaction WHERE  account_id=%s AND tarif_id=%s AND created=%s" % (account_id,tariff_id, now)
-                                cur.execute(query)
-                                transaction_id=cur.fetchone()[0]
-                                cur.execute("""
-                                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, '%s');
-                                   """, (ps_id, transaction_id, now))
+                                    ps_history(cur, ps_id, transaction=transaction_id, created=now)
+
+                                transaction_id = transaction(cursor=cur,
+                                account=account_id,
+                                approved=True,
+                                tarif = tariff_id,
+                                summ=cash_summ,
+                                description=u"Проводка по периодической услуге со нятием суммы в конце периода",
+                                created = now)
+                                ps_history(cur, ps_id, transaction=transaction_id, created=now)
+                                
             time.sleep(n)
 
 class TimeAccessBill(Thread):
@@ -406,9 +371,10 @@ class TimeAccessBill(Thread):
                 SELECT tacc.id, tacc.name
                 FROM billservice_timeaccessservice as tacc
                 JOIN billservice_tariff as tarif ON tarif.time_access_service_id=tacc.id
-                WHERE tacc.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() AND tarif_id=%s ORDER BY datetime DESC LIMIT 1)
+                WHERE tacc.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() AND account_id=%s ORDER BY datetime DESC LIMIT 1)
                 """ % account_id
                 )
+                print "acc_id=", account_id
                 ps_data=cur.fetchone()
                 ps_id=ps_data[0]
                 ps_name = ps_data[1]
@@ -497,13 +463,22 @@ class TraficAccessBill(Thread):
                 SELECT bytes_in, bytes_out FROM radius_session WHERE sessionid='%s' AND checkouted_by_trafic=True
                 ORDER BY interrim_update DESC LIMIT 1
                 """ % session_id)
+                a=cur.fetchone()
                 try:
-                    a=cur.fetchone()
                     old_bytes_in=a[0]
                     old_bytes_out=a[1]
                 except:
                     old_bytes_in=0
                     old_bytes_out=0
+                    # Создаём запись о трафике в таблице
+                    cur.execute(
+                    """
+                    INSERT INTO billservice_summarytrafic(incomming_class_id,outgoing_class_id,
+                    account_id, radius_session, date_start)
+                    VALUES ((SELECT id FROM nas_trafficclass where weight='%s'),(SELECT id FROM nas_trafficclass where weight='%s'),'%s', '%s', '%s')
+                    """ % (100,200, account_id, session_id, datetime.datetime.now())
+                    )
+                    
                 total_bytes_in=session_bytes_in-old_bytes_in
                 total_bytes_out=session_bytes_out-old_bytes_out
                 print total_bytes_in,total_bytes_out
@@ -512,16 +487,17 @@ class TraficAccessBill(Thread):
                 SELECT tacc.id, tacc.name
                 FROM billservice_traffictransmitservice as tacc
                 JOIN billservice_tariff as tarif ON tarif.traffic_transmit_service_id=tacc.id
-                WHERE tacc.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() AND tarif_id=%s ORDER BY datetime DESC LIMIT 1)
+                WHERE tacc.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() AND account_id=%s ORDER BY datetime DESC LIMIT 1)
                 """ % account_id
                 )
+                print "acc_id=", account_id
                 ps_data=cur.fetchone()
                 ps_id=ps_data[0]
                 ps_name = ps_data[1]
                 # Получаем список временных периодов и их стоимость у периодической услуги
                 cur.execute(
                 """
-                SELECT tc.weight, tn.cost, tnp.timeperiod_id
+                SELECT tc.weight, tn.cost, tnp.timeperiod_id, tc.id
                 FROM billservice_traffictransmitnodes as tn
                 JOIN nas_trafficclass as tc ON tc.id=tn.traffic_class_id
                 JOIN billservice_traffictransmitnodes_time_period as tnp ON tnp.traffictransmitnodes_id=tn.id
@@ -534,6 +510,7 @@ class TraficAccessBill(Thread):
                     tc_weight=period[0]
                     traffic_cost=period[1]
                     period_id=period[2]
+                    class_id=period[3]
                     
                     #получаем данные из периода чтобы проверить попала в него сессия или нет
                     cur.execute(
@@ -552,7 +529,7 @@ class TraficAccessBill(Thread):
                         period_length = period_node[3]
                         repeat_after = period_node[4]
                         if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
-                            if tc_weight==200:
+                            if tc_weight==100:
                                 #Входяший
                                 #Относительно клиента
                                 summ=(float(total_bytes_in)/(1024*1024))*traffic_cost
@@ -564,13 +541,20 @@ class TraficAccessBill(Thread):
                                            VALUES (%s, %s, %s, %s, %s, %s);
                                            """,(account_id, True, ps_id, summ, "TRAFFIC ACCESS", datetime.datetime.now()))
                                 query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (summ, account_id)
-                                print u"Снятие денег за входящий трафик. Класс 100 %s" % query
+                                print u"Снятие денег за исходящий трафик. Класс 100 %s" % query
                                 cur.execute(query)
                                 query="""UPDATE radius_session SET checkouted_by_trafic=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
                                 """ % (session_id, account_id, interrim_update)
                                 print query
                                 cur.execute(query)
-                            elif tc_weight==100:
+                                query="""
+                                    UPDATE billservice_summarytrafic
+                                    SET incomming_bytes='%s', outgoing_bytes='%s',
+                                    date_end='%s'
+                                    WHERE radius_session='%s';
+                                    """ % (session_bytes_in, session_bytes_out, datetime.datetime.now(), session_id)
+                                cur.execute(query)
+                            elif tc_weight==200:
                                 #Исходящий Относительно клиента
                                 summ=(float(total_bytes_out)/(1024*1024))*traffic_cost
                                 print "summ=", summ
@@ -580,11 +564,20 @@ class TraficAccessBill(Thread):
                                            VALUES (%s, %s, %s, %s, %s, %s);
                                            """,(account_id, True, ps_id, summ, "TRAFFIC ACCESS", datetime.datetime.now()))
                                 query="UPDATE billservice_account SET  ballance=ballance-%s WHERE id=%s" % (summ, account_id)
-                                print u"Снятие денег за исходящий трафик. Класс 200 %s" % query
+                                print u"Снятие денег за входящий трафик. Класс 200 %s" % query
                                 cur.execute(query)
                                 query="""UPDATE radius_session SET checkouted_by_trafic=True WHERE sessionid='%s' AND account_id='%s' AND interrim_update='%s'
                                 """ % (session_id, account_id, interrim_update)
                                 print query
+                                cur.execute(query)
+
+                            
+                                query="""
+                                    UPDATE billservice_summarytrafic
+                                    SET incomming_bytes='%s', outgoing_bytes='%s',
+                                    date_end='%s'
+                                    WHERE radius_session='%s';
+                                    """ % (session_bytes_in, session_bytes_out, datetime.datetime.now(), session_id)
                                 cur.execute(query)
             time.sleep(30)
 

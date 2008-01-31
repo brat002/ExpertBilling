@@ -30,7 +30,7 @@ class CoreConnection:
         self.address=address
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.settimeout(5)
+        self.sock.settimeout(2)
         self.sock.connect(self.address)
 
     def recvdata(self):
