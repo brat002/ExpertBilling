@@ -35,11 +35,12 @@ class Session(models.Model):
     #Выставляется в случае, если был произведён платёж
     checkouted_by_time = models.BooleanField(default=False, blank=True)
     checkouted_by_trafic = models.BooleanField(default=False, blank=True)
+    disconnect_status=models.CharField(max_length=32, null=True, blank=True)
 
     
 
     class Admin:
-        ordering = ['-date_start']
+        ordering = ['-id']
         list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start', 'interrim_update', 'date_end','caller_id','called_id','nas_id','session_time')
     
     class Meta:

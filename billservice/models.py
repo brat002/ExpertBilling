@@ -98,10 +98,12 @@ class TimePeriodNode(models.Model):
             return False
         
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
     
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','time_start','length','repeat_after')
+
     
     class Meta:
         verbose_name = "Нода временного периода"
@@ -119,10 +121,12 @@ class TimePeriod(models.Model):
         return False
     
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name',)
+
 
     class Meta:
         verbose_name = "Временной период"
@@ -153,7 +157,9 @@ class SettlementPeriod(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','time_start','length','length_in','autostart')
+
 
     class Meta:
         verbose_name = "Расчётный период"
@@ -174,7 +180,9 @@ class PeriodicalService(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','settlement_period','cost','cash_method')
+
 
     class Meta:
         verbose_name = "Периодическая услуга"
@@ -192,7 +200,9 @@ class PeriodicalServiceHistory(models.Model):
         return u"%s" % (self.service)
 
     class Admin:
-        pass
+        ordering = ['-datetime']
+        list_display = ('service','transaction','datetime')
+
 
     class Meta:
         pass
@@ -209,7 +219,9 @@ class OneTimeService(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','cost')
+
 
     class Meta:
         verbose_name = "Разовый платеж"
@@ -228,7 +240,9 @@ class TimeAccessNode(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','time_period','cost')
+
 
     class Meta:
         verbose_name = "Период доступа"
@@ -246,7 +260,9 @@ class TimeAccessService(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','prepaid_time')
+
 
     class Meta:
         verbose_name = "Доступ с учётом времени"
@@ -262,7 +278,9 @@ class AccessParameters(models.Model):
         return self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','access_type','ip_address_pool')
+
 
     class Meta:
         verbose_name = "Параметры доступа"
@@ -273,10 +291,12 @@ class PrepaidTraffic(models.Model):
     size             = models.FloatField(verbose_name=u'Размер')
     
     def __unicode__(self):
-        return "%s %s" % (self.traffic_class, self.size)
+        return u"%s %s" % (self.traffic_class, self.size)
 
     class Admin:
-        pass
+        ordering = ['traffic_class']
+        list_display = ('traffic_class','size')
+
 
     class Meta:
         verbose_name = "Предоплаченный трафик"
@@ -293,7 +313,9 @@ class TrafficTransmitNodes(models.Model):
         return u"%s %s" % (self.traffic_class, self.cost)
 
     class Admin:
-        pass
+        ordering = ['traffic_class']
+        list_display = ('traffic_class','cost','edge_start','edge_end')
+
 
     class Meta:
         pass
@@ -304,10 +326,12 @@ class TrafficTransmitService(models.Model):
     prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, verbose_name=u'Предоплаченный трафик', blank=True, null=True)
     
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name',)
+
 
     class Meta:
         verbose_name = "Доступ с учётом трафика"
@@ -317,7 +341,7 @@ class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     access_type       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
     periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
-    onetime_servies     = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
+    onetime_services     = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость активации тарифного плана', default=0.000 ,help_text=u"Если не указана-предоплаченный трафик и время не учитываются")
@@ -327,10 +351,12 @@ class Tariff(models.Model):
     reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
-        pass
+        ordering = ['name']
+        list_display = ('name','access_type','time_access_service','traffic_transmit_service','cost','settlement_period', 'access_time')
+
 
     class Meta:
         verbose_name = "Тариф"
@@ -347,9 +373,11 @@ class Account(models.Model):
 #    tarif=models.ForeignKey(Tariff,verbose_name=u'Тарифный план')
     ipaddress=models.IPAddressField(u'IP адрес')
     status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    suspended = models.BooleanField(verbose_name=u'Усыплён', help_text=u'Не производить списывание денег по периодическим услугам', default=False)
     banned=models.CharField(verbose_name=u'Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
+    
 
 
 
@@ -405,6 +433,9 @@ class Transaction(models.Model):
         self.account.ballance+=self.summ
         self.account.save()
         super(Transaction, self).delete()
+        
+    def __unicode__(self):
+        return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 
 class AccountTarif(models.Model):
     account   = models.ForeignKey(to=Account, edit_inline=models.STACKED, num_in_admin=1)
@@ -412,4 +443,33 @@ class AccountTarif(models.Model):
     datetime  = models.DateTimeField()
     
     class Admin:
+        ordering = ['-datetime']
+        list_display = ('account','tarif','datetime')
+
+
+class SummaryTrafic(models.Model):
+    """
+    Класс предназначен для ведения статистики по трафику, потреблённому пользователями
+    """
+
+    account = models.ForeignKey('Account', blank=True, null=True, related_name='account_trafic')
+    incomming = models.IPAddressField(blank=True, null=True)
+    incomming_class = models.ForeignKey(TrafficClass, blank=True, null=True, related_name='incomming_class')
+    outgoing = models.IPAddressField(blank=True, null=True)
+    outgoing_class = models.ForeignKey(TrafficClass, blank=True, null=True, related_name='outgoing_class')
+    incomming_bytes = models.PositiveIntegerField(blank=True, null=True)
+    outgoing_bytes = models.PositiveIntegerField(blank=True, null=True)
+    radius_session = models.CharField(max_length=32)
+    date_start = models.DateTimeField()
+    date_end = models.DateTimeField(blank=True, null=True)
+
+    class Admin:
+        ordering = ['-date_end']
+        list_display = ('account', 'incomming', 'incomming_bytes', 'outgoing',  'outgoing_bytes', 'date_start', 'date_end')
+
+    class Meta:
         pass
+    
+    def __unicode__(self):
+        return u'%s' % self.account
+    

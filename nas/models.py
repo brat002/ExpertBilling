@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-from mikrobill.billing.models import Account
+#import mikrobill.billservice.models
 
 # Create your models here.
 
@@ -122,3 +122,4 @@ class IPAddressPool(models.Model):
 
     class Meta:
         pass
+
