@@ -205,7 +205,8 @@ class PeriodicalServiceHistory(models.Model):
 
 
     class Meta:
-        pass
+        verbose_name = "История проводок по периодическим услугам"
+        verbose_name_plural = "История проводок по периодическим услугам"
     
 class OneTimeService(models.Model):
     """
@@ -339,6 +340,7 @@ class TrafficTransmitService(models.Model):
     
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
+    description          = models.TextField(verbose_name=u'Описание тарифного плана')
     access_type       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
     periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
     onetime_services     = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
@@ -349,13 +351,15 @@ class Tariff(models.Model):
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
     reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
+    ps_null_ballance_checkout  = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
+
     
     def __unicode__(self):
         return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
-        list_display = ('name','access_type','time_access_service','traffic_transmit_service','cost','settlement_period', 'access_time')
+        list_display = ('name','access_type','time_access_service','traffic_transmit_service','cost','settlement_period', 'access_time', 'ps_null_ballance_checkout')
 
 
     class Meta:
@@ -374,16 +378,15 @@ class Account(models.Model):
     ipaddress=models.IPAddressField(u'IP адрес')
     status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
     suspended = models.BooleanField(verbose_name=u'Усыплён', help_text=u'Не производить списывание денег по периодическим услугам', default=False)
-    banned=models.CharField(verbose_name=u'Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    #banned=models.CharField(verbose_name=u'Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
-    
-
+    credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
 
 
     class Admin:
         ordering = ['user']
-        list_display = ('user','username','status','banned','ballance','firstname','lastname','ipaddress', 'created')
+        list_display = ('user','username','status','credit','ballance','firstname','lastname','ipaddress', 'created')
         #list_filter = ('username')
 
     def __str__(self):
