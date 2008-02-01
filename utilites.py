@@ -3,27 +3,33 @@ import packet
 import socket
 import datetime, calendar
 from dateutil.relativedelta import relativedelta
+import paramiko
 
+def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id, pod, login, password):
+    if pod==True:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('10.20.3.111',24000))
+        #sock.connect('10.20.3.1',1700)
+        doc=packet.AcctPacket(code=code,secret=nas_secret, dict=dict)
+        doc.AddAttribute('NAS-IP-Address', nas_ip)
+        doc.AddAttribute('NAS-Identifier', nas_id)
+        doc.AddAttribute('User-Name',username)
+        doc.AddAttribute('Acct-Session-Id', session_id)
+        doc_data=doc.RequestPacket()
+        sock.sendto(doc_data,(nas_ip, 1700))
+        (data, addrport) = sock.recvfrom(8192)
+        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
 
-def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('10.20.3.111',24000))
-    #sock.connect('10.20.3.1',1700)
-    doc=packet.AcctPacket(code=code,secret=nas_secret, dict=dict)
-    doc.AddAttribute('NAS-IP-Address', nas_ip)
-    doc.AddAttribute('NAS-Identifier', nas_id)
-    doc.AddAttribute('User-Name',username)
-    doc.AddAttribute('Acct-Session-Id', session_id)
-    doc_data=doc.RequestPacket()
-    sock.sendto(doc_data,(nas_ip, 1700))
-    (data, addrport) = sock.recvfrom(8192)
-    doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+        #for key,value in doc.items():
+        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
 
-    #for key,value in doc.items():
-    #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
-
-    sock.close()
-    return doc.has_key("Error-Cause")==False
+        sock.close()
+        return doc.has_key("Error-Cause")==False
+    else:
+        sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
+        res=sshclient.send_command('/interface pptp-server remove [find user="%s"]' % username)
+        sshclient.close_chanel()
+        return res.readlines()==[]
 
 def in_period(time_start, length, repeat_after):
         """
@@ -155,23 +161,18 @@ def parse_command_string(template, params_dict):
     rc = re.compile(pattern)
     return rc.sub(replace, format_string)
 
-def Transaction(account, approved, tarif, summ, description):
-    """
-    TO-DO: Сделать из функции класс
-    """
-    return True
-
-#import paramiko
-#paramiko.util.log_to_file('demo_simple.log')
-# get host key, if we know one
-
-#hostname='10.20.3.1'
-
-#client=paramiko.SSHClient()
-#client.load_system_host_keys()
-#client.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
-#client.connect(hostname='10.20.3.1',port=22, username='dolphinik',password='Wind0za')
-
-#stdin, stdout, stderr = client.exec_command('/user add name=mikrobill password=123 group=full')
-#print stdin, stdout, stderr
-#client.close()
+class SSHClient(paramiko.SSHClient):
+    def __init__(self, host, port, username, password):
+        paramiko.SSHClient.__init__(self)
+        self.load_system_host_keys()
+        self.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
+        self.connect(hostname=host,port=port, username=username,password=password)
+        
+    def send_command(self, text):
+        stdin, stdout, stderr = self.exec_command(text)
+        #print stderr.readlines()==[]
+        return stdout
+        
+    def close_chanel(self):
+        self.close()
+        

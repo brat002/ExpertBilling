@@ -41,7 +41,7 @@ def get_nas_by_ip(cursor, ip):
     return cursor
 
 def get_account_data_by_username(cursor, username):
-    cursor.execute("""SELECT bsa.username, bsa.password, bsa.ipaddress, (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<now() and bat.account_id=bsa.id ORDER BY datetime DESC LIMIT 1) as tarif_id, status, banned, ballance FROM billservice_account as bsa WHERE username='%s'""" % username)
+    cursor.execute("""SELECT bsa.username, bsa.password, bsa.ipaddress, (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<now() and bat.account_id=bsa.id ORDER BY datetime DESC LIMIT 1) as tarif_id, status, banned, (ballance+credit) as ballance FROM billservice_account as bsa WHERE username='%s'""" % username)
     return cursor
 
 def get_nas_id_by_tarif_id(cursor, tarif_id):

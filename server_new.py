@@ -86,6 +86,7 @@ class handle_auth_core:
            replypacket.AddAttribute('Framed-Protocol', 1)
            replypacket.AddAttribute('Framed-IP-Address', ipaddress)
            replypacket.AddAttribute('Framed-Routing', 0)
+           replypacket.AddAttribute((14988,8),'128k')
 
         else:
              return self.auth_NA(replypacket)
@@ -196,7 +197,7 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
-dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
+dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft", 'dicts\dictionary.mikrotik')
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):
