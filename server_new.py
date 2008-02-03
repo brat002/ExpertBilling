@@ -197,7 +197,7 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
-dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft", 'dicts\dictionary.mikrotik')
+dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):

@@ -8,7 +8,7 @@ import paramiko
 def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id, pod, login, password):
     if pod==True:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(('10.20.3.111',24000))
+        sock.bind(('0.0.0.0',24000))
         #sock.connect('10.20.3.1',1700)
         doc=packet.AcctPacket(code=code,secret=nas_secret, dict=dict)
         doc.AddAttribute('NAS-IP-Address', nas_ip)

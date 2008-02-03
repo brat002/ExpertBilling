@@ -575,41 +575,9 @@ class TraficAccessBill(Thread):
 
             time.sleep(30)
 
-
+ 
         
-class LoggerThread(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-
-    def run(self):
-        #specify logging config file
-        logging.config.fileConfig("logging.conf")
-
-        #create and start listener on port 9999
-        t = logging.config.listen(9999)
-        t.start()
-
-        #create logger
-        logger = logging.getLogger("simpleExample")
-
-        #watch for existence of file named "f"
-        #loop through the code while this file exists
-        
-        while os.path.isfile('f'):
-            logger.debug("debug message")
-            logger.info("info message")
-            logger.warn("warn message")
-            logger.error("error message")
-            logger.critical("critical message")
-            time.sleep(5)
-
-        #cleanup
-        logging.config.stopListening()
-        t.join()
-        
-        
-        
-dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft","dicts\dictionary.rfc3576")
+dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 cas = check_access(timeout=10, dict=dict)
 cas.start()
 
