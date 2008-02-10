@@ -218,7 +218,7 @@ class NetFlowPacket:
             print 'save'
             print flows
             cur.executemany("""
-            INSERT INTO billservice_netflowstream(collector_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
+            INSERT INTO billservice_rawnetflowstream(collector_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
             VALUES (%(collector_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\
             flows)
             

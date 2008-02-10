@@ -590,7 +590,23 @@ class TraficAccessBill(Thread):
                             connection.commit()
             time.sleep(30)
 
- 
+"""
+Алгоритм для агрегации трафика:
+Формируем таблицу с агрегированным трафиком
+
+1. Берём строку из netflowstream_raw
+2. Смотрим есть ли похожая строка в netflowstream за последнюю минуту-полторы и не производилось ли по ней списание.
+2.1 Если есть и списание не производилось-суммируем количество байт
+2.2 Если есть и списание производилось или если нет -пишем новую строку
+3. УДаляем из netflowstream_raw строку или помечаем, что он адолжна быть удалена.
+
+WHILE TRUE
+timeout(120 seconds)
+произвести списания по новым строкам.
+
+
+
+"""
         
 dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 cas = check_access(timeout=10, dict=dict)
