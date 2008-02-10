@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool
+from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass, Collector
 from django.contrib.auth.models import User
 import datetime, time
 
@@ -456,19 +456,16 @@ class SummaryTrafic(models.Model):
     """
 
     account = models.ForeignKey('Account', blank=True, null=True, related_name='account_trafic')
-    incomming = models.IPAddressField(blank=True, null=True)
-    incomming_class = models.ForeignKey(TrafficClass, blank=True, null=True, related_name='incomming_class')
-    outgoing = models.IPAddressField(blank=True, null=True)
-    outgoing_class = models.ForeignKey(TrafficClass, blank=True, null=True, related_name='outgoing_class')
     incomming_bytes = models.PositiveIntegerField(blank=True, null=True)
     outgoing_bytes = models.PositiveIntegerField(blank=True, null=True)
     radius_session = models.CharField(max_length=32)
+    nas_id = models.IPAddressField()
     date_start = models.DateTimeField()
     date_end = models.DateTimeField(blank=True, null=True)
 
     class Admin:
         ordering = ['-date_end']
-        list_display = ('account', 'incomming', 'incomming_bytes', 'outgoing',  'outgoing_bytes', 'date_start', 'date_end')
+        list_display = ('account',  'incomming_bytes',  'outgoing_bytes', 'date_start', 'date_end')
 
     class Meta:
         pass
@@ -476,3 +473,41 @@ class SummaryTrafic(models.Model):
     def __unicode__(self):
         return u'%s' % self.account
     
+
+class NetFlowStream(models.Model):
+    collector = models.ForeignKey(Collector, blank=True, null=True)
+    account = models.ForeignKey(to='Account', blank=True, null=True)
+    tarif = models.ForeignKey(to='Tariff', blank=True, null=True)
+    date_start = models.DateTimeField(auto_now_add=True)
+    groups = models.IntegerField(default=0, null=True, blank=True)
+    src_addr = models.IPAddressField()
+    traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    dst_addr = models.IPAddressField()
+    next_hop = models.IPAddressField()
+    in_index = models.IntegerField()
+    out_index = models.IntegerField()
+    packets = models.IntegerField()
+    octets = models.IntegerField()
+    #sysuptime start flow aggregate
+    start = models.IntegerField()
+    #sysuptime flow send
+    finish = models.IntegerField()
+    src_port = models.IntegerField()
+    dst_port = models.IntegerField()
+    tcp_flags = models.IntegerField()
+    protocol = models.IntegerField()
+    tos = models.IntegerField()
+    source_as = models.IntegerField()
+    dst_as =  models.IntegerField()
+    src_netmask_length = models.IntegerField()
+    dst_netmask_length = models.IntegerField()
+
+
+
+    class Admin:
+          ordering = ['-date_start']
+          list_display = ('collector', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
+
+    class Meta:
+        verbose_name = "Поток NetFlow"
+        verbose_name_plural = "Собранная NetFlow статистика"

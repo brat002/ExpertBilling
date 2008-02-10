@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-#import mikrobill.billservice.models
+#from mikrobill.billservice.models import Account, Tariff
 
 # Create your models here.
 
@@ -54,49 +54,14 @@ class Collector(models.Model):
         verbose_name = "NetFlow коллектор"
         verbose_name_plural = "NetFlow коллекторы"
     
-class NetFlowStream(models.Model):
-    collector = models.ForeignKey(Collector)
-    date_start = models.DateTimeField(auto_now_add=True)
-    groups = models.IntegerField(default=0, null=True, blank=True)
-    src_addr = models.IPAddressField()
-    dst_addr = models.IPAddressField()
-    next_hop = models.IPAddressField()
-    in_index = models.IntegerField()
-    out_index = models.IntegerField()
-    packets = models.IntegerField()
-    octets = models.IntegerField()
-    #sysuptime start flow aggregate
-    start = models.IntegerField()
-    #sysuptime flow send
-    finish = models.IntegerField()
-    src_port = models.IntegerField()
-    dst_port = models.IntegerField()
-    tcp_flags = models.IntegerField()
-    protocol = models.IntegerField()
-    tos = models.IntegerField()
-    source_as = models.IntegerField()
-    dst_as =  models.IntegerField()
-    src_netmask_length = models.IntegerField()
-    dst_netmask_length = models.IntegerField()
-
-        
-    
-    class Admin:
-          ordering = ['-date_start']
-          list_display = ('collector','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
-
-    class Meta:
-        verbose_name = "Поток NetFlow"
-        verbose_name_plural = "Собранная NetFlow статистика"
-        
 class TrafficNode(models.Model):
     name = models.CharField(verbose_name=u'Название класса', max_length=255)
-    src_ip_from  = models.IPAddressField(verbose_name=u'От адреса источника', default='0.0.0.0')
-    src_ip_to  = models.IPAddressField(verbose_name=u'До адреса источника', default='0.0.0.0')
+    src_ip  = models.IPAddressField(verbose_name=u'сеть источника', default='0.0.0.0')
+    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
     
-    dst_ip_from = models.IPAddressField(verbose_name=u'От адреса получателя', default='0.0.0.0')
-    dst_ip_to = models.IPAddressField(verbose_name=u'До адреса получателя', default='0.0.0.0')
+    dst_ip = models.IPAddressField(verbose_name=u'Сеть получателя', default='0.0.0.0')
+    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
     dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', default=0)
     
     next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', default='0.0.0.0')

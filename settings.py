@@ -85,8 +85,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'mikrobill.billing',
+#    'mikrobill.billing',
     'mikrobill.radius',
     'mikrobill.nas',
     'mikrobill.billservice',
+    'mikrobill.statistic',
 )
