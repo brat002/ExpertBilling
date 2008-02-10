@@ -296,16 +296,15 @@ class periodical_service_bill(Thread):
                                """
                                last_checkout=get_last_checkout(ps_id = ps_id, tarif = tariff_id, account = account_id)
                                # Здесь нужно проверить сколько раз прошёл расчётный период
-                               if last_checkout==None:
-                                   last_checkout=period_start
+
                                # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                # Для последней проводки ставим статус Approved=True
                                # для всех сотальных False
                                now=datetime.datetime.now()
-                               # Если дата начала периода больше последнего снятия - делаем проводки
+                               # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
                                # Выражение верно т.к. новая проводка совершится каждый раз только после после перехода
                                #в новый период.
-                               if period_start>last_checkout:
+                               if period_start>last_checkout or (last_checkout==None and now-datetime.timedelta(seconds=n)<=period_start):
 
                                     lc=last_checkout-period_start
                                     nums, ost=divmod((period_end-last_checkout).seconds, delta)
@@ -454,8 +453,11 @@ class TraficAccessBill(Thread):
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur=connection.cursor()
         while True:
+            now=datetime.datetime.now()
             cur.execute("""
-            SELECT rs.account_id, rs.sessionid, rs.bytes_in, rs.bytes_out, rs.interrim_update::timestamp without time zone, tacc.id, tacc.name, tarif.id
+            SELECT rs.account_id, rs.sessionid, rs.bytes_in,
+            rs.bytes_out, rs.interrim_update::timestamp without time zone,
+            tacc.id, tacc.name, tarif.id, rs.nas_id
             FROM radius_session as rs
             JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
             JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
@@ -474,6 +476,7 @@ class TraficAccessBill(Thread):
                 ps_id=row[5]
                 ps_name = row[6]
                 tarif_id = row[7]
+                nas_id = row[8]
                 #1. Ищем последнюю запись по которой была произведена оплата
                 #2. Получаем данные из услуги "Доступ по трафику" из текущего ТП пользователя
                 #2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
@@ -491,6 +494,12 @@ class TraficAccessBill(Thread):
                 except:
                     old_bytes_in=0
                     old_bytes_out=0
+                    cur.execute("""INSERT INTO billservice_summarytrafic(
+                                account_id, tarif_id, nas_id,
+                                radius_session, date_start)
+                                VALUES ('%s', '%s', '%s', '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
+                                )
+                                
 
                 total_bytes_in=session_bytes_in-old_bytes_in
                 total_bytes_out=session_bytes_out-old_bytes_out
@@ -570,9 +579,15 @@ class TraficAccessBill(Thread):
                             """ % (session_id, account_id, interrim_update)
                             print query
                             cur.execute(query)
+                            
+                            cur.execute(
+                            """
+                            UPDATE billservice_summarytrafic
+                            SET incomming_bytes='%s', outgoing_bytes='%s', date_end='%s'
+                            WHERE account_id='%s' and radius_session='%s';
+                            """ % (total_bytes_in, total_bytes_out, now, account_id, session_id)
+                            )
                             connection.commit()
-
-
             time.sleep(30)
 
  
