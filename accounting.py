@@ -590,23 +590,50 @@ class TraficAccessBill(Thread):
                             connection.commit()
             time.sleep(30)
 
-"""
-Алгоритм для агрегации трафика:
-Формируем таблицу с агрегированным трафиком
+class TraficAccessBill(Thread):
+    """
+    Алгоритм для агрегации трафика:
+    Формируем таблицу с агрегированным трафиком
 
-1. Берём строку из netflowstream_raw
-2. Смотрим есть ли похожая строка в netflowstream за последнюю минуту-полторы и не производилось ли по ней списание.
-2.1 Если есть и списание не производилось-суммируем количество байт
-2.2 Если есть и списание производилось или если нет -пишем новую строку
-3. УДаляем из netflowstream_raw строку или помечаем, что он адолжна быть удалена.
+    1. Берём строку из netflowstream_raw
+    2. Смотрим есть ли похожая строка в netflowstream за последнюю минуту-полторы и не производилось ли по ней списание.
+    2.1 Если есть и списание не производилось-суммируем количество байт
+    2.2 Если есть и списание производилось или если нет -пишем новую строку
+    3. УДаляем из netflowstream_raw строку или помечаем, что он адолжна быть удалена.
 
-WHILE TRUE
-timeout(120 seconds)
-произвести списания по новым строкам.
+    WHILE TRUE
+    timeout(120 seconds)
+    произвести списания по новым строкам.
+    """
 
+    def __init__(self):
+        Thread.__init__(self)
 
+    def run(self):
+        connection = conn.getconn()
+        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur=connection.cursor()
+        while True:
+            cur.execute(
+            """
+            SELECT nf.id, ba.id,
+            (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<nf.date_start and bat.account_id=ba.id ORDER BY datetime DESC LIMIT 1) as tarif_id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol
+            FROM billservice_rawnetflowstream as nf
+            JOIN billservice_account as ba ON ba.ipaddress=nf.src_addr OR ba.ipaddress=nf.dst_addr
+            WHERE nf.fetched=False;
+            """
+            )
+            raw_streams=cur.fetchall()
+            """
+            Берём строку, ищем пользователя, у которого адрес совпадает или с dst или с src.
+            Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
+            
+            """
+            for stream in raw_streams:
+                pass
+            time.sleep(30)
 
-"""
         
 dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 cas = check_access(timeout=10, dict=dict)

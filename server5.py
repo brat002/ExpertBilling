@@ -181,10 +181,10 @@ class NetFlowPacket:
         if len(data) < 16:
             raise ValueError, "Short packet"
             
-        cur.execute("""SELECT id from nas_collector WHERE ipaddress='%s'""" % addrport[0])
-        collector_id = cur.fetchone()[0]
+        cur.execute("""SELECT id from nas_nas WHERE support_netflow=True and ipaddress='%s'""" % addrport[0])
+        nas_id = cur.fetchone()[0]
         flows=[]
-        if collector_id!=None:
+        if nas_id!=None:
             _nf = struct.unpack("!H", data[:2])
             self.version = _nf[0]
             if not self.version in self.FLOW_TYPES.keys():
@@ -212,14 +212,32 @@ class NetFlowPacket:
     			        traffic_class=res
     			        print res
     			        flows.append({
-    			        'collector_id':collector_id, 'date_start':datetime.datetime.now(),                        'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,                        'traffic_class_id':traffic_class,                        'next_hop': flow.next_hop, 'in_index':flow.in_index,                        'out_index' : flow.out_index, 'packets' : flow.packets,                        'octets' : flow.octets, 'start' : flow.start,                        'finish' : flow.finish, 'src_port' : flow.src_port,                        'dst_port' : flow.dst_port, 'tcp_flags' : flow.tcp_flags,                        'protocol' : flow.protocol, 'tos' : flow.tos,                        'source_as' : flow.source_as, 'dst_as' : flow.dst_as,                        'src_netmask_length' : flow.src_netmask_length,'dst_netmask_length' : flow.dst_netmask_length})
+    			        'nas_id':nas_id, 'date_start':datetime.datetime.now(),
+    			        'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
+    			        'traffic_class_id':traffic_class,
+    			        'next_hop': flow.next_hop,
+    			        'in_index':flow.in_index,
+    			        'out_index' : flow.out_index,
+    			        'packets' : flow.packets,
+    			        'octets' : flow.octets,
+    			        'start' : flow.start,
+    			        'finish' : flow.finish,
+    			        'src_port' : flow.src_port,
+    			        'dst_port' : flow.dst_port,
+    			        'tcp_flags' : flow.tcp_flags,
+    			        'protocol' : flow.protocol,
+    			        'tos' : flow.tos,
+    			        'source_as' : flow.source_as,
+    			        'dst_as' : flow.dst_as,
+    			        'src_netmask_length' : flow.src_netmask_length,
+    			        'dst_netmask_length' : flow.dst_netmask_length})
     			        break
                     
             print 'save'
             print flows
             cur.executemany("""
-            INSERT INTO billservice_rawnetflowstream(collector_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
-            VALUES (%(collector_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\
+            INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
+            VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\
             flows)
             
 
