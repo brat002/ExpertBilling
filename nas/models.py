@@ -20,6 +20,8 @@ class Nas(models.Model):
     user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True)
     user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True)
     support_pod = models.BooleanField(verbose_name=u'Сервер поддерживает PoD', help_text=u"Технология, позволяющая сбрасывать пользователя с линии средствами RADIUS. Подробно описана в RFC 3576", blank=True, null=True, default=True)
+    support_netflow = models.BooleanField(verbose_name=u'Сервер поддерживает экспорт NetFlow', help_text=u"Сервер доступа поддерживает экспорт статистики через NetFlow", blank=True, null=True, default=True)
+    netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', blank=True, null=True, default=5)
     suport_cao = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP")
 
@@ -40,19 +42,6 @@ class Nas(models.Model):
     def __str__(self):
         return self.name
 
-class Collector(models.Model):
-    name=models.CharField(max_length=255)
-    ipaddress = models.IPAddressField(verbose_name=u'IP адресов коллектора')
-    description = models.TextField(verbose_name=u'Описание', blank=True)
-    version=models.IntegerField(verbose_name=u'Версия протокола NetFLow')
-    
-    class Admin:
-          ordering = ['-name']
-          list_display = ('name','ipaddress','description')
-
-    class Meta:
-        verbose_name = "NetFlow коллектор"
-        verbose_name_plural = "NetFlow коллекторы"
     
 class TrafficNode(models.Model):
     name = models.CharField(verbose_name=u'Название класса', max_length=255)

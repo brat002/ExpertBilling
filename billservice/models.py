@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass, Collector
+from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass
 from django.contrib.auth.models import User
 import datetime, time
 
@@ -474,14 +474,12 @@ class SummaryTrafic(models.Model):
         return u'%s' % self.account
     
 
-class NetFlowStream(models.Model):
-    collector = models.ForeignKey(Collector, blank=True, null=True)
-    account = models.ForeignKey(to='Account', blank=True, null=True)
-    tarif = models.ForeignKey(to='Tariff', blank=True, null=True)
+class RawNetFlowStream(models.Model):
+    nas = models.ForeignKey(Nas, blank=True, null=True)
     date_start = models.DateTimeField(auto_now_add=True)
     groups = models.IntegerField(default=0, null=True, blank=True)
     src_addr = models.IPAddressField()
-    traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
     dst_addr = models.IPAddressField()
     next_hop = models.IPAddressField()
     in_index = models.IntegerField()
@@ -501,13 +499,39 @@ class NetFlowStream(models.Model):
     dst_as =  models.IntegerField()
     src_netmask_length = models.IntegerField()
     dst_netmask_length = models.IntegerField()
+    fetched=models.BooleanField(blank=True, null=True, default=False)
 
 
 
     class Admin:
           ordering = ['-date_start']
-          list_display = ('collector', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
+          list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
 
     class Meta:
-        verbose_name = "Поток NetFlow"
-        verbose_name_plural = "Собранная NetFlow статистика"
+        verbose_name = "Сырая NetFlow статистика"
+        verbose_name_plural = "Сырая NetFlow статистика"
+
+class NetFlowStream(models.Model):
+    nas = models.ForeignKey(Nas, blank=True, null=True)
+    account=models.ForeignKey(Account, related_name='account_netflow')
+    tarif = models.ForeignKey(Tariff, related_name='tarif_netflow')
+    date_start = models.DateTimeField(auto_now_add=True)
+    src_addr = models.IPAddressField()
+    traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    dst_addr = models.IPAddressField()
+    octets = models.IntegerField()
+    src_port = models.IntegerField()
+    dst_port = models.IntegerField()
+    protocol = models.IntegerField()
+    checkouted = models.BooleanField(blank=True, null=True, default=False)
+    for_checkout = models.BooleanField(blank=True, null=True, default=False)
+    
+
+    class Admin:
+          ordering = ['-date_start']
+          list_display = ('nas', 'account', 'tarif','traffic_class','date_start','src_addr','dst_addr','src_port','dst_port','octets')
+
+    class Meta:
+        verbose_name = "NetFlow статистика"
+        verbose_name_plural = "NetFlow статистика"
+
