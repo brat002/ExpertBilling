@@ -33,6 +33,11 @@ ACTIVITY_CHOISES=(
         ("Disabled","Disabled"),
         )
         
+STATISTIC_MODE=(
+                ('NETFLOW','NetFlow'),
+                ('ACCOUNTING','RADIUS Accounting'),
+                )
+
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -342,6 +347,7 @@ class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     description          = models.TextField(verbose_name=u'Описание тарифного плана')
     access_type       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
+    statistic_mode    = models.CharField(choices=STATISTIC_MODE, max_length=255, default='NETFLOW',verbose_name=u'Главный режим сбора статистики', help_text=u"При сборе статистики через NetFlow нельзя применять тарифные планы с оплатой за время. Для Radius Accounting будет недоступна опция учёта трафика по направлениям")
     periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
     onetime_services     = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
