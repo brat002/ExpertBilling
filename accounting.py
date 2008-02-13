@@ -497,7 +497,7 @@ class TraficAccessBill(Thread):
                     cur.execute("""INSERT INTO billservice_summarytrafic(
                                 account_id, tarif_id, nas_id,
                                 radius_session, date_start)
-                                VALUES ('%s', '%s', '%s', '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
+                                VALUES ('%s', '%s', (SELECT id FROM nas_nas WHERE ipaddress='%s'), '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
                                 )
                                 
 
@@ -590,7 +590,7 @@ class TraficAccessBill(Thread):
                             connection.commit()
             time.sleep(30)
 
-class TraficAccessBill(Thread):
+class NetFlowAggregate(Thread):
     """
     Алгоритм для агрегации трафика:
     Формируем таблицу с агрегированным трафиком
@@ -631,7 +631,53 @@ class TraficAccessBill(Thread):
             
             """
             for stream in raw_streams:
-                pass
+                #Смотрим какой тип доступа в тарифном плане. Если IPN-ставим галочку ""
+                cur.execute(
+                """
+                SELECT statistic_mode FROM billservice_tariff WHERE id=%s;
+                """ % stream[2]
+                )
+                tarif_mode=cur.fetchone()[0]=='NETFLOW'
+                cur.execute(
+                """
+                SELECT id
+                FROM billservice_netflowstream
+                WHERE nas_id='%s' and account_id='%s' and
+                tarif_id='%s' and
+                '%s' - date_start < interval '00:01:00' and
+                src_addr='%s' and traffic_class_id='%s' and
+                dst_addr='%s' and
+                src_port='%s' and
+                dst_port='%s' and
+                protocol='%s' and
+                checkouted=False and
+                for_checkout='%s' ORDER BY id DESC LIMIT 1
+                """ % (stream[3], stream[1], stream[2],stream[4], stream[5], stream[6], stream[7],stream[9], stream[10],stream[11], tarif_mode)
+                )
+                row_for_update=cur.fetchone()
+                if row_for_update:
+                    print 'updating'
+                    cur.execute(
+                    """
+                    UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
+                    """ % (stream[8], stream[0])
+                    )
+                else:
+                    print 'inserting'
+                    cur.execute(
+                    """
+                    INSERT INTO billservice_netflowstream(
+                    nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id,
+                    dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                    VALUES ('%s', '%s', '%s', '%s', '%s', '%s',
+                    '%s', '%s', '%s', '%s', '%s', '%s', '%s');
+                    """ % (stream[3],stream[1], stream[2], stream[4],stream[5], stream[6], stream[7],stream[8],stream[9], stream[10], stream[11], False, tarif_mode)
+                    )
+                cur.execute(
+                """
+                UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
+                """ % stream[0]
+                )
             time.sleep(30)
 
         
@@ -646,4 +692,6 @@ psb.start()
 time_access_bill = TimeAccessBill()
 time_access_bill.start()
 
+nfagg=NetFlowAggregate()
+nfagg.start()
 #check_access()
