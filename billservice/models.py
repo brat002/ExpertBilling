@@ -524,6 +524,7 @@ class NetFlowStream(models.Model):
     date_start = models.DateTimeField(auto_now_add=True)
     src_addr = models.IPAddressField()
     traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    traffic_transmit_node = models.ForeignKey(to=TrafficTransmitNodes, blank=True, null=True, editable=False)
     dst_addr = models.IPAddressField()
     octets = models.IntegerField()
     src_port = models.IntegerField()
