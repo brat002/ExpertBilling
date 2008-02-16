@@ -47,61 +47,6 @@ class TimePeriodNode(models.Model):
     length = models.IntegerField(verbose_name=u'Период в секундах')
     repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток')
     
-    def in_period(self):
-        """
-        Если повторение-год = проверяем месяц, число, время
-        Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
-        Если повтроение - квартал   = (текущий месяц - начальный месяц по модулю)/3=1, совпадает число, время
-        Если повторение месяц - смотрим совпадает ли дата, время
-        Если повторение неделя - смотрим совпадает ли день недели, время
-        если повторение день - смотрим совпадает ли время
-        =
-        а=Текущее время - начальное время
-        текущее_начальное_время_нач=начальное время+таймдельта(а[год],а[месяц],a[день])
-        текущее_конечное_время =текущее_начальное_время_нач+таймдельта(self.length)
-        если текущее время >текущее_начальное_время_нач И текущее время < текущее_конечное_время
-             ок
-        иначе
-             вышел за рамки
-        
-        """
-        now=datetime.datetime.now()
-
-        if self.repeat_after=='DAY':
-            delta_days=now - self.time_start
-            #Когда будет начало в текущем периоде. 
-            nums,ost= divmod(delta_days.seconds, 86400)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=self.length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif self.repeat_after=='WEEK':
-            delta_days=now - self.time_start
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, 604800)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=self.length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif self.repeat_after=='MONTH':
-            #Февраль!
-            tnc=datetime.datetime(now.year, now.month, self.time_start.day,self.time_start.hour,self.time_start.minute, self.time_start.second)
-            tkc=tnc+datetime.timedelta(seconds=self.length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif self.repeat_after=='YEAR':
-            #Февраль!
-            tnc=datetime.datetime(now.year, self.time_start.month, self.time_start.day,self.time_start.hour,self.time_start.minute, self.time_start.second)
-            tkc=tnc+datetime.timedelta(seconds=self.length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        
     def __unicode__(self):
         return u"%s" % self.name
     
@@ -109,14 +54,13 @@ class TimePeriodNode(models.Model):
         ordering = ['name']
         list_display = ('name','time_start','length','repeat_after')
 
-    
     class Meta:
         verbose_name = "Нода временного периода"
         verbose_name_plural = "Ноды временных периодов"
 
 
 class TimePeriod(models.Model):
-    name= models.CharField(max_length=255, verbose_name=u'Название группы временных периодов')
+    name = models.CharField(max_length=255, verbose_name=u'Название группы временных периодов')
     time_period_nodes = models.ManyToManyField(to=TimePeriodNode, verbose_name=u'Группа временных периодов')
 
     def in_period(self):
@@ -148,18 +92,9 @@ class SettlementPeriod(models.Model):
     length = models.IntegerField(blank=True, default=0,verbose_name=u'Период действия в секундах')
     length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, null=True, verbose_name=u'Длина промежутка')
     autostart = models.BooleanField(verbose_name=u'Начинать при активации', default=False)
-    next_settlementtime = models.ForeignKey('SettlementPeriod', verbose_name=u'Следующий расчётный период', blank=True, null=True)
 
-    """
-    TO-DO: Сделать предустановленные пириоды :
-    год (с учётом високосного)
-    квартал
-    месяц (с учётом 30,31,29 дней в феврале)
-    неделя
-    день
-    """
     def __unicode__(self):
-        return self.name
+        return u"%s, Автостарт %s" % (self.name, self.autostart)
 
     class Admin:
         ordering = ['name']
@@ -195,10 +130,7 @@ class PeriodicalService(models.Model):
 
 class PeriodicalServiceHistory(models.Model):
     service = models.ForeignKey(to=PeriodicalService)
-    #tarif   = models.ForeignKey(to='Tariff')
     transaction = models.ForeignKey(to='Transaction')
-    #account = models.ForeignKey(to='Account')
-    #summ    = models.FloatField()
     datetime  = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
@@ -310,10 +242,10 @@ class PrepaidTraffic(models.Model):
     
 class TrafficTransmitNodes(models.Model):
     traffic_class     = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
-    time_period       = models.ManyToManyField(to=TimePeriod, verbose_name=u'Промежуток времени', blank=True, null=True)
-    cost              = models.FloatField(verbose_name=u'Цена трафика')
-    edge_start        = models.FloatField(verbose_name=u'Начальная граница')
-    edge_end          = models.FloatField(verbose_name=u'Конечная граница')
+    time_period       = models.ManyToManyField(to=TimePeriod, verbose_name=u'Промежуток времени')
+    cost              = models.FloatField(default=0, verbose_name=u'Цена трафика')
+    edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
+    edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
 
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.cost)
@@ -329,7 +261,7 @@ class TrafficTransmitNodes(models.Model):
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, verbose_name=u'Цены за трафик')
-    prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, verbose_name=u'Предоплаченный трафик', blank=True, null=True)
+    prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -345,19 +277,20 @@ class TrafficTransmitService(models.Model):
     
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
-    description          = models.TextField(verbose_name=u'Описание тарифного плана')
+    description       = models.TextField(verbose_name=u'Описание тарифного плана')
     access_type       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
     statistic_mode    = models.CharField(choices=STATISTIC_MODE, max_length=255, default='NETFLOW',verbose_name=u'Главный режим сбора статистики', help_text=u"При сборе статистики через NetFlow нельзя применять тарифные планы с оплатой за время. Для Radius Accounting будет недоступна опция учёта трафика по направлениям")
     periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
-    onetime_services     = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
+    onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
-    cost              = models.FloatField(verbose_name=u'Стоимость активации тарифного плана', default=0.000 ,help_text=u"Если не указана-предоплаченный трафик и время не учитываются")
-    settlement_period       = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
+    cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0.000 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
+    reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, null=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
+    settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
-    reset_traffic        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
-    ps_null_ballance_checkout  = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
+    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
+    ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
 
     
     def __unicode__(self):
@@ -380,11 +313,9 @@ class Account(models.Model):
     firstname=models.CharField(verbose_name=u'Имя',max_length=200)
     lastname=models.CharField(verbose_name=u'Фамилия',max_length=200)
     address=models.TextField(verbose_name=u'Домашний адрес')
-#    tarif=models.ForeignKey(Tariff,verbose_name=u'Тарифный план')
-    ipaddress=models.IPAddressField(u'IP адрес')
+    ipaddress=models.IPAddressField(u'Статический IP адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
     status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
-    suspended = models.BooleanField(verbose_name=u'Усыплён', help_text=u'Не производить списывание денег по периодическим услугам', default=False)
-    #banned=models.CharField(verbose_name=u'Бан?',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
@@ -447,7 +378,7 @@ class Transaction(models.Model):
         return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 
 class AccountTarif(models.Model):
-    account   = models.ForeignKey(to=Account, edit_inline=models.STACKED, num_in_admin=1)
+    account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, blank=True, null=True, edit_inline=models.STACKED, num_in_admin=1)
     tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True)
     datetime  = models.DateTimeField()
     
@@ -506,8 +437,6 @@ class RawNetFlowStream(models.Model):
     src_netmask_length = models.IntegerField()
     dst_netmask_length = models.IntegerField()
     fetched=models.BooleanField(blank=True, null=True, default=False)
-
-
 
     class Admin:
           ordering = ['-date_start']
