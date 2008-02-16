@@ -31,7 +31,7 @@ def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id, pod
         sshclient.close_chanel()
         return res.readlines()==[]
 
-def in_period(time_start, length, repeat_after):
+def in_period(time_start, length, repeat_after, now=datetime.datetime.now()):
         """
         Если повторение-год = проверяем месяц, число, время
         Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
@@ -49,8 +49,7 @@ def in_period(time_start, length, repeat_after):
              вышел за рамки
 
         """
-        now=datetime.datetime.now()
-
+        
         #time_start=time_start.replace(tzinfo='UTC')
         if repeat_after=='DAY':
             delta_days=now - time_start
