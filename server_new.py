@@ -45,7 +45,6 @@ class handle_auth_core:
     def handle(self, response, nasip):
         db_connection = pool.connection()
         cur = db_connection.cursor()
-        bufsize=4096
         packetobject=packet.Packet(dict=dict,packet=response)
         replypacket=corepacket.CorePacket(secret='None',dict=dict)
         row = get_nas_by_ip(cur, nasip).fetchone()
@@ -77,7 +76,6 @@ class handle_auth_core:
                 return self.auth_NA(replypacket)
 
         cur.close()
-        #Сделать проверку "как работает пользователь". В кредит или по предоплате
         if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
@@ -182,10 +180,6 @@ class handle_acct_core:
             db_connection.commit()
         cur.close()
 
-
-
-
-
         data_to_send=replypacket.ReplyPacket()
         return data_to_send
 
@@ -233,18 +227,15 @@ class handle_acct(DatagramRequestHandler):
         requestpacket=packet.AcctPacket(dict=dict,packet=data)
         packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)
         print packetfromcore.code
-        if packetfromcore.code==5:
-            
-            replyobj=packet.AcctPacket( id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
-            returndat=replyobj.ReplyPacket()
-            self.socket.sendto(returndat,addrport)
-            print "ACC:%.20f" % (clock()-t)
-            del coreconnect
-            del corereply
-            del packetfromcore
-            del replyobj
-        else:
-            pass
+        replyobj=packet.AcctPacket( id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
+        returndat=replyobj.ReplyPacket()
+        self.socket.sendto(returndat,addrport)
+        print "ACC:%.20f" % (clock()-t)
+        del coreconnect
+        del corereply
+        del packetfromcore
+        del replyobj
+
           
 
 class serve_requests(Thread):

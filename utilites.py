@@ -92,10 +92,18 @@ def settlement_period_info(time_start, repeat_after, now=datetime.datetime.now()
         Функция возвращает дату начала и дату конца текущегопериода
         """
         #time_start=time_start.replace(tzinfo='UTC')
-        if repeat_after=='DAY':
+        if type(repeat_after)==int and repeat_after>0:
+            delta_days=now - time_start
+            length=repeat_after
+            #Когда будет начало в текущем периоде.
+            nums,ost= divmod(delta_days.seconds, length)
+            tnc=now-datetime.timedelta(seconds=ost)
+            #Когда это закончится
+            tkc=tnc+datetime.timedelta(seconds=length)
+            return (tnc, tkc, length)
+        elif repeat_after=='DAY':
             delta_days=now - time_start
             length=86400
-
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
