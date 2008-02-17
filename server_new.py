@@ -84,7 +84,7 @@ class handle_auth_core:
            replypacket.AddAttribute('Framed-Protocol', 1)
            replypacket.AddAttribute('Framed-IP-Address', ipaddress)
            replypacket.AddAttribute('Framed-Routing', 0)
-           replypacket.AddAttribute((14988,8),'128k')
+           #replypacket.AddAttribute((14988,8),'128k')
 
         else:
              return self.auth_NA(replypacket)
@@ -127,11 +127,13 @@ class handle_acct_core:
         row=cur.fetchone()
         if row==None:
             return self.acct_NA(replypacket)
+        
+        account_id=row[0]
 
         secret=str(rows[0])
         replypacket.secret=str(secret)
         replypacket.code=5
-
+        now=datetime.datetime.now()
         if packetobject['Acct-Status-Type']==['Start']:
            cur.execute(
            """
@@ -139,8 +141,18 @@ class handle_acct_core:
            account_id, sessionid, date_start, interrim_update,
            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
            )
-           VALUES ((SELECT id FROM billservice_account WHERE username=%s), %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
-           """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
+           VALUES (%s, %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
+           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
+
+           cur.execute(
+           """
+           INSERT INTO radius_activesession(
+           account_id, sessionid, date_start, interrim_update,
+           caller_id, called_id, nas_id, framed_protocol, session_status
+           )
+           VALUES (%s, %s, %s,%s, %s, %s, %s, 'PPTP', 'ACTIVE');
+           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
+
            db_connection.commit()
 
 
@@ -154,10 +166,17 @@ class handle_acct_core:
            VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s,
            %s, %s, %s, %s, %s);
            """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
-                 datetime.datetime.now(), packetobject['Calling-Station-Id'][0],
+                 now, packetobject['Calling-Station-Id'][0],
                  packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                  packetobject['Acct-Session-Time'][0],
                  packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
+           )
+           cur.execute(
+           """
+           UPDATE radius_activesession
+           SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
+           WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
+           """ % (now, packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Time'][0], account_id, packetobject['Acct-Session-Id'][0], packetobject['NAS-IP-Address'][0])
            )
            db_connection.commit()
 
@@ -177,6 +196,14 @@ class handle_acct_core:
                   packetobject['Acct-Session-Time'][0],
                   packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
             )
+            
+            cur.execute(
+               """
+               UPDATE radius_activesession
+               SET date_end='%s', session_status='ACK'
+               WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
+               """ % (now,account_id, packetobject['Acct-Session-Id'][0], packetobject['NAS-IP-Address'][0])
+               )
             db_connection.commit()
         cur.close()
 

@@ -48,10 +48,9 @@ class check_access(Thread):
             while True:
                 time.sleep(self.timeout)
                 cur.execute("""
-                SELECT DISTINCT rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end
-                FROM radius_session as rs
-                WHERE rs.disconnect_status is null AND disconnect_status is null AND rs.date_start is null AND date_end not in
-                (SELECT rsess.date_end from radius_session as rsess WHERE rsess.sessionid=rs.sessionid and rsess.date_end is not null);
+                SELECT rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end
+                FROM radius_activesession as rs
+                WHERE rs.session_status='ACTIVE' or rs.date_end is null;
                 """)
                 rows=cur.fetchall()
                 for row in rows:
@@ -86,28 +85,22 @@ class check_access(Thread):
                     if result==True:
                         #Если удалось отключить - пишем в базу
                         disconnect_result='ACK'
-                    elif result==False:
-                        #Если не удалось отключить - или сессии не существовало
-                        disconnect_result='NACK'
-                    else:
-                        disconnect_result=''
-                    if disconnect_result=='ACK':
                         # Если сбросили сессию, значит она существовала и сервер доступа сам
                         # Пришлёт STOP пакет
                         cur.execute(
                         """
-                        UPDATE radius_session SET disconnect_status=%s WHERE id=(
-                        SELECT id
-                        FROM radius_session WHERE sessionid=%s ORDER BY id DESC LIMIT 1);
+                        UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
-                    else:
-                        # Если сессии не было, значит закрываем её
+                    elif result==False:
+                        #Если не удалось отключить - или сессии не существовало
+                        disconnect_result='NACK'
+
+                        # Если сбросили сессию, значит она существовала и сервер доступа сам
+                        # Пришлёт STOP пакет
                         cur.execute(
                         """
-                        UPDATE radius_session SET date_end=interrim_update, disconnect_status=%s WHERE id=(
-                        SELECT id
-                        FROM radius_session WHERE sessionid=%s ORDER BY id DESC LIMIT 1);
+                        UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
             connection.commit()
@@ -125,9 +118,13 @@ class session_dog(Thread):
         Thread.__init__(self)
 
     def run(self):
-        pass
-        #cur.execute("UPDATE radius_session SET date_end=interrim_update WHERE interrim_update-date_start>= interval '00:01:00' and date_end is Null;")
-        #cur.execute("UPDATE radius_session SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
+        connection = conn.getconn()
+        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur=connection.cursor()
+        while True:
+              #cur.execute("UPDATE radius_activesession SET date_end=interrim_update WHERE interrim_update-date_start>= interval '00:03:00' and date_end is Null;")
+              #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
+              time.sleep(10)
         
 
 class periodical_service_bill(Thread):
@@ -153,8 +150,7 @@ class periodical_service_bill(Thread):
             # Количество снятий в сутки
             transaction_number=24
             n=(24*60*60)/transaction_number
-            #time.sleep(n)
-            
+
             #выбираем список тарифных планов у которых есть периодические услуги
             cur.execute("SELECT id, settlement_period_id, ps_null_ballance_checkout  FROM billservice_tariff WHERE id in (SELECT tariff_id FROM billservice_tariff_periodical_services)")
             rows=cur.fetchall()
@@ -617,6 +613,7 @@ class TraficAccessBill(Thread):
                                     summ=summ,
                                     description="Снятие денег за входящий трафик по RADIUS сессии %s" % session_id,
                                     )
+                                    print 'bytes_in checkout'
                             elif (tc_weight==200 and tarif_mode) and ((out_octets_summ>=trafic_edge_start and out_octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and out_octets_summ<=trafic_edge_start) or (out_octets_summ>=trafic_edge_start and trafic_edge_start==0)):
                                 #Исходящий Относительно клиента
                                 summ=(float(total_bytes_out)/(1024*1024))*traffic_cost
@@ -629,6 +626,7 @@ class TraficAccessBill(Thread):
                                         summ=summ,
                                         description="Снятие денег за исходящий трафик по RADIUS сессии %s" % session_id,
                                         )
+                                    print 'bytes_out checkout'
 
 
                             
@@ -895,4 +893,6 @@ nfagg.start()
 
 nfbill=NetFlowBill()
 nfbill.start()
-#check_access()
+
+sess_dog=session_dog()
+sess_dog.start()

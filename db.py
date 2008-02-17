@@ -52,13 +52,15 @@ def time_periods_by_tarif_id(cursor, tarif_id):
     cursor.execute("""SELECT id, name, time_start::timestamp without time zone, length, repeat_after FROM billservice_timeperiodnode WHERE id=(SELECT  timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=(SELECT access_time_id FROM billservice_tariff WHERE id='%s'))""" % tarif_id)
     return cursor
 
-def transaction(cursor, account, approved, tarif, summ, description, created=datetime.datetime.now()):
+def transaction(cursor, account, approved, tarif, summ, description, created=None):
+    if not created:
+        created=datetime.datetime.now()
+        
     cursor.execute("""
     INSERT INTO billservice_transaction(
     account_id, approved, tarif_id, summ, description, created)
     VALUES (%s, %s, %s, %s, %s, %s);
     """,(account, approved, tarif , summ, description, created))
-
     cursor.execute("""
     UPDATE billservice_account
     SET ballance=ballance-%s WHERE id=%s""" % (summ, account))
@@ -73,7 +75,9 @@ def transaction(cursor, account, approved, tarif, summ, description, created=dat
     
     return cursor.fetchone()[0]
 
-def ps_history(cursor, ps_id, transaction, created=datetime.datetime.now()):
+def ps_history(cursor, ps_id, transaction, created=None):
+    if not created:
+        created=datetime.datetime.now()
     cursor.execute("""
        INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
        """, (ps_id, transaction, created))
