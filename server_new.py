@@ -142,7 +142,6 @@ class handle_acct_core:
         replypacket.code=5
         now=datetime.datetime.now()
         if packetobject['Acct-Status-Type']==['Start']:
-            print packetobject['NAS-Port-Type']
             if packetobject['NAS-Port-Type'][0]=='Virtual':
               access_type='PPTP'
             elif packetobject['NAS-Port-Type'][0]=='Ethernet':
@@ -151,20 +150,20 @@ class handle_acct_core:
             cur.execute(
            """
            INSERT INTO radius_session(
-           account_id, sessionid, date_start, interrim_update,
+           account_id, sessionid, date_start, 
            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
            )
-           VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s, %s);
-           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], access_type, False, False))
+           VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s);
+           """, (account_id, packetobject['Acct-Session-Id'][0], now, packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], access_type, False, False))
 
             cur.execute(
            """
            INSERT INTO radius_activesession(
-           account_id, sessionid, date_start, interrim_update,
+           account_id, sessionid, date_start, 
            caller_id, called_id, nas_id, framed_protocol, session_status
            )
-           VALUES (%s, %s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
-           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], access_type, packetobject['NAS-IP-Address'][0]))
+           VALUES (%s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
+           """, (account_id, packetobject['Acct-Session-Id'][0], now, packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], access_type))
 
             db_connection.commit()
 

@@ -50,16 +50,16 @@ class check_access(Thread):
                 cur.execute("""
                 SELECT rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end
                 FROM radius_activesession as rs
-                WHERE rs.session_status='ACTIVE' or rs.date_end is null;
+                WHERE (rs.session_status='ACTIVE' and rs.date_end is not null) or (rs.date_end is null and rs.session_status!='ACTIVE');
                 """)
                 rows=cur.fetchall()
                 for row in rows:
                     account_id=row[0]
                     session_id=row[1]
                     nas_id=row[2]
-                    
                     cur.execute("SELECT name, secret, support_pod, login, password from nas_nas WHERE ipaddress='%s'" % nas_id)
                     row_n=cur.fetchone()
+                    print type(row_n)
                     nas_name = row_n[0]
                     nas_secret = row_n[1]
                     nas_support_pod =row_n[2]
@@ -230,13 +230,13 @@ class periodical_service_bill(Thread):
                                         #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
                                         pass
                                     # Смотрим сколько раз уже должны были снять деньги
+                                    cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                     lc=now - last_checkout
-                                    nums, ost=divmod(lc.seconds,delta)
-                                    for i in xrange(nums-1):
+                                    nums, ost=divmod(lc.seconds,n)
+                                    if nums>0:
                                         #Смотрим на какую сумму должны были снять денег и снимаем её
-                                        pass
+                                        cash_summ=cash_summ*nums
                                     #print "delta", delta
-                                    cash_summ=(float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number))
                                     # Делаем проводку со статусом Approved
 
                                     transaction_id = transaction(cursor=cur,
@@ -264,7 +264,7 @@ class periodical_service_bill(Thread):
                                 # Если последняя проводка меньше или равно дате начала периода-делаем снятие
                                 if last_checkout<=period_start:
                                     lc=last_checkout-period_start
-                                    nums, ost=divmod(lc.seconds, delta)
+                                    nums, ost=divmod(lc.seconds, n)
                                     for i in xrange(nums-1):
                                         transaction_id = transaction(
                                         cursor=cur,
@@ -293,7 +293,7 @@ class periodical_service_bill(Thread):
                                Для последнего делаем проводку со статусом Approved=True
                                для остальных со статусом False
                                """
-                               last_checkout=get_last_checkout(ps_id = ps_id, tarif = tariff_id, account = account_id)
+                               last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
                                # Здесь нужно проверить сколько раз прошёл расчётный период
 
                                # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
@@ -306,7 +306,7 @@ class periodical_service_bill(Thread):
                                if period_start>last_checkout or (last_checkout==None and now-datetime.timedelta(seconds=n)<=period_start):
 
                                     lc=last_checkout-period_start
-                                    nums, ost=divmod((period_end-last_checkout).seconds, delta)
+                                    nums, ost=divmod((period_end-last_checkout).seconds, n)
                                     for i in xrange(nums-1):
                                         transaction_id = transaction(cursor=cur,
                                         account=account_id,
@@ -728,7 +728,7 @@ class NetFlowAggregate(Thread):
                     )
                 cur.execute(
                 """
-                UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
+                DELETE FROM billservice_rawnetflowstream WHERE id=%s
                 """ % stream[0]
                 )
             connection.commit()
