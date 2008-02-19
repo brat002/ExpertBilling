@@ -4,9 +4,14 @@ from django.db import models
 from mikrobill.billservice.models import Account
 SERVICE_TYPES=(
         ("PPTP","PPTP"),
-        ("L2TP","PPTP"),
-        ("PPPOE","PPTP"),
+        ("L2TP","L2TP"),
+        ("PPPOE","PPPOE"),
         )
+SESSION_STATUS=(
+                ("ACTIVE", u"Активна",),
+                ("NACK", u"Не сброшена",),
+                ("ACK", u"Cброшена",),
+                )
 # Create your models here.
 class Session(models.Model):
     account=models.ForeignKey(Account)
@@ -27,7 +32,7 @@ class Session(models.Model):
     #Атрибут радиуса Acct-Session-Time
     session_time=models.IntegerField(default=0, null=True,blank=True)
     #Нужно определить каким образом клиент подключился к серверу
-    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES,radio_admin=True, blank=True, null=True, default='PPTP')
+    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES,radio_admin=True)
     #Атрибут радиуса Acct-Input-Packets
     bytes_in=models.IntegerField(null=True,blank=True)
     #Атрибут радиуса Acct-Output-Packets
@@ -48,3 +53,44 @@ class Session(models.Model):
     
     def __unicode__(self):
         return self.account.username
+
+
+# Create your models here.
+class ActiveSession(models.Model):
+    account=models.ForeignKey(Account)
+    #Атрибут радиуса Acct-Session-Id
+    sessionid=models.CharField(max_length=255, blank=True)
+    #Время последнего обновления
+    interrim_update=models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    #Время старта сессии
+    date_start=models.DateTimeField(blank=True, null=True)
+    #Время конца сессии
+    date_end=models.DateTimeField(null=True,blank=True)
+    #Атрибут радиуса Calling-Station-Id. IP адрес или мак-адрес
+    caller_id=models.CharField(max_length=255, blank=True)
+    #Атрибут радиуса Called-Station-Id (IP адрес или имя сервиса для PPPOE)
+    called_id=models.CharField(max_length=255, blank=True)
+    #Атрибут радиуса NAS-IP-Address
+    nas_id=models.CharField(max_length=255, blank=True)
+    #Атрибут радиуса Acct-Session-Time
+    session_time=models.IntegerField(default=0, null=True,blank=True)
+    #Нужно определить каким образом клиент подключился к серверу
+    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES,radio_admin=True)
+    #Атрибут радиуса Acct-Input-Octets
+    bytes_in=models.IntegerField(null=True,blank=True)
+    #Атрибут радиуса Acct-Output-Octets
+    bytes_out=models.IntegerField(null=True,blank=True)
+    #Выставляется в случае, если был произведён платёж
+    session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True)
+
+
+
+    class Admin:
+        ordering = ['-id']
+        list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start', 'interrim_update','date_end','caller_id','called_id','session_time', 'session_status')
+
+    class Meta:
+        pass
+
+    def __unicode__(self):
+        return self.sessionid
