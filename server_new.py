@@ -46,6 +46,11 @@ class handle_auth_core:
         db_connection = pool.connection()
         cur = db_connection.cursor()
         packetobject=packet.Packet(dict=dict,packet=response)
+        if packetobject['NAS-Port-Type'][0]=='Virtual':
+            access_type='PPTP'
+        elif packetobject['NAS-Port-Type'][0]=='Ethernet':
+            access_type='PPPOE'
+            
         replypacket=corepacket.CorePacket(secret='None',dict=dict)
         row = get_nas_by_ip(cur, nasip).fetchone()
         if row==None:
@@ -53,8 +58,7 @@ class handle_auth_core:
 
         nas_id=str(row[0])
         secret=str(row[1])
-
-
+        
         replypacket.secret = secret
         row = get_account_data_by_username(cur, packetobject['User-Name'][0]).fetchone()
         if row==None:
@@ -74,7 +78,9 @@ class handle_auth_core:
         for row in rows:
             if in_period(row[2],row[3],row[4])==False:
                 return self.auth_NA(replypacket)
-
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[key][0]
+        
         cur.close()
         if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0:
            replypacket.code=2
@@ -110,6 +116,7 @@ class handle_acct_core:
         #(requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
         #nasip=tools.DecodeAddress(nasip)
         packetobject=packet.Packet(dict=dict,packet=response)
+
         replypacket=corepacket.CorePacket(username="None", secret='None', password="None", dict=dict)
 
         cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
@@ -135,25 +142,31 @@ class handle_acct_core:
         replypacket.code=5
         now=datetime.datetime.now()
         if packetobject['Acct-Status-Type']==['Start']:
-           cur.execute(
+            print packetobject['NAS-Port-Type']
+            if packetobject['NAS-Port-Type'][0]=='Virtual':
+              access_type='PPTP'
+            elif packetobject['NAS-Port-Type'][0]=='Ethernet':
+               access_type='PPPOE'
+
+            cur.execute(
            """
            INSERT INTO radius_session(
            account_id, sessionid, date_start, interrim_update,
            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
            )
-           VALUES (%s, %s, %s,%s, %s, %s, %s, 'PPTP', %s, %s);
-           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], False, False))
+           VALUES (%s, %s, %s,%s, %s, %s, %s, %s, %s, %s);
+           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0], access_type, False, False))
 
-           cur.execute(
+            cur.execute(
            """
            INSERT INTO radius_activesession(
            account_id, sessionid, date_start, interrim_update,
            caller_id, called_id, nas_id, framed_protocol, session_status
            )
-           VALUES (%s, %s, %s,%s, %s, %s, %s, 'PPTP', 'ACTIVE');
-           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0]))
+           VALUES (%s, %s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
+           """, (account_id, packetobject['Acct-Session-Id'][0], datetime.datetime.now(), datetime.datetime.now(), packetobject['Calling-Station-Id'][0], packetobject['Called-Station-Id'][0], access_type, packetobject['NAS-IP-Address'][0]))
 
-           db_connection.commit()
+            db_connection.commit()
 
 
         if packetobject['Acct-Status-Type']==['Alive']:
@@ -163,9 +176,9 @@ class handle_acct_core:
            account_id, sessionid, interrim_update,
            caller_id, called_id, nas_id, session_time,
            bytes_out, bytes_in, checkouted_by_time, checkouted_by_trafic)
-           VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s, %s,
+           VALUES ( %s, %s, %s, %s, %s, %s,
            %s, %s, %s, %s, %s);
-           """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
+           """, (account_id, packetobject['Acct-Session-Id'][0],
                  now, packetobject['Calling-Station-Id'][0],
                  packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                  packetobject['Acct-Session-Time'][0],
@@ -181,16 +194,15 @@ class handle_acct_core:
            db_connection.commit()
 
         if packetobject['Acct-Status-Type']==['Stop']:
-            now=datetime.datetime.now()
             cur.execute(
             """
             INSERT INTO radius_session(
             account_id, sessionid, interrim_update, date_end,
             caller_id, called_id, nas_id, session_time,
             bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic)
-            VALUES ( (SELECT id FROM billservice_account WHERE username=%s), %s, %s, %s, %s,
+            VALUES ( %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s, %s, %s);
-            """, (packetobject['User-Name'][0], packetobject['Acct-Session-Id'][0],
+            """, (account_id, packetobject['Acct-Session-Id'][0],
                   now, now, packetobject['Calling-Station-Id'][0],
                   packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                   packetobject['Acct-Session-Time'][0],
@@ -218,7 +230,8 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
-dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+#dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft")
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):
