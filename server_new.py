@@ -46,6 +46,7 @@ class handle_auth_core:
         db_connection = pool.connection()
         cur = db_connection.cursor()
         packetobject=packet.Packet(dict=dict,packet=response)
+        
         if packetobject['NAS-Port-Type'][0]=='Virtual':
             access_type='PPTP'
         elif packetobject['NAS-Port-Type'][0]=='Ethernet':
@@ -70,7 +71,7 @@ class handle_auth_core:
         if row==None:
             return self.auth_NA(replypacket)
 
-        if int(row[0])!=int(nas_id):
+        if int(row[0])!=int(nas_id) or row[1]!=access_type:
            return self.auth_NA(replypacket)
 
         #TimeAccess

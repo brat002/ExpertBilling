@@ -41,11 +41,20 @@ def get_nas_by_ip(cursor, ip):
     return cursor
 
 def get_account_data_by_username(cursor, username):
-    cursor.execute("""SELECT bsa.username, bsa.password, bsa.ipaddress, (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<now() and bat.account_id=bsa.id ORDER BY datetime DESC LIMIT 1) as tarif_id, status, banned, (ballance+credit) as ballance FROM billservice_account as bsa WHERE username='%s'""" % username)
+    cursor.execute(
+    """SELECT bsa.username, bsa.password, bsa.ipaddress,
+    bsat.tarif_id, status, banned, (ballance+credit) as ballance
+    FROM billservice_account as bsa
+    JOIN billservice_accounttarif as bsat ON bsat.account_id=bsa.id
+    WHERE bsat.datetime<now() and bsa.username='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
     return cursor
 
 def get_nas_id_by_tarif_id(cursor, tarif_id):
-    cursor.execute("""SELECT id from nas_nas WHERE id=(SELECT nas_id FROM billservice_accessparameters_nas WHERE accessparameters_id=(SELECT access_type_id FROM billservice_tariff WHERE id=%s))""" % tarif_id)
+    cursor.execute("""SELECT nas_nas.id, ap.access_type from nas_nas
+    JOIN billservice_accessparameters_nas AS apn ON apn.nas_id=nas_nas.id
+    JOIN billservice_accessparameters AS ap ON ap.id=apn.accessparameters_id
+    JOIN billservice_tariff AS bst ON bst.access_type_id=ap.id
+    WHERE bst.id='%s'""" % tarif_id)
     return cursor
 
 def time_periods_by_tarif_id(cursor, tarif_id):
