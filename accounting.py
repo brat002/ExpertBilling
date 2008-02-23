@@ -122,7 +122,7 @@ class session_dog(Thread):
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur=connection.cursor()
         while True:
-              #cur.execute("UPDATE radius_activesession SET date_end=interrim_update WHERE interrim_update-date_start>= interval '00:03:00' and date_end is Null;")
+              cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
               time.sleep(10)
         
