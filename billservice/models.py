@@ -216,7 +216,7 @@ class AccessParameters(models.Model):
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
-    nas               = models.ManyToManyField(to=Nas, filter_interface=models.HORIZONTAL, blank=True, null=True, verbose_name=u'Сервер доступа')
+    nas               = models.ForeignKey(to=Nas, blank=True, null=True, verbose_name=u'Сервер доступа')
 
     def __unicode__(self):
         return self.name
@@ -286,6 +286,7 @@ class TrafficLimit(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Лимит на класс', blank=True, null=True)
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
+    mode              = models.BooleanField(verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -343,7 +344,7 @@ class Account(models.Model):
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
-    #disabled_by_limit =
+    disabled_by_limit = models.BooleanField(editable=False)
 
     class Admin:
         ordering = ['user']
