@@ -65,7 +65,7 @@ class handle_auth_core:
         if row==None:
             return self.auth_NA(replypacket)
 
-        username, password, ipaddress, tarif_id, status, banned, ballance = row
+        username, password, ipaddress, tarif_id, status, banned, ballance, disabled_by_limit = row
 
         row=get_nas_id_by_tarif_id(cur, tarif_id).fetchone()
         if row==None:
@@ -83,7 +83,7 @@ class handle_auth_core:
         #    print packetobject._DecodeKey(key),packetobject[key][0]
         
         cur.close()
-        if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0:
+        if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0 and disabled_by_limit==False:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
            replypacket.password=str(password) #Нельзя юникод

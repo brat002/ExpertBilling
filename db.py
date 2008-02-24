@@ -14,7 +14,7 @@ def get_nas_by_ip(cursor, ip):
 def get_account_data_by_username(cursor, username):
     cursor.execute(
     """SELECT bsa.username, bsa.password, bsa.ipaddress,
-    bsat.tarif_id, status, banned, (ballance+credit) as ballance
+    bsat.tarif_id, status, banned, (ballance+credit) as ballance, disabled_by_limit
     FROM billservice_account as bsa
     JOIN billservice_accounttarif as bsat ON bsat.account_id=bsa.id
     WHERE bsat.datetime<now() and bsa.username='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
@@ -22,14 +22,14 @@ def get_account_data_by_username(cursor, username):
 
 def get_nas_id_by_tarif_id(cursor, tarif_id):
     cursor.execute("""SELECT nas_nas.id, ap.access_type from nas_nas
-    JOIN billservice_accessparameters_nas AS apn ON apn.nas_id=nas_nas.id
-    JOIN billservice_accessparameters AS ap ON ap.id=apn.accessparameters_id
+    JOIN billservice_accessparameters AS ap ON ap.nas_id=nas_nas.id
     JOIN billservice_tariff AS bst ON bst.access_type_id=ap.id
     WHERE bst.id='%s'""" % tarif_id)
     return cursor
 
 def time_periods_by_tarif_id(cursor, tarif_id):
-    cursor.execute("""SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+    cursor.execute("""
+    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
     FROM billservice_timeperiodnode as tpn
     JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
     JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
