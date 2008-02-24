@@ -2,6 +2,8 @@
 
 VENDOR          WISPr           14122
 
+BEGIN-VENDOR	WISPr
+
 ATTRIBUTE       WISPr-Location-Id            1    string
 ATTRIBUTE       WISPr-Location-Name          2    string
 ATTRIBUTE       WISPr-Logoff-URL             3    string
@@ -12,9 +14,13 @@ ATTRIBUTE       WISPr-Bandwidth-Max-Up       7    integer
 ATTRIBUTE       WISPr-Bandwidth-Max-Down     8    integer
 ATTRIBUTE       WISPr-Session-Terminate-Time 9    string
 
+END-VENDOR	WISPr
+
 # MikroTik Attributes
 
 VENDOR          Mikrotik        14988
+
+BEGIN-VENDOR    Mikrotik
 
 ATTRIBUTE       Mikrotik-Recv-Limit          1    integer
 ATTRIBUTE       Mikrotik-Xmit-Limit          2    integer
@@ -31,3 +37,5 @@ ATTRIBUTE       Mikrotik-Advertise-URL       12   string
 ATTRIBUTE       Mikrotik-Advertise-Interval  13   integer
 ATTRIBUTE       Mikrotik-Recv-Limit-Gigawords 14  integer
 ATTRIBUTE       Mikrotik-Xmit-Limit-Gigawords 15  integer
+
+END-VENDOR      Mikrotik

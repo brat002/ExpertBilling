@@ -106,11 +106,9 @@ class Auth:
 		@rtype:          string
 		"""
 		pw=""
-		print password, authenticator, secret
 
 		while password:
 			hash=md5.new(secret+authenticator).digest()
-			print "%s; len=%s" % (hash, str(len(hash)))
 			for i in range(16):
 				pw+=chr(ord(hash[i]) ^ ord(password[i]))
 

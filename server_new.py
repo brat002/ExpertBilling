@@ -230,8 +230,8 @@ RequireLogin=1
 LoginAllowed=2
 LoginDisabled=3
 
-#dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
-dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft")
+dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+#dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft")
 
 class handle_auth(DatagramRequestHandler):
       def handle(self):
@@ -244,7 +244,7 @@ class handle_auth(DatagramRequestHandler):
         coreconnect = handle_auth_core()
         corereply = coreconnect.handle(response=data, nasip=self.client_address[0])
         packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)
-        packetobject=packet.Packet(secret=packetfromcore.secret, dict=dict,packet=data)
+        packetobject=packet.Packet(secret=packetfromcore.secret, dict=dict, packet=data)
         authobject=auth.Auth(Packet=packetobject, plainpassword=packetfromcore.password, plainusername=packetfromcore.username, code=packetfromcore.code, attrs=packetfromcore._PktEncodeAttributes())
         returndata=authobject.ReturnPacket()
         self.socket.sendto(returndata,addrport)
