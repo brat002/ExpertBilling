@@ -12,9 +12,19 @@ import time
 import os
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import psycopg2
 
-conn=PersistentConnectionPool(7,14,"dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
+from DBUtils.PooledDB import PooledDB
+
+pool = PooledDB(
+     mincached=2,
+     maxcached=60,
+     blocking=True,
+    creator=psycopg2,
+    dsn="dbname='mikrobill' user='mikrobill' host='localhost' password='1234'"
+
+)
+
 
 class check_access(Thread):
         def __init__ (self, dict, timeout=30):
@@ -40,9 +50,8 @@ class check_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
-            connection = conn.getconn()
-            connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur=connection.cursor()
+            connection = pool.connection()
+            cur = connection.cursor()
 
 
             while True:
@@ -117,9 +126,8 @@ class session_dog(Thread):
         Thread.__init__(self)
 
     def run(self):
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
               cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
@@ -142,9 +150,8 @@ class periodical_service_bill(Thread):
         Thread.__init__(self)
         
     def run(self):
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             # Количество снятий в сутки
             transaction_number=24
@@ -273,7 +280,6 @@ class periodical_service_bill(Thread):
                                         summ=ps_cost,
                                         description=u"Проводка по периодической услуге со нятием суммы в в начале периода",
                                         created = now)
-
                                         ps_history(cur, ps_id, transaction=transaction_id, created=now)
 
                                     transaction_id = transaction(cursor=cur,
@@ -326,7 +332,7 @@ class periodical_service_bill(Thread):
                                     created = now)
                                     ps_history(cur, ps_id, transaction=transaction_id, created=now)
             connection.commit()
-            time.sleep(n)
+            time.sleep(60)
 
 class TimeAccessBill(Thread):
     """
@@ -340,9 +346,8 @@ class TimeAccessBill(Thread):
         """
         По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
         """
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             cur.execute("""
             SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tacc.name, tarif.id
@@ -445,9 +450,8 @@ class TraficAccessBill(Thread):
         """
         По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
         """
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             now=datetime.datetime.now()
             cur.execute("""
@@ -662,9 +666,8 @@ class NetFlowAggregate(Thread):
         Thread.__init__(self)
 
     def run(self):
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             cur.execute(
             """
@@ -746,9 +749,8 @@ class NetFlowBill(Thread):
         Thread.__init__(self)
 
     def run(self):
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
 
         while True:
             cur.execute(
@@ -885,9 +887,8 @@ class limit_checker(Thread):
         Thread.__init__(self)
 
     def run(self):
-        connection = conn.getconn()
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur=connection.cursor()
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             """
             Выбираем тарифные планы, у которых есть лимиты
@@ -900,10 +901,11 @@ class limit_checker(Thread):
             JOIN billservice_account as account ON account.id=acctt.account_id
             JOIN billservice_tariff_traffic_limit as ttl ON ttl.tariff_id=tarif.id
             LEFT JOIN billservice_settlementperiod as sp ON sp.id=tarif.settlement_period_id
-            WHERE status='Enabled';
+            WHERE account.status='Enabled' ORDER BY account.id ASC;
             """
             )
             account_tarifs=cur.fetchall()
+            oldid=-1
             for account_tarif in account_tarifs:
                 tarif_id=account_tarif[0]
                 statistic_mode=account_tarif[1]
@@ -914,7 +916,13 @@ class limit_checker(Thread):
                 tarif_sp_length_in=account_tarif[6]
                 tarif_autostart_sp=account_tarif[7]
                 
-                #Выбираем лимит для акканта
+                if oldid==account_id and block:
+                    """
+                    Если у аккаунта уже есть одно превышение лимита
+                    то больше для него лимиты не проверяем
+                    """
+                    continue
+                #Выбираем лимит для аккаунта
                 cur.execute(
                 """
                 SELECT ttl.trafficlimit_id, tl.size, tl.mode, sp.time_start, sp.length, sp.length_in, sp.autostart
@@ -954,7 +962,7 @@ class limit_checker(Thread):
                         settlement_period_start=sp_time_start
                 else:
                     #если и там не указан-пропускаем цикл
-                    pass
+                    continue
                 
                 settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=settlement_period_start, repeat_after=period_length, now=datetime.datetime.now())
                 #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
@@ -1032,11 +1040,10 @@ class limit_checker(Thread):
                             for size in sizes:
                                 if size[0]!=None:
                                     tsize+=size[0]
-                    print tsize, tsize>limit_size*1024
                     if tsize>limit_size*1024:
                         block=True
                     
-                
+                oldid=account_id
                 #пишем в базу состояние пользователя
                 cur.execute(
                 """
@@ -1050,6 +1057,29 @@ class limit_checker(Thread):
             time.sleep(10)
               
 
+class service_dog(Thread):
+    """
+    Для каждого пользователя по тарифному плану в конце расчётного периода производит
+    1. Доснятие суммы
+    2. Сброс предоплаченного времени (не сделано)
+    3. Сброс предоплаченного трафика (не сделано)
+    алгоритм
+    1. выбираем всех пользователей с текущими тарифными планами,
+    у которых указан расчётный период и галочка "делать доснятие"
+    2. Считаем сколько денег было взято по транзакциям.
+    3. Если сумма меньше цены тарифного плана-делаем транзакцию, в которой снимаем деньги.
+    """
+    def __init__ (self):
+        Thread.__init__(self)
+
+    def run(self):
+        connection = pool.connection()
+        cur = connection.cursor()
+        while True:
+              #cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
+              #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
+              time.sleep(10)
+              
         
 dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 cas = check_access(timeout=10, dict=dict)
