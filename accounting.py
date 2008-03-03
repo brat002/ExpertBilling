@@ -88,7 +88,7 @@ class check_access(Thread):
                        if self.check_period(rows=tp.fetchall())==False or disabled_by_limit==True:
                               result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, pod=nas_support_pod, login=nas_login, password=nas_password)
                     else:
-                           result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, pod=nas_support_pod, login=nas_login, password=nas_password)
+                        result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, pod=nas_support_pod, login=nas_login, password=nas_password)
 
                     if result==True:
                         #Если удалось отключить - пишем в базу
@@ -111,6 +111,7 @@ class check_access(Thread):
                         UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
+                    print result
             connection.commit()
             
         def run(self):
@@ -262,20 +263,18 @@ class periodical_service_bill(Thread):
                                 """
                                 last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
                                 # Здесь нужно проверить сколько раз прошёл расчётный период
-                                if last_checkout==None:
-                                    last_checkout=period_start
                                 # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                 # Для последней проводки ставим статус Approved=True
                                 # для всех сотальных False
                                 # Если последняя проводка меньше или равно дате начала периода-делаем снятие
-                                if last_checkout<=period_start:
+                                if last_checkout<period_start or last_checkout is None:
                                     lc=last_checkout-period_start
                                     nums, ost=divmod(lc.seconds, n)
                                     for i in xrange(nums-1):
                                         transaction_id = transaction(
                                         cursor=cur,
                                         account=account_id,
-                                        approved=False,
+                                        approved=True,
                                         tarif = tariff_id,
                                         summ=ps_cost,
                                         description=u"Проводка по периодической услуге со нятием суммы в в начале периода",
@@ -992,7 +991,7 @@ class limit_checker(Thread):
                     for size in sizes:
                         if size[0]!=None:
                             tsize+=size[0]
-                    print tsize
+                    
                     if tsize>limit_size*1024:
                        block=True
                 else:
