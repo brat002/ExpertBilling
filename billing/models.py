@@ -4,8 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 ACTIVITY_CHOISES=(
-        ("Enabled","Enabled"),
-        ("Disabled","Disabled"),
+        (u"Enabled",u"Enabled"),
+        (u"Disabled",u"Disabled"),
         )
         
 
@@ -24,7 +24,7 @@ class Tarif(models.Model):
         #list_filter = ('name')
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
 class Account(models.Model):
     user=models.ForeignKey(User,verbose_name='Системный пользователь', related_name='user_account1')

@@ -89,5 +89,4 @@ INSTALLED_APPS = (
     'mikrobill.radius',
     'mikrobill.nas',
     'mikrobill.billservice',
-    'mikrobill.statistic',
 )

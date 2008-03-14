@@ -7,40 +7,40 @@ import datetime, time
 
 # Create your models here.
 PERIOD_CHOISES=(
-                ('NOT_REPEAT', 'Не повторять'),
-                ('DAY','День'),
-                ('WEEK','Неделя'),
-                ('MONTH','Месяц'),
-                ('QUARTER','Квартал'), # Не реализовано
-                ('HALF_YEAR','Полугодие'), # Не реализовано
-                ('YEAR','Год'),
+                (u'NOT_REPEAT', u'Не повторять'),
+                (u'DAY',u'День'),
+                (u'WEEK',u'Неделя'),
+                (u'MONTH',u'Месяц'),
+                (u'QUARTER',u'Квартал'), # Не реализовано
+                (u'HALF_YEAR',u'Полугодие'), # Не реализовано
+                (u'YEAR',u'Год'),
                 )
 
 CASH_METHODS=(
-                ('AT_START','В начале периода'),
-                ('AT_END','В конце периода'),
-                ('GRADUAL','В течении периода'),
+                (u'AT_START',u'В начале периода'),
+                (u'AT_END',u'В конце периода'),
+                (u'GRADUAL',u'В течении периода'),
                 )
 
 ACCESS_TYPE_METHODS=(
-                ('IPN','IPN'),
-                ('PPTP','PPTP'),
-                ('PPPOE','PPPOE'),
+                (u'IPN',u'IPN'),
+                (u'PPTP',u'PPTP'),
+                (u'PPPOE',u'PPPOE'),
                 )
 
 ACTIVITY_CHOISES=(
-        ("Enabled","Enabled"),
-        ("Disabled","Disabled"),
+        (u"Enabled",u"Enabled"),
+        (u"Disabled",u"Disabled"),
         )
         
 LIMIT_CHOISES=(
-        ("MAX","Наибольший"),
-        ("SUMM","Сумма всех"),
+        (u"MAX",u"Наибольший"),
+        (u"SUMM",u"Сумма всех"),
         )
         
 STATISTIC_MODE=(
-                ('NETFLOW','NetFlow'),
-                ('ACCOUNTING','RADIUS Accounting'),
+                (u'NETFLOW',u'NetFlow'),
+                (u'ACCOUNTING',u'RADIUS Accounting'),
                 )
 
 class TimePeriodNode(models.Model):
@@ -60,8 +60,8 @@ class TimePeriodNode(models.Model):
         list_display = ('name','time_start','length','repeat_after')
 
     class Meta:
-        verbose_name = "Нода временного периода"
-        verbose_name_plural = "Ноды временных периодов"
+        verbose_name = u"Нода временного периода"
+        verbose_name_plural = u"Ноды временных периодов"
 
 
 class TimePeriod(models.Model):
@@ -83,8 +83,8 @@ class TimePeriod(models.Model):
 
 
     class Meta:
-        verbose_name = "Временной период"
-        verbose_name_plural = "Временные периоды"
+        verbose_name = u"Временной период"
+        verbose_name_plural = u"Временные периоды"
 
 
     
@@ -107,8 +107,8 @@ class SettlementPeriod(models.Model):
 
 
     class Meta:
-        verbose_name = "Расчётный период"
-        verbose_name_plural = "Расчётные периоды"
+        verbose_name = u"Расчётный период"
+        verbose_name_plural = u"Расчётные периоды"
 
 class PeriodicalService(models.Model):
     """
@@ -122,7 +122,7 @@ class PeriodicalService(models.Model):
 #    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
     
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -130,8 +130,8 @@ class PeriodicalService(models.Model):
 
 
     class Meta:
-        verbose_name = "Периодическая услуга"
-        verbose_name_plural = "Периодические услуги"
+        verbose_name = u"Периодическая услуга"
+        verbose_name_plural = u"Периодические услуги"
 
 class PeriodicalServiceHistory(models.Model):
     service = models.ForeignKey(to=PeriodicalService)
@@ -147,8 +147,8 @@ class PeriodicalServiceHistory(models.Model):
 
 
     class Meta:
-        verbose_name = "История проводок по периодическим услугам"
-        verbose_name_plural = "История проводок по периодическим услугам"
+        verbose_name = u"История проводок по периодическим услугам"
+        verbose_name_plural = u"История проводок по периодическим услугам"
     
 class OneTimeService(models.Model):
     """
@@ -159,7 +159,7 @@ class OneTimeService(models.Model):
     cost              = models.FloatField(verbose_name=u'Стоимость разовой услуги', null=True, blank=True)
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -167,8 +167,8 @@ class OneTimeService(models.Model):
 
 
     class Meta:
-        verbose_name = "Разовый платеж"
-        verbose_name_plural = "Разовые платежи"
+        verbose_name = u"Разовый платеж"
+        verbose_name_plural = u"Разовые платежи"
 
     
 class TimeAccessNode(models.Model):
@@ -180,7 +180,7 @@ class TimeAccessNode(models.Model):
     cost              = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке')
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -188,8 +188,8 @@ class TimeAccessNode(models.Model):
 
 
     class Meta:
-        verbose_name = "Период доступа"
-        verbose_name_plural = "Периоды доступа"
+        verbose_name = u"Период доступа"
+        verbose_name_plural = u"Периоды доступа"
     
 class TimeAccessService(models.Model):
     """
@@ -200,7 +200,7 @@ class TimeAccessService(models.Model):
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -208,8 +208,8 @@ class TimeAccessService(models.Model):
 
 
     class Meta:
-        verbose_name = "Доступ с учётом времени"
-        verbose_name_plural = "Доступ с учётом времени"
+        verbose_name = u"Доступ с учётом времени"
+        verbose_name_plural = u"Доступ с учётом времени"
     
 class AccessParameters(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
@@ -219,7 +219,7 @@ class AccessParameters(models.Model):
     nas               = models.ForeignKey(to=Nas, blank=True, null=True, verbose_name=u'Сервер доступа')
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -227,8 +227,8 @@ class AccessParameters(models.Model):
 
 
     class Meta:
-        verbose_name = "Параметры доступа"
-        verbose_name_plural = "Параметры доступа"
+        verbose_name = u"Параметры доступа"
+        verbose_name_plural = u"Параметры доступа"
     
 class TrafficSize(models.Model):
     traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
@@ -243,8 +243,8 @@ class TrafficSize(models.Model):
 
 
     class Meta:
-        verbose_name = "Предоплаченный трафик"
-        verbose_name_plural = "Предоплаченный трафик"
+        verbose_name = u"Предоплаченный трафик"
+        verbose_name_plural = u"Предоплаченный трафик"
     
 class TrafficTransmitNodes(models.Model):
     traffic_class     = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
@@ -278,8 +278,8 @@ class TrafficTransmitService(models.Model):
 
 
     class Meta:
-        verbose_name = "Доступ с учётом трафика"
-        verbose_name_plural = "Доступ с учётом трафика"
+        verbose_name = u"Доступ с учётом трафика"
+        verbose_name_plural = u"Доступ с учётом трафика"
 
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
@@ -297,8 +297,8 @@ class TrafficLimit(models.Model):
 
 
     class Meta:
-        verbose_name = "лимит трафика"
-        verbose_name_plural = "Лимиты трафика"
+        verbose_name = u"лимит трафика"
+        verbose_name_plural = u"Лимиты трафика"
         
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
@@ -327,8 +327,8 @@ class Tariff(models.Model):
 
 
     class Meta:
-        verbose_name = "Тариф"
-        verbose_name_plural = "Тарифы"
+        verbose_name = u"Тариф"
+        verbose_name_plural = u"Тарифы"
 
 
 class Account(models.Model):
@@ -352,7 +352,7 @@ class Account(models.Model):
         #list_filter = ('username')
 
     def __str__(self):
-        return u'%s' % self.username
+        return '%s' % self.username
     
     class Meta:
         verbose_name = u"Аккаунт"
@@ -361,7 +361,7 @@ class Account(models.Model):
     def save(self):
         id=self.id
         super(Account, self).save()
-        if id==None and self.status=='Active':
+        if not id and self.status=='Active':
             cost=0
             for ots in self.tarif.onetime_servies.all():
                 cost+=ots.cost
@@ -411,7 +411,9 @@ class AccountTarif(models.Model):
         ordering = ['-datetime']
         list_display = ('account','tarif','datetime')
 
-
+    def __unicode__(self):
+        return u"%s, %s" % (self.account, self.tarif)
+    
 class SummaryTrafic(models.Model):
     """
     Класс предназначен для ведения статистики по трафику, потреблённому пользователями
@@ -468,9 +470,12 @@ class RawNetFlowStream(models.Model):
           list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
 
     class Meta:
-        verbose_name = "Сырая NetFlow статистика"
-        verbose_name_plural = "Сырая NetFlow статистика"
-
+        verbose_name = u"Сырая NetFlow статистика"
+        verbose_name_plural = u"Сырая NetFlow статистика"
+        
+    def __unicode__(self):
+        return u"%s" % self.nas
+    
 class NetFlowStream(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
     account=models.ForeignKey(Account, related_name='account_netflow')
@@ -493,6 +498,10 @@ class NetFlowStream(models.Model):
           list_display = ('nas', 'account', 'tarif','traffic_class','date_start','src_addr','dst_addr','src_port','dst_port','octets')
 
     class Meta:
-        verbose_name = "NetFlow статистика"
-        verbose_name_plural = "NetFlow статистика"
+        verbose_name = u"NetFlow статистика"
+        verbose_name_plural = u"NetFlow статистика"
+        
+    def __unicode__(self):
+        return u"%s" % self.nas
+    
 

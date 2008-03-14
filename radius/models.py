@@ -52,7 +52,7 @@ class Session(models.Model):
         pass
     
     def __unicode__(self):
-        return self.account.username
+        return u"%s" % self.account.username
 
 
 # Create your models here.
@@ -93,4 +93,4 @@ class ActiveSession(models.Model):
         pass
 
     def __unicode__(self):
-        return self.sessionid
+        return u"%s" % self.sessionid

@@ -36,11 +36,11 @@ class Nas(models.Model):
           list_display = ('name','ipaddress','description')
 
     class Meta:
-        verbose_name = "Сервер доступа"
-        verbose_name_plural = "Сервера доступа"
+        verbose_name = u"Сервер доступа"
+        verbose_name_plural = u"Сервера доступа"
     
-    def __str__(self):
-        return self.name
+    def __unicode__(self):
+        return u"%s" % self.name
 
     
 class TrafficNode(models.Model):
@@ -62,8 +62,8 @@ class TrafficNode(models.Model):
         pass
 
     class Meta:
-        verbose_name = "Направление трафика"
-        verbose_name_plural = "Направления трафика"
+        verbose_name = u"Направление трафика"
+        verbose_name_plural = u"Направления трафика"
         
 class TrafficClass(models.Model):
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255)
@@ -78,8 +78,8 @@ class TrafficClass(models.Model):
         pass
 
     class Meta:
-        verbose_name = "Класс трафика"
-        verbose_name_plural = "Классы трафика"
+        verbose_name = u"Класс трафика"
+        verbose_name_plural = u"Классы трафика"
         
 class IPAddressPool(models.Model):
     name     = models.CharField(max_length=255, verbose_name=u'Имя пула')
@@ -87,11 +87,11 @@ class IPAddressPool(models.Model):
     end_IP   = models.IPAddressField(verbose_name=u'Конечный адрес')
 
     def __unicode__(self):
-        return self.name
+        return u"%s" % self.name
 
     class Admin:
         pass
 
     class Meta:
-        verbose_name = "Пул IP адресов"
-        verbose_name_plural = "Пулы IP адресов"
+        verbose_name = u"Пул IP адресов"
+        verbose_name_plural = u"Пулы IP адресов"
