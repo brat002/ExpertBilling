@@ -3,14 +3,14 @@
 from django.db import models
 from mikrobill.billservice.models import Account
 SERVICE_TYPES=(
-        ("PPTP","PPTP"),
-        ("L2TP","L2TP"),
-        ("PPPOE","PPPOE"),
+        (u"PPTP",u"PPTP"),
+        (u"L2TP",u"L2TP"),
+        (u"PPPOE",u"PPPOE"),
         )
 SESSION_STATUS=(
-                ("ACTIVE", u"Активна",),
-                ("NACK", u"Не сброшена",),
-                ("ACK", u"Cброшена",),
+                (u"ACTIVE", u"Активна",),
+                (u"NACK", u"Не сброшена",),
+                (u"ACK", u"Cброшена",),
                 )
 # Create your models here.
 class Session(models.Model):
@@ -42,15 +42,15 @@ class Session(models.Model):
     checkouted_by_trafic = models.BooleanField(default=False, blank=True)
     disconnect_status=models.CharField(max_length=32, null=True, blank=True)
 
-    
+
 
     class Admin:
         ordering = ['-id']
         list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start', 'interrim_update', 'date_end','caller_id','called_id','nas_id','session_time')
-    
+
     class Meta:
         pass
-    
+
     def __unicode__(self):
         return u"%s" % self.account.username
 

@@ -32,12 +32,12 @@ ACTIVITY_CHOISES=(
         (u"Enabled",u"Enabled"),
         (u"Disabled",u"Disabled"),
         )
-        
+
 LIMIT_CHOISES=(
         (u"MAX",u"Наибольший"),
         (u"SUMM",u"Сумма всех"),
         )
-        
+
 STATISTIC_MODE=(
                 (u'NETFLOW',u'NetFlow'),
                 (u'ACCOUNTING',u'RADIUS Accounting'),
@@ -51,10 +51,10 @@ class TimePeriodNode(models.Model):
     time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода')
     length = models.IntegerField(verbose_name=u'Период в секундах')
     repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток')
-    
+
     def __unicode__(self):
         return u"%s" % self.name
-    
+
     class Admin:
         ordering = ['name']
         list_display = ('name','time_start','length','repeat_after')
@@ -73,7 +73,7 @@ class TimePeriod(models.Model):
             if time_period_node.in_period()==True:
                 return True
         return False
-    
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -87,7 +87,7 @@ class TimePeriod(models.Model):
         verbose_name_plural = u"Временные периоды"
 
 
-    
+
 class SettlementPeriod(models.Model):
     """
     Расчётный период
@@ -120,7 +120,7 @@ class PeriodicalService(models.Model):
     cost              = models.FloatField(verbose_name=u'Стоимость услуги', null=True, blank=True)
     cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS)
 #    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
-    
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -147,9 +147,9 @@ class PeriodicalServiceHistory(models.Model):
 
 
     class Meta:
-        verbose_name = u"История проводок по периодическим услугам"
-        verbose_name_plural = u"История проводок по периодическим услугам"
-    
+        verbose_name = u"История проводок по пер. услугам"
+        verbose_name_plural = u"История проводок по пер. услугам"
+
 class OneTimeService(models.Model):
     """
     Справочник разовых услуг
@@ -170,7 +170,7 @@ class OneTimeService(models.Model):
         verbose_name = u"Разовый платеж"
         verbose_name_plural = u"Разовые платежи"
 
-    
+
 class TimeAccessNode(models.Model):
     """
     Нода тарификации по времени
@@ -190,7 +190,7 @@ class TimeAccessNode(models.Model):
     class Meta:
         verbose_name = u"Период доступа"
         verbose_name_plural = u"Периоды доступа"
-    
+
 class TimeAccessService(models.Model):
     """
     Доступ с тарификацией по времени
@@ -210,7 +210,7 @@ class TimeAccessService(models.Model):
     class Meta:
         verbose_name = u"Доступ с учётом времени"
         verbose_name_plural = u"Доступ с учётом времени"
-    
+
 class AccessParameters(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
@@ -229,11 +229,11 @@ class AccessParameters(models.Model):
     class Meta:
         verbose_name = u"Параметры доступа"
         verbose_name_plural = u"Параметры доступа"
-    
+
 class TrafficSize(models.Model):
     traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
     size             = models.FloatField(verbose_name=u'Размер')
-    
+
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.size)
 
@@ -245,7 +245,7 @@ class TrafficSize(models.Model):
     class Meta:
         verbose_name = u"Предоплаченный трафик"
         verbose_name_plural = u"Предоплаченный трафик"
-    
+
 class TrafficTransmitNodes(models.Model):
     traffic_class     = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
     time_period       = models.ManyToManyField(to=TimePeriod, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
@@ -262,13 +262,14 @@ class TrafficTransmitNodes(models.Model):
 
 
     class Meta:
-        pass
+        verbose_name = u"цена за направление"
+        verbose_name_plural = u"Цены за направления трафика"
 
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, filter_interface=models.HORIZONTAL, verbose_name=u'Цены за трафик')
     prepaid_traffic   = models.ManyToManyField(to=TrafficSize, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
-    
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -299,7 +300,7 @@ class TrafficLimit(models.Model):
     class Meta:
         verbose_name = u"лимит трафика"
         verbose_name_plural = u"Лимиты трафика"
-        
+
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     description       = models.TextField(verbose_name=u'Описание тарифного плана')
@@ -317,7 +318,7 @@ class Tariff(models.Model):
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
 
-    
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -353,11 +354,11 @@ class Account(models.Model):
 
     def __str__(self):
         return '%s' % self.username
-    
+
     class Meta:
         verbose_name = u"Аккаунт"
         verbose_name_plural = u"Аккаунты"
-        
+
     def save(self):
         id=self.id
         super(Account, self).save()
@@ -386,7 +387,8 @@ class Transaction(models.Model):
         list_display=('account', 'tarif', 'summ', 'description','created')
 
     class Meta:
-        pass
+        verbose_name = u"Проводка"
+        verbose_name_plural = u"Проводки"
 
     def save(self):
         if self.approved!=False:
@@ -398,7 +400,7 @@ class Transaction(models.Model):
         self.account.ballance+=self.summ
         self.account.save()
         super(Transaction, self).delete()
-        
+
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 
@@ -406,14 +408,18 @@ class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, blank=True, null=True, edit_inline=models.STACKED, num_in_admin=1)
     tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True)
     datetime  = models.DateTimeField()
-    
+
     class Admin:
         ordering = ['-datetime']
         list_display = ('account','tarif','datetime')
 
     def __unicode__(self):
         return u"%s, %s" % (self.account, self.tarif)
-    
+
+    class Meta:
+        verbose_name = u"привязка"
+        verbose_name_plural = u"Привязки аккаунтов к тарифам"
+
 class SummaryTrafic(models.Model):
     """
     Класс предназначен для ведения статистики по трафику, потреблённому пользователями
@@ -432,11 +438,12 @@ class SummaryTrafic(models.Model):
         list_display = ('account',  'incomming_bytes',  'outgoing_bytes', 'date_start', 'date_end')
 
     class Meta:
-        pass
-    
+        verbose_name = u"Общий трафик по RADIUS сессиям"
+        verbose_name_plural = u"Общий трафик по RADIUS сессиям"
+
     def __unicode__(self):
         return u'%s' % self.account
-    
+
 
 class RawNetFlowStream(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
@@ -472,10 +479,10 @@ class RawNetFlowStream(models.Model):
     class Meta:
         verbose_name = u"Сырая NetFlow статистика"
         verbose_name_plural = u"Сырая NetFlow статистика"
-        
+
     def __unicode__(self):
         return u"%s" % self.nas
-    
+
 class NetFlowStream(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
     account=models.ForeignKey(Account, related_name='account_netflow')
@@ -491,7 +498,7 @@ class NetFlowStream(models.Model):
     protocol = models.IntegerField()
     checkouted = models.BooleanField(blank=True, null=True, default=False)
     for_checkout = models.BooleanField(blank=True, null=True, default=False)
-    
+
 
     class Admin:
           ordering = ['-date_start']
@@ -500,8 +507,8 @@ class NetFlowStream(models.Model):
     class Meta:
         verbose_name = u"NetFlow статистика"
         verbose_name_plural = u"NetFlow статистика"
-        
+
     def __unicode__(self):
         return u"%s" % self.nas
-    
+
 
