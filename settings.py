@@ -1,4 +1,8 @@
-core_host='10.20.3.111'
-core_auth=2224
-core_acct=2225
+#-*-coding=utf-8-*-
+
+DATABASE_NAME='mikrobill'
+DATABASE_HOST='localhost'
+DATABASE_USER='mikrobill'
+DATABASE_PASSWORD='1234'
+
 

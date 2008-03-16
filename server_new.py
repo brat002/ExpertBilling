@@ -20,17 +20,20 @@ import corepacket
 from utilites import in_period
 from db import get_nas_by_ip, get_account_data_by_username, get_nas_id_by_tarif_id, time_periods_by_tarif_id
 
-import psycopg2
 
+import settings
+import psycopg2
 from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
-     mincached=2,
+     mincached=3,
      maxcached=60,
      blocking=True,
-    creator=psycopg2,
-    dsn="dbname='mikrobill' user='mikrobill' host='localhost' password='1234'"
-
+     creator=psycopg2,
+     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD)
 )
 
 #auth_class
@@ -46,12 +49,12 @@ class handle_auth_core:
         db_connection = pool.connection()
         cur = db_connection.cursor()
         packetobject=packet.Packet(dict=dict,packet=response)
-        
+
         if packetobject['NAS-Port-Type'][0]=='Virtual':
             access_type='PPTP'
         elif packetobject['NAS-Port-Type'][0]=='Ethernet':
             access_type='PPPOE'
-            
+
         replypacket=corepacket.CorePacket(secret='None',dict=dict)
         row = get_nas_by_ip(cur, nasip).fetchone()
         if row==None:
@@ -59,7 +62,7 @@ class handle_auth_core:
 
         nas_id=str(row[0])
         secret=str(row[1])
-        
+
         replypacket.secret = secret
         row = get_account_data_by_username(cur, packetobject['User-Name'][0]).fetchone()
         if row==None:
@@ -81,7 +84,7 @@ class handle_auth_core:
                 return self.auth_NA(replypacket)
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[key][0]
-        
+
         cur.close()
         if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0 and disabled_by_limit==False:
            replypacket.code=2
@@ -135,7 +138,7 @@ class handle_acct_core:
         row=cur.fetchone()
         if row==None:
             return self.acct_NA(replypacket)
-        
+
         account_id=row[0]
 
         secret=str(rows[0])
@@ -151,7 +154,7 @@ class handle_acct_core:
             cur.execute(
            """
            INSERT INTO radius_session(
-           account_id, sessionid, date_start, 
+           account_id, sessionid, date_start,
            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
            )
            VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s);
@@ -160,7 +163,7 @@ class handle_acct_core:
             cur.execute(
            """
            INSERT INTO radius_activesession(
-           account_id, sessionid, date_start, 
+           account_id, sessionid, date_start,
            caller_id, called_id, nas_id, framed_protocol, session_status
            )
            VALUES (%s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
@@ -208,7 +211,7 @@ class handle_acct_core:
                   packetobject['Acct-Session-Time'][0],
                   packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
             )
-            
+
             cur.execute(
                """
                UPDATE radius_activesession
@@ -276,7 +279,7 @@ class handle_acct(DatagramRequestHandler):
         del packetfromcore
         del replyobj
 
-          
+
 
 class serve_requests(Thread):
         def __init__ (self, address, handler):

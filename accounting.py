@@ -1,28 +1,25 @@
 #-*-coding=utf-8-*-
-import psycopg2
-from psycopg2.pool import PersistentConnectionPool
-import time, datetime
-from utilites import disconnect, settlement_period_info
+
+import time, datetime, os
+from utilites import disconnect, settlement_period_info, in_period
 import dictionary
 from threading import Thread
-from utilites import in_period
-import logging
-import logging.config
-import time
-import os
+
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 
+import settings
 import psycopg2
-
 from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
-     mincached=2,
+     mincached=6,
      maxcached=60,
      blocking=True,
-    creator=psycopg2,
-    dsn="dbname='mikrobill' user='mikrobill' host='localhost' password='1234'"
-
+     creator=psycopg2,
+     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD)
 )
 
 
@@ -31,16 +28,15 @@ class check_access(Thread):
             self.dict=dict
             self.timeout=timeout
             Thread.__init__(self)
-            
+
         def check_period(self, rows):
             for row in rows:
                 if in_period(row[0],row[1],row[2])==False:
                     return False
             return True
-                
+
         def check_acces(self):
             """
-            Функция сейчас применима только к поддерживающим POD NAS-ам
             Раз в 30 секунд происходит выборка всех пользователей
             OnLine, делается проверка,
             1. не вышли ли они за рамки временного диапазона
@@ -113,10 +109,10 @@ class check_access(Thread):
                         )
                     print result
             connection.commit()
-            
+
         def run(self):
             self.check_acces()
-            
+
 
 class session_dog(Thread):
     """
@@ -133,7 +129,7 @@ class session_dog(Thread):
               cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
               time.sleep(10)
-        
+
 
 class periodical_service_bill(Thread):
     """
@@ -145,11 +141,11 @@ class periodical_service_bill(Thread):
     , чтобы проверять с какого времени мы уже не делали снятий и произвести их.
     2. Снятие может производиться в конце расчётного периода.
     ситуация аналогичная первой
-    
+
     """
     def __init__ (self):
         Thread.__init__(self)
-        
+
     def run(self):
         connection = pool.connection()
         cur = connection.cursor()
@@ -340,7 +336,7 @@ class TimeAccessBill(Thread):
     """
     def __init__(self):
         Thread.__init__(self)
-        
+
     def run(self):
         """
         По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
@@ -369,7 +365,7 @@ class TimeAccessBill(Thread):
                 tarif_id = row[6]
                 #1. Ищем последнюю запись по которой была произведена оплата
                 #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
-                #2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
+                #TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
                 #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
                 # рассчитав соотв снятия.
                 #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
@@ -434,7 +430,7 @@ class TimeAccessBill(Thread):
                 """ % (session_id, account_id, interrim_update)
                 cur.execute(query)
                 connection.commit()
-                            
+
             time.sleep(30)
 
 class TraficAccessBill(Thread):
@@ -486,7 +482,7 @@ class TraficAccessBill(Thread):
                 res=cur.fetchone()
                 trafic_transmit_service_id=res[0]
                 settlement_period_id=res[1]
-                
+
                 cur.execute(
                 """
                 SELECT statistic_mode FROM billservice_tariff WHERE id=%s;
@@ -522,7 +518,7 @@ class TraficAccessBill(Thread):
                                 radius_session, date_start)
                                 VALUES ('%s', '%s', (SELECT id FROM nas_nas WHERE ipaddress='%s'), '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
                                 )
-                                
+
 
                 total_bytes_in=session_bytes_in-old_bytes_in
                 total_bytes_out=session_bytes_out-old_bytes_out
@@ -583,7 +579,7 @@ class TraficAccessBill(Thread):
                     trafic_edge_end=period[3]
                     period_id=period[4]
                     class_id=period[5]
-                    
+
                     #получаем данные из периода чтобы проверить попала в него сессия или нет
                     cur.execute(
                     """
@@ -631,7 +627,7 @@ class TraficAccessBill(Thread):
                                     print 'bytes_out checkout'
 
 
-                            
+
                 query="""
                 UPDATE radius_session
                 SET checkouted_by_trafic=True
@@ -640,7 +636,7 @@ class TraficAccessBill(Thread):
                 AND interrim_update='%s'
                 """ % (session_id, account_id, interrim_update)
                 cur.execute(query)
-                            
+
 
                 connection.commit()
             time.sleep(30)
@@ -658,7 +654,7 @@ class NetFlowAggregate(Thread):
 
     WHILE TRUE
     timeout(120 seconds)
-    произвести списания по новым строкам.
+    произвести агрегирование по новым строкам.
     """
 
     def __init__(self):
@@ -682,7 +678,7 @@ class NetFlowAggregate(Thread):
             """
             Берём строку, ищем пользователя, у которого адрес совпадает или с dst или с src.
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
-            
+
             """
 
             for stream in raw_streams:
@@ -877,7 +873,7 @@ class NetFlowBill(Thread):
 
             connection.commit()
             time.sleep(60)
-        
+
 class limit_checker(Thread):
     """
     Проверяет исчерпание лимитов. если лимит исчерпан-ставим соотв галочку в аккаунте
@@ -914,7 +910,7 @@ class limit_checker(Thread):
                 tarif_sp_length=account_tarif[5]
                 tarif_sp_length_in=account_tarif[6]
                 tarif_autostart_sp=account_tarif[7]
-                
+
                 if oldid==account_id and block:
                     """
                     Если у аккаунта уже есть одно превышение лимита
@@ -937,19 +933,19 @@ class limit_checker(Thread):
                     st_tarif_period_length=tarif_sp_length
                 elif tarif_sp_length_in:
                     st_tarif_period_length=tarif_sp_length_in
-                    
+
                 if sp_length:
                     settlement_period_length=sp_length
                 else:
                     settlement_period_length=sp_length_in
-                    
+
                 #Если в лимите указан период
                 autostart_sp, tarif_autostart_sp
                 if autostart_sp!=None:
                     period_length=settlement_period_length
                     if autostart_sp==True:
                         settlement_period_start=tarif_start
-                        
+
                     elif autostart_sp==False:
                         period_start=sp_time_start
                 #иначе берём данные о расчётном периоде из тарифного плана
@@ -962,7 +958,7 @@ class limit_checker(Thread):
                 else:
                     #если и там не указан-пропускаем цикл
                     continue
-                
+
                 settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=settlement_period_start, repeat_after=period_length, now=datetime.datetime.now())
                 #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
                 if limit_mode==True:
@@ -987,11 +983,11 @@ class limit_checker(Thread):
                     )
                     tsize=0
                     sizes=cur.fetchall()
-                    
+
                     for size in sizes:
                         if size[0]!=None:
                             tsize+=size[0]
-                    
+
                     if tsize>limit_size*1024:
                        block=True
                 else:
@@ -1019,14 +1015,14 @@ class limit_checker(Thread):
                             WHERE account_id=%s and interrim_update>'%s' and interrim_update<'%s';
                             """ % (account_id,settlement_period_start, settlement_period_end)
                             )
-                    
+
                             sizes=cur.fetchall()
                             for size in sizes:
                                 if size[0]!=None:
                                     tsize+=size[0]
 
                                 #ставим флаг, что вышли за рамки
-                                
+
                         if clas_weight==200:
                             cur.execute(
                             """
@@ -1041,7 +1037,7 @@ class limit_checker(Thread):
                                     tsize+=size[0]
                     if tsize>limit_size*1024:
                         block=True
-                    
+
                 oldid=account_id
                 #пишем в базу состояние пользователя
                 cur.execute(
@@ -1051,10 +1047,10 @@ class limit_checker(Thread):
                 WHERE id=%s;
                 """ % (block, account_id)
                 )
-                    
-                
+
+
             time.sleep(10)
-              
+
 
 class service_dog(Thread):
     """
@@ -1078,8 +1074,8 @@ class service_dog(Thread):
               #cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
               time.sleep(10)
-              
-        
+
+
 dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 cas = check_access(timeout=10, dict=dict)
 cas.start()
