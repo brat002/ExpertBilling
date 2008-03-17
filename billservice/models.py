@@ -340,12 +340,12 @@ class Account(models.Model):
     lastname=models.CharField(verbose_name=u'Фамилия',max_length=200)
     address=models.TextField(verbose_name=u'Домашний адрес')
     ipaddress=models.IPAddressField(u'Статический IP адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
-    status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default='Enabled')
+    status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default=u'Enabled')
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
-    disabled_by_limit = models.BooleanField(editable=False)
+    disabled_by_limit = models.BooleanField(blank=True, editable=False)
 
     class Admin:
         ordering = ['user']
