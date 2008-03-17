@@ -22,7 +22,7 @@ class Auth:
     def __init__(self, Packet, plainpassword, plainusername, code, attrs):
         self.Packet=Packet
         self.code=code
-        self.typeauth=self._DetectTypeAuth(self.Packet)
+        self.typeauth=self._DetectTypeAuth()
         self.plainusername=plainusername
         self.plainpassword=plainpassword
         self.ident=''
@@ -41,12 +41,12 @@ class Auth:
                   self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
         
-    def _DetectTypeAuth(self, Packet):
-        if Packet.has_key('User-Password'):
+    def _DetectTypeAuth(self):
+        if self.Packet.has_key('User-Password'):
             self.typeauth='PAP'
-        elif Packet.has_key('CHAP-Password'):
+        elif self.Packet.has_key('CHAP-Password'):
                self.typeauth='CHAP'
-        elif Packet.has_key('MS-CHAP-Challenge'):
+        elif self.Packet.has_key('MS-CHAP-Challenge'):
                self.typeauth='MSCHAP2'
         else:
             self.typeauth='UNKNOWN'

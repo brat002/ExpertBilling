@@ -6,9 +6,9 @@ from time import clock
 import settings
 from coreconnection import RequestPacket
 import corepacket
-#import utilites
+
 from threading import Thread
-#core
+
 import sys,time,os,datetime
 from SocketServer import ThreadingUDPServer
 from SocketServer import DatagramRequestHandler
@@ -42,12 +42,12 @@ class handle_auth_core:
         replypacket.username='None'
         replypacket.password='None'
         replypacket.code=3
-        data_to_send=replypacket.ReplyPacket()
-        return data_to_send
+        return replypacket
 
     def handle(self, response, nasip):
         db_connection = pool.connection()
         cur = db_connection.cursor()
+
         packetobject=packet.Packet(dict=dict,packet=response)
 
         if packetobject['NAS-Port-Type'][0]=='Virtual':
@@ -55,7 +55,7 @@ class handle_auth_core:
         elif packetobject['NAS-Port-Type'][0]=='Ethernet':
             access_type='PPPOE'
 
-        replypacket=corepacket.CorePacket(secret='None',dict=dict)
+        replypacket=packet.Packet(secret='None',dict=dict)
         row = get_nas_by_ip(cur, nasip).fetchone()
         if row==None:
             return self.auth_NA(replypacket)
@@ -68,7 +68,7 @@ class handle_auth_core:
         if row==None:
             return self.auth_NA(replypacket)
 
-        username, password, ipaddress, tarif_id, status, banned, ballance, disabled_by_limit = row
+        username, password, ipaddress, tarif_id, status, ballance, disabled_by_limit = row
 
         row=get_nas_id_by_tarif_id(cur, tarif_id).fetchone()
         if row==None:
@@ -77,7 +77,7 @@ class handle_auth_core:
         if int(row[0])!=int(nas_id) or row[1]!=access_type:
            return self.auth_NA(replypacket)
 
-        #TimeAccess
+        #TimeAccess 
         rows = time_periods_by_tarif_id(cur, tarif_id).fetchall()
         for row in rows:
             if in_period(row[2],row[3],row[4])==False:
@@ -85,8 +85,9 @@ class handle_auth_core:
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[key][0]
 
+
         cur.close()
-        if packetobject['User-Name'][0]==username and status=='Enabled' and banned=='Disabled' and ballance>0 and disabled_by_limit==False:
+        if packetobject['User-Name'][0]==username and status=='Enabled' and  ballance>0 and not disabled_by_limit:
            replypacket.code=2
            replypacket.username=str(username) #Нельзя юникод
            replypacket.password=str(password) #Нельзя юникод
@@ -99,8 +100,8 @@ class handle_auth_core:
         else:
              return self.auth_NA(replypacket)
 
-        data_to_send=replypacket.ReplyPacket()
-        return data_to_send
+        #data_to_send=replypacket.ReplyPacket()
+        return replypacket
 
 
 #acct class
@@ -108,9 +109,9 @@ class handle_acct_core:
     def acct_NA(self, replypacket):
         # Если мы не знаем такого сервера доступа-ничего не отвечаем на запрос
         replypacket.code=3
-        data_to_send=replypacket.ReplyPacket()
+        #data_to_send=replypacket.ReplyPacket()
         #self.request.sendto(data_to_send,self.client_address) # or send(data, flags)
-        return data_to_send
+        return replypacket
 
     def handle(self, response, nasip):
         db_connection = pool.connection()
@@ -121,7 +122,7 @@ class handle_acct_core:
         #nasip=tools.DecodeAddress(nasip)
         packetobject=packet.Packet(dict=dict,packet=response)
 
-        replypacket=corepacket.CorePacket(username="None", secret='None', password="None", dict=dict)
+        replypacket=packet.Packet(dict=dict)
 
         cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
         rows = cur.fetchone()
@@ -145,11 +146,12 @@ class handle_acct_core:
         replypacket.secret=str(secret)
         replypacket.code=5
         now=datetime.datetime.now()
+        if packetobject['NAS-Port-Type'][0]=='Virtual':
+            access_type='PPTP'
+        elif packetobject['NAS-Port-Type'][0]=='Ethernet':
+            access_type='PPPOE'
+               
         if packetobject['Acct-Status-Type']==['Start']:
-            if packetobject['NAS-Port-Type'][0]=='Virtual':
-              access_type='PPTP'
-            elif packetobject['NAS-Port-Type'][0]=='Ethernet':
-               access_type='PPPOE'
 
             cur.execute(
            """
@@ -178,14 +180,14 @@ class handle_acct_core:
            INSERT INTO radius_session(
            account_id, sessionid, interrim_update,
            caller_id, called_id, nas_id, session_time,
-           bytes_out, bytes_in, checkouted_by_time, checkouted_by_trafic)
+           bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
            VALUES ( %s, %s, %s, %s, %s, %s,
-           %s, %s, %s, %s, %s);
+           %s, %s, %s, %s, %s, %s);
            """, (account_id, packetobject['Acct-Session-Id'][0],
                  now, packetobject['Calling-Station-Id'][0],
                  packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                  packetobject['Acct-Session-Time'][0],
-                 packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
+                 packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], access_type, False, False)
            )
            cur.execute(
            """
@@ -202,14 +204,14 @@ class handle_acct_core:
             INSERT INTO radius_session(
             account_id, sessionid, interrim_update, date_end,
             caller_id, called_id, nas_id, session_time,
-            bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic)
+            bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
             VALUES ( %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s);
+            %s, %s, %s, %s, %s, %s, %s, %s);
             """, (account_id, packetobject['Acct-Session-Id'][0],
                   now, now, packetobject['Calling-Station-Id'][0],
                   packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                   packetobject['Acct-Session-Time'][0],
-                  packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], False, False)
+                  packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], access_type, False, False)
             )
 
             cur.execute(
@@ -222,8 +224,8 @@ class handle_acct_core:
             db_connection.commit()
         cur.close()
 
-        data_to_send=replypacket.ReplyPacket()
-        return data_to_send
+        #data_to_send=replypacket.ReplyPacket()
+        return replypacket
 
 
 #radius
@@ -242,17 +244,13 @@ class handle_auth(DatagramRequestHandler):
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
         addrport=self.client_address
-        #reqpack=RequestPacket(1,(settings.core_host, settings.core_auth), self.client_address[0])
-        #corereply=reqpack.getreply(data)
         coreconnect = handle_auth_core()
-        corereply = coreconnect.handle(response=data, nasip=self.client_address[0])
-        packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)
+        packetfromcore=coreconnect.handle(response=data, nasip=self.client_address[0])
         packetobject=packet.Packet(secret=packetfromcore.secret, dict=dict, packet=data)
         authobject=auth.Auth(Packet=packetobject, plainpassword=packetfromcore.password, plainusername=packetfromcore.username, code=packetfromcore.code, attrs=packetfromcore._PktEncodeAttributes())
         returndata=authobject.ReturnPacket()
         self.socket.sendto(returndata,addrport)
         del coreconnect
-        del corereply
         del packetfromcore
         del packetobject
         print "AUTH:%.20f" % (clock()-t)
@@ -263,19 +261,15 @@ class handle_acct(DatagramRequestHandler):
         bufsize=4096
         data,socket=self.request # or recv(bufsize, flags)
         addrport=self.client_address
-        #reqpack=RequestPacket(1,(settings.core_host, settings.core_acct), self.client_address[0])
-        #corereply=reqpack.getreply(data)
         coreconnect = handle_acct_core()
-        corereply = coreconnect.handle(response=data, nasip=self.client_address[0])
+        packetfromcore = coreconnect.handle(response=data, nasip=self.client_address[0])
         requestpacket=packet.AcctPacket(dict=dict,packet=data)
-        packetfromcore=corepacket.CorePacket(packet=corereply, dict=dict)
-        print packetfromcore.code
-        replyobj=packet.AcctPacket( id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
+        
+        replyobj=packet.AcctPacket(id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
         returndat=replyobj.ReplyPacket()
         self.socket.sendto(returndat,addrport)
         print "ACC:%.20f" % (clock()-t)
         del coreconnect
-        del corereply
         del packetfromcore
         del replyobj
 

@@ -11,7 +11,7 @@ u = pickle.Unpickler(f)
 data = u.load()
 n=0
 f.close()
-addr=('10.20.3.111',1812)
+addr=('10.10.1.2',1812)
 class AuthRequest(Thread):
       def __init__ (self):
           Thread.__init__(self)
