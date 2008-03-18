@@ -7,18 +7,25 @@ import socket, select, struct, datetime
 
 ##from django.conf import settings
 
-import settings
-
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from IPy import *
 
+import settings
+import psycopg2
+from DBUtils.PooledDB import PooledDB
 
-conn = psycopg2.connect("dbname='mikrobill' user='mikrobill' host='localhost' password='1234'")
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-
-cur = conn.cursor()
+pool = PooledDB(
+     mincached=1,
+     maxcached=5,
+     blocking=True,
+     creator=psycopg2,
+     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD)
+)
+db_connection = pool.connection()
+cur = db_connection.cursor()
+        
 class Account:
     def __init__(self, id, ip, tarif):
         self.id=id
@@ -233,8 +240,7 @@ class NetFlowPacket:
     			        'dst_netmask_length' : flow.dst_netmask_length})
     			        break
                     
-            print 'save'
-            print flows
+
             cur.executemany("""
             INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
             VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\

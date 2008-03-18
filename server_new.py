@@ -112,7 +112,19 @@ class handle_acct_core:
         #data_to_send=replypacket.ReplyPacket()
         #self.request.sendto(data_to_send,self.client_address) # or send(data, flags)
         return replypacket
-
+    
+    def get_bytes(self, packet):
+        if packet.has_key('Acct-Input-Gigawords') and packet['Acct-Input-Gigawords'][0]!=0:
+            bytes_in=packet['Acct-Input-Octets'][0]*packet['Acct-Input-Gigawords'][0]
+        else:
+            bytes_in=packet['Acct-Input-Octets'][0]
+            
+        if packet.has_key('Acct-Output-Gigawords') and packet['Acct-Output-Gigawords'][0]!=0:
+            bytes_out=packet['Acct-Output-Octets'][0]*packet['Acct-Output-Gigawords'][0]
+        else:
+            bytes_out=packet['Acct-Output-Octets'][0]
+        return (bytes_in, bytes_out)
+    
     def handle(self, response, nasip):
         db_connection = pool.connection()
         cur = db_connection.cursor()
@@ -121,7 +133,9 @@ class handle_acct_core:
         #(requestpacketid, code, nasip, length)=struct.unpack("!LB4sH",response[:11])
         #nasip=tools.DecodeAddress(nasip)
         packetobject=packet.Packet(dict=dict,packet=response)
-
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[key][0]
+            
         replypacket=packet.Packet(dict=dict)
 
         cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % nasip)
@@ -175,30 +189,32 @@ class handle_acct_core:
 
 
         if packetobject['Acct-Status-Type']==['Alive']:
-           cur.execute(
-           """
-           INSERT INTO radius_session(
-           account_id, sessionid, interrim_update,
-           caller_id, called_id, nas_id, session_time,
-           bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-           VALUES ( %s, %s, %s, %s, %s, %s,
-           %s, %s, %s, %s, %s, %s);
-           """, (account_id, packetobject['Acct-Session-Id'][0],
+            bytes_in, bytes_out=self.get_bytes(packetobject)
+            cur.execute(
+            """
+            INSERT INTO radius_session(
+            account_id, sessionid, interrim_update,
+            caller_id, called_id, nas_id, session_time,
+            bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+            VALUES ( %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s);
+            """, (account_id, packetobject['Acct-Session-Id'][0],
                  now, packetobject['Calling-Station-Id'][0],
                  packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                  packetobject['Acct-Session-Time'][0],
-                 packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], access_type, False, False)
-           )
-           cur.execute(
-           """
-           UPDATE radius_activesession
-           SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
-           WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
-           """ % (now, packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Time'][0], account_id, packetobject['Acct-Session-Id'][0], packetobject['NAS-IP-Address'][0])
-           )
-           db_connection.commit()
+                 bytes_in, bytes_out, access_type, False, False)
+            )
+            cur.execute(
+            """
+            UPDATE radius_activesession
+            SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
+            WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
+            """ % (now, packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], packetobject['Acct-Session-Time'][0], account_id, packetobject['Acct-Session-Id'][0], packetobject['NAS-IP-Address'][0])
+            )
+            db_connection.commit()
 
         if packetobject['Acct-Status-Type']==['Stop']:
+            bytes_in, bytes_out=self.get_bytes(packetobject)
             cur.execute(
             """
             INSERT INTO radius_session(
@@ -211,7 +227,7 @@ class handle_acct_core:
                   now, now, packetobject['Calling-Station-Id'][0],
                   packetobject['Called-Station-Id'][0], packetobject['NAS-IP-Address'][0],
                   packetobject['Acct-Session-Time'][0],
-                  packetobject['Acct-Input-Octets'][0], packetobject['Acct-Output-Octets'][0], access_type, False, False)
+                  bytes_in, bytes_out, access_type, False, False)
             )
 
             cur.execute(
