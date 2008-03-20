@@ -80,10 +80,7 @@ class TrafficClass:
                 return self.id
         return False
 
-nodes=(
-       ('output', '192.168.11.0', '24', '', '0.0.0.0', '0', '','0.0.0.0'),
-       ('input', '0.0.0.0', '0', '', '192.168.11.0', '24', '','0.0.0.0'),
-       )
+
 trafficclasses_pool=[]
 cur.execute("SELECT id, name, weight FROM nas_trafficclass ORDER BY weight DESC;")
 traffic_classes=cur.fetchall()
@@ -101,7 +98,6 @@ for traffic_class in traffic_classes:
     trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2],nodes=traffic_nodes))
     
 
-#tr_class.check('192.168.11.1', '66.222.22.1')
 
 class Flow(object):
 	# Virtual base class
@@ -173,13 +169,6 @@ class Flow5(Flow):
 		self.src_netmask_length = _ff[17]
 		self.dst_netmask_length = _ff[18]
 
-##	def __str__(self):
-##		ret = "src-mask %s proto %d %s:%d > %s:%d %d bytes" % \
-##		    (self.out_index,self.protocol, self.src_addr, self.src_port, \
-##		     self.dst_addr, self.dst_port, self.octets)
-##		return ret
-
-
 class NetFlowPacket:
     FLOW_TYPES = {
 		5 : (Header5, Flow5),
@@ -217,7 +206,6 @@ class NetFlowPacket:
     			    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port)
     			    if res!=False:
     			        traffic_class=res
-    			        print res
     			        flows.append({
     			        'nas_id':nas_id, 'date_start':datetime.datetime.now(),
     			        'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,

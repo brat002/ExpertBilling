@@ -19,34 +19,34 @@ class Auth:
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """
 
-    def __init__(self, Packet, plainpassword, plainusername, code, attrs):
-        self.Packet=Packet
-        self.code=code
+    def __init__(self, packetobject, packetfromcore):
+        self.packet=packetobject
+        self.code=packetfromcore.code
         self.typeauth=self._DetectTypeAuth()
-        self.plainusername=plainusername
-        self.plainpassword=plainpassword
+        self.plainusername=packetfromcore.username
+        self.plainpassword=packetfromcore.password
         self.ident=''
         self.AccessAccept=False
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
         self._CheckAuth()
-        self.attrs=attrs
+        self.attrs=packetfromcore._PktEncodeAttributes()
 
         
     def ReturnPacket(self):
-            self.Reply=self.Packet.CreateReply()
+            self.Reply=self.packet.CreateReply()
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                   self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
         
     def _DetectTypeAuth(self):
-        if self.Packet.has_key('User-Password'):
+        if self.packet.has_key('User-Password'):
             self.typeauth='PAP'
-        elif self.Packet.has_key('CHAP-Password'):
+        elif self.packet.has_key('CHAP-Password'):
                self.typeauth='CHAP'
-        elif self.Packet.has_key('MS-CHAP-Challenge'):
+        elif self.packet.has_key('MS-CHAP-Challenge'):
                self.typeauth='MSCHAP2'
         else:
             self.typeauth='UNKNOWN'
@@ -60,7 +60,7 @@ class Auth:
         """
         if self.code!=3:
            if self.typeauth=='PAP':
-             if self._PwDecrypt(password=self.Packet['User-Password'][0], authenticator=self.Packet.authenticator, secret=self.Packet.secret):
+             if self._PwDecrypt():
                  #print "PAP Authorisation Ok"
                  self.AccessAccept=True
            if self.typeauth=='CHAP':
@@ -68,59 +68,60 @@ class Auth:
                   #print "CHAP Authorisation Ok"
                   self.AccessAccept=True
            if self.typeauth=='MSCHAP2':
-             if self._MSCHAP2Decrypt(self.plainusername, self.plainpassword):
+             if self._MSCHAP2Decrypt():
                 #print "MSCHAP2 Authorisation Ok"
                 self.AccessAccept=True
                
-    def _MSCHAP2Decrypt(self, username, plainpassword):
-        (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.Packet['MS-CHAP2-Response'][0])
-        self.AuthenticatorChallenge=self.Packet['MS-CHAP-Challenge'][0]
-        if self.NTResponse==self._GenerateNTResponse(self.AuthenticatorChallenge, self.PeerChallenge, username, plainpassword):
+    def _MSCHAP2Decrypt(self):
+        (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])
+        self.AuthenticatorChallenge=self.packet['MS-CHAP-Challenge'][0]
+        if self.NTResponse==self._GenerateNTResponse(self.AuthenticatorChallenge, self.PeerChallenge, self.plainusername, self.plainpassword):
             return True
         else:
             return False
 
         
     def _CHAPDecrypt(self):
-        (ident , password)=struct.unpack('!B16s',self.Packet['CHAP-Password'][0])
-        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.Packet['CHAP-Challenge'][0])
+        (ident , password)=struct.unpack('!B16s',self.packet['CHAP-Password'][0])
+        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet['CHAP-Challenge'][0])
         if md5.new(pck).digest()==password:
             return True
         else:
             return False
         
 
-    def _PwDecrypt(self, password, authenticator, secret):
-		"""
+    def _PwDecrypt(self):
+        """
         Функция расшифровывает пароль из атрибута 2 (Password) с помощью секретного ключа, и аутентикатора
         Используется только в алгоритме PAP
         Unobfuscate a RADIUS password
-
-		RADIUS hides passwords in packets by using an algorithm
-		based on the MD5 hash of the pacaket authenticator and RADIUS
-		secret. This function reverses the obfuscation process.
-
-		@param password: obfuscated form of password
-		@type password:  string
-		@return:         plaintext password
-		@rtype:          string
-		"""
-		pw=""
-
-		while password:
-			hash=md5.new(secret+authenticator).digest()
-			for i in range(16):
-				pw+=chr(ord(hash[i]) ^ ord(password[i]))
-
-			(authenticator,password)=(password[:16], password[16:])
-
-		while pw.endswith("\x00"):
-			pw=pw[:-1]
-			
-		if pw==self.plainpassword:
-		    return True
-		else:
-		    return False
+        
+        RADIUS hides passwords in packets by using an algorithm
+        based on the MD5 hash of the pacaket authenticator and RADIUS
+        secret. This function reverses the obfuscation process.
+        
+        @param password: obfuscated form of password
+        @type password:  string
+        @return:         plaintext password
+        @rtype:          string
+        """
+        pw=''
+        password=self.packet["User-Password"][0]
+        authenticator=self.packet.authenticator
+        while password:
+            hash=md5.new(self.packet.secret+authenticator).digest()
+            for i in range(16):
+        		pw+=chr(ord(hash[i]) ^ ord(password[i]))
+        
+            (authenticator,password)=(password[:16], password[16:])
+        
+        while pw.endswith("\x00"):
+        	pw=pw[:-1]
+        	
+        if pw==password:
+            return True
+        else:
+            return False
         
     #Функции для генерации MSCHAP2 response
     def _convert_key(self, key):
