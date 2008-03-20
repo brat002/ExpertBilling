@@ -198,7 +198,8 @@ class TimeAccessService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     time_periods      = models.ManyToManyField(to=TimeAccessNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежутки')
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
-
+    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
+        
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -230,9 +231,9 @@ class AccessParameters(models.Model):
         verbose_name = u"Параметры доступа"
         verbose_name_plural = u"Параметры доступа"
 
-class TrafficSize(models.Model):
+class PrepaidTraffic(models.Model):
     traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
-    size             = models.FloatField(verbose_name=u'Размер')
+    size             = models.FloatField(verbose_name=u'Размер в мегабайтах')
 
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.size)
@@ -268,8 +269,9 @@ class TrafficTransmitNodes(models.Model):
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, filter_interface=models.HORIZONTAL, verbose_name=u'Цены за трафик')
-    prepaid_traffic   = models.ManyToManyField(to=TrafficSize, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
-
+    prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
+    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
+    
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -281,6 +283,28 @@ class TrafficTransmitService(models.Model):
     class Meta:
         verbose_name = u"Доступ с учётом трафика"
         verbose_name_plural = u"Доступ с учётом трафика"
+
+class AccountPrepays(models.Model):
+    """
+    При подключении пользователю тарифного плана, у которого есть предоплаченный трафик 
+    в таблице должны создаваться записи
+    В начале каждого расчётного периода пользователю должен заново начисляться трафик
+    """
+    account_tarif = models.ForeignKey(to="AccountTarif")
+    prepaid_traffic = models.ForeignKey(to=PrepaidTraffic)
+    size = models.FloatField(blank=True, default=0.000)
+    datetime = models.DateTimeField(auto_now_add=True)
+    
+    def __unicode__(self):
+        return u"%s-%s" % (self.account, self.prepaid_traffic)
+    
+    class Admin:
+        pass
+    
+    class Meta:
+        verbose_name = u"Предоплаченый трафик пользователя"
+        verbose_name_plural = u"Предоплаченный трафик пользователя"
+                
 
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
@@ -314,8 +338,6 @@ class Tariff(models.Model):
     cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0.000 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
     reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, null=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
-    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
-    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
 
 
