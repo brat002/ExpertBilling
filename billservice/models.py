@@ -367,7 +367,7 @@ class Account(models.Model):
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
-    disabled_by_limit = models.BooleanField(blank=True, editable=False)
+    disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
 
     class Admin:
         ordering = ['user']

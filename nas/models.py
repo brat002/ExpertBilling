@@ -70,8 +70,7 @@ class TrafficClass(models.Model):
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
     color = models.IntegerField(verbose_name=u'Цвет на графиках', blank=True, null=True)
     trafficnode=models.ManyToManyField(verbose_name=u'Направления трафика', to=TrafficNode)
-    parent=models.ForeignKey(to='self', verbose_name=u'Родительский класс')
-    transmit_next = models.BooleanField(verbose_name=u'Передавать по цепочке дальше')
+
     
     def __unicode__(self):
         return u"%s" % self.name
