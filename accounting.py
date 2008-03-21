@@ -222,7 +222,7 @@ class periodical_service_bill(Thread):
                                 last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
                                 # Здесь нужно проверить сколько раз прошёл расчётный период
                                 if last_checkout==None:
-                                    last_checkout=period_start
+                                    last_checkout=account_datetime
 
                                 if (now-last_checkout).seconds>=n:
                                     #Проверяем наступил ли новый период
@@ -263,7 +263,7 @@ class periodical_service_bill(Thread):
                                 # Для последней проводки ставим статус Approved=True
                                 # для всех сотальных False
                                 # Если последняя проводка меньше или равно дате начала периода-делаем снятие
-                                if last_checkout<period_start or last_checkout is None:
+                                if last_checkout<period_start or (last_checkout is None and account_datetime<period_start):
                                     lc=last_checkout-period_start
                                     nums, ost=divmod(lc.seconds, n)
                                     for i in xrange(nums-1):
@@ -642,6 +642,9 @@ class TraficAccessBill(Thread):
             time.sleep(30)
 
 class NetFlowAggregate(Thread):
+    """
+    TO-DO: Вынести в NetFlow коллектор
+    """
     """
     Алгоритм для агрегации трафика:
     Формируем таблицу с агрегированным трафиком
@@ -1075,27 +1078,29 @@ class service_dog(Thread):
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
               time.sleep(10)
 
+if __name__ == "__main__":
+    
+    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
+    cas = check_access(timeout=10, dict=dict)
+    cas.start()
 
-dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
-cas = check_access(timeout=10, dict=dict)
-cas.start()
+    traficaccessbill = TraficAccessBill()
+    traficaccessbill.start()
+    
+    psb=periodical_service_bill()
+    psb.start()
+    
+    time_access_bill = TimeAccessBill()
+    time_access_bill.start()
 
-traficaccessbill = TraficAccessBill()
-traficaccessbill.start()
-psb=periodical_service_bill()
-psb.start()
-time_access_bill = TimeAccessBill()
-time_access_bill.start()
+    nfagg=NetFlowAggregate()
+    nfagg.start()
 
-nfagg=NetFlowAggregate()
-nfagg.start()
+    nfbill=NetFlowBill()
+    nfbill.start()
 
-nfbill=NetFlowBill()
-nfbill.start()
+    sess_dog=session_dog()
+    sess_dog.start()
 
-sess_dog=session_dog()
-sess_dog.start()
-
-lmch=limit_checker()
-lmch.start()
-
+    lmch=limit_checker()
+    lmch.start()

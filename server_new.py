@@ -1,4 +1,5 @@
 #-*-coding=utf-8-*-
+from log import simple_log
 
 from auth import Auth
 from time import clock
@@ -57,7 +58,7 @@ class HandleAuth(HandleBase):
     def handle(self):
         db_connection = pool.connection()
         cur = db_connection.cursor()
-      
+        simple_log(packet=self.packetobject)
         row = get_nas_by_ip(cur, self.nasip).fetchone()
         if row==None:
             return self.auth_NA()
@@ -78,6 +79,7 @@ class HandleAuth(HandleBase):
 
         if int(row[0])!=int(nas_id) or row[1]!=self.access_type:
            return self.auth_NA()
+       
 
         #TimeAccess 
         rows = time_periods_by_tarif_id(cur, tarif_id).fetchall()
@@ -89,6 +91,7 @@ class HandleAuth(HandleBase):
 
 
         cur.close()
+        
         if self.packetobject['User-Name'][0]==username and status=='Enabled' and  ballance>0 and not disabled_by_limit:
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
@@ -141,6 +144,8 @@ class HandleAcct(HandleBase):
         #Проверяем знаем ли мы такого пользователя
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        simple_log(packet=self.packetobject)
+        
         cur.execute(
         """
         SELECT id FROM billservice_account WHERE username='%s';
@@ -253,9 +258,12 @@ class RadiusAuth(BaseAuth):
       def handle(self):
         t = clock()
         data=self.request[0] # or recv(bufsize, flags)
-        assert len(data)>=4096
+        print len(data)
+        assert len(data)<=4096
         addrport=self.client_address
+        simple_log('Auth Request From:%s:%s' % addrport)
         packetobject=packet.Packet(dict=dict,packet=data)
+        simple_log('Create Initial response packet Ok')
         coreconnect = HandleAuth(nasip=self.client_address[0], packetobject=packetobject)
         packetfromcore=coreconnect.handle()
         
@@ -274,7 +282,7 @@ class RadiusAcct(BaseAuth):
       def handle(self):
         t = clock()
         data=self.request[0] # or recv(bufsize, flags)
-        assert len(data)>=4096
+        assert len(data)<=4096
         addrport=self.client_address
         packetobject=packet.AcctPacket(dict=dict,packet=data)
         

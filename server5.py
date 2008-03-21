@@ -13,19 +13,27 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
-pool = PooledDB(
-     mincached=1,
-     maxcached=5,
-     blocking=True,
-     creator=psycopg2,
-     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                            settings.DATABASE_USER,
-                                                            settings.DATABASE_HOST,
-                                                            settings.DATABASE_PASSWORD)
-)
-db_connection = pool.connection()
-cur = db_connection.cursor()
-        
+     
+
+def RefreshClasses():
+    trafficclasses_pool=[]
+    cur.execute("SELECT id, name, weight FROM nas_trafficclass ORDER BY weight DESC;")
+    traffic_classes=cur.fetchall()
+    for traffic_class in traffic_classes:
+        cur.execute(
+        """
+        SELECT tn.name, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
+        tn.next_hop
+        FROM nas_trafficnode as tn
+        JOIN nas_trafficclass_trafficnode as tnc ON tnc.trafficnode_id=tn.id
+        WHERE tnc.trafficclass_id=%s
+        """ % traffic_class[0]
+        )
+        traffic_nodes=cur.fetchall()
+        trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2],nodes=traffic_nodes))
+    
+    return trafficclasses_pool
+   
 class Account:
     def __init__(self, id, ip, tarif):
         self.id=id
@@ -81,21 +89,6 @@ class TrafficClass:
         return False
 
 
-trafficclasses_pool=[]
-cur.execute("SELECT id, name, weight FROM nas_trafficclass ORDER BY weight DESC;")
-traffic_classes=cur.fetchall()
-for traffic_class in traffic_classes:
-    cur.execute(
-    """
-    SELECT tn.name, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
-    tn.next_hop
-    FROM nas_trafficnode as tn
-    JOIN nas_trafficclass_trafficnode as tnc ON tnc.trafficnode_id=tn.id
-    WHERE tnc.trafficclass_id=%s
-    """ % traffic_class[0]
-    )
-    traffic_nodes=cur.fetchall()
-    trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2],nodes=traffic_nodes))
     
 
 
@@ -178,7 +171,10 @@ class NetFlowPacket:
             raise ValueError, "Short packet"
             
         cur.execute("""SELECT id from nas_nas WHERE support_netflow=True and ipaddress='%s'""" % addrport[0])
-        nas_id = cur.fetchone()[0]
+        try:
+            nas_id = cur.fetchone()[0]
+        except:
+            return
         flows=[]
         if nas_id!=None:
             _nf = struct.unpack("!H", data[:2])
@@ -191,6 +187,7 @@ class NetFlowPacket:
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
+            trafficclasses_pool = RefreshClasses()
             
             for n in range(self.hdr.num_flows):
 
@@ -245,27 +242,42 @@ class NetFlowPacket:
 ##			i += 1
 ##
 ##		return ret
+if __name__=='__main__':
+    pool = PooledDB(
+         mincached=1,
+         maxcached=5,
+         blocking=True,
+         creator=psycopg2,
+         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                                settings.DATABASE_USER,
+                                                                settings.DATABASE_HOST,
+                                                                settings.DATABASE_PASSWORD)
+    )
+    db_connection = pool.connection()
+    cur = db_connection.cursor()
 
-host = None
-port = 9996
 
-addrs = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
-    socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
-socks = []
+    host = '0.0.0.0'
+    port = 9996
 
-for addr in addrs:
-	sock = socket.socket(addr[0], addr[1])
-	sock.bind(addr[4])
-	socks.append(sock)
+    addrs = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
+                               socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
+    socks = []
 
-	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
+    for addr in addrs:
+    	sock = socket.socket(addr[0], addr[1])
+    	sock.bind(addr[4])
+    	socks.append(sock)
+    	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
 
-while 1:
-	(rlist, wlist, xlist) = select.select(socks, [], socks)
-
-	for sock in rlist:
-		(data, addrport) = sock.recvfrom(8192)
-		print "Received flow packet from %s:%d" % addrport
-		#print
-        NetFlowPacket(data, addrport)
+    while 1:
+	    (rlist, wlist, xlist) = select.select(socks, [], socks)
+	    for sock in rlist:
+		    (data, addrport) = sock.recvfrom(8192)
+		    print "Received flow packet from %s:%d" % addrport
+		    
+            try:
+                NetFlowPacket(data, addrport)
+            except:
+                print 'bad_packet'
 

@@ -3,15 +3,18 @@
 Модуль содержит класс для проверки прав на авторизацию
 """
 import packet
-import md5,struct
-import sha as SHA
-import md4
-import pyDes as DES
-from pyDes import ECB
+#import md5,struct
+import struct
+#import sha as SHA
+#import md4
+#import pyDes as DES
+
+from Crypto.Cipher import DES
+#from pyDes import ECB
 from encodings import utf_16_le,hex_codec
-
-
-
+from Crypto.Hash import MD4 as md4
+from Crypto.Hash import SHA as SHA
+from Crypto.Hash import MD5 as md5
 class Auth:
     """
     Класс предназначен для реализации проверки авторизации для механизмов
@@ -163,6 +166,7 @@ class Auth:
         return chr(ordbyte)
 
     def _ChallengeHash(self, PeerChallenge, AuthenticatorChallenge, username):
+        
     	return SHA.new("%s%s%s" % (PeerChallenge, AuthenticatorChallenge, username)).digest()[0:8]
 
     def _NtPasswordHash(self, password, utf16=True):
@@ -201,9 +205,9 @@ class Auth:
         # По алгоритму дополняем нолями MD4 хэш пароля до 21 символа
     	pwhash+='\x00' * (21-len(pwhash))
     	resp=''
-
+        
     	for i in range(3):
-    		desk=DES.des(self._convert_key(pwhash[i*7:(i+1)*7]), ECB)
+    		desk=DES.new(self._convert_key(pwhash[i*7:(i+1)*7]), DES.MODE_ECB)
     		resp+=desk.encrypt(challenge)
     	return resp
     
