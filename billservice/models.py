@@ -355,13 +355,20 @@ class Tariff(models.Model):
 
 
 class Account(models.Model):
-    user=models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
-    username=models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
-    password=models.CharField(verbose_name=u'Пароль',max_length=200)
-    firstname=models.CharField(verbose_name=u'Имя',max_length=200)
-    lastname=models.CharField(verbose_name=u'Фамилия',max_length=200)
-    address=models.TextField(verbose_name=u'Домашний адрес')
-    ipaddress=models.IPAddressField(u'Статический IP адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
+    """
+    Если установлена галочка condition_static, при привязке пользователя к тарифному плану
+    ему автоматически назначится IP адрес из пула адресов, указанного в тарифном плане 
+    """
+    user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
+    username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
+    password = models.CharField(verbose_name=u'Пароль',max_length=200)
+    firstname = models.CharField(verbose_name=u'Имя',max_length=200)
+    lastname = models.CharField(verbose_name=u'Фамилия',max_length=200)
+    address = models.TextField(verbose_name=u'Домашний адрес')
+    virtual_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
+    condition_dynamic = models.BooleanField(verbose_name=u'Условно динамический IP адрес', help_text=u"Адрес автомаиески назначится при привязке пользователю тарифного плана", blank=True, default=False)
+    ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
+    ipn_mac_address = models.IPAddressField(u'MAC адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
     status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default=u'Enabled')
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)

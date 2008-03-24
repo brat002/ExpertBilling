@@ -6,7 +6,7 @@ from django.db import models
 # Create your models here.
 
 class Nas(models.Model):
-    name = models.CharField(verbose_name=u'Имя сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
+    name = models.CharField(verbose_name=u'Системное имя сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
     ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
     secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
     login = models.CharField(verbose_name=u'Имя для доступа к серверу по SSH', max_length=255)
@@ -21,7 +21,7 @@ class Nas(models.Model):
     user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True)
     support_pod = models.BooleanField(verbose_name=u'Сервер поддерживает PoD', help_text=u"Технология, позволяющая сбрасывать пользователя с линии средствами RADIUS. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     support_netflow = models.BooleanField(verbose_name=u'Сервер поддерживает экспорт NetFlow', help_text=u"Сервер доступа поддерживает экспорт статистики через NetFlow", blank=True, null=True, default=True)
-    netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', blank=True, null=True, default=5)
+    netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
     suport_cao = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP")
 
@@ -68,7 +68,7 @@ class TrafficNode(models.Model):
 class TrafficClass(models.Model):
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
-    color = models.IntegerField(verbose_name=u'Цвет на графиках', blank=True, null=True)
+    color = models.CharField(verbose_name=u'Цвет на графиках', blank=True, null=True)
     trafficnode=models.ManyToManyField(verbose_name=u'Направления трафика', to=TrafficNode)
 
     
@@ -96,3 +96,23 @@ class IPAddressPool(models.Model):
     class Meta:
         verbose_name = u"Пул IP адресов"
         verbose_name_plural = u"Пулы IP адресов"
+
+class IPAddressesInUse(models.Model):
+    from billservice.models import Account
+    pool = models.ForeignKey(to=IPAddressPool)
+    address = models.IPAddressField()
+    account = models.ForeignKey(to=Account)
+    date_bounded = models.DateTimeField()
+    date_unbounded = models.DateTimeField()
+    
+    def __unicode__(self):
+        return u"%s-%s" % (self.address, self.account)
+    
+    class Admin:
+        pass
+
+    class Meta:
+        verbose_name = u"Использемый адрес пула"
+        verbose_name_plural = u"Использемые адреса пулов"
+            
+    
