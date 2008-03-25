@@ -7,12 +7,10 @@ import datetime, time
 
 # Create your models here.
 PERIOD_CHOISES=(
-                (u'NOT_REPEAT', u'Не повторять'),
+                (u'DONT_REPEAT', u'Не повторять'),
                 (u'DAY',u'День'),
                 (u'WEEK',u'Неделя'),
                 (u'MONTH',u'Месяц'),
-                (u'QUARTER',u'Квартал'), # Не реализовано
-                (u'HALF_YEAR',u'Полугодие'), # Не реализовано
                 (u'YEAR',u'Год'),
                 )
 
@@ -218,7 +216,14 @@ class AccessParameters(models.Model):
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     nas               = models.ForeignKey(to=Nas, blank=True, null=True, verbose_name=u'Сервер доступа')
-
+    max_limit_in      = models.CharField(verbose_name=u"MAX IN (kbps)", max_length=64, blank=True, null=True)
+    max_limit_out     = models.CharField(verbose_name=u"MAX OUT (kbps)", max_length=64, blank=True, null=True)
+    min_limit_in      = models.CharField(verbose_name=u"MIN IN (kbps)", max_length=64, blank=True, null=True)
+    min_limit_out     = models.CharField(verbose_name=u"MIN OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_limit_in    = models.CharField(verbose_name=u"Burst IN (kbps)", max_length=64, blank=True, null=True)
+    burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_time        = models.IntegerField(verbose_name=u"Burst Time", blank=True, null=True)    
+    
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -231,6 +236,30 @@ class AccessParameters(models.Model):
         verbose_name = u"Параметры доступа"
         verbose_name_plural = u"Параметры доступа"
 
+class TimeSpeed(models.Model):
+    """
+    Настройки скорости в интервал времени
+    """
+    access_parameters = models.ForeignKey(to=AccessParameters, edit_inline=True)
+    time = models.ForeignKey(TimePeriodNode, core=True)
+    max_limit_in      = models.CharField(verbose_name=u"MAX IN (kbps)", max_length=64, blank=True, null=True)
+    max_limit_out     = models.CharField(verbose_name=u"MAX OUT (kbps)", max_length=64, blank=True, null=True)
+    min_limit_in      = models.CharField(verbose_name=u"MIN IN (kbps)", max_length=64, blank=True, null=True)
+    min_limit_out     = models.CharField(verbose_name=u"MIN OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_limit_in    = models.CharField(verbose_name=u"Burst IN (kbps)", max_length=64, blank=True, null=True)
+    burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_time        = models.IntegerField(verbose_name=u"Burst Time", blank=True, null=True)    
+        
+    def __unicode__(self):
+        return u"%s %s/%s %s/%s %s/%s" % (self.time, self.max_limit_in, self.max_limit_out, self.min_limit_in, self.min_limit_out, self.burst_limit_in, self.burst_limit_out)
+
+    class Admin:
+        pass
+    
+    class Meta:
+         verbose_name = u"настройка скорости"
+         verbose_name_plural = u"Настройки скорости"
+                     
 class PrepaidTraffic(models.Model):
     traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
     size             = models.FloatField(verbose_name=u'Размер в мегабайтах')
@@ -378,7 +407,7 @@ class Account(models.Model):
 
     class Admin:
         ordering = ['user']
-        list_display = ('user','username','status','credit','ballance','firstname','lastname','ipaddress', 'created')
+        list_display = ('user', 'virtual_ip_address', 'condition_dynamic', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
         #list_filter = ('username')
 
     def __str__(self):
