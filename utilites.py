@@ -87,6 +87,13 @@ def in_period(time_start, length, repeat_after, now=None):
             if now>=tnc and now<=tkc:
                 return True
             return False
+        elif repeat_after=='DONT_REPEAT':
+            delta_days=now - time_start
+
+            tkc=time_start+datetime.timedelta(seconds=length)
+            if now>=time_start and now<=tkc:
+                return True
+            return False            
 
 def settlement_period_info(time_start, repeat_after, now=None):
         """

@@ -48,8 +48,8 @@ class HandleBase(object):
 #auth_class
 class HandleAuth(HandleBase):
     
-    def __init__(self, nasip, packetobject):
-        self.nasip = nasip
+    def __init__(self,  packetobject):
+        self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject 
         self.replypacket=packet.Packet(secret='None',dict=dict)
         self.access_type=self.get_accesstype()
@@ -117,7 +117,7 @@ class HandleAcct(HandleBase):
     
     def __init__(self, packetobject, nasip):
         self.packetobject=packetobject
-        self.nasip=nasip
+        self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
         self.access_type=self.get_accesstype()
         

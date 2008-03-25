@@ -33,7 +33,7 @@ def time_periods_by_tarif_id(cursor, tarif_id):
     FROM billservice_timeperiodnode as tpn
     JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
     JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
-     JOIN billservice_tariff AS bst ON bst.access_type_id=ap.id
+    JOIN billservice_tariff AS bst ON bst.access_type_id=ap.id
     WHERE bst.id=%s""" % tarif_id)
     return cursor
 
@@ -44,21 +44,16 @@ def transaction(cursor, account, approved, tarif, summ, description, created=Non
     cursor.execute("""
     INSERT INTO billservice_transaction(
     account_id, approved, tarif_id, summ, description, created)
-    VALUES (%s, %s, %s, %s, %s, %s);
+    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
     """,(account, approved, tarif , summ, description, created))
+    
+    tr_id=cursor.fetchone()[0]
+    
     cursor.execute("""
     UPDATE billservice_account
     SET ballance=ballance-%s WHERE id=%s""" % (summ, account))
     
-    cursor.execute("""
-    SELECT id
-    FROM billservice_transaction
-    WHERE
-    account_id=%s
-    AND tarif_id=%s
-    AND created='%s'""" % (account,tarif, created))
-    
-    return cursor.fetchone()[0]
+    return tr_id
 
 def ps_history(cursor, ps_id, transaction, created=None):
     if not created:
