@@ -6,7 +6,7 @@ from django.db import models
 # Create your models here.
 
 class Nas(models.Model):
-    name = models.CharField(verbose_name=u'Системное имя сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
+    name = models.CharField(verbose_name=u'Идентификатор сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
     ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
     secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
     login = models.CharField(verbose_name=u'Имя для доступа к серверу по SSH', max_length=255)
@@ -68,7 +68,7 @@ class TrafficNode(models.Model):
 class TrafficClass(models.Model):
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
-    color = models.CharField(verbose_name=u'Цвет на графиках', blank=True, null=True)
+    color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, null=True)
     trafficnode=models.ManyToManyField(verbose_name=u'Направления трафика', to=TrafficNode)
 
     
