@@ -5,16 +5,27 @@ import datetime, calendar
 from dateutil.relativedelta import relativedelta
 import paramiko
 
-def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id, pod, login, password):
-    if pod==True:
+def DAE(dict, code, nas_ip, username, access_type=None, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
+    """
+    Dynamic Authorization Extensions
+    http://www.rfc-archive.org/getrfc.php?rfc=3576
+    """
+    
+    if code==40:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         #sock.connect('10.20.3.1',1700)
-        doc=packet.AcctPacket(code=code,secret=nas_secret, dict=dict)
+        doc=packet.AcctPacket(code=code, secret=nas_secret, dict=dict)
         doc.AddAttribute('NAS-IP-Address', nas_ip)
         doc.AddAttribute('NAS-Identifier', nas_id)
-        doc.AddAttribute('User-Name',username)
-        doc.AddAttribute('Acct-Session-Id', session_id)
+        doc.AddAttribute('User-Name', str(username))
+        doc.AddAttribute('Acct-Session-Id', str(session_id))
+        #doc.AddAttribute('Framed-IP-Address', '192.168.12.3')
+        if speed_string:
+            #Пока только для микротика
+            doc.AddAttribute((14988,8), speed_string)
+            #doc.AddAttribute((14988,8), "160k")
+            
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(nas_ip, 1700))
         (data, addrport) = sock.recvfrom(8192)
@@ -24,12 +35,29 @@ def disconnect(dict, code, nas_secret, nas_ip, nas_id, username, session_id, pod
         #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
 
         sock.close()
+        #try:
+        #    print doc['Error-Cause'][0]
+        #except:
+        #    pass
         return doc.has_key("Error-Cause")==False
     else:
         sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
-        res=sshclient.send_command('/interface pptp-server remove [find user="%s"]' % username)
+        print 'ssh connected'
+        """
+        #сначала проверить есть ли, если нет-создать, если есть-установить
+        /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
+        """
+        
+        #query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
+        query="/interface print"
+        print query
+        #'/interface pptp-server remove [find user="%s"]' % username
+        res=sshclient.send_command(query)
         sshclient.close_chanel()
-        return res.readlines()==[]
+        print res[1].readlines()
+        return res[1].readlines()==[]
+
+
 
 def in_period(time_start, length, repeat_after, now=None):
         """
@@ -180,16 +208,64 @@ def parse_command_string(template, params_dict):
 
 class SSHClient(paramiko.SSHClient):
     def __init__(self, host, port, username, password):
-        paramiko.SSHClient.__init__(self)
+        
         self.load_system_host_keys()
         self.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
         self.connect(hostname=host,port=port, username=username,password=password)
+        paramiko.SSHClient.__init__(self)
         
     def send_command(self, text):
         stdin, stdout, stderr = self.exec_command(text)
         #print stderr.readlines()==[]
-        return stdout
+        return stdout, stderr
         
     def close_chanel(self):
         self.close()
-        
+def create_nulls(param):
+    if param==None:
+        return 0
+    if param=="None":
+        return 0
+            
+def create_speed_string(params, nas_type, coa=False):
+    params=map(lambda x: x=='None' and 0 or x, params)
+    result=''
+    if nas_type[:8]==u'mikrotik':
+        #max_limit
+        if coa==False:
+            result+="%s/%s" % (params[0], params[1])
+           
+            #burst_limit
+            result+=" %s/%s" % (params[2],params[3])
+            
+            #burst_treshold
+            result+=" %s/%s" % (params[4], params[5])
+            
+            #burst_time
+            result+=" %s/%s" % (params[6], params[7])
+           
+            #priority
+            result+=" %s" % params[8]
+            
+            #burst_time
+            result+=" %s/%s" % (params[9], params[10])
+        else:
+            result+="max-limit=%s/%s" % (params[0], params[1])
+           
+            #burst_limit
+            result+=" burst-limit=%s/%s" % (params[2],params[3])
+            
+            #burst_treshold
+            result+=" burst-treshold=%s/%s" % (params[4], params[5])
+            
+            #burst_time
+            result+=" burst-time=%s/%s" % (params[6], params[7])
+            
+            #priority
+            result+=" priority=%s" % params[8]
+            
+            #burst_time
+            result+=" limit-at=%s/%s" % (params[9], params[10])
+            
+    
+    return result

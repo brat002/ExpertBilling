@@ -11,13 +11,14 @@ from SocketServer import DatagramRequestHandler
 from threading import Thread
 import dictionary, packet
 
-from utilites import in_period
-from db import get_nas_by_ip, get_account_data_by_username, get_nas_id_by_tarif_id, time_periods_by_tarif_id
+from utilites import in_period, create_speed_string, DAE
+from db import get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, get_nas_id_by_tarif_id, time_periods_by_tarif_id
 
 
 import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
+
 
 class HandleBase(object):
     
@@ -51,48 +52,91 @@ class HandleAuth(HandleBase):
     def __init__(self,  packetobject):
         self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject 
-        self.replypacket=packet.Packet(secret='None',dict=dict)
         self.access_type=self.get_accesstype()
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
         
         
-    def handle(self):
-        db_connection = pool.connection()
-        cur = db_connection.cursor()
-        simple_log(packet=self.packetobject)
-        row = get_nas_by_ip(cur, self.nasip).fetchone()
+        row=self.get_nas_info()
+
         if row==None:
+            self.cur.close()
             return self.auth_NA()
 
-        nas_id=str(row[0])
-        secret=str(row[1])
+        self.nas_id=str(row[0])
+        self.nas_type=row[2]
+        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
+        
+        
+    def create_speed(self, tarif_id):
+        defaults = get_default_speed_parameters(self.cur, tarif_id)
+        speeds = get_speed_parameters(self.cur, tarif_id)
+        if defaults is None:
+            return None
+        result=[]
+        i=0
+        for speed in speeds:
+            if in_period(speed[0],speed[1],speed[2])==True:     
+                for s in speed[3:]:
+                    if s==0:
+                        res=0
+                    elif s=='':
+                        res=defaults[i]
+                    else:
+                        res=s
+                    result.append(res)
+                    i+=1
+        if speeds==[]:
+            result=defaults
+        
+        result_params=create_speed_string(result, self.nas_type)
+        if self.nas_type[:8]==u'mikrotik' and result_params!='':
+            self.replypacket.AddAttribute((14988,8),result_params)
+    
+    def get_nas_info(self):
+        row = get_nas_by_ip(self.cur, self.nasip)
+        return row
+    
+    def handle(self):
+        
+        
+        simple_log(packet=self.packetobject)
 
-        self.replypacket.secret = secret
-        row = get_account_data_by_username(cur, self.packetobject['User-Name'][0]).fetchone()
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+        
         if row==None:
+            self.cur.close()
             return self.auth_NA()
 
         username, password, ipaddress, tarif_id, status, ballance, disabled_by_limit = row
 
-        row=get_nas_id_by_tarif_id(cur, tarif_id).fetchone()
+        row=get_nas_id_by_tarif_id(self.cur, tarif_id)
         if row==None:
+            self.cur.close()
+            self.connection.close()
             return self.auth_NA()
-
-        if int(row[0])!=int(nas_id) or row[1]!=self.access_type:
+        
+        if int(row[0])!=int(self.nas_id) or row[1]!=self.access_type:
+           self.cur.close()
+           self.connection.close()
            return self.auth_NA()
-       
+        
 
         #TimeAccess 
-        rows = time_periods_by_tarif_id(cur, tarif_id).fetchall()
+        rows = time_periods_by_tarif_id(self.cur, tarif_id)
+        allow_dial=False
         for row in rows:
-            if in_period(row[2],row[3],row[4])==False:
-                return self.auth_NA()
+            if in_period(row[2],row[3],row[4])==True:
+                allow_dial=True
+                break
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[key][0]
 
-
-        cur.close()
         
-        if self.packetobject['User-Name'][0]==username and status=='Enabled' and  ballance>0 and not disabled_by_limit:
+        
+        
+        
+        if self.packetobject['User-Name'][0]==username and allow_dial and status=='Enabled' and  ballance>0 and not disabled_by_limit:
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
            self.replypacket.password=str(password) #Нельзя юникод
@@ -100,11 +144,15 @@ class HandleAuth(HandleBase):
            self.replypacket.AddAttribute('Framed-Protocol', 1)
            self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
            self.replypacket.AddAttribute('Framed-Routing', 0)
-           #replypacket.AddAttribute((14988,8),'128k')
+           self.create_speed(tarif_id)
+           self.cur.close()
+           self.connection.close()
 
         else:
+             self.cur.close()
+             self.connection.close()
              return self.auth_NA()
-
+        
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 
@@ -120,7 +168,8 @@ class HandleAcct(HandleBase):
         self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
         self.access_type=self.get_accesstype()
-        
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
    
     def get_bytes(self):
         if self.packetobject.has_key('Acct-Input-Gigawords') and self.packetobject['Acct-Input-Gigawords'][0]!=0:
@@ -135,10 +184,9 @@ class HandleAcct(HandleBase):
         return (bytes_in, bytes_out)
     
     def handle(self):
-        db_connection = pool.connection()
-        cur = db_connection.cursor()
-        cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % self.nasip)
-        rows = cur.fetchone()
+
+        self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % self.nasip)
+        rows = self.cur.fetchone()
         if rows==None:
             return self.acct_NA(self.replypacket)
         #Проверяем знаем ли мы такого пользователя
@@ -146,12 +194,12 @@ class HandleAcct(HandleBase):
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         simple_log(packet=self.packetobject)
         
-        cur.execute(
+        self.cur.execute(
         """
         SELECT id FROM billservice_account WHERE username='%s';
         """ % self.packetobject['User-Name'][0]
         )
-        row=cur.fetchone()
+        row=self.cur.fetchone()
         if row==None:
             return self.acct_NA(self.replypacket)
 
@@ -165,7 +213,7 @@ class HandleAcct(HandleBase):
                
         if self.packetobject['Acct-Status-Type']==['Start']:
 
-            cur.execute(
+            self.cur.execute(
             """
             INSERT INTO radius_session(
             account_id, sessionid, date_start,
@@ -176,7 +224,7 @@ class HandleAcct(HandleBase):
                  self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
                  self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
 
-            cur.execute(
+            self.cur.execute(
             """
             INSERT INTO radius_activesession(
             account_id, sessionid, date_start,
@@ -187,37 +235,54 @@ class HandleAcct(HandleBase):
                  self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
                  self.packetobject['NAS-IP-Address'][0], self.access_type))
 
-            db_connection.commit()
+            self.connection.commit()
 
 
         if self.packetobject['Acct-Status-Type']==['Alive']:
+            
+            self.cur.execute(
+                        """
+                        SELECT timespeed.access_parameters_id, timespeed.time_id, timespeed.max_limit_in, timespeed.max_limit_out, 
+                               timespeed.min_limit_in, timespeed.min_limit_out, timespeed.burst_limit_in, timespeed.burst_limit_out, 
+                               timespeed.burst_treshold_in, timespeed.burst_treshold_out, timespeed.burst_time_in, timespeed.burst_time_out, 
+                               timespeed.priority
+                        FROM billservice_timespeed as timespeed
+                        JOIN billservice_tariff as tariff ON  timespeed.access_parameters_id=tariff.access_parameters_id
+                        JOIN billservice_accounttarif as accounttarif ON accounttarif.tarif_id=tariff.id and accounttarif.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account_id=%s LIMIT 1)
+                        WHERE accounttarif.account_id=%s;
+                        """ % (account_id, account_id)
+                        
+                        )
+            periods=self.cur.fetchall()
+            
             bytes_in, bytes_out=self.get_bytes()
-            cur.execute(
-            """
-            INSERT INTO radius_session(
-            account_id, sessionid, interrim_update,
-            caller_id, called_id, nas_id, session_time,
-            bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-            VALUES ( %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s);
-            """, (account_id, self.packetobject['Acct-Session-Id'][0],
-                 now, self.packetobject['Calling-Station-Id'][0],
-                 self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
-                 self.packetobject['Acct-Session-Time'][0],
-                 bytes_in, bytes_out, self.access_type, False, False)
+            self.cur.execute(
+                        """
+                        INSERT INTO radius_session(
+                        account_id, sessionid, interrim_update,
+                        caller_id, called_id, nas_id, session_time,
+                        bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+                        VALUES ( %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s);
+                        """, (account_id, self.packetobject['Acct-Session-Id'][0],
+                             now, self.packetobject['Calling-Station-Id'][0],
+                             self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
+                             self.packetobject['Acct-Session-Time'][0],
+                             bytes_in, bytes_out, self.access_type, False, False)
+                        )
+            self.cur.execute(
+                        """
+                        UPDATE radius_activesession
+                        SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
+                        WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
+                        """ % (now, self.packetobject['Acct-Input-Octets'][0], self.packetobject['Acct-Output-Octets'][0], self.packetobject['Acct-Session-Time'][0], account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
             )
-            cur.execute(
-            """
-            UPDATE radius_activesession
-            SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
-            WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
-            """ % (now, self.packetobject['Acct-Input-Octets'][0], self.packetobject['Acct-Output-Octets'][0], self.packetobject['Acct-Session-Time'][0], account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
-            )
-            db_connection.commit()
+
+            self.connection.commit()
 
         if self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
-            cur.execute(
+            self.cur.execute(
             """
             INSERT INTO radius_session(
             account_id, sessionid, interrim_update, date_end,
@@ -232,15 +297,16 @@ class HandleAcct(HandleBase):
                   bytes_in, bytes_out, self.access_type, False, False)
             )
 
-            cur.execute(
+            self.cur.execute(
                """
                UPDATE radius_activesession
                SET date_end='%s', session_status='ACK'
                WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
                """ % (now,account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
                )
-            db_connection.commit()
-        cur.close()
+            self.connection.commit()
+        self.connection.close()
+        self.cur.close()
 
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
@@ -258,13 +324,12 @@ class RadiusAuth(BaseAuth):
       def handle(self):
         t = clock()
         data=self.request[0] # or recv(bufsize, flags)
-        print len(data)
         assert len(data)<=4096
         addrport=self.client_address
         simple_log('Auth Request From:%s:%s' % addrport)
         packetobject=packet.Packet(dict=dict,packet=data)
         simple_log('Create Initial response packet Ok')
-        coreconnect = HandleAuth(nasip=self.client_address[0], packetobject=packetobject)
+        coreconnect = HandleAuth(packetobject=packetobject)
         packetfromcore=coreconnect.handle()
         
         #Обавляем Secret
@@ -272,7 +337,7 @@ class RadiusAuth(BaseAuth):
         authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
         returndata=authobject.ReturnPacket()
         self.socket.sendto(returndata,addrport)
-        del coreconnect
+        
         del packetfromcore
         del packetobject
         print "AUTH:%.20f" % (clock()-t)
@@ -294,7 +359,7 @@ class RadiusAcct(BaseAuth):
         returndat=packetfromcore.ReplyPacket()
         self.socket.sendto(returndat,addrport)
         print "ACC:%.20f" % (clock()-t)
-        del coreconnect
+        #del coreconnect
         del packetfromcore
 
 
@@ -340,8 +405,6 @@ if __name__ == "__main__":
                                                                settings.DATABASE_HOST,
                                                                settings.DATABASE_PASSWORD)
     )
-
-    
     if os.name=='nt':
         setpriority(priority=4)
         
