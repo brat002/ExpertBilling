@@ -13,7 +13,7 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
-     
+
 
 def RefreshClasses():
     trafficclasses_pool=[]
@@ -31,15 +31,15 @@ def RefreshClasses():
         )
         traffic_nodes=cur.fetchall()
         trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2],nodes=traffic_nodes))
-    
+
     return trafficclasses_pool
-   
+
 class Account:
     def __init__(self, id, ip, tarif):
         self.id=id
         self.ip=ip
         self.tarif=tarif
-        
+
 class TrafficNode:
     def __init__(self, name, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop):
         self.name = name
@@ -65,10 +65,10 @@ class TrafficNode:
 
         if src_port==self.src_port or self.src_port==0:
             res['src_port']=True
-            
+
         if src_port==self.src_port or self.src_port==0:
             res['dst_port']=True
-            
+
         return res
 
 
@@ -80,7 +80,7 @@ class TrafficClass:
         self.data=[]
         for node in nodes:
             self.data.append(TrafficNode(name=node[0], src_ip=node[1], src_mask=node[2], src_port=node[3], dst_ip=node[4], dst_mask=node[5], dst_port=node[6], next_hop=node[7]))
-        
+
     def check(self, src, src_port, dst, dst_port):
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port)
@@ -89,7 +89,7 @@ class TrafficClass:
         return False
 
 
-    
+
 
 
 class Flow(object):
@@ -169,7 +169,7 @@ class NetFlowPacket:
     def __init__(self, data, addrport):
         if len(data) < 16:
             raise ValueError, "Short packet"
-            
+
         cur.execute("""SELECT id from nas_nas WHERE support_netflow=True and ipaddress='%s'""" % addrport[0])
         try:
             nas_id = cur.fetchone()[0]
@@ -187,8 +187,8 @@ class NetFlowPacket:
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
-            trafficclasses_pool = RefreshClasses()
-            
+
+
             for n in range(self.hdr.num_flows):
 
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
@@ -198,39 +198,45 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
 
                 traffic_class=None
-    			
+
                 for traffic_class in trafficclasses_pool:
     			    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port)
+
     			    if res!=False:
     			        traffic_class=res
-    			        flows.append({
-    			        'nas_id':nas_id, 'date_start':datetime.datetime.now(),
-    			        'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
-    			        'traffic_class_id':traffic_class,
-    			        'next_hop': flow.next_hop,
-    			        'in_index':flow.in_index,
-    			        'out_index' : flow.out_index,
-    			        'packets' : flow.packets,
-    			        'octets' : flow.octets,
-    			        'start' : flow.start,
-    			        'finish' : flow.finish,
-    			        'src_port' : flow.src_port,
-    			        'dst_port' : flow.dst_port,
-    			        'tcp_flags' : flow.tcp_flags,
-    			        'protocol' : flow.protocol,
-    			        'tos' : flow.tos,
-    			        'source_as' : flow.source_as,
-    			        'dst_as' : flow.dst_as,
-    			        'src_netmask_length' : flow.src_netmask_length,
-    			        'dst_netmask_length' : flow.dst_netmask_length})
-    			        break
-                    
+    			        flows.append(
+                        {
+                        'nas_id':nas_id, 'date_start':datetime.datetime.now(),
+                        'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
+                        'traffic_class_id':traffic_class,
+                        'next_hop': flow.next_hop,
+                        'in_index':flow.in_index,
+                        'out_index' : flow.out_index,
+                        'packets' : flow.packets,
+                        'octets' : flow.octets,
+                        'start' : flow.start,
+                        'finish' : flow.finish,
+                        'src_port' : flow.src_port,
+                        'dst_port' : flow.dst_port,
+                        'tcp_flags' : flow.tcp_flags,
+                        'protocol' : flow.protocol,
+                        'tos' : flow.tos,
+                        'source_as' : flow.source_as,
+                        'dst_as' : flow.dst_as,
+                        'src_netmask_length' : flow.src_netmask_length,
+                        'dst_netmask_length' : flow.dst_netmask_length,
+                        'fetched':False
+                        }
+                        );break
 
+            print flows
             cur.executemany("""
-            INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length)
-            VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s)""" ,\
-            flows)
-            
+                        INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
+                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
+                        flows)
+            db_connection.commit()
+
+
 
 
 ##	def __str__(self):
@@ -263,7 +269,7 @@ if __name__=='__main__':
     addrs = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
     socks = []
-
+    trafficclasses_pool = RefreshClasses()
     for addr in addrs:
     	sock = socket.socket(addr[0], addr[1])
     	sock.bind(addr[4])
@@ -275,9 +281,9 @@ if __name__=='__main__':
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
 		    print "Received flow packet from %s:%d" % addrport
-		    
-            try:
-                NetFlowPacket(data, addrport)
-            except:
-                print 'bad_packet'
+
+            #try:
+            NetFlowPacket(data, addrport)
+            #except:
+            #    print 'bad_packet'
 
