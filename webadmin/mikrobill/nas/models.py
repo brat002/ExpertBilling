@@ -5,7 +5,18 @@ from django.db import models
 
 # Create your models here.
 
+NAS_LIST=(
+                (u'mikrotik2.8', u'MikroTik 2.8'),
+                (u'mikrotik2.9',u'MikroTik 2.9'),
+                (u'mikrotik3',u'Mikrotik 3'),
+                (u'windows2000s',u'Windows 2000 Server'),
+                (u'common_radius',u'Общий RADIUS интерфейс'),
+                (u'common_ssh',u'common_ssh'),
+                )
+
+
 class Nas(models.Model):
+    type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
     name = models.CharField(verbose_name=u'Идентификатор сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
     ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
     secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
@@ -22,7 +33,7 @@ class Nas(models.Model):
     support_pod = models.BooleanField(verbose_name=u'Сервер поддерживает PoD', help_text=u"Технология, позволяющая сбрасывать пользователя с линии средствами RADIUS. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     support_netflow = models.BooleanField(verbose_name=u'Сервер поддерживает экспорт NetFlow', help_text=u"Сервер доступа поддерживает экспорт статистики через NetFlow", blank=True, null=True, default=True)
     netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
-    suport_cao = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", blank=True, null=True, default=True)
+    support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP")
 
 

@@ -1,11 +1,11 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os
-from utilites import disconnect, settlement_period_info, in_period
+from utilites import DAE, settlement_period_info, in_period, create_speed_string
 import dictionary
 from threading import Thread
 
-from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
+from db import get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 
 import settings
 import psycopg2
@@ -27,14 +27,36 @@ class check_access(Thread):
         def __init__ (self, dict, timeout=30):
             self.dict=dict
             self.timeout=timeout
+            self.connection = pool.connection()
             Thread.__init__(self)
 
         def check_period(self, rows):
             for row in rows:
-                if in_period(row[0],row[1],row[2])==False:
-                    return False
-            return True
+                if in_period(row[2],row[3],row[4])==True:
+                    return True
+            return False
 
+        def create_speed(self, tarif_id, nas_type):
+            defaults = get_default_speed_parameters(self.cur, tarif_id)
+            speeds = get_speed_parameters(self.cur, tarif_id)
+            result=[]
+            i=0
+            for speed in speeds:
+                if in_period(speed[0],speed[1],speed[2])==True:     
+                    for s in speed[3:]:
+                        if s==0:
+                            res=0
+                        elif s=='' or s==None:
+                            res=defaults[i]
+                        else:
+                            res=s
+                        result.append(res)
+                        i+=1
+            if speeds==[]:
+                result=defaults
+            
+            return create_speed_string(result, nas_type, coa=True)
+            
         def check_acces(self):
             """
             Раз в 30 секунд происходит выборка всех пользователей
@@ -46,69 +68,99 @@ class check_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
-            connection = pool.connection()
-            cur = connection.cursor()
+
 
 
             while True:
+                self.cur = self.connection.cursor()
                 time.sleep(self.timeout)
-                cur.execute("""
-                SELECT rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end
+                self.cur.execute("""
+                SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol)
                 FROM radius_activesession as rs
                 WHERE (rs.session_status='ACTIVE' and rs.date_end is null) or (rs.date_end is null and rs.session_status!='ACTIVE');
                 """)
-                rows=cur.fetchall()
+                rows=self.cur.fetchall()
                 for row in rows:
-                    account_id=row[0]
-                    session_id=row[1]
-                    nas_id=row[2]
-                    cur.execute("SELECT name, secret, support_pod, login, password from nas_nas WHERE ipaddress='%s'" % nas_id)
-                    row_n=cur.fetchone()
+                    activesession_id=row[0]
+                    account_id=row[1]
+                    session_id=row[2]
+                    nas_id=row[3]
+                    speed_string=row[6]
+                    access_type=row[7]
+                    self.cur.execute("SELECT name, secret, support_pod, login, password, type from nas_nas WHERE ipaddress='%s'" % nas_id)
+                    row_n=self.cur.fetchone()
                     nas_name = row_n[0]
                     nas_secret = row_n[1]
                     nas_support_pod =row_n[2]
                     nas_login =row_n[3]
                     nas_password =row_n[4]
+                    nas_type = row_n[5]
                     result=''
-
-                    cur.execute("SELECT username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() LIMIT 1) as tarif_id, (ballance+credit) as ballance, disabled_by_limit FROM billservice_account WHERE id='%s'" % account_id)
-                    row_u = cur.fetchone()
+                    #Ошибка"!!!!!
+                    self.cur.execute("SELECT account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit FROM billservice_account as account WHERE account.id='%s'" % account_id)
+                    row_u = self.cur.fetchone()
                     username=row_u[0]
                     tarif_id = row_u[1]
                     ballance=row_u[2]
                     disabled_by_limit=row_u[3]
+
                     if ballance>0:
                        #Информация для проверки периода
-                       tp=time_periods_by_tarif_id(cur, tarif_id)
+
                        #rows_t=cur.fetchall()
-                       if self.check_period(rows=tp.fetchall())==False or disabled_by_limit==True:
-                              result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, pod=nas_support_pod, login=nas_login, password=nas_password)
+
+                       if self.check_period(time_periods_by_tarif_id(self.cur, tarif_id))==False or disabled_by_limit==True:
+                              result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password)
+                              
+                       else:
+
+                           """
+                           Делаем проверку на то, изменилась ли скорость.
+                           """
+                           speed=self.create_speed(tarif_id, nas_type)
+                           #print speed, speed_string
+                           if speed_string!=speed:
+                               
+                               coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
+                               print "coa_result=", coa_result
+                               if coa_result==True:
+                                   self.cur.execute(
+                                            """
+                                            UPDATE radius_activesession
+                                            SET speed_string='%s', speed_changed=True
+                                            WHERE id=%s;
+                                            """ % (speed, activesession_id)
+                                            )
                     else:
-                        result = disconnect(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, pod=nas_support_pod, login=nas_login, password=nas_password)
+
+                        result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id,  login=nas_login, password=nas_password)
 
                     if result==True:
                         #Если удалось отключить - пишем в базу
                         disconnect_result='ACK'
                         # Если сбросили сессию, значит она существовала и сервер доступа сам
                         # Пришлёт STOP пакет
-                        cur.execute(
+                        self.cur.execute(
                         """
                         UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
+                        print result
                     elif result==False:
                         #Если не удалось отключить - или сессии не существовало
                         disconnect_result='NACK'
 
                         # Если сбросили сессию, значит она существовала и сервер доступа сам
                         # Пришлёт STOP пакет
-                        cur.execute(
+                        self.cur.execute(
                         """
                         UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
-                    print result
-            connection.commit()
+                        print result
+                self.connection.commit()
+                self.cur.close()
+#           connection.commit()
 
         def run(self):
             self.check_acces()
@@ -126,9 +178,10 @@ class session_dog(Thread):
         connection = pool.connection()
         cur = connection.cursor()
         while True:
-              cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
+              cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
-              time.sleep(10)
+              connection.commit()
+              time.sleep(30)
 
 
 class periodical_service_bill(Thread):
@@ -673,7 +726,7 @@ class NetFlowAggregate(Thread):
             (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<nf.date_start and bat.account_id=ba.id ORDER BY datetime DESC LIMIT 1) as tarif_id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
             nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol
             FROM billservice_rawnetflowstream as nf
-            JOIN billservice_account as ba ON ba.ipaddress=nf.src_addr OR ba.ipaddress=nf.dst_addr
+            JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
             WHERE nf.fetched=False;
             """
             )
@@ -1081,9 +1134,10 @@ class service_dog(Thread):
 if __name__ == "__main__":
     
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
+#===============================================================================
     cas = check_access(timeout=10, dict=dict)
     cas.start()
-
+ 
     traficaccessbill = TraficAccessBill()
     traficaccessbill.start()
     
@@ -1092,15 +1146,16 @@ if __name__ == "__main__":
     
     time_access_bill = TimeAccessBill()
     time_access_bill.start()
-
+ 
     nfagg=NetFlowAggregate()
     nfagg.start()
-
+ 
     nfbill=NetFlowBill()
     nfbill.start()
-
+ 
     sess_dog=session_dog()
     sess_dog.start()
-
+ 
     lmch=limit_checker()
     lmch.start()
+#===============================================================================

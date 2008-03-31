@@ -41,6 +41,17 @@ STATISTIC_MODE=(
                 (u'ACCOUNTING',u'RADIUS Accounting'),
                 )
 
+PRIORITIES=(
+                (u'1',u'1'),
+                (u'2',u'2'),
+                (u'3',u'3'),
+                (u'4',u'4'),
+                (u'5',u'5'),
+                (u'6',u'6'),
+                (u'7',u'7'),
+                (u'8',u'8'),
+                )
+
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -222,7 +233,12 @@ class AccessParameters(models.Model):
     min_limit_out     = models.CharField(verbose_name=u"MIN OUT (kbps)", max_length=64, blank=True, null=True)
     burst_limit_in    = models.CharField(verbose_name=u"Burst IN (kbps)", max_length=64, blank=True, null=True)
     burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
-    burst_time        = models.IntegerField(verbose_name=u"Burst Time", blank=True, null=True)    
+    burst_treshold_in    = models.CharField(verbose_name=u"Burst treshold IN (kbps)", max_length=64, blank=True, null=True)
+    burst_treshold_out   = models.CharField(verbose_name=u"Burst treshold OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)    
+    burst_time_out       = models.IntegerField(verbose_name=u"Burst Time out", blank=True, null=True)
+    #от 0 до 8 
+    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, null=True)
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -248,8 +264,13 @@ class TimeSpeed(models.Model):
     min_limit_out     = models.CharField(verbose_name=u"MIN OUT (kbps)", max_length=64, blank=True, null=True)
     burst_limit_in    = models.CharField(verbose_name=u"Burst IN (kbps)", max_length=64, blank=True, null=True)
     burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
-    burst_time        = models.IntegerField(verbose_name=u"Burst Time", blank=True, null=True)    
-        
+    burst_treshold_in    = models.CharField(verbose_name=u"Burst treshold IN (kbps)", max_length=64, blank=True, null=True)
+    burst_treshold_out   = models.CharField(verbose_name=u"Burst treshold OUT (kbps)", max_length=64, blank=True, null=True)
+    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)    
+    burst_time_out       = models.IntegerField(verbose_name=u"Burst Time out", blank=True, null=True)
+    #от 0 до 8 
+    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, null=True)
+          
     def __unicode__(self):
         return u"%s %s/%s %s/%s %s/%s" % (self.time, self.max_limit_in, self.max_limit_out, self.min_limit_in, self.min_limit_out, self.burst_limit_in, self.burst_limit_out)
 
@@ -357,7 +378,7 @@ class TrafficLimit(models.Model):
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     description       = models.TextField(verbose_name=u'Описание тарифного плана')
-    access_type       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
+    access_parameters       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
     statistic_mode    = models.CharField(choices=STATISTIC_MODE, max_length=255, default='NETFLOW',verbose_name=u'Главный режим сбора статистики', help_text=u"При сборе статистики через NetFlow нельзя применять тарифные планы с оплатой за время. Для Radius Accounting будет недоступна опция учёта трафика по направлениям")
     traffic_limit     = models.ManyToManyField(to=TrafficLimit, filter_interface=models.HORIZONTAL,verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
     periodical_services = models.ManyToManyField(to=PeriodicalService, filter_interface=models.HORIZONTAL, verbose_name=u'периодические услуги', blank=True, null=True)
@@ -375,7 +396,7 @@ class Tariff(models.Model):
 
     class Admin:
         ordering = ['name']
-        list_display = ('name','access_type','time_access_service','traffic_transmit_service','cost','settlement_period', 'ps_null_ballance_checkout')
+        list_display = ('name','access_parameters','time_access_service','traffic_transmit_service','cost','settlement_period', 'ps_null_ballance_checkout')
 
 
     class Meta:
