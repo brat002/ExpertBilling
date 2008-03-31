@@ -82,6 +82,8 @@ class ActiveSession(models.Model):
     bytes_out=models.IntegerField(null=True,blank=True)
     #Выставляется в случае, если был произведён платёж
     session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True)
+    speed_string = models.CharField(max_length=255, blank=True, null=True)
+    speed_changed = models.BooleanField(blank=True, default=False)
 
 
 
