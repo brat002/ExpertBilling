@@ -31,7 +31,7 @@ ACTIVITY_CHOISES=(
         (u"Disabled",u"Disabled"),
         )
 
-LIMIT_CHOISES=(
+CHOISE_METHODS=(
         (u"MAX",u"Наибольший"),
         (u"SUMM",u"Сумма всех"),
         )
@@ -208,7 +208,7 @@ class TimeAccessService(models.Model):
     time_periods      = models.ManyToManyField(to=TimeAccessNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежутки')
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
-        
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -235,11 +235,11 @@ class AccessParameters(models.Model):
     burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
     burst_treshold_in    = models.CharField(verbose_name=u"Burst treshold IN (kbps)", max_length=64, blank=True, null=True)
     burst_treshold_out   = models.CharField(verbose_name=u"Burst treshold OUT (kbps)", max_length=64, blank=True, null=True)
-    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)    
+    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)
     burst_time_out       = models.IntegerField(verbose_name=u"Burst Time out", blank=True, null=True)
-    #от 0 до 8 
-    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, null=True)
-    
+    #от 1 до 8
+    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -266,23 +266,24 @@ class TimeSpeed(models.Model):
     burst_limit_out   = models.CharField(verbose_name=u"Burst OUT (kbps)", max_length=64, blank=True, null=True)
     burst_treshold_in    = models.CharField(verbose_name=u"Burst treshold IN (kbps)", max_length=64, blank=True, null=True)
     burst_treshold_out   = models.CharField(verbose_name=u"Burst treshold OUT (kbps)", max_length=64, blank=True, null=True)
-    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)    
+    burst_time_in        = models.IntegerField(verbose_name=u"Burst Time in", blank=True, null=True)
     burst_time_out       = models.IntegerField(verbose_name=u"Burst Time out", blank=True, null=True)
-    #от 0 до 8 
-    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, null=True)
-          
+    #от 1 до 8
+    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
+
     def __unicode__(self):
         return u"%s %s/%s %s/%s %s/%s" % (self.time, self.max_limit_in, self.max_limit_out, self.min_limit_in, self.min_limit_out, self.burst_limit_in, self.burst_limit_out)
 
     class Admin:
         pass
-    
+
     class Meta:
          verbose_name = u"настройка скорости"
          verbose_name_plural = u"Настройки скорости"
-                     
+
 class PrepaidTraffic(models.Model):
-    traffic_class    = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
+    traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику")
+    traffic_class    = models.ForeignKey(to=TrafficClass, core=True, verbose_name=u'Класс трафика')
     size             = models.FloatField(verbose_name=u'Размер в мегабайтах')
 
     def __unicode__(self):
@@ -297,31 +298,15 @@ class PrepaidTraffic(models.Model):
         verbose_name = u"Предоплаченный трафик"
         verbose_name_plural = u"Предоплаченный трафик"
 
-class TrafficTransmitNodes(models.Model):
-    traffic_class     = models.ForeignKey(to=TrafficClass, verbose_name=u'Класс трафика')
-    time_period       = models.ManyToManyField(to=TimePeriod, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
-    cost              = models.FloatField(default=0, verbose_name=u'Цена трафика')
-    edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
-    edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-
-    def __unicode__(self):
-        return u"%s %s" % (self.traffic_class, self.cost)
-
-    class Admin:
-        ordering = ['traffic_class']
-        list_display = ('traffic_class','cost','edge_start','edge_end')
-
-
-    class Meta:
-        verbose_name = u"цена за направление"
-        verbose_name_plural = u"Цены за направления трафика"
 
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
-    traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, filter_interface=models.HORIZONTAL, verbose_name=u'Цены за трафик')
-    prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
+    #traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, filter_interface=models.HORIZONTAL, verbose_name=u'Цены за трафик')
+    #prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
-    
+    cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM')
+
+
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -334,9 +319,30 @@ class TrafficTransmitService(models.Model):
         verbose_name = u"Доступ с учётом трафика"
         verbose_name_plural = u"Доступ с учётом трафика"
 
+class TrafficTransmitNodes(models.Model):
+    traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, edit_inline=True, verbose_name=u"Услуга доступа по трафику")
+    traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Классы трафика')
+    time_nodes       = models.ManyToManyField(to=TimePeriodNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
+    cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
+    edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
+    edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
+
+    def __unicode__(self):
+        return u"%s" % (self.cost)
+
+    class Admin:
+        ordering = ['traffic_class']
+        list_display = ('cost','edge_start','edge_end')
+
+
+    class Meta:
+        verbose_name = u"цена за направление"
+        verbose_name_plural = u"Цены за направления трафика"
+
+
 class AccountPrepays(models.Model):
     """
-    При подключении пользователю тарифного плана, у которого есть предоплаченный трафик 
+    При подключении пользователю тарифного плана, у которого есть предоплаченный трафик
     в таблице должны создаваться записи
     В начале каждого расчётного периода пользователю должен заново начисляться трафик
     """
@@ -344,17 +350,17 @@ class AccountPrepays(models.Model):
     prepaid_traffic = models.ForeignKey(to=PrepaidTraffic)
     size = models.FloatField(blank=True, default=0.000)
     datetime = models.DateTimeField(auto_now_add=True)
-    
+
     def __unicode__(self):
         return u"%s-%s" % (self.account, self.prepaid_traffic)
-    
+
     class Admin:
         pass
-    
+
     class Meta:
         verbose_name = u"Предоплаченый трафик пользователя"
         verbose_name_plural = u"Предоплаченный трафик пользователя"
-                
+
 
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
@@ -379,7 +385,6 @@ class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     description       = models.TextField(verbose_name=u'Описание тарифного плана')
     access_parameters       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
-    statistic_mode    = models.CharField(choices=STATISTIC_MODE, max_length=255, default='NETFLOW',verbose_name=u'Главный режим сбора статистики', help_text=u"При сборе статистики через NetFlow нельзя применять тарифные планы с оплатой за время. Для Radius Accounting будет недоступна опция учёта трафика по направлениям")
     traffic_limit     = models.ManyToManyField(to=TrafficLimit, filter_interface=models.HORIZONTAL,verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
     periodical_services = models.ManyToManyField(to=PeriodicalService, filter_interface=models.HORIZONTAL, verbose_name=u'периодические услуги', blank=True, null=True)
     onetime_services  = models.ManyToManyField(to=OneTimeService, filter_interface=models.HORIZONTAL,verbose_name=u'Разовые услуги', blank=True, null=True)
@@ -407,7 +412,7 @@ class Tariff(models.Model):
 class Account(models.Model):
     """
     Если установлена галочка condition_static, при привязке пользователя к тарифному плану
-    ему автоматически назначится IP адрес из пула адресов, указанного в тарифном плане 
+    ему автоматически назначится IP адрес из пула адресов, указанного в тарифном плане
     """
     user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
@@ -537,9 +542,9 @@ class RawNetFlowStream(models.Model):
     packets = models.IntegerField()
     octets = models.IntegerField()
     #sysuptime start flow aggregate
-    start = models.IntegerField()
+    start = models.PositiveIntegerField()
     #sysuptime flow send
-    finish = models.IntegerField()
+    finish = models.PositiveIntegerField()
     src_port = models.IntegerField()
     dst_port = models.IntegerField()
     tcp_flags = models.IntegerField()
@@ -549,7 +554,7 @@ class RawNetFlowStream(models.Model):
     dst_as =  models.IntegerField()
     src_netmask_length = models.IntegerField()
     dst_netmask_length = models.IntegerField()
-    fetched=models.BooleanField(blank=True, null=True, default=False)
+    fetched=models.BooleanField(blank=True, default=False)
 
     class Admin:
           ordering = ['-date_start']

@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os
-from utilites import DAE, settlement_period_info, in_period, create_speed_string
+from utilites import DAE, settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
 
@@ -42,7 +42,7 @@ class check_access(Thread):
             result=[]
             i=0
             for speed in speeds:
-                if in_period(speed[0],speed[1],speed[2])==True:     
+                if in_period(speed[0],speed[1],speed[2])==True:
                     for s in speed[3:]:
                         if s==0:
                             res=0
@@ -54,9 +54,9 @@ class check_access(Thread):
                         i+=1
             if speeds==[]:
                 result=defaults
-            
+
             return create_speed_string(result, nas_type, coa=True)
-            
+
         def check_acces(self):
             """
             Раз в 30 секунд происходит выборка всех пользователей
@@ -111,7 +111,7 @@ class check_access(Thread):
 
                        if self.check_period(time_periods_by_tarif_id(self.cur, tarif_id))==False or disabled_by_limit==True:
                               result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password)
-                              
+
                        else:
 
                            """
@@ -120,7 +120,7 @@ class check_access(Thread):
                            speed=self.create_speed(tarif_id, nas_type)
                            #print speed, speed_string
                            if speed_string!=speed:
-                               
+
                                coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
                                print "coa_result=", coa_result
                                if coa_result==True:
@@ -486,213 +486,213 @@ class TimeAccessBill(Thread):
 
             time.sleep(30)
 
-class TraficAccessBill(Thread):
-    """
-    Услуга применима только для VPN доступа, когда точно известна дата авторизации
-    и дата отключения пользователя
-    """
-    def __init__(self):
-        Thread.__init__(self)
-
-    def run(self):
-        """
-        По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
-        """
-        connection = pool.connection()
-        cur = connection.cursor()
-        while True:
-            now=datetime.datetime.now()
-            cur.execute("""
-            SELECT rs.account_id, rs.sessionid, rs.bytes_in,
-            rs.bytes_out, rs.interrim_update::timestamp without time zone,
-            tacc.id, tacc.name, tarif.id, rs.nas_id
-            FROM radius_session as rs
-            JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
-            JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
-            JOIN billservice_traffictransmitservice as tacc ON tacc.id=tarif.traffic_transmit_service_id
-            WHERE rs.checkouted_by_trafic=False and rs.date_start is NUll AND acc_t.datetime<now() ORDER BY rs.interrim_update ASC;
-            """)
-            rows=cur.fetchall()
-
-            for row in rows:
-                account_id=row[0]
-                session_id = row[1]
-                session_bytes_in = row[2]
-                session_bytes_out = row[3]
-                interrim_update = row[4]
-                ps_id=row[5]
-                ps_name = row[6]
-                tarif_id = row[7]
-                nas_id = row[8]
-
-                cur.execute(
-                """
-                SELECT traffic_transmit_service_id, settlement_period_id
-                FROM billservice_tariff
-                WHERE id=%s;
-                """ % tarif_id
-                )
-                res=cur.fetchone()
-                trafic_transmit_service_id=res[0]
-                settlement_period_id=res[1]
-
-                cur.execute(
-                """
-                SELECT statistic_mode FROM billservice_tariff WHERE id=%s;
-                """ % tarif_id
-                )
-                tarif_mode=cur.fetchone()[0]=='ACCOUNTING'
-                #1. Ищем последнюю запись по которой была произведена оплата
-                #2. Получаем данные из услуги "Доступ по трафику" из текущего ТП пользователя
-                #2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
-                #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
-                # рассчитав соотв снятия.
-                #2.2 Если снятия не было-снять столько, на сколько насидел пользователь с начала сессии
-                cur.execute("""
-                SELECT bytes_in, bytes_out FROM radius_session WHERE sessionid='%s' AND checkouted_by_trafic=True
-                ORDER BY interrim_update DESC LIMIT 1
-                """ % session_id)
-                a=cur.fetchone()
-                try:
-                    old_bytes_in=a[0]
-                    old_bytes_out=a[1]
-                    cur.execute(
-                    """
-                    UPDATE billservice_summarytrafic
-                    SET incomming_bytes='%s', outgoing_bytes='%s', date_end='%s'
-                    WHERE account_id='%s' and radius_session='%s';
-                    """ % (total_bytes_in, total_bytes_out, now, account_id, session_id)
-                    )
-                except:
-                    old_bytes_in=0
-                    old_bytes_out=0
-                    cur.execute("""INSERT INTO billservice_summarytrafic(
-                                account_id, tarif_id, nas_id,
-                                radius_session, date_start)
-                                VALUES ('%s', '%s', (SELECT id FROM nas_nas WHERE ipaddress='%s'), '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
-                                )
-
-
-                total_bytes_in=session_bytes_in-old_bytes_in
-                total_bytes_out=session_bytes_out-old_bytes_out
-                in_octets_summ=0
-                out_octets_summ=0
-                #Производим вычисления для дифференциализации оплаты трафика
-                #Если в тарифном плане указан расчётный период
-                if settlement_period_id:
-                    cur.execute(
-                                """
-                                SELECT time_start::timestamp without time zone, length_in, autostart FROM billservice_settlementperiod WHERE id=%s;
-                                """ % settlement_period_id
-                                )
-
-                    settlement_period=cur.fetchone()
-                    if settlement_period is not None:
-                        sp_time_start=settlement_period[0]
-                        sp_length=settlement_period[1]
-
-                        if settlement_period[2]==False:
-                            # Если у расчётного периода стоит параметр Автостарт-за началшо расчётногопериода принимаем
-                            # дату привязки тарифного плана пользователю
-                            cur.execute("""
-                                SELECT a.datetime::timestamp without time zone
-                                FROM billservice_accounttarif as a
-                                LEFT JOIN billservice_account as b ON b.id=a.account_id
-                                WHERE datetime<'%s' WHERE a.account_id=%s
-                                """ % (stream_date, account_id))
-                            sp_time_start=cur.fetchone()[0]
-
-                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=interrim_update)
-                        # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-                        cur.execute(
-                        """
-                        SELECT sum(incomming_bytes), sum(outgoing_bytes)
-                        FROM billservice_summarytrafic
-                        WHERE account_id=%s and tarif_id=%s and date_start between '%s' and '%s'
-                        """ % (account_id, tarif_id, settlement_period_start, settlement_period_end)
-                        )
-                        in_octets_summ, out_octets_summ=cur.fetchone()
-
-                # Получаем список временных периодов и их стоимость у периодической услуги
-                cur.execute(
-                """
-                SELECT tc.weight, tn.cost, tn.edge_start, tn.edge_end, tnp.timeperiod_id, tc.id
-                FROM billservice_traffictransmitnodes as tn
-                JOIN nas_trafficclass as tc ON tc.id=tn.traffic_class_id
-                JOIN billservice_traffictransmitnodes_time_period as tnp ON tnp.traffictransmitnodes_id=tn.id
-                JOIN billservice_traffictransmitservice_traffic_nodes as tts ON tts.traffictransmitnodes_id=tn.id
-                WHERE tts.traffictransmitservice_id=%s and (tc.weight=100 or tc.weight=200)
-                """ % ps_id
-                )
-                periods=cur.fetchall()
-                for period in periods:
-                    tc_weight=period[0]
-                    traffic_cost=period[1]
-                    trafic_edge_start=period[2]
-                    trafic_edge_end=period[3]
-                    period_id=period[4]
-                    class_id=period[5]
-
-                    #получаем данные из периода чтобы проверить попала в него сессия или нет
-                    cur.execute(
-                    """
-                    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
-                    FROM billservice_timeperiodnode as tpn
-                    JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
-                    WHERE tptpn.timeperiod_id=%s
-                    """ % period_id
-                    )
-                    period_nodes_data=cur.fetchall()
-                    for period_node in period_nodes_data:
-                        period_id=period_node[0]
-                        period_name = period_node[1]
-                        period_start = period_node[2]
-                        period_length = period_node[3]
-                        repeat_after = period_node[4]
-                        if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
-                            #in_octets_summ, out_octets_summ
-                            if (tc_weight==100 and tarif_mode) and ((in_octets_summ>=trafic_edge_start and in_octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and in_octets_summ<=trafic_edge_start) or (in_octets_summ>=trafic_edge_start and trafic_edge_start==0)):
-                                #Входяший
-                                #Относительно клиента
-                                summ=(float(total_bytes_in)/(1024*1024))*traffic_cost
-                                if summ>0 and tarif_mode:
-                                    transaction(
-                                    cursor=cur,
-                                    account=account_id,
-                                    approved=True,
-                                    tarif=tarif_id,
-                                    summ=summ,
-                                    description="Снятие денег за входящий трафик по RADIUS сессии %s" % session_id,
-                                    )
-                                    print 'bytes_in checkout'
-                            elif (tc_weight==200 and tarif_mode) and ((out_octets_summ>=trafic_edge_start and out_octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and out_octets_summ<=trafic_edge_start) or (out_octets_summ>=trafic_edge_start and trafic_edge_start==0)):
-                                #Исходящий Относительно клиента
-                                summ=(float(total_bytes_out)/(1024*1024))*traffic_cost
-                                if summ>0:
-                                    transaction(
-                                        cursor=cur,
-                                        account=account_id,
-                                        approved=True,
-                                        tarif=tarif_id,
-                                        summ=summ,
-                                        description="Снятие денег за исходящий трафик по RADIUS сессии %s" % session_id,
-                                        )
-                                    print 'bytes_out checkout'
-
-
-
-                query="""
-                UPDATE radius_session
-                SET checkouted_by_trafic=True
-                WHERE sessionid='%s'
-                AND account_id='%s'
-                AND interrim_update='%s'
-                """ % (session_id, account_id, interrim_update)
-                cur.execute(query)
-
-
-                connection.commit()
-            time.sleep(30)
+##class TraficAccessBill(Thread):
+##    """
+##    Услуга применима только для VPN доступа, когда точно известна дата авторизации
+##    и дата отключения пользователя
+##    """
+##    def __init__(self):
+##        Thread.__init__(self)
+##
+##    def run(self):
+##        """
+##        По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
+##        """
+##        connection = pool.connection()
+##        cur = connection.cursor()
+##        while True:
+##            now=datetime.datetime.now()
+##            cur.execute("""
+##            SELECT rs.account_id, rs.sessionid, rs.bytes_in,
+##            rs.bytes_out, rs.interrim_update::timestamp without time zone,
+##            tacc.id, tacc.name, tarif.id, rs.nas_id
+##            FROM radius_session as rs
+##            JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
+##            JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
+##            JOIN billservice_traffictransmitservice as tacc ON tacc.id=tarif.traffic_transmit_service_id
+##            WHERE rs.checkouted_by_trafic=False and rs.date_start is NUll AND acc_t.datetime<now() ORDER BY rs.interrim_update ASC;
+##            """)
+##            rows=cur.fetchall()
+##
+##            for row in rows:
+##                account_id=row[0]
+##                session_id = row[1]
+##                session_bytes_in = row[2]
+##                session_bytes_out = row[3]
+##                interrim_update = row[4]
+##                ps_id=row[5]
+##                ps_name = row[6]
+##                tarif_id = row[7]
+##                nas_id = row[8]
+##
+##                cur.execute(
+##                """
+##                SELECT traffic_transmit_service_id, settlement_period_id
+##                FROM billservice_tariff
+##                WHERE id=%s;
+##                """ % tarif_id
+##                )
+##                res=cur.fetchone()
+##                trafic_transmit_service_id=res[0]
+##                settlement_period_id=res[1]
+##
+##                cur.execute(
+##                """
+##                SELECT statistic_mode FROM billservice_tariff WHERE id=%s;
+##                """ % tarif_id
+##                )
+##                tarif_mode=cur.fetchone()[0]=='ACCOUNTING'
+##                #1. Ищем последнюю запись по которой была произведена оплата
+##                #2. Получаем данные из услуги "Доступ по трафику" из текущего ТП пользователя
+##                #2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
+##                #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
+##                # рассчитав соотв снятия.
+##                #2.2 Если снятия не было-снять столько, на сколько насидел пользователь с начала сессии
+##                cur.execute("""
+##                SELECT bytes_in, bytes_out FROM radius_session WHERE sessionid='%s' AND checkouted_by_trafic=True
+##                ORDER BY interrim_update DESC LIMIT 1
+##                """ % session_id)
+##                a=cur.fetchone()
+##                try:
+##                    old_bytes_in=a[0]
+##                    old_bytes_out=a[1]
+##                    cur.execute(
+##                    """
+##                    UPDATE billservice_summarytrafic
+##                    SET incomming_bytes='%s', outgoing_bytes='%s', date_end='%s'
+##                    WHERE account_id='%s' and radius_session='%s';
+##                    """ % (total_bytes_in, total_bytes_out, now, account_id, session_id)
+##                    )
+##                except:
+##                    old_bytes_in=0
+##                    old_bytes_out=0
+##                    cur.execute("""INSERT INTO billservice_summarytrafic(
+##                                account_id, tarif_id, nas_id,
+##                                radius_session, date_start)
+##                                VALUES ('%s', '%s', (SELECT id FROM nas_nas WHERE ipaddress='%s'), '%s', '%s')""" % (account_id, tarif_id, nas_id,session_id,now)
+##                                )
+##
+##
+##                total_bytes_in=session_bytes_in-old_bytes_in
+##                total_bytes_out=session_bytes_out-old_bytes_out
+##                in_octets_summ=0
+##                out_octets_summ=0
+##                #Производим вычисления для дифференциализации оплаты трафика
+##                #Если в тарифном плане указан расчётный период
+##                if settlement_period_id:
+##                    cur.execute(
+##                                """
+##                                SELECT time_start::timestamp without time zone, length_in, autostart FROM billservice_settlementperiod WHERE id=%s;
+##                                """ % settlement_period_id
+##                                )
+##
+##                    settlement_period=cur.fetchone()
+##                    if settlement_period is not None:
+##                        sp_time_start=settlement_period[0]
+##                        sp_length=settlement_period[1]
+##
+##                        if settlement_period[2]==False:
+##                            # Если у расчётного периода стоит параметр Автостарт-за началшо расчётногопериода принимаем
+##                            # дату привязки тарифного плана пользователю
+##                            cur.execute("""
+##                                SELECT a.datetime::timestamp without time zone
+##                                FROM billservice_accounttarif as a
+##                                LEFT JOIN billservice_account as b ON b.id=a.account_id
+##                                WHERE datetime<'%s' WHERE a.account_id=%s
+##                                """ % (stream_date, account_id))
+##                            sp_time_start=cur.fetchone()[0]
+##
+##                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=interrim_update)
+##                        # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
+##                        cur.execute(
+##                        """
+##                        SELECT sum(incomming_bytes), sum(outgoing_bytes)
+##                        FROM billservice_summarytrafic
+##                        WHERE account_id=%s and tarif_id=%s and date_start between '%s' and '%s'
+##                        """ % (account_id, tarif_id, settlement_period_start, settlement_period_end)
+##                        )
+##                        in_octets_summ, out_octets_summ=cur.fetchone()
+##
+##                # Получаем список временных периодов и их стоимость у периодической услуги
+##                cur.execute(
+##                """
+##                SELECT tc.weight, tn.cost, tn.edge_start, tn.edge_end, tnp.timeperiod_id, tc.id
+##                FROM billservice_traffictransmitnodes as tn
+##                JOIN nas_trafficclass as tc ON tc.id=tn.traffic_class_id
+##                JOIN billservice_traffictransmitnodes_time_period as tnp ON tnp.traffictransmitnodes_id=tn.id
+##                JOIN billservice_traffictransmitservice_traffic_nodes as tts ON tts.traffictransmitnodes_id=tn.id
+##                WHERE tts.traffictransmitservice_id=%s and (tc.weight=100 or tc.weight=200)
+##                """ % ps_id
+##                )
+##                periods=cur.fetchall()
+##                for period in periods:
+##                    tc_weight=period[0]
+##                    traffic_cost=period[1]
+##                    trafic_edge_start=period[2]
+##                    trafic_edge_end=period[3]
+##                    period_id=period[4]
+##                    class_id=period[5]
+##
+##                    #получаем данные из периода чтобы проверить попала в него сессия или нет
+##                    cur.execute(
+##                    """
+##                    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+##                    FROM billservice_timeperiodnode as tpn
+##                    JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
+##                    WHERE tptpn.timeperiod_id=%s
+##                    """ % period_id
+##                    )
+##                    period_nodes_data=cur.fetchall()
+##                    for period_node in period_nodes_data:
+##                        period_id=period_node[0]
+##                        period_name = period_node[1]
+##                        period_start = period_node[2]
+##                        period_length = period_node[3]
+##                        repeat_after = period_node[4]
+##                        if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
+##                            #in_octets_summ, out_octets_summ
+##                            if (tc_weight==100 and tarif_mode) and ((in_octets_summ>=trafic_edge_start and in_octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and in_octets_summ<=trafic_edge_start) or (in_octets_summ>=trafic_edge_start and trafic_edge_start==0)):
+##                                #Входяший
+##                                #Относительно клиента
+##                                summ=(float(total_bytes_in)/(1024*1024))*traffic_cost
+##                                if summ>0 and tarif_mode:
+##                                    transaction(
+##                                    cursor=cur,
+##                                    account=account_id,
+##                                    approved=True,
+##                                    tarif=tarif_id,
+##                                    summ=summ,
+##                                    description="Снятие денег за входящий трафик по RADIUS сессии %s" % session_id,
+##                                    )
+##                                    print 'bytes_in checkout'
+##                            elif (tc_weight==200 and tarif_mode) and ((out_octets_summ>=trafic_edge_start and out_octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and out_octets_summ<=trafic_edge_start) or (out_octets_summ>=trafic_edge_start and trafic_edge_start==0)):
+##                                #Исходящий Относительно клиента
+##                                summ=(float(total_bytes_out)/(1024*1024))*traffic_cost
+##                                if summ>0:
+##                                    transaction(
+##                                        cursor=cur,
+##                                        account=account_id,
+##                                        approved=True,
+##                                        tarif=tarif_id,
+##                                        summ=summ,
+##                                        description="Снятие денег за исходящий трафик по RADIUS сессии %s" % session_id,
+##                                        )
+##                                    print 'bytes_out checkout'
+##
+##
+##
+##                query="""
+##                UPDATE radius_session
+##                SET checkouted_by_trafic=True
+##                WHERE sessionid='%s'
+##                AND account_id='%s'
+##                AND interrim_update='%s'
+##                """ % (session_id, account_id, interrim_update)
+##                cur.execute(query)
+##
+##
+##                connection.commit()
+##            time.sleep(30)
 
 class NetFlowAggregate(Thread):
     """
@@ -716,6 +716,12 @@ class NetFlowAggregate(Thread):
     def __init__(self):
         Thread.__init__(self)
 
+    def check_period(self, rows):
+        for row in rows:
+            if in_period(row[0],row[1],row[2])==True:
+                return True
+        return False
+
     def run(self):
         connection = pool.connection()
         cur = connection.cursor()
@@ -724,9 +730,11 @@ class NetFlowAggregate(Thread):
             """
             SELECT nf.id, ba.id,
             (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<nf.date_start and bat.account_id=ba.id ORDER BY datetime DESC LIMIT 1) as tarif_id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
-            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id, tariff.traffic_transmit_service_id
             FROM billservice_rawnetflowstream as nf
             JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
+            JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
             WHERE nf.fetched=False;
             """
             )
@@ -738,20 +746,34 @@ class NetFlowAggregate(Thread):
             """
 
             for stream in raw_streams:
-                #Смотрим какой тип доступа в тарифном плане. Если IPN-ставим галочку ""
-                cur.execute(
-                """
-                SELECT statistic_mode FROM billservice_tariff WHERE id=%s;
-                """ % stream[2]
-                )
-                tarif_mode=cur.fetchone()[0]=='NETFLOW'
+                tarif_id=stream[12]
+                traffic_transmit_service=stream[13]
+                if traffic_transmit_service:
+
+                #Выбираем временыне интервалы из услуги по трафику
+                    cur.execute(
+                    """
+                    SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+                    FROM billservice_timeperiodnode as tpn
+                    JOIN billservice_traffictransmitnodes_time_nodes as ttntp ON ttntp.timeperiodnode_id=tpn.id
+		            JOIN billservice_traffictransmitnodes as ttns ON ttns.id=ttntp.traffictransmitnodes_id
+                    WHERE ttns.traffic_transmit_service_id=%s
+                    """ % traffic_transmit_service
+                    )
+
+                    periods=cur.fetchall()
+                    #Нужно ли списывать деньги за этот трафик
+                    tarif_mode=self.check_period(periods)
+
+
+
                 cur.execute(
                 """
                 SELECT id
                 FROM billservice_netflowstream
                 WHERE nas_id='%s' and account_id='%s' and
                 tarif_id='%s' and
-                '%s' - date_start < interval '00:01:00' and
+                '%s' - date_start < interval '00:01:40' and
                 src_addr='%s' and traffic_class_id='%s' and
                 dst_addr='%s' and
                 src_port='%s' and
@@ -788,6 +810,7 @@ class NetFlowAggregate(Thread):
             connection.commit()
             time.sleep(10)
 
+
 class NetFlowBill(Thread):
     """
     WHILE TRUE
@@ -798,6 +821,39 @@ class NetFlowBill(Thread):
 
     def __init__(self):
         Thread.__init__(self)
+
+    def get_actual_cost(self, cur, trafic_transmit_service_id, traffic_class_id, octets_summ, stream_date):
+
+        cur.execute(
+        """
+        SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+        FROM billservice_traffictransmitnodes as ttsn
+        JOIN billservice_traffictransmitnodes_traffic_class as tcn ON tcn.traffictransmitnodes_id=ttsn.id
+        JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
+        JOIN billservice_timeperiodnode AS tpn on tpn.id=timeperiodnode_id
+        WHERE ((ttsn.edge_start>=%s and ttsn.edge_end<=%s) or (ttsn.edge_start>=%s and ttsn.edge_end=0 ) ) and ttsn.traffic_transmit_service_id=%s and tcn.trafficclass_id=%s;
+        """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id)
+        )
+
+        trafic_transmit_nodes=cur.fetchall()
+        cost=0
+        time_from_start=0
+        for node in trafic_transmit_nodes:
+            trafic_transmit_node_id=node[0]
+            trafic_cost=node[1]
+            trafic_edge_start=node[2]
+            trafic_edge_end=node[3]
+
+            period_start=node[4]
+            period_length=node[5]
+            repeat_after=node[6]
+            tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+            if result:
+                if from_start<time_from_start or time_from_start==0:
+                    time_from_start=from_start
+                    cost=trafic_cost
+        return cost
+
 
     def run(self):
         connection = pool.connection()
@@ -831,6 +887,7 @@ class NetFlowBill(Thread):
                 res=cur.fetchone()
                 trafic_transmit_service_id=res[0]
                 settlement_period_id=res[1]
+
                 if trafic_transmit_service_id:
                     #Если в тарифном плане указан расчётный период
                     if settlement_period_id:
@@ -839,14 +896,13 @@ class NetFlowBill(Thread):
                         SELECT time_start::timestamp without time zone, length_in, autostart FROM billservice_settlementperiod WHERE id=%s;
                         """ % settlement_period_id
                         )
-                        octets_summ=0
                         settlement_period=cur.fetchone()
                         if settlement_period is not None:
                             sp_time_start=settlement_period[0]
                             sp_length=settlement_period[1]
 
                             if settlement_period[2]==False:
-                                # Если у расчётного периода стоит параметр Автостарт-за началшо расчётногопериода принимаем
+                                # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
                                 # дату привязки тарифного плана пользователю
                                 cur.execute("""
                                     SELECT a.datetime::timestamp without time zone
@@ -858,65 +914,34 @@ class NetFlowBill(Thread):
 
                             settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=stream_date)
                             # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-
-                    cur.execute(
-                    """
-                    SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end
-                    FROM billservice_traffictransmitnodes as ttsn
-                    JOIN billservice_traffictransmitservice_traffic_nodes AS ttstn ON ttstn.traffictransmitnodes_id=ttsn.id
-                    WHERE ttstn.traffictransmitservice_id=%s and ttsn.traffic_class_id=%s ;
-                    """ % (trafic_transmit_service_id, traffic_class_id)
-                    )
-                    trafic_transmit_nodes=cur.fetchall()
-                    for trafic_transmit_node in trafic_transmit_nodes:
-                        trafic_transmit_node_id=trafic_transmit_node[0]
-                        trafic_cost=trafic_transmit_node[1]
-                        trafic_edge_start=trafic_transmit_node[2]
-                        trafic_edge_end=trafic_transmit_node[3]
-                        if settlement_period_id:
-                            cur.execute(
+                        cur.execute(
                             """
                             SELECT sum(octets)
                             FROM billservice_netflowstream
-                            WHERE traffic_class_id=%s and traffic_transmit_node_id=%s and tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
-                            """ % (traffic_class_id, trafic_transmit_node_id, tarif_id, account_id, settlement_period_start, settlement_period_end)
+                            WHERE traffic_class_id=%s and tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
+                            """ % (traffic_class_id, tarif_id, account_id, settlement_period_start, settlement_period_end)
                             )
-                            octets_summ=cur.fetchone()[0]
-                        else:
-                            octets_summ=0
+                        octets_summ=cur.fetchone()[0]
+                    else:
+                        octets_summ=0
 
-                        #Выбираем временные промежутки для каждой ноды
-                        cur.execute(
-                        """
-                        SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
-                        FROM billservice_timeperiodnode as tpn
-                        JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
-                        JOIN billservice_traffictransmitnodes_time_period as ttntp ON ttntp.timeperiod_id=tpnds.timeperiod_id
-                        WHERE ttntp.traffictransmitnodes_id=%s
-                        """ % trafic_transmit_node[0]
-                        )
-                        timeperiods = cur.fetchall()
-                        for timeperiod in timeperiods:
-                            period_start=timeperiod[2]
-                            period_length=timeperiod[3]
-                            repeat_after=timeperiod[4]
-                            if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date):
-                                    if (octets_summ>=trafic_edge_start and octets_summ<=trafic_edge_end) or (trafic_edge_start==0 and trafic_edge_end==0) or (trafic_edge_start==0 and octets_summ<=trafic_edge_start) or (octets_summ>=trafic_edge_start and trafic_edge_start==0):
-                                        """
-                                        Использован т.н. дифференциальный подход к начислению денег за трафик
-                                        Тарифный план позволяет указать по какой цене считать трафик
-                                        в зависимости от того сколько этого трафика уже накачал пользователь за расчётный период
-                                        """
-                                        summ=(trafic_cost*octets)/(1024*1024)
-                                        #Производим списывание денег
-                                        transaction(
-                                        cursor=cur,
-                                        account=account_id,
-                                        approved=True,
-                                        tarif=tarif_id,
-                                        summ=summ,
-                                        description="Снятие денег за трафик у пользователя %s" % username,
-                                        )
+                trafic_cost=self.get_actual_cost(cur,trafic_transmit_service_id, traffic_class_id, octets_summ, stream_date)
+                """
+                Использован т.н. дифференциальный подход к начислению денег за трафик
+                Тарифный план позволяет указать по какой цене считать трафик
+                в зависимости от того сколько этого трафика уже накачал пользователь за расчётный период
+                """
+                summ=(trafic_cost*octets)/(1024*1024)
+                if summ>0:
+                    #Производим списывание денег
+                    transaction(
+                    cursor=cur,
+                    account=account_id,
+                    approved=True,
+                    tarif=tarif_id,
+                    summ=summ,
+                    description=u"Снятие денег за трафик у пользователя %s" % username,
+                    )
 
                 cur.execute(
                 """
@@ -946,7 +971,7 @@ class limit_checker(Thread):
             """
             cur.execute(
             """
-            SELECT tarif.id, tarif.statistic_mode, account.id, acctt.datetime, sp.time_start, sp.length, sp.length_in, sp.autostart
+            SELECT tarif.id, account.id, acctt.datetime, sp.time_start, sp.length, sp.length_in, sp.autostart
             FROM billservice_tariff as tarif
             JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id and acctt.datetime=(SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
             JOIN billservice_account as account ON account.id=acctt.account_id
@@ -959,13 +984,12 @@ class limit_checker(Thread):
             oldid=-1
             for account_tarif in account_tarifs:
                 tarif_id=account_tarif[0]
-                statistic_mode=account_tarif[1]
-                account_id=account_tarif[2]
-                tarif_start=account_tarif[3]
-                tarif_sp_start=account_tarif[4]
-                tarif_sp_length=account_tarif[5]
-                tarif_sp_length_in=account_tarif[6]
-                tarif_autostart_sp=account_tarif[7]
+                account_id=account_tarif[1]
+                tarif_start=account_tarif[2]
+                tarif_sp_start=account_tarif[3]
+                tarif_sp_length=account_tarif[4]
+                tarif_sp_length_in=account_tarif[5]
+                tarif_autostart_sp=account_tarif[6]
 
                 if oldid==account_id and block:
                     """
@@ -1021,78 +1045,33 @@ class limit_checker(Thread):
                     settlement_period_start=datetime.datetime.now()-datetime.timedelta(seconds=delta)
                     settlement_period_end=datetime.datetime.now()
                 block=False
-                if statistic_mode=="NETFLOW":
-                    """
-                    Так как методы хранения нетфлоу и радиус статистики отличаются,
-                    то делаем проверку и выбираем данные из нужной в каждом случае таблицы
-                    """
-                    cur.execute(
-                    """
-                    SELECT
-                    (SELECT sum(octets) as s FROM billservice_netflowstream WHERE traffic_class_id=tcl.id and account_id=%s and date_start>'%s' and date_start<'%s') as size
-                    FROM billservice_trafficlimit_traffic_class as tc
-                    JOIN nas_trafficclass as tcl ON tcl.id=tc.trafficclass_id
-                    JOIN nas_trafficclass_trafficnode as tctn ON tctn.trafficclass_id=tc.trafficclass_id
-                    JOIN nas_trafficnode as tn ON tn.id=tctn.trafficnode_id
-                    WHERE tc.trafficlimit_id=%s
-                    """ % (account_id, settlement_period_start, settlement_period_end, limit_id)
-                    )
-                    tsize=0
-                    sizes=cur.fetchall()
 
-                    for size in sizes:
-                        if size[0]!=None:
-                            tsize+=size[0]
+                """
+                Так как методы хранения нетфлоу и радиус статистики отличаются,
+                то делаем проверку и выбираем данные из нужной в каждом случае таблицы
+                """
+                cur.execute(
+                """
+                SELECT
+                (SELECT sum(octets) as s FROM billservice_netflowstream
+                WHERE traffic_class_id=tcl.id and account_id=%s and date_start>'%s' and date_start<'%s') as size
+                FROM billservice_trafficlimit_traffic_class as tc
+                JOIN nas_trafficclass as tcl ON tcl.id=tc.trafficclass_id
+                JOIN nas_trafficclass_trafficnode as tctn ON tctn.trafficclass_id=tc.trafficclass_id
+                JOIN nas_trafficnode as tn ON tn.id=tctn.trafficnode_id
+                WHERE tc.trafficlimit_id=%s
+                """ % (account_id, settlement_period_start, settlement_period_end, limit_id)
+                )
+                tsize=0
+                sizes=cur.fetchall()
 
-                    if tsize>limit_size*1024:
-                       block=True
-                else:
-                    """
-                    Выбираем все классы. Если веса классов=100 или 200 - проверяем вх и исх трафик
-                    """
-                    cur.execute(
-                    """
-                    SELECT tcl.id, tcl.weight
-                    FROM billservice_trafficlimit_traffic_class as tc
-                    JOIN nas_trafficclass as tcl ON tcl.id=tc.trafficclass_id
-                    WHERE tc.trafficlimit_id=%s
-                    """ % limit_id
-                    )
-                    classes=cur.fetchall()
-                    tsize=0
-                    for clas in classes:
-                        clas_id=clas[0]
-                        clas_weight=clas[1]
-                        if clas_weight==100:
-                            cur.execute(
-                            """
-                            SELECT sum(bytes_in) as size
-                            FROM radius_activesession
-                            WHERE account_id=%s and interrim_update>'%s' and interrim_update<'%s';
-                            """ % (account_id,settlement_period_start, settlement_period_end)
-                            )
+                for size in sizes:
+                    if size[0]!=None:
+                        tsize+=size[0]
 
-                            sizes=cur.fetchall()
-                            for size in sizes:
-                                if size[0]!=None:
-                                    tsize+=size[0]
+                if tsize>limit_size*1024:
+                   block=True
 
-                                #ставим флаг, что вышли за рамки
-
-                        if clas_weight==200:
-                            cur.execute(
-                            """
-                            SELECT sum(bytes_out) as size
-                            FROM radius_activesession
-                            WHERE account_id=%s and interrim_update>'%s' and interrim_update<'%s';
-                            """ % (account_id,settlement_period_start, settlement_period_end)
-                            )
-                            sizes=cur.fetchall()
-                            for size in sizes:
-                                if size[0]!=None:
-                                    tsize+=size[0]
-                    if tsize>limit_size*1024:
-                        block=True
 
                 oldid=account_id
                 #пишем в базу состояние пользователя
@@ -1132,30 +1111,30 @@ class service_dog(Thread):
               time.sleep(10)
 
 if __name__ == "__main__":
-    
+
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 #===============================================================================
     cas = check_access(timeout=10, dict=dict)
     cas.start()
- 
-    traficaccessbill = TraficAccessBill()
-    traficaccessbill.start()
-    
+
+#    traficaccessbill = TraficAccessBill()
+#    traficaccessbill.start()
+
     psb=periodical_service_bill()
     psb.start()
-    
+
     time_access_bill = TimeAccessBill()
     time_access_bill.start()
- 
+
     nfagg=NetFlowAggregate()
     nfagg.start()
- 
+
     nfbill=NetFlowBill()
     nfbill.start()
- 
+
     sess_dog=session_dog()
     sess_dog.start()
- 
+
     lmch=limit_checker()
     lmch.start()
 #===============================================================================
