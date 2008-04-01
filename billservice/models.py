@@ -180,32 +180,11 @@ class OneTimeService(models.Model):
         verbose_name_plural = u"Разовые платежи"
 
 
-class TimeAccessNode(models.Model):
-    """
-    Нода тарификации по времени
-    """
-    name              = models.CharField(max_length=255, verbose_name=u'Название промежутка')
-    time_period       = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток')
-    cost              = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке')
-
-    def __unicode__(self):
-        return u"%s" % self.name
-
-    class Admin:
-        ordering = ['name']
-        list_display = ('name','time_period','cost')
-
-
-    class Meta:
-        verbose_name = u"Период доступа"
-        verbose_name_plural = u"Периоды доступа"
-
 class TimeAccessService(models.Model):
     """
     Доступ с тарификацией по времени
     """
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
-    time_periods      = models.ManyToManyField(to=TimeAccessNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежутки')
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
 
@@ -220,6 +199,27 @@ class TimeAccessService(models.Model):
     class Meta:
         verbose_name = u"Доступ с учётом времени"
         verbose_name_plural = u"Доступ с учётом времени"
+
+class TimeAccessNode(models.Model):
+    """
+    Нода тарификации по времени
+    """
+    time_access_service = models.ForeignKey(to=TimeAccessService, edit_inline=True)
+    name                = models.CharField(max_length=255, verbose_name=u'Название промежутка', core=True)
+    time_period         = models.ForeignKey(to=TimePeriodNode, verbose_name=u'Промежуток')
+    cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', core=True)
+
+    def __unicode__(self):
+        return u"%s" % self.name
+
+    class Admin:
+        ordering = ['name']
+        list_display = ('name', 'time_period', 'cost')
+
+
+    class Meta:
+        verbose_name = u"Период доступа"
+        verbose_name_plural = u"Периоды доступа"
 
 class AccessParameters(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
@@ -326,7 +326,7 @@ class TrafficTransmitNodes(models.Model):
     cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
     edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
     edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-
+    
     def __unicode__(self):
         return u"%s" % (self.cost)
 
