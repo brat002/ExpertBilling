@@ -61,8 +61,10 @@ class Nas(models.Model):
 
     
 class TrafficNode(models.Model):
-    name = models.CharField(verbose_name=u'Название класса', max_length=255)
-    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
+    """
+    Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
+    """
+    name = models.CharField(verbose_name=u'Название направления', max_length=255)
     src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
     src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
@@ -84,9 +86,15 @@ class TrafficNode(models.Model):
         verbose_name_plural = u"Направления трафика"
         
 class TrafficClass(models.Model):
+    """
+    Классы трафика не должны пересекаться, ноды внутри одного класса не должны указывать сразу входящие 
+    и исходящие направления. Правило: Один класс на одно направление (вх/исх/межабонентский) 
+    """
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
     color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, null=True)
+    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
+    store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
     trafficnode=models.ManyToManyField(verbose_name=u'Направления трафика', to=TrafficNode)
 
     
