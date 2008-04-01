@@ -127,7 +127,7 @@ class check_access(Thread):
                                    self.cur.execute(
                                             """
                                             UPDATE radius_activesession
-                                            SET speed_string='%s', speed_changed=True
+                                            SET speed_string='%s'
                                             WHERE id=%s;
                                             """ % (speed, activesession_id)
                                             )
@@ -862,9 +862,10 @@ class NetFlowBill(Thread):
         while True:
             cur.execute(
             """
-            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.octets,bs_acc.username
+            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.octets, bs_acc.username, traficnode.direction
             FROM billservice_netflowstream as nf
             JOIN billservice_account as bs_acc ON bs_acc.id=nf.account_id
+            JOIN nas_trafficnode as traficnode ON traficnode.id=nf.traffic_transmit_node_id
             WHERE for_checkout=True and checkouted=False;
             """
             )
@@ -918,8 +919,8 @@ class NetFlowBill(Thread):
                             """
                             SELECT sum(octets)
                             FROM billservice_netflowstream
-                            WHERE traffic_class_id=%s and tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
-                            """ % (traffic_class_id, tarif_id, account_id, settlement_period_start, settlement_period_end)
+                            WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
+                            """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
                             )
                         octets_summ=cur.fetchone()[0]
                     else:

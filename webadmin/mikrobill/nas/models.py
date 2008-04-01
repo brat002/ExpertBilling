@@ -14,6 +14,12 @@ NAS_LIST=(
                 (u'common_ssh',u'common_ssh'),
                 )
 
+DIRECTIONS_LIST=(
+                (u'INPUT', u'Входящий на абонента'),
+                (u'OUTPUT',u'Исходящий от абонента'),
+                (u'BOTH',u'Межабонентский'),
+                )
+
 
 class Nas(models.Model):
     type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
@@ -56,7 +62,8 @@ class Nas(models.Model):
     
 class TrafficNode(models.Model):
     name = models.CharField(verbose_name=u'Название класса', max_length=255)
-    src_ip  = models.IPAddressField(verbose_name=u'сеть источника', default='0.0.0.0')
+    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
+    src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
     src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
     

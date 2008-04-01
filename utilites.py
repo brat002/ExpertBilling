@@ -41,19 +41,22 @@ def DAE(dict, code, nas_ip, username, access_type=None, nas_secret=None, nas_id=
         #    pass
         return doc.has_key("Error-Cause")==False
     else:
-        sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
-        print 'ssh connected'
+
         """
         #сначала проверить есть ли, если нет-создать, если есть-установить
         /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
         """
 
-        #query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
-        query="/interface print"
-        print query
-        #'/interface pptp-server remove [find user="%s"]' % username
-        res=sshclient.send_command(query)
-        sshclient.close_chanel()
+        query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
+        #query="/interface print"
+        try:
+            sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
+            print 'ssh connected'
+            #'/interface pptp-server remove [find user="%s"]' % username
+            res=sshclient.send_command(query)
+            sshclient.close_chanel()
+        except:
+            print 'SSH ERROR'
         print res[1].readlines()
         return res[1].readlines()==[]
 
@@ -259,24 +262,20 @@ def settlement_period_info(time_start, repeat_after, now=None):
             delta=tkc-tnc
             return (tnc, tkc, delta.seconds)
 
-def parse_command_string(template, params_dict):
-    """
-    format string can contains argument names prefixed by '%' - for example
-    '/user/add %name %password'
-    It will be changed to '/user/add name=value1 password=value2'
-    """
-    pattern = r'%([-_!@{}#\$&\*\(\)\.\?\w]+)'
-
-    def replace( match ):
-        param_name = match.group()[1:]
-        try:
-            param_value = params_dict[param_name]
-        except KeyError:
-            param_value = 'undefined'
-        return "%s=%s" % (param_name,  param_value)
+def command_string_parser(command_string='', command_dict={}):
     import re
-    rc = re.compile(pattern)
-    return rc.sub(replace, format_string)
+    if len(command_string) == 0 or len(command_dict) == 0:
+        return ''
+    pattern = re.compile('\$[_\w]+')
+    match = pattern.finditer(command_string)
+    if match is None:
+        return ''
+    params = [m.group()[1:] for m in match]
+    for p in params :
+        if p in command_dict.keys() :
+            s = re.compile( '\$%s' % p)
+            command_string = s.sub(command_dict[p],command_string)
+    return command_string
 
 class SSHClient(paramiko.SSHClient):
     def __init__(self, host, port, username, password):
@@ -293,6 +292,7 @@ class SSHClient(paramiko.SSHClient):
 
     def close_chanel(self):
         self.close()
+        
 def create_nulls(param):
     if param==None:
         return 0
