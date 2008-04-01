@@ -730,11 +730,12 @@ class NetFlowAggregate(Thread):
             """
             SELECT nf.id, ba.id,
             (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<nf.date_start and bat.account_id=ba.id ORDER BY datetime DESC LIMIT 1) as tarif_id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
-            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id, tariff.traffic_transmit_service_id
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id, tariff.traffic_transmit_service_id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
-            JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
-            JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
-            JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
+            LEFT JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
+            LEFT JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
+            LEFT JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
+            JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
             WHERE nf.fetched=False;
             """
             )
@@ -748,6 +749,11 @@ class NetFlowAggregate(Thread):
             for stream in raw_streams:
                 tarif_id=stream[12]
                 traffic_transmit_service=stream[13]
+                store=stream[14]
+                tarif_mode=False
+                account_id=stream[1]
+                tarif_id=stream[2]
+                
                 if traffic_transmit_service:
 
                 #Выбираем временыне интервалы из услуги по трафику
@@ -764,51 +770,59 @@ class NetFlowAggregate(Thread):
                     periods=cur.fetchall()
                     #Нужно ли списывать деньги за этот трафик
                     tarif_mode=self.check_period(periods)
-
-
-
-                cur.execute(
-                """
-                SELECT id
-                FROM billservice_netflowstream
-                WHERE nas_id='%s' and account_id='%s' and
-                tarif_id='%s' and
-                '%s' - date_start < interval '00:01:40' and
-                src_addr='%s' and traffic_class_id='%s' and
-                dst_addr='%s' and
-                src_port='%s' and
-                dst_port='%s' and
-                protocol='%s' and
-                checkouted=False and
-                for_checkout='%s' ORDER BY id DESC LIMIT 1
-                """ % (stream[3], stream[1], stream[2],stream[4], stream[5], stream[6], stream[7],stream[9], stream[10],stream[11], tarif_mode)
-                )
-                row_for_update=cur.fetchone()
-                if row_for_update:
-                    print 'updating'
+                    
+                if account_id is not None:
+                    # Если пользователь
                     cur.execute(
                     """
-                    UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
-                    """ % (stream[8], stream[0])
+                    SELECT id
+                    FROM billservice_netflowstream
+                    WHERE nas_id='%s' and account_id=%s and
+                    tarif_id=%s and
+                    '%s' - date_start < interval '00:01:40' and
+                    src_addr='%s' and traffic_class_id='%s' and
+                    dst_addr='%s' and
+                    src_port='%s' and
+                    dst_port='%s' and
+                    protocol='%s' and
+                    checkouted=False and
+                    for_checkout='%s' ORDER BY id DESC LIMIT 1
+                    """ % (stream[3], account_id, tarif_id, stream[4], stream[5], stream[6], stream[7],stream[9], stream[10],stream[11], tarif_mode)
+                    )
+                    row_for_update=cur.fetchone()
+                    if row_for_update:
+                        print 'updating'
+                        cur.execute(
+                        """
+                        UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
+                        """ % (stream[8], stream[0])
+                        )
+                    else:
+                        print 'inserting'
+                        cur.execute(
+                        """
+                        INSERT INTO billservice_netflowstream(
+                        nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id,
+                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                        VALUES ('%s', '%s', '%s', '%s', '%s', '%s',
+                        '%s', '%s', '%s', '%s', '%s', '%s', '%s');
+                        """ % (stream[3], account_id, tarif_id, stream[4],stream[5], stream[6], stream[7],stream[8],stream[9], stream[10], stream[11], False, tarif_mode)
+                        )
+
+
+                    cur.execute(
+                    """
+                    DELETE FROM billservice_rawnetflowstream WHERE id=%s
+                    """ % stream[0]
                     )
                 else:
-                    print 'inserting'
                     cur.execute(
                     """
-                    INSERT INTO billservice_netflowstream(
-                    nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id,
-                    dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                    VALUES ('%s', '%s', '%s', '%s', '%s', '%s',
-                    '%s', '%s', '%s', '%s', '%s', '%s', '%s');
-                    """ % (stream[3],stream[1], stream[2], stream[4],stream[5], stream[6], stream[7],stream[8],stream[9], stream[10], stream[11], False, tarif_mode)
-                    )
-                cur.execute(
-                """
-                DELETE FROM billservice_rawnetflowstream WHERE id=%s
-                """ % stream[0]
-                )
+                    UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
+                    """ % stream[0]
+                    )                    
             connection.commit()
-            time.sleep(10)
+            time.sleep(60)
 
 
 class NetFlowBill(Thread):
@@ -862,10 +876,10 @@ class NetFlowBill(Thread):
         while True:
             cur.execute(
             """
-            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.octets, bs_acc.username, traficnode.direction
+            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.octets, bs_acc.username, traficclass.direction
             FROM billservice_netflowstream as nf
             JOIN billservice_account as bs_acc ON bs_acc.id=nf.account_id
-            JOIN nas_trafficnode as traficnode ON traficnode.id=nf.traffic_transmit_node_id
+            JOIN nas_trafficclass as traficclass ON traficclass.id=nf.traffic_class_id
             WHERE for_checkout=True and checkouted=False;
             """
             )
@@ -878,16 +892,21 @@ class NetFlowBill(Thread):
                 traffic_class_id=row[4]
                 octets=row[5]
                 username=row[6]
+                nf_direction=row[7]
+                s=False
                 cur.execute(
                 """
-                SELECT traffic_transmit_service_id, settlement_period_id
-                FROM billservice_tariff
-                WHERE id=%s;
+                SELECT tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check
+                FROM billservice_tariff as tarif
+                JOIN billservice_traffictransmitservice as transmitservice ON transmitservice.id=tarif.traffic_transmit_service_id
+                WHERE tarif.id=%s;
                 """ % tarif_id
                 )
                 res=cur.fetchone()
                 trafic_transmit_service_id=res[0]
                 settlement_period_id=res[1]
+                cash_method=res[2]
+                period_check=res[3]
 
                 if trafic_transmit_service_id:
                     #Если в тарифном плане указан расчётный период
@@ -902,19 +921,19 @@ class NetFlowBill(Thread):
                             sp_time_start=settlement_period[0]
                             sp_length=settlement_period[1]
 
-                            if settlement_period[2]==False:
-                                # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
-                                # дату привязки тарифного плана пользователю
-                                cur.execute("""
-                                    SELECT a.datetime::timestamp without time zone
-                                    FROM billservice_accounttarif as a
-                                    LEFT JOIN billservice_account as b ON b.id=a.account_id
-                                    WHERE datetime<'%s' WHERE a.account_id=%s
-                                    """ % (stream_date, account_id))
-                                sp_time_start=cur.fetchone()[0]
+                        if settlement_period[2]==False:
+                            # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
+                            # дату привязки тарифного плана пользователю
+                            cur.execute("""
+                                SELECT a.datetime::timestamp without time zone
+                                FROM billservice_accounttarif as a
+                                LEFT JOIN billservice_account as b ON b.id=a.account_id
+                                WHERE datetime<'%s' WHERE a.account_id=%s
+                                """ % (stream_date, account_id))
+                            sp_time_start=cur.fetchone()[0]
 
-                            settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=stream_date)
-                            # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
+                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=stream_date)
+                        # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
                         cur.execute(
                             """
                             SELECT sum(octets)
@@ -932,8 +951,84 @@ class NetFlowBill(Thread):
                 Тарифный план позволяет указать по какой цене считать трафик
                 в зависимости от того сколько этого трафика уже накачал пользователь за расчётный период
                 """
+                print 1
+                if cash_method=="MAX":
+                    print 2
+                    if period_check=="SP_START" and settlement_period_id:
+                        print 3
+                        """
+                        Если в тарифном плане указан расчётный период.
+                        Находим направление по которому больше всего скачал этот пользователь с начала расчтного периода
+                        если совпало-снимаем деньги.
+                        """
+                        cur.execute(
+                            """
+                            SELECT sum(octets)
+                            FROM billservice_netflowstream
+                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="OUTPUT"
+                            WHERE tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
+                            GROUP BY direction
+                            """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
+                            )
+                        output=cur.fetchone()[0]
+                        
+                        cur.execute(
+                            """
+                            SELECT sum(octets)
+                            FROM billservice_netflowstream
+                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="INPUT"
+                            WHERE tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
+                            GROUP BY direction
+                            """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
+                            )
+                        input=cur.fetchone()[0]
+                        
+                        #s = nf_direction == max(input,output) and True or False
+                        if (input>output and nf_direction=='INPUT') or (input<output and nf_direction=='OUTPUT'): 
+                            s=True
+                            print 4
+                            
+                        
+                    elif period_check=="AG_START":
+                        print 5
+                        """
+                        Находим направление по которому больше всего скачал этот пользователь за текущую агрегацию
+                        если совпало-снимаем деньги.
+                        """
+
+                        cur.execute(
+                            """
+                            SELECT sum(octets)
+                            FROM billservice_netflowstream
+                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="OUTPUT"
+                            WHERE tarif_id=%s and account_id=%s and checkouted=False
+                            GROUP BY direction
+                            """ % ( tarif_id, account_id)
+                            )
+                        output=cur.fetchone()[0]
+                        
+                        cur.execute(
+                            """
+                            SELECT sum(octets)
+                            FROM billservice_netflowstream
+                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="INPUT"
+                            WHERE tarif_id=%s and account_id=%s and checkouted=False
+                            GROUP BY direction
+                            """ % ( tarif_id, account_id)
+                            )
+                        input=cur.fetchone()[0]
+                        
+                        #s = nf_direction == max(input,output) and True or False
+                        if (input>output and nf_direction=='INPUT') or (input<output and nf_direction=='OUTPUT'): 
+                            s=True
+                            print 6
+                else:
+                    s=None       
+                    print 7     
+                       
+                    
                 summ=(trafic_cost*octets)/(1024*1024)
-                if summ>0:
+                if summ>0 and (s==True or s==None):
                     #Производим списывание денег
                     transaction(
                     cursor=cur,
@@ -954,7 +1049,7 @@ class NetFlowBill(Thread):
 
 
             connection.commit()
-            time.sleep(60)
+            time.sleep(120)
 
 class limit_checker(Thread):
     """

@@ -36,6 +36,11 @@ CHOISE_METHODS=(
         (u"SUMM",u"Сумма всех"),
         )
 
+CHECK_PERIODS=(
+        (u"SP_START",u"С начала расчётного периода"),
+        (u"AG_START",u"С начала интервала агрегации"),
+        )
+
 STATISTIC_MODE=(
                 (u'NETFLOW',u'NetFlow'),
                 (u'ACCOUNTING',u'RADIUS Accounting'),
@@ -305,6 +310,7 @@ class TrafficTransmitService(models.Model):
     #prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM')
+    period_check       = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START')
 
 
     def __unicode__(self):

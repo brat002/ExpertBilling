@@ -17,7 +17,7 @@ from DBUtils.PooledDB import PooledDB
 
 def RefreshClasses():
     trafficclasses_pool=[]
-    cur.execute("SELECT id, name, weight FROM nas_trafficclass ORDER BY weight DESC;")
+    cur.execute("SELECT id, name, weight, store FROM nas_trafficclass ORDER BY weight DESC;")
     traffic_classes=cur.fetchall()
     for traffic_class in traffic_classes:
         cur.execute(
@@ -30,17 +30,17 @@ def RefreshClasses():
         """ % traffic_class[0]
         )
         traffic_nodes=cur.fetchall()
-        trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2],nodes=traffic_nodes))
+        trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2], traffic_class[3], nodes=traffic_nodes))
 
     return trafficclasses_pool
 
-class Account:
+class Account(object):
     def __init__(self, id, ip, tarif):
         self.id=id
         self.ip=ip
         self.tarif=tarif
 
-class TrafficNode:
+class TrafficNode(object):
     def __init__(self, name, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop):
         self.name = name
         self.src_ip  = src_ip
@@ -72,11 +72,12 @@ class TrafficNode:
         return res
 
 
-class TrafficClass:
-    def __init__(self, id, name, weight, nodes):
+class TrafficClass(object):
+    def __init__(self, id, name, weight, store, nodes):
         self.id=id
         self.name = name
         self.weight = weight
+        self.store = store
         self.data=[]
         for node in nodes:
             self.data.append(TrafficNode(name=node[0], src_ip=node[1], src_mask=node[2], src_port=node[3], dst_ip=node[4], dst_mask=node[5], dst_port=node[6], next_hop=node[7]))
@@ -84,7 +85,7 @@ class TrafficClass:
     def check(self, src, src_port, dst, dst_port):
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port)
-            if res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True:
+            if self.store==True or (res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True):
                 return self.id
         return False
 
