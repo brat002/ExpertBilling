@@ -132,10 +132,6 @@ class HandleAuth(HandleBase):
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[key][0]
 
-        
-        
-        
-        
         if self.packetobject['User-Name'][0]==username and allow_dial and status=='Enabled' and  ballance>0 and not disabled_by_limit:
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
@@ -196,14 +192,17 @@ class HandleAcct(HandleBase):
         
         self.cur.execute(
         """
-        SELECT id FROM billservice_account WHERE username='%s';
+        SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
+        JOIN billservice_accounttarif as accounttariff ON accounttariff.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1)
+        JOIN billservice_tariff as tariff ON tariff.id=accounttariff.tarif_id
+        WHERE account.username='%s';
         """ % self.packetobject['User-Name'][0]
         )
         row=self.cur.fetchone()
         if row==None:
             return self.acct_NA(self.replypacket)
 
-        account_id=row[0]
+        account_id, time_access=row
 
         secret=str(rows[0])
         self.replypacket.secret=str(secret)
@@ -212,17 +211,17 @@ class HandleAcct(HandleBase):
 
                
         if self.packetobject['Acct-Status-Type']==['Start']:
-
-            self.cur.execute(
-            """
-            INSERT INTO radius_session(
-            account_id, sessionid, date_start,
-            caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
-            )
-            VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s);
-            """, (account_id, self.packetobject['Acct-Session-Id'][0], now, 
-                 self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
-                 self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
+            if time_access:
+                self.cur.execute(
+                """
+                INSERT INTO radius_session(
+                account_id, sessionid, date_start,
+                caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
+                )
+                VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s);
+                """, (account_id, self.packetobject['Acct-Session-Id'][0], now, 
+                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
+                     self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
 
             self.cur.execute(
             """
@@ -239,37 +238,22 @@ class HandleAcct(HandleBase):
 
 
         if self.packetobject['Acct-Status-Type']==['Alive']:
-            
-            self.cur.execute(
-                        """
-                        SELECT timespeed.access_parameters_id, timespeed.time_id, timespeed.max_limit_in, timespeed.max_limit_out, 
-                               timespeed.min_limit_in, timespeed.min_limit_out, timespeed.burst_limit_in, timespeed.burst_limit_out, 
-                               timespeed.burst_treshold_in, timespeed.burst_treshold_out, timespeed.burst_time_in, timespeed.burst_time_out, 
-                               timespeed.priority
-                        FROM billservice_timespeed as timespeed
-                        JOIN billservice_tariff as tariff ON  timespeed.access_parameters_id=tariff.access_parameters_id
-                        JOIN billservice_accounttarif as accounttarif ON accounttarif.tarif_id=tariff.id and accounttarif.id=(SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account_id=%s LIMIT 1)
-                        WHERE accounttarif.account_id=%s;
-                        """ % (account_id, account_id)
-                        
-                        )
-            periods=self.cur.fetchall()
-            
             bytes_in, bytes_out=self.get_bytes()
-            self.cur.execute(
-                        """
-                        INSERT INTO radius_session(
-                        account_id, sessionid, interrim_update,
-                        caller_id, called_id, nas_id, session_time,
-                        bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                        VALUES ( %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s);
-                        """, (account_id, self.packetobject['Acct-Session-Id'][0],
-                             now, self.packetobject['Calling-Station-Id'][0],
-                             self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
-                             self.packetobject['Acct-Session-Time'][0],
-                             bytes_in, bytes_out, self.access_type, False, False)
-                        )
+            if time_access:
+                self.cur.execute(
+                            """
+                            INSERT INTO radius_session(
+                            account_id, sessionid, interrim_update,
+                            caller_id, called_id, nas_id, session_time,
+                            bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+                            VALUES ( %s, %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s, %s);
+                            """, (account_id, self.packetobject['Acct-Session-Id'][0],
+                                 now, self.packetobject['Calling-Station-Id'][0],
+                                 self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
+                                 self.packetobject['Acct-Session-Time'][0],
+                                 bytes_in, bytes_out, self.access_type, False, False)
+                            )
             self.cur.execute(
                         """
                         UPDATE radius_activesession
@@ -282,20 +266,21 @@ class HandleAcct(HandleBase):
 
         if self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
-            self.cur.execute(
-            """
-            INSERT INTO radius_session(
-            account_id, sessionid, interrim_update, date_end,
-            caller_id, called_id, nas_id, session_time,
-            bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-            VALUES ( %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s);
-            """, (account_id, self.packetobject['Acct-Session-Id'][0],
-                  now, now, self.packetobject['Calling-Station-Id'][0],
-                  self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
-                  self.packetobject['Acct-Session-Time'][0],
-                  bytes_in, bytes_out, self.access_type, False, False)
-            )
+            if time_access:
+                self.cur.execute(
+                """
+                INSERT INTO radius_session(
+                account_id, sessionid, interrim_update, date_end,
+                caller_id, called_id, nas_id, session_time,
+                bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+                VALUES ( %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s);
+                """, (account_id, self.packetobject['Acct-Session-Id'][0],
+                      now, now, self.packetobject['Calling-Station-Id'][0],
+                      self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
+                      self.packetobject['Acct-Session-Time'][0],
+                      bytes_in, bytes_out, self.access_type, False, False)
+                )
 
             self.cur.execute(
                """
