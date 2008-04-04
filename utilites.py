@@ -1,17 +1,30 @@
 #-*-coding=utf-8-*-
+from distutils.dist import command_re
 import packet
 import socket
 import datetime, calendar
 from dateutil.relativedelta import relativedelta
 import paramiko
 
-def DAE(dict, code, nas_ip, username, access_type=None, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
+class IPNAccount(object):
+    def __init__(self):
+        nas_ip=''
+        login=''
+        password=''
+        format_string=''
+        access_type=''
+        username=''
+        user_id=''
+        ipaddress=''
+        mac_address=''
+        
+def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
     """
     Dynamic Authorization Extensions
     http://www.rfc-archive.org/getrfc.php?rfc=3576
     """
 
-    if code==40:
+    if code==40 or (code==43 and coa==True):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         #sock.connect('10.20.3.1',1700)
@@ -46,8 +59,10 @@ def DAE(dict, code, nas_ip, username, access_type=None, nas_secret=None, nas_id=
         #сначала проверить есть ли, если нет-создать, если есть-установить
         /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
         """
-
-        query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
+        if code==43:
+            query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
+        elif code==40:
+            query='/interface %s-server remove [find user="%s"]' % (access_type, username)
         #query="/interface print"
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
@@ -57,10 +72,30 @@ def DAE(dict, code, nas_ip, username, access_type=None, nas_secret=None, nas_id=
             sshclient.close_chanel()
         except:
             print 'SSH ERROR'
-        print res[1].readlines()
+        #print res[1].readlines()
         return res[1].readlines()==[]
 
-
+def ipn_manipulate(account):
+        command_string=command_string_parser(command_string=account.format_string, command_dict=
+                            {
+                             'access_type':account.access_type,
+                             'username': account.username,
+                             'user_id':account.user_id,
+                             'ipaddress':account.ipaddress,
+                             'mac_address':account.mac_address,
+                             }
+                            )
+        try:
+            sshclient=SSHClient(host=account.nas_ip, port=22, username=account.login, password=account.password)
+            print 'ssh connected'
+            #'/interface pptp-server remove [find user="%s"]' % username
+            res=sshclient.send_command(command_string)
+            sshclient.close_chanel()
+        except:
+            print 'SSH ERROR'
+        #print res[1].readlines()
+        return res[1].readlines()==[]
+    
 
 def in_period(time_start, length, repeat_after, now=None):
         """

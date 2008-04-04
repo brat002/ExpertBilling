@@ -23,7 +23,7 @@ pool = PooledDB(
 )
 
 
-class check_access(Thread):
+class check_vpn_access(Thread):
         def __init__ (self, dict, timeout=30):
             self.dict=dict
             self.timeout=timeout
@@ -75,8 +75,12 @@ class check_access(Thread):
                 self.cur = self.connection.cursor()
                 time.sleep(self.timeout)
                 self.cur.execute("""
-                SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol)
+                SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol),
+                nas.name, nas.secret, nas.support_pod, nas.login, nas.password, nas.type, nas.support_coa,
+                account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit
                 FROM radius_activesession as rs
+                JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id
+                JOIN billservice_account as account ON account.id=rs.account_id
                 WHERE (rs.session_status='ACTIVE' and rs.date_end is null) or (rs.date_end is null and rs.session_status!='ACTIVE');
                 """)
                 rows=self.cur.fetchall()
@@ -87,33 +91,23 @@ class check_access(Thread):
                     nas_id=row[3]
                     speed_string=row[6]
                     access_type=row[7]
-                    self.cur.execute("SELECT name, secret, support_pod, login, password, type from nas_nas WHERE ipaddress='%s'" % nas_id)
-                    row_n=self.cur.fetchone()
-                    nas_name = row_n[0]
-                    nas_secret = row_n[1]
-                    nas_support_pod =row_n[2]
-                    nas_login =row_n[3]
-                    nas_password =row_n[4]
-                    nas_type = row_n[5]
-                    result=''
-                    #Ошибка"!!!!!
-                    self.cur.execute("SELECT account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit FROM billservice_account as account WHERE account.id='%s'" % account_id)
-                    row_u = self.cur.fetchone()
-                    username=row_u[0]
-                    tarif_id = row_u[1]
-                    ballance=row_u[2]
-                    disabled_by_limit=row_u[3]
+                    nas_name = row[8]
+                    nas_secret = row[9]
+                    nas_support_pod =row[10]
+                    nas_login =row[11]
+                    nas_password =row[12]
+                    nas_type = row[13]
+                    nas_coa = row[14]
+                    result=None
+                    username=row[15]
+                    tarif_id = row[16]
+                    ballance=row[17]
+                    disabled_by_limit=row[18]
 
                     if ballance>0:
-                       #Информация для проверки периода
-
-                       #rows_t=cur.fetchall()
-
                        if self.check_period(time_periods_by_tarif_id(self.cur, tarif_id))==False or disabled_by_limit==True:
                               result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password)
-
                        else:
-
                            """
                            Делаем проверку на то, изменилась ли скорость.
                            """
@@ -121,7 +115,7 @@ class check_access(Thread):
                            #print speed, speed_string
                            if speed_string!=speed:
 
-                               coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
+                               coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, coa=nas_coa, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
                                print "coa_result=", coa_result
                                if coa_result==True:
                                    self.cur.execute(
@@ -131,36 +125,24 @@ class check_access(Thread):
                                             WHERE id=%s;
                                             """ % (speed, activesession_id)
                                             )
+                               continue
                     else:
-
                         result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id,  login=nas_login, password=nas_password)
 
-                    if result==True:
-                        #Если удалось отключить - пишем в базу
+                    if result==True: 
                         disconnect_result='ACK'
-                        # Если сбросили сессию, значит она существовала и сервер доступа сам
-                        # Пришлёт STOP пакет
-                        self.cur.execute(
-                        """
-                        UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
-                        """, (disconnect_result, session_id)
-                        )
-                        print result
                     elif result==False:
-                        #Если не удалось отключить - или сессии не существовало
                         disconnect_result='NACK'
 
-                        # Если сбросили сессию, значит она существовала и сервер доступа сам
-                        # Пришлёт STOP пакет
+                    if result is not None:
                         self.cur.execute(
                         """
                         UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                         """, (disconnect_result, session_id)
                         )
-                        print result
+
                 self.connection.commit()
                 self.cur.close()
-#           connection.commit()
 
         def run(self):
             self.check_acces()
@@ -729,12 +711,13 @@ class NetFlowAggregate(Thread):
             cur.execute(
             """
             SELECT nf.id, ba.id,
-            (SELECT bat.tarif_id FROM billservice_accounttarif as bat WHERE bat.datetime<nf.date_start and bat.account_id=ba.id ORDER BY datetime DESC LIMIT 1) as tarif_id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
-            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id, tariff.traffic_transmit_service_id, trafficclass.store
+            tariff.id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id, 
+            tariff.traffic_transmit_service_id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
             LEFT JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
-            LEFT JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
-            LEFT JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
+            JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
             JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
             WHERE nf.fetched=False;
             """
@@ -837,7 +820,10 @@ class NetFlowBill(Thread):
         Thread.__init__(self)
 
     def get_actual_cost(self, cur, trafic_transmit_service_id, traffic_class_id, octets_summ, stream_date):
-
+        """
+        Метод возвращает актуальную цену для направления трафика для пользователя:
+        
+        """
         cur.execute(
         """
         SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
@@ -851,7 +837,7 @@ class NetFlowBill(Thread):
 
         trafic_transmit_nodes=cur.fetchall()
         cost=0
-        time_from_start=0
+        min_from_start=0
         for node in trafic_transmit_nodes:
             trafic_transmit_node_id=node[0]
             trafic_cost=node[1]
@@ -863,8 +849,8 @@ class NetFlowBill(Thread):
             repeat_after=node[6]
             tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
             if result:
-                if from_start<time_from_start or time_from_start==0:
-                    time_from_start=from_start
+                if from_start<min_from_start or min_from_start==0:
+                    min_from_start=from_start
                     cost=trafic_cost
         return cost
 
@@ -964,9 +950,8 @@ class NetFlowBill(Thread):
                         cur.execute(
                             """
                             SELECT sum(octets)
-                            FROM billservice_netflowstream
-                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="OUTPUT"
-                            WHERE tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
+                            FROM billservice_netflowstream as netflowstream, nas_trafficclass as trafficclass
+                            WHERE  trafficclass.id=netflowstream.traffic_class_id and trafficclass.direction="OUTPUT" and tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
                             GROUP BY direction
                             """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
                             )
@@ -975,9 +960,8 @@ class NetFlowBill(Thread):
                         cur.execute(
                             """
                             SELECT sum(octets)
-                            FROM billservice_netflowstream
-                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="INPUT"
-                            WHERE tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
+                            FROM billservice_netflowstream as netflowstream, nas_trafficclass as trafficclass
+                            WHERE  trafficclass.id=netflowstream.traffic_class_id and trafficclass.direction="INPUT" and tarif_id=%s and account_id=%s and date_start between '%s' and '%s'
                             GROUP BY direction
                             """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
                             )
@@ -999,9 +983,8 @@ class NetFlowBill(Thread):
                         cur.execute(
                             """
                             SELECT sum(octets)
-                            FROM billservice_netflowstream
-                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="OUTPUT"
-                            WHERE tarif_id=%s and account_id=%s and checkouted=False
+                            FROM billservice_netflowstream as netflowstream, nas_trafficclass as trafficclass
+                            WHERE  trafficclass.id=netflowstream.traffic_class_id and trafficclass.direction="OUTPUT" and tarif_id=%s and account_id=%s and checkouted=False
                             GROUP BY direction
                             """ % ( tarif_id, account_id)
                             )
@@ -1010,9 +993,8 @@ class NetFlowBill(Thread):
                         cur.execute(
                             """
                             SELECT sum(octets)
-                            FROM billservice_netflowstream
-                            JOIN nas_trafficclass as trafficclass ON trafficclass.direction="INPUT"
-                            WHERE tarif_id=%s and account_id=%s and checkouted=False
+                            FROM billservice_netflowstream as netflowstream, nas_trafficclass as trafficclass
+                            WHERE  trafficclass.id=netflowstream.traffic_class_id and trafficclass.direction="INPUT" and tarif_id=%s and account_id=%s and checkouted=False
                             GROUP BY direction
                             """ % ( tarif_id, account_id)
                             )
@@ -1210,7 +1192,7 @@ if __name__ == "__main__":
 
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 #===============================================================================
-    cas = check_access(timeout=10, dict=dict)
+    cas = check_vpn_access(timeout=60, dict=dict)
     cas.start()
 
 #    traficaccessbill = TraficAccessBill()
