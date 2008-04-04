@@ -85,7 +85,7 @@ class TrafficClass(object):
     def check(self, src, src_port, dst, dst_port):
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port)
-            if self.store==True or (res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True):
+            if res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True:
                 return self.id
         return False
 

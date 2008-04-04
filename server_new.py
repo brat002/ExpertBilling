@@ -214,7 +214,7 @@ class HandleAcct(HandleBase):
             if time_access:
                 self.cur.execute(
                 """
-                INSERT INTO radius_session(
+                INSERT REPLACE INTO radius_session(
                 account_id, sessionid, date_start,
                 caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
                 )
@@ -225,7 +225,7 @@ class HandleAcct(HandleBase):
 
             self.cur.execute(
             """
-            INSERT INTO radius_activesession(
+            INSERT REPLACE INTO radius_activesession(
             account_id, sessionid, date_start,
             caller_id, called_id, nas_id, framed_protocol, session_status
             )
