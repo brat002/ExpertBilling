@@ -306,8 +306,6 @@ class PrepaidTraffic(models.Model):
 
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
-    #traffic_nodes     = models.ManyToManyField(to=TrafficTransmitNodes, filter_interface=models.HORIZONTAL, verbose_name=u'Цены за трафик')
-    #prepaid_traffic   = models.ManyToManyField(to=PrepaidTraffic, filter_interface=models.HORIZONTAL, verbose_name=u'Предоплаченный трафик', help_text=u'Учитывается только если в тарифном плане указан расчётный период',blank=True, null=True)
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM')
     period_check       = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START')
@@ -332,7 +330,7 @@ class TrafficTransmitNodes(models.Model):
     cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
     edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
     edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-    
+
     def __unicode__(self):
         return u"%s" % (self.cost)
 
@@ -509,6 +507,30 @@ class AccountTarif(models.Model):
     class Meta:
         verbose_name = u"привязка"
         verbose_name_plural = u"Привязки аккаунтов к тарифам"
+
+class AccountIPNSpeed(models.Model):
+      """
+      Класс описывает настройки скорости для пользователей с тарифными планами IPN
+      После создания пользователя должна создваться запись в этой таблице
+      """
+      account = models.ForeignKey(to=Account)
+      speed   = models.CharField(max_length=32)
+      state   = models.BooleanField(blank=True, default=False)
+      static  = models.BooleanField(verbose_name=u"Статическая скорость", help_text=u"Пока опция установлена, биллинг не будет менять для этого клиента скорость", blank=True, null=True)
+      datetime  = models.DateTimeField()
+
+      def __unicode__(self):
+          return u"%s %s" % (self.account, self.speed)
+
+      class Admin:
+          pass
+
+      class Meta:
+        verbose_name = u"скорости IPN клиентов"
+        verbose_name_plural = u"Скорости IPN клиентов"
+
+
+
 
 class SummaryTrafic(models.Model):
     """
