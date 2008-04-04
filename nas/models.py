@@ -22,6 +22,10 @@ DIRECTIONS_LIST=(
 
 
 class Nas(models.Model):
+    """
+    /ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id
+    /ip firewall address-list remove $user_id
+    """
     type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
     name = models.CharField(verbose_name=u'Идентификатор сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
     ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
