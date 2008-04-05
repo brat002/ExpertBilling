@@ -339,7 +339,7 @@ def create_speed_string(params, nas_type, coa=False):
     result=''
     if nas_type[:8]==u'mikrotik':
         #max_limit
-        if coa==False:
+        if coa==True:
             result+="%s/%s" % (params[0], params[1])
 
             #burst_limit

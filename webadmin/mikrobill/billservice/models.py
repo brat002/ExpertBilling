@@ -27,14 +27,15 @@ ACCESS_TYPE_METHODS=(
                 )
 
 ACTIVITY_CHOISES=(
-        (u"Enabled",u"Enabled"),
-        (u"Disabled",u"Disabled"),
+        (u"Enabled",u"Активен"),
+        (u"Disabled",u"Неактивен"),
         )
 
 CHOISE_METHODS=(
         (u"MAX",u"Наибольший"),
         (u"SUMM",u"Сумма всех"),
         )
+
 
 CHECK_PERIODS=(
         (u"SP_START",u"С начала расчётного периода"),
@@ -428,6 +429,7 @@ class Account(models.Model):
     condition_dynamic = models.BooleanField(verbose_name=u'Условно динамический IP адрес', help_text=u"Адрес автомаиески назначится при привязке пользователю тарифного плана", blank=True, default=False)
     ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
     ipn_mac_address = models.IPAddressField(u'MAC адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
+    ipn_status = models.CharField(max_length=32, verbose_name=u"Статус на сервере доступа", choices=ACTIVITY_CHOISES, default='disabled')
     status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default=u'Enabled')
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)

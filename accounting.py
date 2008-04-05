@@ -32,7 +32,7 @@ class check_vpn_access(Thread):
 
         def check_period(self, rows):
             for row in rows:
-                if in_period(row[2],row[3],row[4])==True:
+                if in_period(row[0],row[1],row[2])==True:
                     return True
             return False
 
@@ -55,7 +55,7 @@ class check_vpn_access(Thread):
             if speeds==[]:
                 result=defaults
 
-            return create_speed_string(result, nas_type, coa=True)
+            return create_speed_string(result, nas_type, coa=False)
 
         def check_acces(self):
             """
@@ -1188,6 +1188,119 @@ class service_dog(Thread):
               #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
               time.sleep(10)
 
+class ipn_service(Thread):
+    """
+    Тред должен:
+    1. Проверять не изменилась ли скорость для IPN клиентов и меня её на сервере доступа
+    2. Если балланс клиента стал меньше 0 - отключать, если уже не отключен (параметр ipn_status в account) и включать, если отключен (ipn_status) и баланс стал больше 0
+    3. Если клиент вышел за рамки разрешённого временного диапазона в тарифном плане-отключать 
+    """
+    def __init__ (self):
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = connection.cursor()
+        
+    def check_period(self, rows):
+        for row in rows:
+            if in_period(row[0],row[1],row[2])==True:
+                return True
+        return False
+
+    def create_speed(self, tarif_id, nas_type):
+        defaults = get_default_speed_parameters(self.cur, tarif_id)
+        speeds = get_speed_parameters(self.cur, tarif_id)
+        result=[]
+        i=0
+        for speed in speeds:
+            if in_period(speed[0],speed[1],speed[2])==True:
+                for s in speed[3:]:
+                    if s==0:
+                        res=0
+                    elif s=='' or s==None:
+                        res=defaults[i]
+                    else:
+                        res=s
+                    result.append(res)
+                    i+=1
+        if speeds==[]:
+            result=defaults
+
+        return create_speed_string(result, nas_type, coa=False)
+
+
+    def run(self):
+
+        while True:
+            cur.execute(
+                        """
+                        SELECT account.id, account.username, account.ipn_ip_address, account.ipn_mac_address, 
+                            (account.ballance+account.credit) as ballance, account.disabled_by_limit, 
+                            account.ipn_status, tariff.id,
+                            nas."type", nas.user_enable_action, nas.user_disable_action, nas."login", nas."password", nas."ipaddress",
+                            accessparameters.access_type, accessparameters.access_time_id, ipn_speed.speed, ipn_speed.static, ipn_speed.state
+                        FROM billservice_account as account
+                        JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                        JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
+                        JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
+                        JOIN nas_nas as nas ON nas.id=accessparameters.nas_id
+                        LEFT JOIN billservice_accountipnspeed as ipn_speed ON ipn_speed.account_id=account.id
+                        WHERE account.status='Enabled' and accessparameters.access_type='IPN'
+                        ;
+                        """
+                        )
+            rows=cur.fetchall()
+            for row in rows:
+                account_id = row[0]
+                account_username = row[1]
+                account_ipaddress = row[2]
+                account_mac = row[3]
+                account_ballance=row[4]
+                account_disabled_by_limit=row[5]
+                account_ipn_status=row[6]
+                tarif_id=row[7]
+                nas_type=row[8]
+                nas_user_enable=row[9]
+                nas_user_disable=row[10]
+                nas_login=row[11]
+                nas_password=row[12]
+                nas_ipaddress=row[13]
+                access_type=row[14]
+                access_time_id=row[15]
+                ipn_speed=row[16]
+                ipn_static=row[17]
+                ipn_state=row[18]
+                allow=None
+               
+                period=self.check_period(time_periods_by_tarif_id(cur, tarif_id))
+
+                if account_ballance>0 and period==True and account_ipn_status==False:
+                    #шлём команду, на включение пользователя, account_ipn_status=True
+                    allow=True                  
+                elif (account_disabled_by_limit==True or account_ballance<=0 or period==False) and account_ipn_status==True:
+                    #шлём команду на отключение пользователя,account_ipn_status=False
+                    allow=False
+                
+               
+                speed=self.create_speed(tarif_id, nas_type)
+                if speed!=ipn_speed and ipn_static==False:
+                    #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+                    pass
+                elif speed!=ipn_speed and ipn_static==True and ipn_state==False:
+                    #отправляем на сервер доступа настройки скорости, помечаем state True
+                    pass
+
+                if allow==True:
+                    #шлём разрешающий запрос
+                    pass
+                
+                if allow==False:
+                    #шлём запрещающий запрос
+                    pass
+                
+                
+            self.connection.commit()   
+            time.sleep(60)
+              
 if __name__ == "__main__":
 
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")

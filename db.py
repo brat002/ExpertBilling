@@ -59,7 +59,7 @@ def get_nas_id_by_tarif_id(cursor, tarif_id):
 
 def time_periods_by_tarif_id(cursor, tarif_id):
     cursor.execute("""
-    SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+    SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
     FROM billservice_timeperiodnode as tpn
     JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
     JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
