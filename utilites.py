@@ -75,16 +75,20 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
         #print res[1].readlines()
         return res[1].readlines()==[]
 
-def ipn_manipulate(account):
-        command_string=command_string_parser(command_string=account.format_string, command_dict=
-                            {
-                             'access_type':account.access_type,
-                             'username': account.username,
-                             'user_id':account.user_id,
-                             'ipaddress':account.ipaddress,
-                             'mac_address':account.mac_address,
-                             }
-                            )
+def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data={}):
+        if account_data!={}:
+            command_string=command_string_parser(command_string=account.format_string, command_dict=
+                                {
+                                 'access_type':account_data['access_type'],
+                                 'username': account_data['username'],
+                                 'user_id':account_data['user_id'],
+                                 'ipaddress':account_data['ipaddress'],
+                                 'mac_address':account_data['mac_address'],
+                                 }
+                                )
+        else:
+            command_string=format_string
+            
         try:
             sshclient=SSHClient(host=account.nas_ip, port=22, username=account.login, password=account.password)
             print 'ssh connected'
