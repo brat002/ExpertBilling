@@ -473,6 +473,7 @@ class Transaction(models.Model):
     description = models.TextField()
     created=models.DateTimeField(auto_now_add=True)
 
+
     class Admin:
         list_display=('account', 'tarif', 'summ', 'description','created')
 
@@ -625,4 +626,17 @@ class NetFlowStream(models.Model):
     def __unicode__(self):
         return u"%s" % self.nas
 
-
+class SheduleLog(models.Model):
+    account = models.ForeignKey(to=Account, unique=True)
+    ballance_checkout = models.DateTimeField()
+    prepaid_traffic_reset = models.DateTimeField()
+    prepaid_time_reset = models.DateTimeField()
+    
+    class Admin:
+        pass
+    
+    class Meta:
+        verbose_name = u"Периодическая операция"
+        verbose_name_plural = u"Периодиеские операции"        
+        
+    

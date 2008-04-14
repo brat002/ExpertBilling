@@ -71,29 +71,29 @@ def transaction(cursor, account, approved, tarif, summ, description, created=Non
     if not created:
         created=datetime.datetime.now()
 
-    f=cursor.execute(
-    """
-    UPDATE billservice_transaction SET summ=summ+%s
-    WHERE account_id=%s and approved=%s and tarif_id=%s and description=%s and now()-created<=interval '00:10:00'
-    """, (summ, account, approved, tarif, description)
-    )
+#    f=cursor.execute(
+#    """
+#    UPDATE billservice_transaction SET summ=summ+%s, updated=now()
+#    WHERE account_id=%s and approved=%s and tarif_id=%s and description=%s and (now()-created<=interval '00:10:00' and now()-updated<=interval '00:02:00'
+#    """, (summ, account, approved, tarif, description)
+#    )
+#
+#    if not f:
+    cursor.execute("""
+    INSERT INTO billservice_transaction(
+    account_id, approved, tarif_id, summ, description, created)
+    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
+    """,(account, approved, tarif , summ, description, created))
 
-    if not f:
-        cursor.execute("""
-        INSERT INTO billservice_transaction(
-        account_id, approved, tarif_id, summ, description, created)
-        VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;
-        """,(account, approved, tarif , summ, description, created))
-
-        tr_id=cursor.fetchone()[0]
-    else:
-        cursor.execute(
-        """
-        SELECT id FROM billservice_transaction
-        WHERE account_id=%s and approved=%s and tarif_id=%s and summ=%s and description='%s' ORDER BY id DESC LIMIT 1
-        """ % (account, approved, tarif , summ, description)
-        )
-        tr_id=cursor.fetchone()[0]
+    tr_id=cursor.fetchone()[0]
+#    else:
+#        cursor.execute(
+#        """
+#        SELECT id FROM billservice_transaction
+#        WHERE account_id=%s and approved=%s and tarif_id=%s and summ=%s and description='%s' ORDER BY id DESC LIMIT 1
+#        """ % (account, approved, tarif , summ, description)
+#        )
+#        tr_id=cursor.fetchone()[0]
     cursor.execute("""
     UPDATE billservice_account
     SET ballance=ballance-%s WHERE id=%s""" % (summ, account))
