@@ -1186,7 +1186,7 @@ class limit_checker(Thread):
             connection.commit()
             cur.close()
             connection.close()
-            time.sleep(10)
+            time.sleep(60)
 
 
 class service_dog(Thread):
@@ -1305,7 +1305,7 @@ class ipn_service(Thread):
                                                  'mac_address':account_mac,
                                                  }
                                    )
-                    
+                               
                                     
                 elif (account_disabled_by_limit==True or account_ballance<=0 or period==False) and account_ipn_status==True:
                     #шлём команду на отключение пользователя,account_ipn_status=False
@@ -1315,7 +1315,6 @@ class ipn_service(Thread):
                                                  'mac_address':account_mac,
                                                  }
                                    )
-                    
                 
                 if sended in (True, False):
                     self.cur.execute("UPDATE billservice_account SET account_ipn_status=%s WHERE id=%s" % (sended, account_id))
