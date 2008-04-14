@@ -380,7 +380,7 @@ class TimeAccessBill(Thread):
 
     def run(self):
         """
-        По каждой записи делаем транзакции для польователя в соотв с его текущим тарифным планов
+        По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
         """
         while True:
             connection = pool.connection()
@@ -805,7 +805,7 @@ class NetFlowAggregate(Thread):
                     DELETE FROM billservice_rawnetflowstream WHERE id=%s
                     """ % stream[0]
                     )
-                else:
+                elif account_id is None and store:
                     cur.execute(
                     """
                     UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
@@ -890,17 +890,19 @@ class NetFlowBill(Thread):
                 s=False
                 cur.execute(
                 """
-                SELECT tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check
+                SELECT tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check, accounttarif.id
                 FROM billservice_tariff as tarif
                 JOIN billservice_traffictransmitservice as transmitservice ON transmitservice.id=tarif.traffic_transmit_service_id
+                JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=%s ORDER BY DESC LIMIT 1)
                 WHERE tarif.id=%s;
-                """ % tarif_id
+                """ % (account_id, tarif_id)
                 )
                 res=cur.fetchone()
                 trafic_transmit_service_id=res[0]
                 settlement_period_id=res[1]
                 cash_method=res[2]
                 period_check=res[3]
+                accounttarif_id=res[4]
 
                 if trafic_transmit_service_id:
                     #Если в тарифном плане указан расчётный период
@@ -1028,7 +1030,22 @@ class NetFlowBill(Thread):
                     s=None       
                     print 7     
                        
-                    
+                cur.execute("""SELECT prepais.id, prepais.size FROM billservice_accountprepays as prepais
+                JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                WHERE prepais.account_tarif_id=%s and prepaidtraffic.traffic_class_id=%s and traffic_class.traffic_transmit_service_id=%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id))
+                try:
+                    prepaid_id, prepaid_octets=cur.fetchone()
+                except:
+                    prepaid_octets=0
+                if prepaid>=0:
+                    if prepaid>=octets:
+                        octets=0
+                        prepaid=prepaid-octets
+                    elif octets>=prepaid:
+                        octets=octets-prepaid
+                        prepaid=0
+                    cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepais, prepaid_id))
+                        
                 summ=(trafic_cost*octets)/(1024*1024)
                 if summ>0 and (s==True or s==None):
                     #Производим списывание денег

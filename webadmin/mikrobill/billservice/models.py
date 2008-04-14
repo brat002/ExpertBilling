@@ -288,6 +288,9 @@ class TimeSpeed(models.Model):
          verbose_name_plural = u"Настройки скорости"
 
 class PrepaidTraffic(models.Model):
+    """
+    Настройки предоплаченного трафика для тарифного плана
+    """
     traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику")
     traffic_class    = models.ForeignKey(to=TrafficClass, core=True, verbose_name=u'Класс трафика')
     size             = models.FloatField(verbose_name=u'Размер в мегабайтах')
