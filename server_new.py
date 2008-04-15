@@ -126,7 +126,7 @@ class HandleAuth(HandleBase):
         rows = time_periods_by_tarif_id(self.cur, tarif_id)
         allow_dial=False
         for row in rows:
-            if in_period(row[2],row[3],row[4])==True:
+            if in_period(row[0],row[1],row[2])==True:
                 allow_dial=True
                 break
         #for key,value in packetobject.items():
@@ -214,7 +214,7 @@ class HandleAcct(HandleBase):
             if time_access:
                 self.cur.execute(
                 """
-                INSERT REPLACE INTO radius_session(
+                INSERT INTO radius_session(
                 account_id, sessionid, date_start,
                 caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
                 )
@@ -225,7 +225,7 @@ class HandleAcct(HandleBase):
 
             self.cur.execute(
             """
-            INSERT REPLACE INTO radius_activesession(
+            INSERT INTO radius_activesession(
             account_id, sessionid, date_start,
             caller_id, called_id, nas_id, framed_protocol, session_status
             )
@@ -337,7 +337,6 @@ class RadiusAcct(BaseAuth):
         packetobject=packet.AcctPacket(dict=dict,packet=data)
         
         coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0])
-        
         packetfromcore = coreconnect.handle()
         
         #replyobj=packet.AcctPacket(id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
