@@ -211,8 +211,7 @@ class TimeAccessNode(models.Model):
     Нода тарификации по времени
     """
     time_access_service = models.ForeignKey(to=TimeAccessService, edit_inline=True)
-    name                = models.CharField(max_length=255, verbose_name=u'Название промежутка', core=True)
-    time_period         = models.ForeignKey(to=TimePeriodNode, verbose_name=u'Промежуток')
+    time_period         = models.ForeignKey(to=TimePeriodNode, verbose_name=u'Промежуток', core=True)
     cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', core=True)
 
     def __unicode__(self):
@@ -220,7 +219,7 @@ class TimeAccessNode(models.Model):
 
     class Admin:
         ordering = ['name']
-        list_display = ('name', 'time_period', 'cost')
+        list_display = ('time_period', 'cost')
 
 
     class Meta:
@@ -369,7 +368,18 @@ class AccountPrepays(models.Model):
         verbose_name = u"Предоплаченый трафик пользователя"
         verbose_name_plural = u"Предоплаченный трафик пользователя"
 
-
+class AccountPrepaysTime(models.Model):
+    account_tarif = models.ForeignKey(to="AccountTarif")
+    size = models.IntegerField()
+    datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Admin:
+        pass
+    
+    class Meta:
+        verbose_name = u"Предоплаченное время пользователя"
+        verbose_name_plural = u"Предоплаченное время пользователей"        
+    
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
@@ -467,9 +477,23 @@ class Account(models.Model):
             transaction.description = u'Снятие за первоначальную услугу'
             transaction.save()
 
+#===============================================================================
+# class TransactionType(models.Model):
+#    name = models.CharField(max_length=255)
+#    internal_name = model
+#    
+#    class Admin:
+#        pass
+# 
+#    class Meta:
+#        verbose_name = u"тип проводки"
+#        verbose_name_plural = u"Типы проводок"
+#===============================================================================
 
+ 
 class Transaction(models.Model):
     account=models.ForeignKey(Account)
+#    type = models.ForeignKey(to=TransactionType)
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff)
     summ=models.FloatField(blank=True)
@@ -478,7 +502,7 @@ class Transaction(models.Model):
 
 
     class Admin:
-        list_display=('account', 'tarif', 'summ', 'description','created')
+        list_display=('account',  'tarif', 'summ', 'description', 'created')
 
     class Meta:
         verbose_name = u"Проводка"

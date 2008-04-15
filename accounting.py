@@ -386,12 +386,12 @@ class TimeAccessBill(Thread):
             connection = pool.connection()
             cur = connection.cursor()
             cur.execute("""
-            SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tacc.name, tarif.id
+            SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tacc.name, tarif.id, acc_t.id
             FROM radius_session as rs
             JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
             JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
             JOIN billservice_timeaccessservice as tacc ON tacc.id=tarif.time_access_service_id
-            WHERE rs.checkouted_by_time=False and rs.date_start is NUll and acc_t.datetime<now() ORDER BY rs.interrim_update ASC;
+            WHERE rs.checkouted_by_time=False and rs.date_start is NUll and acc_t.datetime<rs.interrim_update ORDER BY rs.interrim_update ASC;
             """)
             rows=cur.fetchall()
 
@@ -404,6 +404,7 @@ class TimeAccessBill(Thread):
                 ps_id=row[4]
                 ps_name = row[5]
                 tarif_id = row[6]
+                accountt_tarif_id = row[7]
                 #1. Ищем последнюю запись по которой была произведена оплата
                 #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
                 #TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
@@ -419,14 +420,35 @@ class TimeAccessBill(Thread):
                 except:
                     old_time=0
                 total_time=session_time-old_time
+                
+                cur.execute(
+                            """
+                            SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif=%s
+                            """ % accountt_tarif_id
+                            )
+                
+                try:
+                    prepaid_id, prepaid=cur.fetchone()
+                except:
+                    prepaid=0
+                    prepaid_id=-1
+                if prepaid>=0:
+                    if prepaid>=total_time:
+                        total_time=0
+                        prepaid=prepaid-total_time
+                    elif total_time>=prepaid:
+                        total_time=total_time-prepaid
+                        prepaid=0
+                    cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+
 
                 # Получаем список временных периодов и их стоимость у периодической услуги
                 cur.execute(
                 """
                 SELECT tan.time_period_id, tan.cost
                 FROM billservice_timeaccessnode as tan
-                JOIN billservice_timeaccessservice_time_periods as tp ON tan.time_period_id=tp.timeaccessnode_id
-                WHERE tp.timeaccessservice_id=%s
+                JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id                
+                WHERE tan.time_access_service_id=%s
                 """ % ps_id
                 )
                 periods=cur.fetchall()
@@ -893,7 +915,7 @@ class NetFlowBill(Thread):
                 SELECT tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check, accounttarif.id
                 FROM billservice_tariff as tarif
                 JOIN billservice_traffictransmitservice as transmitservice ON transmitservice.id=tarif.traffic_transmit_service_id
-                JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=%s ORDER BY DESC LIMIT 1)
+                JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=%s ORDER BY datetime DESC LIMIT 1)
                 WHERE tarif.id=%s;
                 """ % (account_id, tarif_id)
                 )
@@ -1032,11 +1054,12 @@ class NetFlowBill(Thread):
                        
                 cur.execute("""SELECT prepais.id, prepais.size FROM billservice_accountprepays as prepais
                 JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                WHERE prepais.account_tarif_id=%s and prepaidtraffic.traffic_class_id=%s and traffic_class.traffic_transmit_service_id=%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id))
+                WHERE prepais.account_tarif_id=%s and prepaidtraffic.traffic_class_id=%s and prepaidtraffic.traffic_transmit_service_id=%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id))
                 try:
-                    prepaid_id, prepaid_octets=cur.fetchone()
+                    prepaid_id, prepaid=cur.fetchone()
                 except:
-                    prepaid_octets=0
+                    prepaid=0
+                    prepaid_id=-1
                 if prepaid>=0:
                     if prepaid>=octets:
                         octets=0
@@ -1044,7 +1067,7 @@ class NetFlowBill(Thread):
                     elif octets>=prepaid:
                         octets=octets-prepaid
                         prepaid=0
-                    cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepais, prepaid_id))
+                    cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
                         
                 summ=(trafic_cost*octets)/(1024*1024)
                 if summ>0 and (s==True or s==None):
@@ -1210,8 +1233,8 @@ class service_dog(Thread):
     """
     Для каждого пользователя по тарифному плану в конце расчётного периода производит
     1. Доснятие суммы
-    2. Сброс предоплаченного времени (не сделано)
-    3. Сброс предоплаченного трафика (не сделано)
+    2. Сброс и начисление предоплаченного времени (не сделано)
+    3. Сброс и начисление предоплаченного трафика (не сделано)
     алгоритм
     1. выбираем всех пользователей с текущими тарифными планами,
     у которых указан расчётный период и галочка "делать доснятие"
