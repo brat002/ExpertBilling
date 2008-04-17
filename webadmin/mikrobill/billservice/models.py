@@ -192,7 +192,7 @@ class TimeAccessService(models.Model):
     """
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
-    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время')
+    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время', blank=True, default=False)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -292,7 +292,7 @@ class PrepaidTraffic(models.Model):
     """
     traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику")
     traffic_class    = models.ForeignKey(to=TrafficClass, core=True, verbose_name=u'Класс трафика')
-    size             = models.FloatField(verbose_name=u'Размер в мегабайтах')
+    size             = models.FloatField(verbose_name=u'Размер в байтах')
 
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.size)
@@ -370,6 +370,7 @@ class AccountPrepays(models.Model):
 
 class AccountPrepaysTime(models.Model):
     account_tarif = models.ForeignKey(to="AccountTarif")
+    prepaid_time_service = models.ForeignKey(to=TimeAccessService)
     size = models.IntegerField()
     datetime = models.DateTimeField(auto_now_add=True)
     
@@ -402,7 +403,7 @@ class TrafficLimit(models.Model):
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
     description       = models.TextField(verbose_name=u'Описание тарифного плана')
-    access_parameters       = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
+    access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
     traffic_limit     = models.ManyToManyField(to=TrafficLimit, filter_interface=models.HORIZONTAL,verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
     periodical_services = models.ManyToManyField(to=PeriodicalService, filter_interface=models.HORIZONTAL, verbose_name=u'периодические услуги', blank=True, null=True)
     onetime_services  = models.ManyToManyField(to=OneTimeService, filter_interface=models.HORIZONTAL,verbose_name=u'Разовые услуги', blank=True, null=True)
@@ -655,9 +656,9 @@ class NetFlowStream(models.Model):
 
 class SheduleLog(models.Model):
     account = models.ForeignKey(to=Account, unique=True)
-    ballance_checkout = models.DateTimeField()
-    prepaid_traffic_reset = models.DateTimeField()
-    prepaid_time_reset = models.DateTimeField()
+    ballance_checkout = models.DateTimeField(blank=True, null=True)
+    prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
+    prepaid_time_reset = models.DateTimeField(blank=True, null=True)
     
     class Admin:
         pass
