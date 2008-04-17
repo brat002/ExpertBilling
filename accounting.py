@@ -1,10 +1,10 @@
 #-*-coding=utf-8-*-
 
-import time, datetime, os
+import time, datetime, os, sys
 from utilites import DAE, settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
-
+import threading
 from db import get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 
 import settings
@@ -12,7 +12,7 @@ import psycopg2
 from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
-     mincached=6,
+     mincached=1,
      maxcached=60,
      blocking=True,
      creator=psycopg2,
@@ -73,7 +73,9 @@ class check_vpn_access(Thread):
             while True:
                 self.connection = pool.connection()
                 self.cur = self.connection.cursor()
-                time.sleep(self.timeout)
+                #Закрываем подвисшие сессии
+                self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
+                
                 self.cur.execute("""
                 SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol),
                 nas.name, nas.secret, nas.support_pod, nas.login, nas.password, nas.type, nas.support_coa,
@@ -144,30 +146,10 @@ class check_vpn_access(Thread):
                 self.connection.commit()
                 self.cur.close()
                 self.connection.close()
+                time.sleep(self.timeout)
 
         def run(self):
             self.check_acces()
-
-
-class session_dog(Thread):
-    """
-    Закрывает подвисшие сессии
-    Подумать над реализацией для MySQL
-    """
-    def __init__ (self):
-        Thread.__init__(self)
-
-    def run(self):
-        while True:
-              connection = pool.connection()
-              cur = connection.cursor()
-              cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
-              #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
-              connection.commit()
-              cur.close()
-              connection.close()
-        
-              time.sleep(30)
 
 
 class periodical_service_bill(Thread):
@@ -1090,7 +1072,7 @@ class NetFlowBill(Thread):
                 )
 
 
-            connection.commit()
+                connection.commit()
             cur.close()
             connection.close()
             time.sleep(120)
@@ -1229,12 +1211,13 @@ class limit_checker(Thread):
             time.sleep(60)
 
 
-class service_dog(Thread):
+class settlement_period_service_dog(Thread):
     """
     Для каждого пользователя по тарифному плану в конце расчётного периода производит
     1. Доснятие суммы
-    2. Сброс и начисление предоплаченного времени (не сделано)
-    3. Сброс и начисление предоплаченного трафика (не сделано)
+    2. Если денег мало для активации тарифного плана, ставим статус Disabled
+    2. Сброс и начисление предоплаченного времени
+    3. Сброс и начисление предоплаченного трафика
     алгоритм
     1. выбираем всех пользователей с текущими тарифными планами,
     у которых указан расчётный период и галочка "делать доснятие"
@@ -1244,13 +1227,128 @@ class service_dog(Thread):
     def __init__ (self):
         Thread.__init__(self)
 
+
+    def stop(self):
+        """
+        Stop the thread
+        """
+       
+
     def run(self):
         connection = pool.connection()
         cur = connection.cursor()
         while True:
-              #cur.execute("UPDATE radius_activesession SET date_end=interrim_update, session_status='NACK' WHERE now()-interrim_update>= interval '00:03:00' and date_end is Null;")
-              #cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start) WHERE session_time is Null;")
-              time.sleep(10)
+
+            cur.execute(
+                        """
+                        SELECT shedulelog.account_id, shedulelog.ballance_checkout::timestamp without time zone, shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
+                        sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, accounttarif.datetime::timestamp without time zone,  tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time 
+                        FROM billservice_shedulelog as shedulelog
+                        JOIN billservice_accounttarif AS accounttarif ON accounttarif.account_id=( SELECT id FROM billservice_accounttarif WHERE account_id=shedulelog.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                        JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
+                        JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
+                        LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
+                        LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
+                        WHERE (tariff.settlement_period_id is not NULL) 
+                        or now()-shedulelog.ballance_checkout<=interval '23:59:00'
+                        or now()-shedulelog.prepaid_traffic_reset<=interval '23:59:00'
+                        or now()-shedulelog.prepaid_time_reset<=interval '23:59:00'
+                        """
+                        )
+            rows=cur.fetchall()
+            for row in rows:
+                (account_id, ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
+                time_start, length, length_in, autostart, accounttarif_id, datetime, tarif_id, 
+                reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id, 
+                reset_traffic, reset_time) = row
+                if autostart:
+                    time_start=datetime
+                if length==0:
+                    length=length_in
+                    
+                
+                    
+                period_start, period_end, delta = settlement_period_info(time_start, length)
+                
+                #нужно производить в конце расчётного периода
+                if (ballance_checkout is None or ballance_checkout<period_start) and cost>0:
+                    #снять деньги
+                    if reset_tarif_cost:
+                        cur.execute(
+                                    """
+                                    SELECT sum(summ) 
+                                    FROM billservice_transaction
+                                    WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s
+                                    """ % (period_start, period_end, account_id, tarif_id)
+                                    )
+                        summ=cur.fetchone()[0]
+                        if cost>summ:
+                            s=cost-summ
+                            transaction(
+                            cursor=cur,
+                            account=account_id,
+                            approved=True,
+                            tarif=tarif_id,
+                            summ=s,
+                            description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
+                            ) 
+                        cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s" % account_id)
+                    #Если балланса не хватает - отключить пользователя
+                    cur.execute(
+                                """
+                                UPDATE billservice_account SET status='Disabled' WHERE id=%s and ballance+credit<%s
+                                """ % (account_id, cost)
+                                )
+
+                if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and traffic_transmit_service_id:
+                    
+                    if reset_traffic:
+                        cur.execute(
+                            """
+                            UPDATE billservice_accountprepays SET size=0 WHERE account_tarif_id=%s
+                            """ % accounttarif_id
+                            )
+                    #сбросить предоплаченный трафик и начислить новый
+                    cur.execute(
+                                """
+                                SELECT id, size
+                                FROM billservice_prepaidtraffic 
+                                WHERE traffic_transmit_service_id=%s;
+                                """ % traffic_transmit_service_id
+                                )
+                    prepais=cur.fetchall()
+                    for prepaid_traffic_id, size in prepais:
+
+                        cur.execute(
+                                    """
+                                    UPDATE billservice_accountprepays SET size=size+%s, datetime=now()
+                                    WHERE account_tarif_id=%s and prepaid_traffic_id=%s
+                                    """ % (size, accounttarif_id, prepaid_traffic_id)
+                                    )
+                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s" % account_id)
+                
+                if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
+                    
+                    if reset_time:
+                        #снять время и начислить новое
+                        cur.execute(
+                                    """
+                                    UPDATE billservice_accountprepaystime SET size=0
+                                    WHERE account_tarif=%s
+                                    """ % accounttarif_id
+                                    )
+                    cur.execute(
+                                """
+                                UPDATE billservice_accountprepaystime
+                                SET size=size+(SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s), 
+                                datetime=now()
+                                WHERE account_tarif_id=%s
+                                """ % (time_access_service_id, accounttarif_id)
+                                )
+                    
+                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s" % account_id)
+
+            time.sleep(60)
 
 class ipn_service(Thread):
     """
@@ -1379,30 +1477,42 @@ if __name__ == "__main__":
 
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
 #===============================================================================
-    cas = check_vpn_access(timeout=60, dict=dict)
-    cas.start()
+    threads=[]
+    threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    psb=periodical_service_bill()
-    psb.start()
-
-    time_access_bill = TimeAccessBill()
-    time_access_bill.start()
-
-    nfagg=NetFlowAggregate()
-    nfagg.start()
-
-    nfbill=NetFlowBill()
-    nfbill.start()
-
-    sess_dog=session_dog()
-    sess_dog.start()
-
-    lmch=limit_checker()
-    lmch.start()
+    threads.append(periodical_service_bill())
     
-    ipn_s = ipn_service()
-    ipn_s.start()
+
+    threads.append(TimeAccessBill())
+    
+
+    threads.append(NetFlowAggregate())
+    
+
+    threads.append(NetFlowBill())
+
+    threads.append(limit_checker())
+    
+    
+    threads.append(ipn_service())
+    
+    
+    threads.append(settlement_period_service_dog())
+    for th in threads:
+        th.start()
+    
+    while True:
+        for t in threads:
+            
+            if not t.isAlive():
+                print 'restarting thread', t.getName()
+                t.__init__()
+                t.start()
+            print 'thread status', t.getName(), t.isAlive()
+        time.sleep(15)
+                
+    
 #===============================================================================
