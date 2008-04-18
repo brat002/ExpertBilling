@@ -561,8 +561,6 @@ class AccountIPNSpeed(models.Model):
         verbose_name_plural = u"Скорости IPN клиентов"
 
 
-
-
 class SummaryTrafic(models.Model):
     """
     Класс предназначен для ведения статистики по трафику, потреблённому пользователями
@@ -667,4 +665,7 @@ class SheduleLog(models.Model):
         verbose_name = u"Периодическая операция"
         verbose_name_plural = u"Периодиеские операции"        
         
-    
+class PreBill(models.Model):
+    account = models.ForeignKey(to=Account)
+    traffic_class = models.ForeignKey(to=Nas)
+        
