@@ -380,3 +380,55 @@ def create_speed_string(params, nas_type, coa=False):
 
 
     return result
+
+# Parsers
+
+class ActiveSessionsParser:
+    """
+    parse strings like
+    Flags: R - radius
+    0 R name=dolphinik service=pptp caller-id=10.10.1.2 address=192.168.12.3 uptime=1h56m6s encoding="" session-id=0x81A00000 limit-bytes-in=0 limit-bytes-out=0
+    1   name=ppp1 service=pptp caller-id=10.10.1.3 address=192.168.12.2 uptime=51s encoding=MPPE128 stateless session-id=0x81A00001 limit-bytes-in=0 limit-bytes-out=0
+    giving
+
+    Usage:
+
+    asp = ActiveSessionsParser(test_string)
+    list = sap.parse()
+
+    print list
+    >> [{'caller-id': '10.10.1.2', 'session-id': '0x81A00000', 'name': 'dolphinik', 'service': 'pptp', 'address': '192.168.12.3'},
+    >> {'caller-id': '10.10.1.3', 'session-id': '0x81A00001', 'name': 'ppp1', 'service': 'pptp', 'address': '192.168.12.2'}]
+
+    """
+    start_field = 'name'
+    fields = ('name','service','caller-id','address','session-id')
+    strings = []
+    ar = []
+
+    def __init__(self, string):
+        import re
+        sts = string.split('\n')
+        for s in sts :
+            m = re.search('(%s.*)' % self.start_field,s)
+            try:
+                self.strings.append(m.groups()[0])
+            except:
+                pass
+
+
+    def parse(self):
+        """
+        return list of dicts
+        """
+        for s in self.strings:
+            strstr = {}
+            for s in [x.strip() for x in s.split(' ') if len(x) >0] :
+                try:
+                    x,y = s.split('=')
+                    if x in self.fields :
+                        strstr[x] = y
+                except ValueError :
+                    pass
+            self.ar.append(strstr)
+        return self.ar
