@@ -237,14 +237,14 @@ def in_period_info(time_start, length, repeat_after, now=None):
 
 
 
-def settlement_period_info(time_start, repeat_after, now=None):
+def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None):
         """
         Функция возвращает дату начала и дату конца текущегопериода
         """
         if not now:
             now=datetime.datetime.now()
         #time_start=time_start.replace(tzinfo='UTC')
-        if type(repeat_after)==int and repeat_after>0:
+        if repeat_after_seconds>0:
             delta_days=now - time_start
             length=repeat_after
             #Когда будет начало в текущем периоде.

@@ -36,6 +36,12 @@ CHOISE_METHODS=(
         (u"SUMM",u"Сумма всех"),
         )
 
+COUNT_METHODS=(
+        (u"INPUT",u"Входящий"),
+        (u"OUTPUT",u"Исходящий"),
+        (u"SUM",u"Входящий+Исходящий"),
+        )
+
 
 CHECK_PERIODS=(
         (u"SP_START",u"С начала расчётного периода"),
@@ -310,8 +316,9 @@ class PrepaidTraffic(models.Model):
 class TrafficTransmitService(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
-    cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM')
-    period_check       = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START')
+    cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
+    period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START', editable=False)
+    count_method      = models.CharField(verbose_name=u"Снимать за", choices=COUNT_METHODS, max_length=32, default='SUM') 
 
 
     def __unicode__(self):
@@ -664,8 +671,4 @@ class SheduleLog(models.Model):
     class Meta:
         verbose_name = u"Периодическая операция"
         verbose_name_plural = u"Периодиеские операции"        
-        
-class PreBill(models.Model):
-    account = models.ForeignKey(to=Account)
-    traffic_class = models.ForeignKey(to=Nas)
         
