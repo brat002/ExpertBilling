@@ -147,7 +147,6 @@ class HandleAuth(HandleBase):
                self.create_speed(tarif_id)
                self.cur.close()
                self.connection.close()
-    
             else:
                  self.cur.close()
                  self.connection.close()
