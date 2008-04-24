@@ -25,14 +25,15 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
     """
 
     if code==40 or (code==43 and coa==True):
+        print 'disconnect request'
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         #sock.connect('10.20.3.1',1700)
-        doc=packet.AcctPacket(code=code, secret=nas_secret, dict=dict)
+        doc = packet.AcctPacket(code=code, secret=nas_secret, dict=dict)
         doc.AddAttribute('NAS-IP-Address', nas_ip)
         doc.AddAttribute('NAS-Identifier', nas_id)
-        doc.AddAttribute('User-Name', str(username))
-        doc.AddAttribute('Acct-Session-Id', str(session_id))
+        doc.AddAttribute('User-Name', username)
+        doc.AddAttribute('Acct-Session-Id', session_id)
         #doc.AddAttribute('Framed-IP-Address', '192.168.12.3')
         if speed_string:
             #Пока только для микротика
@@ -241,6 +242,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         """
         Функция возвращает дату начала и дату конца текущегопериода
         """
+        
         if not now:
             now=datetime.datetime.now()
         #time_start=time_start.replace(tzinfo='UTC')
@@ -322,8 +324,8 @@ class SSHClient(paramiko.SSHClient):
         self.load_system_host_keys()
         self.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
         self.connect(hostname=host,port=port, username=username,password=password)
-
-
+        #self._transport.get_pty('vt100', 60, 80)
+        
     def send_command(self, text):
         stdin, stdout, stderr = self.exec_command(text)
         #print stderr.readlines()==[]
@@ -402,14 +404,14 @@ class ActiveSessionsParser:
 
     """
     start_field = 'name'
-    fields = ('name','service','caller-id','address','session-id')
+    fields = ('name','service','caller-id','address','session-id','target-addresses')
     strings = []
     ar = []
 
     def __init__(self, string):
         import re
-        sts = string.split('\n')
-        for s in sts :
+        #sts = string.split('\n')
+        for s in string :
             m = re.search('(%s.*)' % self.start_field,s)
             try:
                 self.strings.append(m.groups()[0])

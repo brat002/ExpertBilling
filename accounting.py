@@ -67,12 +67,63 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
+            from utilites import SSHClient, ActiveSessionsParser
+            self.connection = pool.connection()
+            self.cur = self.connection.cursor()
+            
+            self.cur.execute(
+                             """
+                             SELECT name, "type", ipaddress, secret, "login", "password" FROM nas_nas;
+                             """
+                             )
+            nasses=self.cur.fetchall()
+            for nas_name, nas_type, nas_ipaddress, nas_secret, nas_login, nas_password in nasses:
+                if nas_type[:8]==u'mikrotik':
+                    ssh=SSHClient(host=nas_ipaddress, port=22, username=nas_login, password=nas_password)
+                    response=ssh.send_command("/ppp active print terse without-paging")[0]
+                    #print response.read()
+                    response=response.readlines()[1:]
+                    result=[]
+                    print response
+                    if nas_type==u'mikrotik2.9':
+                        for r in xrange(0,len(response)-1,4):
+                            result.append(response[r].strip()+response[r+1].strip()+' '+response[r+2].strip())
+                    if nas_type==u"mikrotik3.0":
+                        result=response.readlines()
+                    #print response
+                    print result
+                    sessions=ActiveSessionsParser(result).parse()
+                    ssh.close_chanel()
+                    #перебираем активные сессии на сервере
+                    session=None
+                    for session in sessions:
 
+                        self.cur.execute("""
+                                        SELECT id FROM billservice_account WHERE virtual_ip_address='%s'
+                                        """ % session['address'])
 
-
+                        
+                        if self.cur.fetchone() is not None:
+                            DAE(dict=self.dict, 
+                                code=40, 
+                                nas_secret=nas_secret, 
+                                nas_ip=nas_ipaddress, 
+                                nas_id=nas_name, 
+                                username=session['name'], 
+                                session_id=session['session-id'][2:],  
+                                login='mikrobill', 
+                                password='1234')
+                    
+                    self.cur.execute("""
+                    UPDATE radius_activesession 
+                    SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='ACK' 
+                    WHERE date_end is Null and nas_id='%s';""" % nas_ipaddress)
+                    self.connection.commit()
+                        #print type(nas_ipaddress), type(session['name']), type(nas_secret), type(nas_name), type(session['session-id'])
+                                         
+            time.sleep(10)        
             while True:
-                self.connection = pool.connection()
-                self.cur = self.connection.cursor()
+
                 #Закрываем подвисшие сессии
                 self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
                 
@@ -130,7 +181,6 @@ class check_vpn_access(Thread):
                                continue
                     else:
                         result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id,  login=nas_login, password=nas_password)
-
                     if result==True: 
                         disconnect_result='ACK'
                     elif result==False:
@@ -144,8 +194,8 @@ class check_vpn_access(Thread):
                         )
 
                 self.connection.commit()
-                self.cur.close()
-                self.connection.close()
+                #self.cur.close()
+            
                 time.sleep(self.timeout)
 
         def run(self):
@@ -230,10 +280,10 @@ class periodical_service_bill(Thread):
                             now=datetime.datetime.now()
                             if ps_cash_method=="GRADUAL":
                                 """
-                            # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
-                            # Если закончился один-снимаем всю сумму, указанную в периодической услуге
-                            # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
-                            # а остальные помечаем неактивными и уведомляем администратора
+                                # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
+                                # Если закончился один-снимаем всю сумму, указанную в периодической услуге
+                                # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
+                                # а остальные помечаем неактивными и уведомляем администратора
                                 """
                                 last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
                                 # Здесь нужно проверить сколько раз прошёл расчётный период
@@ -261,6 +311,7 @@ class periodical_service_bill(Thread):
                                     transaction_id = transaction(cursor=cur,
                                     account=account_id,
                                     approved=True,
+                                    type='PS_GRADUAL',
                                     tarif = tariff_id,
                                     summ=cash_summ,
                                     description=u"Проводка по периодической услуге со нятием суммы в течении периода",
@@ -279,25 +330,19 @@ class periodical_service_bill(Thread):
                                 # Для последней проводки ставим статус Approved=True
                                 # для всех сотальных False
                                 # Если последняя проводка меньше или равно дате начала периода-делаем снятие
+                                summ=0
                                 if last_checkout<period_start or (last_checkout is None and account_datetime<period_start):
                                     lc=last_checkout-period_start
                                     nums, ost=divmod(lc.seconds, n)
                                     for i in xrange(nums-1):
-                                        transaction_id = transaction(
-                                        cursor=cur,
-                                        account=account_id,
-                                        approved=True,
-                                        tarif = tariff_id,
-                                        summ=ps_cost,
-                                        description=u"Проводка по периодической услуге со нятием суммы в в начале периода",
-                                        created = now)
-                                        ps_history(cur, ps_id, transaction=transaction_id, created=now)
+                                        summ+=ps_cost
 
                                     transaction_id = transaction(cursor=cur,
                                     account=account_id,
                                     approved=True,
+                                    type='PS_AT_START',
                                     tarif = tariff_id,
-                                    summ=ps_cost,
+                                    summ=ps_cost+summ,
                                     description=u"Проводка по периодической услуге со нятием суммы в начале периода",
                                     created = now)
                                     ps_history(cur, ps_id, transaction=transaction_id, created=now)
@@ -319,26 +364,20 @@ class periodical_service_bill(Thread):
                                # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
                                # Выражение верно т.к. новая проводка совершится каждый раз только после после перехода
                                #в новый период.
+                               summ=0
                                if period_start>last_checkout or (last_checkout==None and now-datetime.timedelta(seconds=n)<=period_start):
 
                                     lc=last_checkout-period_start
                                     nums, ost=divmod((period_end-last_checkout).seconds, n)
                                     for i in xrange(nums-1):
-                                        transaction_id = transaction(cursor=cur,
-                                        account=account_id,
-                                        approved=False,
-                                        tarif = tariff_id,
-                                        summ=cash_summ,
-                                        description=u"Проводка по периодической услуге со нятием суммы в конце периода",
-                                        created = now)
-
-                                        ps_history(cur, ps_id, transaction=transaction_id, created=now)
+                                        summ+=ps_cost
 
                                     transaction_id = transaction(cursor=cur,
                                     account=account_id,
                                     approved=True,
+                                    type='PS_AT_END',
                                     tarif = tariff_id,
-                                    summ=cash_summ,
+                                    summ=ps_cost+summ,
                                     description=u"Проводка по периодической услуге со нятием суммы в конце периода",
                                     created = now)
                                     ps_history(cur, ps_id, transaction=transaction_id, created=now)
@@ -453,6 +492,7 @@ class TimeAccessBill(Thread):
                             if summ>0:
                                 transaction(
                                 cursor=cur,
+                                type='TIME_ACCESS',
                                 account=account_id,
                                 approved=True,
                                 tarif=tarif_id,
@@ -685,8 +725,6 @@ class TimeAccessBill(Thread):
 class NetFlowAggregate(Thread):
     """
     TO-DO: Вынести в NetFlow коллектор
-    """
-    """
     Алгоритм для агрегации трафика:
     Формируем таблицу с агрегированным трафиком
 
@@ -768,7 +806,7 @@ class NetFlowAggregate(Thread):
                     FROM billservice_netflowstream
                     WHERE nas_id='%s' and account_id=%s and
                     tarif_id=%s and
-                    '%s' - date_start < interval '00:01:40' and
+                    '%s' - date_start < interval '00:10:00' and
                     src_addr='%s' and traffic_class_id='%s' and
                     dst_addr='%s' and
                     src_port='%s' and
@@ -1061,6 +1099,7 @@ class NetFlowBill(Thread):
                         #Производим списывание денег
                         transaction(
                         cursor=cur,
+                        type='NETFLOW_BILL',
                         account=account_id,
                         approved=True,
                         tarif=tarif_id,
@@ -1272,13 +1311,13 @@ class settlement_period_service_dog(Thread):
                     
                 
                     
-                period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length)
+                period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length, repeat_after_seconds=length_in)
                 
                 #нужно производить в конце расчётного периода
 
                 if (ballance_checkout is None and datetime.datetime.now()-datetime.timedelta(seconds=delta)<=period_start) or ballance_checkout<=period_start:
                     #В конце расчётного периода снять деньги
-                    if reset_tarif_cost and (ballance_checkout is not None or ballance_checkout<=period_start):
+                    if reset_tarif_cost:
                         cur.execute(
                                     """
                                     SELECT sum(summ) 
@@ -1293,6 +1332,7 @@ class settlement_period_service_dog(Thread):
                             s=cost-summ
                             transaction(
                             cursor=cur,
+                            type='END_PS_MONEY_RESET',
                             account=account_id,
                             approved=True,
                             tarif=tarif_id,
@@ -1362,7 +1402,7 @@ class settlement_period_service_dog(Thread):
 class ipn_service(Thread):
     """
     Тред должен:
-    1. Проверять не изменилась ли скорость для IPN клиентов и меняем её на сервере доступа
+    1. Проверять не изменилась ли скорость для IPN клиентов и менять её на сервере доступа
     2. Если балланс клиента стал меньше 0 - отключать, если уже не отключен (параметр ipn_status в account) и включать, если отключен (ipn_status) и баланс стал больше 0
     3. Если клиент вышел за рамки разрешённого временного диапазона в тарифном плане-отключать 
     """
@@ -1400,7 +1440,6 @@ class ipn_service(Thread):
 
 
     def run(self):
-
         while True:
             self.cur.execute(
                         """
@@ -1484,7 +1523,7 @@ class ipn_service(Thread):
               
 if __name__ == "__main__":
 
-    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.rfc3576")
+    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
     threads.append(check_vpn_access(timeout=60, dict=dict))
@@ -1493,15 +1532,9 @@ if __name__ == "__main__":
 #    traficaccessbill.start()
 
     threads.append(periodical_service_bill())
-    
-
     threads.append(TimeAccessBill())
-    
-
     threads.append(NetFlowAggregate())
-    
-
-    #threads.append(NetFlowBill())
+    threads.append(NetFlowBill())
 
     threads.append(limit_checker())
     
