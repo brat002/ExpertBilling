@@ -20,6 +20,10 @@ DIRECTIONS_LIST=(
                 (u'BOTH',u'Межабонентский'),
                 )
 
+SERVICE_LIST=(
+              ('Virtual', 'VPN'),
+              ('IPN', 'IPN'),
+              )
 
 class Nas(models.Model):
     """
@@ -116,6 +120,8 @@ class IPAddressPool(models.Model):
     name     = models.CharField(max_length=255, verbose_name=u'Имя пула')
     start_IP = models.IPAddressField(verbose_name=u'Начальный адрес')
     end_IP   = models.IPAddressField(verbose_name=u'Конечный адрес')
+    lease_length = models.PositiveIntegerField(verbose_name=u'Время аренды')
+    service    = models.CharField(max_length=32, choices=SERVICE_LIST)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -127,16 +133,17 @@ class IPAddressPool(models.Model):
         verbose_name = u"Пул IP адресов"
         verbose_name_plural = u"Пулы IP адресов"
 
-class IPAddressesInUse(models.Model):
+class IPLeases(models.Model):
     from billservice.models import Account
     pool = models.ForeignKey(to=IPAddressPool)
-    address = models.IPAddressField()
+    ip_address = models.IPAddressField()
     account = models.ForeignKey(to=Account)
-    date_bounded = models.DateTimeField()
-    date_unbounded = models.DateTimeField()
+    mac_address = models.CharField(max_length=22)
+    lease_start = models.DateTimeField()
+    
     
     def __unicode__(self):
-        return u"%s-%s" % (self.address, self.account)
+        return u"%s" % (self.ip_address)
     
     class Admin:
         pass

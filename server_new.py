@@ -28,8 +28,10 @@ class HandleBase(object):
         """
         if self.packetobject['NAS-Port-Type'][0]=='Virtual':
             return 'PPTP'
-        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet':
+        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and self.packetboject.has_key('Service-Type'):
             return 'PPPOE'
+        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and not self.packetboject.has_key('Service-Type'):
+            return 'DHCP'
         return     
     
     def auth_NA(self):
@@ -99,56 +101,59 @@ class HandleAuth(HandleBase):
     
     def handle(self):
         
-        
+        for key,value in self.packetobject.items():
+            print self.packetobject._DecodeKey(key),self.packetobject[key][0]
+                    
         simple_log(packet=self.packetobject)
-
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
-        
-        if row==None:
-            self.cur.close()
-            return self.auth_NA()
-
-        username, password, ipaddress, tarif_id, status, ballance, disabled_by_limit = row
-
-        row=get_nas_id_by_tarif_id(self.cur, tarif_id)
-        if row==None:
-            self.cur.close()
-            self.connection.close()
-            return self.auth_NA()
-        
-        if int(row[0])!=int(self.nas_id) or row[1]!=self.access_type:
-           self.cur.close()
-           self.connection.close()
-           return self.auth_NA()
-        
-
-        #TimeAccess 
-        rows = time_periods_by_tarif_id(self.cur, tarif_id)
-        allow_dial=False
-        for row in rows:
-            if in_period(row[0],row[1],row[2])==True:
-                allow_dial=True
-                break
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[key][0]
-
-        if self.packetobject['User-Name'][0]==username and allow_dial and status=='Enabled' and  ballance>0 and not disabled_by_limit:
-           self.replypacket.code=2
-           self.replypacket.username=str(username) #Нельзя юникод
-           self.replypacket.password=str(password) #Нельзя юникод
-           self.replypacket.AddAttribute('Service-Type', 2)
-           self.replypacket.AddAttribute('Framed-Protocol', 1)
-           self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-           self.replypacket.AddAttribute('Framed-Routing', 0)
-           self.create_speed(tarif_id)
-           self.cur.close()
-           self.connection.close()
-
-        else:
-             self.cur.close()
-             self.connection.close()
-             return self.auth_NA()
-        
+        if self.get_accesstype() in ('PPTP', 'PPPOE'):
+            row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+            
+            if row==None:
+                self.cur.close()
+                return self.auth_NA()
+    
+            username, password, ipaddress, tarif_id, status, ballance, disabled_by_limit = row
+    
+            row=get_nas_id_by_tarif_id(self.cur, tarif_id)
+            if row==None:
+                self.cur.close()
+                self.connection.close()
+                return self.auth_NA()
+            
+            if int(row[0])!=int(self.nas_id) or row[1]!=self.access_type:
+               self.cur.close()
+               self.connection.close()
+               return self.auth_NA()
+            
+    
+            #TimeAccess 
+            rows = time_periods_by_tarif_id(self.cur, tarif_id)
+            allow_dial=False
+            for row in rows:
+                if in_period(row[0],row[1],row[2])==True:
+                    allow_dial=True
+                    break
+                
+    
+    
+            if self.packetobject['User-Name'][0]==username and allow_dial and status=='Enabled' and  ballance>0 and not disabled_by_limit:
+               self.replypacket.code=2
+               self.replypacket.username=str(username) #Нельзя юникод
+               self.replypacket.password=str(password) #Нельзя юникод
+               self.replypacket.AddAttribute('Service-Type', 2)
+               self.replypacket.AddAttribute('Framed-Protocol', 1)
+               self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+               self.replypacket.AddAttribute('Framed-Routing', 0)
+               self.create_speed(tarif_id)
+               self.cur.close()
+               self.connection.close()
+    
+            else:
+                 self.cur.close()
+                 self.connection.close()
+                 return self.auth_NA()
+        elif self.get_accesstype()=='DHCP':
+            pass
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 
@@ -211,7 +216,18 @@ class HandleAcct(HandleBase):
 
                
         if self.packetobject['Acct-Status-Type']==['Start']:
-            if time_access:
+            #Проверяем нет ли такой сессии в базе
+            #self.cur.execute("""
+            #SELECT id
+            #FROM radius_session
+            #WHERE account_id=%s and sessionid='%s' and
+            #caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
+            #""" % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
+            #       self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
+            
+            #allow_write = self.cur.fetchone()==[]
+            allow_write=True
+            if time_access and allow_write:
                 self.cur.execute(
                 """
                 INSERT INTO radius_session(
@@ -222,18 +238,19 @@ class HandleAcct(HandleBase):
                 """, (account_id, self.packetobject['Acct-Session-Id'][0], now, 
                      self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
                      self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
-
-            self.cur.execute(
-            """
-            INSERT INTO radius_activesession(
-            account_id, sessionid, date_start,
-            caller_id, called_id, nas_id, framed_protocol, session_status
-            )
-            VALUES (%s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
-            """, (account_id, self.packetobject['Acct-Session-Id'][0], now, 
-                 self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
-                 self.packetobject['NAS-IP-Address'][0], self.access_type))
-
+            
+            if allow_write:
+                self.cur.execute(
+                """
+                INSERT INTO radius_activesession(
+                account_id, sessionid, date_start,
+                caller_id, called_id, nas_id, framed_protocol, session_status
+                )
+                VALUES (%s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
+                """, (account_id, self.packetobject['Acct-Session-Id'][0], now, 
+                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], 
+                     self.packetobject['NAS-IP-Address'][0], self.access_type))
+    
             self.connection.commit()
 
 
