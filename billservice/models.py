@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass
+from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass, IPAddressPool
 from django.contrib.auth.models import User
 import datetime, time
 
@@ -446,8 +446,9 @@ class Account(models.Model):
     firstname = models.CharField(verbose_name=u'Имя',max_length=200)
     lastname = models.CharField(verbose_name=u'Фамилия',max_length=200)
     address = models.TextField(verbose_name=u'Домашний адрес')
+    vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
     virtual_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
-    condition_dynamic = models.BooleanField(verbose_name=u'Условно динамический IP адрес', help_text=u"Адрес автомаиески назначится при привязке пользователю тарифного плана", blank=True, default=False)
+    ipn_pool = models.ForeignKey(to=IPAddressPool, related_name='ipn_pool', blank=True, null=True)
     ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
     ipn_mac_address = models.IPAddressField(u'MAC адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
     ipn_status = models.CharField(max_length=32, verbose_name=u"Статус на сервере доступа", choices=ACTIVITY_CHOISES, default='disabled')
@@ -457,10 +458,25 @@ class Account(models.Model):
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
+    assign_ip_from_dhcp = models.BooleanField(blank=True, default=False)
+
+    
+    
+    """
+    assign_ip_from_dhcp - если стоит галочка-добавить в таблицу nas_ipleases свободную 
+    запись без времени старта из пула pool и выдавать ему адрес по DHCP. Время конца аренды прописано в пуле.
+    
+    Если выбран пул и указан IP - считать запись статической.
+    Если выбран пул и не указан IP - назначать IP адрес из пула динамически
+    
+    После первой выдачи IP адреса клиенту - поставить дату старта.
+    Для virtual_pool предлагать только пулы с service=vpn
+    Для ipn_pool предлагать только пулы с service=ipn
+    """
 
     class Admin:
         ordering = ['user']
-        list_display = ('user', 'virtual_ip_address', 'condition_dynamic', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
+        list_display = ('user', 'virtual_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
         #list_filter = ('username')
 
     def __str__(self):
@@ -472,6 +488,8 @@ class Account(models.Model):
 
     def save(self):
         id=self.id
+        #if self.assign_ip_from_dhcp and ipn_ip_address!='':
+            
         super(Account, self).save()
         if not id and self.status=='Active':
             cost=0
@@ -485,23 +503,26 @@ class Account(models.Model):
             transaction.description = u'Снятие за первоначальную услугу'
             transaction.save()
 
-#===============================================================================
-# class TransactionType(models.Model):
-#    name = models.CharField(max_length=255)
-#    internal_name = model
-#    
-#    class Admin:
-#        pass
-# 
-#    class Meta:
-#        verbose_name = u"тип проводки"
-#        verbose_name_plural = u"Типы проводок"
+
+class TransactionType(models.Model):
+    name = models.CharField(max_length=255)
+    internal_name = models.CharField(max_length=32, unique=True)
+    
+    def __unicode__(self):
+        return u"%s %s" % (self.name, self.internal_name)
+    
+    class Admin:
+        pass
+ 
+    class Meta:
+        verbose_name = u"тип проводки"
+        verbose_name_plural = u"Типы проводок"
 #===============================================================================
 
  
 class Transaction(models.Model):
     account=models.ForeignKey(Account)
-#    type = models.ForeignKey(to=TransactionType)
+    type = models.ForeignKey(to=TransactionType, to_field='internal_name')
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff)
     summ=models.FloatField(blank=True)
