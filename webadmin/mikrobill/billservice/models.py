@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 from django.db import models
 from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass, IPAddressPool
 from django.contrib.auth.models import User
@@ -318,7 +318,7 @@ class TrafficTransmitService(models.Model):
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
     period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START', editable=False)
-    count_method      = models.CharField(verbose_name=u"Снимать за", choices=COUNT_METHODS, max_length=32, default='SUM') 
+    count_method      = models.CharField(verbose_name=u"Снимать за", choices=COUNT_METHODS, max_length=32, default='SUM')
 
 
     def __unicode__(self):
@@ -380,14 +380,14 @@ class AccountPrepaysTime(models.Model):
     prepaid_time_service = models.ForeignKey(to=TimeAccessService)
     size = models.IntegerField()
     datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Admin:
         pass
-    
+
     class Meta:
         verbose_name = u"Предоплаченное время пользователя"
-        verbose_name_plural = u"Предоплаченное время пользователей"        
-    
+        verbose_name_plural = u"Предоплаченное время пользователей"
+
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
@@ -447,12 +447,12 @@ class Account(models.Model):
     lastname = models.CharField(verbose_name=u'Фамилия',max_length=200)
     address = models.TextField(verbose_name=u'Домашний адрес')
     vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
-    virtual_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
+    vpn_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, null=True)
     ipn_pool = models.ForeignKey(to=IPAddressPool, related_name='ipn_pool', blank=True, null=True)
     ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
-    ipn_mac_address = models.IPAddressField(u'MAC адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, null=True)
-    ipn_status = models.CharField(max_length=32, verbose_name=u"Статус на сервере доступа", choices=ACTIVITY_CHOISES, default='disabled')
-    status=models.CharField(verbose_name=u'Статус пользователя',max_length=200, choices=ACTIVITY_CHOISES,radio_admin=True, default=u'Enabled')
+    ipn_mac_address = models.CharField(u'MAC адрес клиента', max_length=32, help_text=u'Для IPN тарифных планов', blank=True, null=True)
+    ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
+    status=models.BooleanField(verbose_name=u'Статус пользователя', radio_admin=True, default=False)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
     ballance=models.FloatField(u'Балланс', blank=True)
@@ -460,15 +460,15 @@ class Account(models.Model):
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     assign_ip_from_dhcp = models.BooleanField(blank=True, default=False)
 
-    
-    
+
+
     """
-    assign_ip_from_dhcp - если стоит галочка-добавить в таблицу nas_ipleases свободную 
+    assign_ip_from_dhcp - если стоит галочка-добавить в таблицу nas_ipleases свободную
     запись без времени старта из пула pool и выдавать ему адрес по DHCP. Время конца аренды прописано в пуле.
-    
+
     Если выбран пул и указан IP - считать запись статической.
     Если выбран пул и не указан IP - назначать IP адрес из пула динамически
-    
+
     После первой выдачи IP адреса клиенту - поставить дату старта.
     Для virtual_pool предлагать только пулы с service=vpn
     Для ipn_pool предлагать только пулы с service=ipn
@@ -476,7 +476,7 @@ class Account(models.Model):
 
     class Admin:
         ordering = ['user']
-        list_display = ('user', 'virtual_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
+        list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
         #list_filter = ('username')
 
     def __str__(self):
@@ -489,7 +489,7 @@ class Account(models.Model):
     def save(self):
         id=self.id
         #if self.assign_ip_from_dhcp and ipn_ip_address!='':
-            
+
         super(Account, self).save()
         if not id and self.status=='Active':
             cost=0
@@ -507,19 +507,19 @@ class Account(models.Model):
 class TransactionType(models.Model):
     name = models.CharField(max_length=255)
     internal_name = models.CharField(max_length=32, unique=True)
-    
+
     def __unicode__(self):
         return u"%s %s" % (self.name, self.internal_name)
-    
+
     class Admin:
         pass
- 
+
     class Meta:
         verbose_name = u"тип проводки"
         verbose_name_plural = u"Типы проводок"
 #===============================================================================
 
- 
+
 class Transaction(models.Model):
     account=models.ForeignKey(Account)
     type = models.ForeignKey(to=TransactionType, to_field='internal_name')
@@ -685,11 +685,11 @@ class SheduleLog(models.Model):
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
     prepaid_time_reset = models.DateTimeField(blank=True, null=True)
-    
+
     class Admin:
         pass
-    
+
     class Meta:
         verbose_name = u"Периодическая операция"
-        verbose_name_plural = u"Периодиеские операции"        
-        
+        verbose_name_plural = u"Периодиеские операции"
+
