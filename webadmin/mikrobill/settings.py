@@ -86,7 +86,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
 #    'mikrobill.billing',
-    'mikrobill.radius',
-    'mikrobill.nas',
-    'mikrobill.billservice',
+    'radius',
+    'nas',
+    'billservice',
 )
