@@ -44,7 +44,7 @@ from nas.models import IPAddressPool
 
 
 from AccountFrame import AccountsMdiChild
-
+from NasFrame import NasMdiChild
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -83,7 +83,10 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def open(self):
-        return
+        child = NasMdiChild()
+        self.workspace.addWindow(child)
+        child.show()
+        return child
 
 
     def save(self):

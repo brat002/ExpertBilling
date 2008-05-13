@@ -9,7 +9,6 @@ NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
                 (u'mikrotik3',u'Mikrotik 3'),
-                (u'windows2000s',u'Windows 2000 Server'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
                 )
@@ -39,7 +38,7 @@ class Nas(models.Model):
     description = models.TextField(verbose_name=u'Описание', blank=True, null=True)
     allow_pptp = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPTP', default=True)
     allow_pppoe = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPPOE', default=True)
-    allow_ipn = models.BooleanField(verbose_name=u'Сервер поддерживает IPN', help_text=u"IPN - технология, которая позволяет предоставлять доступ в интернет без установления VPN соединения с сервером доступа", blank=True, null=True, default=True)
+    allow_ipn = models.BooleanField(verbose_name=u'Сервер поддерживает IPN', help_text=u"IPN - технология, которая позволяет предоставлять доступ в интернет без установления VPN соединения с сервером доступа", default=True)
     user_add_action = models.TextField(verbose_name=u'Действие при создании пользователя',blank=True, null=True)
     user_enable_action = models.TextField(verbose_name=u'Действие при разрешении работы пользователя',blank=True, null=True)
     user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True)
@@ -47,8 +46,8 @@ class Nas(models.Model):
     support_pod = models.BooleanField(verbose_name=u'Сервер поддерживает PoD', help_text=u"Технология, позволяющая сбрасывать пользователя с линии средствами RADIUS. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     support_netflow = models.BooleanField(verbose_name=u'Сервер поддерживает экспорт NetFlow', help_text=u"Сервер доступа поддерживает экспорт статистики через NetFlow", blank=True, null=True, default=True)
     netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
-    support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", blank=True, null=True, default=True)
-    configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP")
+    support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", default=True)
+    configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP", default=False)
 
 
     def save(self):
