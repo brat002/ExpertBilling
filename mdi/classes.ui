@@ -1,0 +1,228 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>422</width>
+    <height>228</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>150</x>
+     <y>190</y>
+     <width>261</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>30</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="title" >
+    <string>Input</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2" >
+   <property name="geometry" >
+    <rect>
+     <x>230</x>
+     <y>30</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="title" >
+    <string>Output</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>170</y>
+     <width>411</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="toolTip" >
+    <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Должно отображаться, если указан buddy класс&lt;/p>&lt;/body>&lt;/html></string>
+   </property>
+   <property name="text" >
+    <string>Создать/отредактировать в Buddy классе противоположное направление?</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>160</width>
+     <height>100</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <item row="0" column="0" >
+     <widget class="QLabel" name="label" >
+      <property name="text" >
+       <string>Src IP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QLineEdit" name="lineEdit" />
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="label_6" >
+      <property name="text" >
+       <string>Src mask</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QLineEdit" name="lineEdit_3" />
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="label_3" >
+      <property name="text" >
+       <string>Protocol</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QComboBox" name="comboBox" />
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="label_4" >
+      <property name="text" >
+       <string>Src port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QLineEdit" name="lineEdit_5" />
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>240</x>
+     <y>50</y>
+     <width>161</width>
+     <height>74</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" >
+    <item row="0" column="0" >
+     <widget class="QLabel" name="label_2" >
+      <property name="text" >
+       <string>Dst-IP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <widget class="QLineEdit" name="lineEdit_2" />
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="label_7" >
+      <property name="text" >
+       <string>Dst mask</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" >
+     <widget class="QLineEdit" name="lineEdit_4" />
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="label_5" >
+      <property name="text" >
+       <string>Dst port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" >
+     <widget class="QLineEdit" name="lineEdit_6" />
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>1</x>
+     <y>11</y>
+     <width>411</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <item>
+     <widget class="QLabel" name="label_8" >
+      <property name="text" >
+       <string>Название направления</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_7" />
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>368</x>
+     <y>204</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>410</x>
+     <y>210</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

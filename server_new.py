@@ -12,7 +12,7 @@ from threading import Thread
 import dictionary, packet
 
 from utilites import in_period, create_speed_string, DAE
-from db import get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, get_nas_id_by_tarif_id, time_periods_by_tarif_id
+from db import get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
 
 import settings
@@ -101,10 +101,10 @@ class HandleAuth(HandleBase):
 
     def handle(self):
 
-        for key,value in self.packetobject.items():
-            print self.packetobject._DecodeKey(key),self.packetobject[key][0]
+        #for key,value in self.packetobject.items():
+        #    print self.packetobject._DecodeKey(key),self.packetobject[key][0]
 
-        simple_log(packet=self.packetobject)
+        #simple_log(packet=self.packetobject)
         if self.get_accesstype() in ('PPTP', 'PPPOE'):
             row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
 
@@ -112,15 +112,15 @@ class HandleAuth(HandleBase):
                 self.cur.close()
                 return self.auth_NA()
 
-            username, password, ipaddress, tarif_id, status, ballance, disabled_by_limit = row
+            username, password, nas_id,ipaddress, tarif_id, status, ballance, disabled_by_limit = row
+            #Проверка на то, указан ли сервер доступа
+            #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
+            #if row==None:
+            #    self.cur.close()
+            #    self.connection.close()
+            #    return self.auth_NA()
 
-            row=get_nas_id_by_tarif_id(self.cur, tarif_id)
-            if row==None:
-                self.cur.close()
-                self.connection.close()
-                return self.auth_NA()
-
-            if int(row[0])!=int(self.nas_id) or row[1]!=self.access_type:
+            if int(nas_id)!=int(self.nas_id) or row[1]!=self.access_type:
                self.cur.close()
                self.connection.close()
                return self.auth_NA()
