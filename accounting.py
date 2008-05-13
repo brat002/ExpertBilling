@@ -1449,10 +1449,11 @@ class ipn_service(Thread):
                             nas."type", nas.user_enable_action, nas.user_disable_action, nas."login", nas."password", nas."ipaddress",
                             accessparameters.access_type, accessparameters.access_time_id, ipn_speed.speed, ipn_speed.static, ipn_speed.state
                         FROM billservice_account as account
-                        JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                        JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif
+                             WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
                         JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
                         JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
-                        JOIN nas_nas as nas ON nas.id=accessparameters.nas_id
+                        JOIN nas_nas as nas ON nas.id=account.nas_id
                         LEFT JOIN billservice_accountipnspeed as ipn_speed ON ipn_speed.account_id=account.id
                         WHERE account.status=True and accessparameters.access_type='IPN'
                         ;

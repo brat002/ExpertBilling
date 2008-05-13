@@ -72,7 +72,7 @@ class TrafficNode(models.Model):
     """
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
-    name = models.CharField(verbose_name=u'Название направления', max_length=255)
+    name = models.CharField(verbose_name=u'Название направления', max_length=255, blank=True, null=True)
     src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
     src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
@@ -99,6 +99,7 @@ class TrafficClass(models.Model):
     и исходящие направления. Правило: Один класс на одно направление (вх/исх/межабонентский)
     """
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255)
+    buddy = models.ForeignKey('self', verbose_name=u"Противоположный этому класс", blank=True, null=True)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
     color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, null=True)
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)

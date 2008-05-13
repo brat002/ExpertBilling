@@ -1,0 +1,1107 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>518</width>
+    <height>604</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>150</x>
+     <y>560</y>
+     <width>341</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>511</width>
+     <height>541</height>
+    </rect>
+   </property>
+   <property name="currentIndex" >
+    <number>6</number>
+   </property>
+   <widget class="QWidget" name="tab_3" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QLabel" name="label_7" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>51</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Название</string>
+     </property>
+     <property name="buddy" >
+      <cstring>lineEdit</cstring>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit" >
+     <property name="geometry" >
+      <rect>
+       <x>70</x>
+       <y>10</y>
+       <width>391</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_2" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>451</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>Расчётный период</string>
+     </property>
+     <widget class="QCheckBox" name="checkBox_5" >
+      <property name="geometry" >
+       <rect>
+        <x>11</x>
+        <y>11</y>
+        <width>357</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Начать при активации у пользователя данного тарифного плана</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox" >
+      <property name="geometry" >
+       <rect>
+        <x>11</x>
+        <y>36</y>
+        <width>357</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_6" >
+      <property name="geometry" >
+       <rect>
+        <x>11</x>
+        <y>90</y>
+        <width>357</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Производить доснятие суммы до стоимости тарифного плана</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>11</x>
+        <y>62</y>
+        <width>357</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" >
+       <item>
+        <widget class="QLabel" name="label_8" >
+         <property name="text" >
+          <string>Стоимость пакета</string>
+         </property>
+         <property name="buddy" >
+          <cstring>lineEdit_2</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit_2" />
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_7" >
+     <property name="geometry" >
+      <rect>
+       <x>20</x>
+       <y>170</y>
+       <width>371</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Производить снятие денег при нулевом баллансе пользователя</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_7" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QLabel" name="label_12" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Параметры доступа</string>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_3" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>491</width>
+       <height>421</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>Настройки скорости</string>
+     </property>
+     <widget class="QTableWidget" name="tableWidget_7" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>229</y>
+        <width>491</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text" >
+        <string>MAX IN</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>MAX OUT</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>MIN IN</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>MIN OUT</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>BURST IN</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>BURST OUT</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Burst Tr IN</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Burst Tr OUT</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Burst time IN</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Burst time OUT</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Priority</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QToolButton" name="toolButton_15" >
+      <property name="geometry" >
+       <rect>
+        <x>10</x>
+        <y>209</y>
+        <width>25</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>+</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="toolButton_16" >
+      <property name="geometry" >
+       <rect>
+        <x>40</x>
+        <y>209</y>
+        <width>25</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>-</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="toolButton_17" >
+      <property name="geometry" >
+       <rect>
+        <x>70</x>
+        <y>210</y>
+        <width>38</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Copy</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>10</x>
+        <y>14</y>
+        <width>302</width>
+        <height>178</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" >
+       <item row="0" column="1" >
+        <widget class="QLabel" name="label_16" >
+         <property name="text" >
+          <string>IN</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" >
+        <widget class="QLabel" name="label_17" >
+         <property name="text" >
+          <string>OUT</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="label_15" >
+         <property name="text" >
+          <string>MAX</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QLineEdit" name="lineEdit_3" />
+       </item>
+       <item row="1" column="2" >
+        <widget class="QLineEdit" name="lineEdit_4" />
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="label_18" >
+         <property name="text" >
+          <string>MIN</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QLineEdit" name="lineEdit_5" />
+       </item>
+       <item row="2" column="2" >
+        <widget class="QLineEdit" name="lineEdit_6" />
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="label_19" >
+         <property name="text" >
+          <string>Burst</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" >
+        <widget class="QLineEdit" name="lineEdit_7" />
+       </item>
+       <item row="3" column="2" >
+        <widget class="QLineEdit" name="lineEdit_8" />
+       </item>
+       <item row="4" column="0" >
+        <widget class="QLabel" name="label_20" >
+         <property name="text" >
+          <string>Burst Treshold</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" >
+        <widget class="QLineEdit" name="lineEdit_9" />
+       </item>
+       <item row="4" column="2" >
+        <widget class="QLineEdit" name="lineEdit_10" />
+       </item>
+       <item row="5" column="0" >
+        <widget class="QLabel" name="label_21" >
+         <property name="text" >
+          <string>Burst Time</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" >
+        <widget class="QLineEdit" name="lineEdit_11" />
+       </item>
+       <item row="5" column="2" >
+        <widget class="QLineEdit" name="lineEdit_12" />
+       </item>
+       <item row="6" column="0" >
+        <widget class="QLabel" name="label_22" >
+         <property name="text" >
+          <string>Приоритет</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" colspan="2" >
+        <widget class="QLineEdit" name="lineEdit_13" />
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>311</width>
+       <height>48</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_13" >
+        <property name="text" >
+         <string>Тип доступа</string>
+        </property>
+        <property name="buddy" >
+         <cstring>comboBox_2</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2" >
+       <widget class="QComboBox" name="comboBox_2" />
+      </item>
+      <item row="1" column="0" colspan="2" >
+       <widget class="QLabel" name="label_14" >
+        <property name="text" >
+         <string>Разрешённое время доступа</string>
+        </property>
+        <property name="buddy" >
+         <cstring>comboBox_3</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" >
+       <widget class="QComboBox" name="comboBox_3" />
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Tab 1</string>
+    </attribute>
+    <widget class="QCheckBox" name="checkBox" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>141</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Оплата за время</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBox" >
+     <property name="geometry" >
+      <rect>
+       <x>110</x>
+       <y>60</y>
+       <width>121</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>86</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Предоплачено, с</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_2" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>361</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Сбрасывать в конце расчётного периода предоплаченное время</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>161</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Периоды доступа</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>118</width>
+       <height>3</height>
+      </rect>
+     </property>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="tableWidget" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>491</width>
+       <height>271</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Промежуток времени</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Цена за минуту</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="toolButton" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>130</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_2" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>130</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2" >
+    <attribute name="title" >
+     <string>Tab 2</string>
+    </attribute>
+    <widget class="QCheckBox" name="checkBox_3" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>131</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Оплата за трафик</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_4" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>331</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Сбрасывать в конце периода предоплаченый трафик</string>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="geometry" >
+      <rect>
+       <x>380</x>
+       <y>0</y>
+       <width>101</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>Списывать за</string>
+     </property>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>82</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" >
+       <item>
+        <widget class="QRadioButton" name="radioButton" >
+         <property name="text" >
+          <string>Входящий</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButton_2" >
+         <property name="text" >
+          <string>Исходящий</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButton_3" >
+         <property name="text" >
+          <string>Сумму</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QTableWidget" name="tableWidget_2" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>110</y>
+       <width>481</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Класс трафика</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Размер</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QLabel" name="label_3" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>141</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Предоплаченный трафик</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_3" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_4" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>80</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="listWidget" >
+     <property name="geometry" >
+      <rect>
+       <x>30</x>
+       <y>280</y>
+       <width>61</width>
+       <height>221</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>10</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>20</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>50</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>100</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>150</string>
+      </property>
+     </item>
+     <item>
+      <property name="text" >
+       <string>250</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QToolButton" name="toolButton_5" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>260</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_6" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>260</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="tableWidget_3" >
+     <property name="geometry" >
+      <rect>
+       <x>90</x>
+       <y>280</y>
+       <width>411</width>
+       <height>221</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Класс трафика</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Промежуток времени</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Цена</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="toolButton_7" >
+     <property name="geometry" >
+      <rect>
+       <x>80</x>
+       <y>260</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_8" >
+     <property name="geometry" >
+      <rect>
+       <x>110</x>
+       <y>260</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4" >
+     <property name="geometry" >
+      <rect>
+       <x>80</x>
+       <y>240</y>
+       <width>75</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Цены трафика</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>280</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>От:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>480</y>
+       <width>18</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>До:</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_5" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QTableWidget" name="tableWidget_5" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>491</width>
+       <height>471</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Название</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Период</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Стоимость</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Способ снятия</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="toolButton_11" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_12" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_10" >
+     <property name="geometry" >
+      <rect>
+       <x>110</x>
+       <y>10</y>
+       <width>116</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Периодические услуги</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_6" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QTableWidget" name="tableWidget_6" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>491</width>
+       <height>471</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Название</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Стоимость</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="toolButton_13" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_14" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_11" >
+     <property name="geometry" >
+      <rect>
+       <x>140</x>
+       <y>10</y>
+       <width>80</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Разовые услуги</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_4" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QTableWidget" name="tableWidget_4" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>41</y>
+       <width>491</width>
+       <height>471</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Название</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>За поледний</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Период</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Классы трафика</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="toolButton_9" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton_10" >
+     <property name="geometry" >
+      <rect>
+       <x>40</x>
+       <y>20</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_9" >
+     <property name="geometry" >
+      <rect>
+       <x>110</x>
+       <y>10</y>
+       <width>86</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Лимиты трафика</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
