@@ -12,23 +12,24 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
 from billservice.models import Account
-from nas.models import IPAddressPool
+from nas.models import IPAddressPool, Nas
 
 class AddAccountFrame(QtGui.QDialog):
     def __init__(self, model=None):
         super(AddAccountFrame, self).__init__()
         self.model=model
 
-        self.account_label = QLabel(u'Имя пользователя')
-        self.password_label = QLabel(u'Пароль')
+
+        self.password_label = QLabel(u'<b>Пароль</b>')
         self.vpn_ip_label = QLabel(u'VPN IP адрес')
 
-        user_label = QLabel(u'Имя пользователя')
-        username_label = QLabel(u'Аккаунт')
-        password_label = QLabel(u'Пароль')
-        firstname_label = QLabel(u'Имя')
-        lastname_label = QLabel(u'Фамилия')
-        address_label = QLabel(u'Адрес')
+        user_label = QLabel(u'<b>Имя пользователя</b>')
+        username_label = QLabel(u'<b>Аккаунт</b>')
+        password_label = QLabel(u'<b>Пароль</b>')
+        firstname_label = QLabel(u'<b>Имя</b>')
+        lastname_label = QLabel(u'<b>Фамилия</b>')
+        address_label = QLabel(u'<b>Адрес</b>')
+        nas_label = QLabel(u'<b>Сервер доступа</b>')
         vpn_pool_label = QLabel(u'Имя VPN пула')
         vpn_ip_address_label = QLabel(u'VPN IP адрес пользователя')
         ipn_pool_label = QLabel(u'Имя IPN пула')
@@ -53,7 +54,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"), self, QtCore.SLOT("reject()"))
 
 
-        self.user_edit = QComboBox()
+        self.nas_edit = QComboBox()
         self.username_edit = QLineEdit('')
         self.password_edit = QLineEdit('')
         self.password_edit.EchoMode(2)
@@ -61,9 +62,14 @@ class AddAccountFrame(QtGui.QDialog):
         self.lastname_edit = QLineEdit('')
         self.address_edit = QTextEdit()
         self.vpn_pool_edit = QComboBox()
+
         self.vpn_ip_address_edit = QLineEdit('')
+        self.vpn_ip_address_edit.setInputMask("000.000.000.000; ")
+
         self.ipn_pool_edit = QComboBox()
         self.ipn_ip_address_edit = QLineEdit('')
+        self.ipn_ip_address_edit.setInputMask("000.000.000.000; ")
+
         self.ipn_mac_address_edit = QLineEdit('')
         self.ipn_status_edit = QCheckBox()
         self.status_edit = QCheckBox()
@@ -77,7 +83,7 @@ class AddAccountFrame(QtGui.QDialog):
 
         #self.button_add = QPushButton('Save')
 
-        user_label.setBuddy(self.user_edit)
+        nas_label.setBuddy(self.nas_edit)
         username_label.setBuddy(self.username_edit)
         password_label.setBuddy(self.password_edit)
         firstname_label.setBuddy(self.firstname_edit)
@@ -100,7 +106,7 @@ class AddAccountFrame(QtGui.QDialog):
 
         grid = QGridLayout()
 
-        grid.addWidget(user_label,0,0)
+        grid.addWidget(nas_label,0,0)
         grid.addWidget(username_label,1,0)
         grid.addWidget(password_label,2,0)
         grid.addWidget(firstname_label,3,0)
@@ -120,7 +126,7 @@ class AddAccountFrame(QtGui.QDialog):
         grid.addWidget(disabled_by_limit_label,17,0)
         grid.addWidget(assign_ip_from_dhcp_label,18,0)
 
-        grid.addWidget(self.user_edit,0,1)
+        grid.addWidget(self.nas_edit,0,1)
         grid.addWidget(self.username_edit,1,1)
         grid.addWidget(self.password_edit,2,1)
         grid.addWidget(self.firstname_edit,3,1)
@@ -153,6 +159,8 @@ class AddAccountFrame(QtGui.QDialog):
 
 
         self.fixtures()
+    def resizeEvent(self, event):
+        self.size = event.oldSize()
 
     def accept(self):
         """
@@ -162,17 +170,17 @@ class AddAccountFrame(QtGui.QDialog):
 
         if self.model:
             model=self.model
+            model.user.username=unicode(self.username_edit.text())
         else:
-            print 'account'
+            print 'New account'
             model=Account()
-        model.user = User.objects.get(username=unicode(self.user_edit.currentText()))
+            model.user = User.objects.create(username=unicode(self.username_edit.text()), password=unicode(self.password_edit.text()))
 
         model.username = unicode(self.username_edit.text())
 
-
-
         #if self.model.vpn_pool:
         #    self.vpn_pool_edit.setCurrentItem(self.vpn_pool_edit.findItems(self.model.vpn_pool.name, QtCore.Qt.MatchFlags())[0])
+
 
         #if self.model.ipn_pool:
         #    self.ipn_pool_edit.setCurrentItem(self.ipn_pool_edit.findItems(self.model.ipn_pool.name, QtCore.Qt.MatchFlags())[0])
@@ -191,7 +199,7 @@ class AddAccountFrame(QtGui.QDialog):
         model.ipn_ip_address = value
         print 'ipn ok'
 
-        if unicode(self.vpn_ip_address_edit.text())=='None' or unicode(self.vpn_ip_address_edit.text())==u'':
+        if unicode(self.vpn_ip_address_edit.text())== 'None' or unicode(self.vpn_ip_address_edit.text()) == u'':
             value = None
         else:
             value = unicode(self.vpn_ip_address_edit.text())
@@ -199,24 +207,27 @@ class AddAccountFrame(QtGui.QDialog):
         model.vpn_ip_address = value
         print 'vpn ok'
 
-        if unicode(self.ipn_mac_address_edit.text())=='None' or unicode(self.ipn_mac_address_edit.text())==u'':
+        if unicode(self.ipn_mac_address_edit.text()) == 'None' or unicode(self.ipn_mac_address_edit.text()) == u'':
             value = None
         else:
             value = unicode(self.ipn_mac_address_edit.text())
+        print 'mac ok'
 
         model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
-
-        #self.model.ipn_status = self.ipn_status_edit.checkStateSet()
-        #self.model.status = self.status_edit.checkStateSet()
-        #self.model.suspended = self.suspended_edit.checkStateSet()
+        #print self.nas_edit.currentText()
+        model.nas = Nas.objects.get(name=str(self.nas_edit.currentText()))
+        #print self.ipn_status_edit.checkState()
+        model.ipn_status = self.ipn_status_edit.checkState() == 2
+        model.status = self.status_edit.checkState() == 2
+        model.suspended = self.suspended_edit.checkState() == 2
 
         #self.created_edit.setDateTime(QDateTimeEdit.dateTimeFromText(self.model.created))
 
         model.ballance = unicode(self.ballance_edit.text())
         model.credit = unicode(self.credit_edit.text())
-        #print self.disabled_by_limit_edit.checkStateSet()
-        #self.model.disabled_by_limit = self.disabled_by_limit_edit.checkStateSet()
-        #self.model.assign_ip_from_dhcp = self.assign_ip_from_dhcp_edit.checkStateSet()
+        model.disabled_by_limit = self.disabled_by_limit_edit.checkState() == 2
+        model.assign_ip_from_dhcp = self.assign_ip_from_dhcp_edit.checkState() == 2
+
         try:
             model.save()
         except Exception, e:
@@ -230,9 +241,9 @@ class AddAccountFrame(QtGui.QDialog):
     def fixtures(self):
 
 
-        users = User.objects.all()
-        for user in users:
-            self.user_edit.addItem(user.username)
+        #users = User.objects.all()
+        #for user in users:
+        #    self.user_edit.addItem(user.username)
 
         pools = IPAddressPool.objects.all()
 
@@ -240,10 +251,14 @@ class AddAccountFrame(QtGui.QDialog):
             self.ipn_pool_edit.addItem(pool.name)
             self.vpn_pool_edit.addItem(pool.name)
 
+        nasses = Nas.objects.all()
+        for nas in nasses:
+            self.nas_edit.addItem(nas.name)
+
         if self.model:
             self.username_edit.setText(unicode(self.model.username))
 
-            self.user_edit.setCurrentIndex(self.user_edit.findText(self.model.user.username, QtCore.Qt.MatchCaseSensitive))
+            self.nas_edit.setCurrentIndex(self.nas_edit.findText(self.model.nas.name, QtCore.Qt.MatchCaseSensitive))
 
             if self.model.vpn_pool:
                 self.vpn_pool_edit.setCurrentIndex(self.vpn_pool_edit.findText(self.model.vpn_pool.name, QtCore.Qt.MatchFlags())[0])
@@ -259,16 +274,16 @@ class AddAccountFrame(QtGui.QDialog):
             self.vpn_ip_address_edit.setText(unicode(self.model.vpn_ip_address))
             self.ipn_mac_address_edit.setText(unicode(self.model.ipn_mac_address))
 
-            self.ipn_status_edit.setTristate(self.model.ipn_status)
-            self.status_edit.setTristate(self.model.status)
-            self.suspended_edit.setTristate(self.model.suspended)
+            self.ipn_status_edit.setCheckState(self.model.ipn_status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.created_edit.setDateTime(self.model.created)
 
             self.ballance_edit.setText(unicode(self.model.ballance))
             self.credit_edit.setText(unicode(self.model.credit))
 
-            self.disabled_by_limit_edit.setTristate(self.model.disabled_by_limit)
-            self.assign_ip_from_dhcp_edit.setTristate(self.model.assign_ip_from_dhcp)
+            self.disabled_by_limit_edit.setCheckState(self.model.disabled_by_limit == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.assign_ip_from_dhcp_edit.setCheckState(self.model.assign_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
 
 
     def save(self):
@@ -287,21 +302,19 @@ class AccountsMdiChild(QtGui.QDialog):
         self.button_edit = QPushButton('Edit')
         self.button_delete = QPushButton('Delete')
         self.countedit = QLineEdit("100")
-        self.tablewidget = QTableWidget()
+        self.tableWidget = QTableWidget()
 
-        self.tablewidget.setAlternatingRowColors(True)
-        self.tablewidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tablewidget.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tablewidget.setSelectionMode(QTableWidget.SingleSelection)
+        self.tableWidget.setAlternatingRowColors(True)
+        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
+        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
         #self.tablewidget.setSortingEnabled(True)
 
 
-        columns=[u'Id', u'Аккаунт владельца', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'VPN IP адрес', u'IPN IP адрес', u'Усыплён', u'Статус в системе']
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Усыплён', u'Статус в системе']
         i=0
-        self.tablewidget.setColumnCount(len(columns))
-        self.tablewidget.setHorizontalHeaderLabels(columns)
-
-
+        self.tableWidget.setColumnCount(len(columns))
+        self.tableWidget.setHorizontalHeaderLabels(columns)
 
 
         #layout = QVBoxLayout()
@@ -311,11 +324,11 @@ class AccountsMdiChild(QtGui.QDialog):
         layout.addWidget(self.button_add,1,1)
         layout.addWidget(self.button_edit,1,2)
         layout.addWidget(self.button_delete,1,3)
-        layout.addWidget(self.tablewidget,2,0,3,0)
+        layout.addWidget(self.tableWidget,2,0,3,0)
         self.setLayout(layout)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.isUntitled = True
-        self.tablewidget.resizeColumnsToContents()
+        self.tableWidget.resizeColumnsToContents()
         self.resize(1100,600)
         self.setSizeGripEnabled(1)
 
@@ -326,7 +339,8 @@ class AccountsMdiChild(QtGui.QDialog):
         self.connect(self.button_add, QtCore.SIGNAL("clicked()"), self.addframe)
         self.connect(self.button_edit, QtCore.SIGNAL("clicked()"), self.editframe)
         self.connect(self.button_delete, QtCore.SIGNAL("clicked()"), self.delete)
-        self.connect(self.tablewidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.refresh()
 
 
     def addframe(self):
@@ -337,13 +351,15 @@ class AccountsMdiChild(QtGui.QDialog):
         addf.exec_()
         self.refresh()
     def getSelectedId(self):
-        return int(self.tablewidget.item(self.tablewidget.currentRow(), 0).text())
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
     def delete(self):
         id=self.getSelectedId()
         if id>0 and QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
             try:
-                model=Account.objects.get(id=self.getSelectedId()).delete()
+                model=Account.objects.get(id=self.getSelectedId())
+                model.delete()
+                model.user.delete()
             except Exception, e:
                 print e
         self.refresh()
@@ -366,30 +382,31 @@ class AccountsMdiChild(QtGui.QDialog):
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
-        self.tablewidget.setItem(x,y,headerItem)
+        self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
 
     def refresh(self):
         cnt = int(self.countedit.text())
 
         accounts=Account.objects.all().order_by('id')[0:cnt]
-        self.tablewidget.setRowCount(accounts.count())
+        self.tableWidget.setRowCount(accounts.count())
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
         for a in accounts:
             self.addrow(a.id, i,0)
-            self.addrow(a.user, i,1)
-            self.addrow(a.username, i,2)
-            self.addrow(a.ballance, i,3)
-            self.addrow(a.credit, i,4)
-            self.addrow(a.firstname, i,5)
-            self.addrow(a.lastname, i,6)
+            #self.addrow(a.user, i,1)
+            self.addrow(a.username, i,1)
+            self.addrow(a.ballance, i,2)
+            self.addrow(a.credit, i,3)
+            self.addrow(a.firstname, i,4)
+            self.addrow(a.lastname, i,5)
+            self.addrow(a.nas.name,i,6)
             self.addrow(a.vpn_ip_address, i,7)
             self.addrow(a.ipn_ip_address, i,8)
             self.addrow(a.suspended, i,9)
             self.addrow(a.status, i,10)
             i+=1
-        self.tablewidget.resizeColumnsToContents()
+        self.tableWidget.resizeColumnsToContents()
 
     def newFile(self):
         self.isUntitled = True

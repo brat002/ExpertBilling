@@ -44,123 +44,11 @@
     <attribute name="title" >
      <string>Tab 1</string>
     </attribute>
-    <widget class="QLabel" name="label" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>21</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Тип</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox" >
-     <property name="geometry" >
-      <rect>
-       <x>50</x>
-       <y>20</y>
-       <width>111</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text" >
-       <string>Mikrotik 2.8</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>Mikrotik 2.9</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>Mikrotik 3.0</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>-other-</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit" >
-     <property name="geometry" >
-      <rect>
-       <x>50</x>
-       <y>50</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_2" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>50</y>
-       <width>21</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Имя</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_2" >
-     <property name="geometry" >
-      <rect>
-       <x>50</x>
-       <y>80</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_3" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>21</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>IP</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_3" >
-     <property name="geometry" >
-      <rect>
-       <x>50</x>
-       <y>110</y>
-       <width>113</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_4" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>110</y>
-       <width>31</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Secret</string>
-     </property>
-    </widget>
     <widget class="QGroupBox" name="groupBox" >
      <property name="geometry" >
       <rect>
-       <x>209</x>
-       <y>10</y>
+       <x>210</x>
+       <y>130</y>
        <width>171</width>
        <height>121</height>
       </rect>
@@ -168,52 +56,6 @@
      <property name="title" >
       <string>SSH</string>
      </property>
-     <widget class="QLineEdit" name="lineEdit_4" >
-      <property name="geometry" >
-       <rect>
-        <x>50</x>
-        <y>20</y>
-        <width>113</width>
-        <height>20</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="lineEdit_5" >
-      <property name="geometry" >
-       <rect>
-        <x>50</x>
-        <y>50</y>
-        <width>113</width>
-        <height>20</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_5" >
-      <property name="geometry" >
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>31</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>Имя</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_6" >
-      <property name="geometry" >
-       <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>41</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>Пароль</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButton" >
       <property name="geometry" >
        <rect>
@@ -227,11 +69,49 @@
        <string>Test</string>
       </property>
      </widget>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>151</width>
+        <height>48</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label_5" >
+         <property name="text" >
+          <string>Имя</string>
+         </property>
+         <property name="buddy" >
+          <cstring>lineEdit_4</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="lineEdit_4" />
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="label_6" >
+         <property name="text" >
+          <string>Пароль</string>
+         </property>
+         <property name="buddy" >
+          <cstring>lineEdit_5</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QLineEdit" name="lineEdit_5" />
+       </item>
+      </layout>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBox_2" >
      <property name="geometry" >
       <rect>
-       <x>210</x>
+       <x>10</x>
        <y>140</y>
        <width>171</width>
        <height>111</height>
@@ -240,45 +120,128 @@
      <property name="title" >
       <string>Разрешённые сервисы</string>
      </property>
-     <widget class="QCheckBox" name="checkBox" >
+     <widget class="QWidget" name="" >
       <property name="geometry" >
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>70</width>
-        <height>19</height>
+        <width>58</width>
+        <height>68</height>
        </rect>
       </property>
-      <property name="text" >
-       <string>PPTP</string>
-      </property>
+      <layout class="QGridLayout" >
+       <item row="0" column="0" >
+        <widget class="QCheckBox" name="pptp_edit" >
+         <property name="text" >
+          <string>PPTP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QCheckBox" name="pppoe_edit" >
+         <property name="text" >
+          <string>PPPOE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QCheckBox" name="pppoe_edit_2" >
+         <property name="text" >
+          <string>IPN</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
-     <widget class="QCheckBox" name="checkBox_2" >
-      <property name="geometry" >
-       <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>70</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>PPPOE</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="checkBox_3" >
-      <property name="geometry" >
-       <rect>
-        <x>10</x>
-        <y>80</y>
-        <width>70</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>IPN</string>
-      </property>
-     </widget>
+    </widget>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>371</width>
+       <height>100</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Тип</string>
+        </property>
+        <property name="buddy" >
+         <cstring>nas_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QComboBox" name="nas_edit" >
+        <item>
+         <property name="text" >
+          <string>Mikrotik 2.8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Mikrotik 2.9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Mikrotik 3.0</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>-other-</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Имя</string>
+        </property>
+        <property name="buddy" >
+         <cstring>nas_name</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="nas_name" />
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>IP</string>
+        </property>
+        <property name="buddy" >
+         <cstring>nas_ip</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QLineEdit" name="nas_ip" >
+        <property name="inputMask" >
+         <string>000.000.000.000; </string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Secret</string>
+        </property>
+        <property name="buddy" >
+         <cstring>nas_secret</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="QLineEdit" name="nas_secret" />
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2" >
@@ -291,7 +254,7 @@
        <x>10</x>
        <y>10</y>
        <width>381</width>
-       <height>231</height>
+       <height>480</height>
       </rect>
      </property>
      <property name="currentIndex" >
@@ -301,114 +264,110 @@
       <attribute name="title" >
        <string>Tab 1</string>
       </attribute>
-      <widget class="QTextEdit" name="textEdit" >
+      <widget class="QWidget" name="" >
        <property name="geometry" >
         <rect>
          <x>10</x>
-         <y>30</y>
+         <y>110</y>
          <width>361</width>
-         <height>61</height>
+         <height>91</height>
         </rect>
        </property>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QLabel" name="label_8" >
+          <property name="text" >
+           <string>Действие при удалении пользователя: </string>
+          </property>
+          <property name="buddy" >
+           <cstring>textEdit_2</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="textEdit_2" />
+        </item>
+       </layout>
       </widget>
-      <widget class="QLabel" name="label_7" >
+      <widget class="QWidget" name="" >
        <property name="geometry" >
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>201</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Действие при создании пользователя: </string>
-       </property>
-       <property name="buddy" >
-        <cstring>textEdit</cstring>
-       </property>
-      </widget>
-      <widget class="QTextEdit" name="textEdit_2" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>130</y>
          <width>361</width>
-         <height>64</height>
+         <height>91</height>
         </rect>
        </property>
-      </widget>
-      <widget class="QLabel" name="label_8" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>100</y>
-         <width>211</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Действие при удалении пользователя: </string>
-       </property>
-       <property name="buddy" >
-        <cstring>textEdit_2</cstring>
-       </property>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QLabel" name="label_7" >
+          <property name="text" >
+           <string>Действие при создании пользователя: </string>
+          </property>
+          <property name="buddy" >
+           <cstring>textEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="textEdit" />
+        </item>
+       </layout>
       </widget>
      </widget>
      <widget class="QWidget" name="tab_4" >
       <attribute name="title" >
        <string>Tab 2</string>
       </attribute>
-      <widget class="QLabel" name="label_9" >
+      <widget class="QWidget" name="" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>361</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QLabel" name="label_10" >
+          <property name="text" >
+           <string>Действие при запрещении работы пользователя: </string>
+          </property>
+          <property name="buddy" >
+           <cstring>textEdit_4</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="textEdit_4" />
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="" >
        <property name="geometry" >
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>351</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Действие при разрешении работы пользователя:</string>
-       </property>
-       <property name="buddy" >
-        <cstring>textEdit_3</cstring>
-       </property>
-      </widget>
-      <widget class="QTextEdit" name="textEdit_3" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>30</y>
          <width>361</width>
-         <height>61</height>
+         <height>91</height>
         </rect>
        </property>
-      </widget>
-      <widget class="QLabel" name="label_10" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>100</y>
-         <width>361</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Действие при запрещении работы пользователя: </string>
-       </property>
-       <property name="buddy" >
-        <cstring>textEdit_4</cstring>
-       </property>
-      </widget>
-      <widget class="QTextEdit" name="textEdit_4" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>130</y>
-         <width>361</width>
-         <height>64</height>
-        </rect>
-       </property>
+       <layout class="QVBoxLayout" >
+        <item>
+         <widget class="QLabel" name="label_9" >
+          <property name="text" >
+           <string>Действие при разрешении работы пользователя:</string>
+          </property>
+          <property name="buddy" >
+           <cstring>textEdit_3</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="textEdit_3" />
+        </item>
+       </layout>
       </widget>
      </widget>
     </widget>

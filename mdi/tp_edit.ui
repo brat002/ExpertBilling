@@ -38,7 +38,7 @@
     </rect>
    </property>
    <property name="currentIndex" >
-    <number>6</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="tab_3" >
     <attribute name="title" >
@@ -118,7 +118,7 @@
        <string>Производить доснятие суммы до стоимости тарифного плана</string>
       </property>
      </widget>
-     <widget class="QWidget" name="" >
+     <widget class="QWidget" name="layoutWidget" >
       <property name="geometry" >
        <rect>
         <x>11</x>
@@ -291,7 +291,7 @@
        <string>Copy</string>
       </property>
      </widget>
-     <widget class="QWidget" name="" >
+     <widget class="QWidget" name="layoutWidget" >
       <property name="geometry" >
        <rect>
         <x>10</x>
@@ -393,7 +393,7 @@
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="" >
+    <widget class="QWidget" name="layoutWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -600,7 +600,7 @@
      <property name="title" >
       <string>Списывать за</string>
      </property>
-     <widget class="QWidget" name="" >
+     <widget class="QWidget" name="layoutWidget" >
       <property name="geometry" >
        <rect>
         <x>10</x>
