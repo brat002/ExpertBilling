@@ -38,144 +38,119 @@
     </rect>
    </property>
    <property name="currentIndex" >
-    <number>3</number>
+    <number>6</number>
    </property>
    <widget class="QWidget" name="tab_3" >
     <attribute name="title" >
      <string>Page</string>
     </attribute>
-    <widget class="QLabel" name="label_7" >
+    <widget class="QSplitter" name="splitter" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Название</string>
-     </property>
-     <property name="buddy" >
-      <cstring>lineEdit</cstring>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit" >
-     <property name="geometry" >
-      <rect>
-       <x>70</x>
-       <y>10</y>
-       <width>391</width>
-       <height>20</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QGroupBox" name="groupBox_2" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>40</y>
        <width>451</width>
-       <height>121</height>
+       <height>191</height>
       </rect>
      </property>
-     <property name="title" >
-      <string>Расчётный период</string>
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QCheckBox" name="checkBox_5" >
-      <property name="geometry" >
-       <rect>
-        <x>11</x>
-        <y>11</y>
-        <width>357</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>Начать при активации у пользователя данного тарифного плана</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="comboBox" >
-      <property name="geometry" >
-       <rect>
-        <x>11</x>
-        <y>36</y>
-        <width>357</width>
-        <height>20</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="checkBox_6" >
-      <property name="geometry" >
-       <rect>
-        <x>11</x>
-        <y>90</y>
-        <width>357</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>Производить доснятие суммы до стоимости тарифного плана</string>
-      </property>
-     </widget>
-     <widget class="QWidget" name="layoutWidget" >
-      <property name="geometry" >
-       <rect>
-        <x>11</x>
-        <y>62</y>
-        <width>357</width>
-        <height>22</height>
-       </rect>
-      </property>
+     <widget class="QWidget" name="" >
       <layout class="QHBoxLayout" >
        <item>
-        <widget class="QLabel" name="label_8" >
+        <widget class="QLabel" name="name_label" >
          <property name="text" >
-          <string>Стоимость пакета</string>
+          <string>Название</string>
          </property>
          <property name="buddy" >
-          <cstring>lineEdit_2</cstring>
+          <cstring>name_edit</cstring>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_2" />
+        <widget class="QLineEdit" name="name_edit" />
        </item>
       </layout>
      </widget>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_7" >
-     <property name="geometry" >
-      <rect>
-       <x>20</x>
-       <y>170</y>
-       <width>371</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Производить снятие денег при нулевом баллансе пользователя</string>
-     </property>
+     <widget class="QGroupBox" name="sp_groupbox" >
+      <property name="title" >
+       <string>Расчётный период</string>
+      </property>
+      <widget class="QCheckBox" name="checkBox_5" >
+       <property name="geometry" >
+        <rect>
+         <x>11</x>
+         <y>20</y>
+         <width>357</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>Начать при активации у пользователя данного тарифного плана</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox" >
+       <property name="geometry" >
+        <rect>
+         <x>11</x>
+         <y>50</y>
+         <width>357</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBox_6" >
+       <property name="geometry" >
+        <rect>
+         <x>11</x>
+         <y>110</y>
+         <width>357</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>Производить доснятие суммы до стоимости тарифного плана</string>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget" >
+       <property name="geometry" >
+        <rect>
+         <x>11</x>
+         <y>80</y>
+         <width>357</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" >
+        <item>
+         <widget class="QLabel" name="label_8" >
+          <property name="text" >
+           <string>Стоимость пакета</string>
+          </property>
+          <property name="buddy" >
+           <cstring>lineEdit_2</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_2" />
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QCheckBox" name="checkBox_7" >
+      <property name="text" >
+       <string>Производить снятие денег при нулевом баллансе пользователя</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_7" >
     <attribute name="title" >
      <string>Page</string>
     </attribute>
-    <widget class="QLabel" name="label_12" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>111</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Параметры доступа</string>
-     </property>
-    </widget>
-    <widget class="QGroupBox" name="groupBox_3" >
+    <widget class="QGroupBox" name="speed_access_groupBox" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -187,110 +162,6 @@
      <property name="title" >
       <string>Настройки скорости</string>
      </property>
-     <widget class="QTableWidget" name="tableWidget_7" >
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>229</y>
-        <width>491</width>
-        <height>192</height>
-       </rect>
-      </property>
-      <column>
-       <property name="text" >
-        <string>MAX IN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>MAX OUT</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>MIN IN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>MIN OUT</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>BURST IN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>BURST OUT</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst Tr IN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst Tr OUT</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst time IN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst time OUT</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Priority</string>
-       </property>
-      </column>
-     </widget>
-     <widget class="QToolButton" name="toolButton_15" >
-      <property name="geometry" >
-       <rect>
-        <x>10</x>
-        <y>209</y>
-        <width>25</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>+</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="toolButton_16" >
-      <property name="geometry" >
-       <rect>
-        <x>40</x>
-        <y>209</y>
-        <width>25</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>-</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="toolButton_17" >
-      <property name="geometry" >
-       <rect>
-        <x>70</x>
-        <y>210</y>
-        <width>38</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>Copy</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget" >
       <property name="geometry" >
        <rect>
@@ -302,132 +173,261 @@
       </property>
       <layout class="QGridLayout" >
        <item row="0" column="1" >
-        <widget class="QLabel" name="label_16" >
+        <widget class="QLabel" name="in_label" >
          <property name="text" >
           <string>IN</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2" >
-        <widget class="QLabel" name="label_17" >
+        <widget class="QLabel" name="out_label" >
          <property name="text" >
           <string>OUT</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0" >
-        <widget class="QLabel" name="label_15" >
+        <widget class="QLabel" name="max_label" >
          <property name="text" >
           <string>MAX</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1" >
-        <widget class="QLineEdit" name="lineEdit_3" />
+        <widget class="QLineEdit" name="max_in_edit" />
        </item>
        <item row="1" column="2" >
-        <widget class="QLineEdit" name="lineEdit_4" />
+        <widget class="QLineEdit" name="max_out_edit" />
        </item>
        <item row="2" column="0" >
-        <widget class="QLabel" name="label_18" >
+        <widget class="QLabel" name="min_label" >
          <property name="text" >
           <string>MIN</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1" >
-        <widget class="QLineEdit" name="lineEdit_5" />
+        <widget class="QLineEdit" name="min_in_edit" />
        </item>
        <item row="2" column="2" >
-        <widget class="QLineEdit" name="lineEdit_6" />
+        <widget class="QLineEdit" name="min_out_edit" />
        </item>
        <item row="3" column="0" >
-        <widget class="QLabel" name="label_19" >
+        <widget class="QLabel" name="burst_label" >
          <property name="text" >
           <string>Burst</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1" >
-        <widget class="QLineEdit" name="lineEdit_7" />
+        <widget class="QLineEdit" name="burst_in_edit" />
        </item>
        <item row="3" column="2" >
-        <widget class="QLineEdit" name="lineEdit_8" />
+        <widget class="QLineEdit" name="burst_out_edit" />
        </item>
        <item row="4" column="0" >
-        <widget class="QLabel" name="label_20" >
+        <widget class="QLabel" name="burst_treshold_label" >
          <property name="text" >
           <string>Burst Treshold</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1" >
-        <widget class="QLineEdit" name="lineEdit_9" />
+        <widget class="QLineEdit" name="burst_treshold_in_edit" />
        </item>
        <item row="4" column="2" >
-        <widget class="QLineEdit" name="lineEdit_10" />
+        <widget class="QLineEdit" name="burst_treshold_out_edit" />
        </item>
        <item row="5" column="0" >
-        <widget class="QLabel" name="label_21" >
+        <widget class="QLabel" name="burst_time_label" >
          <property name="text" >
           <string>Burst Time</string>
          </property>
         </widget>
        </item>
        <item row="5" column="1" >
-        <widget class="QLineEdit" name="lineEdit_11" />
+        <widget class="QLineEdit" name="burst_time_in_edit" />
        </item>
        <item row="5" column="2" >
-        <widget class="QLineEdit" name="lineEdit_12" />
+        <widget class="QLineEdit" name="burst_time_out_edit" />
        </item>
        <item row="6" column="0" >
-        <widget class="QLabel" name="label_22" >
+        <widget class="QLabel" name="priority_label" >
          <property name="text" >
           <string>Приоритет</string>
          </property>
         </widget>
        </item>
        <item row="6" column="1" colspan="2" >
-        <widget class="QLineEdit" name="lineEdit_13" />
+        <widget class="QLineEdit" name="priority_edit" />
        </item>
       </layout>
      </widget>
+     <widget class="QSplitter" name="splitter_3" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>200</y>
+        <width>491</width>
+        <height>222</height>
+       </rect>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QFrame" name="frame" >
+       <property name="frameShape" >
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="frameShadow" >
+        <enum>QFrame::Raised</enum>
+       </property>
+       <widget class="QToolButton" name="add_speed_button" >
+        <property name="geometry" >
+         <rect>
+          <x>3</x>
+          <y>5</y>
+          <width>22</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text" >
+         <string>+</string>
+        </property>
+        <property name="icon" >
+         <iconset>images/add.png</iconset>
+        </property>
+        <property name="iconSize" >
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="copy_speed_button" >
+        <property name="geometry" >
+         <rect>
+          <x>58</x>
+          <y>4</y>
+          <width>32</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text" >
+         <string>Copy</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="delete_speed_button" >
+        <property name="geometry" >
+         <rect>
+          <x>31</x>
+          <y>5</y>
+          <width>23</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text" >
+         <string>-</string>
+        </property>
+        <property name="icon" >
+         <iconset>images/del.png</iconset>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QTableWidget" name="speed_table" >
+       <column>
+        <property name="text" >
+         <string>MAX IN</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>MAX OUT</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>MIN IN</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>MIN OUT</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>BURST IN</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>BURST OUT</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>Burst Tr IN</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>Burst Tr OUT</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>Burst time IN</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>Burst time OUT</string>
+        </property>
+       </column>
+       <column>
+        <property name="text" >
+         <string>Priority</string>
+        </property>
+       </column>
+      </widget>
+     </widget>
     </widget>
-    <widget class="QWidget" name="layoutWidget" >
+    <widget class="QWidget" name="" >
      <property name="geometry" >
       <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>311</width>
+       <x>12</x>
+       <y>14</y>
+       <width>313</width>
        <height>48</height>
       </rect>
      </property>
      <layout class="QGridLayout" >
       <item row="0" column="0" >
-       <widget class="QLabel" name="label_13" >
+       <widget class="QLabel" name="access_type_label" >
         <property name="text" >
          <string>Тип доступа</string>
         </property>
         <property name="buddy" >
-         <cstring>comboBox_2</cstring>
+         <cstring>access_type_edit</cstring>
         </property>
        </widget>
       </item>
-      <item row="0" column="1" colspan="2" >
-       <widget class="QComboBox" name="comboBox_2" />
+      <item row="0" column="1" >
+       <widget class="QComboBox" name="access_type_edit" />
       </item>
-      <item row="1" column="0" colspan="2" >
-       <widget class="QLabel" name="label_14" >
+      <item row="1" column="0" >
+       <widget class="QLabel" name="access_time_label" >
         <property name="text" >
-         <string>Разрешённое время доступа</string>
+         <string>Время доступа</string>
         </property>
         <property name="buddy" >
-         <cstring>comboBox_3</cstring>
+         <cstring>access_time_edit</cstring>
         </property>
        </widget>
       </item>
-      <item row="1" column="2" >
-       <widget class="QComboBox" name="comboBox_3" />
+      <item row="1" column="1" >
+       <widget class="QComboBox" name="access_time_edit" />
       </item>
      </layout>
     </widget>
@@ -436,7 +436,7 @@
     <attribute name="title" >
      <string>Tab 1</string>
     </attribute>
-    <widget class="QCheckBox" name="checkBox" >
+    <widget class="QCheckBox" name="timeaccess_checkbox" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -449,7 +449,7 @@
       <string>Оплата за время</string>
      </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox" >
+    <widget class="QSpinBox" name="prepaid_edit" >
      <property name="geometry" >
       <rect>
        <x>110</x>
@@ -459,7 +459,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QLabel" name="label" >
+    <widget class="QLabel" name="prepaid_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -472,7 +472,7 @@
       <string>Предоплачено, с</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox_2" >
+    <widget class="QCheckBox" name="reset_time_checkbox" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -485,7 +485,7 @@
       <string>Сбрасывать в конце расчётного периода предоплаченное время</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_2" >
+    <widget class="QLabel" name="time_access_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -511,13 +511,13 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QTableWidget" name="tableWidget" >
+    <widget class="QTableWidget" name="timeaccess_table" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>150</y>
        <width>491</width>
-       <height>271</height>
+       <height>355</height>
       </rect>
      </property>
      <column>
@@ -531,31 +531,44 @@
       </property>
      </column>
     </widget>
-    <widget class="QToolButton" name="toolButton" >
+    <widget class="QFrame" name="frame_2" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>130</y>
-       <width>25</width>
-       <height>20</height>
+       <y>123</y>
+       <width>491</width>
+       <height>27</height>
       </rect>
      </property>
-     <property name="text" >
-      <string>+</string>
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
      </property>
-    </widget>
-    <widget class="QToolButton" name="toolButton_2" >
-     <property name="geometry" >
-      <rect>
-       <x>40</x>
-       <y>130</y>
-       <width>25</width>
-       <height>20</height>
-      </rect>
+     <property name="frameShadow" >
+      <enum>QFrame::Raised</enum>
      </property>
-     <property name="text" >
-      <string>-</string>
-     </property>
+     <widget class="QSplitter" name="splitter_2" >
+      <property name="geometry" >
+       <rect>
+        <x>6</x>
+        <y>3</y>
+        <width>60</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QToolButton" name="add_time_button" >
+       <property name="text" >
+        <string>+</string>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="delete_time_button" >
+       <property name="text" >
+        <string>-</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2" >
@@ -1001,9 +1014,9 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>41</y>
+       <y>40</y>
        <width>491</width>
-       <height>471</height>
+       <height>472</height>
       </rect>
      </property>
      <column>
@@ -1069,6 +1082,7 @@
    </widget>
   </widget>
  </widget>
+ <includes/>
  <resources/>
  <connections>
   <connection>
@@ -1104,4 +1118,21 @@
    </hints>
   </connection>
  </connections>
+ <designerdata>
+  <property name="gridDeltaX" >
+   <number>10</number>
+  </property>
+  <property name="gridDeltaY" >
+   <number>10</number>
+  </property>
+  <property name="gridSnapX" >
+   <bool>false</bool>
+  </property>
+  <property name="gridSnapY" >
+   <bool>false</bool>
+  </property>
+  <property name="gridVisible" >
+   <bool>true</bool>
+  </property>
+ </designerdata>
 </ui>
