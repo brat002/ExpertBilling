@@ -48,7 +48,7 @@ class Nas(models.Model):
     netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
     support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", default=True)
     configure_nas = models.BooleanField(verbose_name=u'Произвести начальное конфигурирование сервера доступа?',help_text=u"На сервере доступа будет настроен RADIUS клиент, включен PPTP", default=False)
-
+    confstring = models.TextField(verbose_name="Конфигурация по запросу", blank=True, default='')
 
     def save(self):
         if self.configure_nas==True:
