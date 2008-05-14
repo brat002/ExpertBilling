@@ -1,0 +1,512 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>427</width>
+    <height>476</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>70</x>
+     <y>440</y>
+     <width>341</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>421</width>
+     <height>421</height>
+    </rect>
+   </property>
+   <property name="currentIndex" >
+    <number>2</number>
+   </property>
+   <widget class="QWidget" name="tab" >
+    <attribute name="title" >
+     <string>Tab 1</string>
+    </attribute>
+    <widget class="QLabel" name="address_label" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>230</y>
+       <width>44</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Адрес</string>
+     </property>
+     <property name="buddy" >
+      <cstring>address_edit</cstring>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="address_edit" >
+     <property name="geometry" >
+      <rect>
+       <x>58</x>
+       <y>240</y>
+       <width>333</width>
+       <height>111</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="status_edit" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>370</y>
+       <width>70</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Включен</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="suspended_edit" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>210</y>
+       <width>325</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Не производить списывание денег по периодическим услугам</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>148</y>
+       <width>325</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="ballance_label" >
+        <property name="text" >
+         <string>Текущий балланс</string>
+        </property>
+        <property name="buddy" >
+         <cstring>ballance_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="ballance_edit" />
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="credit_label" >
+        <property name="text" >
+         <string>Максимальный кредит</string>
+        </property>
+        <property name="buddy" >
+         <cstring>credit_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="credit_edit" />
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="" >
+     <property name="geometry" >
+      <rect>
+       <x>11</x>
+       <y>7</y>
+       <width>391</width>
+       <height>141</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="username_label" >
+        <property name="text" >
+         <string>Логин</string>
+        </property>
+        <property name="buddy" >
+         <cstring>username_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="username_edit" />
+      </item>
+      <item row="0" column="2" >
+       <widget class="QToolButton" name="generate_login_toolButton" >
+        <property name="text" >
+         <string>Сгенерировать</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="password_label" >
+        <property name="text" >
+         <string>Пароль</string>
+        </property>
+        <property name="buddy" >
+         <cstring>password_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="password_edit" />
+      </item>
+      <item row="1" column="2" >
+       <widget class="QToolButton" name="generate_password_toolButton" >
+        <property name="text" >
+         <string>Сгенерировать</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Имя</string>
+        </property>
+        <property name="buddy" >
+         <cstring>firstname_edit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2" >
+       <widget class="QLineEdit" name="firstname_edit" />
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="lastname_edit" >
+        <property name="text" >
+         <string>Фамилия</string>
+        </property>
+        <property name="buddy" >
+         <cstring>lineEdit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2" >
+       <widget class="QLineEdit" name="lineEdit" />
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2" >
+    <attribute name="title" >
+     <string>Tab 2</string>
+    </attribute>
+    <widget class="QGroupBox" name="ip_settings_groupBox" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>391</width>
+       <height>341</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>IP Адреса</string>
+     </property>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>352</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" >
+       <item row="0" column="0" colspan="2" >
+        <widget class="QCheckBox" name="assign_ipn_ip_from_dhcp_edit" >
+         <property name="text" >
+          <string>Выдавать IP адрес с помощью DHCP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="ipn_dhcp_pool_label" >
+         <property name="text" >
+          <string>DHCP пул</string>
+         </property>
+         <property name="buddy" >
+          <cstring>dhcp_pool_edit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2" >
+        <widget class="QComboBox" name="dhcp_pool_edit" />
+       </item>
+       <item row="1" column="3" >
+        <widget class="QToolButton" name="assign_ipn_address_toolButton" >
+         <property name="text" >
+          <string>Назначить адрес</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="ipn_ip_address_label" >
+         <property name="text" >
+          <string>Текущий адрес</string>
+         </property>
+         <property name="buddy" >
+          <cstring>ipn_ip_address_edit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QLineEdit" name="ipn_ip_address_edit" >
+         <property name="inputMask" >
+          <string>000.000.000.000; </string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="ipn_mac_address_label" >
+         <property name="text" >
+          <string>Аппаратный адрес</string>
+         </property>
+         <property name="buddy" >
+          <cstring>ipn_mac_address_edit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" >
+        <widget class="QLineEdit" name="ipn_mac_address_edit" >
+         <property name="inputMask" >
+          <string>00:00:00:00:00:00;0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2" colspan="2" >
+        <widget class="QToolButton" name="get_mac_address_toolButton" >
+         <property name="text" >
+          <string>Получить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2" >
+        <widget class="QCheckBox" name="assign_vpn_ip_from_dhcp_edit_2" >
+         <property name="text" >
+          <string>Выдавать VPN адрес с помощью DHCP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" >
+        <widget class="QLabel" name="vpn_dhcp_pool_label" >
+         <property name="text" >
+          <string>DHCP пул</string>
+         </property>
+         <property name="buddy" >
+          <cstring>assign_vpn_ip_from_dhcp_edit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="2" >
+        <widget class="QComboBox" name="assign_vpn_ip_from_dhcp_edit" />
+       </item>
+       <item row="5" column="3" >
+        <widget class="QToolButton" name="assign_vpn_address_toolButton" >
+         <property name="text" >
+          <string>Назначить адрес</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" >
+        <widget class="QLabel" name="vpn_ip_address_label" >
+         <property name="text" >
+          <string>Текущий адрес</string>
+         </property>
+         <property name="buddy" >
+          <cstring>vpn_ip_address_edit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" >
+        <widget class="QLineEdit" name="vpn_ip_address_edit" >
+         <property name="inputMask" >
+          <string>000.000.000.000; </string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QSplitter" name="splitter" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>281</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QLabel" name="label_2" >
+      <property name="text" >
+       <string>Сервер доступа</string>
+      </property>
+      <property name="buddy" >
+       <cstring>comboBox</cstring>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox" />
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_3" >
+    <attribute name="title" >
+     <string>Page</string>
+    </attribute>
+    <widget class="QTableWidget" name="accounttarif_table" >
+     <property name="geometry" >
+      <rect>
+       <x>0</x>
+       <y>90</y>
+       <width>411</width>
+       <height>291</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Тарифный план</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Дата </string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QToolButton" name="add_accounttarif_toolButton" >
+     <property name="geometry" >
+      <rect>
+       <x>0</x>
+       <y>70</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="del_accounttarif_toolButton" >
+     <property name="geometry" >
+      <rect>
+       <x>30</x>
+       <y>70</y>
+       <width>25</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3" >
+     <property name="geometry" >
+      <rect>
+       <x>100</x>
+       <y>10</y>
+       <width>311</width>
+       <height>42</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Здесь вы можете просмотреть историю тарифных планов
+ пользователя и создать задания для перехода на
+ новые тарифные планы</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>username_edit</tabstop>
+  <tabstop>generate_login_toolButton</tabstop>
+  <tabstop>password_edit</tabstop>
+  <tabstop>generate_password_toolButton</tabstop>
+  <tabstop>firstname_edit</tabstop>
+  <tabstop>lineEdit</tabstop>
+  <tabstop>ballance_edit</tabstop>
+  <tabstop>credit_edit</tabstop>
+  <tabstop>suspended_edit</tabstop>
+  <tabstop>address_edit</tabstop>
+  <tabstop>status_edit</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>assign_ipn_ip_from_dhcp_edit</tabstop>
+  <tabstop>dhcp_pool_edit</tabstop>
+  <tabstop>assign_ipn_address_toolButton</tabstop>
+  <tabstop>ipn_ip_address_edit</tabstop>
+  <tabstop>ipn_mac_address_edit</tabstop>
+  <tabstop>get_mac_address_toolButton</tabstop>
+  <tabstop>assign_vpn_ip_from_dhcp_edit_2</tabstop>
+  <tabstop>assign_vpn_ip_from_dhcp_edit</tabstop>
+  <tabstop>assign_vpn_address_toolButton</tabstop>
+  <tabstop>vpn_ip_address_edit</tabstop>
+  <tabstop>add_accounttarif_toolButton</tabstop>
+  <tabstop>del_accounttarif_toolButton</tabstop>
+  <tabstop>accounttarif_table</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

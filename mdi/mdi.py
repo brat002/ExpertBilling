@@ -34,8 +34,8 @@ import mdi_rc
 
 import os, sys
 
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
+sys.path.append('k:/mikrobill/current/webadmin')
+sys.path.append('k:/mikrobill/current/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User

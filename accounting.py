@@ -1,11 +1,12 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import DAE, settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
 from db import get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
+import Pyro.core
 
 import settings
 import psycopg2
@@ -67,7 +68,7 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
-            from utilites import SSHClient, ActiveSessionsParser
+            from utilites import ActiveSessionsParser
             self.connection = pool.connection()
             self.cur = self.connection.cursor()
 
@@ -79,7 +80,10 @@ class check_vpn_access(Thread):
             nasses=self.cur.fetchall()
             for nas_name, nas_type, nas_ipaddress, nas_secret, nas_login, nas_password in nasses:
                 if nas_type[:8]==u'mikrotik':
-                    ssh=SSHClient(host=nas_ipaddress, port=22, username=nas_login, password=nas_password)
+                    try:
+                        ssh=SSHClient(host=nas_ipaddress, port=22, username=nas_login, password=nas_password)
+                    except:
+                        continue
                     response=ssh.send_command("/ppp active print terse without-paging")[0]
                     #print response.read()
                     response=response.readlines()[1:]
@@ -759,7 +763,7 @@ class NetFlowAggregate(Thread):
             nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id,
             tariff.traffic_transmit_service_id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
-            LEFT JOIN billservice_account as ba ON ba.virtual_ip_address=nf.src_addr OR ba.virtual_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
+            LEFT JOIN billservice_account as ba ON ba.vpn_ip_address=nf.src_addr OR ba.vpn_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
             JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
             JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
             JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
@@ -1522,6 +1526,45 @@ class ipn_service(Thread):
             self.connection.commit()
             time.sleep(60)
 
+class RPCServer(Thread):
+    def __init__ (self):
+        Thread.__init__(self)
+
+    class RPC(Pyro.core.ObjBase):
+        def __init__(self):
+            Pyro.core.ObjBase.__init__(self)
+        Pyro.core.initServer()
+
+
+        def testCredentials(self, host, login, password):
+            try:
+                print host, login, password
+                a=SSHClient(host, 22,login, password)
+                a.close()
+            except Exception, e:
+                print e
+                return False
+            return True
+
+        def configureNAS(self, host, login, password, configuration):
+            try:
+                a=SSHClient(host, 22,login, password)
+                a.send_command(configuration)
+                a.close()
+            except Exception, e:
+                print e
+                return False
+            return True
+
+
+    daemon=Pyro.core.Daemon()
+    uri=daemon.connect(RPC(),"rpc")
+    daemon.requestLoop()
+
+
+
+
+
 if __name__ == "__main__":
 
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
@@ -1544,6 +1587,8 @@ if __name__ == "__main__":
 
 
     threads.append(settlement_period_service_dog())
+
+    threads.append(RPCServer())
     for th in threads:
         th.start()
 
@@ -1552,8 +1597,8 @@ if __name__ == "__main__":
 
             if not t.isAlive():
                 print 'restarting thread', t.getName()
-                t.__init__()
-                t.start()
+                #t.__init__()
+                #t.start()
                 print 'thread status', t.getName(), t.isAlive()
         time.sleep(15)
 

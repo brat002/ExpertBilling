@@ -13,155 +13,330 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
 from billservice.models import Account
 from nas.models import IPAddressPool, Nas
+from django.db import transaction
+from randgen import nameGen, GenPasswd2
 
 class AddAccountFrame(QtGui.QDialog):
     def __init__(self, model=None):
         super(AddAccountFrame, self).__init__()
         self.model=model
 
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,427,476).size()).expandedTo(self.minimumSizeHint()))
 
-        self.password_label = QLabel(u'<b>Пароль</b>')
-        self.vpn_ip_label = QLabel(u'VPN IP адрес')
-
-        user_label = QLabel(u'<b>Имя пользователя</b>')
-        username_label = QLabel(u'<b>Аккаунт</b>')
-        password_label = QLabel(u'<b>Пароль</b>')
-        firstname_label = QLabel(u'<b>Имя</b>')
-        lastname_label = QLabel(u'<b>Фамилия</b>')
-        address_label = QLabel(u'<b>Адрес</b>')
-        nas_label = QLabel(u'<b>Сервер доступа</b>')
-        vpn_pool_label = QLabel(u'Имя VPN пула')
-        vpn_ip_address_label = QLabel(u'VPN IP адрес пользователя')
-        ipn_pool_label = QLabel(u'Имя IPN пула')
-        ipn_ip_address_label = QLabel(u'IP адрес пльзователя')
-        ipn_mac_address_label = QLabel(u'MAC адрес')
-        ipn_status_label = QLabel(u'Статус на сервере доступа')
-        status_label = QLabel(u'Статус пользователя в системе')
-        suspended_label = QLabel(u'Не списывать деньги по периодичесим слугам')
-        created_label = QLabel(u'Дата создания')
-        ballance_label = QLabel(u'Текущий балланс')
-        credit_label = QLabel(u'Максимальный кредит')
-        disabled_by_limit_label = QLabel(u'Отключен за превышение лимита')
-        assign_ip_from_dhcp_label = QLabel(u'Назначить IP адрес через DHCP')
-
-        self.buttonBox = QDialogButtonBox()
-        self.buttonBox.setGeometry(QtCore.QRect(30,240,341,32))
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(70,440,341,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
 
 
-        self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"), self, QtCore.SLOT("accept()"))
-        self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"), self, QtCore.SLOT("reject()"))
+        self.tabWidget = QtGui.QTabWidget(self)
+        self.tabWidget.setGeometry(QtCore.QRect(0,10,421,421))
 
 
-        self.nas_edit = QComboBox()
-        self.username_edit = QLineEdit('')
-        self.password_edit = QLineEdit('')
-        self.password_edit.EchoMode(2)
-        self.firstname_edit = QLineEdit('')
-        self.lastname_edit = QLineEdit('')
-        self.address_edit = QTextEdit()
-        self.vpn_pool_edit = QComboBox()
+        self.tab = QtGui.QWidget()
 
-        self.vpn_ip_address_edit = QLineEdit('')
-        self.vpn_ip_address_edit.setInputMask("000.000.000.000; ")
-
-        self.ipn_pool_edit = QComboBox()
-        self.ipn_ip_address_edit = QLineEdit('')
-        self.ipn_ip_address_edit.setInputMask("000.000.000.000; ")
-
-        self.ipn_mac_address_edit = QLineEdit('')
-        self.ipn_status_edit = QCheckBox()
-        self.status_edit = QCheckBox()
-        self.suspended_edit = QCheckBox()
-        self.created_edit = QDateTimeEdit()
-        self.created_edit.setCalendarPopup(True)
-        self.ballance_edit = QLineEdit('0')
-        self.credit_edit = QLineEdit('0')
-        self.disabled_by_limit_edit = QCheckBox()
-        self.assign_ip_from_dhcp_edit = QCheckBox()
-
-        #self.button_add = QPushButton('Save')
-
-        nas_label.setBuddy(self.nas_edit)
-        username_label.setBuddy(self.username_edit)
-        password_label.setBuddy(self.password_edit)
-        firstname_label.setBuddy(self.firstname_edit)
-        lastname_label.setBuddy(self.lastname_edit)
-        address_label.setBuddy(self.address_edit)
-        vpn_pool_label.setBuddy(self.vpn_pool_edit)
-        vpn_ip_address_label.setBuddy(self.vpn_ip_address_edit)
-        ipn_pool_label.setBuddy(self.ipn_pool_edit)
-        ipn_ip_address_label.setBuddy(self.ipn_ip_address_edit)
-        ipn_mac_address_label.setBuddy(self.ipn_mac_address_edit)
-        ipn_status_label.setBuddy(self.ipn_status_edit)
-        status_label.setBuddy(self.status_edit)
-        suspended_label.setBuddy(self.suspended_edit)
-        created_label.setBuddy(self.created_edit)
-        ballance_label.setBuddy(self.ballance_edit)
-        credit_label.setBuddy(self.credit_edit)
-        disabled_by_limit_label.setBuddy(self.disabled_by_limit_edit)
-        assign_ip_from_dhcp_label.setBuddy(self.assign_ip_from_dhcp_edit)
+        self.address_label = QtGui.QLabel(self.tab)
+        self.address_label.setGeometry(QtCore.QRect(10,230,44,21))
 
 
-        grid = QGridLayout()
-
-        grid.addWidget(nas_label,0,0)
-        grid.addWidget(username_label,1,0)
-        grid.addWidget(password_label,2,0)
-        grid.addWidget(firstname_label,3,0)
-        grid.addWidget(lastname_label,4,0)
-        grid.addWidget(address_label,5,0)
-        grid.addWidget(vpn_pool_label,6,0)
-        grid.addWidget(vpn_ip_address_label,7,0)
-        grid.addWidget(ipn_pool_label,8,0)
-        grid.addWidget(ipn_ip_address_label,9,0)
-        grid.addWidget(ipn_mac_address_label,10,0)
-        grid.addWidget(ipn_status_label,11,0)
-        grid.addWidget(status_label,12,0)
-        grid.addWidget(suspended_label,13,0)
-        grid.addWidget(created_label,14,0)
-        grid.addWidget(ballance_label,15,0)
-        grid.addWidget(credit_label,16,0)
-        grid.addWidget(disabled_by_limit_label,17,0)
-        grid.addWidget(assign_ip_from_dhcp_label,18,0)
-
-        grid.addWidget(self.nas_edit,0,1)
-        grid.addWidget(self.username_edit,1,1)
-        grid.addWidget(self.password_edit,2,1)
-        grid.addWidget(self.firstname_edit,3,1)
-        grid.addWidget(self.lastname_edit,4,1)
-        grid.addWidget(self.address_edit,5,1)
-        grid.addWidget(self.vpn_pool_edit,6,1)
-        grid.addWidget(self.vpn_ip_address_edit,7,1)
-        grid.addWidget(self.ipn_pool_edit,8,1)
-        grid.addWidget(self.ipn_ip_address_edit,9,1)
-        grid.addWidget(self.ipn_mac_address_edit,10,1)
-        grid.addWidget(self.ipn_status_edit,11,1)
-        grid.addWidget(self.status_edit,12,1)
-        grid.addWidget(self.suspended_edit,13,1)
-        grid.addWidget(self.created_edit,14,1)
-        grid.addWidget(self.ballance_edit,15,1)
-        grid.addWidget(self.credit_edit,16,1)
-        grid.addWidget(self.disabled_by_limit_edit,17,1)
-        grid.addWidget(self.assign_ip_from_dhcp_edit,18,1)
+        self.address_edit = QtGui.QTextEdit(self.tab)
+        self.address_edit.setGeometry(QtCore.QRect(58,240,333,111))
 
 
-        #grid.addWidget(self.button_add,19,1)
-        grid.addWidget(self.buttonBox,19,0,2,2)
+        self.status_edit = QtGui.QCheckBox(self.tab)
+        self.status_edit.setGeometry(QtCore.QRect(10,370,70,19))
 
-        #layout = QVBoxLayout()
 
-        self.setLayout(grid)
+        self.suspended_edit = QtGui.QCheckBox(self.tab)
+        self.suspended_edit.setGeometry(QtCore.QRect(10,210,345,19))
 
-        #self.connect(self.button_add,  QtCore.SIGNAL("clicked()"), self.save)
-        #self.connect(self.button_add, QtCore.SIGNAL("clicked()"), self, QtCore.SLOT("accept()"))
+
+        self.widget = QtGui.QWidget(self.tab)
+        self.widget.setGeometry(QtCore.QRect(10,148,325,61))
+
+
+        self.gridlayout = QtGui.QGridLayout(self.widget)
+
+
+        self.ballance_label = QtGui.QLabel(self.widget)
+
+        self.gridlayout.addWidget(self.ballance_label,0,0,1,1)
+
+        self.ballance_edit = QtGui.QLineEdit(self.widget)
+
+        self.gridlayout.addWidget(self.ballance_edit,0,1,1,1)
+
+        self.credit_label = QtGui.QLabel(self.widget)
+
+        self.gridlayout.addWidget(self.credit_label,1,0,1,1)
+
+        self.credit_edit = QtGui.QLineEdit(self.widget)
+
+        self.gridlayout.addWidget(self.credit_edit,1,1,1,1)
+
+        self.widget1 = QtGui.QWidget(self.tab)
+        self.widget1.setGeometry(QtCore.QRect(11,7,391,141))
+
+
+        self.gridlayout1 = QtGui.QGridLayout(self.widget1)
+
+
+        self.username_label = QtGui.QLabel(self.widget1)
+
+        self.gridlayout1.addWidget(self.username_label,0,0,1,1)
+
+        self.username_edit = QtGui.QLineEdit(self.widget1)
+
+        self.gridlayout1.addWidget(self.username_edit,0,1,1,1)
+
+        self.generate_login_toolButton = QtGui.QToolButton(self.widget1)
+
+        self.gridlayout1.addWidget(self.generate_login_toolButton,0,2,1,1)
+
+        self.password_label = QtGui.QLabel(self.widget1)
+
+        self.gridlayout1.addWidget(self.password_label,1,0,1,1)
+
+        self.password_edit = QtGui.QLineEdit(self.widget1)
+
+        self.gridlayout1.addWidget(self.password_edit,1,1,1,1)
+
+        self.generate_password_toolButton = QtGui.QToolButton(self.widget1)
+
+        self.gridlayout1.addWidget(self.generate_password_toolButton,1,2,1,1)
+
+        self.firstname_label = QtGui.QLabel(self.widget1)
+
+        self.gridlayout1.addWidget(self.firstname_label,2,0,1,1)
+
+        self.firstname_edit = QtGui.QLineEdit(self.widget1)
+
+        self.gridlayout1.addWidget(self.firstname_edit,2,1,1,2)
+
+        self.lastname_label = QtGui.QLabel(self.widget1)
+
+        self.gridlayout1.addWidget(self.lastname_label,3,0,1,1)
+
+        self.lastname_edit = QtGui.QLineEdit(self.widget1)
+
+        self.gridlayout1.addWidget(self.lastname_edit,3,1,1,2)
+        self.tabWidget.addTab(self.tab,"")
+
+        self.tab_2 = QtGui.QWidget()
+
+
+        self.ip_settings_groupBox = QtGui.QGroupBox(self.tab_2)
+        self.ip_settings_groupBox.setGeometry(QtCore.QRect(10,40,391,341))
+
+
+        self.widget2 = QtGui.QWidget(self.ip_settings_groupBox)
+        self.widget2.setGeometry(QtCore.QRect(20,20,352,231))
+
+
+        self.gridlayout2 = QtGui.QGridLayout(self.widget2)
+
+
+        self.assign_ipn_ip_from_dhcp_edit = QtGui.QCheckBox(self.widget2)
+
+        self.gridlayout2.addWidget(self.assign_ipn_ip_from_dhcp_edit,0,0,1,2)
+
+        self.ipn_dhcp_pool_label = QtGui.QLabel(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_dhcp_pool_label,1,0,1,1)
+
+        self.ipn_dhcp_pool_edit = QtGui.QComboBox(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_dhcp_pool_edit,1,1,1,2)
+
+        self.assign_ipn_address_toolButton = QtGui.QToolButton(self.widget2)
+
+        self.gridlayout2.addWidget(self.assign_ipn_address_toolButton,1,3,1,1)
+
+        self.ipn_ip_address_label = QtGui.QLabel(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_ip_address_label,2,0,1,1)
+
+        self.ipn_ip_address_edit = QtGui.QLineEdit(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_ip_address_edit,2,1,1,1)
+
+        self.ipn_mac_address_label = QtGui.QLabel(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_mac_address_label,3,0,1,1)
+
+        self.ipn_mac_address_edit = QtGui.QLineEdit(self.widget2)
+
+        self.gridlayout2.addWidget(self.ipn_mac_address_edit,3,1,1,1)
+
+        self.get_mac_address_toolButton = QtGui.QToolButton(self.widget2)
+
+        self.gridlayout2.addWidget(self.get_mac_address_toolButton,3,2,1,2)
+
+        self.assign_vpn_ip_from_dhcp_edit = QtGui.QCheckBox(self.widget2)
+
+        self.gridlayout2.addWidget(self.assign_vpn_ip_from_dhcp_edit,4,0,1,2)
+
+        self.vpn_dhcp_pool_label = QtGui.QLabel(self.widget2)
+
+        self.gridlayout2.addWidget(self.vpn_dhcp_pool_label,5,0,1,1)
+
+        self.vpn_dhcp_pool_edit = QtGui.QComboBox(self.widget2)
+
+        self.gridlayout2.addWidget(self.vpn_dhcp_pool_edit,5,1,1,2)
+
+        self.assign_vpn_address_toolButton = QtGui.QToolButton(self.widget2)
+
+        self.gridlayout2.addWidget(self.assign_vpn_address_toolButton,5,3,1,1)
+
+        self.vpn_ip_address_label = QtGui.QLabel(self.widget2)
+
+        self.gridlayout2.addWidget(self.vpn_ip_address_label,6,0,1,1)
+
+        self.vpn_ip_address_edit = QtGui.QLineEdit(self.widget2)
+
+        self.gridlayout2.addWidget(self.vpn_ip_address_edit,6,1,1,1)
+
+        self.splitter = QtGui.QSplitter(self.tab_2)
+        self.splitter.setGeometry(QtCore.QRect(10,10,281,20))
+        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+
+
+        self.label_2 = QtGui.QLabel(self.splitter)
+
+
+        self.nas_edit = QtGui.QComboBox(self.splitter)
+
+        self.tabWidget.addTab(self.tab_2,"")
+
+        self.tab_3 = QtGui.QWidget()
+
+
+        self.accounttarif_table = QtGui.QTableWidget(self.tab_3)
+        self.accounttarif_table.setGeometry(QtCore.QRect(0,90,411,291))
+
+
+        self.add_accounttarif_toolButton = QtGui.QToolButton(self.tab_3)
+        self.add_accounttarif_toolButton.setGeometry(QtCore.QRect(0,70,25,20))
+
+
+        self.del_accounttarif_toolButton = QtGui.QToolButton(self.tab_3)
+        self.del_accounttarif_toolButton.setGeometry(QtCore.QRect(30,70,25,20))
+
+
+        self.label_3 = QtGui.QLabel(self.tab_3)
+        self.label_3.setGeometry(QtCore.QRect(100,10,311,42))
+
+        self.tabWidget.addTab(self.tab_3,"")
+        self.address_label.setBuddy(self.address_edit)
+        self.ballance_label.setBuddy(self.ballance_edit)
+        self.credit_label.setBuddy(self.credit_edit)
+        self.username_label.setBuddy(self.username_edit)
+        self.password_label.setBuddy(self.password_edit)
+        self.firstname_label.setBuddy(self.firstname_edit)
+        self.lastname_label.setBuddy(self.lastname_edit)
+        self.ipn_dhcp_pool_label.setBuddy(self.ipn_dhcp_pool_edit)
+        self.ipn_ip_address_label.setBuddy(self.ipn_ip_address_edit)
+        self.ipn_mac_address_label.setBuddy(self.ipn_mac_address_edit)
+        self.vpn_dhcp_pool_label.setBuddy(self.vpn_dhcp_pool_edit)
+        self.vpn_ip_address_label.setBuddy(self.vpn_ip_address_edit)
+        self.label_2.setBuddy(self.nas_edit)
+
+        self.retranslateUi()
+        #self.tabWidget.setCurrentIndex(1)
+        self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        self.connect(self.generate_login_toolButton,QtCore.SIGNAL("clicked()"),self.generate_login)
+        self.connect(self.generate_password_toolButton,QtCore.SIGNAL("clicked()"),self.generate_password)
+
+
+
+        self.setTabOrder(self.buttonBox,self.tabWidget)
+        self.setTabOrder(self.tabWidget,self.username_edit)
+        self.setTabOrder(self.username_edit,self.generate_login_toolButton)
+        self.setTabOrder(self.generate_login_toolButton,self.password_edit)
+        self.setTabOrder(self.password_edit,self.generate_password_toolButton)
+        self.setTabOrder(self.generate_password_toolButton,self.firstname_label)
+        self.setTabOrder(self.firstname_label,self.lastname_edit)
+        self.setTabOrder(self.lastname_edit,self.ballance_edit)
+        self.setTabOrder(self.ballance_edit,self.credit_edit)
+        self.setTabOrder(self.credit_edit,self.suspended_edit)
+        self.setTabOrder(self.suspended_edit,self.address_edit)
+        self.setTabOrder(self.address_edit,self.status_edit)
+        self.setTabOrder(self.status_edit,self.nas_edit)
+        self.setTabOrder(self.nas_edit,self.assign_ipn_ip_from_dhcp_edit)
+        self.setTabOrder(self.assign_ipn_ip_from_dhcp_edit,self.ipn_dhcp_pool_edit)
+        self.setTabOrder(self.ipn_dhcp_pool_edit,self.assign_ipn_address_toolButton)
+        self.setTabOrder(self.assign_ipn_address_toolButton,self.ipn_ip_address_edit)
+        self.setTabOrder(self.ipn_ip_address_edit,self.ipn_mac_address_edit)
+        self.setTabOrder(self.ipn_mac_address_edit,self.get_mac_address_toolButton)
+        self.setTabOrder(self.get_mac_address_toolButton,self.assign_vpn_ip_from_dhcp_edit)
+        self.setTabOrder(self.assign_vpn_ip_from_dhcp_edit,self.vpn_dhcp_pool_edit)
+        self.setTabOrder(self.vpn_dhcp_pool_edit,self.assign_vpn_address_toolButton)
+        self.setTabOrder(self.assign_vpn_address_toolButton,self.vpn_ip_address_edit)
+        self.setTabOrder(self.vpn_ip_address_edit,self.add_accounttarif_toolButton)
+        self.setTabOrder(self.add_accounttarif_toolButton,self.del_accounttarif_toolButton)
+        self.setTabOrder(self.del_accounttarif_toolButton,self.accounttarif_table)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+    def generate_login(self):
+        self.username_edit.setText(nameGen())
+
+    def generate_password(self):
+        self.password_edit.setText(GenPasswd2())
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.address_label.setText(QtGui.QApplication.translate("Dialog", "Адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.status_edit.setText(QtGui.QApplication.translate("Dialog", "Включен", None, QtGui.QApplication.UnicodeUTF8))
+        self.suspended_edit.setText(QtGui.QApplication.translate("Dialog", "Не производить списывание денег по периодическим услугам", None, QtGui.QApplication.UnicodeUTF8))
+        self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Текущий балланс", None, QtGui.QApplication.UnicodeUTF8))
+        self.credit_label.setText(QtGui.QApplication.translate("Dialog", "Максимальный кредит", None, QtGui.QApplication.UnicodeUTF8))
+        self.username_label.setText(QtGui.QApplication.translate("Dialog", "<b>Логин</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.generate_login_toolButton.setText(QtGui.QApplication.translate("Dialog", "Сгенерировать", None, QtGui.QApplication.UnicodeUTF8))
+        self.password_label.setText(QtGui.QApplication.translate("Dialog", "<b>Пароль</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.generate_password_toolButton.setText(QtGui.QApplication.translate("Dialog", "Сгенерировать", None, QtGui.QApplication.UnicodeUTF8))
+        self.firstname_label.setText(QtGui.QApplication.translate("Dialog", "<b>Имя</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.lastname_label.setText(QtGui.QApplication.translate("Dialog", "<b>Фамилия</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Аккаунт", None, QtGui.QApplication.UnicodeUTF8))
+        self.ip_settings_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "IP Адреса", None, QtGui.QApplication.UnicodeUTF8))
+        self.assign_ipn_ip_from_dhcp_edit.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес с помощью DHCP", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_dhcp_pool_label.setText(QtGui.QApplication.translate("Dialog", "DHCP пул", None, QtGui.QApplication.UnicodeUTF8))
+        self.assign_ipn_address_toolButton.setText(QtGui.QApplication.translate("Dialog", "Назначить адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_mac_address_label.setText(QtGui.QApplication.translate("Dialog", "Аппаратный адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "00:00:00:00:00:00;0", None, QtGui.QApplication.UnicodeUTF8))
+        self.get_mac_address_toolButton.setText(QtGui.QApplication.translate("Dialog", "Получить", None, QtGui.QApplication.UnicodeUTF8))
+        self.assign_vpn_ip_from_dhcp_edit.setText(QtGui.QApplication.translate("Dialog", "Выдавать VPN адрес с помощью DHCP", None, QtGui.QApplication.UnicodeUTF8))
+        self.vpn_dhcp_pool_label.setText(QtGui.QApplication.translate("Dialog", "DHCP пул", None, QtGui.QApplication.UnicodeUTF8))
+        self.assign_vpn_address_toolButton.setText(QtGui.QApplication.translate("Dialog", "Назначить адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.vpn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Текущий VPN адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.vpn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Настройки доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.accounttarif_table.clear()
+        self.accounttarif_table.setColumnCount(2)
+
+
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.accounttarif_table.setHorizontalHeaderItem(0,headerItem)
+
+        headerItem1 = QtGui.QTableWidgetItem()
+        headerItem1.setText(QtGui.QApplication.translate("Dialog", "Дата ", None, QtGui.QApplication.UnicodeUTF8))
+        self.accounttarif_table.setHorizontalHeaderItem(1,headerItem1)
+
+        self.add_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Dialog", "Здесь вы можете просмотреть историю тарифных планов\n"
+        " пользователя и создать задания для перехода на\n"
+        " новые тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "История тарифных планов", None, QtGui.QApplication.UnicodeUTF8))
 
 
         self.fixtures()
-    def resizeEvent(self, event):
-        self.size = event.oldSize()
 
+    @transaction.commit_manually
     def accept(self):
         """
         понаставить проверок
@@ -170,11 +345,20 @@ class AddAccountFrame(QtGui.QDialog):
 
         if self.model:
             model=self.model
+            if unicode(self.username_edit.text())!=model.user.username:
+                if User.objects.filter(username=unicode(self.username_edit.text())).count()>0 or Account.objects.filter(username=unicode(self.username_edit.text())).count()>0:
+                    QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
+                    return
             model.user.username=unicode(self.username_edit.text())
         else:
             print 'New account'
+            if User.objects.filter(username=unicode(self.username_edit.text())).count()>0 or Account.objects.filter(username=unicode(self.username_edit.text())).count()>0:
+                QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
+                return
+
             model=Account()
             model.user = User.objects.create(username=unicode(self.username_edit.text()), password=unicode(self.password_edit.text()))
+
 
         model.username = unicode(self.username_edit.text())
 
@@ -191,47 +375,54 @@ class AddAccountFrame(QtGui.QDialog):
         model.address = unicode(self.address_edit.toPlainText())
 
 
-        if unicode(self.ipn_ip_address_edit.text())=='None' or unicode(self.ipn_ip_address_edit.text())==u"":
+        if unicode(self.ipn_ip_address_edit.text())=='None' or unicode(self.ipn_ip_address_edit.text())==u"...":
             value = None
         else:
+            if self.ipn_ip_address_edit.text()!=model.ipn_ip_address and model.ipn_ip_address!='' and  Account.objects.filter(ipn_ip_address=unicode(self.ipn_ip_address_edit.text())).count()>0:
+               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+               return
             value = unicode(self.ipn_ip_address_edit.text())
 
         model.ipn_ip_address = value
-        print 'ipn ok'
 
-        if unicode(self.vpn_ip_address_edit.text())== 'None' or unicode(self.vpn_ip_address_edit.text()) == u'':
+
+        if unicode(self.vpn_ip_address_edit.text())== 'None' or unicode(self.vpn_ip_address_edit.text()) == u'...':
             value = None
         else:
+            if model.vpn_ip_address!=self.vpn_ip_address_edit.text() and  Account.objects.filter(vpn_ip_address=unicode(self.vpn_ip_address_edit.text())).count()>0:
+               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+               return
             value = unicode(self.vpn_ip_address_edit.text())
 
         model.vpn_ip_address = value
-        print 'vpn ok'
 
-        if unicode(self.ipn_mac_address_edit.text()) == 'None' or unicode(self.ipn_mac_address_edit.text()) == u'':
+
+        if unicode(self.ipn_mac_address_edit.text()) == 'None' or unicode(self.ipn_mac_address_edit.text()) == u'00:00:00:00:00:00':
             value = None
         else:
+            if model.ipn_mac_address!=self.ipn_mac_address_edit.text() and model.ipn_mac_address!=None and model.ipn_mac_address!="00:00:00:00:00:00" and  Account.objects.filter(ipn_mac_address=unicode(self.ipn_mac_address_edit.text())).count()>0:
+               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC адрес."))
+               return
+
             value = unicode(self.ipn_mac_address_edit.text())
-        print 'mac ok'
 
-        model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
-        #print self.nas_edit.currentText()
+        model.ipn_mac_address = value
+
         model.nas = Nas.objects.get(name=str(self.nas_edit.currentText()))
-        #print self.ipn_status_edit.checkState()
-        model.ipn_status = self.ipn_status_edit.checkState() == 2
-        model.status = self.status_edit.checkState() == 2
-        model.suspended = self.suspended_edit.checkState() == 2
-
-        #self.created_edit.setDateTime(QDateTimeEdit.dateTimeFromText(self.model.created))
 
         model.ballance = unicode(self.ballance_edit.text())
         model.credit = unicode(self.credit_edit.text())
-        model.disabled_by_limit = self.disabled_by_limit_edit.checkState() == 2
-        model.assign_ip_from_dhcp = self.assign_ip_from_dhcp_edit.checkState() == 2
+
+        model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == 2
+        model.assign_vpn_ip_from_dhcp = self.assign_vpn_ip_from_dhcp_edit.checkState() == 2
+        model.suspended = self.suspended_edit.checkState() == 2
+        model.status = self.status_edit.checkState() == 2
 
         try:
             model.save()
+            transaction.commit()
         except Exception, e:
-            print e
+            transaction.rollback()
             return
 
 
@@ -274,16 +465,16 @@ class AddAccountFrame(QtGui.QDialog):
             self.vpn_ip_address_edit.setText(unicode(self.model.vpn_ip_address))
             self.ipn_mac_address_edit.setText(unicode(self.model.ipn_mac_address))
 
-            self.ipn_status_edit.setCheckState(self.model.ipn_status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+
             self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.created_edit.setDateTime(self.model.created)
+
 
             self.ballance_edit.setText(unicode(self.model.ballance))
             self.credit_edit.setText(unicode(self.model.credit))
 
-            self.disabled_by_limit_edit.setCheckState(self.model.disabled_by_limit == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.assign_ip_from_dhcp_edit.setCheckState(self.model.assign_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.assign_ipn_ip_from_dhcp_edit.setCheckState(self.model.assign_ipn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.assign_vpn_ip_from_dhcp_edit.setCheckState(self.model.assign_vpn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
 
 
     def save(self):
@@ -291,17 +482,13 @@ class AddAccountFrame(QtGui.QDialog):
 
 
 
-class AccountsMdiChild(QtGui.QDialog):
+class AccountsMdiChild(QMainWindow):
     sequenceNumber = 1
 
     def __init__(self):
         super(AccountsMdiChild, self).__init__()
 
-        self.button = QPushButton('Refresh')
-        self.button_add = QPushButton('Add')
-        self.button_edit = QPushButton('Edit')
-        self.button_delete = QPushButton('Delete')
-        self.countedit = QLineEdit("100")
+
         self.tableWidget = QTableWidget()
 
         self.tableWidget.setAlternatingRowColors(True)
@@ -311,34 +498,41 @@ class AccountsMdiChild(QtGui.QDialog):
         #self.tablewidget.setSortingEnabled(True)
 
 
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Усыплён', u'Статус в системе']
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе']
         i=0
         self.tableWidget.setColumnCount(len(columns))
         self.tableWidget.setHorizontalHeaderLabels(columns)
+        self.setCentralWidget(self.tableWidget)
 
 
-        #layout = QVBoxLayout()
-        layout = QGridLayout()
-        layout.addWidget(self.countedit,0,0)
-        layout.addWidget(self.button,0,1)
-        layout.addWidget(self.button_add,1,1)
-        layout.addWidget(self.button_edit,1,2)
-        layout.addWidget(self.button_delete,1,3)
-        layout.addWidget(self.tableWidget,2,0,3,0)
-        self.setLayout(layout)
+        self.statusbar = QStatusBar(self)
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        #self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+
+
+        self.addAction = QtGui.QAction(self)
+        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
+
+        self.delAction = QtGui.QAction(self)
+        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
+
+        self.toolBar.addAction(self.addAction)
+        self.toolBar.addAction(self.delAction)
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.isUntitled = True
         self.tableWidget.resizeColumnsToContents()
         self.resize(1100,600)
-        self.setSizeGripEnabled(1)
 
 
 
-
-        self.connect(self.button, QtCore.SIGNAL("clicked()"), self.refresh)
-        self.connect(self.button_add, QtCore.SIGNAL("clicked()"), self.addframe)
-        self.connect(self.button_edit, QtCore.SIGNAL("clicked()"), self.editframe)
-        self.connect(self.button_delete, QtCore.SIGNAL("clicked()"), self.delete)
+        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
+        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.refresh()
 
@@ -381,14 +575,15 @@ class AccountsMdiChild(QtGui.QDialog):
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
 
     def refresh(self):
-        cnt = int(self.countedit.text())
 
-        accounts=Account.objects.all().order_by('id')[0:cnt]
+        accounts=Account.objects.all().order_by('id')
         self.tableWidget.setRowCount(accounts.count())
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0

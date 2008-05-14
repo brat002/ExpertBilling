@@ -17,7 +17,7 @@ class IPNAccount(object):
         user_id=''
         ipaddress=''
         mac_address=''
-        
+
 def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
     """
     Dynamic Authorization Extensions
@@ -89,7 +89,7 @@ def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data=
                                 )
         else:
             command_string=format_string
-            
+
         try:
             sshclient=SSHClient(host=account.nas_ip, port=22, username=account.login, password=account.password)
             print 'ssh connected'
@@ -100,7 +100,7 @@ def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data=
             print 'SSH ERROR'
         #print res[1].readlines()
         return res[1].readlines()==[]
-    
+
 
 def in_period(time_start, length, repeat_after, now=None):
         """
@@ -242,7 +242,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         """
         Функция возвращает дату начала и дату конца текущегопериода
         """
-        
+
         if not now:
             now=datetime.datetime.now()
         #time_start=time_start.replace(tzinfo='UTC')
@@ -325,7 +325,7 @@ class SSHClient(paramiko.SSHClient):
         self.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
         self.connect(hostname=host,port=port, username=username,password=password)
         #self._transport.get_pty('vt100', 60, 80)
-        
+
     def send_command(self, text):
         stdin, stdout, stderr = self.exec_command(text)
         #print stderr.readlines()==[]
@@ -333,7 +333,9 @@ class SSHClient(paramiko.SSHClient):
 
     def close_chanel(self):
         self.close()
-        
+
+
+
 def create_nulls(param):
     if param==None:
         return 0

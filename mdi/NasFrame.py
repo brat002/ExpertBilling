@@ -228,8 +228,19 @@ class AddNasFrame(QtGui.QDialog):
 
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.testButton,QtCore.SIGNAL("clicked()"),self.testNAS)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         #QtCore.QMetaObject.connectSlotsByName(self)
+
+    def testNAS(self):
+        import Pyro.core
+
+        # you have to change the URI below to match your own host/port.
+        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
+
+        if not connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
@@ -242,7 +253,7 @@ class AddNasFrame(QtGui.QDialog):
         self.pppoe_edit.setText(QtGui.QApplication.translate("Dialog", "PPPOE", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_edit.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "<b>Тип</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "<b>Имя</b>", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Dialog", "<b>Identify</b>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "<b>IP</b>", None, QtGui.QApplication.UnicodeUTF8))
         self.nas_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Dialog", "<b>Secret</b>", None, QtGui.QApplication.UnicodeUTF8))
@@ -274,6 +285,25 @@ class AddNasFrame(QtGui.QDialog):
             print 'New nas'
             model=Nas()
 
+        if unicode(self.nas_name_edit.text())==u"":
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан идентификатор сервера доступа"))
+            return
+
+        if unicode(self.ssh_name_edit.text())==u"":
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано имя пользователя для SSH"))
+            return
+
+        if unicode(self.ssh_password_edit.text())==u"":
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан пароль для SSH"))
+            return
+
+        if unicode(self.nas_ip_edit.text())==u"":
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан IP адрес сервера доступа"))
+            return
+
+        if unicode(self.nas_secret_edit.text())==u"":
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана секретная фраза"))
+            return
 
         model.login = unicode(self.ssh_name_edit.text())
         model.password = unicode(self.ssh_password_edit.text())
@@ -285,10 +315,6 @@ class AddNasFrame(QtGui.QDialog):
         model.allow_pptp = self.pptp_edit.checkState()==2
         model.allow_pppoe = self.pppoe_edit.checkState()==2
         model.allow_ipn = self.ipn_edit.checkState()==2
-
-        print model.allow_pptp
-        print model.allow_pppoe
-        print model.allow_ipn
 
         model.user_add_action= unicode(self.user_add_edit.toPlainText())
         model.user_delete_action= unicode(self.user_remove_edit.toPlainText())
@@ -328,21 +354,9 @@ class AddNasFrame(QtGui.QDialog):
 
             self.nas_type_edit.setCurrentIndex(self.nas_type_edit.findText(self.model.type, QtCore.Qt.MatchCaseSensitive))
 
-
             self.pptp_edit.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.pppoe_edit.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.ipn_edit.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-
-##            self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-##            self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-##            self.created_edit.setDateTime(self.model.created)
-##
-##            self.ballance_edit.setText(unicode(self.model.ballance))
-##            self.credit_edit.setText(unicode(self.model.credit))
-##
-##            self.disabled_by_limit_edit.setCheckState(self.model.disabled_by_limit == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-##            self.assign_ip_from_dhcp_edit.setCheckState(self.model.assign_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-
 
     def save(self):
         print 'Saved'
@@ -366,13 +380,16 @@ class NasMdiChild(QMainWindow):
         self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
         self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
 
+
+
         self.setCentralWidget(self.tableWidget)
 
         self.statusbar = QStatusBar(self)
         self.setStatusBar(self.statusbar)
 
         self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        #self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
@@ -393,6 +410,8 @@ class NasMdiChild(QMainWindow):
         self.retranslateUi()
         self.refresh()
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         #self.show()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -428,7 +447,24 @@ class NasMdiChild(QMainWindow):
         self.refresh()
 
     def configure(self):
-        pass
+        id=self.getSelectedId()
+        if id==0:
+            return
+        try:
+            model=Nas.objects.get(id=self.getSelectedId())
+        except:
+            return
+        import Pyro.core
+
+        # you have to change the URI below to match your own host/port.
+        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
+
+        if connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
+            QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+        else:
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
+
+
 
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
