@@ -28,7 +28,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QTabWidget" name="tabWidget" >
+  <widget class="QTabWidget" name="maintabWidget" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -75,7 +75,7 @@
         <x>10</x>
         <y>20</y>
         <width>151</width>
-        <height>48</height>
+        <height>51</height>
        </rect>
       </property>
       <layout class="QGridLayout" >
@@ -248,7 +248,7 @@
     <attribute name="title" >
      <string>Tab 2</string>
     </attribute>
-    <widget class="QTabWidget" name="tabWidget_2" >
+    <widget class="QTabWidget" name="secondtabWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
