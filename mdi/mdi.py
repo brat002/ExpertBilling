@@ -36,7 +36,10 @@ import os, sys
 
 sys.path.append('k:/mikrobill/current/webadmin')
 sys.path.append('k:/mikrobill/current/webadmin/mikrobill')
+sys.path.append('k:/mikrobill/current/webadmin')
 
+sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
+sys.path.append('d:/projects/mikrobill/webadmin')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
 from billservice.models import Account
@@ -45,7 +48,7 @@ from nas.models import IPAddressPool
 
 from AccountFrame import AccountsMdiChild
 from NasFrame import NasMdiChild
-
+from SettlementPeriodFrame import SettlementPeriodChild
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -80,6 +83,7 @@ class MainWindow(QtGui.QMainWindow):
     def newFile(self):
         child = self.createMdiChild()
         child.newFile()
+        self.workspace.addWindow(child)
         child.show()
 
     def open(self):
@@ -90,8 +94,12 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def save(self):
-        if self.activeMdiChild().save():
-            self.statusBar().showMessage(self.tr("File saved"), 2000)
+        child=SettlementPeriodChild()
+        self.workspace.addWindow(child)
+        child.show()
+
+        #if self.activeMdiChild().save():
+        #    self.statusBar().showMessage(self.tr("File saved"), 2000)
 
     def saveAs(self):
         if self.activeMdiChild().saveAs():
@@ -113,8 +121,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)
-        self.saveAct.setEnabled(hasMdiChild)
-        self.saveAsAct.setEnabled(hasMdiChild)
+        #self.saveAct.setEnabled(hasMdiChild)
+        #self.saveAsAct.setEnabled(hasMdiChild)
         self.pasteAct.setEnabled(hasMdiChild)
         self.closeAct.setEnabled(hasMdiChild)
         self.closeAllAct.setEnabled(hasMdiChild)

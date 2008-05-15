@@ -11,10 +11,103 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
-from billservice.models import Account
+from billservice.models import Account, Tariff, AccountTarif
 from nas.models import IPAddressPool, Nas
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
+import datetime, time, calendar
+
+class AddAccountTarif(QtGui.QDialog):
+    def __init__(self, account, model=None):
+        super(AddAccountTarif, self).__init__()
+        self.model=model
+        self.account=account
+
+        self.setObjectName("Dialog")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()).expandedTo(self.minimumSizeHint()))
+
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(130,140,161,32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.hint_label = QtGui.QLabel(self)
+        self.hint_label.setGeometry(QtCore.QRect(10,10,371,31))
+        self.hint_label.setObjectName("hint_label")
+
+        self.widget = QtGui.QWidget(self)
+        self.widget.setGeometry(QtCore.QRect(10,40,281,101))
+        self.widget.setObjectName("widget")
+
+        self.gridlayout = QtGui.QGridLayout(self.widget)
+        self.gridlayout.setObjectName("gridlayout")
+
+        self.tarif_label = QtGui.QLabel(self.widget)
+        self.tarif_label.setObjectName("tarif_label")
+        self.gridlayout.addWidget(self.tarif_label,0,0,1,1)
+
+        self.tarif_edit = QtGui.QComboBox(self.widget)
+        self.tarif_edit.setMaxVisibleItems(10)
+        self.tarif_edit.setObjectName("tarif_edit")
+        self.gridlayout.addWidget(self.tarif_edit,0,1,1,1)
+
+        self.date_label = QtGui.QLabel(self.widget)
+        self.date_label.setObjectName("date_label")
+        self.gridlayout.addWidget(self.date_label,1,0,1,1)
+
+        self.date_edit = QtGui.QDateTimeEdit(self.widget)
+        self.date_edit.setFrame(True)
+        self.date_edit.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.date_edit.setMinimumDate(QtCore.QDate(2008,1,1))
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setObjectName("date_edit")
+        self.gridlayout.addWidget(self.date_edit,1,1,1,1)
+
+
+        self.retranslateUi()
+        self.fixtures()
+        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
+        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
+
+    def accept(self):
+        tarif=Tariff.objects.get(name=unicode(self.tarif_edit.currentText()))
+        date=self.date_edit.dateTime().toPyDateTime()
+
+        if self.model:
+            self.model.tarif=tarif
+            self.model.datetime=date
+            self.model.save()
+        else:
+            model=AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+
+        QDialog.accept(self)
+
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование плана", None, QtGui.QApplication.UnicodeUTF8))
+        self.hint_label.setText(QtGui.QApplication.translate("Dialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        "p, li { white-space: pre-wrap; }\n"
+        "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Выберите тарифный план и время, </span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;\">когда должен быть осуществлён переход</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.tarif_label.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
+
+    def fixtures(self):
+        tarifs=Tariff.objects.all()
+        for tarif in tarifs:
+            self.tarif_edit.addItem(tarif.name)
+        now=datetime.datetime.now()
+
+        if self.model:
+            self.tarif_edit.setCurrentIndex(self.tarif_edit.findText(self.model.tarif.name, QtCore.Qt.MatchCaseSensitive))
+
+            now = QtCore.QDateTime()
+
+            now.setTime_t(calendar.timegm(self.model.datetime.timetuple()))
+        self.date_edit.setDateTime(now)
+
 
 class AddAccountFrame(QtGui.QDialog):
     def __init__(self, model=None):
@@ -169,6 +262,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.gridlayout2.addWidget(self.ipn_mac_address_edit,3,1,1,1)
 
         self.get_mac_address_toolButton = QtGui.QToolButton(self.widget2)
+        self.get_mac_address_toolButton.hide()
 
         self.gridlayout2.addWidget(self.get_mac_address_toolButton,3,2,1,2)
 
@@ -213,6 +307,15 @@ class AddAccountFrame(QtGui.QDialog):
 
         self.accounttarif_table = QtGui.QTableWidget(self.tab_3)
         self.accounttarif_table.setGeometry(QtCore.QRect(0,90,411,291))
+        vh = self.accounttarif_table.verticalHeader()
+        vh.setVisible(False)
+
+        hh = self.accounttarif_table.horizontalHeader()
+        hh.setStretchLastSection(True)
+        hh.setHighlightSections(False)
+        hh.setClickable(False)
+        hh.ResizeMode(QtGui.QHeaderView.Stretch)
+
 
 
         self.add_accounttarif_toolButton = QtGui.QToolButton(self.tab_3)
@@ -248,6 +351,12 @@ class AddAccountFrame(QtGui.QDialog):
         self.connect(self.generate_login_toolButton,QtCore.SIGNAL("clicked()"),self.generate_login)
         self.connect(self.generate_password_toolButton,QtCore.SIGNAL("clicked()"),self.generate_password)
 
+        self.connect(self.add_accounttarif_toolButton,QtCore.SIGNAL("clicked()"),self.add_accounttarif)
+        self.connect(self.del_accounttarif_toolButton,QtCore.SIGNAL("clicked()"),self.del_accounttarif)
+
+        self.connect(self.accounttarif_table, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
+
+
 
 
         self.setTabOrder(self.buttonBox,self.tabWidget)
@@ -278,6 +387,53 @@ class AddAccountFrame(QtGui.QDialog):
         self.setTabOrder(self.del_accounttarif_toolButton,self.accounttarif_table)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
+
+        self.accounttarif_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.accounttarif_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.accounttarif_table.setSelectionMode(QTableWidget.SingleSelection)
+
+    def getSelectedId(self):
+        return int(self.accounttarif_table.item(self.accounttarif_table.currentRow(), 0).text())
+
+    def add_accounttarif(self):
+
+        child=AddAccountTarif(self.model)
+        child.exec_()
+        self.accountTarifRefresh()
+
+    def del_accounttarif(self):
+        i=self.getSelectedId()
+        try:
+            model=AccountTarif.objects.get(id=i)
+        except:
+            return
+
+        if model.datetime<datetime.datetime.now():
+            QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
+            return
+
+        if QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
+            model.delete()
+        self.accountTarifRefresh()
+
+    def edit_accounttarif(self):
+        i=self.getSelectedId()
+        try:
+            model=AccountTarif.objects.get(id=i)
+        except:
+            return
+
+        if model.datetime<datetime.datetime.now():
+            QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
+            return
+
+        child=AddAccountTarif(account=self.model, model=model)
+        child.exec_()
+        self.accountTarifRefresh()
+
+
+
+
     def generate_login(self):
         self.username_edit.setText(nameGen())
 
@@ -285,7 +441,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.password_edit.setText(GenPasswd2())
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование аккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.address_label.setText(QtGui.QApplication.translate("Dialog", "Адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.status_edit.setText(QtGui.QApplication.translate("Dialog", "Включен", None, QtGui.QApplication.UnicodeUTF8))
         self.suspended_edit.setText(QtGui.QApplication.translate("Dialog", "Не производить списывание денег по периодическим услугам", None, QtGui.QApplication.UnicodeUTF8))
@@ -315,16 +471,20 @@ class AddAccountFrame(QtGui.QDialog):
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Настройки доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.accounttarif_table.clear()
-        self.accounttarif_table.setColumnCount(2)
+        self.accounttarif_table.setColumnCount(3)
 
 
         headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        headerItem.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
         self.accounttarif_table.setHorizontalHeaderItem(0,headerItem)
+
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.accounttarif_table.setHorizontalHeaderItem(1,headerItem)
 
         headerItem1 = QtGui.QTableWidgetItem()
         headerItem1.setText(QtGui.QApplication.translate("Dialog", "Дата ", None, QtGui.QApplication.UnicodeUTF8))
-        self.accounttarif_table.setHorizontalHeaderItem(1,headerItem1)
+        self.accounttarif_table.setHorizontalHeaderItem(2,headerItem1)
 
         self.add_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.del_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
@@ -344,8 +504,9 @@ class AddAccountFrame(QtGui.QDialog):
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
 
         if self.model:
+
             model=self.model
-            if unicode(self.username_edit.text())!=model.user.username:
+            if self.username_edit.text()!=model.username:
                 if User.objects.filter(username=unicode(self.username_edit.text())).count()>0 or Account.objects.filter(username=unicode(self.username_edit.text())).count()>0:
                     QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                     return
@@ -362,23 +523,16 @@ class AddAccountFrame(QtGui.QDialog):
 
         model.username = unicode(self.username_edit.text())
 
-        #if self.model.vpn_pool:
-        #    self.vpn_pool_edit.setCurrentItem(self.vpn_pool_edit.findItems(self.model.vpn_pool.name, QtCore.Qt.MatchFlags())[0])
-
-
-        #if self.model.ipn_pool:
-        #    self.ipn_pool_edit.setCurrentItem(self.ipn_pool_edit.findItems(self.model.ipn_pool.name, QtCore.Qt.MatchFlags())[0])
-
         model.password = unicode(self.password_edit.text())
         model.firstname = unicode(self.firstname_edit.text())
         model.lastname = unicode(self.lastname_edit.text())
         model.address = unicode(self.address_edit.toPlainText())
 
 
-        if unicode(self.ipn_ip_address_edit.text())=='None' or unicode(self.ipn_ip_address_edit.text())==u"...":
+        if unicode(self.ipn_ip_address_edit.text())==u"...":
             value = None
         else:
-            if self.ipn_ip_address_edit.text()!=model.ipn_ip_address and model.ipn_ip_address!='' and  Account.objects.filter(ipn_ip_address=unicode(self.ipn_ip_address_edit.text())).count()>0:
+            if (self.ipn_ip_address_edit.text()!=model.ipn_ip_address or model.ipn_ip_address==None) and  Account.objects.filter(ipn_ip_address=unicode(self.ipn_ip_address_edit.text())).count()>0:
                QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                return
             value = unicode(self.ipn_ip_address_edit.text())
@@ -386,10 +540,10 @@ class AddAccountFrame(QtGui.QDialog):
         model.ipn_ip_address = value
 
 
-        if unicode(self.vpn_ip_address_edit.text())== 'None' or unicode(self.vpn_ip_address_edit.text()) == u'...':
+        if unicode(self.vpn_ip_address_edit.text()) == u'...':
             value = None
         else:
-            if model.vpn_ip_address!=self.vpn_ip_address_edit.text() and  Account.objects.filter(vpn_ip_address=unicode(self.vpn_ip_address_edit.text())).count()>0:
+            if (model.vpn_ip_address!=self.vpn_ip_address_edit.text() or model.vpn_ip_address==None) and  Account.objects.filter(vpn_ip_address=unicode(self.vpn_ip_address_edit.text())).count()>0:
                QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                return
             value = unicode(self.vpn_ip_address_edit.text())
@@ -397,10 +551,10 @@ class AddAccountFrame(QtGui.QDialog):
         model.vpn_ip_address = value
 
 
-        if unicode(self.ipn_mac_address_edit.text()) == 'None' or unicode(self.ipn_mac_address_edit.text()) == u'00:00:00:00:00:00':
+        if unicode(self.ipn_mac_address_edit.text()) == u'00:00:00:00:00:00':
             value = None
         else:
-            if model.ipn_mac_address!=self.ipn_mac_address_edit.text() and model.ipn_mac_address!=None and model.ipn_mac_address!="00:00:00:00:00:00" and  Account.objects.filter(ipn_mac_address=unicode(self.ipn_mac_address_edit.text())).count()>0:
+            if (model.ipn_mac_address!=self.ipn_mac_address_edit.text() and self.ipn_mac_address_edit.text()!= '00:00:00:00:00:00') and  Account.objects.filter(ipn_mac_address=unicode(self.ipn_mac_address_edit.text())).count()>0:
                QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC адрес."))
                return
 
@@ -475,11 +629,33 @@ class AddAccountFrame(QtGui.QDialog):
 
             self.assign_ipn_ip_from_dhcp_edit.setCheckState(self.model.assign_ipn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.assign_vpn_ip_from_dhcp_edit.setCheckState(self.model.assign_vpn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.accountTarifRefresh()
+
+    def accountTarifRefresh(self):
+        if self.model:
+            ac=AccountTarif.objects.filter(account=self.model).order_by('datetime')
+            self.accounttarif_table.setRowCount(ac.count())
+            i=0
+            for a in ac:
+
+                self.addrow(a.id, i,0)
+                self.addrow(a.tarif.name, i,1)
+                self.addrow(a.datetime, i,2)
+                self.accounttarif_table.setRowHeight(i, 17)
+                self.accounttarif_table.setColumnHidden(0, True)
+                i+=1
+            #self.accounttarif_table.resizeColumnsToContents()
 
 
     def save(self):
         print 'Saved'
 
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        headerItem.setText(unicode(value))
+        self.accounttarif_table.setItem(x,y,headerItem)
 
 
 class AccountsMdiChild(QMainWindow):
@@ -487,6 +663,8 @@ class AccountsMdiChild(QMainWindow):
 
     def __init__(self):
         super(AccountsMdiChild, self).__init__()
+
+        self.setWindowTitle(u"Пользователи")
 
 
         self.tableWidget = QTableWidget()
@@ -496,6 +674,17 @@ class AccountsMdiChild(QMainWindow):
         self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
         self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
         #self.tablewidget.setSortingEnabled(True)
+        vh = self.tableWidget.verticalHeader()
+        vh.setVisible(False)
+
+        hh = self.tableWidget.horizontalHeader()
+        hh.setStretchLastSection(True)
+        hh.setHighlightSections(False)
+        #hh.setClickable(False)
+        hh.ResizeMode(QtGui.QHeaderView.Stretch)
+        #hh.setCascadingSectionResizes(True)
+        hh.setMovable(True)
+        hh.setOffset(200)
 
 
         columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе']
@@ -544,6 +733,7 @@ class AccountsMdiChild(QMainWindow):
         #addf.show()
         addf.exec_()
         self.refresh()
+
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
@@ -573,10 +763,14 @@ class AccountsMdiChild(QMainWindow):
         addf.exec_()
         self.refresh()
 
-    def addrow(self, value, x, y):
+    def addrow(self, value, x, y, color=None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
+        if color:
+            if int(value)<0:
+                headerItem.setBackgroundColor(QColor(color))
+
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
@@ -591,7 +785,7 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.id, i,0)
             #self.addrow(a.user, i,1)
             self.addrow(a.username, i,1)
-            self.addrow(a.ballance, i,2)
+            self.addrow(a.ballance, i,2, color="red")
             self.addrow(a.credit, i,3)
             self.addrow(a.firstname, i,4)
             self.addrow(a.lastname, i,5)
@@ -600,8 +794,11 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.ipn_ip_address, i,8)
             self.addrow(a.suspended, i,9)
             self.addrow(a.status, i,10)
+            self.tableWidget.setRowHeight(i, 17)
+            self.tableWidget.setColumnHidden(0, True)
+
             i+=1
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
 
     def newFile(self):
         self.isUntitled = True

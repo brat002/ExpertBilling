@@ -243,7 +243,7 @@ class AddNasFrame(QtGui.QDialog):
             QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры SSH", None, QtGui.QApplication.UnicodeUTF8))
         self.testButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "<b>Имя</b>", None, QtGui.QApplication.UnicodeUTF8))
@@ -379,7 +379,14 @@ class NasMdiChild(QMainWindow):
         self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
         self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
-
+        vh = self.tableWidget.verticalHeader()
+        vh.setVisible(False)
+        hh = self.tableWidget.horizontalHeader()
+        hh.setStretchLastSection(True)
+        hh.setHighlightSections(False)
+        #hh.setClickable(False)
+        hh.ResizeMode(QtGui.QHeaderView.Stretch)
+        hh.setMovable(True)
 
 
         self.setCentralWidget(self.tableWidget)
@@ -417,7 +424,7 @@ class NasMdiChild(QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Управление серевами доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
         columns=["id", "Name", "Type", "IP"]
@@ -511,6 +518,8 @@ class NasMdiChild(QMainWindow):
             self.addrow(nas.name, i,1)
             self.addrow(nas.type, i,2)
             self.addrow(nas.ipaddress, i,3)
+            self.tableWidget.setRowHeight(i, 17)
+            self.tableWidget.setColumnHidden(0, True)
 
             i+=1
         self.tableWidget.resizeColumnsToContents()
