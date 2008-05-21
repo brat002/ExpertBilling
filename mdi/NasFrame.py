@@ -96,7 +96,7 @@ class AddNasFrame(QtGui.QDialog):
         self.gridlayout1.addWidget(self.ipn_edit,2,0,1,1)
 
         self.widget2 = QtGui.QWidget(self.tab)
-        self.widget2.setGeometry(QtCore.QRect(10,20,371,100))
+        self.widget2.setGeometry(QtCore.QRect(10,20,371,120))
 
 
         self.gridlayout2 = QtGui.QGridLayout(self.widget2)
@@ -370,7 +370,7 @@ class NasMdiChild(QMainWindow):
         super(NasMdiChild, self).__init__()
 
         #MainWindow.setObjectName("MainWindow")
-        #MainWindow.resize(QtCore.QSize(QtCore.QRect(0,0,803,600).size()).expandedTo(MainWindow.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,300,300).size()).expandedTo(self.minimumSizeHint()))
 
 
         self.tableWidget = QTableWidget(self)
@@ -427,7 +427,7 @@ class NasMdiChild(QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Управление серевами доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns=["id", "Name", "Type", "IP"]
+        columns=["id", "Name", "Type", "IP", '']
         self.tableWidget.setColumnCount(len(columns))
         self.tableWidget.setHorizontalHeaderLabels(columns)
 

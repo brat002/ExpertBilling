@@ -16,7 +16,7 @@ from nas.models import IPAddressPool, Nas
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
-
+from time import mktime
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, account, model=None):
         super(AddAccountTarif, self).__init__()
@@ -105,7 +105,7 @@ class AddAccountTarif(QtGui.QDialog):
 
             now = QtCore.QDateTime()
 
-            now.setTime_t(calendar.timegm(self.model.datetime.timetuple()))
+            now.setTime_t((mktime(self.model.datetime.timetuple())))
         self.date_edit.setDateTime(now)
 
 
@@ -471,7 +471,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Настройки доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.accounttarif_table.clear()
-        self.accounttarif_table.setColumnCount(3)
+        self.accounttarif_table.setColumnCount(4)
 
 
         headerItem = QtGui.QTableWidgetItem()
@@ -485,6 +485,11 @@ class AddAccountFrame(QtGui.QDialog):
         headerItem1 = QtGui.QTableWidgetItem()
         headerItem1.setText(QtGui.QApplication.translate("Dialog", "Дата ", None, QtGui.QApplication.UnicodeUTF8))
         self.accounttarif_table.setHorizontalHeaderItem(2,headerItem1)
+
+        headerItem1 = QtGui.QTableWidgetItem()
+        headerItem1.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
+        self.accounttarif_table.setHorizontalHeaderItem(3,headerItem1)
+
 
         self.add_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.del_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
@@ -640,11 +645,11 @@ class AddAccountFrame(QtGui.QDialog):
 
                 self.addrow(a.id, i,0)
                 self.addrow(a.tarif.name, i,1)
-                self.addrow(a.datetime, i,2)
+                self.addrow(a.datetime.strftime("%d-%m-%Y %H:%M:%S"), i,2)
                 self.accounttarif_table.setRowHeight(i, 17)
                 self.accounttarif_table.setColumnHidden(0, True)
                 i+=1
-            #self.accounttarif_table.resizeColumnsToContents()
+            #self.tabWidget.resizeColumnsToContents()
 
 
     def save(self):
@@ -687,7 +692,7 @@ class AccountsMdiChild(QMainWindow):
         hh.setOffset(200)
 
 
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе']
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u""]
         i=0
         self.tableWidget.setColumnCount(len(columns))
         self.tableWidget.setHorizontalHeaderLabels(columns)
