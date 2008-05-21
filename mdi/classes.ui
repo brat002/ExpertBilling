@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>422</width>
-    <height>228</height>
+    <height>274</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -16,7 +16,7 @@
    <property name="geometry" >
     <rect>
      <x>150</x>
-     <y>190</y>
+     <y>230</y>
      <width>261</width>
      <height>32</height>
     </rect>
@@ -32,7 +32,7 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>30</y>
+     <y>40</y>
      <width>181</width>
      <height>131</height>
     </rect>
@@ -40,12 +40,54 @@
    <property name="title" >
     <string>Input</string>
    </property>
+   <widget class="QWidget" name="" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>160</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label" >
+       <property name="text" >
+        <string>Src IP</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" >
+      <widget class="QLineEdit" name="lineEdit" />
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_6" >
+       <property name="text" >
+        <string>Src mask</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" >
+      <widget class="QLineEdit" name="lineEdit_3" />
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_4" >
+       <property name="text" >
+        <string>Src port</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" >
+      <widget class="QLineEdit" name="lineEdit_5" />
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2" >
    <property name="geometry" >
     <rect>
      <x>230</x>
-     <y>30</y>
+     <y>40</y>
      <width>181</width>
      <height>131</height>
     </rect>
@@ -53,12 +95,54 @@
    <property name="title" >
     <string>Output</string>
    </property>
+   <widget class="QWidget" name="layoutWidget" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>161</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label_2" >
+       <property name="text" >
+        <string>Dst-IP</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" >
+      <widget class="QLineEdit" name="lineEdit_2" />
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_7" >
+       <property name="text" >
+        <string>Dst mask</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" >
+      <widget class="QLineEdit" name="lineEdit_4" />
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_5" >
+       <property name="text" >
+        <string>Dst port</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" >
+      <widget class="QLineEdit" name="lineEdit_6" />
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QCheckBox" name="checkBox" >
    <property name="geometry" >
     <rect>
      <x>10</x>
-     <y>170</y>
+     <y>210</y>
      <width>411</width>
      <height>19</height>
     </rect>
@@ -73,101 +157,7 @@ p, li { white-space: pre-wrap; }
     <string>Создать/отредактировать в Buddy классе противоположное направление?</string>
    </property>
   </widget>
-  <widget class="QWidget" name="" >
-   <property name="geometry" >
-    <rect>
-     <x>10</x>
-     <y>50</y>
-     <width>160</width>
-     <height>100</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" >
-    <item row="0" column="0" >
-     <widget class="QLabel" name="label" >
-      <property name="text" >
-       <string>Src IP</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1" >
-     <widget class="QLineEdit" name="lineEdit" />
-    </item>
-    <item row="1" column="0" >
-     <widget class="QLabel" name="label_6" >
-      <property name="text" >
-       <string>Src mask</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1" >
-     <widget class="QLineEdit" name="lineEdit_3" />
-    </item>
-    <item row="2" column="0" >
-     <widget class="QLabel" name="label_3" >
-      <property name="text" >
-       <string>Protocol</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1" >
-     <widget class="QComboBox" name="comboBox" />
-    </item>
-    <item row="3" column="0" >
-     <widget class="QLabel" name="label_4" >
-      <property name="text" >
-       <string>Src port</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1" >
-     <widget class="QLineEdit" name="lineEdit_5" />
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="" >
-   <property name="geometry" >
-    <rect>
-     <x>240</x>
-     <y>50</y>
-     <width>161</width>
-     <height>74</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" >
-    <item row="0" column="0" >
-     <widget class="QLabel" name="label_2" >
-      <property name="text" >
-       <string>Dst-IP</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1" >
-     <widget class="QLineEdit" name="lineEdit_2" />
-    </item>
-    <item row="1" column="0" >
-     <widget class="QLabel" name="label_7" >
-      <property name="text" >
-       <string>Dst mask</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1" >
-     <widget class="QLineEdit" name="lineEdit_4" />
-    </item>
-    <item row="2" column="0" >
-     <widget class="QLabel" name="label_5" >
-      <property name="text" >
-       <string>Dst port</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1" >
-     <widget class="QLineEdit" name="lineEdit_6" />
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="" >
+  <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
      <x>1</x>
@@ -186,6 +176,38 @@ p, li { white-space: pre-wrap; }
     </item>
     <item>
      <widget class="QLineEdit" name="lineEdit_7" />
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>11</x>
+     <y>180</y>
+     <width>331</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <item>
+     <widget class="QLabel" name="label_3" >
+      <property name="text" >
+       <string>Protocol</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="comboBox" />
+    </item>
+    <item>
+     <widget class="QLabel" name="label_9" >
+      <property name="text" >
+       <string>Next Hop</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_8" />
     </item>
    </layout>
   </widget>

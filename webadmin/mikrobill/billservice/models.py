@@ -86,7 +86,7 @@ class TimePeriodNode(models.Model):
 
 
 class TimePeriod(models.Model):
-    name = models.CharField(max_length=255, verbose_name=u'Название группы временных периодов')
+    name = models.CharField(max_length=255, verbose_name=u'Название группы временных периодов', unique=True)
     time_period_nodes = models.ManyToManyField(to=TimePeriodNode, filter_interface=models.HORIZONTAL, verbose_name=u'Группа временных периодов')
 
     def in_period(self):

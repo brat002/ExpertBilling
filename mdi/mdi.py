@@ -49,6 +49,7 @@ from nas.models import IPAddressPool
 from AccountFrame import AccountsMdiChild
 from NasFrame import NasMdiChild
 from SettlementPeriodFrame import SettlementPeriodChild
+from TimePeriodFrame import TimePeriodChild
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -106,7 +107,9 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage(self.tr("File saved"), 2000)
 
     def cut(self):
-        self.activeMdiChild().cut()
+        child=TimePeriodChild()
+        self.workspace.addWindow(child)
+        child.show()
 
     def copy(self):
         self.activeMdiChild().copy()

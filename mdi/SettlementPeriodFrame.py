@@ -275,7 +275,7 @@ class SettlementPeriodChild(QMainWindow):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Расчётные периоды", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
-        self.tableWidget.setColumnCount(6)
+        self.tableWidget.setColumnCount(7)
         self.tableWidget.setRowCount(0)
 
         headerItem = QtGui.QTableWidgetItem()
@@ -301,6 +301,10 @@ class SettlementPeriodChild(QMainWindow):
         headerItem5 = QtGui.QTableWidgetItem()
         headerItem5.setText(QtGui.QApplication.translate("MainWindow", "Продолжительность в секундах", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(5,headerItem5)
+        headerItem5 = QtGui.QTableWidgetItem()
+        headerItem5.setText(QtGui.QApplication.translate("MainWindow", "", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setHorizontalHeaderItem(6,headerItem5)
+        
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
