@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>274</height>
+    <width>271</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -15,9 +15,9 @@
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
     <rect>
-     <x>150</x>
-     <y>230</y>
-     <width>261</width>
+     <x>90</x>
+     <y>290</y>
+     <width>161</width>
      <height>32</height>
     </rect>
    </property>
@@ -28,186 +28,124 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QGroupBox" name="groupBox" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>40</y>
-     <width>181</width>
-     <height>131</height>
-    </rect>
-   </property>
-   <property name="title" >
-    <string>Input</string>
-   </property>
-   <widget class="QWidget" name="" >
-    <property name="geometry" >
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>160</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="label" >
-       <property name="text" >
-        <string>Src IP</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" >
-      <widget class="QLineEdit" name="lineEdit" />
-     </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="label_6" >
-       <property name="text" >
-        <string>Src mask</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" >
-      <widget class="QLineEdit" name="lineEdit_3" />
-     </item>
-     <item row="2" column="0" >
-      <widget class="QLabel" name="label_4" >
-       <property name="text" >
-        <string>Src port</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" >
-      <widget class="QLineEdit" name="lineEdit_5" />
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_2" >
-   <property name="geometry" >
-    <rect>
-     <x>230</x>
-     <y>40</y>
-     <width>181</width>
-     <height>131</height>
-    </rect>
-   </property>
-   <property name="title" >
-    <string>Output</string>
-   </property>
-   <widget class="QWidget" name="layoutWidget" >
-    <property name="geometry" >
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>161</width>
-      <height>101</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="label_2" >
-       <property name="text" >
-        <string>Dst-IP</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" >
-      <widget class="QLineEdit" name="lineEdit_2" />
-     </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="label_7" >
-       <property name="text" >
-        <string>Dst mask</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" >
-      <widget class="QLineEdit" name="lineEdit_4" />
-     </item>
-     <item row="2" column="0" >
-      <widget class="QLabel" name="label_5" >
-       <property name="text" >
-        <string>Dst port</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" >
-      <widget class="QLineEdit" name="lineEdit_6" />
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QCheckBox" name="checkBox" >
-   <property name="geometry" >
-    <rect>
-     <x>10</x>
-     <y>210</y>
-     <width>411</width>
-     <height>19</height>
-    </rect>
-   </property>
-   <property name="toolTip" >
-    <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
-p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Должно отображаться, если указан buddy класс&lt;/p>&lt;/body>&lt;/html></string>
-   </property>
-   <property name="text" >
-    <string>Создать/отредактировать в Buddy классе противоположное направление?</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget" >
-   <property name="geometry" >
-    <rect>
-     <x>1</x>
-     <y>11</y>
-     <width>411</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" >
-    <item>
-     <widget class="QLabel" name="label_8" >
-      <property name="text" >
-       <string>Название направления</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_7" />
-    </item>
-   </layout>
-  </widget>
   <widget class="QWidget" name="" >
    <property name="geometry" >
     <rect>
-     <x>11</x>
-     <y>180</y>
-     <width>331</width>
-     <height>22</height>
+     <x>10</x>
+     <y>16</y>
+     <width>251</width>
+     <height>261</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" >
-    <item>
-     <widget class="QLabel" name="label_3" >
+   <layout class="QGridLayout" >
+    <item row="0" column="0" >
+     <widget class="QLabel" name="name_label" >
+      <property name="text" >
+       <string>Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" colspan="2" >
+     <widget class="QLineEdit" name="name_edit" >
+      <property name="font" >
+       <font>
+        <family>MS Reference Sans Serif</family>
+       </font>
+      </property>
+      <property name="text" >
+       <string>weqdsd</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" >
+     <widget class="QLabel" name="group_label" >
+      <property name="text" >
+       <string>Group</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" colspan="2" >
+     <widget class="QComboBox" name="group_edit" />
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="src_ip_label" >
+      <property name="text" >
+       <string>Src IP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" colspan="2" >
+     <widget class="QLineEdit" name="src_ip_edit" />
+    </item>
+    <item row="3" column="0" >
+     <widget class="QLabel" name="src_mask_label" >
+      <property name="text" >
+       <string>Src mask</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="2" >
+     <widget class="QLineEdit" name="src_mask_edit" />
+    </item>
+    <item row="4" column="0" >
+     <widget class="QLabel" name="dst_ip_label" >
+      <property name="text" >
+       <string>Dst-IP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1" colspan="2" >
+     <widget class="QLineEdit" name="dst_ip_edit" />
+    </item>
+    <item row="5" column="0" >
+     <widget class="QLabel" name="dst_mask_label" >
+      <property name="text" >
+       <string>Dst mask</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1" colspan="2" >
+     <widget class="QLineEdit" name="dst_mask_edit" />
+    </item>
+    <item row="6" column="0" >
+     <widget class="QLabel" name="protocol_label" >
       <property name="text" >
        <string>Protocol</string>
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QComboBox" name="comboBox" />
+    <item row="6" column="1" colspan="2" >
+     <widget class="QComboBox" name="protocol_edit" />
     </item>
-    <item>
-     <widget class="QLabel" name="label_9" >
+    <item row="7" column="0" >
+     <widget class="QLabel" name="src_port_label" >
+      <property name="text" >
+       <string>Src port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1" colspan="2" >
+     <widget class="QLineEdit" name="src_port_edit" />
+    </item>
+    <item row="8" column="0" >
+     <widget class="QLabel" name="dst_port_label" >
+      <property name="text" >
+       <string>Dst port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1" colspan="2" >
+     <widget class="QLineEdit" name="dst_port_edit" />
+    </item>
+    <item row="9" column="0" >
+     <widget class="QLabel" name="next_hop_label" >
       <property name="text" >
        <string>Next Hop</string>
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="QLineEdit" name="lineEdit_8" />
+    <item row="9" column="1" colspan="2" >
+     <widget class="QLineEdit" name="next_hop_edit" />
     </item>
    </layout>
   </widget>

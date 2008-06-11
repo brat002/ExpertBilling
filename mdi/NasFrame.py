@@ -241,6 +241,7 @@ class AddNasFrame(QtGui.QDialog):
 
         if not connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
             QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
+        print connection.get_cursor()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование", None, QtGui.QApplication.UnicodeUTF8))
@@ -387,6 +388,8 @@ class NasMdiChild(QMainWindow):
         #hh.setClickable(False)
         hh.ResizeMode(QtGui.QHeaderView.Stretch)
         hh.setMovable(True)
+        hh.setMaximumHeight(18)
+        hh.setAlignment(QtCore.Qt.AlignLeft)
 
 
         self.setCentralWidget(self.tableWidget)
@@ -413,6 +416,12 @@ class NasMdiChild(QMainWindow):
         self.toolBar.addAction(self.addAction)
         self.toolBar.addAction(self.delAction)
         self.toolBar.addAction(self.configureAction)
+        
+        
+#===============================================================================
+#        length_edit = QtGui.QComboBox()
+#        self.toolBar.addWidget(length_edit)
+#===============================================================================
 
         self.retranslateUi()
         self.refresh()
