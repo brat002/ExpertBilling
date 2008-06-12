@@ -50,6 +50,7 @@ from AccountFrame import AccountsMdiChild
 from NasFrame import NasMdiChild
 from SettlementPeriodFrame import SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
+from ClassFrame import ClassChild
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -112,7 +113,9 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def copy(self):
-        self.activeMdiChild().copy()
+        child=ClassChild()
+        self.workspace.addWindow(child)
+        child.show()
 
     def paste(self):
         self.activeMdiChild().paste()
