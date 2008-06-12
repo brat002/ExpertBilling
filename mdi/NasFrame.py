@@ -389,7 +389,7 @@ class NasMdiChild(QMainWindow):
         hh.ResizeMode(QtGui.QHeaderView.Stretch)
         hh.setMovable(True)
         hh.setMaximumHeight(18)
-        hh.setAlignment(QtCore.Qt.AlignLeft)
+        #hh.setAlignment(QtCore.Qt.AlignLeft)
 
 
         self.setCentralWidget(self.tableWidget)
