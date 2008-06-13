@@ -282,9 +282,9 @@ class ClassChild(QMainWindow):
 
         self.listWidget = QListWidget(self.splitter)
         self.listWidget.setMaximumSize(QtCore.QSize(220,16777215))
-        self.listWidget.setMouseTracking(True)
-        self.listWidget.setAcceptDrops(True)
-        self.listWidget.setDragEnabled(True)
+        #self.listWidget.setMouseTracking(True)
+        #self.listWidget.setAcceptDrops(True)
+        #self.listWidget.setDragEnabled(True)
         self.listWidget.setDropIndicatorShown(True)
         
         self.listWidget.setDragDropMode(QAbstractItemView.InternalMove)
@@ -301,8 +301,25 @@ class ClassChild(QMainWindow):
         self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        
+        self.tableWidget.setAlternatingRowColors(True)
+        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
+        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
+        
         self.tableWidget.setObjectName("tableWidget")
         self.setCentralWidget(self.splitter)
+        
+        vh = self.tableWidget.verticalHeader()
+        vh.setVisible(False)
+        hh = self.tableWidget.horizontalHeader()
+        hh.setStretchLastSection(True)
+        hh.setHighlightSections(False)
+        #hh.setClickable(False)
+        hh.ResizeMode(QtGui.QHeaderView.Stretch)
+        hh.setMovable(True)
+        hh.setMaximumHeight(18)
+        
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,801,21))
@@ -332,43 +349,39 @@ class ClassChild(QMainWindow):
         self.delClassNodeAction = QtGui.QAction(self)
         self.delClassNodeAction.setIcon(QtGui.QIcon("images/del.png"))
         self.delClassNodeAction.setObjectName("delClassNodeAction")
+        
+        #Up Class
+        self.upClassAction = QtGui.QAction(self)
+        self.upClassAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.upClassAction.setObjectName("delClassNodeAction")
+               
+        #Down Class
+        self.downClassAction = QtGui.QAction(self)
+        self.downClassAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.downClassAction.setObjectName("delClassNodeAction")
+        
         self.toolBar.addAction(self.addClassAction)
         self.toolBar.addAction(self.delClassAction)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.addClassNodeAction)
         self.toolBar.addAction(self.delClassNodeAction)
         self.toolBar.addSeparator()
+        self.toolBar.addAction(self.upClassAction)
+        self.toolBar.addAction(self.downClassAction)
 
         self.retranslateUi()
         self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
+        self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
+        
+        self.connect(self.upClassAction, QtCore.SIGNAL("triggered()"), self.upClass)
+        self.connect(self.downClassAction, QtCore.SIGNAL("triggered()"), self.downClass)
+        
         self.connect(self.listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editClass)
+        self.connect(self.listWidget, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
         self.refresh_list()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.listWidget.__class__.dragEnterEvent = self.lwDragEnterEvent
-        
-        self.listWidget.__class__.dropEvent = self.lwDropEvent
-        
-    def lwDragEnterEvent(self, event):
-        print "DragEnter"
-        event.setDropAction(QtCore.Qt.MoveAction)
-        
-        
-        #event.acceptProposedAction()
-        event.accept()
-        #event.accept()
-    
-    def lwDropEvent(self, event):
-        print "DragDrop"
-        
-        #event.acceptProposedAction()
-        event.accept()
-        #event.setDropAction(QtCore.Qt.CopyAction)
-        print self.listWidget.dropIndicatorPosition()
-        # we want to append only URLs to the list...
-    
-        
-        #event.accept()
+
     
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
@@ -381,28 +394,39 @@ class ClassChild(QMainWindow):
         self.tableWidget.setHorizontalHeaderItem(0,headerItem)
 
         headerItem1 = QtGui.QTableWidgetItem()
+        
         headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Group", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
 
         headerItem2 = QtGui.QTableWidgetItem()
+        
         headerItem2.setText(QtGui.QApplication.translate("MainWindow", "Protocol", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(2,headerItem2)
 
         headerItem3 = QtGui.QTableWidgetItem()
+        
         headerItem3.setText(QtGui.QApplication.translate("MainWindow", "Src-IP", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(3,headerItem3)
 
         headerItem4 = QtGui.QTableWidgetItem()
+        
         headerItem4.setText(QtGui.QApplication.translate("MainWindow", "Src-mask", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(4,headerItem4)
 
         headerItem5 = QtGui.QTableWidgetItem()
+        
         headerItem5.setText(QtGui.QApplication.translate("MainWindow", "Dst-IP", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(5,headerItem5)
 
         headerItem6 = QtGui.QTableWidgetItem()
+        
         headerItem6.setText(QtGui.QApplication.translate("MainWindow", "Dst-Mask", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setHorizontalHeaderItem(6,headerItem6)
+        columns = ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        self.tableWidget.setColumnCount(len(columns))
+        self.tableWidget.setHorizontalHeaderLabels(columns)
+        self.tableWidget.setColumnHidden(0, True)
+
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.addClassAction.setText(QtGui.QApplication.translate("MainWindow", "Add class", None, QtGui.QApplication.UnicodeUTF8))
         self.delClassAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class", None, QtGui.QApplication.UnicodeUTF8))
@@ -421,6 +445,7 @@ class ClassChild(QMainWindow):
             
         self.refresh_list()
         
+    
     def editClass(self):
         name=self.getSelectedName()
         try:
@@ -434,27 +459,73 @@ class ClassChild(QMainWindow):
             model.name=unicode(child.name_edit.text())
             
             model.color=child.color
-            print child.color
+            
             model.store=child.store_edit.checkState()==2
             model.save()
             
             
         self.refresh_list()
             
-        #text = QInputDialog.getText(self,u"Введите название периода", u"Название:", QLineEdit.Normal);        
-        #if text[0].isEmpty()==True and text[2]:
-        #    QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
-        #    return
-            
-        #try:
-        #    TimePeriod.objects.create(name=unicode(text[0]))
-        #except:
-        #    QtGui.QMessageBox.warning(self, u"Ошибка",
-        #                u"Вероятно, такое название уже есть в списке.")
-        #    return
+    def delClass(self):
+        name=self.getSelectedName()
+        try:
+            model=TrafficClass.objects.get(name=unicode(name))
+        except:
+            return
 
+        if id>0 and QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
+            model.delete()
+
+        self.refresh_list()
         
-        #self.refresh()
+        
+    def savePosition(self, direction):
+        item_changed_name = unicode(self.listWidget.item(self.listWidget.currentRow()).text())
+        if direction == u"up":
+            item_swap_name = unicode(self.listWidget.item(self.listWidget.currentRow()+1).text())
+        elif direction == u"down":
+            item_swap_name = unicode(self.listWidget.item(self.listWidget.currentRow()-1).text())
+            
+        
+        model1 = TrafficClass.objects.get(name = item_changed_name)
+        model2 = TrafficClass.objects.get(name = item_swap_name)
+        print model1.weight, model2.weight
+        a=model1.weight+0
+        b=model2.weight+0
+        
+        model1.weight=1000001
+        model1.save()
+        
+        model2.weight=a
+        model1.weight=b
+        
+        model2.save()
+        
+        model1.save()
+        
+        model2.save()
+        
+        print model1.weight, model2.weight
+            
+
+    
+    def upClass(self):
+        #self.listWidget.currentItem()
+        row=self.listWidget.currentRow()
+        item = self.listWidget.takeItem(row)
+        self.listWidget.insertItem(row-1,item)
+        self.listWidget.setCurrentItem(item)
+        self.savePosition(direction=u"up")
+        #pass
+    
+    def downClass(self):
+        row=self.listWidget.currentRow()
+        item = self.listWidget.takeItem(row)
+        self.listWidget.insertItem(row+1,item)
+        self.listWidget.setCurrentItem(item)
+        self.savePosition(direction=u"down")
+        
+        
     def refresh_list(self):
         self.listWidget.clear()
 
@@ -463,20 +534,11 @@ class ClassChild(QMainWindow):
         for clas in classes:
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(clas.name)
+            item.setBackgroundColor(QColor(clas.color))
             self.listWidget.addItem(item)
+            
+            
         
-    def delPeriod(self):
-        name=self.getSelectedName()
-        try:
-            model=TimePeriod.objects.get(name=unicode(name))
-        except:
-            return
-
-        if id>0 and QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            model.delete()
-
-        self.refresh()
-
 
     def editPeriod(self):
         name=unicode(self.getSelectedName())
@@ -540,18 +602,27 @@ class ClassChild(QMainWindow):
             text=unicode(widget.text())
         self.tableWidget.clearContents()
         #print text
-        model=TimePeriod.objects.get(name=text)
+        model = TrafficClass.objects.get(name=text)
+        nodes = TrafficNode.objects.filter(traffic_class = model).order_by("id")
 
-        self.tableWidget.setRowCount(model.time_period_nodes.count())
+        self.tableWidget.setRowCount(nodes.count())
+        
         i=0        
-        for node in model.time_period_nodes.all().order_by('id'):
+        ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        for node in nodes:
 
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
-            self.addrow(node.time_start.strftime("%d-%m-%Y %H:%M:%S"), i,2)
-            self.addrow((node.time_start+datetime.timedelta(seconds=node.length)).strftime("%d-%m-%Y %H:%M:%S"), i,3)
-            self.addrow(node.repeat_after, i,4)
+            self.addrow(node.direction, i,2)
+            self.addrow(node.protocol, i,3)
+            self.addrow(node.src_ip, i,4)
+            self.addrow(node.src_mask, i,5)
+            self.addrow(node.src_port, i,6)
             
+            self.addrow(node.dst_ip, i,7)
+            self.addrow(node.dst_mask, i,8)
+            self.addrow(node.dst_port, i,9)
+            self.addrow(node.next_hop, i,10)
             self.tableWidget.setRowHeight(i, 17)
             #self.tableWidget.setColumnHidden(0, True)
 # 
