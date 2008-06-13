@@ -693,7 +693,7 @@ class AccountsMdiChild(QMainWindow):
 
 
         columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u""]
-        i=0
+        
         self.tableWidget.setColumnCount(len(columns))
         self.tableWidget.setHorizontalHeaderLabels(columns)
         self.setCentralWidget(self.tableWidget)
