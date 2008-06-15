@@ -16,7 +16,7 @@ NAS_LIST=(
 DIRECTIONS_LIST=(
                 (u'INPUT', u'Входящий на абонента'),
                 (u'OUTPUT',u'Исходящий от абонента'),
-                (u'BOTH',u'Межабонентский'),
+                (u'TRANSIT',u'Межабонентский'),
                 )
 
 SERVICE_LIST=(
@@ -92,7 +92,7 @@ class TrafficNode(models.Model):
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
     traffic_class = models.ForeignKey(TrafficClass, edit_inline=models.TABULAR, num_extra_on_change=3)
-    name = models.CharField(verbose_name=u'Название направления', max_length=255, blank=True, null=True, core=True)
+    name = models.CharField(verbose_name=u'Название направления', max_length=255, core=True)
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
     protocol = models.CharField(max_length=10, blank=True, null=True)
     src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
