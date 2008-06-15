@@ -1555,6 +1555,12 @@ class RPCServer(Thread):
                 print e
                 return False
             return True
+        
+        def get_cursor(self):
+            connection = pool.connection()
+            cur = connection.cursor()
+            return [1,2,3]
+             
 
 
     daemon=Pyro.core.Daemon()
