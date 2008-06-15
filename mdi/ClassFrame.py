@@ -93,162 +93,190 @@ class ClassEdit(QtGui.QDialog):
             
         
 
-class AddTimePeriod(QtGui.QDialog):
-    def __init__(self, timemodel, nodemodel=None):
-        super(AddTimePeriod, self).__init__()
-        self.timemodel=timemodel
-        self.nodemodel=nodemodel
+class ClassNodeFrame(QtGui.QDialog):
+    def __init__(self, model=None):
+        super(ClassNodeFrame, self).__init__()
+        self.model=model
         
-        self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(110,160,161,32))
+        self.buttonBox.setGeometry(QtCore.QRect(80,290,160,26))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        
         self.buttonBox.setObjectName("buttonBox")
 
-        self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(10,10,197,16))
-        self.label.setObjectName("label")
+        self.layoutWidget = QtGui.QWidget(self)
+        self.layoutWidget.setGeometry(QtCore.QRect(10,10,181,265))
+        self.layoutWidget.setObjectName("layoutWidget")
 
-        self.widget = QtGui.QWidget(self)
-        self.widget.setGeometry(QtCore.QRect(10,30,261,131))
-        self.widget.setObjectName("widget")
-
-        self.gridlayout = QtGui.QGridLayout(self.widget)
+        self.gridlayout = QtGui.QGridLayout(self.layoutWidget)
         self.gridlayout.setObjectName("gridlayout")
 
-        self.label_2 = QtGui.QLabel(self.widget)
-        self.label_2.setObjectName("label_2")
-        self.gridlayout.addWidget(self.label_2,0,0,1,1)
+        self.name_label = QtGui.QLabel(self.layoutWidget)
+        self.name_label.setObjectName("name_label")
+        self.gridlayout.addWidget(self.name_label,0,0,1,1)
 
-        self.name_edit = QtGui.QLineEdit(self.widget)
+        self.name_edit = QtGui.QLineEdit(self.layoutWidget)
+
+        font = QtGui.QFont()
+        font.setFamily("MS Reference Sans Serif")
+        self.name_edit.setFont(font)
         self.name_edit.setObjectName("name_edit")
-        self.gridlayout.addWidget(self.name_edit,0,1,1,1)
+        self.gridlayout.addWidget(self.name_edit,0,1,1,2)
 
-        self.start_label = QtGui.QLabel(self.widget)
-        self.start_label.setObjectName("start_label")
-        self.gridlayout.addWidget(self.start_label,1,0,1,1)
+        self.group_label = QtGui.QLabel(self.layoutWidget)
+        self.group_label.setObjectName("group_label")
+        self.gridlayout.addWidget(self.group_label,1,0,1,1)
 
-        self.start_date_edit = QtGui.QDateTimeEdit(self.widget)
-        self.start_date_edit.setCalendarPopup(True)
-        self.start_date_edit.setObjectName("start_date_edit")
-        self.gridlayout.addWidget(self.start_date_edit,1,1,1,1)
+        self.direction_edit = QtGui.QComboBox(self.layoutWidget)
+        self.direction_edit.setObjectName("direction_edit")
+        self.gridlayout.addWidget(self.direction_edit,1,1,1,2)
 
-        self.end_label = QtGui.QLabel(self.widget)
-        self.end_label.setObjectName("end_label")
-        self.gridlayout.addWidget(self.end_label,2,0,1,1)
+        self.src_ip_label = QtGui.QLabel(self.layoutWidget)
+        self.src_ip_label.setObjectName("src_ip_label")
+        self.gridlayout.addWidget(self.src_ip_label,2,0,1,1)
 
-        self.end_date_edit = QtGui.QDateTimeEdit(self.widget)
-        self.end_date_edit.setCalendarPopup(True)
-        self.end_date_edit.setObjectName("end_date_edit")
-        self.gridlayout.addWidget(self.end_date_edit,2,1,1,1)
+        self.src_ip_edit = QtGui.QLineEdit(self.layoutWidget)
 
-        self.repeat_label = QtGui.QLabel(self.widget)
-        self.repeat_label.setObjectName("repeat_label")
-        self.gridlayout.addWidget(self.repeat_label,3,0,1,1)
+        font = QtGui.QFont()
+        font.setFamily("MS Sans Serif")
+        font.setPointSize(8)
+        self.src_ip_edit.setFont(font)
+        self.src_ip_edit.setMaxLength(15)
+        self.src_ip_edit.setFrame(True)
+        self.src_ip_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.src_ip_edit.setObjectName("src_ip_edit")
+        self.gridlayout.addWidget(self.src_ip_edit,2,1,1,2)
 
-        self.repeat_edit = QtGui.QComboBox(self.widget)
-        self.repeat_edit.setObjectName("repeat_edit")
-        self.gridlayout.addWidget(self.repeat_edit,3,1,1,1)
+        self.src_mask_label = QtGui.QLabel(self.layoutWidget)
+        self.src_mask_label.setObjectName("src_mask_label")
+        self.gridlayout.addWidget(self.src_mask_label,3,0,1,1)
+
+        self.src_mask_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.src_mask_edit.setObjectName("src_mask_edit")
+        self.gridlayout.addWidget(self.src_mask_edit,3,1,1,2)
+
+        self.dst_ip_label = QtGui.QLabel(self.layoutWidget)
+        self.dst_ip_label.setObjectName("dst_ip_label")
+        self.gridlayout.addWidget(self.dst_ip_label,4,0,1,1)
+
+        self.dst_ip_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.dst_ip_edit.setObjectName("dst_ip_edit")
+        self.gridlayout.addWidget(self.dst_ip_edit,4,1,1,2)
+
+        self.dst_mask_label = QtGui.QLabel(self.layoutWidget)
+        self.dst_mask_label.setObjectName("dst_mask_label")
+        self.gridlayout.addWidget(self.dst_mask_label,5,0,1,1)
+
+        self.dst_mask_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.dst_mask_edit.setObjectName("dst_mask_edit")
+        self.gridlayout.addWidget(self.dst_mask_edit,5,1,1,2)
+
+        self.protocol_label = QtGui.QLabel(self.layoutWidget)
+        self.protocol_label.setObjectName("protocol_label")
+        self.gridlayout.addWidget(self.protocol_label,6,0,1,1)
+
+        self.protocol_edit = QtGui.QComboBox(self.layoutWidget)
+        self.protocol_edit.setObjectName("protocol_edit")
+        self.gridlayout.addWidget(self.protocol_edit,6,1,1,2)
+
+        self.src_port_label = QtGui.QLabel(self.layoutWidget)
+        self.src_port_label.setObjectName("src_port_label")
+        self.gridlayout.addWidget(self.src_port_label,7,0,1,1)
+
+        self.src_port_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.src_port_edit.setObjectName("src_port_edit")
+        self.gridlayout.addWidget(self.src_port_edit,7,1,1,2)
+
+        self.dst_port_label = QtGui.QLabel(self.layoutWidget)
+        self.dst_port_label.setObjectName("dst_port_label")
+        self.gridlayout.addWidget(self.dst_port_label,8,0,1,1)
+
+        self.dst_port_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.dst_port_edit.setObjectName("dst_port_edit")
+        self.gridlayout.addWidget(self.dst_port_edit,8,1,1,2)
+        
+        self.src_validator=QtGui.QIntValidator(self.src_port_edit)
+        self.src_port_edit.setValidator(self.src_validator)
+        
+        self.dst_validator=QtGui.QIntValidator(self.dst_port_edit)
+        self.dst_port_edit.setValidator(self.dst_validator)
+
+
+        self.next_hop_label = QtGui.QLabel(self.layoutWidget)
+        self.next_hop_label.setObjectName("next_hop_label")
+        self.gridlayout.addWidget(self.next_hop_label,9,0,1,1)
+
+        self.next_hop_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.next_hop_edit.setObjectName("next_hop_edit")
+        self.gridlayout.addWidget(self.next_hop_edit,9,1,1,2)
 
         self.retranslateUi()
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        #QtCore.QMetaObject.connectSlotsByName(Dialog)
         self.fixtures()
 
-
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Период времени", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "<b>Укажите временной промежуток</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
-        self.end_label.setText(QtGui.QApplication.translate("Dialog", "Окончание", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_label.setText(QtGui.QApplication.translate("Dialog", "Повторять через", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Сутки", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Неделя", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Месяц", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Год", None, QtGui.QApplication.UnicodeUTF8))
-
-
-    def accept(self):
-        """
-        понаставить проверок
-        """
-        #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
-
-        if self.nodemodel:
-            model=self.nodemodel
-        else:
-            print 'New sp'
-            model=TimePeriodNode()
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Name", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_edit.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
+        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Group", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_edit.setText('0.0.0.0')
+        self.src_mask_label.setText(QtGui.QApplication.translate("Dialog", "Src mask", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_mask_edit.setText('0.0.0.0')
+        self.dst_ip_label.setText(QtGui.QApplication.translate("Dialog", "Dst-IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_ip_edit.setText('0.0.0.0')
+        self.dst_mask_label.setText(QtGui.QApplication.translate("Dialog", "Dst mask", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_mask_edit.setText('0.0.0.0')
+        self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Protocol", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_port_label.setText(QtGui.QApplication.translate("Dialog", "Dst port", None, QtGui.QApplication.UnicodeUTF8))
+        self.next_hop_label.setText(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
+        self.next_hop_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000;   ", None, QtGui.QApplication.UnicodeUTF8))
+        self.next_hop_edit.setText('0.0.0.0')
         
-        model.name=unicode(self.name_edit.text())
-        model.time_start=self.start_date_edit.dateTime().toPyDateTime()
-
-        model.length=self.start_date_edit.dateTime().secsTo(self.end_date_edit.dateTime())
-        print model.length
+        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
+        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
+        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "TRANSIT", None, QtGui.QApplication.UnicodeUTF8))
+        protocols=['', 'ddp', 'egd', 'encap', 'ggp', 'gre', 'hmp', 'icmp', 'idpr-cmtp', 'igmp', 'ipencap', 'ipip',  'ipsec-ah', 'ipsec-esp', 'iso-tp4', 'ospf', 'pup', 'rdp', 'rspf','st', 'tcp', 'udp',  'vmtp', 'xns-idp', 'xtp']
         
-        model.repeat_after=unicode(self.repeat_edit.currentText())
-        try:
-            id=model.id
-            model.save()
-            #Если редактируем
-            if not id:
-                self.timemodel.time_period_nodes.add(model)
-        except Exception, e:
-            print e
-            return
+        for protocol in protocols:
+            self.protocol_edit.addItem(QtGui.QApplication.translate("Dialog", protocol, None, QtGui.QApplication.UnicodeUTF8))
 
-
-
-        QDialog.accept(self)
 
     def fixtures(self):
-        start=datetime.datetime.now()
-        end=datetime.datetime.now()
+        
+        if self.model:
+            
+           self.name_edit.setText(unicode(self.model.name))
+           self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
+           self.src_ip_edit.setText(unicode(self.model.src_ip))
+           self.src_mask_edit.setText(unicode(self.model.src_mask))
+           self.src_port_edit.setText(unicode(self.model.src_port))
+           self.dst_ip_edit.setText(unicode(self.model.dst_ip))
+           self.dst_mask_edit.setText(unicode(self.model.dst_mask))
+           self.dst_port_edit.setText(unicode(self.model.dst_port))
+           self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.model.protocol, QtCore.Qt.MatchCaseSensitive)),
+           self.next_hop_edit.setText(unicode(self.model.next_hop))
 
-        if self.nodemodel:
-            self.name_edit.setText(unicode(self.nodemodel.name))
-    
-            start = QtCore.QDateTime()
+                                       
 
-            start.setTime_t(int(mktime(self.nodemodel.time_start.timetuple())))
-
-            end = QtCore.QDateTime()
-            end.setTime_t(int(mktime((self.nodemodel.time_start+datetime.timedelta(seconds=self.nodemodel.length)).timetuple())))
-
-            self.repeat_edit.setCurrentIndex(self.repeat_edit.findText(self.nodemodel.repeat_after, QtCore.Qt.MatchCaseSensitive))
             
     
 
-        self.start_date_edit.setDateTime(start)
-        self.end_date_edit.setDateTime(end)
 
     def save(self):
         print 'Saved'
 
-
-class ListWidget(QListWidget):
-    def __init__(self, parent = None):
-        QListWidget.__init__(self, parent)
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
-
-    def dragEnterEvent(self, event):
-        event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        #event.setDropAction(QtCore.Qt.CopyAction)
-        #event.acceptProposedAction()
-        event.accept()
-
-    def dropEvent(self, event):
-        print "Drop"
-        event.setDropAction(QtCore.Qt.CopyAction)
-        event.accept()
-        print unicode(self.currentItem().text())
 
 
 class ClassChild(QMainWindow):
@@ -375,9 +403,15 @@ class ClassChild(QMainWindow):
         
         self.connect(self.upClassAction, QtCore.SIGNAL("triggered()"), self.upClass)
         self.connect(self.downClassAction, QtCore.SIGNAL("triggered()"), self.downClass)
+
+        self.connect(self.addClassNodeAction, QtCore.SIGNAL("triggered()"), self.addNode)
+        self.connect(self.delClassNodeAction, QtCore.SIGNAL("triggered()"), self.delNode)
         
         self.connect(self.listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editClass)
         self.connect(self.listWidget, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
+        
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
+        
         self.refresh_list()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -438,10 +472,14 @@ class ClassChild(QMainWindow):
         #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),Dialog.accept)
         child=ClassEdit()
         if child.exec_()==1:
-            clc=TrafficClass.objects.all().order_by("-weight")[0]
-            max_weight=clc.weight
+            try:
+                clc=TrafficClass.objects.all().order_by("-weight")[0]
+                max_weight=clc.weight
+            except:
+                max_weight=0
+            
             print "color=", child.color
-            TrafficClass.objects.create(name=unicode(child.name_edit.text()), weight=max_weight+100, color=unicode(child.color), store=child.store_edit.checkState()==2)
+            TrafficClass.objects.create(name=unicode(child.name_edit.text()), weight=max_weight+1, color=unicode(child.color), store=child.store_edit.checkState()==2)
             
         self.refresh_list()
         
@@ -538,40 +576,86 @@ class ClassChild(QMainWindow):
             self.listWidget.addItem(item)
             
             
-        
 
-    def editPeriod(self):
-        name=unicode(self.getSelectedName())
-        text = QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QLineEdit.Normal,name);
-        if text[0].isEmpty()==True and text[2]:
-            QtGui.QMessageBox.warning(self, u"Ошибка",
-                    u"Введено пустое название.")
-            return
-        try:
-            model=TimePeriod.objects.get(name=name)
-            model.name=unicode(text[0])
-            model.save()                
-        except Exception, e:
-            QtGui.QMessageBox.warning(self, u"Ошибка",
-                        u"Введено недопустимое значение.")
-            return
-        self.refresh()
+    def nodeCreator(self, model, child, nodemodel=None):
+        
+        name = unicode(child.name_edit.text())
+        direction = unicode(child.direction_edit.currentText())
+        protocol = unicode(child.protocol_edit.currentText())
+        
+        src_ip = unicode(child.src_ip_edit.text())
+        if src_ip =='...':
+            src_ip='0.0.0.0'
+            
+        src_mask = unicode(child.src_mask_edit.text())
+        if src_mask == '...':
+            src_mask='0.0.0.0'
+            
+        dst_ip = unicode(child.dst_ip_edit.text())
+        if dst_ip =='...':
+            dst_ip='0.0.0.0'
+        
+        dst_mask = unicode(child.dst_mask_edit.text())
+        if dst_mask=='...':
+            dst_mask='0.0.0.0'
+            
+        src_port = unicode(child.src_port_edit.text())
+        if src_port=='':
+            src_port=0
+        dst_port = unicode(child.dst_port_edit.text())
+        if dst_port=='':
+            dst_port=0        
+        next_hop = unicode(child.next_hop_edit.text())
+        
+        if not nodemodel:
+            """
+            СОздаём новую запись
+            """
+        
+            TrafficNode.objects.create(traffic_class=model,
+                                       name = name,
+                                       direction = direction,
+                                       src_ip = src_ip,
+                                       src_mask = src_mask,
+                                       src_port = src_port,
+                                       dst_ip = dst_ip,
+                                       dst_mask = dst_mask,
+                                       dst_port = dst_port,
+                                       protocol = protocol,
+                                       next_hop=next_hop
+                                       )
+        else: 
+           nodemodel.name = name
+           nodemodel.direction = direction
+           nodemodel.src_ip = src_ip
+           nodemodel.src_mask = src_mask
+           nodemodel.src_port = src_port
+           nodemodel.dst_ip = dst_ip
+           nodemodel.dst_mask = dst_mask
+           nodemodel.dst_port = dst_port
+           nodemodel.protocol = protocol
+           nodemodel.next_hop=next_hop
+           nodemodel.save()
+            
+           
 
     def addNode(self):
         name=self.getSelectedName()
         try:
-            model=TimePeriod.objects.get(name=unicode(name))
+            model=TrafficClass.objects.get(name=unicode(name))
         except:
             return
 
-        child=AddTimePeriod(timemodel=model)
-        child.exec_()
-        self.refreshTable()
+        child=ClassNodeFrame()
+        if child.exec_()==1:
+            self.nodeCreator(model=model, child=child)
+            
+            self.refreshTable()
         
     def delNode(self):
         id = self.getSelectedId()
         try:
-            nodemodel = TimePeriodNode.objects.get(id=id)
+            nodemodel = TrafficNode.objects.get(id=id)
         except:
             return
         if QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
@@ -581,18 +665,20 @@ class ClassChild(QMainWindow):
     def editNode(self):
         id = self.getSelectedId()
         try:
-            nodemodel = TimePeriodNode.objects.get(id=id)
+            nodemodel = TrafficNode.objects.get(id=id)
         except:
-            pass
-        
+            return
+
         name=self.getSelectedName()
         try:
-            model=TimePeriod.objects.get(name=unicode(name))
+            model=TrafficClass.objects.get(name=unicode(name))
         except:
             return
         
-        child=AddTimePeriod(timemodel=model, nodemodel=nodemodel)
-        child.exec_()
+        
+        child=ClassNodeFrame(model=nodemodel)
+        if child.exec_()==1:
+            self.nodeCreator(model=model, nodemodel=nodemodel, child=child)
         self.refreshTable()
         
     def refreshTable(self, widget=None):
