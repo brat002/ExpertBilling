@@ -25,7 +25,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
    <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
    </property>
    <property name="centerButtons" >
     <bool>true</bool>
@@ -36,7 +36,7 @@
     <rect>
      <x>0</x>
      <y>10</y>
-     <width>616</width>
+     <width>621</width>
      <height>550</height>
     </rect>
    </property>
@@ -53,18 +53,10 @@
     <enum>Qt::ElideNone</enum>
    </property>
    <widget class="QWidget" name="tab_3" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Общее</string>
     </attribute>
-    <widget class="QTextEdit" name="textEdit" >
+    <widget class="QTextEdit" name="tarif_description_edit" >
      <property name="geometry" >
       <rect>
        <x>11</x>
@@ -74,13 +66,13 @@
       </rect>
      </property>
      <property name="textInteractionFlags" >
-      <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+      <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::NoTextInteraction|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label" >
+    <widget class="QLabel" name="tarif_description_labellabel" >
      <property name="geometry" >
       <rect>
-       <x>17</x>
+       <x>10</x>
        <y>320</y>
        <width>198</width>
        <height>16</height>
@@ -90,10 +82,10 @@
       <string>Описание тарифного плана</string>
      </property>
      <property name="buddy" >
-      <cstring>textEdit</cstring>
+      <cstring>tarif_description_edit</cstring>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox" >
+    <widget class="QCheckBox" name="tarif_status_edit" >
      <property name="geometry" >
       <rect>
        <x>13</x>
@@ -106,13 +98,13 @@
       <string>Активен</string>
      </property>
     </widget>
-    <widget class="QLabel" name="name_label" >
+    <widget class="QLabel" name="tarif_name_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>20</y>
        <width>71</width>
-       <height>31</height>
+       <height>20</height>
       </rect>
      </property>
      <property name="text" >
@@ -124,14 +116,14 @@
       <rect>
        <x>10</x>
        <y>60</y>
-       <width>492</width>
+       <width>481</width>
        <height>161</height>
       </rect>
      </property>
      <property name="title" >
       <string>Расчётный период</string>
      </property>
-     <widget class="QCheckBox" name="checkBox_5" >
+     <widget class="QCheckBox" name="sp_type_edit" >
       <property name="geometry" >
        <rect>
         <x>11</x>
@@ -144,45 +136,71 @@
        <string>Начать при активации у пользователя данного тарифного плана</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_2" >
+     <widget class="QLabel" name="sp_name_label" >
       <property name="geometry" >
        <rect>
         <x>10</x>
         <y>50</y>
         <width>71</width>
-        <height>31</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>Название</string>
       </property>
      </widget>
-     <widget class="QComboBox" name="comboBox" >
+     <widget class="QComboBox" name="sp_name_edit" >
       <property name="geometry" >
        <rect>
         <x>140</x>
         <y>50</y>
         <width>241</width>
-        <height>26</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_2" >
+     <widget class="QLabel" name="tarif_cost_label" >
       <property name="geometry" >
        <rect>
-        <x>140</x>
-        <y>90</y>
+        <x>10</x>
+        <y>80</y>
+        <width>125</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Стоимость пакета</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="reset_tarif_cost_edit" >
+      <property name="geometry" >
+       <rect>
+        <x>9</x>
+        <y>120</y>
+        <width>453</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Производить доснятие суммы до стоимости тарифного плана</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="tarif_cost_edit" >
+      <property name="geometry" >
+       <rect>
+        <x>139</x>
+        <y>80</y>
         <width>241</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
     </widget>
-    <widget class="QCheckBox" name="checkBox_7" >
+    <widget class="QCheckBox" name="ps_null_ballance_checkout_edit_2" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>220</y>
+       <y>230</y>
        <width>451</width>
        <height>30</height>
       </rect>
@@ -191,46 +209,23 @@
       <string>Производить снятие денег при нулевом баллансе пользователя</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox_6" >
-     <property name="geometry" >
-      <rect>
-       <x>20</x>
-       <y>190</y>
-       <width>453</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Производить доснятие суммы до стоимости тарифного плана</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_2" >
+    <widget class="QComboBox" name="access_type_edit" >
      <property name="geometry" >
       <rect>
        <x>150</x>
-       <y>250</y>
+       <y>260</y>
        <width>241</width>
-       <height>26</height>
+       <height>21</height>
       </rect>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox_3" >
+    <widget class="QComboBox" name="access_time_edit" >
      <property name="geometry" >
       <rect>
        <x>150</x>
-       <y>280</y>
+       <y>290</y>
        <width>241</width>
-       <height>26</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="tp_name_edit" >
-     <property name="geometry" >
-      <rect>
-       <x>80</x>
-       <y>20</y>
-       <width>311</width>
-       <height>27</height>
+       <height>21</height>
       </rect>
      </property>
     </widget>
@@ -238,9 +233,9 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>251</y>
-       <width>182</width>
-       <height>26</height>
+       <y>261</y>
+       <width>121</width>
+       <height>21</height>
       </rect>
      </property>
      <property name="text" >
@@ -251,38 +246,27 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>283</y>
-       <width>182</width>
-       <height>26</height>
+       <y>293</y>
+       <width>131</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text" >
       <string>Время доступа</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_8" >
+    <widget class="QLineEdit" name="tarif_name_edit" >
      <property name="geometry" >
       <rect>
-       <x>21</x>
-       <y>151</y>
-       <width>125</width>
-       <height>29</height>
+       <x>110</x>
+       <y>20</y>
+       <width>381</width>
+       <height>20</height>
       </rect>
-     </property>
-     <property name="text" >
-      <string>Стоимость пакета</string>
      </property>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_7" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Настройки скорости</string>
     </attribute>
@@ -313,7 +297,7 @@
       <property name="frameShadow" >
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QToolButton" name="delete_time_button_5" >
+      <widget class="QToolButton" name="del_speed_button" >
        <property name="geometry" >
         <rect>
          <x>40</x>
@@ -326,7 +310,7 @@
         <string>-</string>
        </property>
       </widget>
-      <widget class="QToolButton" name="add_time_button_5" >
+      <widget class="QToolButton" name="add_speed_button" >
        <property name="geometry" >
         <rect>
          <x>6</x>
@@ -334,6 +318,9 @@
          <width>24</width>
          <height>20</height>
         </rect>
+       </property>
+       <property name="contextMenuPolicy" >
+        <enum>Qt::DefaultContextMenu</enum>
        </property>
        <property name="text" >
         <string>+</string>
@@ -348,6 +335,9 @@
         <width>595</width>
         <height>264</height>
        </rect>
+      </property>
+      <property name="contextMenuPolicy" >
+       <enum>Qt::DefaultContextMenu</enum>
       </property>
       <property name="frameShape" >
        <enum>QFrame::Panel</enum>
@@ -407,148 +397,148 @@
        </property>
       </column>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_3" >
+     <widget class="QLineEdit" name="speed_priority_edit" >
       <property name="geometry" >
        <rect>
         <x>110</x>
         <y>210</y>
         <width>331</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="max_out_edit" >
+     <widget class="QLineEdit" name="speed_max_out_edit" >
       <property name="geometry" >
        <rect>
         <x>276</x>
         <y>45</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_out_edit" >
+     <widget class="QLineEdit" name="speed_burst_out_edit" >
       <property name="geometry" >
        <rect>
         <x>276</x>
         <y>111</y>
         <width>164</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_time_out_edit" >
+     <widget class="QLineEdit" name="speed_burst_time_out_edit" >
       <property name="geometry" >
        <rect>
         <x>276</x>
         <y>177</y>
         <width>164</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="min_in_edit" >
+     <widget class="QLineEdit" name="speed_min_in_edit" >
       <property name="geometry" >
        <rect>
         <x>109</x>
         <y>78</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="burst_label" >
+     <widget class="QLabel" name="speed_burst_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>111</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>Burst</string>
       </property>
       <property name="buddy" >
-       <cstring>burst_in_edit</cstring>
+       <cstring>speed_burst_in_edit</cstring>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_treshold_out_edit" >
+     <widget class="QLineEdit" name="speed_burst_treshold_out_edit" >
       <property name="geometry" >
        <rect>
         <x>276</x>
         <y>144</y>
         <width>164</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="priority_label" >
+     <widget class="QLabel" name="speed_priority_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>210</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>Приоритет</string>
       </property>
      </widget>
-     <widget class="QLabel" name="burst_time_label" >
+     <widget class="QLabel" name="speed_burst_time_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>177</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>Burst Time</string>
       </property>
       <property name="buddy" >
-       <cstring>burst_time_in_edit</cstring>
+       <cstring>speed_burst_time_in_edit</cstring>
       </property>
      </widget>
-     <widget class="QLabel" name="burst_treshold_label" >
+     <widget class="QLabel" name="speed_burst_treshold_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>144</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>Burst Treshold</string>
       </property>
       <property name="buddy" >
-       <cstring>burst_treshold_in_edit</cstring>
+       <cstring>speed_burst_treshold_in_edit</cstring>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_time_in_edit" >
+     <widget class="QLineEdit" name="speed_burst_time_in_edit" >
       <property name="geometry" >
        <rect>
         <x>109</x>
         <y>177</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_in_edit" >
+     <widget class="QLineEdit" name="speed_burst_in_edit" >
       <property name="geometry" >
        <rect>
         <x>109</x>
         <y>111</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="out_label" >
+     <widget class="QLabel" name="speed_out_label" >
       <property name="geometry" >
        <rect>
         <x>276</x>
@@ -561,7 +551,7 @@
        <string>OUT</string>
       </property>
      </widget>
-     <widget class="QLabel" name="in_label" >
+     <widget class="QLabel" name="speed_in_label" >
       <property name="geometry" >
        <rect>
         <x>106</x>
@@ -574,92 +564,84 @@
        <string>IN</string>
       </property>
      </widget>
-     <widget class="QLabel" name="max_label" >
+     <widget class="QLabel" name="speed_max_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>45</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>MAX</string>
       </property>
       <property name="buddy" >
-       <cstring>max_in_edit</cstring>
+       <cstring>speed_max_in_edit</cstring>
       </property>
      </widget>
-     <widget class="QLineEdit" name="max_in_edit" >
+     <widget class="QLineEdit" name="speed_max_in_edit" >
       <property name="geometry" >
        <rect>
         <x>109</x>
         <y>45</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="frame" >
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="min_label" >
+     <widget class="QLabel" name="speed_min_label" >
       <property name="geometry" >
        <rect>
         <x>11</x>
         <y>78</y>
         <width>89</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text" >
        <string>MIN</string>
       </property>
       <property name="buddy" >
-       <cstring>min_in_edit</cstring>
+       <cstring>speed_min_in_edit</cstring>
       </property>
      </widget>
-     <widget class="QLineEdit" name="min_out_edit" >
+     <widget class="QLineEdit" name="speed_min_out_edit" >
       <property name="geometry" >
        <rect>
         <x>276</x>
         <y>78</y>
         <width>164</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="burst_treshold_in_edit" >
+     <widget class="QLineEdit" name="speed_burst_treshold_in_edit" >
       <property name="geometry" >
        <rect>
         <x>109</x>
         <y>144</y>
         <width>161</width>
-        <height>27</height>
+        <height>21</height>
        </rect>
       </property>
      </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Оплата за время</string>
     </attribute>
-    <widget class="QLabel" name="prepaid_label" >
+    <widget class="QLabel" name="prepaid_time_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>10</y>
        <width>121</width>
-       <height>31</height>
+       <height>16</height>
       </rect>
      </property>
      <property name="text" >
@@ -717,11 +699,11 @@
       </property>
      </column>
     </widget>
-    <widget class="QFrame" name="frame_2" >
+    <widget class="QFrame" name="timeaccess_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>63</y>
+       <y>60</y>
        <width>596</width>
        <height>27</height>
       </rect>
@@ -732,7 +714,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button" >
+     <widget class="QToolButton" name="del_timecost_button" >
       <property name="geometry" >
        <rect>
         <x>40</x>
@@ -745,7 +727,7 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button" >
+     <widget class="QToolButton" name="add_timecost_button" >
       <property name="geometry" >
        <rect>
         <x>6</x>
@@ -759,30 +741,22 @@
       </property>
      </widget>
     </widget>
-    <widget class="QSpinBox" name="spinBox" >
+    <widget class="QSpinBox" name="prepaid_time_edit" >
      <property name="geometry" >
       <rect>
        <x>130</x>
        <y>10</y>
        <width>221</width>
-       <height>27</height>
+       <height>21</height>
       </rect>
      </property>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Оплата за трафик</string>
     </attribute>
-    <widget class="QCheckBox" name="checkBox_4" >
+    <widget class="QCheckBox" name="reset_traffic_edit" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -795,7 +769,7 @@
       <string>Сбрасывать в конце периода предоплаченый трафик</string>
      </property>
     </widget>
-    <widget class="QGroupBox" name="groupBox" >
+    <widget class="QGroupBox" name="transmit_service_groupbox" >
      <property name="geometry" >
       <rect>
        <x>498</x>
@@ -818,21 +792,21 @@
       </property>
       <layout class="QVBoxLayout" >
        <item>
-        <widget class="QRadioButton" name="radioButton" >
+        <widget class="QRadioButton" name="input_radioButton" >
          <property name="text" >
           <string>Входящий</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_2" >
+        <widget class="QRadioButton" name="output_radioButton" >
          <property name="text" >
           <string>Исходящий</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_3" >
+        <widget class="QRadioButton" name="summ_radioButton" >
          <property name="text" >
           <string>Вх+Исх</string>
          </property>
@@ -841,7 +815,7 @@
       </layout>
      </widget>
     </widget>
-    <widget class="QListWidget" name="listWidget" >
+    <widget class="QListWidget" name="diff_listWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -889,7 +863,7 @@
       </property>
      </item>
     </widget>
-    <widget class="QTableWidget" name="tableWidget_3" >
+    <widget class="QTableWidget" name="traficcost_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>98</x>
@@ -973,7 +947,7 @@
       </property>
      </item>
     </widget>
-    <widget class="QLabel" name="label_4" >
+    <widget class="QLabel" name="trafficcost_label" >
      <property name="geometry" >
       <rect>
        <x>100</x>
@@ -1028,7 +1002,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QFrame" name="frame_6" >
+    <widget class="QFrame" name="traffic_dif_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1070,7 +1044,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QTableWidget" name="tableWidget_2" >
+    <widget class="QTableWidget" name="prepaid_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1108,7 +1082,7 @@
       </property>
      </column>
     </widget>
-    <widget class="QLabel" name="label_3" >
+    <widget class="QLabel" name="prepaid_traffic_cost_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1121,7 +1095,7 @@
       <string>Предоплаченный трафик</string>
      </property>
     </widget>
-    <widget class="QFrame" name="frame_3" >
+    <widget class="QFrame" name="prepaid_traffic_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1136,7 +1110,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button_2" >
+     <widget class="QToolButton" name="del_prepaid_time_button" >
       <property name="geometry" >
        <rect>
         <x>40</x>
@@ -1149,7 +1123,7 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button_2" >
+     <widget class="QToolButton" name="add_prepaid_time_button" >
       <property name="geometry" >
        <rect>
         <x>6</x>
@@ -1163,7 +1137,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QLabel" name="label_5" >
+    <widget class="QLabel" name="diff_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1178,18 +1152,10 @@
     </widget>
    </widget>
    <widget class="QWidget" name="tab_5" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Периодические услуги</string>
     </attribute>
-    <widget class="QTableWidget" name="tableWidget_5" >
+    <widget class="QTableWidget" name="periodical_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1237,11 +1203,11 @@
       </property>
      </column>
     </widget>
-    <widget class="QFrame" name="frame_8" >
+    <widget class="QFrame" name="periodical_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>12</y>
+       <y>10</y>
        <width>596</width>
        <height>27</height>
       </rect>
@@ -1252,7 +1218,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button_6" >
+     <widget class="QToolButton" name="del_periodical_button" >
       <property name="geometry" >
        <rect>
         <x>40</x>
@@ -1265,7 +1231,7 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button_6" >
+     <widget class="QToolButton" name="add_periodical_button" >
       <property name="geometry" >
        <rect>
         <x>6</x>
@@ -1281,18 +1247,10 @@
     </widget>
    </widget>
    <widget class="QWidget" name="tab_6" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Разовые услуги</string>
     </attribute>
-    <widget class="QTableWidget" name="tableWidget_6" >
+    <widget class="QTableWidget" name="onetime_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1330,11 +1288,11 @@
       </property>
      </column>
     </widget>
-    <widget class="QFrame" name="frame_9" >
+    <widget class="QFrame" name="onetime_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>12</y>
+       <y>10</y>
        <width>596</width>
        <height>27</height>
       </rect>
@@ -1345,7 +1303,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button_7" >
+     <widget class="QToolButton" name="del_onetime_button" >
       <property name="geometry" >
        <rect>
         <x>40</x>
@@ -1358,7 +1316,7 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button_7" >
+     <widget class="QToolButton" name="add_onetime_button" >
       <property name="geometry" >
        <rect>
         <x>6</x>
@@ -1374,18 +1332,10 @@
     </widget>
    </widget>
    <widget class="QWidget" name="tab_4" >
-    <property name="geometry" >
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>612</width>
-      <height>523</height>
-     </rect>
-    </property>
     <attribute name="title" >
      <string>Лимиты</string>
     </attribute>
-    <widget class="QTableWidget" name="tableWidget_4" >
+    <widget class="QTableWidget" name="limit_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -1433,11 +1383,11 @@
       </property>
      </column>
     </widget>
-    <widget class="QFrame" name="frame_10" >
+    <widget class="QFrame" name="limit_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>12</y>
+       <y>10</y>
        <width>596</width>
        <height>27</height>
       </rect>
@@ -1448,7 +1398,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button_8" >
+     <widget class="QToolButton" name="del_limit_button" >
       <property name="geometry" >
        <rect>
         <x>40</x>
@@ -1461,7 +1411,7 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button_8" >
+     <widget class="QToolButton" name="add_limit_button" >
       <property name="geometry" >
        <rect>
         <x>6</x>
@@ -1477,53 +1427,58 @@
     </widget>
    </widget>
   </widget>
+  <action name="actionDf" >
+   <property name="text" >
+    <string>df</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>checkBox_5</tabstop>
-  <tabstop>checkBox_7</tabstop>
-  <tabstop>checkBox_6</tabstop>
-  <tabstop>textEdit</tabstop>
-  <tabstop>checkBox</tabstop>
-  <tabstop>max_in_edit</tabstop>
-  <tabstop>max_out_edit</tabstop>
-  <tabstop>min_in_edit</tabstop>
-  <tabstop>min_out_edit</tabstop>
-  <tabstop>burst_in_edit</tabstop>
-  <tabstop>burst_out_edit</tabstop>
-  <tabstop>burst_treshold_in_edit</tabstop>
-  <tabstop>burst_treshold_out_edit</tabstop>
-  <tabstop>burst_time_in_edit</tabstop>
-  <tabstop>burst_time_out_edit</tabstop>
-  <tabstop>add_time_button_5</tabstop>
-  <tabstop>delete_time_button_5</tabstop>
+  <tabstop>sp_type_edit</tabstop>
+  <tabstop>ps_null_ballance_checkout_edit_2</tabstop>
+  <tabstop>reset_tarif_cost_edit</tabstop>
+  <tabstop>tarif_description_edit</tabstop>
+  <tabstop>tarif_status_edit</tabstop>
+  <tabstop>speed_max_in_edit</tabstop>
+  <tabstop>speed_max_out_edit</tabstop>
+  <tabstop>speed_min_in_edit</tabstop>
+  <tabstop>speed_min_out_edit</tabstop>
+  <tabstop>speed_burst_in_edit</tabstop>
+  <tabstop>speed_burst_out_edit</tabstop>
+  <tabstop>speed_burst_treshold_in_edit</tabstop>
+  <tabstop>speed_burst_treshold_out_edit</tabstop>
+  <tabstop>speed_burst_time_in_edit</tabstop>
+  <tabstop>speed_burst_time_out_edit</tabstop>
+  <tabstop>add_speed_button</tabstop>
+  <tabstop>del_speed_button</tabstop>
   <tabstop>speed_table</tabstop>
   <tabstop>reset_time_checkbox</tabstop>
-  <tabstop>add_time_button</tabstop>
-  <tabstop>delete_time_button</tabstop>
+  <tabstop>add_timecost_button</tabstop>
+  <tabstop>del_timecost_button</tabstop>
   <tabstop>timeaccess_table</tabstop>
-  <tabstop>checkBox_4</tabstop>
-  <tabstop>radioButton</tabstop>
-  <tabstop>radioButton_2</tabstop>
-  <tabstop>radioButton_3</tabstop>
+  <tabstop>reset_traffic_edit</tabstop>
+  <tabstop>input_radioButton</tabstop>
+  <tabstop>output_radioButton</tabstop>
+  <tabstop>summ_radioButton</tabstop>
   <tabstop>add_time_button_4</tabstop>
   <tabstop>delete_time_button_4</tabstop>
   <tabstop>add_time_button_3</tabstop>
   <tabstop>delete_time_button_3</tabstop>
-  <tabstop>listWidget</tabstop>
-  <tabstop>tableWidget_3</tabstop>
-  <tabstop>add_time_button_2</tabstop>
-  <tabstop>delete_time_button_2</tabstop>
-  <tabstop>tableWidget_2</tabstop>
-  <tabstop>add_time_button_6</tabstop>
-  <tabstop>delete_time_button_6</tabstop>
-  <tabstop>tableWidget_5</tabstop>
-  <tabstop>tableWidget_6</tabstop>
-  <tabstop>add_time_button_7</tabstop>
-  <tabstop>delete_time_button_7</tabstop>
-  <tabstop>tableWidget_4</tabstop>
-  <tabstop>delete_time_button_8</tabstop>
-  <tabstop>add_time_button_8</tabstop>
+  <tabstop>diff_listWidget</tabstop>
+  <tabstop>traficcost_tableWidget</tabstop>
+  <tabstop>add_prepaid_time_button</tabstop>
+  <tabstop>del_prepaid_time_button</tabstop>
+  <tabstop>prepaid_tableWidget</tabstop>
+  <tabstop>add_periodical_button</tabstop>
+  <tabstop>del_periodical_button</tabstop>
+  <tabstop>periodical_tableWidget</tabstop>
+  <tabstop>onetime_tableWidget</tabstop>
+  <tabstop>add_onetime_button</tabstop>
+  <tabstop>del_onetime_button</tabstop>
+  <tabstop>limit_tableWidget</tabstop>
+  <tabstop>del_limit_button</tabstop>
+  <tabstop>add_limit_button</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
