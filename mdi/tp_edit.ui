@@ -52,7 +52,7 @@
    <property name="elideMode" >
     <enum>Qt::ElideNone</enum>
    </property>
-   <widget class="QWidget" name="tab_3" >
+   <widget class="QWidget" name="tab_1" >
     <attribute name="title" >
      <string>Общее</string>
     </attribute>
@@ -266,7 +266,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_7" >
+   <widget class="QWidget" name="tab_2" >
     <attribute name="title" >
      <string>Настройки скорости</string>
     </attribute>
@@ -631,7 +631,7 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab" >
+   <widget class="QWidget" name="tab_3" >
     <attribute name="title" >
      <string>Оплата за время</string>
     </attribute>
@@ -752,7 +752,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_2" >
+   <widget class="QWidget" name="tab_4" >
     <attribute name="title" >
      <string>Оплата за трафик</string>
     </attribute>
@@ -809,6 +809,9 @@
         <widget class="QRadioButton" name="summ_radioButton" >
          <property name="text" >
           <string>Вх+Исх</string>
+         </property>
+         <property name="checked" >
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -1331,7 +1334,7 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_4" >
+   <widget class="QWidget" name="tab_7" >
     <attribute name="title" >
      <string>Лимиты</string>
     </attribute>
@@ -1427,11 +1430,6 @@
     </widget>
    </widget>
   </widget>
-  <action name="actionDf" >
-   <property name="text" >
-    <string>df</string>
-   </property>
-  </action>
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>

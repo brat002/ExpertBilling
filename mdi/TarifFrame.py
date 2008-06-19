@@ -241,6 +241,7 @@ class TarifChild(QMainWindow):
 
         item2 = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
         item2.setText(0,QtGui.QApplication.translate("MainWindow", "Траффик 60", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.tableWidget.clear()
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setRowCount(1)
