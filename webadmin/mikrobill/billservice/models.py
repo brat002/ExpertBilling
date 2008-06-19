@@ -216,12 +216,12 @@ class TimeAccessNode(models.Model):
     """
     Нода тарификации по времени
     """
-    time_access_service = models.ForeignKey(to=TimeAccessService, edit_inline=True)
+    time_access_service = models.ForeignKey(to=TimeAccessService, edit_inline=True, related_name="time_access_nodes")
     time_period         = models.ForeignKey(to=TimePeriodNode, verbose_name=u'Промежуток', core=True)
     cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', core=True)
 
     def __unicode__(self):
-        return u"%s" % self.name
+        return u"%s %s" % (self.time_period, self.cost)
 
     class Admin:
         ordering = ['name']
@@ -266,7 +266,7 @@ class TimeSpeed(models.Model):
     """
     Настройки скорости в интервал времени
     """
-    access_parameters = models.ForeignKey(to=AccessParameters, edit_inline=True)
+    access_parameters = models.ForeignKey(to=AccessParameters, edit_inline=True, related_name="access_speed")
     time = models.ForeignKey(TimePeriodNode, core=True)
     max_limit_in      = models.CharField(verbose_name=u"MAX IN (kbps)", max_length=64, blank=True, default=0)
     max_limit_out     = models.CharField(verbose_name=u"MAX OUT (kbps)", max_length=64, blank=True, default=0)
@@ -295,16 +295,16 @@ class PrepaidTraffic(models.Model):
     """
     Настройки предоплаченного трафика для тарифного плана
     """
-    traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику")
-    traffic_class    = models.ForeignKey(to=TrafficClass, core=True, verbose_name=u'Класс трафика')
-    size             = models.FloatField(verbose_name=u'Размер в байтах')
+    traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="prepaid_traffic")
+    traffic_class    = models.ManyToManyField(to=TrafficClass, verbose_name=u'Класс трафика')
+    size             = models.FloatField(verbose_name=u'Размер в байтах', core=True)
 
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.size)
 
     class Admin:
         ordering = ['traffic_class']
-        list_display = ('traffic_class','size')
+        list_display = ('size',)
 
 
     class Meta:
@@ -333,7 +333,7 @@ class TrafficTransmitService(models.Model):
         verbose_name_plural = u"Доступ с учётом трафика"
 
 class TrafficTransmitNodes(models.Model):
-    traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, edit_inline=True, verbose_name=u"Услуга доступа по трафику")
+    traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
     traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Классы трафика')
     time_nodes        = models.ManyToManyField(to=TimePeriodNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
     cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')

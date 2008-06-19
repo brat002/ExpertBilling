@@ -51,7 +51,7 @@ from NasFrame import NasMdiChild
 from SettlementPeriodFrame import SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
-from TarifFrame import TarifChild
+#from TarifFrame import TarifChild
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -105,9 +105,10 @@ class MainWindow(QtGui.QMainWindow):
         #    self.statusBar().showMessage(self.tr("File saved"), 2000)
 
     def saveAs(self):
-        child = TarifChild()
-        self.workspace.addWindow(child)
-        child.show()
+        pass
+        #child = TarifChild()
+        #self.workspace.addWindow(child)
+        #child.show()
 
     def cut(self):
         child=TimePeriodChild()
