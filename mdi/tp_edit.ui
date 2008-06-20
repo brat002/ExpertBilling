@@ -37,7 +37,7 @@
      <x>0</x>
      <y>10</y>
      <width>621</width>
-     <height>550</height>
+     <height>561</height>
     </rect>
    </property>
    <property name="tabPosition" >
@@ -47,7 +47,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex" >
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="elideMode" >
     <enum>Qt::ElideNone</enum>
@@ -69,7 +69,7 @@
       <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::NoTextInteraction|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
-    <widget class="QLabel" name="tarif_description_labellabel" >
+    <widget class="QLabel" name="tarif_description_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -196,7 +196,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QCheckBox" name="ps_null_ballance_checkout_edit_2" >
+    <widget class="QCheckBox" name="ps_null_ballance_checkout_edit" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -276,127 +276,12 @@
        <x>10</x>
        <y>10</y>
        <width>598</width>
-       <height>501</height>
+       <height>245</height>
       </rect>
      </property>
      <property name="title" >
       <string>Настройки скорости по-умолчанию</string>
      </property>
-     <widget class="QFrame" name="frame_7" >
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>240</y>
-        <width>597</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="frameShape" >
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="frameShadow" >
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QToolButton" name="del_speed_button" >
-       <property name="geometry" >
-        <rect>
-         <x>40</x>
-         <y>3</y>
-         <width>25</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>-</string>
-       </property>
-      </widget>
-      <widget class="QToolButton" name="add_speed_button" >
-       <property name="geometry" >
-        <rect>
-         <x>6</x>
-         <y>3</y>
-         <width>24</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="contextMenuPolicy" >
-        <enum>Qt::DefaultContextMenu</enum>
-       </property>
-       <property name="text" >
-        <string>+</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QTableWidget" name="speed_table" >
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>270</y>
-        <width>595</width>
-        <height>264</height>
-       </rect>
-      </property>
-      <property name="contextMenuPolicy" >
-       <enum>Qt::DefaultContextMenu</enum>
-      </property>
-      <property name="frameShape" >
-       <enum>QFrame::Panel</enum>
-      </property>
-      <property name="frameShadow" >
-       <enum>QFrame::Sunken</enum>
-      </property>
-      <property name="alternatingRowColors" >
-       <bool>true</bool>
-      </property>
-      <property name="selectionMode" >
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-      <property name="selectionBehavior" >
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="verticalScrollMode" >
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
-      </property>
-      <property name="horizontalScrollMode" >
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
-      </property>
-      <property name="gridStyle" >
-       <enum>Qt::DotLine</enum>
-      </property>
-      <property name="sortingEnabled" >
-       <bool>false</bool>
-      </property>
-      <column>
-       <property name="text" >
-        <string>MAX</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>MIN</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>BURST</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst Tr</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Burst time</string>
-       </property>
-      </column>
-      <column>
-       <property name="text" >
-        <string>Priority</string>
-       </property>
-      </column>
-     </widget>
      <widget class="QLineEdit" name="speed_priority_edit" >
       <property name="geometry" >
        <rect>
@@ -630,6 +515,131 @@
       </property>
      </widget>
     </widget>
+    <widget class="QTableWidget" name="speed_table" >
+     <property name="geometry" >
+      <rect>
+       <x>9</x>
+       <y>290</y>
+       <width>595</width>
+       <height>239</height>
+      </rect>
+     </property>
+     <property name="contextMenuPolicy" >
+      <enum>Qt::DefaultContextMenu</enum>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Panel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="alternatingRowColors" >
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode" >
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior" >
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="verticalScrollMode" >
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode" >
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="gridStyle" >
+      <enum>Qt::DotLine</enum>
+     </property>
+     <property name="sortingEnabled" >
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Time</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>MAX</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>MIN</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>BURST</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Burst Tr</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Burst time</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Priority</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QFrame" name="speed_panel" >
+     <property name="geometry" >
+      <rect>
+       <x>9</x>
+       <y>260</y>
+       <width>597</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QToolButton" name="del_speed_button" >
+      <property name="geometry" >
+       <rect>
+        <x>40</x>
+        <y>3</y>
+        <width>25</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>-</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="add_speed_button" >
+      <property name="geometry" >
+       <rect>
+        <x>6</x>
+        <y>3</y>
+        <width>24</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="contextMenuPolicy" >
+       <enum>Qt::DefaultContextMenu</enum>
+      </property>
+      <property name="text" >
+       <string>+</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="tab_3" >
     <attribute name="title" >
@@ -667,7 +677,7 @@
        <x>10</x>
        <y>90</y>
        <width>595</width>
-       <height>421</height>
+       <height>436</height>
       </rect>
      </property>
      <property name="frameShape" >
@@ -688,6 +698,11 @@
      <property name="gridStyle" >
       <enum>Qt::DotLine</enum>
      </property>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
      <column>
       <property name="text" >
        <string>Время</string>
@@ -759,8 +774,8 @@
     <widget class="QCheckBox" name="reset_traffic_edit" >
      <property name="geometry" >
       <rect>
-       <x>10</x>
-       <y>20</y>
+       <x>12</x>
+       <y>498</y>
        <width>398</width>
        <height>19</height>
       </rect>
@@ -769,110 +784,13 @@
       <string>Сбрасывать в конце периода предоплаченый трафик</string>
      </property>
     </widget>
-    <widget class="QGroupBox" name="transmit_service_groupbox" >
-     <property name="geometry" >
-      <rect>
-       <x>498</x>
-       <y>6</y>
-       <width>109</width>
-       <height>101</height>
-      </rect>
-     </property>
-     <property name="title" >
-      <string>Списывать за</string>
-     </property>
-     <widget class="QWidget" name="layoutWidget" >
-      <property name="geometry" >
-       <rect>
-        <x>5</x>
-        <y>14</y>
-        <width>99</width>
-        <height>83</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" >
-       <item>
-        <widget class="QRadioButton" name="input_radioButton" >
-         <property name="text" >
-          <string>Входящий</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="output_radioButton" >
-         <property name="text" >
-          <string>Исходящий</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="summ_radioButton" >
-         <property name="text" >
-          <string>Вх+Исх</string>
-         </property>
-         <property name="checked" >
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QListWidget" name="diff_listWidget" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>110</y>
-       <width>81</width>
-       <height>221</height>
-      </rect>
-     </property>
-     <property name="frameShape" >
-      <enum>QFrame::Panel</enum>
-     </property>
-     <item>
-      <property name="text" >
-       <string>0</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>10</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>20</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>50</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>100</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>150</string>
-      </property>
-     </item>
-     <item>
-      <property name="text" >
-       <string>250</string>
-      </property>
-     </item>
-    </widget>
     <widget class="QTableWidget" name="traficcost_tableWidget" >
      <property name="geometry" >
       <rect>
-       <x>98</x>
-       <y>110</y>
-       <width>511</width>
-       <height>221</height>
+       <x>8</x>
+       <y>60</y>
+       <width>601</width>
+       <height>247</height>
       </rect>
      </property>
      <property name="frameShape" >
@@ -891,9 +809,52 @@
       <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
      <property name="gridStyle" >
-      <enum>Qt::DotLine</enum>
+      <enum>Qt::NoPen</enum>
      </property>
      <row/>
+     <row/>
+     <row/>
+     <row/>
+     <row>
+      <property name="text" >
+       <string>6</string>
+      </property>
+     </row>
+     <row>
+      <property name="text" >
+       <string>7</string>
+      </property>
+     </row>
+     <row>
+      <property name="text" >
+       <string>8</string>
+      </property>
+     </row>
+     <row>
+      <property name="text" >
+       <string>9</string>
+      </property>
+     </row>
+     <row>
+      <property name="text" >
+       <string>10</string>
+      </property>
+     </row>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>От МБ</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>До МБ</string>
+      </property>
+     </column>
      <column>
       <property name="text" >
        <string>Класс трафика</string>
@@ -924,37 +885,372 @@
        <string>Цена</string>
       </property>
      </column>
-     <item row="0" column="0" >
-      <property name="text" >
-       <string>VPN Ангарская</string>
-      </property>
-     </item>
      <item row="0" column="1" >
       <property name="text" >
-       <string>1</string>
+       <string>0</string>
       </property>
      </item>
      <item row="0" column="2" >
       <property name="text" >
-       <string>1</string>
+       <string>20</string>
+      </property>
+     </item>
+     <item row="0" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
       </property>
      </item>
      <item row="0" column="4" >
       <property name="text" >
-       <string>22:00:00 2008-11-11</string>
+       <string>1</string>
       </property>
      </item>
      <item row="0" column="5" >
       <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="0" column="6" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="0" column="7" >
+      <property name="text" >
+       <string>00:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="0" column="8" >
+      <property name="text" >
        <string>65</string>
+      </property>
+     </item>
+     <item row="1" column="1" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="1" column="2" >
+      <property name="text" >
+       <string>20</string>
+      </property>
+     </item>
+     <item row="1" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="1" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="1" column="5" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="1" column="6" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="1" column="7" >
+      <property name="text" >
+       <string>01:00:00 2008-21-11</string>
+      </property>
+     </item>
+     <item row="1" column="8" >
+      <property name="text" >
+       <string>65</string>
+      </property>
+     </item>
+     <item row="2" column="1" >
+      <property name="text" >
+       <string>20</string>
+      </property>
+     </item>
+     <item row="2" column="2" >
+      <property name="text" >
+       <string>80</string>
+      </property>
+     </item>
+     <item row="2" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="2" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="2" column="5" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="2" column="6" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="2" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="2" column="8" >
+      <property name="text" >
+       <string>40</string>
+      </property>
+     </item>
+     <item row="3" column="1" >
+      <property name="text" >
+       <string>20</string>
+      </property>
+     </item>
+     <item row="3" column="2" >
+      <property name="text" >
+       <string>80</string>
+      </property>
+     </item>
+     <item row="3" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская Медиа</string>
+      </property>
+     </item>
+     <item row="3" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="3" column="5" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="3" column="6" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="3" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="3" column="8" >
+      <property name="text" >
+       <string>40</string>
+      </property>
+     </item>
+     <item row="4" column="1" >
+      <property name="text" >
+       <string>20</string>
+      </property>
+     </item>
+     <item row="4" column="2" >
+      <property name="text" >
+       <string>80</string>
+      </property>
+     </item>
+     <item row="4" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="4" column="4" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="4" column="5" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="4" column="6" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="4" column="7" >
+      <property name="text" >
+       <string>00:00:00 2008-12-11</string>
+      </property>
+     </item>
+     <item row="4" column="8" >
+      <property name="text" >
+       <string>40</string>
+      </property>
+     </item>
+     <item row="5" column="1" >
+      <property name="text" >
+       <string>80</string>
+      </property>
+     </item>
+     <item row="5" column="2" >
+      <property name="text" >
+       <string>150</string>
+      </property>
+     </item>
+     <item row="5" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="5" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="5" column="5" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="5" column="6" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="5" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="5" column="8" >
+      <property name="text" >
+       <string>10</string>
+      </property>
+     </item>
+     <item row="6" column="1" >
+      <property name="text" >
+       <string>80</string>
+      </property>
+     </item>
+     <item row="6" column="2" >
+      <property name="text" >
+       <string>150</string>
+      </property>
+     </item>
+     <item row="6" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="6" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="6" column="5" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="6" column="6" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="6" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="6" column="8" >
+      <property name="text" >
+       <string>5</string>
+      </property>
+     </item>
+     <item row="7" column="1" >
+      <property name="text" >
+       <string>150</string>
+      </property>
+     </item>
+     <item row="7" column="2" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="7" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="7" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="7" column="5" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="7" column="6" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="7" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="7" column="8" >
+      <property name="text" >
+       <string>5</string>
+      </property>
+     </item>
+     <item row="8" column="1" >
+      <property name="text" >
+       <string>150</string>
+      </property>
+     </item>
+     <item row="8" column="2" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="8" column="3" >
+      <property name="text" >
+       <string>VPN Ангарская</string>
+      </property>
+     </item>
+     <item row="8" column="4" >
+      <property name="text" >
+       <string>1</string>
+      </property>
+     </item>
+     <item row="8" column="5" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="8" column="6" >
+      <property name="text" >
+       <string>0</string>
+      </property>
+     </item>
+     <item row="8" column="7" >
+      <property name="text" >
+       <string>22:00:00 2008-11-11</string>
+      </property>
+     </item>
+     <item row="8" column="8" >
+      <property name="text" >
+       <string>5</string>
       </property>
      </item>
     </widget>
     <widget class="QLabel" name="trafficcost_label" >
      <property name="geometry" >
       <rect>
-       <x>100</x>
-       <y>59</y>
+       <x>10</x>
+       <y>10</y>
        <width>161</width>
        <height>16</height>
       </rect>
@@ -963,54 +1259,12 @@
       <string>Цена за МБ трафика</string>
      </property>
     </widget>
-    <widget class="QFrame" name="frame_5" >
-     <property name="geometry" >
-      <rect>
-       <x>100</x>
-       <y>80</y>
-       <width>391</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="frameShape" >
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow" >
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QToolButton" name="delete_time_button_3" >
-      <property name="geometry" >
-       <rect>
-        <x>40</x>
-        <y>3</y>
-        <width>25</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>-</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="add_time_button_3" >
-      <property name="geometry" >
-       <rect>
-        <x>6</x>
-        <y>3</y>
-        <width>24</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>+</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QFrame" name="traffic_dif_panel" >
+    <widget class="QFrame" name="traffic_cost_panel" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>80</y>
-       <width>81</width>
+       <y>30</y>
+       <width>598</width>
        <height>27</height>
       </rect>
      </property>
@@ -1020,10 +1274,10 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QToolButton" name="delete_time_button_4" >
+     <widget class="QToolButton" name="del_traffic_cost_button" >
       <property name="geometry" >
        <rect>
-        <x>40</x>
+        <x>41</x>
         <y>3</y>
         <width>25</width>
         <height>20</height>
@@ -1033,10 +1287,10 @@
        <string>-</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="add_time_button_4" >
+     <widget class="QToolButton" name="add_traffic_cost_button" >
       <property name="geometry" >
        <rect>
-        <x>6</x>
+        <x>7</x>
         <y>3</y>
         <width>24</width>
         <height>20</height>
@@ -1051,7 +1305,7 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>390</y>
+       <y>370</y>
        <width>599</width>
        <height>121</height>
       </rect>
@@ -1076,6 +1330,11 @@
      </property>
      <column>
       <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
        <string>Класс трафика</string>
       </property>
      </column>
@@ -1089,7 +1348,7 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>340</y>
+       <y>320</y>
        <width>203</width>
        <height>16</height>
       </rect>
@@ -1102,7 +1361,7 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>360</y>
+       <y>340</y>
        <width>600</width>
        <height>27</height>
       </rect>
@@ -1140,31 +1399,18 @@
       </property>
      </widget>
     </widget>
-    <widget class="QLabel" name="diff_label" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>81</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text" >
-      <string>Объём за РП</string>
-     </property>
-    </widget>
    </widget>
-   <widget class="QWidget" name="tab_5" >
+   <widget class="QWidget" name="tab_6" >
     <attribute name="title" >
-     <string>Периодические услуги</string>
+     <string>Разовые услуги</string>
     </attribute>
-    <widget class="QTableWidget" name="periodical_tableWidget" >
+    <widget class="QTableWidget" name="onetime_tableWidget" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>40</y>
        <width>597</width>
-       <height>471</height>
+       <height>486</height>
       </rect>
      </property>
      <property name="frameShape" >
@@ -1185,6 +1431,101 @@
      <property name="gridStyle" >
       <enum>Qt::DotLine</enum>
      </property>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Название</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Стоимость</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QFrame" name="onetime_panel" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>596</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QToolButton" name="del_onetime_button" >
+      <property name="geometry" >
+       <rect>
+        <x>40</x>
+        <y>3</y>
+        <width>25</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>-</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="add_onetime_button" >
+      <property name="geometry" >
+       <rect>
+        <x>6</x>
+        <y>3</y>
+        <width>24</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>+</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_5" >
+    <attribute name="title" >
+     <string>Периодические услуги</string>
+    </attribute>
+    <widget class="QTableWidget" name="periodical_tableWidget" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>597</width>
+       <height>486</height>
+      </rect>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Panel</enum>
+     </property>
+     <property name="selectionMode" >
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior" >
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="verticalScrollMode" >
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode" >
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="gridStyle" >
+      <enum>Qt::DotLine</enum>
+     </property>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
      <column>
       <property name="text" >
        <string>Название</string>
@@ -1249,91 +1590,6 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_6" >
-    <attribute name="title" >
-     <string>Разовые услуги</string>
-    </attribute>
-    <widget class="QTableWidget" name="onetime_tableWidget" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>597</width>
-       <height>471</height>
-      </rect>
-     </property>
-     <property name="frameShape" >
-      <enum>QFrame::Panel</enum>
-     </property>
-     <property name="selectionMode" >
-      <enum>QAbstractItemView::SingleSelection</enum>
-     </property>
-     <property name="selectionBehavior" >
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <property name="verticalScrollMode" >
-      <enum>QAbstractItemView::ScrollPerPixel</enum>
-     </property>
-     <property name="horizontalScrollMode" >
-      <enum>QAbstractItemView::ScrollPerPixel</enum>
-     </property>
-     <property name="gridStyle" >
-      <enum>Qt::DotLine</enum>
-     </property>
-     <column>
-      <property name="text" >
-       <string>Название</string>
-      </property>
-     </column>
-     <column>
-      <property name="text" >
-       <string>Стоимость</string>
-      </property>
-     </column>
-    </widget>
-    <widget class="QFrame" name="onetime_panel" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>596</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="frameShape" >
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow" >
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QToolButton" name="del_onetime_button" >
-      <property name="geometry" >
-       <rect>
-        <x>40</x>
-        <y>3</y>
-        <width>25</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>-</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="add_onetime_button" >
-      <property name="geometry" >
-       <rect>
-        <x>6</x>
-        <y>3</y>
-        <width>24</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text" >
-       <string>+</string>
-      </property>
-     </widget>
-    </widget>
-   </widget>
    <widget class="QWidget" name="tab_7" >
     <attribute name="title" >
      <string>Лимиты</string>
@@ -1344,7 +1600,7 @@
        <x>10</x>
        <y>40</y>
        <width>597</width>
-       <height>471</height>
+       <height>486</height>
       </rect>
      </property>
      <property name="frameShape" >
@@ -1365,6 +1621,11 @@
      <property name="gridStyle" >
       <enum>Qt::DotLine</enum>
      </property>
+     <column>
+      <property name="text" >
+       <string>Id</string>
+      </property>
+     </column>
      <column>
       <property name="text" >
        <string>Название</string>
@@ -1434,7 +1695,7 @@
  <tabstops>
   <tabstop>tabWidget</tabstop>
   <tabstop>sp_type_edit</tabstop>
-  <tabstop>ps_null_ballance_checkout_edit_2</tabstop>
+  <tabstop>ps_null_ballance_checkout_edit</tabstop>
   <tabstop>reset_tarif_cost_edit</tabstop>
   <tabstop>tarif_description_edit</tabstop>
   <tabstop>tarif_status_edit</tabstop>
@@ -1456,14 +1717,8 @@
   <tabstop>del_timecost_button</tabstop>
   <tabstop>timeaccess_table</tabstop>
   <tabstop>reset_traffic_edit</tabstop>
-  <tabstop>input_radioButton</tabstop>
-  <tabstop>output_radioButton</tabstop>
-  <tabstop>summ_radioButton</tabstop>
-  <tabstop>add_time_button_4</tabstop>
-  <tabstop>delete_time_button_4</tabstop>
-  <tabstop>add_time_button_3</tabstop>
-  <tabstop>delete_time_button_3</tabstop>
-  <tabstop>diff_listWidget</tabstop>
+  <tabstop>add_traffic_cost_button</tabstop>
+  <tabstop>del_traffic_cost_button</tabstop>
   <tabstop>traficcost_tableWidget</tabstop>
   <tabstop>add_prepaid_time_button</tabstop>
   <tabstop>del_prepaid_time_button</tabstop>
@@ -1479,6 +1734,7 @@
   <tabstop>add_limit_button</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
+ <includes/>
  <resources/>
  <connections>
   <connection>
@@ -1522,10 +1778,10 @@
    <number>10</number>
   </property>
   <property name="gridSnapX" >
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="gridSnapY" >
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="gridVisible" >
    <bool>true</bool>
