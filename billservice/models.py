@@ -339,7 +339,10 @@ class TrafficTransmitNodes(models.Model):
     cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
     edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
     edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-
+    in_direction      = models.BooleanField()
+    out_direction      = models.BooleanField()
+    transit_direction      = models.BooleanField()
+    
     def __unicode__(self):
         return u"%s" % (self.cost)
 
