@@ -435,31 +435,14 @@ class TimePeriodChild(QMainWindow):
         self.timeperiod_list_edit.clear()
 
         periods=TimePeriod.objects.all().order_by('id')
-        
+
         for period in periods:
             item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item.setText(period.name)
             self.timeperiod_list_edit.addItem(item)
         
-#===============================================================================
-#        self.tableWidget.setRowCount(periods.count())
-#        #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
-#        i=0
-#        for period in periods:
-#            self.addrow(period.id, i,0)
-#            self.addrow(period.name, i,1)
-#            self.addrow(period.autostart, i,2)
-#            self.addrow(period.time_start, i,3)
-#            self.addrow(period.length_in, i,4)
-#            self.addrow(period.length, i,5)
-#            self.tableWidget.setRowHeight(i, 17)
-#            self.tableWidget.setColumnHidden(0, True)
-# 
-# 
-#            i+=1
-#        self.tableWidget.resizeColumnsToContents()
-#        self.tableWidget.rowHeight(10)
-#===============================================================================
+
+        
 
     def newFile(self):
         self.isUntitled = True
