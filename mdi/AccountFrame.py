@@ -12,28 +12,30 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
 from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod
-from nas.models import IPAddressPool, Nas
+from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
+from CustomForms import CheckBoxDialog, ComboBoxDialog
 
 class CustomWidget(QtGui.QLabel):
     def __init__(self, parent, models):
         QtGui.QLabel.__init__(self, parent)
+        self.models=models
 
         labels={}
         for x in models:
             label = QtGui.QLabel(self)
-            label.setText(unicode(x))
+            label.setText(unicode(x.name))
             labels[x]=label
             
         layout = QtGui.QVBoxLayout(self)
         for key in labels:
-            print key
+            #print key
             layout.addWidget(labels[key])
         self.setLayout(layout)
-        self.setGeometry(QtCore.QRect(0,0,691,411))
+        #self.setGeometry(QtCore.QRect(0,0,691,411))
         #self.setMinimumHeight(15*len(models))
         
 
@@ -389,10 +391,10 @@ class TarifFrame(QtGui.QDialog):
         self.traficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
         self.traficcost_tableWidget.setFrameShape(QtGui.QFrame.Panel)
         self.traficcost_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.traficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        #self.traficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.traficcost_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.traficcost_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.traficcost_tableWidget.setGridStyle(QtCore.Qt.NoPen)
+        self.traficcost_tableWidget.setGridStyle(QtCore.Qt.DotLine)
         self.traficcost_tableWidget.setObjectName("traficcost_tableWidget")
 
         self.trafficcost_label = QtGui.QLabel(self.tab_4)
@@ -508,6 +510,7 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.limit_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.limit_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.limit_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.limit_tableWidget.setGridStyle(QtCore.Qt.DotLine)
         self.limit_tableWidget.setObjectName("limit_tableWidget")
 
@@ -536,6 +539,12 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.traficcost_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.trafficCostCellEdit)
+        QtCore.QObject.connect(self.prepaid_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.prepaidTrafficEdit)
+        QtCore.QObject.connect(self.limit_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.limitClassEdit)
+        
+        QtCore.QObject.connect(self.add_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.addTrafficCostRow)
+        QtCore.QObject.connect(self.del_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.delTrafficCostRow)
         
         self.setTabOrder(self.tabWidget,self.sp_type_edit)
         self.setTabOrder(self.sp_type_edit,self.ps_null_ballance_checkout_edit)
@@ -808,11 +817,82 @@ class TarifFrame(QtGui.QDialog):
             item_type.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             widget.setCellWidget(x,y, item_type)
             
+    def timeAccessRowEdit(self):
+        pass
         
+    def addTrafficCostRow(self):
+        current_row = self.traficcost_tableWidget.currentRow()+1
+        self.traficcost_tableWidget.insertRow(current_row)
+        self.addrow(self.traficcost_tableWidget, True, current_row, 4, item_type='checkbox')
+        self.addrow(self.traficcost_tableWidget, True, current_row, 5, item_type='checkbox')
+        self.addrow(self.traficcost_tableWidget, True, current_row, 6, item_type='checkbox')
+    
+    def delTrafficCostRow(self):
+        current_row = self.traficcost_tableWidget.currentRow()
         
+        self.traficcost_tableWidget.removeRow(current_row)
+        
+    def prepaidTrafficEdit(self,y,x):
+        if x==1:
+            try:
+                models = self.prepaid_tableWidget.cellWidget(y,x).models
+            except:
+                models = []
+            
+            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            if child.exec_()==1:
+                self.prepaid_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.prepaid_tableWidget, models=child.selected_items))
+                if len(child.selected_items)>0:
+                    self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    
+    def limitClassEdit(self,y,x):
+        if x==4:
+            try:
+                models = self.limit_tableWidget.cellWidget(y,x).models
+            except:
+                models = []
+            
+            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            if child.exec_()==1:
+                self.limit_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.limit_tableWidget, models=child.selected_items))
+                if len(child.selected_items)>0:
+                    self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    
+        if x==3:
+            item = self.limit_tableWidget.item(y,x)
+            
+            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = item.text() )
+            if child.exec_()==1:
+                self.limit_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+                    
+                    
+    def trafficCostCellEdit(self,y,x):
+        
+        #Редактируем класс тарфика
 
-
-
+        if x==3:
+            try:
+                models = self.traficcost_tableWidget.cellWidget(y,x).models
+            except:
+                models = []
+            
+            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            if child.exec_()==1:
+                self.traficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.traficcost_tableWidget, models=child.selected_items))
+                if len(child.selected_items)>0:
+                    self.traficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    
+                
+        if x==7:
+            try:
+                models = self.traficcost_tableWidget.cellWidget(y,x).models
+            except:
+                models = []
+            child = CheckBoxDialog(all_items=TimePeriod.objects.all(), selected_items = models)
+            if child.exec_()==1:
+                self.traficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.traficcost_tableWidget, models=child.selected_items))
+                if len(child.selected_items)>0:
+                    self.traficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)                
     
     def fixtures(self):
         settlement_periods = SettlementPeriod.objects.all()
@@ -910,15 +990,15 @@ class TarifFrame(QtGui.QDialog):
                 self.limit_tableWidget.setRowCount(nodes.count())
                 i=0
                 for node in nodes:
-                    classes = [clas.name for clas in node.traffic_class.all()]
+                    classes = [clas for clas in node.traffic_class.all()]
                     self.addrow(self.limit_tableWidget, node.id,i, 0)
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
-                    self.addrow(self.limit_tableWidget, node.mode,i, 2)
-                    self.addrow(self.limit_tableWidget, node.settlement_period,i, 3)
+                    self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
+                    self.addrow(self.limit_tableWidget, node.settlement_period.name,i, 3)
                     self.limit_tableWidget.setCellWidget(0,4, CustomWidget(parent=self.limit_tableWidget, models=classes))
                     self.addrow(self.limit_tableWidget, node.size,i, 5)
                     
-                    self.limit_tableWidget.setRowHeight(i, len(classes)*23) 
+                    self.limit_tableWidget.setRowHeight(i, len(classes)*22) 
                     i+=1
                     
             #Prepaid Traffic
@@ -928,12 +1008,12 @@ class TarifFrame(QtGui.QDialog):
                     self.prepaid_tableWidget.setRowCount(nodes.count())
                     i=0
                     for node in nodes:
-                        classes = [clas.name for clas in node.traffic_class.all()]
+                        classes = [clas for clas in node.traffic_class.all()]
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
                         self.prepaid_tableWidget.setCellWidget(0,1, CustomWidget(parent=self.prepaid_tableWidget, models=classes))
                         self.addrow(self.prepaid_tableWidget, node.size,i, 2)
                                
-                        self.prepaid_tableWidget.setRowHeight(i, len(classes)*23) 
+                        self.prepaid_tableWidget.setRowHeight(i, len(classes)*22) 
                         i+=1 
                 
                 if self.model.traffic_transmit_service.traffic_transmit_nodes.all().count()>0:
@@ -942,9 +1022,9 @@ class TarifFrame(QtGui.QDialog):
                     i = 0
                     for node in nodes:
                         tableWidget = QtGui.QTableWidget()
-                        classes = [clas.name for clas in node.traffic_class.all()]
+                        classes = [clas for clas in node.traffic_class.all()]
                         
-                        time_periods = "\n".join([tp.name for tp in node.time_nodes.all()])
+                        time_periods = [tp for tp in node.time_nodes.all()]
                         
                         self.addrow(self.traficcost_tableWidget, node.id, i, 0)
                         self.addrow(self.traficcost_tableWidget, node.edge_start, i, 1)
@@ -954,9 +1034,9 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.traficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
                         self.addrow(self.traficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
                         self.addrow(self.traficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.addrow(self.traficcost_tableWidget, time_periods, i, 7)
+                        self.traficcost_tableWidget.setCellWidget(0,7, CustomWidget(parent=self.traficcost_tableWidget, models=time_periods))
                         self.addrow(self.traficcost_tableWidget, node.cost, i, 8)
-                        self.traficcost_tableWidget.setRowHeight(i, len(classes)*23)
+                        self.traficcost_tableWidget.setRowHeight(i, len(classes)*22)
                         
                     self.traficcost_tableWidget.resizeColumnsToContents()
                         
