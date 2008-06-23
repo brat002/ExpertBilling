@@ -17,7 +17,13 @@ from django.db import transaction
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
-from CustomForms import CheckBoxDialog, ComboBoxDialog
+from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog
+
+class CashType(object):
+    def __init__(self, name):
+        self.name=name
+        
+cash_types = [CashType("AT_START"), CashType("AT_END"), CashType("GRADUAL")]
 
 class CustomWidget(QtGui.QLabel):
     def __init__(self, parent, models):
@@ -320,6 +326,7 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.speed_table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.speed_table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.speed_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.speed_table.setGridStyle(QtCore.Qt.DotLine)
         self.speed_table.setSortingEnabled(False)
         self.speed_table.setObjectName("speed_table")
@@ -387,15 +394,15 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setGeometry(QtCore.QRect(12,498,398,19))
         self.reset_traffic_edit.setObjectName("reset_traffic_edit")
 
-        self.traficcost_tableWidget = QtGui.QTableWidget(self.tab_4)
-        self.traficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
-        self.traficcost_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.traficcost_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        #self.traficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.traficcost_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.traficcost_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.traficcost_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.traficcost_tableWidget.setObjectName("traficcost_tableWidget")
+        self.trafficcost_tableWidget = QtGui.QTableWidget(self.tab_4)
+        self.trafficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
+        self.trafficcost_tableWidget.setFrameShape(QtGui.QFrame.Panel)
+        self.trafficcost_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        #self.trafficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.trafficcost_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.trafficcost_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.trafficcost_tableWidget.setGridStyle(QtCore.Qt.DotLine)
+        self.trafficcost_tableWidget.setObjectName("trafficcost_tableWidget")
 
         self.trafficcost_label = QtGui.QLabel(self.tab_4)
         self.trafficcost_label.setGeometry(QtCore.QRect(10,10,161,16))
@@ -435,13 +442,13 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_traffic_panel.setFrameShadow(QtGui.QFrame.Raised)
         self.prepaid_traffic_panel.setObjectName("prepaid_traffic_panel")
 
-        self.del_prepaid_time_button = QtGui.QToolButton(self.prepaid_traffic_panel)
-        self.del_prepaid_time_button.setGeometry(QtCore.QRect(40,3,25,20))
-        self.del_prepaid_time_button.setObjectName("del_prepaid_time_button")
+        self.del_prepaid_traffic_button = QtGui.QToolButton(self.prepaid_traffic_panel)
+        self.del_prepaid_traffic_button.setGeometry(QtCore.QRect(40,3,25,20))
+        self.del_prepaid_traffic_button.setObjectName("del_prepaid_traffic_button")
 
-        self.add_prepaid_time_button = QtGui.QToolButton(self.prepaid_traffic_panel)
-        self.add_prepaid_time_button.setGeometry(QtCore.QRect(6,3,24,20))
-        self.add_prepaid_time_button.setObjectName("add_prepaid_time_button")
+        self.add_prepaid_traffic_button = QtGui.QToolButton(self.prepaid_traffic_panel)
+        self.add_prepaid_traffic_button.setGeometry(QtCore.QRect(6,3,24,20))
+        self.add_prepaid_traffic_button.setObjectName("add_prepaid_traffic_button")
         self.tabWidget.addTab(self.tab_4,"")
 
         self.tab_6 = QtGui.QWidget()
@@ -539,12 +546,39 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        QtCore.QObject.connect(self.traficcost_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.trafficCostCellEdit)
+        
+        QtCore.QObject.connect(self.trafficcost_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.trafficCostCellEdit)
         QtCore.QObject.connect(self.prepaid_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.prepaidTrafficEdit)
         QtCore.QObject.connect(self.limit_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.limitClassEdit)
         
+        QtCore.QObject.connect(self.onetime_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.oneTimeServicesEdit)
+        
+        
+        QtCore.QObject.connect(self.timeaccess_table, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.timeAccessServiceEdit)
+        
+        QtCore.QObject.connect(self.periodical_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.periodicalServicesEdit)
+        
+        
+        QtCore.QObject.connect(self.speed_table, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.speedEdit)
+        
         QtCore.QObject.connect(self.add_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.addTrafficCostRow)
         QtCore.QObject.connect(self.del_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.delTrafficCostRow)
+
+        QtCore.QObject.connect(self.add_limit_button, QtCore.SIGNAL("clicked()"), self.addLimitRow)
+        QtCore.QObject.connect(self.del_limit_button, QtCore.SIGNAL("clicked()"), self.delLimitRow)       
+
+        QtCore.QObject.connect(self.add_onetime_button, QtCore.SIGNAL("clicked()"), self.addOneTimeRow)
+        QtCore.QObject.connect(self.del_onetime_button, QtCore.SIGNAL("clicked()"), self.delOneTimeRow)        
+        
+        QtCore.QObject.connect(self.add_timecost_button, QtCore.SIGNAL("clicked()"), self.addTimeAccessRow)
+        QtCore.QObject.connect(self.del_timecost_button, QtCore.SIGNAL("clicked()"), self.delTimeAccessRow)
+
+
+        QtCore.QObject.connect(self.add_prepaid_traffic_button, QtCore.SIGNAL("clicked()"), self.addPrepaidTrafficRow)
+        QtCore.QObject.connect(self.del_prepaid_traffic_button, QtCore.SIGNAL("clicked()"), self.delPrepaidTrafficRow)        
+        
+        QtCore.QObject.connect(self.add_speed_button, QtCore.SIGNAL("clicked()"), self.addSpeedRow)
+        QtCore.QObject.connect(self.del_speed_button, QtCore.SIGNAL("clicked()"), self.delSpeedRow)   
         
         self.setTabOrder(self.tabWidget,self.sp_type_edit)
         self.setTabOrder(self.sp_type_edit,self.ps_null_ballance_checkout_edit)
@@ -571,10 +605,10 @@ class TarifFrame(QtGui.QDialog):
         self.setTabOrder(self.timeaccess_table,self.reset_traffic_edit)
         self.setTabOrder(self.reset_traffic_edit,self.add_traffic_cost_button)
         self.setTabOrder(self.add_traffic_cost_button,self.del_traffic_cost_button)
-        self.setTabOrder(self.del_traffic_cost_button,self.traficcost_tableWidget)
-        self.setTabOrder(self.traficcost_tableWidget,self.add_prepaid_time_button)
-        self.setTabOrder(self.add_prepaid_time_button,self.del_prepaid_time_button)
-        self.setTabOrder(self.del_prepaid_time_button,self.prepaid_tableWidget)
+        self.setTabOrder(self.del_traffic_cost_button,self.trafficcost_tableWidget)
+        self.setTabOrder(self.trafficcost_tableWidget,self.add_prepaid_traffic_button)
+        self.setTabOrder(self.add_prepaid_traffic_button,self.del_prepaid_traffic_button)
+        self.setTabOrder(self.del_prepaid_traffic_button,self.prepaid_tableWidget)
         self.setTabOrder(self.prepaid_tableWidget,self.add_periodical_button)
         self.setTabOrder(self.add_periodical_button,self.del_periodical_button)
         self.setTabOrder(self.del_periodical_button,self.periodical_tableWidget)
@@ -670,45 +704,45 @@ class TarifFrame(QtGui.QDialog):
         self.add_timecost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.clear()
-        self.traficcost_tableWidget.setColumnCount(9)
-        self.traficcost_tableWidget.setRowCount(0)
+        self.trafficcost_tableWidget.clear()
+        self.trafficcost_tableWidget.setColumnCount(9)
+        self.trafficcost_tableWidget.setRowCount(0)
 
         headerItem16 = QtGui.QTableWidgetItem()
         headerItem16.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(0,headerItem16)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(0,headerItem16)
 
         headerItem17 = QtGui.QTableWidgetItem()
         headerItem17.setText(QtGui.QApplication.translate("Dialog", "От МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(1,headerItem17)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(1,headerItem17)
 
         headerItem18 = QtGui.QTableWidgetItem()
         headerItem18.setText(QtGui.QApplication.translate("Dialog", "До МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(2,headerItem18)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(2,headerItem18)
 
         headerItem19 = QtGui.QTableWidgetItem()
         headerItem19.setText(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(3,headerItem19)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(3,headerItem19)
 
         headerItem20 = QtGui.QTableWidgetItem()
         headerItem20.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(4,headerItem20)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(4,headerItem20)
 
         headerItem21 = QtGui.QTableWidgetItem()
         headerItem21.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(5,headerItem21)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(5,headerItem21)
 
         headerItem22 = QtGui.QTableWidgetItem()
         headerItem22.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(6,headerItem22)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(6,headerItem22)
 
         headerItem23 = QtGui.QTableWidgetItem()
         headerItem23.setText(QtGui.QApplication.translate("Dialog", "Время", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(7,headerItem23)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(7,headerItem23)
 
         headerItem24 = QtGui.QTableWidgetItem()
         headerItem24.setText(QtGui.QApplication.translate("Dialog", "Цена", None, QtGui.QApplication.UnicodeUTF8))
-        self.traficcost_tableWidget.setHorizontalHeaderItem(8,headerItem24)
+        self.trafficcost_tableWidget.setHorizontalHeaderItem(8,headerItem24)
 
         self.trafficcost_label.setText(QtGui.QApplication.translate("Dialog", "Цена за МБ трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.del_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
@@ -729,8 +763,8 @@ class TarifFrame(QtGui.QDialog):
         headerItem27.setText(QtGui.QApplication.translate("Dialog", "Размер", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(2,headerItem27)
         self.prepaid_traffic_cost_label.setText(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
-        self.del_prepaid_time_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
-        self.add_prepaid_time_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.onetime_tableWidget.clear()
         self.onetime_tableWidget.setColumnCount(3)
@@ -768,16 +802,17 @@ class TarifFrame(QtGui.QDialog):
 
         headerItem34 = QtGui.QTableWidgetItem()
         headerItem34.setText(QtGui.QApplication.translate("Dialog", "Стоимость", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(3,headerItem34)
+        self.periodical_tableWidget.setHorizontalHeaderItem(4,headerItem34)
 
         headerItem35 = QtGui.QTableWidgetItem()
         headerItem35.setText(QtGui.QApplication.translate("Dialog", "Способ снятия", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(4,headerItem35)
+        self.periodical_tableWidget.setHorizontalHeaderItem(3,headerItem35)
+        
         self.del_periodical_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_periodical_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
-        self.limit_tableWidget.setColumnCount(5)
+        self.limit_tableWidget.setColumnCount(6)
         self.limit_tableWidget.setRowCount(0)
 
         headerItem36 = QtGui.QTableWidgetItem()
@@ -799,6 +834,11 @@ class TarifFrame(QtGui.QDialog):
         headerItem40 = QtGui.QTableWidgetItem()
         headerItem40.setText(QtGui.QApplication.translate("Dialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.setHorizontalHeaderItem(4,headerItem40)
+        
+        headerItem50 = QtGui.QTableWidgetItem()
+        headerItem50.setText(QtGui.QApplication.translate("Dialog", "Объём", None, QtGui.QApplication.UnicodeUTF8))
+        self.limit_tableWidget.setHorizontalHeaderItem(5,headerItem50)
+        
         self.del_limit_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_limit_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
@@ -819,19 +859,68 @@ class TarifFrame(QtGui.QDialog):
             
     def timeAccessRowEdit(self):
         pass
-        
+ 
+#-----------------------------Добавление строк в таблицы       
     def addTrafficCostRow(self):
-        current_row = self.traficcost_tableWidget.currentRow()+1
-        self.traficcost_tableWidget.insertRow(current_row)
-        self.addrow(self.traficcost_tableWidget, True, current_row, 4, item_type='checkbox')
-        self.addrow(self.traficcost_tableWidget, True, current_row, 5, item_type='checkbox')
-        self.addrow(self.traficcost_tableWidget, True, current_row, 6, item_type='checkbox')
+        current_row = self.trafficcost_tableWidget.currentRow()+1
+        self.trafficcost_tableWidget.insertRow(current_row)
+        self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
+        self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
+        self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
     
     def delTrafficCostRow(self):
-        current_row = self.traficcost_tableWidget.currentRow()
+        current_row = self.trafficcost_tableWidget.currentRow()
         
-        self.traficcost_tableWidget.removeRow(current_row)
+        self.trafficcost_tableWidget.removeRow(current_row)
         
+        
+    def addLimitRow(self):
+        current_row = self.limit_tableWidget.rowCount()
+        self.limit_tableWidget.insertRow(current_row)
+        self.addrow(self.limit_tableWidget, True, current_row, 2, item_type='checkbox')
+
+    
+    def delLimitRow(self):
+        current_row = self.limit_tableWidget.currentRow()
+        
+        self.limit_tableWidget.removeRow(current_row)
+
+    def addOneTimeRow(self):
+        current_row = self.onetime_tableWidget.rowCount()
+        self.onetime_tableWidget.insertRow(current_row)
+    
+    def delOneTimeRow(self):
+        current_row = self.onetime_tableWidget.currentRow()        
+        self.onetime_tableWidget.removeRow(current_row)
+
+    def addTimeAccessRow(self):
+        current_row = self.timeaccess_table.rowCount()
+        self.timeaccess_table.insertRow(current_row)
+    
+    def delTimeAccessRow(self):
+        current_row = self.timeaccess_table.currentRow()        
+        self.timeaccess_table.removeRow(current_row)
+
+    def addPrepaidTrafficRow(self):
+        current_row = self.prepaid_tableWidget.rowCount()
+        self.prepaid_tableWidget.insertRow(current_row)
+    
+    def delPrepaidTrafficRow(self):
+        current_row = self.prepaid_tableWidget.currentRow()        
+        self.prepaid_tableWidget.removeRow(current_row)
+
+    def addSpeedRow(self):
+        current_row = self.speed_table.rowCount()
+        self.speed_table.insertRow(current_row)
+    
+    def delSpeedRow(self):
+        current_row = self.speed_table.currentRow()        
+        self.speed_table.removeRow(current_row)
+
+                
+#-----------------------------
+
+#-----------------------------Обработка редактирования таблиц
     def prepaidTrafficEdit(self,y,x):
         if x==1:
             try:
@@ -844,7 +933,62 @@ class TarifFrame(QtGui.QDialog):
                 self.prepaid_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.prepaid_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
                     self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
-                    
+        
+        if x==2:
+            item = self.prepaid_tableWidget.item(y,x)
+            try:
+                default_text=int(item.text())
+            except:
+                default_text=0
+            
+            text = QInputDialog.getInteger(self, u"Объём:", u"Введите количество предоплаченных мегабайт", default_text)        
+           
+            self.prepaid_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+ 
+ 
+    def speedEdit(self,y,x):
+        if x==1:
+            item = self.speed_table.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+                
+            child = ComboBoxDialog(items=TimePeriod.objects.all(), selected_item = default_text )
+            if child.exec_()==1:
+                self.speed_table.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+        if x in (2, 3,4,5,6):
+            item = self.speed_table.item(y,x)
+            try:
+                text = unicode(item.text())
+            except:
+                text=""
+            if x==2:
+                child = SpeedEditDialog(item=text, title=u"Максимальная скорость")
+            if x==3:
+                child = SpeedEditDialog(item=text, title=u"Гарантированная скорость")
+            if x==4:
+                child = SpeedEditDialog(item=text, title=u"Пиковая скорость")
+            if x==5:
+                child = SpeedEditDialog(item=text, title=u"Средняя скорость для достижения пика")
+            if x==6:
+                child = SpeedEditDialog(item=text, title=u"Время для подсчёта средней скорости")                                
+                                
+            if child.exec_()==1:
+                self.speed_table.setItem(y,x, QTableWidgetItem(child.resultstring))
+            
+        if x==7:
+            item = self.speed_table.item(y,x)
+            try:
+                default_text=int(item.text())
+            except:
+                default_text=0
+            
+            text = QInputDialog.getInteger(self, u"Приоритет", u"Введите приоритет от 1 до 8", default_text)        
+           
+            self.speed_table.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+
+
     def limitClassEdit(self,y,x):
         if x==4:
             try:
@@ -860,39 +1004,186 @@ class TarifFrame(QtGui.QDialog):
                     
         if x==3:
             item = self.limit_tableWidget.item(y,x)
-            
-            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = item.text() )
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = default_text )
             if child.exec_()==1:
                 self.limit_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
-                    
-                    
+
+        if x==1:
+            item = self.limit_tableWidget.item(y,x)
+            try:
+                default_text=item.text()
+            except:
+                default_text=u""
+            
+            text = QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
+            if text[0].isEmpty()==True and text[2]:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+                return
+            
+            self.limit_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))
+             
+        if x==5:
+            item = self.limit_tableWidget.item(y,x)
+            try:
+                default_text=int(item.text())
+            except:
+                default_text=0
+            
+            text = QInputDialog.getInteger(self, u"Размер:", u"Введите размер лимита в МБ, после которого произойдёт отключение", default_text)        
+           
+            self.limit_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+                
+    def oneTimeServicesEdit(self,y,x):
+        if x==1:
+            item = self.onetime_tableWidget.item(y,x)
+            try:
+                default_text=item.text()
+            except:
+                default_text=u""
+            
+            text = QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
+            if text[0].isEmpty()==True and text[2]:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+                return
+            
+            self.onetime_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))        
+
+        if x==2:
+            item = self.onetime_tableWidget.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0.00
+            
+            text = QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость разовой услуги", default_text)        
+           
+            self.onetime_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+                
+
+    def timeAccessServiceEdit(self,y,x):
+        if x==1:
+            item = self.timeaccess_table.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=TimePeriod.objects.all(), selected_item = default_text )
+            if child.exec_()==1:
+                self.timeaccess_table.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))    
+
+        if x==2:
+            item = self.timeaccess_table.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0.00
+            
+            text = QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость", default_text)        
+           
+            self.timeaccess_table.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+                
+                                     
+   
     def trafficCostCellEdit(self,y,x):
         
         #Редактируем класс тарфика
 
         if x==3:
             try:
-                models = self.traficcost_tableWidget.cellWidget(y,x).models
+                models = self.trafficcost_tableWidget.cellWidget(y,x).models
             except:
                 models = []
             
             child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
             if child.exec_()==1:
-                self.traficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.traficcost_tableWidget, models=child.selected_items))
+                self.trafficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
-                    self.traficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    self.trafficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)
                     
                 
         if x==7:
             try:
-                models = self.traficcost_tableWidget.cellWidget(y,x).models
+                models = self.trafficcost_tableWidget.cellWidget(y,x).models
             except:
                 models = []
             child = CheckBoxDialog(all_items=TimePeriod.objects.all(), selected_items = models)
             if child.exec_()==1:
-                self.traficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.traficcost_tableWidget, models=child.selected_items))
+                self.trafficcost_tableWidget.setCellWidget(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
-                    self.traficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)                
+                    self.trafficcost_tableWidget.setRowHeight(y, len(child.selected_items)*25)    
+
+        if x==8:
+            item = self.trafficcost_tableWidget.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0
+            
+            text = QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text)        
+           
+            self.trafficcost_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            
+
+
+    def periodicalServicesEdit(self,y,x):
+        
+                  
+        if x==2:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+                
+            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = default_text )
+            if child.exec_()==1:
+                self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+
+        if x==1:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text=item.text()
+            except:
+                default_text=u""
+            
+            text = QInputDialog.getText(self,u"Введите название", u"Название:", QLineEdit.Normal, default_text)        
+            if text[0].isEmpty()==True and text[2]:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+                return
+            
+            self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))
+
+        if x==3:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+                
+            child = ComboBoxDialog(items=cash_types, selected_item = default_text )
+            if child.exec_()==1:
+                self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+             
+        if x==4:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0
+            
+            text = QInputDialog.getDouble(self, u"Цена:", u"Введите цену", default_text)        
+           
+            self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+
+
+#----------------------------
+
+    def getCurrentIdFromtable(self, tablewidget):
+        return int(tablewidget.item(tablewidget.currentRow(), 0).text())
     
     def fixtures(self):
         settlement_periods = SettlementPeriod.objects.all()
@@ -916,20 +1207,47 @@ class TarifFrame(QtGui.QDialog):
             self.ps_null_ballance_checkout_edit.setCheckState(self.model.ps_null_ballance_checkout == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
             #Speed default parameters
-            self.speed_max_in_edit.setText(self.model.access_parameters.max_limit_in)
-            self.speed_max_out_edit.setText(self.model.access_parameters.max_limit_out)
+            try:
+                max_limit_in, max_limit_out = self.model.access_parameters.max_limit.split("/")
+            except:
+                max_limit_in, max_limit_out = "",""
+            
+            self.speed_max_in_edit.setText(max_limit_in)
+            self.speed_max_out_edit.setText(max_limit_out)
+            
+            try:
+                min_limit_in, min_limit_out = self.model.access_parameters.min_limit.split("/")
+            except:
+                min_limit_in, min_limit_out = "",""
 
-            self.speed_min_in_edit.setText(self.model.access_parameters.min_limit_in)
-            self.speed_min_out_edit.setText(self.model.access_parameters.min_limit_out)
-        
-            self.speed_burst_in_edit.setText(self.model.access_parameters.burst_limit_in)
-            self.speed_burst_out_edit.setText(self.model.access_parameters.burst_limit_out)
-            
-            self.speed_burst_treshold_in_edit.setText(self.model.access_parameters.burst_treshold_in)
-            self.speed_burst_treshold_out_edit.setText(self.model.access_parameters.burst_treshold_out)
-            
-            self.speed_burst_time_in_edit.setText(unicode(self.model.access_parameters.burst_time_in))
-            self.speed_burst_time_out_edit.setText(unicode(self.model.access_parameters.burst_time_out))    
+            self.speed_min_in_edit.setText(min_limit_in)
+            self.speed_min_out_edit.setText(min_limit_out)
+
+            try:
+                burst_limit_in, burst_limit_out = self.model.access_parameters.burst_limit.split("/")
+            except:
+                burst_limit_in, burst_limit_out = "",""
+
+            self.speed_burst_in_edit.setText(burst_limit_in)
+            self.speed_burst_out_edit.setText(burst_limit_out)
+
+            try:
+                burst_treshold_in, burst_treshold_out = self.model.access_parameters.burst_treshold.split("/")
+            except:
+                burst_treshold_in, burst_treshold_out = "",""
+
+            self.speed_burst_treshold_in_edit.setText(burst_treshold_in)
+            self.speed_burst_treshold_out_edit.setText(burst_treshold_out)
+
+            try:
+                burst_time_in, burst_time_out = self.model.access_parameters.burst_time.split("/")
+            except:
+                burst_time_in, burst_time_out = "",""
+
+            self.speed_burst_time_in_edit.setText(burst_time_in)
+            self.speed_burst_time_out_edit.setText(burst_time_out)
+
+
             self.speed_priority_edit.setText(unicode(self.model.access_parameters.priority))   
             
             #self.speed_table.clear()
@@ -939,11 +1257,11 @@ class TarifFrame(QtGui.QDialog):
             for speed in speeds:
                 self.addrow(self.speed_table, speed.id,i, 0)
                 self.addrow(self.speed_table, speed.time.name,i, 1)
-                self.addrow(self.speed_table, u"%s/%s" % (speed.max_limit_in, speed.max_limit_out),i, 2)
-                self.addrow(self.speed_table, u"%s/%s" % (speed.min_limit_in, speed.min_limit_out),i, 3)
-                self.addrow(self.speed_table, u"%s/%s" % (speed.burst_limit_in, speed.burst_limit_out),i, 4)
-                self.addrow(self.speed_table, u"%s/%s" % (speed.burst_treshold_in, speed.burst_treshold_out),i, 5)
-                self.addrow(self.speed_table, u"%s/%s" % (speed.burst_time_in, speed.burst_time_out),i, 6)
+                self.addrow(self.speed_table, speed.max_limit,i, 2)
+                self.addrow(self.speed_table, speed.min_limit,i, 3)
+                self.addrow(self.speed_table, speed.burst_limit,i, 4)
+                self.addrow(self.speed_table, speed.burst_treshold,i, 5)
+                self.addrow(self.speed_table, speed.burst_time,i, 6)
                 self.addrow(self.speed_table, u"%s" % speed.priority, i, 7)
                 i+=1
                 
@@ -956,7 +1274,7 @@ class TarifFrame(QtGui.QDialog):
                 i=0
                 for node in nodes:
                     self.addrow(self.timeaccess_table, node.id,i, 0)
-                    self.addrow(self.timeaccess_table, node.time_period.name,i, 1)
+                    self.addrow(self.timeaccess_table, node.time_period,i, 1)
                     self.addrow(self.timeaccess_table, node.cost,i, 2)
                     i+=1                
                    
@@ -969,8 +1287,8 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, node.id,i, 0)
                     self.addrow(self.periodical_tableWidget, node.name,i, 1)
                     self.addrow(self.periodical_tableWidget, node.settlement_period.name,i, 2)
-                    self.addrow(self.periodical_tableWidget, node.cost,i, 3)
-                    self.addrow(self.periodical_tableWidget, node.cash_method, i, 4)
+                    self.addrow(self.periodical_tableWidget, node.cash_method, i, 3)
+                    self.addrow(self.periodical_tableWidget, node.cost,i, 4)
                     i+=1                   
 
             #Onetime Service
@@ -1018,7 +1336,7 @@ class TarifFrame(QtGui.QDialog):
                 
                 if self.model.traffic_transmit_service.traffic_transmit_nodes.all().count()>0:
                     nodes = self.model.traffic_transmit_service.traffic_transmit_nodes.all()
-                    self.traficcost_tableWidget.setRowCount(nodes.count())
+                    self.trafficcost_tableWidget.setRowCount(nodes.count())
                     i = 0
                     for node in nodes:
                         tableWidget = QtGui.QTableWidget()
@@ -1026,19 +1344,19 @@ class TarifFrame(QtGui.QDialog):
                         
                         time_periods = [tp for tp in node.time_nodes.all()]
                         
-                        self.addrow(self.traficcost_tableWidget, node.id, i, 0)
-                        self.addrow(self.traficcost_tableWidget, node.edge_start, i, 1)
-                        self.addrow(self.traficcost_tableWidget, node.edge_end, i, 2)
-                        #self.addrow(self.traficcost_tableWidget, classes, i, 3)
-                        self.traficcost_tableWidget.setCellWidget(0,3, CustomWidget(parent=self.traficcost_tableWidget, models=classes))
-                        self.addrow(self.traficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
-                        self.addrow(self.traficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
-                        self.addrow(self.traficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.traficcost_tableWidget.setCellWidget(0,7, CustomWidget(parent=self.traficcost_tableWidget, models=time_periods))
-                        self.addrow(self.traficcost_tableWidget, node.cost, i, 8)
-                        self.traficcost_tableWidget.setRowHeight(i, len(classes)*22)
+                        self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
+                        #self.addrow(self.trafficcost_tableWidget, classes, i, 3)
+                        self.trafficcost_tableWidget.setCellWidget(0,3, CustomWidget(parent=self.trafficcost_tableWidget, models=classes))
+                        self.addrow(self.trafficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
+                        self.addrow(self.trafficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
+                        self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
+                        self.trafficcost_tableWidget.setCellWidget(0,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_periods))
+                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 8)
+                        self.trafficcost_tableWidget.setRowHeight(i, len(classes)*22)
                         
-                    self.traficcost_tableWidget.resizeColumnsToContents()
+                    self.trafficcost_tableWidget.resizeColumnsToContents()
                         
                         
                     
