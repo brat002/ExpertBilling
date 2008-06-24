@@ -11,7 +11,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
-from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod
+from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed
 from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
@@ -41,7 +41,7 @@ class CustomWidget(QtGui.QLabel):
             #print key
             layout.addWidget(labels[key])
         self.setLayout(layout)
-        #self.setGeometry(QtCore.QRect(0,0,691,411))
+        #self.setGeometry(QtCore.QRect(0,0,100,411))
         #self.setMinimumHeight(15*len(models))
         
 
@@ -180,7 +180,7 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_name_label.setObjectName("tarif_name_label")
 
         self.sp_groupbox = QtGui.QGroupBox(self.tab_1)
-        self.sp_groupbox.setGeometry(QtCore.QRect(10,60,481,161))
+        self.sp_groupbox.setGeometry(QtCore.QRect(10,60,395,161))
         self.sp_groupbox.setObjectName("sp_groupbox")
 
         self.sp_type_edit = QtGui.QCheckBox(self.sp_groupbox)
@@ -230,7 +230,38 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_name_edit = QtGui.QLineEdit(self.tab_1)
         self.tarif_name_edit.setGeometry(QtCore.QRect(110,20,381,20))
         self.tarif_name_edit.setObjectName("tarif_name_edit")
-        self.tabWidget.addTab(self.tab_1,"")
+
+        self.components_groupBox = QtGui.QGroupBox(self.tab_1)
+        self.components_groupBox.setGeometry(QtCore.QRect(420,60,184,159))
+        self.components_groupBox.setObjectName("components_groupBox")
+
+        self.widget = QtGui.QWidget(self.components_groupBox)
+        self.widget.setGeometry(QtCore.QRect(11,20,168,131))
+        self.widget.setObjectName("widget")
+
+        self.vboxlayout = QtGui.QVBoxLayout(self.widget)
+        self.vboxlayout.setObjectName("vboxlayout")
+
+        self.transmit_service_checkbox = QtGui.QCheckBox(self.widget)
+        self.transmit_service_checkbox.setObjectName("transmit_service_checkbox")
+        self.vboxlayout.addWidget(self.transmit_service_checkbox)
+
+        self.time_access_service_checkbox = QtGui.QCheckBox(self.widget)
+        self.time_access_service_checkbox.setObjectName("time_access_service_checkbox")
+        self.vboxlayout.addWidget(self.time_access_service_checkbox)
+
+        self.onetime_services_checkbox = QtGui.QCheckBox(self.widget)
+        self.onetime_services_checkbox.setObjectName("onetime_services_checkbox")
+        self.vboxlayout.addWidget(self.onetime_services_checkbox)
+
+        self.periodical_services_checkbox = QtGui.QCheckBox(self.widget)
+        self.periodical_services_checkbox.setObjectName("periodical_services_checkbox")
+        self.vboxlayout.addWidget(self.periodical_services_checkbox)
+
+        self.limites_checkbox = QtGui.QCheckBox(self.widget)
+        self.limites_checkbox.setObjectName("limites_checkbox")
+        self.vboxlayout.addWidget(self.limites_checkbox)
+        
 
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -329,7 +360,9 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.speed_table.setGridStyle(QtCore.Qt.DotLine)
         self.speed_table.setSortingEnabled(False)
+        self.speed_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.speed_table.setObjectName("speed_table")
+        self.speed_table.verticalHeader().setHidden(True)
 
         self.speed_panel = QtGui.QFrame(self.tab_2)
         self.speed_panel.setGeometry(QtCore.QRect(9,260,597,27))
@@ -345,7 +378,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_speed_button.setGeometry(QtCore.QRect(6,3,24,20))
         self.add_speed_button.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         self.add_speed_button.setObjectName("add_speed_button")
-        self.tabWidget.addTab(self.tab_2,"")
+        
 
         self.tab_3 = QtGui.QWidget()
         self.tab_3.setObjectName("tab_3")
@@ -366,7 +399,10 @@ class TarifFrame(QtGui.QDialog):
         self.timeaccess_table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.timeaccess_table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.timeaccess_table.setGridStyle(QtCore.Qt.DotLine)
+        self.timeaccess_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.timeaccess_table.setObjectName("timeaccess_table")
+        self.timeaccess_table.verticalHeader().setHidden(True)
+        self.timeaccess_table.setColumnHidden(0, True)
 
         self.timeaccess_panel = QtGui.QFrame(self.tab_3)
         self.timeaccess_panel.setGeometry(QtCore.QRect(10,60,596,27))
@@ -385,7 +421,8 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_time_edit = QtGui.QSpinBox(self.tab_3)
         self.prepaid_time_edit.setGeometry(QtCore.QRect(130,10,221,21))
         self.prepaid_time_edit.setObjectName("prepaid_time_edit")
-        self.tabWidget.addTab(self.tab_3,"")
+        
+
 
         self.tab_4 = QtGui.QWidget()
         self.tab_4.setObjectName("tab_4")
@@ -398,12 +435,15 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
         self.trafficcost_tableWidget.setFrameShape(QtGui.QFrame.Panel)
         self.trafficcost_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        #self.trafficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.trafficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.trafficcost_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.trafficcost_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.trafficcost_tableWidget.setGridStyle(QtCore.Qt.DotLine)
         self.trafficcost_tableWidget.setObjectName("trafficcost_tableWidget")
-
+        #self.trafficcost_tableWidget.verticalHeader().setHidden(True)
+        self.trafficcost_tableWidget.setColumnHidden(0, True)
+        
+        
         self.trafficcost_label = QtGui.QLabel(self.tab_4)
         self.trafficcost_label.setGeometry(QtCore.QRect(10,10,161,16))
         self.trafficcost_label.setObjectName("trafficcost_label")
@@ -413,6 +453,9 @@ class TarifFrame(QtGui.QDialog):
         self.traffic_cost_panel.setFrameShape(QtGui.QFrame.Box)
         self.traffic_cost_panel.setFrameShadow(QtGui.QFrame.Raised)
         self.traffic_cost_panel.setObjectName("traffic_cost_panel")
+
+        
+        
 
         self.del_traffic_cost_button = QtGui.QToolButton(self.traffic_cost_panel)
         self.del_traffic_cost_button.setGeometry(QtCore.QRect(41,3,25,20))
@@ -430,7 +473,10 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.prepaid_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.prepaid_tableWidget.setGridStyle(QtCore.Qt.DotLine)
+        self.prepaid_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.prepaid_tableWidget.setObjectName("prepaid_tableWidget")
+        self.prepaid_tableWidget.verticalHeader().setHidden(True)
+        self.prepaid_tableWidget.setColumnHidden(0, True)
 
         self.prepaid_traffic_cost_label = QtGui.QLabel(self.tab_4)
         self.prepaid_traffic_cost_label.setGeometry(QtCore.QRect(10,320,203,16))
@@ -449,7 +495,12 @@ class TarifFrame(QtGui.QDialog):
         self.add_prepaid_traffic_button = QtGui.QToolButton(self.prepaid_traffic_panel)
         self.add_prepaid_traffic_button.setGeometry(QtCore.QRect(6,3,24,20))
         self.add_prepaid_traffic_button.setObjectName("add_prepaid_traffic_button")
+        
+        self.tabWidget.addTab(self.tab_1,"")
+        self.tabWidget.addTab(self.tab_2,"")
         self.tabWidget.addTab(self.tab_4,"")
+        self.tabWidget.addTab(self.tab_3,"")
+        
 
         self.tab_6 = QtGui.QWidget()
         self.tab_6.setObjectName("tab_6")
@@ -462,7 +513,11 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.onetime_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.onetime_tableWidget.setGridStyle(QtCore.Qt.DotLine)
+        self.onetime_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.onetime_tableWidget.setObjectName("onetime_tableWidget")
+        self.onetime_tableWidget.verticalHeader().setHidden(True)
+        self.onetime_tableWidget.setColumnHidden(0, True)
+
 
         self.onetime_panel = QtGui.QFrame(self.tab_6)
         self.onetime_panel.setGeometry(QtCore.QRect(10,10,596,27))
@@ -478,6 +533,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_onetime_button.setGeometry(QtCore.QRect(6,3,24,20))
         self.add_onetime_button.setObjectName("add_onetime_button")
         self.tabWidget.addTab(self.tab_6,"")
+        
 
         self.tab_5 = QtGui.QWidget()
         self.tab_5.setObjectName("tab_5")
@@ -490,7 +546,10 @@ class TarifFrame(QtGui.QDialog):
         self.periodical_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.periodical_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.periodical_tableWidget.setGridStyle(QtCore.Qt.DotLine)
+        self.periodical_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.periodical_tableWidget.setObjectName("periodical_tableWidget")
+        self.periodical_tableWidget.verticalHeader().setHidden(True)
+        self.periodical_tableWidget.setColumnHidden(0, True)
 
         self.periodical_panel = QtGui.QFrame(self.tab_5)
         self.periodical_panel.setGeometry(QtCore.QRect(10,10,596,27))
@@ -520,6 +579,8 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.limit_tableWidget.setGridStyle(QtCore.Qt.DotLine)
         self.limit_tableWidget.setObjectName("limit_tableWidget")
+        self.limit_tableWidget.verticalHeader().setHidden(True)
+        self.limit_tableWidget.setColumnHidden(0, True)
 
         self.limit_panel = QtGui.QFrame(self.tab_7)
         self.limit_panel.setGeometry(QtCore.QRect(10,10,596,27))
@@ -544,6 +605,8 @@ class TarifFrame(QtGui.QDialog):
 
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
+#------------Connects
+
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         
@@ -580,6 +643,23 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.add_speed_button, QtCore.SIGNAL("clicked()"), self.addSpeedRow)
         QtCore.QObject.connect(self.del_speed_button, QtCore.SIGNAL("clicked()"), self.delSpeedRow)   
         
+        QtCore.QObject.connect(self.add_periodical_button, QtCore.SIGNAL("clicked()"), self.addPeriodicalRow)
+        QtCore.QObject.connect(self.del_periodical_button, QtCore.SIGNAL("clicked()"), self.delPeriodicalRow)   
+        
+        QtCore.QObject.connect(self.sp_type_edit, QtCore.SIGNAL("stateChanged(int)"), self.filterSettlementPeriods)
+        
+        QtCore.QObject.connect(self.transmit_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.transmitTabActivityActions)
+        
+        QtCore.QObject.connect(self.time_access_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.timeaccessTabActivityActions)
+        
+        QtCore.QObject.connect(self.onetime_services_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.onetimeTabActivityActions)
+        
+        QtCore.QObject.connect(self.periodical_services_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.periodicalServicesTabActivityActions)
+        
+        QtCore.QObject.connect(self.limites_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.limitTabActivityActions)
+
+        
+#-----------------------        
         self.setTabOrder(self.tabWidget,self.sp_type_edit)
         self.setTabOrder(self.sp_type_edit,self.ps_null_ballance_checkout_edit)
         self.setTabOrder(self.ps_null_ballance_checkout_edit,self.reset_tarif_cost_edit)
@@ -635,6 +715,12 @@ class TarifFrame(QtGui.QDialog):
         self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом баллансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.access_type_label.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setText(QtGui.QApplication.translate("Dialog", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.components_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Набор компонентов", None, QtGui.QApplication.UnicodeUTF8))
+        self.transmit_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.time_access_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
+        self.onetime_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.periodical_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.limites_checkbox.setText(QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_access_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки скорости по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_burst_label.setText(QtGui.QApplication.translate("Dialog", "Burst", None, QtGui.QApplication.UnicodeUTF8))
@@ -867,6 +953,7 @@ class TarifFrame(QtGui.QDialog):
         self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
         self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
         self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
+        
     
     def delTrafficCostRow(self):
         current_row = self.trafficcost_tableWidget.currentRow()
@@ -918,7 +1005,70 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table.removeRow(current_row)
 
                 
+    def addPeriodicalRow(self):
+        self.periodical_tableWidget.insertRow(self.periodical_tableWidget.rowCount())
+    
+    def delPeriodicalRow(self):
+        self.periodical_tableWidget.removeRow(self.periodical_tableWidget.currentRow())
+        
 #-----------------------------
+
+#---------Local Logic
+    def filterSettlementPeriods(self):
+        
+        self.sp_name_edit.clear()
+        self.sp_name_edit.addItem("")
+        if self.sp_type_edit.checkState()==2:         
+            settlement_periods = SettlementPeriod.objects.filter(autostart = True)
+            ast=True
+        else:
+            ast=False
+            settlement_periods = SettlementPeriod.objects.filter(autostart = False)
+            
+        for sp in settlement_periods:
+            self.sp_name_edit.addItem(sp.name)
+            
+        try:
+            if self.model.settlement_period and self.model.settlement_period.autostart==ast:
+                self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(self.model.settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+        except:
+            pass
+            
+#------------------tab actions         
+    def timeaccessTabActivityActions(self):
+        if self.time_access_service_checkbox.checkState()!=2:
+            self.tab_3.setDisabled(True)
+        else:
+            self.tab_3.setDisabled(False)
+               
+    def transmitTabActivityActions(self):
+        if self.transmit_service_checkbox.checkState()!=2:
+            self.tab_4.setDisabled(True)
+        else:
+            self.tab_4.setDisabled(False)
+            
+    def onetimeTabActivityActions(self):
+        
+        if self.onetime_services_checkbox.checkState()!=2:
+            self.tab_6.setDisabled(True)
+
+        else:
+            self.tab_6.setDisabled(False)
+            
+    def periodicalServicesTabActivityActions(self):
+        if self.periodical_services_checkbox.checkState()!=2:
+            self.tab_5.setDisabled(True)
+        else:
+            self.tab_5.setDisabled(False)
+            
+    def limitTabActivityActions(self):
+        if self.limites_checkbox.checkState()!=2:
+            self.tab_7.setDisabled(True)
+        else:
+            self.tab_7.setDisabled(False)        
+#-------------------
+
+
 
 #-----------------------------Обработка редактирования таблиц
     def prepaidTrafficEdit(self,y,x):
@@ -1182,13 +1332,32 @@ class TarifFrame(QtGui.QDialog):
 
 #----------------------------
 
-    def getCurrentIdFromtable(self, tablewidget):
-        return int(tablewidget.item(tablewidget.currentRow(), 0).text())
+    def getIdFromtable(self, tablewidget, row=0):
+        tmp=tablewidget.item(row, 0)
+        if tmp is not None:
+            return int(tmp.text())
+        return -1
+        
     
     def fixtures(self):
-        settlement_periods = SettlementPeriod.objects.all()
+        try:
+            if self.model.settlement_period.autostart==True:
+                settlement_periods = SettlementPeriod.objects.filter(autostart=True)
+                self.sp_type_edit.setChecked()
+            else:
+                settlement_periods = SettlementPeriod.objects.filter(autostart=False)
+        except:
+            settlement_periods = SettlementPeriod.objects.filter(autostart=False)
+        
+        self.sp_name_edit.addItem("")        
         for sp in settlement_periods:
             self.sp_name_edit.addItem(sp.name)
+        
+            
+        try:
+            self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(self.model.settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+        except:
+            print "sp not found"
             
         access_types = ["PPTP", "PPPOE", "IPN"]
         for access_type in access_types:
@@ -1199,6 +1368,8 @@ class TarifFrame(QtGui.QDialog):
         for at in access_time:
             self.access_time_edit.addItem(unicode(at.name))
 
+
+        
         if self.model:
             self.tarif_name_edit.setText(self.model.name)
             self.tarif_cost_edit.setText(unicode(self.model.cost))
@@ -1264,9 +1435,11 @@ class TarifFrame(QtGui.QDialog):
                 self.addrow(self.speed_table, speed.burst_time,i, 6)
                 self.addrow(self.speed_table, u"%s" % speed.priority, i, 7)
                 i+=1
-                
-            #OneTimeService
+            self.speed_table.setColumnHidden(0, True)
+            
+            #Time Access Service
             if self.model.time_access_service:
+                self.time_access_service_checkbox.setChecked(True)
                 self.prepaid_time_edit.setValue(self.model.time_access_service.prepaid_time)
                 self.reset_time_checkbox.setCheckState(self.model.time_access_service.reset_time == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
                 nodes = self.model.time_access_service.time_access_nodes.all()
@@ -1277,9 +1450,11 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.timeaccess_table, node.time_period,i, 1)
                     self.addrow(self.timeaccess_table, node.cost,i, 2)
                     i+=1                
-                   
+            self.timeaccess_table.setColumnHidden(0, True)
+            
             #PeriodicalService
             if self.model.periodical_services.all().count()>0:
+                self.periodical_services_checkbox.setChecked(True)
                 nodes = self.model.periodical_services.all()
                 self.periodical_tableWidget.setRowCount(nodes.count())
                 i=0
@@ -1290,9 +1465,11 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, node.cash_method, i, 3)
                     self.addrow(self.periodical_tableWidget, node.cost,i, 4)
                     i+=1                   
-
+            self.periodical_tableWidget.setColumnHidden(0, True)
+            
             #Onetime Service
             if self.model.onetime_services.all().count()>0:
+                self.onetime_services_checkbox.setChecked(True)
                 nodes = self.model.onetime_services.all()
                 self.onetime_tableWidget.setRowCount(nodes.count())
                 i=0
@@ -1301,9 +1478,11 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.onetime_tableWidget, node.name,i, 1)
                     self.addrow(self.onetime_tableWidget, node.cost,i, 2)
                     i+=1   
-                    
+            self.onetime_tableWidget.setColumnHidden(0, True)
+            
             #Limites
             if self.model.traffic_limit.all().count()>0:
+                self.limites_checkbox.setChecked(True)
                 nodes = self.model.traffic_limit.all()
                 self.limit_tableWidget.setRowCount(nodes.count())
                 i=0
@@ -1318,9 +1497,12 @@ class TarifFrame(QtGui.QDialog):
                     
                     self.limit_tableWidget.setRowHeight(i, len(classes)*22) 
                     i+=1
-                    
+            self.limit_tableWidget.setColumnHidden(0, True)
+            
             #Prepaid Traffic
             if self.model.traffic_transmit_service:
+                self.transmit_service_checkbox.setChecked(True)
+                
                 if self.model.traffic_transmit_service.prepaid_traffic.all().count()>0:
                     nodes = self.model.traffic_transmit_service.prepaid_traffic.all()
                     self.prepaid_tableWidget.setRowCount(nodes.count())
@@ -1333,6 +1515,7 @@ class TarifFrame(QtGui.QDialog):
                                
                         self.prepaid_tableWidget.setRowHeight(i, len(classes)*22) 
                         i+=1 
+                self.prepaid_tableWidget.setColumnHidden(0, True)
                 
                 if self.model.traffic_transmit_service.traffic_transmit_nodes.all().count()>0:
                     nodes = self.model.traffic_transmit_service.traffic_transmit_nodes.all()
@@ -1357,9 +1540,65 @@ class TarifFrame(QtGui.QDialog):
                         self.trafficcost_tableWidget.setRowHeight(i, len(classes)*22)
                         
                     self.trafficcost_tableWidget.resizeColumnsToContents()
-                        
-                        
-                    
+                    self.trafficcost_tableWidget.setColumnHidden(0, True)
+        
+            self.access_type_edit.setCurrentIndex(self.access_type_edit.findText(self.model.access_parameters.access_type, QtCore.Qt.MatchCaseSensitive))
+            self.access_time_edit.setCurrentIndex(self.access_time_edit.findText(self.model.access_parameters.access_time.name, QtCore.Qt.MatchCaseSensitive))
+            
+        self.timeaccessTabActivityActions()
+        self.transmitTabActivityActions()
+        self.onetimeTabActivityActions()
+        self.periodicalServicesTabActivityActions()
+        self.limitTabActivityActions()
+                
+                
+    def accept(self):
+        if self.model:
+            model=self.model
+            access_parameters = self.model.access_parameters
+        else:
+            model=Tariff()
+            access_parameters = AccessParameters()
+            
+        model.name = unicode(self.tarif_name_edit.text())
+        model.cost = unicode(self.tarif_cost_edit.text())
+        model.description = unicode(self.tarif_description_edit.toHtml())
+        model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
+        model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
+        
+        access_parameters.access_type = unicode(self.access_type_edit.currentText())
+        access_parameters.access_time = TimePeriod.objects.get(name = unicode(self.access_time_edit.currentText()))
+        access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text(), self.speed_max_out_edit.text()) 
+        access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text(), self.speed_min_out_edit.text())
+        access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text(), self.speed_burst_out_edit.text())
+        access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text(), self.speed_burst_treshold_out_edit.text())
+        access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text(), self.speed_burst_time_out_edit.text())
+        access_parameters.priority = unicode(self.speed_priority_edit.text())
+        access_parameters.save()
+        model.access_parameters=access_parameters
+        
+        #Таблица скоростей
+        
+        for i in xrange(0, self.speed_table.rowCount()):
+            id = self.getIdFromtable(self.speed_table, i)
+            if id!=-1:
+                speed = TimeSpeed.objects.get(id=id)
+            else:
+                speed = TimeSpeed()
+            speed.access_parameters=model.access_parameters
+            speed.time = TimePeriod.objects.get(name = unicode(self.speed_table.item(i,1).text())) 
+            speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
+            speed.min_limit = u"%s" % self.speed_table.item(i,3).text()
+            speed.burst_limit = u"%s" % self.speed_table.item(i,4).text()
+            speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text()
+            speed.burst_time = u"%s" % self.speed_table.item(i,6).text()
+            speed.priority = unicode(self.speed_table.item(i,7).text())
+            speed.save()
+        model.save()
+        
+        model.settlement_period = SettlementPeriod.objects.get(name = unicode(self.sp_name_edit.currentText()))
+        model.save()
+        QtGui.QDialog.accept(self)
                     
 class AddAccountFrame(QtGui.QDialog):
     def __init__(self, model=None):
@@ -1920,9 +2159,9 @@ class AddAccountFrame(QtGui.QDialog):
 class AccountsMdiChild(QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self):
+    def __init__(self, parent):
         super(AccountsMdiChild, self).__init__()
-
+        self.parent = parent
         self.setWindowTitle(u"Пользователи")
         
         self.centralwidget = QtGui.QWidget(self)
@@ -2042,8 +2281,11 @@ class AccountsMdiChild(QMainWindow):
     
     def editTarif(self, item, num):
         model = Tariff.objects.get(name=unicode(item.text(0)))
+        
         tarifframe = TarifFrame(model=model)
-        tarifframe.exec_()
+        self.parent.workspace.addWindow(tarifframe)
+        tarifframe.show()
+        print 123
         self.refresh()
         #print num
 

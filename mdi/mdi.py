@@ -84,8 +84,7 @@ class MainWindow(QtGui.QMainWindow):
             event.accept()
 
     def newFile(self):
-        child = self.createMdiChild()
-        child.newFile()
+        child =  AccountsMdiChild(parent=self)
         self.workspace.addWindow(child)
         child.show()
 
@@ -177,14 +176,7 @@ class MainWindow(QtGui.QMainWindow):
                          self.windowMapper, QtCore.SLOT("map()"))
             self.windowMapper.setMapping(action, child)
 
-    def createMdiChild(self):
-        child = AccountsMdiChild()
-        self.workspace.addWindow(child)
-        self.connect(child, QtCore.SIGNAL("copyAvailable(bool)"),
-                     self.cutAct.setEnabled)
-        self.connect(child, QtCore.SIGNAL("copyAvailable(bool)"),
-                     self.copyAct.setEnabled)
-        return child
+
 
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon(":/images/new.png"),

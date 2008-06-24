@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>Dialog</string>
+   <string>Тарифный план</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
@@ -47,7 +47,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex" >
-    <number>1</number>
+    <number>0</number>
    </property>
    <property name="elideMode" >
     <enum>Qt::ElideNone</enum>
@@ -116,7 +116,7 @@
       <rect>
        <x>10</x>
        <y>60</y>
-       <width>481</width>
+       <width>395</width>
        <height>161</height>
       </rect>
      </property>
@@ -264,6 +264,66 @@
        <height>20</height>
       </rect>
      </property>
+    </widget>
+    <widget class="QGroupBox" name="components_groupBox" >
+     <property name="geometry" >
+      <rect>
+       <x>420</x>
+       <y>60</y>
+       <width>184</width>
+       <height>159</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>Набор компонентов</string>
+     </property>
+     <widget class="QWidget" name="" >
+      <property name="geometry" >
+       <rect>
+        <x>11</x>
+        <y>20</y>
+        <width>168</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" >
+       <item>
+        <widget class="QCheckBox" name="transmit_service_checkbox" >
+         <property name="text" >
+          <string>Оплата за трафик</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="time_access_service_checkbox" >
+         <property name="text" >
+          <string>Оплата за время</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="onetime_services_checkbox" >
+         <property name="text" >
+          <string>Разовые услуги</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="periodical_services__checkbox" >
+         <property name="text" >
+          <string>Периодические услуги</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="limites_checkbox" >
+         <property name="text" >
+          <string>Лимиты</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2" >
@@ -1734,7 +1794,6 @@
   <tabstop>add_limit_button</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
- <includes/>
  <resources/>
  <connections>
   <connection>
