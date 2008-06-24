@@ -236,7 +236,7 @@ class AccessParameters(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
-    ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
+    #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default=0)
     min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default=0)
     burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default=0)
@@ -272,7 +272,7 @@ class TimeSpeed(models.Model):
     priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
 
     def __unicode__(self):
-        return u"%s %s/%s %s/%s %s/%s" % (self.time, self.max_limit_in, self.max_limit_out, self.min_limit_in, self.min_limit_out, self.burst_limit_in, self.burst_limit_out)
+        return u"%s" % self.time
 
     class Admin:
         pass
@@ -325,7 +325,7 @@ class TrafficTransmitService(models.Model):
 class TrafficTransmitNodes(models.Model):
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
     traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Классы трафика')
-    time_nodes        = models.ManyToManyField(to=TimePeriodNode, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
+    time_nodes        = models.ManyToManyField(to=TimePeriod, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
     cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
     edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
     edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
