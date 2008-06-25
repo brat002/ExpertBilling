@@ -11,7 +11,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
-from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed
+from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit
 from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
@@ -1436,6 +1436,7 @@ class TarifFrame(QtGui.QDialog):
                 self.addrow(self.speed_table, u"%s" % speed.priority, i, 7)
                 i+=1
             self.speed_table.setColumnHidden(0, True)
+            self.speed_table.resizeColumnsToContents()
             
             #Time Access Service
             if self.model.time_access_service:
@@ -1561,7 +1562,7 @@ class TarifFrame(QtGui.QDialog):
             access_parameters = AccessParameters()
             
         model.name = unicode(self.tarif_name_edit.text())
-        model.cost = unicode(self.tarif_cost_edit.text())
+        model.cost = unicode(self.tarif_cost_edit.text()) or 0
         model.description = unicode(self.tarif_description_edit.toHtml())
         model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
         model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
@@ -1573,7 +1574,7 @@ class TarifFrame(QtGui.QDialog):
         access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text(), self.speed_burst_out_edit.text())
         access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text(), self.speed_burst_treshold_out_edit.text())
         access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text(), self.speed_burst_time_out_edit.text())
-        access_parameters.priority = unicode(self.speed_priority_edit.text())
+        access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
         access_parameters.save()
         model.access_parameters=access_parameters
         
@@ -1592,11 +1593,143 @@ class TarifFrame(QtGui.QDialog):
             speed.burst_limit = u"%s" % self.speed_table.item(i,4).text()
             speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text()
             speed.burst_time = u"%s" % self.speed_table.item(i,6).text()
-            speed.priority = unicode(self.speed_table.item(i,7).text())
+            speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
             speed.save()
         model.save()
         
-        model.settlement_period = SettlementPeriod.objects.get(name = unicode(self.sp_name_edit.currentText()))
+        #Период
+        if unicode(self.sp_name_edit.currentText())!="":
+            model.settlement_period = SettlementPeriod.objects.get(name = unicode(self.sp_name_edit.currentText()))
+        else:
+            model.settlement_period=None
+        
+        #Доступ по времени
+        if model.time_access_service is not None:
+            time_access_service = model.time_access_service
+        else:
+            time_access_service=TimeAccessService()
+            
+            
+        if self.time_access_service_checkbox.checkState()==0:
+            if time_access_service.id is not None:
+                model.time_access_service = None
+                model.save()
+                TimeAccessService.objects.get(id=time_access_service.id).delete()
+            else:
+                model.time_access_service=None
+        elif self.time_access_service_checkbox.checkState()==2:
+            if self.timeaccess_table.rowCount()>0:
+                print 1
+                time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
+                time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
+                time_access_service.save()
+                model.time_access_service = time_access_service
+                for i in xrange(0, self.timeaccess_table.rowCount()):
+                    print 2
+                    id = self.getIdFromtable(self.timeaccess_table, i)
+                    if id!=-1:
+                        time_access_node = TimeAccessNode.objects.get(id=id)
+                    else:
+                        time_access_node = TimeAccessNode()
+                    
+                    time_access_node.time_access_service=time_access_service
+                    time_access_node.time_period = TimePeriod.objects.get(name=unicode(self.timeaccess_table.item(i,1).text()))
+                    time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
+                    time_access_node.save()
+        
+        #Разовые услуги
+        if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:
+            for i in xrange(0, self.onetime_tableWidget.rowCount()):
+                print 2
+                id = self.getIdFromtable(self.onetime_tableWidget, i)
+                
+                if id!=-1:
+                    onetime_service = OneTimeService.objects.get(id=id)
+                else:
+                    onetime_service = OneTimeService()
+                
+                onetime_service.name=unicode(self.onetime_tableWidget.item(i, 1).text())
+                onetime_service.cost=unicode(self.onetime_tableWidget.item(i, 2).text())
+                
+                onetime_service.save()     
+                  
+                #Если это новая запись
+                if id==-1:      
+                    model.save() 
+                    onetime_service.tariff_set.add(model)
+        elif self.onetime_services_checkbox.checkState()==0 and model.onetime_services.all().count()>0:
+            for service in model.onetime_services.all():
+                service.tariff_set.remove(model)
+                                               
+        
+        #Периодические услуги
+        if self.periodical_tableWidget.rowCount()>0 and self.periodical_services_checkbox.checkState()==2:
+            for i in xrange(0, self.periodical_tableWidget.rowCount()):
+                print 2
+                id = self.getIdFromtable(self.periodical_tableWidget, i)
+                
+                if id!=-1:
+                    periodical_service = PeriodicalService.objects.get(id=id)
+                else:
+                    periodical_service = PeriodicalService()
+                
+                periodical_service.name=unicode(self.periodical_tableWidget.item(i, 1).text())
+                periodical_service.settlement_period = SettlementPeriod.objects.get(name = unicode(self.periodical_tableWidget.item(i, 2).text()))
+                periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
+                periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
+                
+                periodical_service.save()     
+                  
+                #Если это новая запись
+                if id==-1:      
+                    model.save() 
+                    periodical_service.tariff_set.add(model)
+        elif self.periodical_services_checkbox.checkState()==0 and model.periodical_services.all().count()>0:
+            for service in model.periodical_services.all():
+                service.tariff_set.remove(model)                
+            
+
+        #Лимиты
+        if self.limit_tableWidget.rowCount()>0 and self.limites_checkbox.checkState()==2:
+            for i in xrange(0, self.limit_tableWidget.rowCount()):
+                print 2
+                id = self.getIdFromtable(self.limit_tableWidget, i)
+                
+                if id!=-1:
+                    
+                    limit = TrafficLimit.objects.get(id=id)
+                else:
+                    limit = TrafficLimit()
+                
+                limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
+                limit.settlement_period = SettlementPeriod.objects.get(name = unicode(self.limit_tableWidget.item(i, 3).text()))
+                limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
+                limit.size=unicode(self.limit_tableWidget.item(i, 5).text())
+                
+                traffic_class_models = self.limit_tableWidget.cellWidget(i, 4).models
+                if len(traffic_class_models)==0:
+                    return
+                
+                limit.save()
+                for cl in traffic_class_models:
+                    if cl not in limit.traffic_class.all():
+                        cl.trafficlimit_set.add(limit)
+
+                for cl in limit.traffic_class.all():
+                    if cl not in traffic_class_models:
+                        cl.trafficlimit_set.remove(limit)
+                                        
+                limit.save()     
+                  
+                #Если это новая запись
+                if id==-1:      
+                    model.save() 
+                    limit.tariff_set.add(model)
+        elif self.limites_checkbox.checkState()==0 and model.traffic_limit.all().count()>0:
+            for service in model.traffic_limit.all():
+                service.tariff_set.remove(model)  
+                            
+            
         model.save()
         QtGui.QDialog.accept(self)
                     
