@@ -36,12 +36,6 @@ CHOISE_METHODS=(
         (u"SUMM",u"Сумма всех"),
         )
 
-COUNT_METHODS=(
-        (u"INPUT",u"Входящий"),
-        (u"OUTPUT",u"Исходящий"),
-        (u"SUM",u"Входящий+Исходящий"),
-        )
-
 
 CHECK_PERIODS=(
         (u"SP_START",u"С начала расчётного периода"),
@@ -250,7 +244,7 @@ class AccessParameters(models.Model):
 
     class Admin:
         ordering = ['name']
-        list_display = ('name','access_type','ip_address_pool')
+        list_display = ('name','access_type')
 
 
     class Meta:
@@ -303,11 +297,12 @@ class PrepaidTraffic(models.Model):
 
 
 class TrafficTransmitService(models.Model):
-    name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
+    name              = models.CharField(max_length=255, verbose_name=u'Название услуги', blank=True, default="Transmit Service")
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
+    #Не реализовано в GUI
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
+    #Не реализовано в GUI
     period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START', editable=False)
-    count_method      = models.CharField(verbose_name=u"Снимать за", choices=COUNT_METHODS, max_length=32, default='SUM')
 
 
     def __unicode__(self):
