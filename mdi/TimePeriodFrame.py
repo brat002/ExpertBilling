@@ -440,6 +440,7 @@ class TimePeriodChild(QMainWindow):
             item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item.setText(period.name)
             self.timeperiod_list_edit.addItem(item)
+            
         
 
         

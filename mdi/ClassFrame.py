@@ -572,6 +572,7 @@ class ClassChild(QMainWindow):
         for clas in classes:
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(clas.name)
+            #item.setTextColor(QColor(clas.color))
             item.setBackgroundColor(QColor(clas.color))
             self.listWidget.addItem(item)
             

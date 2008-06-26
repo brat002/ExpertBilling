@@ -11,7 +11,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
-from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit
+from billservice.models import Account, Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
 from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
@@ -958,6 +958,9 @@ class TarifFrame(QtGui.QDialog):
     def delTrafficCostRow(self):
         current_row = self.trafficcost_tableWidget.currentRow()
         
+        id = self.getIdFromtable(self.trafficcost_tableWidget, current_row)
+        if id!=-1:
+            TrafficTransmitNodes.objects.get(id=id).delete()
         self.trafficcost_tableWidget.removeRow(current_row)
         
         
@@ -969,7 +972,9 @@ class TarifFrame(QtGui.QDialog):
     
     def delLimitRow(self):
         current_row = self.limit_tableWidget.currentRow()
-        
+        id = self.getIdFromtable(self.limit_tableWidget, current_row)
+        if id!=-1:
+            TrafficLimit.objects.get(id=id).delete()
         self.limit_tableWidget.removeRow(current_row)
 
     def addOneTimeRow(self):
@@ -977,7 +982,13 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget.insertRow(current_row)
     
     def delOneTimeRow(self):
-        current_row = self.onetime_tableWidget.currentRow()        
+        current_row = self.onetime_tableWidget.currentRow()     
+        id = self.getIdFromtable(self.onetime_tableWidget, current_row)
+        
+        if id!=-1:
+            service = OneTimeService.objects.get(id=id)
+            service.tariff_set.remove(self.model)
+            service.delete()
         self.onetime_tableWidget.removeRow(current_row)
 
     def addTimeAccessRow(self):
@@ -985,7 +996,12 @@ class TarifFrame(QtGui.QDialog):
         self.timeaccess_table.insertRow(current_row)
     
     def delTimeAccessRow(self):
-        current_row = self.timeaccess_table.currentRow()        
+        current_row = self.timeaccess_table.currentRow()   
+        id = self.getIdFromtable(self.timeaccess_table, current_row)
+        
+        if id!=-1:
+            service = TimeAccessNode.objects.get(id=id).delete()
+    
         self.timeaccess_table.removeRow(current_row)
 
     def addPrepaidTrafficRow(self):
@@ -993,7 +1009,12 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_tableWidget.insertRow(current_row)
     
     def delPrepaidTrafficRow(self):
-        current_row = self.prepaid_tableWidget.currentRow()        
+        current_row = self.prepaid_tableWidget.currentRow()  
+        id = self.getIdFromtable(self.prepaid_tableWidget, current_row)
+        
+        if id!=-1:
+            PrepaidTraffic.objects.get(id=id).delete()
+     
         self.prepaid_tableWidget.removeRow(current_row)
 
     def addSpeedRow(self):
@@ -1001,7 +1022,12 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table.insertRow(current_row)
     
     def delSpeedRow(self):
-        current_row = self.speed_table.currentRow()        
+        current_row = self.speed_table.currentRow()
+        id = self.getIdFromtable(self.speed_table, current_row)
+        
+        if id!=-1:
+            service = TimeSpeed.objects.get(id=id)
+            service.delete()    
         self.speed_table.removeRow(current_row)
 
                 
@@ -1009,7 +1035,14 @@ class TarifFrame(QtGui.QDialog):
         self.periodical_tableWidget.insertRow(self.periodical_tableWidget.rowCount())
     
     def delPeriodicalRow(self):
-        self.periodical_tableWidget.removeRow(self.periodical_tableWidget.currentRow())
+        current_row = self.periodical_tableWidget.currentRow()
+        id = self.getIdFromtable(self.periodical_tableWidget, current_row)
+        
+        if id!=-1:
+            service = PeriodicalService.objects.get(id=id)
+            service.tariff_set.remove(self.model)
+            service.delete()    
+        self.periodical_tableWidget.removeRow(current_row)
         
 #-----------------------------
 
@@ -1493,10 +1526,10 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period.name,i, 3)
-                    self.limit_tableWidget.setCellWidget(0,4, CustomWidget(parent=self.limit_tableWidget, models=classes))
+                    self.limit_tableWidget.setCellWidget(i,4, CustomWidget(parent=self.limit_tableWidget, models=classes))
                     self.addrow(self.limit_tableWidget, node.size,i, 5)
-                    
-                    self.limit_tableWidget.setRowHeight(i, len(classes)*22) 
+                    if len(classes)>1:
+                        self.limit_tableWidget.setRowHeight(i, len(classes)*25) 
                     i+=1
             self.limit_tableWidget.setColumnHidden(0, True)
             
@@ -1511,7 +1544,7 @@ class TarifFrame(QtGui.QDialog):
                     for node in nodes:
                         classes = [clas for clas in node.traffic_class.all()]
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
-                        self.prepaid_tableWidget.setCellWidget(0,1, CustomWidget(parent=self.prepaid_tableWidget, models=classes))
+                        self.prepaid_tableWidget.setCellWidget(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=classes))
                         self.addrow(self.prepaid_tableWidget, node.size,i, 2)
                                
                         self.prepaid_tableWidget.setRowHeight(i, len(classes)*22) 
@@ -1519,27 +1552,27 @@ class TarifFrame(QtGui.QDialog):
                 self.prepaid_tableWidget.setColumnHidden(0, True)
                 
                 if self.model.traffic_transmit_service.traffic_transmit_nodes.all().count()>0:
+                    self.reset_traffic_edit.setCheckState(self.model.traffic_transmit_service.reset_traffic == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
                     nodes = self.model.traffic_transmit_service.traffic_transmit_nodes.all()
                     self.trafficcost_tableWidget.setRowCount(nodes.count())
                     i = 0
                     for node in nodes:
-                        tableWidget = QtGui.QTableWidget()
+                        
                         classes = [clas for clas in node.traffic_class.all()]
                         
                         time_periods = [tp for tp in node.time_nodes.all()]
-                        
+                        print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
                         self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
-                        #self.addrow(self.trafficcost_tableWidget, classes, i, 3)
-                        self.trafficcost_tableWidget.setCellWidget(0,3, CustomWidget(parent=self.trafficcost_tableWidget, models=classes))
+                        self.trafficcost_tableWidget.setCellWidget(i,3, CustomWidget(parent=self.trafficcost_tableWidget, models=classes))
                         self.addrow(self.trafficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
                         self.addrow(self.trafficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
                         self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.trafficcost_tableWidget.setCellWidget(0,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_periods))
+                        self.trafficcost_tableWidget.setCellWidget(i,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_periods))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 8)
-                        self.trafficcost_tableWidget.setRowHeight(i, len(classes)*22)
-                        
+                        self.trafficcost_tableWidget.setRowHeight(i, len(classes)*25)
+                        i+=1
                     self.trafficcost_tableWidget.resizeColumnsToContents()
                     self.trafficcost_tableWidget.setColumnHidden(0, True)
         
@@ -1569,11 +1602,11 @@ class TarifFrame(QtGui.QDialog):
         
         access_parameters.access_type = unicode(self.access_type_edit.currentText())
         access_parameters.access_time = TimePeriod.objects.get(name = unicode(self.access_time_edit.currentText()))
-        access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text(), self.speed_max_out_edit.text()) 
-        access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text(), self.speed_min_out_edit.text())
-        access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text(), self.speed_burst_out_edit.text())
-        access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text(), self.speed_burst_treshold_out_edit.text())
-        access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text(), self.speed_burst_time_out_edit.text())
+        access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or '', self.speed_max_out_edit.text() or '') 
+        access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text() or '', self.speed_min_out_edit.text() or '')
+        access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text() or '', self.speed_burst_out_edit.text() or '')
+        access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or '', self.speed_burst_treshold_out_edit.text() or '')
+        access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or '', self.speed_burst_time_out_edit.text() or '')
         access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
         access_parameters.save()
         model.access_parameters=access_parameters
@@ -1588,11 +1621,11 @@ class TarifFrame(QtGui.QDialog):
                 speed = TimeSpeed()
             speed.access_parameters=model.access_parameters
             speed.time = TimePeriod.objects.get(name = unicode(self.speed_table.item(i,1).text())) 
-            speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
-            speed.min_limit = u"%s" % self.speed_table.item(i,3).text()
-            speed.burst_limit = u"%s" % self.speed_table.item(i,4).text()
-            speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text()
-            speed.burst_time = u"%s" % self.speed_table.item(i,6).text()
+            speed.max_limit = u"%s" % self.speed_table.item(i,2).text() or ''
+            speed.min_limit = u"%s" % self.speed_table.item(i,3).text() or ''
+            speed.burst_limit = u"%s" % self.speed_table.item(i,4).text() or ''
+            speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text() or ''
+            speed.burst_time = u"%s" % self.speed_table.item(i,6).text() or ''
             speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
             speed.save()
         model.save()
@@ -1729,7 +1762,116 @@ class TarifFrame(QtGui.QDialog):
             for service in model.traffic_limit.all():
                 service.tariff_set.remove(model)  
                             
+        #Доступ по трафику 
+        if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
+            if self.model.traffic_transmit_service is not None:
+                traffic_transmit_service = self.model.traffic_transmit_service
+            else:
+                traffic_transmit_service = TrafficTransmitService()
             
+            traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
+            traffic_transmit_service.save()
+            
+            for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
+                id = self.getIdFromtable(self.trafficcost_tableWidget, i)
+                
+                if id!=-1:
+                    transmit_node = TrafficTransmitNodes.objects.get(id=id)
+                else:
+                    transmit_node = TrafficTransmitNodes()
+                
+                
+                transmit_node.traffic_transmit_service = traffic_transmit_service
+                transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text())
+                transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text())
+                transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
+                transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
+                transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
+                transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,8).text())
+                
+                
+                
+                traffic_class_models = self.trafficcost_tableWidget.cellWidget(i, 3).models
+                if len(traffic_class_models)==0:
+                    return
+                
+                transmit_node.save()
+                for cl in traffic_class_models:
+                    if cl not in transmit_node.traffic_class.all():
+                        cl.traffictransmitnodes_set.add(transmit_node)
+                        print "add"
+
+                for cl in transmit_node.traffic_class.all():
+                    if cl not in traffic_class_models:
+                        cl.traffictransmitnodes_set.remove(transmit_node)
+                        print "del"
+                        
+                time_period_models = self.trafficcost_tableWidget.cellWidget(i, 7).models
+                if len(time_period_models)==0:
+                    return
+                
+                for cl in time_period_models:
+                    if cl not in transmit_node.time_nodes.all():
+                        cl.traffictransmitnodes_set.add(transmit_node)
+
+                for cl in transmit_node.time_nodes.all():
+                    if cl not in time_period_models:
+                        cl.traffictransmitnodes_set.remove(transmit_node)
+                                                                
+                transmit_node.save() 
+                traffic_transmit_service.save()   
+            self.model.traffic_transmit_service = traffic_transmit_service
+            self.model.save() 
+                  
+            #Предоплаченный трафик
+            for i in xrange(0, self.prepaid_tableWidget.rowCount()):
+                id = self.getIdFromtable(self.prepaid_tableWidget, i)
+                
+                if id!=-1:
+                    prepaid_node = PrepaidTraffic.objects.get(id=id)
+                else:
+                    prepaid_node = PrepaidTraffic()
+                
+                
+                prepaid_node.traffic_transmit_service = traffic_transmit_service
+                prepaid_node.size = unicode(self.prepaid_tableWidget.item(i,2).text())
+                
+                traffic_class_models = self.prepaid_tableWidget.cellWidget(i, 1).models
+                if len(traffic_class_models)==0:
+                    return
+                
+                prepaid_node.save()
+                for cl in traffic_class_models:
+                    if cl not in prepaid_node.traffic_class.all():
+                        cl.prepaidtraffic_set.add(prepaid_node)
+                        print "add"
+
+                for cl in prepaid_node.traffic_class.all():
+                    if cl not in traffic_class_models:
+                        cl.prepaidtraffic_set.remove(prepaidt_node)
+                        print "del"
+                        
+                                                                
+                prepaid_node.save() 
+                traffic_transmit_service.save()   
+            self.model.save() 
+                  
+
+        elif self.transmit_service_checkbox.checkState()==0:
+            if self.model.traffic_transmit_service is not None:
+                transmit_service = TrafficTransmitService.objects.get(id=self.model.traffic_transmit_service.id)
+                self.model.traffic_transmit_service = None
+                self.model.save()
+                transmit_service.remove()
+
+
+        elif self.transmit_service_checkbox.checkState()==0:
+            if self.model.traffic_transmit_service is not None:
+                transmit_service = TrafficTransmitService.objects.get(id=self.model.traffic_transmit_service.id)
+                self.model.traffic_transmit_service = None
+                self.model.save()
+                transmit_service.remove()
+                            
         model.save()
         QtGui.QDialog.accept(self)
                     

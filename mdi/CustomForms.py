@@ -194,9 +194,9 @@ class SpeedEditDialog(QtGui.QDialog):
             
             
     def accept(self): 
-        if self.speed_in_edit.text()=="" or self.speed_out_edit.text()=="":
-            return
-        
-        self.resultstring = "%s%s/%s%s" % (self.speed_in_edit.text(), self.in_postfix.currentText(), self.speed_out_edit.text(), self.out_postfix.currentText())
+        if (self.speed_in_edit.text()=="" and self.in_postfix.currentText()=="") and (self.speed_out_edit.text()=="" and self.out_postfix.currentText()=="") :
+            self.resultstring=""
+        else:     
+            self.resultstring = "%s%s/%s%s" % (self.speed_in_edit.text(), self.in_postfix.currentText(), self.speed_out_edit.text(), self.out_postfix.currentText())
         QtGui.QDialog.accept(self)
         

@@ -60,6 +60,10 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace = QtGui.QWorkspace()
         self.setCentralWidget(self.workspace)
 
+
+
+
+
         self.connect(self.workspace, QtCore.SIGNAL("windowActivated(QWidget *)"), self.updateMenus)
         self.windowMapper = QtCore.QSignalMapper(self)
         self.connect(self.windowMapper, QtCore.SIGNAL("mapped(QWidget *)"),
@@ -179,7 +183,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def createActions(self):
-        self.newAct = QtGui.QAction(QtGui.QIcon(":/images/new.png"),
+        self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
                             self.tr("&New"), self)
         self.newAct.setShortcut(self.tr("Ctrl+N"))
         self.newAct.setStatusTip(self.tr("Create a new file"))
