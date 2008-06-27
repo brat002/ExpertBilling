@@ -514,6 +514,7 @@ class TransactionType(models.Model):
 class Transaction(models.Model):
     account=models.ForeignKey(Account)
     type = models.ForeignKey(to=TransactionType, to_field='internal_name')
+    
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff)
     summ=models.FloatField(blank=True)
