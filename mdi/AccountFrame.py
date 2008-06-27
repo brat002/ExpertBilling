@@ -273,22 +273,25 @@ class TarifFrame(QtGui.QDialog):
         self.speed_priority_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_priority_edit.setGeometry(QtCore.QRect(110,210,331,21))
         self.speed_priority_edit.setObjectName("speed_priority_edit")
+        self.speed_priority_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"[1-8]{1,1}"), self))
 
         self.speed_max_out_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_max_out_edit.setGeometry(QtCore.QRect(276,45,161,21))
         self.speed_max_out_edit.setObjectName("speed_max_out_edit")
-
+        self.speed_max_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
+        
         self.speed_burst_out_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_out_edit.setGeometry(QtCore.QRect(276,111,164,21))
         self.speed_burst_out_edit.setObjectName("speed_burst_out_edit")
+        self.speed_burst_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_burst_time_out_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_time_out_edit.setGeometry(QtCore.QRect(276,177,164,21))
-        self.speed_burst_time_out_edit.setObjectName("speed_burst_time_out_edit")
+        self.speed_burst_time_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_min_in_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_min_in_edit.setGeometry(QtCore.QRect(109,78,161,21))
-        self.speed_min_in_edit.setObjectName("speed_min_in_edit")
+        self.speed_min_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_burst_label = QtGui.QLabel(self.speed_access_groupBox)
         self.speed_burst_label.setGeometry(QtCore.QRect(11,111,89,21))
@@ -296,7 +299,7 @@ class TarifFrame(QtGui.QDialog):
 
         self.speed_burst_treshold_out_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_treshold_out_edit.setGeometry(QtCore.QRect(276,144,164,21))
-        self.speed_burst_treshold_out_edit.setObjectName("speed_burst_treshold_out_edit")
+        self.speed_burst_treshold_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_priority_label = QtGui.QLabel(self.speed_access_groupBox)
         self.speed_priority_label.setGeometry(QtCore.QRect(11,210,89,21))
@@ -312,11 +315,11 @@ class TarifFrame(QtGui.QDialog):
 
         self.speed_burst_time_in_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_time_in_edit.setGeometry(QtCore.QRect(109,177,161,21))
-        self.speed_burst_time_in_edit.setObjectName("speed_burst_time_in_edit")
+        self.speed_burst_time_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_burst_in_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_in_edit.setGeometry(QtCore.QRect(109,111,161,21))
-        self.speed_burst_in_edit.setObjectName("speed_burst_in_edit")
+        self.speed_burst_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_out_label = QtGui.QLabel(self.speed_access_groupBox)
         self.speed_out_label.setGeometry(QtCore.QRect(276,21,164,18))
@@ -333,7 +336,7 @@ class TarifFrame(QtGui.QDialog):
         self.speed_max_in_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_max_in_edit.setGeometry(QtCore.QRect(109,45,161,21))
         self.speed_max_in_edit.setFrame(True)
-        self.speed_max_in_edit.setObjectName("speed_max_in_edit")
+        self.speed_max_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_min_label = QtGui.QLabel(self.speed_access_groupBox)
         self.speed_min_label.setGeometry(QtCore.QRect(11,78,89,21))
@@ -341,11 +344,11 @@ class TarifFrame(QtGui.QDialog):
 
         self.speed_min_out_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_min_out_edit.setGeometry(QtCore.QRect(276,78,164,21))
-        self.speed_min_out_edit.setObjectName("speed_min_out_edit")
+        self.speed_min_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_burst_treshold_in_edit = QtGui.QLineEdit(self.speed_access_groupBox)
         self.speed_burst_treshold_in_edit.setGeometry(QtCore.QRect(109,144,161,21))
-        self.speed_burst_treshold_in_edit.setObjectName("speed_burst_treshold_in_edit")
+        self.speed_burst_treshold_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([kM]?)"), self))
 
         self.speed_table = QtGui.QTableWidget(self.tab_2)
         self.speed_table.setGeometry(QtCore.QRect(9,290,595,239))
@@ -1584,8 +1587,44 @@ class TarifFrame(QtGui.QDialog):
         self.onetimeTabActivityActions()
         self.periodicalServicesTabActivityActions()
         self.limitTabActivityActions()
+
+    def get_speed(self, speed):
+        
+        speed_in, speed_out = speed.split("/")
+        if speed_in.endswith(u"k"):
+            speed_in = int(speed_in[0:-1])*1024
+        elif speed_in.endswith(u"M"):
+            speed_in = int(speed_in[0:-1])*1024*1024
+        else:
+            speed_in=int(speed_in)
+        
+        if speed_out.endswith(u"k"):
+            speed_out = int(speed_out[0:-1])*1024
+        elif speed_out.endswith(u"M"):
+            speed_out = int(speed_out[0:-1])*1024*1024
+        else:
+            speed_out=int(speed_out)
+                       
+        return speed_in, speed_out
+    
+    def compare_speeds(self, speed1, speed2):
+
+        speed1_in, speed1_out = self.get_speed(unicode(speed1))
+        speed2_in, speed2_out = self.get_speed(unicode(speed2))
+        
+        if speed1_in<speed2_in:
+            return False
+
+        if speed1_out<speed2_out:
+            return False        
+        return True
+    
+
+
+            
                 
-                
+          
+    #@transaction.commit_manually            
     def accept(self):
         if self.model:
             model=self.model
@@ -1620,13 +1659,61 @@ class TarifFrame(QtGui.QDialog):
             else:
                 speed = TimeSpeed()
             speed.access_parameters=model.access_parameters
+
+            try:
+                speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
+            except:
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали максимальную скорость")
+                return
+            
+            try:
+                speed.min_limit = u"%s" % self.speed_table.item(i,3).text() or ''
+            except:
+                speed.min_limit=""
+            try:
+                speed.burst_limit = u"%s" % self.speed_table.item(i,4).text() or ''
+            except:
+                speed.burst_limit = ""
+            try:
+                speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text() or ''
+            except:
+                speed.burst_treshold = ""
+            try:
+                speed.burst_time = u"%s" % self.speed_table.item(i,6).text() or ''
+            except:
+                speed.burst_time = ""
+            try:
+                speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
+            except:
+                speed.priority = 8
+            
+            if speed.max_limit=="" and speed.priority==8 and (speed.min_limit!="" or speed.burst_limit!="" or speed.burst_treshold!="" or speed.burst_time!=""):
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Проверьте настройки скорости в таблице")
+                return                 
+
+            if unicode(self.speed_table.item(i,1).text())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Укажите периоды времени для настроек скорости")
+
+                #transaction.rollback()
+                
+                return
             speed.time = TimePeriod.objects.get(name = unicode(self.speed_table.item(i,1).text())) 
-            speed.max_limit = u"%s" % self.speed_table.item(i,2).text() or ''
-            speed.min_limit = u"%s" % self.speed_table.item(i,3).text() or ''
-            speed.burst_limit = u"%s" % self.speed_table.item(i,4).text() or ''
-            speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text() or ''
-            speed.burst_time = u"%s" % self.speed_table.item(i,6).text() or ''
-            speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
+            try:
+                if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
+                    print 1
+                    #transaction.rollback()
+                    
+                    return
+
+                if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
+                    print 2
+                    #transaction.rollback()
+                    
+                    return
+            except:
+                print "speed compare error"
             speed.save()
         model.save()
         
@@ -1854,25 +1941,32 @@ class TarifFrame(QtGui.QDialog):
                                                                 
                 prepaid_node.save() 
                 traffic_transmit_service.save()   
-            self.model.save() 
+            model.save() 
                   
 
         elif self.transmit_service_checkbox.checkState()==0:
-            if self.model.traffic_transmit_service is not None:
-                transmit_service = TrafficTransmitService.objects.get(id=self.model.traffic_transmit_service.id)
-                self.model.traffic_transmit_service = None
-                self.model.save()
+            if model.traffic_transmit_service is not None:
+                transmit_service = TrafficTransmitService.objects.get(id=model.traffic_transmit_service.id)
+                model.traffic_transmit_service = None
+                model.save()
                 transmit_service.remove()
 
 
         elif self.transmit_service_checkbox.checkState()==0:
-            if self.model.traffic_transmit_service is not None:
-                transmit_service = TrafficTransmitService.objects.get(id=self.model.traffic_transmit_service.id)
-                self.model.traffic_transmit_service = None
-                self.model.save()
+            if model.traffic_transmit_service is not None:
+                transmit_service = TrafficTransmitService.objects.get(id=model.traffic_transmit_service.id)
+                model.traffic_transmit_service = None
+                model.save()
                 transmit_service.remove()
                             
-        model.save()
+        try:
+            model.save()
+            print True
+            #transaction.commit()
+        except Exception, e:
+            #transaction.rollback()
+            #return
+            pass
         QtGui.QDialog.accept(self)
                     
 class AddAccountFrame(QtGui.QDialog):

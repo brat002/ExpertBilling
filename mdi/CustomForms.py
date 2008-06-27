@@ -144,11 +144,11 @@ class SpeedEditDialog(QtGui.QDialog):
 
         self.speed_in_edit = QtGui.QLineEdit(self)
         self.speed_in_edit.setGeometry(QtCore.QRect(20,60,113,21))
-        self.speed_in_edit.setObjectName("speed_in_edit")
+        self.speed_in_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"[0-9]{1,}"), self))
 
         self.speed_out_edit = QtGui.QLineEdit(self)
         self.speed_out_edit.setGeometry(QtCore.QRect(220,60,113,21))
-        self.speed_out_edit.setObjectName("speed_out_edit")
+        self.speed_out_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"[0-9]{1,}"), self))
 
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
@@ -196,7 +196,9 @@ class SpeedEditDialog(QtGui.QDialog):
     def accept(self): 
         if (self.speed_in_edit.text()=="" and self.in_postfix.currentText()=="") and (self.speed_out_edit.text()=="" and self.out_postfix.currentText()=="") :
             self.resultstring=""
-        else:     
+        elif (self.speed_in_edit.text()!="" and self.speed_out_edit.text()=="") or (self.speed_in_edit.text()=="" and self.speed_out_edit.text()!=""):
+            return
+        elif self.speed_in_edit.text()!="" or  self.in_postfix.currentText()!="" or self.speed_out_edit.text()!="" or self.out_postfix.currentText()!="":     
             self.resultstring = "%s%s/%s%s" % (self.speed_in_edit.text(), self.in_postfix.currentText(), self.speed_out_edit.text(), self.out_postfix.currentText())
         QtGui.QDialog.accept(self)
         
