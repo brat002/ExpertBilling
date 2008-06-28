@@ -380,12 +380,12 @@ class ClassChild(QMainWindow):
         
         #Up Class
         self.upClassAction = QtGui.QAction(self)
-        self.upClassAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.upClassAction.setIcon(QtGui.QIcon("images/up.png"))
         self.upClassAction.setObjectName("delClassNodeAction")
                
         #Down Class
         self.downClassAction = QtGui.QAction(self)
-        self.downClassAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.downClassAction.setIcon(QtGui.QIcon("images/down.png"))
         self.downClassAction.setObjectName("delClassNodeAction")
         
         self.toolBar.addAction(self.addClassAction)

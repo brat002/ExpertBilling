@@ -2,6 +2,7 @@
 
 
 from PyQt4 import QtCore, QtGui
+from Reports import TransactionsReport
 
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
@@ -202,3 +203,90 @@ class SpeedEditDialog(QtGui.QDialog):
             self.resultstring = "%s%s/%s%s" % (self.speed_in_edit.text(), self.in_postfix.currentText(), self.speed_out_edit.text(), self.out_postfix.currentText())
         QtGui.QDialog.accept(self)
         
+class TransactionForm(QtGui.QDialog):
+    def __init__(self, model=None, account=None):
+        super(TransactionForm, self).__init__()
+        self.model = model
+        self.account = account
+        
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()).expandedTo(self.minimumSizeHint()))
+
+        self.widget = QtGui.QWidget(self)
+        self.widget.setGeometry(QtCore.QRect(11,12,481,173))
+        self.widget.setObjectName("widget")
+
+        self.gridlayout = QtGui.QGridLayout(self.widget)
+        self.gridlayout.setObjectName("gridlayout")
+
+        self.payed_document_label = QtGui.QLabel(self.widget)
+        self.payed_document_label.setObjectName("payed_document_label")
+        self.gridlayout.addWidget(self.payed_document_label,0,0,1,1)
+
+        self.payed_document_edit = QtGui.QLineEdit(self.widget)
+        self.payed_document_edit.setFrame(True)
+        self.payed_document_edit.setObjectName("payed_document_edit")
+        self.gridlayout.addWidget(self.payed_document_edit,0,1,1,1)
+
+        self.pay_type_label = QtGui.QLabel(self.widget)
+        self.pay_type_label.setObjectName("pay_type_label")
+        self.gridlayout.addWidget(self.pay_type_label,1,0,1,1)
+
+        self.payed_type_edit = QtGui.QComboBox(self.widget)
+        self.payed_type_edit.setObjectName("payed_type_edit")
+        self.gridlayout.addWidget(self.payed_type_edit,1,1,1,1)
+
+        self.summ_label = QtGui.QLabel(self.widget)
+        self.summ_label.setObjectName("summ_label")
+        self.gridlayout.addWidget(self.summ_label,2,0,1,1)
+
+        self.summ_edit = QtGui.QLineEdit(self.widget)
+        self.summ_edit.setObjectName("summ_edit")
+        self.gridlayout.addWidget(self.summ_edit,2,1,1,1)
+
+        self.comment_label = QtGui.QLabel(self.widget)
+        self.comment_label.setObjectName("comment_label")
+        self.gridlayout.addWidget(self.comment_label,3,0,1,1)
+
+        self.comment_edit = QtGui.QTextEdit(self.widget)
+        self.comment_edit.setObjectName("comment_edit")
+        self.gridlayout.addWidget(self.comment_edit,3,1,1,1)
+
+        self.transactions_pushButton = QtGui.QPushButton(self.widget)
+        self.transactions_pushButton.setObjectName("transactions_pushButton")
+        self.gridlayout.addWidget(self.transactions_pushButton,4,0,1,1)
+
+        self.buttonBox = QtGui.QDialogButtonBox(self.widget)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridlayout.addWidget(self.buttonBox,4,1,1,1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        
+        QtCore.QObject.connect(self.transactions_pushButton,QtCore.SIGNAL("clicked()"),self.transactions_report)
+
+    def retranslateUi(self):
+        self.setWindowTitle(u"Новая проводка для %s" % self.account.username)
+        self.payed_document_label.setText(QtGui.QApplication.translate("Dialog", "Платёжный документ", None, QtGui.QApplication.UnicodeUTF8))
+        self.pay_type_label.setText(QtGui.QApplication.translate("Dialog", "Вид платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Пополнить балланс", None, QtGui.QApplication.UnicodeUTF8))
+        self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Списать с балланса", None, QtGui.QApplication.UnicodeUTF8))
+        self.summ_label.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
+        self.comment_label.setText(QtGui.QApplication.translate("Dialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+        self.transactions_pushButton.setText(QtGui.QApplication.translate("Dialog", "История проводок", None, QtGui.QApplication.UnicodeUTF8))
+    
+    def accept(self):
+        if self.payed_type_edit.currentText()==u"Пополнить балланс":
+            self.result = int(self.summ_edit.text()) * (-1)
+        else:
+            self.result = int(self.summ_edit.text())
+            
+        QtGui.QDialog.accept(self)
+        
+    def transactions_report(self):
+        if self.account:
+            child = TransactionsReport(account = self.account)
+            child.exec_()
+            

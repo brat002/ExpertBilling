@@ -512,11 +512,12 @@ class TransactionType(models.Model):
 
 
 class Transaction(models.Model):
+    bill = models.CharField(blank=True, default = "", max_length=255)
     account=models.ForeignKey(Account)
     type = models.ForeignKey(to=TransactionType, to_field='internal_name')
     
     approved = models.BooleanField(default=True)
-    tarif=models.ForeignKey(Tariff)
+    tarif=models.ForeignKey(Tariff, blank=True, null=True)
     summ=models.FloatField(blank=True)
     description = models.TextField()
     created=models.DateTimeField(auto_now_add=True)
