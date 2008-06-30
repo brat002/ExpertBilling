@@ -2587,9 +2587,10 @@ class AddAccountFrame(QtGui.QDialog):
 class AccountsMdiChild(QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self, parent):
+    def __init__(self, parent, selected_account=None):
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
+        self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
         
         self.centralwidget = QtGui.QWidget(self)
@@ -2624,8 +2625,8 @@ class AccountsMdiChild(QMainWindow):
         #hh.setClickable(False)
         hh.ResizeMode(QtGui.QHeaderView.Stretch)
         #hh.setCascadingSectionResizes(True)
-        hh.setMovable(True)
-        hh.setOffset(200)
+        hh.setMovable(False)
+        #hh.setOffset(200)
 
 
         columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u""]
@@ -2697,7 +2698,7 @@ class AccountsMdiChild(QMainWindow):
         self.retranslateUi()
         self.refresh()
         self.refreshTree()
-        
+            
     def retranslateUi(self):
         self.tarif_treeWidget.clear()
 
@@ -2829,7 +2830,9 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.status, i,10)
             self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)
-
+            if self.selected_account:
+                if self.selected_account.id == a.id:
+                    self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
             i+=1
         #self.tableWidget.resizeColumnsToContents()
 

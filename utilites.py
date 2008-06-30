@@ -348,39 +348,39 @@ def create_speed_string(params, nas_type, coa=False):
     if nas_type[:8]==u'mikrotik':
         #max_limit
         if coa==True:
-            result+="%s/%s" % (params[0], params[1])
+            result+="%s" % params[0]
 
             #burst_limit
-            result+=" %s/%s" % (params[2],params[3])
+            result+=" %s" % params[1]
 
             #burst_treshold
-            result+=" %s/%s" % (params[4], params[5])
+            result+=" %s" % params[2]
 
             #burst_time
-            result+=" %s/%s" % (params[6], params[7])
+            result+=" %s" % params[3]
 
             #priority
-            result+=" %s" % params[8]
+            result+=" %s" % params[4]
 
             #burst_time
-            result+=" %s/%s" % (params[9], params[10])
+            result+=" %s" % params[5]
         else:
-            result+="max-limit=%s/%s" % (params[0], params[1])
+            result+="max-limit=%s" % params[0]
 
             #burst_limit
-            result+=" burst-limit=%s/%s" % (params[2],params[3])
+            result+=" burst-limit=%s" % params[1]
 
             #burst_treshold
-            result+=" burst-treshold=%s/%s" % (params[4], params[5])
+            result+=" burst-treshold=%s" % params[2]
 
             #burst_time
-            result+=" burst-time=%s/%s" % (params[6], params[7])
+            result+=" burst-time=%s" % params[3]
 
             #priority
-            result+=" priority=%s" % params[8]
+            result+=" priority=%s" % params[4]
 
             #burst_time
-            result+=" limit-at=%s/%s" % (params[9], params[10])
+            result+=" limit-at=%s" % params[5]
 
 
     return result

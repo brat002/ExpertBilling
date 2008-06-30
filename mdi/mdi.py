@@ -51,7 +51,8 @@ from NasFrame import NasMdiChild
 from SettlementPeriodFrame import SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
-#from TarifFrame import TarifChild
+from MonitorFrame import MonitorFrame
+
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -124,7 +125,9 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def paste(self):
-        self.activeMdiChild().paste()
+        child = MonitorFrame()
+        self.workspace.addWindow(child)
+        child.show()
 
     def about(self):
         QtGui.QMessageBox.about(self, self.tr("About MDI"),
@@ -135,7 +138,7 @@ class MainWindow(QtGui.QMainWindow):
         hasMdiChild = (self.activeMdiChild() is not None)
         #self.saveAct.setEnabled(hasMdiChild)
         #self.saveAsAct.setEnabled(hasMdiChild)
-        self.pasteAct.setEnabled(hasMdiChild)
+        self.pasteAct.setEnabled(True)
         self.closeAct.setEnabled(hasMdiChild)
         self.closeAllAct.setEnabled(hasMdiChild)
         self.tileAct.setEnabled(hasMdiChild)

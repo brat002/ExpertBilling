@@ -78,6 +78,7 @@ class HandleAuth(HandleBase):
         result=[]
         i=0
         for speed in speeds:
+            print speed[0],speed[1],speed[2]
             if in_period(speed[0],speed[1],speed[2])==True:
                 for s in speed[3:]:
                     if s==0:
@@ -91,7 +92,8 @@ class HandleAuth(HandleBase):
         if speeds==[]:
             result=defaults
 
-        result_params=create_speed_string(result, self.nas_type)
+        result_params=create_speed_string(result, self.nas_type, True)
+        print "params=", result_params
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
 
@@ -110,19 +112,20 @@ class HandleAuth(HandleBase):
 
             if row==None:
                 self.cur.close()
+                print 1
                 return self.auth_NA()
 
-            username, password, nas_id,ipaddress, tarif_id, status, ballance, disabled_by_limit = row
+            username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit = row
             #Проверка на то, указан ли сервер доступа
             #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
             #if row==None:
             #    self.cur.close()
             #    self.connection.close()
-            #    return self.auth_NA()
-
-            if int(nas_id)!=int(self.nas_id) or row[1]!=self.access_type:
+            #    return self.auth_NA() 
+            if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
                self.cur.close()
                self.connection.close()
+               print 2
                return self.auth_NA()
 
 
@@ -130,13 +133,15 @@ class HandleAuth(HandleBase):
             rows = time_periods_by_tarif_id(self.cur, tarif_id)
             allow_dial=False
             for row in rows:
+                #print row[0],row[1],u"%s" % row[2]
                 if in_period(row[0],row[1],row[2])==True:
                     allow_dial=True
+                    print 3
                     break
 
 
-
             if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
+               print 4
                self.replypacket.code=2
                self.replypacket.username=str(username) #Нельзя юникод
                self.replypacket.password=str(password) #Нельзя юникод
@@ -150,6 +155,7 @@ class HandleAuth(HandleBase):
             else:
                  self.cur.close()
                  self.connection.close()
+                 print 5
                  return self.auth_NA()
         elif self.get_accesstype()=='DHCP':
             pass

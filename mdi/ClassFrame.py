@@ -22,6 +22,7 @@ NAS_LIST=(
                 (u'common_ssh',u'common_ssh'),
                 )
 
+
 class ClassEdit(QtGui.QDialog):
     def __init__(self, model=None):
         super(ClassEdit, self).__init__()
@@ -97,6 +98,23 @@ class ClassNodeFrame(QtGui.QDialog):
     def __init__(self, model=None):
         super(ClassNodeFrame, self).__init__()
         self.model=model
+        self.protocols={'':0,
+           'ddp':37,
+           'encap':98, 
+           'ggp':3, 
+           'gre':47, 
+           'hmp':20, 
+           'icmp':1, 
+           'idpr-cmtp':38, 
+           'igmp':2, 
+           'ipencap':4, 
+           'ipip':94,  
+           'ospf':89, 
+           'rdp':27, 
+           'tcp':6, 
+           'udp':17
+           }
+            
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()).expandedTo(self.minimumSizeHint()))
 
@@ -247,9 +265,9 @@ class ClassNodeFrame(QtGui.QDialog):
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "TRANSIT", None, QtGui.QApplication.UnicodeUTF8))
-        protocols=['', 'ddp', 'egd', 'encap', 'ggp', 'gre', 'hmp', 'icmp', 'idpr-cmtp', 'igmp', 'ipencap', 'ipip',  'ipsec-ah', 'ipsec-esp', 'iso-tp4', 'ospf', 'pup', 'rdp', 'rspf','st', 'tcp', 'udp',  'vmtp', 'xns-idp', 'xtp']
         
-        for protocol in protocols:
+        for protocol in self.protocols:
+            print protocol
             self.protocol_edit.addItem(QtGui.QApplication.translate("Dialog", protocol, None, QtGui.QApplication.UnicodeUTF8))
 
 
@@ -265,7 +283,7 @@ class ClassNodeFrame(QtGui.QDialog):
            self.dst_ip_edit.setText(unicode(self.model.dst_ip))
            self.dst_mask_edit.setText(unicode(self.model.dst_mask))
            self.dst_port_edit.setText(unicode(self.model.dst_port))
-           self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.model.protocol, QtCore.Qt.MatchCaseSensitive)),
+           #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
            self.next_hop_edit.setText(unicode(self.model.next_hop))
 
                                        
@@ -274,9 +292,54 @@ class ClassNodeFrame(QtGui.QDialog):
     
 
 
-    def save(self):
-        print 'Saved'
+    def accept(self):
+        
+        if self.model:
+            model = self.model
+        else:
+            model = TrafficNode()
+            
+        model.name = unicode(self.name_edit.text())
+        model.direction = unicode(self.direction_edit.currentText())
+        
+        model.protocol = self.protocols[unicode(self.protocol_edit.currentText())]
+        
+        src_ip = unicode(self.src_ip_edit.text())
+        if src_ip =='...':
+            src_ip='0.0.0.0'
+        
+        model.src_ip = src_ip
+            
+        src_mask = unicode(self.src_mask_edit.text())
+        if src_mask == '...':
+            src_mask='0.0.0.0'
+        model.src_mask = src_mask
+            
+        dst_ip = unicode(self.dst_ip_edit.text())
+        if dst_ip =='...':
+            dst_ip='0.0.0.0'
+        model.dst_ip = dst_ip
+        
+        dst_mask = unicode(self.dst_mask_edit.text())
+        if dst_mask=='...':
+            dst_mask='0.0.0.0'
+        model.src_mask = src_mask
+            
+        src_port = unicode(self.src_port_edit.text())
+        if src_port=='':
+            src_port=0
+            
+        model.src_port = src_port
+        
+        dst_port = unicode(self.dst_port_edit.text())
+        if dst_port=='':
+            dst_port=0        
+        model.dst_port = dst_port
+        
+        model.next_hop = unicode(self.next_hop_edit.text()) 
 
+        self.model=model
+        QtGui.QDialog.accept(self)
 
 
 class ClassChild(QMainWindow):
@@ -527,7 +590,6 @@ class ClassChild(QMainWindow):
         
         model1 = TrafficClass.objects.get(name = item_changed_name)
         model2 = TrafficClass.objects.get(name = item_swap_name)
-        print model1.weight, model2.weight
         a=model1.weight+0
         b=model2.weight+0
         
@@ -578,65 +640,9 @@ class ClassChild(QMainWindow):
             
             
 
-    def nodeCreator(self, model, child, nodemodel=None):
+#    def nodeCreator(self, model, child, nodemodel=None):
         
-        name = unicode(child.name_edit.text())
-        direction = unicode(child.direction_edit.currentText())
-        protocol = unicode(child.protocol_edit.currentText())
-        
-        src_ip = unicode(child.src_ip_edit.text())
-        if src_ip =='...':
-            src_ip='0.0.0.0'
-            
-        src_mask = unicode(child.src_mask_edit.text())
-        if src_mask == '...':
-            src_mask='0.0.0.0'
-            
-        dst_ip = unicode(child.dst_ip_edit.text())
-        if dst_ip =='...':
-            dst_ip='0.0.0.0'
-        
-        dst_mask = unicode(child.dst_mask_edit.text())
-        if dst_mask=='...':
-            dst_mask='0.0.0.0'
-            
-        src_port = unicode(child.src_port_edit.text())
-        if src_port=='':
-            src_port=0
-        dst_port = unicode(child.dst_port_edit.text())
-        if dst_port=='':
-            dst_port=0        
-        next_hop = unicode(child.next_hop_edit.text())
-        
-        if not nodemodel:
-            """
-            СОздаём новую запись
-            """
-        
-            TrafficNode.objects.create(traffic_class=model,
-                                       name = name,
-                                       direction = direction,
-                                       src_ip = src_ip,
-                                       src_mask = src_mask,
-                                       src_port = src_port,
-                                       dst_ip = dst_ip,
-                                       dst_mask = dst_mask,
-                                       dst_port = dst_port,
-                                       protocol = protocol,
-                                       next_hop=next_hop
-                                       )
-        else: 
-           nodemodel.name = name
-           nodemodel.direction = direction
-           nodemodel.src_ip = src_ip
-           nodemodel.src_mask = src_mask
-           nodemodel.src_port = src_port
-           nodemodel.dst_ip = dst_ip
-           nodemodel.dst_mask = dst_mask
-           nodemodel.dst_port = dst_port
-           nodemodel.protocol = protocol
-           nodemodel.next_hop=next_hop
-           nodemodel.save()
+
             
            
 
@@ -649,7 +655,8 @@ class ClassChild(QMainWindow):
 
         child=ClassNodeFrame()
         if child.exec_()==1:
-            self.nodeCreator(model=model, child=child)
+            child.model.traffic_class=model
+            child.model.save()
             
             self.refreshTable()
         
@@ -664,22 +671,15 @@ class ClassChild(QMainWindow):
             self.refreshTable()
         
     def editNode(self):
-        id = self.getSelectedId()
         try:
-            nodemodel = TrafficNode.objects.get(id=id)
-        except:
-            return
-
-        name=self.getSelectedName()
-        try:
-            model=TrafficClass.objects.get(name=unicode(name))
+            model=TrafficNode.objects.get(id=self.getSelectedId())
         except:
             return
         
         
-        child=ClassNodeFrame(model=nodemodel)
+        child=ClassNodeFrame(model=model)
         if child.exec_()==1:
-            self.nodeCreator(model=model, nodemodel=nodemodel, child=child)
+            child.model.save()
         self.refreshTable()
         
     def refreshTable(self, widget=None):
@@ -746,6 +746,8 @@ class ClassChild(QMainWindow):
         self.refresh()
 
     def addrow(self, value, x, y):
+        if value==None:
+            value=""
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
@@ -760,122 +762,6 @@ class ClassChild(QMainWindow):
             item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item.setText(period.name)
             self.timeperiod_list_edit.addItem(item)
-        
-#===============================================================================
-#        self.tableWidget.setRowCount(periods.count())
-#        #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
-#        i=0
-#        for period in periods:
-#            self.addrow(period.id, i,0)
-#            self.addrow(period.name, i,1)
-#            self.addrow(period.autostart, i,2)
-#            self.addrow(period.time_start, i,3)
-#            self.addrow(period.length_in, i,4)
-#            self.addrow(period.length, i,5)
-#            self.tableWidget.setRowHeight(i, 17)
-#            self.tableWidget.setColumnHidden(0, True)
-# 
-# 
-#            i+=1
-#        self.tableWidget.resizeColumnsToContents()
-#        self.tableWidget.rowHeight(10)
-#===============================================================================
 
-    def newFile(self):
-        self.isUntitled = True
-        #self.curFile = self.tr("iplist").arg(MdiChild.sequenceNumber)
-        #MdiChild.sequenceNumber += 1
-        #self.setWindowTitle(self.curFile+"[*]")
-
-    def loadFile(self, fileName):
-        file = QtCore.QFile(fileName)
-        if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                        self.tr("Cannot read file %1:\n%2.")
-                        .arg(fileName)
-                        .arg(file.errorString()))
-            return False
-
-        instr = QtCore.QTextStream(file)
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.setPlainText(instr.readAll())
-        QtGui.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def save(self):
-        if self.isUntitled:
-            return self.saveAs()
-        else:
-            return self.saveFile(self.curFile)
-
-    def saveAs(self):
-        fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("Save As"),
-                        self.curFile)
-        if fileName.isEmpty:
-            return False
-
-        return self.saveFile(fileName)
-
-    def saveFile(self, fileName):
-        file = QtCore.QFile(fileName)
-
-        if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("Cannot write file %1:\n%2.")
-                    .arg(fileName)
-                    .arg(file.errorString()))
-            return False
-
-        outstr = QtCore.QTextStream(file)
-        QtCore.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        outstr << self.toPlainText()
-        QtCore.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def userFriendlyCurrentFile(self):
-        return self.strippedName(self.curFile)
-
-    def currentFile(self):
-        return self.curFile
-
-    def closeEvent(self, event):
-        #if self.maybeSave():
-        #    event.accept()
-        #else:
-        #    event.ignore()
-        pass
-
-    def documentWasModified(self):
-        self.setWindowModified(self.document().isModified())
-
-    def maybeSave(self):
-        if self.document().isModified():
-            ret = QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("'%1' has been modified.\n"\
-                            "Do you want to save your changes?")
-                    .arg(self.userFriendlyCurrentFile()),
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.Default,
-                    QtGui.QMessageBox.No,
-                    QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape)
-            if ret == QtGui.QMessageBox.Yes:
-                return self.save()
-            elif ret == QtGui.QMessageBox.Cancel:
-                return False
-
-        return True
-
-    def setCurrentFile(self, fileName):
-        self.curFile = QtCore.QFileInfo(fileName).canonicalFilePath()
-        self.isUntitled = False
-        self.document().setModified(False)
-        self.setWindowModified(False)
-        self.setWindowTitle(self.userFriendlyCurrentFile() + "[*]")
-
-    def strippedName(self, fullFileName):
-        return QtCore.QFileInfo(fullFileName).fileName()
 
 
