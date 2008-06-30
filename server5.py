@@ -22,15 +22,14 @@ def RefreshClasses():
     for traffic_class in traffic_classes:
         cur.execute(
         """
-        SELECT tn.name, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
+        SELECT tn.name, tn.direction, tn.protocol, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
         tn.next_hop
         FROM nas_trafficnode as tn
-        JOIN nas_trafficclass_trafficnode as tnc ON tnc.trafficnode_id=tn.id
-        WHERE tnc.trafficclass_id=%s
+        WHERE tn.traffic_class_id=%s
         """ % traffic_class[0]
         )
         traffic_nodes=cur.fetchall()
-        trafficclasses_pool.append(TrafficClass(traffic_class[0], traffic_class[1], traffic_class[2], traffic_class[3], nodes=traffic_nodes))
+        trafficclasses_pool.append(TrafficClass(traffic_class, nodes=traffic_nodes))
 
     return trafficclasses_pool
 
@@ -41,16 +40,17 @@ class Account(object):
         self.tarif=tarif
 
 class TrafficNode(object):
-    def __init__(self, name, direction, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop):
-        self.name = name
-        self.direction = direction
-        self.src_ip  = src_ip
-        self.src_mask  = src_mask
-        self.src_port  = src_port
-        self.dst_ip = dst_ip
-        self.dst_mask = dst_mask
-        self.dst_port  = dst_port
-        self.next_hop = next_hop
+    def __init__(self, node_data):
+        self.name,
+        self.direction,
+        self.protocol,
+        self.src_ip,
+        self.src_mask,
+        self.src_port  = src_port,
+        self.dst_ip,
+        self.dst_mask,
+        self.dst_port,
+        self.next_hop = node_data
 
 
     def check_class(self, src_ip, src_port, dst_ip, dst_port):
@@ -74,14 +74,14 @@ class TrafficNode(object):
 
 
 class TrafficClass(object):
-    def __init__(self, id, name, weight, store, nodes):
-        self.id=id
-        self.name = name
-        self.weight = weight
-        self.store = store
+    def __init__(self, class_data, nodes):
+        self.id,
+        self.name,
+        self.weight,
+        self.store= class_data
         self.data=[]
         for node in nodes:
-            self.data.append(TrafficNode(name=node[0], src_ip=node[1], src_mask=node[2], src_port=node[3], dst_ip=node[4], dst_mask=node[5], dst_port=node[6], next_hop=node[7]))
+            self.data.append(TrafficNode(node))
 
     def check(self, src, src_port, dst, dst_port):
         for node in self.data:

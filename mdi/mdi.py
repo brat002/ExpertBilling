@@ -1,4 +1,4 @@
-#-*-coding=utf-8*-
+﻿#-*-coding=utf-8*-
 
 ############################################################################
 #
@@ -350,6 +350,6 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     mainwindow = MainWindow()
     mainwindow.show()
-    #app.setStyle("Plastique")
+    app.setStyle("cleanlooks")
     app.setStyleSheet(open("./style.qss","r").read())
     sys.exit(app.exec_())
