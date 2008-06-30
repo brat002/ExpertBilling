@@ -16,9 +16,12 @@ def get_default_speed_parameters(cursor, tarif):
     rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] [rx-rate-min[/tx-rate-min]]]]
     """
     cursor.execute("""
-    SELECT accessparameters.max_limit_in, accessparameters.max_limit_out,
-           accessparameters.burst_limit_in, accessparameters.burst_limit_out, accessparameters.burst_treshold_in, accessparameters.burst_treshold_out,
-           accessparameters.burst_time_in, accessparameters.burst_time_out,accessparameters.priority, accessparameters.min_limit_in, accessparameters.min_limit_out
+    SELECT accessparameters.max_limit,
+           accessparameters.burst_limit,
+           accessparameters.burst_treshold,
+           accessparameters.burst_time,
+           accessparameters.priority,
+           accessparameters.min_limit
     FROM billservice_accessparameters as accessparameters
     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
     WHERE tariff.id=%s;
@@ -30,9 +33,13 @@ def get_speed_parameters(cursor, tarif):
     rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] [rx-rate-min[/tx-rate-min]]]]
     """
     cursor.execute("""
-    SELECT timenode.time_start::timestamp without time zone, timenode.length, timenode.repeat_after, timespeed.max_limit_in, timespeed.max_limit_out,
-           timespeed.burst_limit_in, timespeed.burst_limit_out, timespeed.burst_treshold_in, timespeed.burst_treshold_in, timespeed.burst_time_in,timespeed.burst_time_out,
-           timespeed.priority, timespeed.min_limit_in, timespeed.min_limit_out
+    SELECT timenode.time_start::timestamp without time zone, timenode.length, timenode.repeat_after, 
+           timespeed.max_limit,
+           timespeed.burst_limit,
+           timespeed.burst_treshold,
+           timespeed.burst_time,
+           timespeed.priority, 
+           timespeed.min_limit
     FROM billservice_timespeed as timespeed
     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
     JOIN billservice_timeperiodnode as timenode ON timespeed.time_id=timenode.id
@@ -44,10 +51,12 @@ def get_speed_parameters(cursor, tarif):
 def get_account_data_by_username(cursor, username):
     cursor.execute(
     """SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
-    bsat.tarif_id, account.status, (account.ballance+account.credit) as ballance, account.disabled_by_limit
+    bsat.tarif_id, accessparameters.access_type, account.status, (account.ballance+account.credit) as ballance, account.disabled_by_limit
     FROM billservice_account as account
-    JOIN billservice_accounttarif as bsat ON bsat.account_id=bsa.id
-    WHERE bsat.datetime<now() and bsa.username='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
+    JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
+    JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
+    JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
+    WHERE bsat.datetime<now() and account.username='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
     return cursor.fetchone()
 
 #def get_nas_id_by_tarif_id(cursor, tarif_id):

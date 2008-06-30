@@ -41,8 +41,9 @@ class Account(object):
         self.tarif=tarif
 
 class TrafficNode(object):
-    def __init__(self, name, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop):
+    def __init__(self, name, direction, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop):
         self.name = name
+        self.direction = direction
         self.src_ip  = src_ip
         self.src_mask  = src_mask
         self.src_port  = src_port

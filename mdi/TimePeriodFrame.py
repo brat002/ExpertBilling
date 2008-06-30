@@ -95,10 +95,10 @@ class AddTimePeriod(QtGui.QDialog):
         self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
         self.end_label.setText(QtGui.QApplication.translate("Dialog", "Окончание", None, QtGui.QApplication.UnicodeUTF8))
         self.repeat_label.setText(QtGui.QApplication.translate("Dialog", "Повторять через", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Сутки", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Неделя", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Месяц", None, QtGui.QApplication.UnicodeUTF8))
-        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "Год", None, QtGui.QApplication.UnicodeUTF8))
+        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "DAY", None, QtGui.QApplication.UnicodeUTF8))
+        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "WEEK", None, QtGui.QApplication.UnicodeUTF8))
+        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "MONTH", None, QtGui.QApplication.UnicodeUTF8))
+        self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "YEAR", None, QtGui.QApplication.UnicodeUTF8))
 
 
     def accept(self):

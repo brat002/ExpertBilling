@@ -204,3 +204,4 @@ class TransactionsReport(QtGui.QDialog):
         self.ballance.setText(unicode(write_on-write_off))
         
         
+        
