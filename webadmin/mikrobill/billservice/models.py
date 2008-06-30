@@ -231,11 +231,11 @@ class AccessParameters(models.Model):
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
-    max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default=0)
-    min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default=0)
-    burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default=0)
-    burst_treshold = models.CharField(verbose_name=u"Burst treshold (kbps)", max_length=64, blank=True, default=0)
-    burst_time     = models.IntegerField(verbose_name=u"Burst Time", blank=True, default=0)
+    max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
+    min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default="")
+    burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default="")
+    burst_treshold = models.CharField(verbose_name=u"Burst treshold (kbps)", max_length=64, blank=True, default="")
+    burst_time     = models.CharField(verbose_name=u"Burst Time", blank=True, max_length=64, default="")
     #от 1 до 8
     priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
 
@@ -257,13 +257,13 @@ class TimeSpeed(models.Model):
     """
     access_parameters = models.ForeignKey(to=AccessParameters, edit_inline=True, related_name="access_speed")
     time = models.ForeignKey(TimePeriod, core=True)
-    max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default=0)
-    min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default=0)
-    burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default=0)
-    burst_treshold = models.CharField(verbose_name=u"Burst treshold (kbps)", max_length=64, blank=True, default=0)
-    burst_time     = models.IntegerField(verbose_name=u"Burst Time", blank=True, default=0)
+    max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
+    min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default="")
+    burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default="")
+    burst_treshold = models.CharField(verbose_name=u"Burst treshold (kbps)", max_length=64, blank=True, default="")
+    burst_time     = models.CharField(verbose_name=u"Burst Time", blank=True, max_length=64, default="")
     #от 1 до 8
-    priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
+    priority       = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
 
     def __unicode__(self):
         return u"%s" % self.time
