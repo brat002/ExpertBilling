@@ -33,61 +33,62 @@ def RefreshClasses():
 
     return trafficclasses_pool
 
-class Account(object):
-    def __init__(self, id, ip, tarif):
-        self.id=id
-        self.ip=ip
-        self.tarif=tarif
-
 class TrafficNode(object):
     def __init__(self, node_data):
-        self.name,
-        self.direction,
-        self.protocol,
-        self.src_ip,
-        self.src_mask,
-        self.src_port  = src_port,
-        self.dst_ip,
-        self.dst_mask,
-        self.dst_port,
+        self.name, \
+        self.direction, \
+        self.protocol, \
+        self.src_ip, \
+        self.src_mask, \
+        self.src_port, \
+        self.dst_ip, \
+        self.dst_mask, \
+        self.dst_port, \
         self.next_hop = node_data
 
 
-    def check_class(self, src_ip, src_port, dst_ip, dst_port):
+    def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol):
         src = IP("%s/%s" % (self.src_ip, self.src_mask))
         dst = IP("%s/%s" % (self.dst_ip, self.dst_mask))
-        res={'src':False, 'src_port':False, 'dst':False,'dst_port':False}
+        res={'src':False, 'src_port':False, 'dst':False,'dst_port':False, 'protocol':False}
 
         if IP(src_ip) in src:
             res['src']=True
 
+
         if IP(dst_ip) in dst:
             res['dst']=True
+
 
         if src_port==self.src_port or self.src_port==0:
             res['src_port']=True
 
-        if src_port==self.src_port or self.src_port==0:
+        if dst_port==self.dst_port or self.dst_port==0:
             res['dst_port']=True
 
+        if protocol==int(self.protocol) or int(self.protocol)==0:
+            res['protocol']=True
+            
+        res['direction']=self.direction
+        print res
         return res
 
 
 class TrafficClass(object):
     def __init__(self, class_data, nodes):
-        self.id,
-        self.name,
-        self.weight,
-        self.store= class_data
+        self.id, \
+        self.name, \
+        self.weight, \
+        self.store = class_data
         self.data=[]
         for node in nodes:
             self.data.append(TrafficNode(node))
 
-    def check(self, src, src_port, dst, dst_port):
+    def check(self, src, src_port, dst, dst_port, protocol):
         for node in self.data:
-            res=node.check_class(src, src_port, dst, dst_port)
-            if res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True:
-                return self.id
+            res=node.check_class(src, src_port, dst, dst_port, protocol)
+            if res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True and res['protocol']:
+                return self.id, res['direction']
         return False
 
 
@@ -202,15 +203,16 @@ class NetFlowPacket:
                 traffic_class=None
 
                 for traffic_class in trafficclasses_pool:
-    			    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port)
+    			    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol)
 
     			    if res!=False:
-    			        traffic_class=res
+    			        traffic_class, direction =res
     			        flows.append(
                         {
                         'nas_id':nas_id, 'date_start':datetime.datetime.now(),
                         'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
                         'traffic_class_id':traffic_class,
+                        'direction': direction,
                         'next_hop': flow.next_hop,
                         'in_index':flow.in_index,
                         'out_index' : flow.out_index,
@@ -233,8 +235,8 @@ class NetFlowPacket:
 
             print flows
             cur.executemany("""
-                        INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
-                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
+                        INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
+                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
                         flows)
             db_connection.commit()
 
