@@ -58,6 +58,12 @@ PRIORITIES=(
                 (u'8',u'8'),
                 )
 
+DIRECTIONS_LIST=(
+                (u'INPUT', u'Входящий на абонента'),
+                (u'OUTPUT',u'Исходящий от абонента'),
+                (u'TRANSIT',u'Межабонентский'),
+                )
+
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -613,6 +619,7 @@ class RawNetFlowStream(models.Model):
     groups = models.IntegerField(default=0, null=True, blank=True)
     src_addr = models.IPAddressField()
     traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
     dst_addr = models.IPAddressField()
     next_hop = models.IPAddressField()
     in_index = models.IntegerField()
@@ -652,6 +659,7 @@ class NetFlowStream(models.Model):
     date_start = models.DateTimeField(auto_now_add=True)
     src_addr = models.IPAddressField()
     traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
+    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
     traffic_transmit_node = models.ForeignKey(to=TrafficTransmitNodes, blank=True, null=True, editable=False)
     dst_addr = models.IPAddressField()
     octets = models.IntegerField()
