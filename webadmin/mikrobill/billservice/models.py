@@ -287,6 +287,9 @@ class PrepaidTraffic(models.Model):
     """
     traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="prepaid_traffic")
     traffic_class    = models.ManyToManyField(to=TrafficClass, verbose_name=u'Класс трафика')
+    in_direction     = models.BooleanField()
+    out_direction    = models.BooleanField()
+    transit_direction= models.BooleanField()
     size             = models.FloatField(verbose_name=u'Размер в байтах', core=True)
 
     def __unicode__(self):
@@ -386,6 +389,9 @@ class TrafficLimit(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Лимит на класс', blank=True, null=True)
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
+    in_direction      = models.BooleanField()
+    out_direction     = models.BooleanField()
+    transit_direction = models.BooleanField()
     mode              = models.BooleanField(verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
 
     def __unicode__(self):

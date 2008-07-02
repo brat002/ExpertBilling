@@ -87,9 +87,9 @@ class TrafficClass(object):
     def check(self, src, src_port, dst, dst_port, protocol):
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port, protocol)
-            if res['src']==True and res['dst']==True and res['src_port']==True and res['dst_port']==True and res['protocol']:
+            if res['src'] and res['dst'] and res['src_port'] and res['dst_port'] and res['protocol']:
                 return self.id, res['direction']
-        return False
+        return False, False
 
 
 
@@ -203,11 +203,11 @@ class NetFlowPacket:
                 traffic_class=None
 
                 for traffic_class in trafficclasses_pool:
-    			    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol)
-
-    			    if res!=False:
-    			        traffic_class, direction =res
-    			        flows.append(
+                    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol)
+                    
+                    if res[0]:
+                        traffic_class, direction = res
+                        flows.append(
                         {
                         'nas_id':nas_id, 'date_start':datetime.datetime.now(),
                         'src_addr':flow.src_addr, 'dst_addr':flow.dst_addr,
@@ -234,11 +234,14 @@ class NetFlowPacket:
                         );break
 
             print flows
+   
             cur.executemany("""
-                        INSERT INTO billservice_rawnetflowstream(nas_id,date_start,src_addr,dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets,octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
-                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s,%(packets)s,%(octets)s,%(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
+                        INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
+                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s, %(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
                         flows)
             db_connection.commit()
+            
+            #break
 
 
 

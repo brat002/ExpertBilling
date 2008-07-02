@@ -847,7 +847,7 @@ class TarifFrame(QtGui.QDialog):
         self.del_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.clear()
-        self.prepaid_tableWidget.setColumnCount(3)
+        self.prepaid_tableWidget.setColumnCount(6)
         self.prepaid_tableWidget.setRowCount(0)
 
         headerItem25 = QtGui.QTableWidgetItem()
@@ -859,8 +859,21 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_tableWidget.setHorizontalHeaderItem(1,headerItem26)
 
         headerItem27 = QtGui.QTableWidgetItem()
-        headerItem27.setText(QtGui.QApplication.translate("Dialog", "Размер", None, QtGui.QApplication.UnicodeUTF8))
+        headerItem27.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(2,headerItem27)
+        
+        headerItem28 = QtGui.QTableWidgetItem()
+        headerItem28.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
+        self.prepaid_tableWidget.setHorizontalHeaderItem(3,headerItem28)
+
+        headerItem29 = QtGui.QTableWidgetItem()
+        headerItem29.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
+        self.prepaid_tableWidget.setHorizontalHeaderItem(4,headerItem29)
+        
+        headerItem30 = QtGui.QTableWidgetItem()
+        headerItem30.setText(QtGui.QApplication.translate("Dialog", "Количество МБ", None, QtGui.QApplication.UnicodeUTF8))
+        self.prepaid_tableWidget.setHorizontalHeaderItem(5,headerItem30)
+                
         self.prepaid_traffic_cost_label.setText(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.del_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
@@ -911,7 +924,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_periodical_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
-        self.limit_tableWidget.setColumnCount(6)
+        self.limit_tableWidget.setColumnCount(9)
         self.limit_tableWidget.setRowCount(0)
 
         headerItem36 = QtGui.QTableWidgetItem()
@@ -935,9 +948,22 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget.setHorizontalHeaderItem(4,headerItem40)
         
         headerItem50 = QtGui.QTableWidgetItem()
-        headerItem50.setText(QtGui.QApplication.translate("Dialog", "Объём", None, QtGui.QApplication.UnicodeUTF8))
+        headerItem50.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.setHorizontalHeaderItem(5,headerItem50)
+
+        headerItem51 = QtGui.QTableWidgetItem()
+        headerItem51.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
+        self.limit_tableWidget.setHorizontalHeaderItem(6,headerItem51)
         
+        headerItem52 = QtGui.QTableWidgetItem()
+        headerItem52.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
+        self.limit_tableWidget.setHorizontalHeaderItem(7,headerItem52)
+
+               
+        headerItem53 = QtGui.QTableWidgetItem()
+        headerItem53.setText(QtGui.QApplication.translate("Dialog", "Объём МБ", None, QtGui.QApplication.UnicodeUTF8))
+        self.limit_tableWidget.setHorizontalHeaderItem(8,headerItem53)
+                        
         self.del_limit_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_limit_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
@@ -998,6 +1024,10 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget.insertRow(current_row)
         self.addrow(self.limit_tableWidget, True, current_row, 2, item_type='checkbox')
 
+        self.addrow(self.limit_tableWidget, True, current_row, 5, item_type='checkbox')
+        self.addrow(self.limit_tableWidget, True, current_row, 6, item_type='checkbox')
+        self.addrow(self.limit_tableWidget, True, current_row, 7, item_type='checkbox')
+
     
     def delLimitRow(self):
         current_row = self.limit_tableWidget.currentRow()
@@ -1036,6 +1066,10 @@ class TarifFrame(QtGui.QDialog):
     def addPrepaidTrafficRow(self):
         current_row = self.prepaid_tableWidget.rowCount()
         self.prepaid_tableWidget.insertRow(current_row)
+        
+        self.addrow(self.prepaid_tableWidget, True, current_row, 2, item_type='checkbox')
+        self.addrow(self.prepaid_tableWidget, True, current_row, 3, item_type='checkbox')
+        self.addrow(self.prepaid_tableWidget, True, current_row, 4, item_type='checkbox')
     
     def delPrepaidTrafficRow(self):
         current_row = self.prepaid_tableWidget.currentRow()  
@@ -1161,14 +1195,14 @@ class TarifFrame(QtGui.QDialog):
                 if len(child.selected_items)>0:
                     self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
         
-        if x==2:
+        if x==5:
             item = self.prepaid_tableWidget.item(y,x)
             try:
-                default_text=int(item.text())
+                default_text=float(item.text())
             except:
                 default_text=0
             
-            text = QInputDialog.getInteger(self, u"Объём:", u"Введите количество предоплаченных мегабайт", default_text)        
+            text = QInputDialog.getDouble(self, u"Объём:", u"Введите количество предоплаченных мегабайт", default_text)        
            
             self.prepaid_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
  
@@ -1253,7 +1287,7 @@ class TarifFrame(QtGui.QDialog):
             
             self.limit_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))
              
-        if x==5:
+        if x==8:
             item = self.limit_tableWidget.item(y,x)
             try:
                 default_text=int(item.text())
@@ -1588,7 +1622,11 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period.name,i, 3)
                     self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=classes))
-                    self.addrow(self.limit_tableWidget, node.size,i, 5)
+                    self.addrow(self.limit_tableWidget, node.size,i, 8)
+                    
+                    self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
+                    self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
+                    self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
                     if len(classes)>1:
                         self.limit_tableWidget.setRowHeight(i, len(classes)*25) 
                     i+=1
@@ -1606,7 +1644,12 @@ class TarifFrame(QtGui.QDialog):
                         classes = [clas for clas in node.traffic_class.all()]
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
                         self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=classes))
-                        self.addrow(self.prepaid_tableWidget, node.size,i, 2)
+
+                        self.addrow(self.prepaid_tableWidget, node.in_direction, i, 2, item_type='checkbox')
+                        self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
+                        self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
+                        
+                        self.addrow(self.prepaid_tableWidget, node.size,i, 5)
                                
                         self.prepaid_tableWidget.setRowHeight(i, len(classes)*22) 
                         i+=1 
@@ -1883,9 +1926,13 @@ class TarifFrame(QtGui.QDialog):
                 limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                 limit.settlement_period = SettlementPeriod.objects.get(name = unicode(self.limit_tableWidget.item(i, 3).text()))
                 limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                limit.size=unicode(self.limit_tableWidget.item(i, 5).text())
-                
-                traffic_class_models = self.limit_tableWidget.cellWidget(i, 4).models
+                limit.size=unicode(self.limit_tableWidget.item(i, 8).text())
+
+                limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
+                limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
+                limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
+
+                traffic_class_models = self.limit_tableWidget.item(i, 4).models
                 if len(traffic_class_models)==0:
                     return
                 
@@ -1970,7 +2017,7 @@ class TarifFrame(QtGui.QDialog):
             self.model.save() 
                   
             #Предоплаченный трафик
-            for i in xrange(0, self.prepaid_tableWidget.rowCount()):
+            for i in xrange(self.prepaid_tableWidget.rowCount()):
                 id = self.getIdFromtable(self.prepaid_tableWidget, i)
                 
                 if id!=-1:
@@ -1978,9 +2025,13 @@ class TarifFrame(QtGui.QDialog):
                 else:
                     prepaid_node = PrepaidTraffic()
                 
+                print "i=", self.prepaid_tableWidget.item(i,2)
                 
                 prepaid_node.traffic_transmit_service = traffic_transmit_service
-                prepaid_node.size = unicode(self.prepaid_tableWidget.item(i,2).text())
+                prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
+                prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
+                prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
+                prepaid_node.size = unicode(self.prepaid_tableWidget.item(i,5).text())
                 
                 traffic_class_models = self.prepaid_tableWidget.item(i, 1).models
                 if len(traffic_class_models)==0:
