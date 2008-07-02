@@ -78,26 +78,33 @@ class check_vpn_access(Thread):
                              """
                              )
             nasses=self.cur.fetchall()
+            print 0
             for nas_name, nas_type, nas_ipaddress, nas_secret, nas_login, nas_password in nasses:
+                print 1
                 if nas_type[:8]==u'mikrotik':
                     try:
                         ssh=SSHClient(host=nas_ipaddress, port=22, username=nas_login, password=nas_password)
+                        print 2
                     except:
+                        print 3
                         continue
                     response=ssh.send_command("/ppp active print terse without-paging")[0]
-                    #print response.read()
-                    response=response.readlines()[1:]
+                    #print response.readlines()
+                    response=response.readlines()[0:-1]
                     result=[]
-                    print response
-                    if nas_type==u'mikrotik2.9':
+                    #print response
+                    if nas_type=='mikrotik2.9':
+                        print 111
                         for r in xrange(0,len(response)-1,4):
                             result.append(response[r].strip()+response[r+1].strip()+' '+response[r+2].strip())
-                    if nas_type==u"mikrotik3.0":
-                        result=response.readlines()
+                    if nas_type==u"mikrotik3":
+                        print 222
+                        result=response
                     #print response
                     print result
                     sessions=ActiveSessionsParser(result).parse()
                     ssh.close_chanel()
+                    print sessions
                     #перебираем активные сессии на сервере
                     session=None
                     for session in sessions:
@@ -115,8 +122,8 @@ class check_vpn_access(Thread):
                                 nas_id=nas_name,
                                 username=session['name'],
                                 session_id=session['session-id'][2:],
-                                login='mikrobill',
-                                password='1234')
+                                login=nas_login,
+                                password=nas_password)
 
                     self.cur.execute("""
                     UPDATE radius_activesession
@@ -155,11 +162,11 @@ class check_vpn_access(Thread):
                     nas_password =row[12]
                     nas_type = row[13]
                     nas_coa = row[14]
-                    result=None
                     username=row[15]
                     tarif_id = row[16]
                     ballance=row[17]
                     disabled_by_limit=row[18]
+                    result=None
 
                     if ballance>0:
                        if self.check_period(time_periods_by_tarif_id(self.cur, tarif_id))==False or disabled_by_limit==True:
@@ -754,14 +761,15 @@ class NetFlowAggregate(Thread):
 
     def run(self):
         while True:
+            print 'next aggregation cycle'
             connection = pool.connection()
             cur = connection.cursor()
             cur.execute(
             """
-            SELECT nf.id, ba.id,
-            tariff.id, nf.nas_id, nf.date_start, nf.src_addr, nf.traffic_class_id,
-            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, tariff.id,
-            tariff.traffic_transmit_service_id, trafficclass.store
+            SELECT nf.id, 
+            nf.nas_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.id,
+            tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
             LEFT JOIN billservice_account as ba ON ba.vpn_ip_address=nf.src_addr OR ba.vpn_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
             JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
@@ -778,12 +786,11 @@ class NetFlowAggregate(Thread):
             """
 
             for stream in raw_streams:
-                tarif_id=stream[12]
-                traffic_transmit_service=stream[13]
-                store=stream[14]
+                nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id,\
+                traffic_transmit_service, tarif_id, store = stream
+
                 tarif_mode=False
-                account_id=stream[1]
-                tarif_id=stream[2]
+                print nf_id
 
                 if traffic_transmit_service:
 
@@ -811,6 +818,7 @@ class NetFlowAggregate(Thread):
                     WHERE nas_id='%s' and account_id=%s and
                     tarif_id=%s and
                     '%s' - date_start < interval '00:10:00' and
+                    direction='%s' and
                     src_addr='%s' and traffic_class_id='%s' and
                     dst_addr='%s' and
                     src_port='%s' and
@@ -818,7 +826,7 @@ class NetFlowAggregate(Thread):
                     protocol='%s' and
                     checkouted=False and
                     for_checkout='%s' ORDER BY id DESC LIMIT 1
-                    """ % (stream[3], account_id, tarif_id, stream[4], stream[5], stream[6], stream[7],stream[9], stream[10],stream[11], tarif_mode)
+                    """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode)
                     )
                     row_for_update=cur.fetchone()
                     if row_for_update:
@@ -826,31 +834,31 @@ class NetFlowAggregate(Thread):
                         cur.execute(
                         """
                         UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
-                        """ % (stream[8], stream[0])
+                        """ % (octets, nf_id)
                         )
                     else:
                         print 'inserting'
                         cur.execute(
                         """
                         INSERT INTO billservice_netflowstream(
-                        nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id,
+                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                         dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                        VALUES ('%s', '%s', '%s', '%s', '%s', '%s',
+                        VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
                         '%s', '%s', '%s', '%s', '%s', '%s', '%s');
-                        """ % (stream[3], account_id, tarif_id, stream[4],stream[5], stream[6], stream[7],stream[8],stream[9], stream[10], stream[11], False, tarif_mode)
+                        """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
                         )
 
 
                     cur.execute(
                     """
                     DELETE FROM billservice_rawnetflowstream WHERE id=%s
-                    """ % stream[0]
+                    """ % nf_id
                     )
                 elif account_id is None and store:
                     cur.execute(
                     """
                     UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
-                    """ % stream[0]
+                    """ % nf_id
                     )
             connection.commit()
             cur.close()
@@ -1563,9 +1571,9 @@ class RPCServer(Thread):
              
 
 
-    daemon=Pyro.core.Daemon()
-    uri=daemon.connect(RPC(),"rpc")
-    daemon.requestLoop()
+#    daemon=Pyro.core.Daemon()
+#    uri=daemon.connect(RPC(),"rpc")
+#    daemon.requestLoop()
 
 
 
@@ -1576,25 +1584,25 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    threads.append(check_vpn_access(timeout=60, dict=dict))
+    #threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    threads.append(periodical_service_bill())
-    threads.append(TimeAccessBill())
+    #threads.append(periodical_service_bill())
+    #threads.append(TimeAccessBill())
     threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
+    #threads.append(NetFlowBill())
 
-    threads.append(limit_checker())
-
-
-    threads.append(ipn_service())
+    #threads.append(limit_checker())
 
 
-    threads.append(settlement_period_service_dog())
+#    threads.append(ipn_service())
 
-    threads.append(RPCServer())
+
+    #threads.append(settlement_period_service_dog())
+
+#    threads.append(RPCServer())
     for th in threads:
         th.start()
 
