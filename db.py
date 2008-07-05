@@ -76,15 +76,15 @@ def time_periods_by_tarif_id(cursor, tarif_id):
     WHERE bst.id=%s""" % tarif_id)
     return cursor.fetchall()
 
-def transaction(cursor, account, approved, type, tarif, summ, description, created=None):
+def transaction(cursor, account, approved, type, tarif, summ, description, created=None, bill=''):
     if not created:
         created=datetime.datetime.now()
 
     cursor.execute("""
-    INSERT INTO billservice_transaction(
-    account_id, approved, type, tarif_id, summ, description, created)
-    VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id;
-    """,(account, approved, type, tarif , summ, description, created))
+    INSERT INTO billservice_transaction(bill,
+    account_id, approved, type_id, tarif_id, summ, description, created)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
+    """,(bill, account, approved, type, tarif , summ, description, created))
 
     tr_id=cursor.fetchone()[0]
 

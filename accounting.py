@@ -790,7 +790,7 @@ class NetFlowAggregate(Thread):
                 traffic_transmit_service, tarif_id, store = stream
 
                 tarif_mode=False
-                print nf_id
+                #print nf_id
 
                 if traffic_transmit_service:
 
@@ -799,8 +799,9 @@ class NetFlowAggregate(Thread):
                     """
                     SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
                     FROM billservice_timeperiodnode as tpn
-                    JOIN billservice_traffictransmitnodes_time_nodes as ttntp ON ttntp.timeperiodnode_id=tpn.id
-		            JOIN billservice_traffictransmitnodes as ttns ON ttns.id=ttntp.traffictransmitnodes_id
+                    JOIN billservice_timeperiod_time_period_nodes as timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
+                    JOIN billservice_traffictransmitnodes_time_nodes as ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
+                    JOIN billservice_traffictransmitnodes as ttns ON ttns.id=ttntp.traffictransmitnodes_id
                     WHERE ttns.traffic_transmit_service_id=%s
                     """ % traffic_transmit_service
                     )
@@ -877,20 +878,28 @@ class NetFlowBill(Thread):
     def __init__(self):
         Thread.__init__(self)
 
-    def get_actual_cost(self, cur, trafic_transmit_service_id, traffic_class_id, octets_summ, stream_date):
+    def get_actual_cost(self, cur, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date):
         """
         Метод возвращает актуальную цену для направления трафика для пользователя:
 
         """
+        if direction=="INPUT":
+            d = "in_direction=True"
+        elif direction=="OUTPUT":
+            d = "out_direction=True"
+        if direction=="TRANSIT":
+            d = "transit_direction=True"
+            
         cur.execute(
         """
         SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
         FROM billservice_traffictransmitnodes as ttsn
         JOIN billservice_traffictransmitnodes_traffic_class as tcn ON tcn.traffictransmitnodes_id=ttsn.id
         JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
-        JOIN billservice_timeperiodnode AS tpn on tpn.id=timeperiodnode_id
-        WHERE ((ttsn.edge_start>=%s and ttsn.edge_end<=%s) or (ttsn.edge_start>=%s and ttsn.edge_end=0 ) ) and ttsn.traffic_transmit_service_id=%s and tcn.trafficclass_id=%s;
-        """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id)
+        JOIN billservice_timeperiod_time_period_nodes ON billservice_timeperiod_time_period_nodes.timeperiod_id=tns.timeperiod_id
+        JOIN billservice_timeperiodnode AS tpn on tpn.id=billservice_timeperiod_time_period_nodes.timeperiodnode_id 
+        WHERE ((ttsn.edge_start>=%s and ttsn.edge_end<=%s) or (ttsn.edge_start>=%s and ttsn.edge_end=0 ) ) and ttsn.traffic_transmit_service_id=%s and tcn.trafficclass_id=%s and ttsn.%s;
+        """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id, d)
         )
 
         trafic_transmit_nodes=cur.fetchall()
@@ -919,8 +928,8 @@ class NetFlowBill(Thread):
             cur = connection.cursor()
             cur.execute(
             """
-            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.octets, bs_acc.username, traficclass.direction,
-            tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check,transmitservice.count_method, accounttarif.id
+            SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.direction, nf.octets, bs_acc.username, 
+            tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check, accounttarif.id
             FROM billservice_netflowstream as nf
             JOIN billservice_account as bs_acc ON bs_acc.id=nf.account_id
             JOIN nas_trafficclass as traficclass ON traficclass.id=nf.traffic_class_id
@@ -928,28 +937,30 @@ class NetFlowBill(Thread):
             JOIN billservice_traffictransmitservice as transmitservice ON transmitservice.id=tarif.traffic_transmit_service_id
             JOIN billservice_accounttarif as accounttarif ON accounttarif.id=
             (SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=nf.account_id ORDER BY datetime DESC LIMIT 1)
-            WHERE for_checkout=True and checkouted=False;
+            WHERE for_checkout=True and checkouted=False ORDER BY nf.account_id ASC;
             """
             )
             rows=cur.fetchall()
             for row in rows:
-                nf_id=row[0]
-                account_id=row[1]
-                tarif_id=row[2]
-                stream_date=row[3]
-                traffic_class_id=row[4]
-                octets=row[5]
-                username=row[6]
-                nf_direction=row[7]
+                """
+                TO-DO: Пробегаемся по всем записям. Суммируем суммы денег для одного пользователя и разом списываем всю сумму
+                """
+                nf_id, \
+                account_id,\
+                tarif_id, \
+                stream_date, \
+                traffic_class_id,\
+                direction, \
+                octets, \
+                username, \
+                trafic_transmit_service_id, \
+                settlement_period_id, \
+                cash_method, \
+                period_check, \
+                accounttarif_id = row
                 s=False
-                trafic_transmit_service_id=row[8]
-                settlement_period_id=row[9]
-                cash_method=row[10]
-                period_check=row[11]
-                count_method=row[12]
-                accounttarif_id=row[13]
 
-                if trafic_transmit_service_id and (count_method=='INPUT' and nf_direction=='INPUT') or (count_method=='OUTPUT' and nf_direction=='OUTPUT') or count_method=='SUM':
+                if trafic_transmit_service_id:
                     #Если в тарифном плане указан расчётный период
                     if settlement_period_id:
                         cur.execute(
@@ -986,7 +997,7 @@ class NetFlowBill(Thread):
                     else:
                         octets_summ=0
 
-                    trafic_cost=self.get_actual_cost(cur,trafic_transmit_service_id, traffic_class_id, octets_summ, stream_date)
+                    trafic_cost=self.get_actual_cost(cur,trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
                     """
                     Использован т.н. дифференциальный подход к начислению денег за трафик
                     Тарифный план позволяет указать по какой цене считать трафик
@@ -1088,10 +1099,12 @@ class NetFlowBill(Thread):
 #                        s=None
 #===============================================================================
 
-
-                    cur.execute("""SELECT prepais.id, prepais.size FROM billservice_accountprepays as prepais
-                    JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                    WHERE prepais.account_tarif_id=%s and prepaidtraffic.traffic_class_id=%s and prepaidtraffic.traffic_transmit_service_id=%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id))
+                    
+                    #Исправить запрос
+                    #cur.execute("""SELECT prepais.id, prepais.size FROM billservice_accountprepays as prepais
+                    #JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                    #WHERE prepais.account_tarif_id=%s and prepaidtraffic.traffic_class_id=%s and prepaidtraffic.traffic_transmit_service_id=%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id))
+                    #"""
                     try:
                         prepaid_id, prepaid=cur.fetchone()
                     except:
@@ -1107,7 +1120,9 @@ class NetFlowBill(Thread):
                         cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
                     summ=(trafic_cost*octets)/(1024*1024)
-                    if summ>0 and (s==True or s==None):
+                    print summ
+                    #if summ>0 and (s==True or s==None):
+                    if summ>0:
                         #Производим списывание денег
                         transaction(
                         cursor=cur,
@@ -1592,7 +1607,7 @@ if __name__ == "__main__":
     #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
     threads.append(NetFlowAggregate())
-    #threads.append(NetFlowBill())
+    threads.append(NetFlowBill())
 
     #threads.append(limit_checker())
 
