@@ -323,7 +323,7 @@ class ClassNodeFrame(QtGui.QDialog):
         dst_mask = unicode(self.dst_mask_edit.text())
         if dst_mask=='...':
             dst_mask='0.0.0.0'
-        model.src_mask = src_mask
+        model.dst_mask = dst_mask
             
         src_port = unicode(self.src_port_edit.text())
         if src_port=='':
