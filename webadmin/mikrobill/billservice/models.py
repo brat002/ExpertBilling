@@ -557,8 +557,8 @@ class Transaction(models.Model):
         return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 
 class AccountTarif(models.Model):
-    account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, blank=True, null=True, edit_inline=models.STACKED, num_in_admin=1)
-    tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True)
+    account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, blank=True, null=True, edit_inline=models.STACKED, num_in_admin=1, related_name='related_accounttarif')
+    tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True, related_name="account_tarif")
     datetime  = models.DateTimeField()
 
     class Admin:

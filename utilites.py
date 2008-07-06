@@ -78,11 +78,11 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
 
 def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data={}):
         if account_data!={}:
-            command_string=command_string_parser(command_string=account.format_string, command_dict=
+            command_string=command_string_parser(command_string=format_string, command_dict=
                                 {
                                  'access_type':account_data['access_type'],
                                  'username': account_data['username'],
-                                 'user_id':account_data['user_id'],
+                                 'user_id':str(account_data['user_id']),
                                  'ipaddress':account_data['ipaddress'],
                                  'mac_address':account_data['mac_address'],
                                  }
@@ -91,13 +91,14 @@ def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data=
             command_string=format_string
 
         try:
-            sshclient=SSHClient(host=account.nas_ip, port=22, username=account.login, password=account.password)
+            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
             #'/interface pptp-server remove [find user="%s"]' % username
+            print command_string
             res=sshclient.send_command(command_string)
             sshclient.close_chanel()
-        except:
-            print 'SSH ERROR'
+        except Exception, e:
+            print e
         #print res[1].readlines()
         return res[1].readlines()==[]
 
@@ -304,6 +305,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             return (tnc, tkc, delta.seconds)
 
 def command_string_parser(command_string='', command_dict={}):
+    
     import re
     if len(command_string) == 0 or len(command_dict) == 0:
         return ''
@@ -316,6 +318,7 @@ def command_string_parser(command_string='', command_dict={}):
         if p in command_dict.keys() :
             s = re.compile( '\$%s' % p)
             command_string = s.sub(command_dict[p],command_string)
+    print command_string
     return command_string
 
 class SSHClient(paramiko.SSHClient):
