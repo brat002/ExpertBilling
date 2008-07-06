@@ -3,6 +3,7 @@
 import os, sys
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import *
+import Pyro.core
 
 import mdi_rc
 
@@ -11,7 +12,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
-from billservice.models import Account, Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
+from billservice.models import Account, AccountTarif,  Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
 from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
 from randgen import nameGen, GenPasswd2
@@ -2666,6 +2667,12 @@ class AccountsMdiChild(QMainWindow):
         self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
         self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
+
+        
+
+        
         #self.tablewidget.setSortingEnabled(True)
         vh = self.tableWidget.verticalHeader()
         vh.setVisible(False)
@@ -2709,12 +2716,23 @@ class AccountsMdiChild(QMainWindow):
         self.delTarifAction = QtGui.QAction(self)
         self.delTarifAction.setIcon(QtGui.QIcon("images/del.png"))
         
-        self.transactionAction = QtGui.QAction(self)
+        self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
         self.transactionAction.setIcon(QtGui.QIcon("images/add.png"))
 
-        self.transactionReportAction = QtGui.QAction(self)
+        self.transactionReportAction = QtGui.QAction(u'Журнал проводок',self)
         self.transactionReportAction.setIcon(QtGui.QIcon("images/add.png"))
+
+        self.actionDisableSession = QtGui.QAction(u'Отключить на сервере доступа',self)
+        self.actionDisableSession.setIcon(QtGui.QIcon("images/del.png"))
+
+        self.actionEnableSession = QtGui.QAction(u'Включить на сервере доступа',self)
+        self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
                 
+        self.tableWidget.addAction(self.transactionAction)
+        
+        self.tableWidget.addAction(self.actionEnableSession)
+        self.tableWidget.addAction(self.actionDisableSession)
+                        
 
         self.toolBar.addAction(self.addTarifAction)
         self.toolBar.addAction(self.delTarifAction)
@@ -2742,13 +2760,20 @@ class AccountsMdiChild(QMainWindow):
         
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemChanged(QTreeWidgetItem *,int)"), self.refresh)
+        
         self.connect(self.transactionAction, QtCore.SIGNAL("triggered()"), self.makeTransation)
         
         self.connect(self.transactionReportAction, QtCore.SIGNAL("triggered()"), self.transactionReport) 
+        
+        self.connect(self.actionDisableSession, QtCore.SIGNAL("triggered()"), self.accountDisable)
+        
+        self.connect(self.actionEnableSession, QtCore.SIGNAL("triggered()"), self.accountEnable)
                      
         self.retranslateUi()
-        self.refresh()
         self.refreshTree()
+        self.refresh()
+        
             
     def retranslateUi(self):
         self.tarif_treeWidget.clear()
@@ -2841,13 +2866,16 @@ class AccountsMdiChild(QMainWindow):
         addf.exec_()
         self.refresh()
 
-    def addrow(self, value, x, y, color=None):
+    def addrow(self, value, x, y, color=None, enabled=True):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
         if color:
             if int(value)<0:
                 headerItem.setBackgroundColor(QColor(color))
+        
+        if not enabled:
+            headerItem.setTextColor(QColor('#FF0100'))
 
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
@@ -2860,26 +2888,36 @@ class AccountsMdiChild(QMainWindow):
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.setText(0, u"%s" % tarif.name)
             
-    def refresh(self):
-
-        accounts=Account.objects.all().order_by('id')
+        self.tarif_treeWidget.setCurrentItem(item)
+            
+    def refresh(self, item=None, k=''):
+        print item
+        #if item:
+        #    tarif = Tariff.objects.get(name=unicode(item.text(0)))
+        #else:
+        tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
+        print tarif.id
+        accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
+        #accounts=Account.objects.all()
         self.tableWidget.setRowCount(accounts.count())
+        
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
         for a in accounts:
-            self.addrow(a.id, i,0)
+            
+            self.addrow(a.id, i,0, enabled=a.status)
             #self.addrow(a.user, i,1)
-            self.addrow(a.username, i,1)
-            self.addrow(a.ballance, i,2, color="red")
-            self.addrow(a.credit, i,3)
-            self.addrow(a.firstname, i,4)
-            self.addrow(a.lastname, i,5)
-            self.addrow(a.nas.name,i,6)
-            self.addrow(a.vpn_ip_address, i,7)
-            self.addrow(a.ipn_ip_address, i,8)
-            self.addrow(a.suspended, i,9)
-            self.addrow(a.status, i,10)
-            self.tableWidget.setRowHeight(i, 17)
+            self.addrow(a.username, i,1, enabled=a.status)
+            self.addrow(a.ballance, i,2, color="red", enabled=a.status)
+            self.addrow(a.credit, i,3, enabled=a.status)
+            self.addrow(a.firstname, i,4, enabled=a.status)
+            self.addrow(a.lastname, i,5, enabled=a.status)
+            self.addrow(a.nas.name,i,6, enabled=a.status)
+            self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
+            self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
+            self.addrow(a.suspended, i,9, enabled=a.status)
+            self.addrow(a.status, i,10, enabled=a.status)
+            self.tableWidget.setRowHeight(i, 14)
             self.tableWidget.setColumnHidden(0, True)
             if self.selected_account:
                 if self.selected_account.id == a.id:
@@ -2887,11 +2925,43 @@ class AccountsMdiChild(QMainWindow):
             i+=1
         #self.tableWidget.resizeColumnsToContents()
 
-    def newFile(self):
-        self.isUntitled = True
-        #self.curFile = self.tr("iplist").arg(MdiChild.sequenceNumber)
-        #MdiChild.sequenceNumber += 1
-        #self.setWindowTitle(self.curFile+"[*]")
+    def accountDisable(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+        try:
+            model=Account.objects.get(id=self.getSelectedId())
+        except:
+            return
+        
+
+        # you have to change the URI below to match your own host/port.
+        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
+
+        if connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'disable', model.id):
+            QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
+        else:
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+
+
+    def accountEnable(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+        try:
+            model=Account.objects.get(id=self.getSelectedId())
+        except:
+            return
+        
+
+        # you have to change the URI below to match your own host/port.
+        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
+
+        if connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'enable', model.id):
+            QMessageBox.Information(self, u"Ok", unicode(u"Ok."))
+        else:
+            QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+
 
     def loadFile(self, fileName):
         file = QtCore.QFile(fileName)
