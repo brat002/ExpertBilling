@@ -1650,7 +1650,7 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
                         self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
                         
-                        self.addrow(self.prepaid_tableWidget, node.size,i, 5)
+                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1024*1024),i, 5)
                                
                         self.prepaid_tableWidget.setRowHeight(i, len(classes)*22) 
                         i+=1 
@@ -2032,7 +2032,7 @@ class TarifFrame(QtGui.QDialog):
                 prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
                 prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
                 prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                prepaid_node.size = unicode(self.prepaid_tableWidget.item(i,5).text())
+                prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,5).text())*1024*1024)
                 
                 traffic_class_models = self.prepaid_tableWidget.item(i, 1).models
                 if len(traffic_class_models)==0:
@@ -2897,8 +2897,8 @@ class AccountsMdiChild(QMainWindow):
         #else:
         tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
         print tarif.id
-        accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
-        #accounts=Account.objects.all()
+        #accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
+        accounts=Account.objects.all()
         self.tableWidget.setRowCount(accounts.count())
         
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]

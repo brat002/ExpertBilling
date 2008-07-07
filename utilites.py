@@ -243,11 +243,15 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         """
         Функция возвращает дату начала и дату конца текущегопериода
         """
-
+        
+        print time_start, repeat_after, repeat_after_seconds,  now
+        
         if not now:
             now=datetime.datetime.now()
         #time_start=time_start.replace(tzinfo='UTC')
+        print "repeat_after_seconds=",repeat_after_seconds
         if repeat_after_seconds>0:
+            #print 1
             delta_days=now - time_start
             length=repeat_after
             #Когда будет начало в текущем периоде.
@@ -274,8 +278,6 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                return True
             return (tnc, tkc, length)
         elif repeat_after=='MONTH':
             #Февраль!
