@@ -145,7 +145,7 @@ class check_vpn_access(Thread):
                 FROM radius_activesession as rs
                 JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id
                 JOIN billservice_account as account ON account.id=rs.account_id
-                WHERE (rs.session_status='ACTIVE' and rs.date_end is null) or (rs.date_end is null and rs.session_status!='ACTIVE');
+                WHERE rs.date_end is null;
                 """)
                 rows=self.cur.fetchall()
                 for row in rows:
@@ -325,7 +325,7 @@ class periodical_service_bill(Thread):
                                     type='PS_GRADUAL',
                                     tarif = tariff_id,
                                     summ=cash_summ,
-                                    description=u"Проводка по периодической услуге со нятием суммы в течении периода",
+                                    description=u"Проводка по периодической услуге со cнятием суммы в течении периода",
                                     created = now)
 
                                     ps_history(cursor=cur, ps_id=ps_id, transaction=transaction_id, created=now)
@@ -362,7 +362,7 @@ class periodical_service_bill(Thread):
                                """
                                Смотрим завершился ли хотя бы один расчётный период.
                                Если завершился - считаем сколько уже их завершилось.
-                               Для последнего делаем проводку со статусом Approved=True
+                               
                                для остальных со статусом False
                                """
                                last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
@@ -904,7 +904,8 @@ class NetFlowBill(Thread):
             d = "out_direction=True"
         if direction=="TRANSIT":
             d = "transit_direction=True"
-            
+        
+        print octets_summ, trafic_transmit_service_id, traffic_class_id, d    
         cur.execute(
         """
         SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
@@ -913,10 +914,11 @@ class NetFlowBill(Thread):
         JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
         JOIN billservice_timeperiod_time_period_nodes ON billservice_timeperiod_time_period_nodes.timeperiod_id=tns.timeperiod_id
         JOIN billservice_timeperiodnode AS tpn on tpn.id=billservice_timeperiod_time_period_nodes.timeperiodnode_id 
-        WHERE ((ttsn.edge_start>=%s and ttsn.edge_end<=%s) or (ttsn.edge_start>=%s and ttsn.edge_end=0 ) ) and ttsn.traffic_transmit_service_id=%s and tcn.trafficclass_id=%s and ttsn.%s;
+        WHERE ((ttsn.edge_start>='%s' and ttsn.edge_end<='%s') or (ttsn.edge_start>='%s' and ttsn.edge_end='0' ) ) and ttsn.traffic_transmit_service_id='%s' and tcn.trafficclass_id='%s' and ttsn.%s;
         """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id, d)
         )
-
+        
+        
         trafic_transmit_nodes=cur.fetchall()
         cost=0
         min_from_start=0
@@ -983,27 +985,27 @@ class NetFlowBill(Thread):
                     if settlement_period_id:
                         cur.execute(
                         """
-                        SELECT time_start::timestamp without time zone, length_in, autostart FROM billservice_settlementperiod WHERE id=%s;
+                        SELECT time_start::timestamp without time zone, length_in, length, autostart FROM billservice_settlementperiod WHERE id=%s;
                         """ % settlement_period_id
                         )
                         settlement_period=cur.fetchone()
                         if settlement_period is not None:
-                            sp_time_start=settlement_period[0]
-                            sp_length=settlement_period[1]
+                            
+                            sp_time_start,sp_length_in, sp_length=settlement_period[0:3]
 
-                        if settlement_period[2]==False:
+                        if settlement_period[3]==True:
                             # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
                             # дату привязки тарифного плана пользователю
                             cur.execute("""
                                 SELECT a.datetime::timestamp without time zone
                                 FROM billservice_accounttarif as a
                                 LEFT JOIN billservice_account as b ON b.id=a.account_id
-                                WHERE datetime<'%s' WHERE a.account_id=%s
+                                WHERE datetime<'%s' and a.account_id=%s
                                 """ % (stream_date, account_id))
                             sp_time_start=cur.fetchone()[0]
 
-                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length, now=stream_date)
-                        # Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
+                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length, now=stream_date)
+                        #Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
                         cur.execute(
                             """
                             SELECT sum(octets)
@@ -1011,10 +1013,11 @@ class NetFlowBill(Thread):
                             WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
                             """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
                             )
-                        octets_summ=cur.fetchone()[0]
+                        octets_summ=cur.fetchone()[0] or 0
                     else:
                         octets_summ=0
-
+                    
+                    print "octets_summ", octets_summ
                     trafic_cost=self.get_actual_cost(cur,trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
                     """
                     Использован т.н. дифференциальный подход к начислению денег за трафик
@@ -1140,7 +1143,7 @@ class NetFlowBill(Thread):
                         
                         #print prepaid
                     except:
-                        print "dont prepaid"
+                        #print "dont prepaid"
                         prepaid=0
                         prepaid_id=-1
                     if prepaid>=0:
@@ -1154,6 +1157,7 @@ class NetFlowBill(Thread):
                         cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
                     summ=(trafic_cost*octets)/(1024*1024)
+                    print "summ=", summ
                     if summ>0:
                         pays.add_summ(account_id, tarif_id, summ)
                     #if summ>0 and (s==True or s==None):
@@ -1358,18 +1362,22 @@ class settlement_period_service_dog(Thread):
 
             cur.execute(
                         """
-                        SELECT shedulelog.account_id, shedulelog.ballance_checkout::timestamp without time zone, shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
+                        SELECT account.id, shedulelog.ballance_checkout::timestamp without time zone, shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
                         sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, accounttarif.datetime::timestamp without time zone,  tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time
-                        FROM billservice_shedulelog as shedulelog
-                        JOIN billservice_accounttarif AS accounttarif ON accounttarif.account_id=( SELECT id FROM billservice_accounttarif WHERE account_id=shedulelog.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            FROM billservice_account as account  
+                        LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
+                        JOIN billservice_accounttarif AS accounttarif ON accounttarif.account_id=account.id
                         JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
                         JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
                         LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
                         LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
-                        WHERE (tariff.settlement_period_id is not NULL)
-                        or now()-shedulelog.ballance_checkout<=interval '23:59:00'
+                        WHERE 
+                        now()-shedulelog.ballance_checkout<=interval '23:59:00'
                         or now()-shedulelog.prepaid_traffic_reset<=interval '23:59:00'
                         or now()-shedulelog.prepaid_time_reset<=interval '23:59:00'
+                        or shedulelog.ballance_checkout is Null
+                        or shedulelog.prepaid_traffic_reset is Null
+                        or shedulelog.prepaid_time_reset is Null
                         """
                         )
             rows=cur.fetchall()
@@ -1384,7 +1392,7 @@ class settlement_period_service_dog(Thread):
 
 
 
-                period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length, repeat_after_seconds=length_in)
+                period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length)
 
                 #нужно производить в конце расчётного периода
 
@@ -1601,17 +1609,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def __init__ (self):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
+        
+    def run(self):
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
-        uri=daemon.connect(self,"rpc")
+        daemon.connect(self,"rpc")
         
         daemon.requestLoop()
-        
-
- 
-            
-        
-
 
     def testCredentials(self, host, login, password):
         try:
@@ -1652,7 +1656,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cur = connection.cursor()
         return [1,2,3]
              
-
+print 123
 
 
 
@@ -1665,12 +1669,12 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    #threads.append(check_vpn_access(timeout=60, dict=dict))
+    threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    #threads.append(periodical_service_bill())
+    threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
     threads.append(NetFlowAggregate())
     threads.append(NetFlowBill())
