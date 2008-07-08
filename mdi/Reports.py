@@ -2,7 +2,7 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
+from helpers import tableFormat
 
 import mdi_rc
 
@@ -12,8 +12,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 
 from billservice.models import Transaction, Account, TransactionType
-from time import mktime
-import datetime, calendar
+
 
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, account=None):
@@ -60,7 +59,7 @@ class TransactionsReport(QtGui.QDialog):
 
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setGeometry(QtCore.QRect(10,70,681,331))
-        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget) 
 
         self.save_pushButton = QtGui.QPushButton(self)
         self.save_pushButton.setGeometry(QtCore.QRect(11,441,77,25))
@@ -99,7 +98,6 @@ class TransactionsReport(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
-        #QtCore.QMetaObject.connectSlotsByName(Dialog)
         self.fixtures()
         
     def retranslateUi(self):
@@ -110,7 +108,6 @@ class TransactionsReport(QtGui.QDialog):
         self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Пыщь", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
         self.tableWidget.setColumnCount(7)
-        #self.tableWidget.setRowCount(2)
 
         headerItem2 = QtGui.QTableWidgetItem()
         headerItem2.setText(QtGui.QApplication.translate("Dialog", "id", None, QtGui.QApplication.UnicodeUTF8))
@@ -186,7 +183,7 @@ class TransactionsReport(QtGui.QDialog):
         write_off = 0
         for transaction in transactions:
             self.addrow(transaction.id, i, 0)
-            self.addrow(transaction.created, i, 1)
+            self.addrow(transaction.created.strftime("%d-%m-%Y %H:%M:%S"), i, 1)
             self.addrow(transaction.bill, i, 2)
             self.addrow(transaction.type.name, i, 3)
             self.addrow(transaction.tarif, i, 4)

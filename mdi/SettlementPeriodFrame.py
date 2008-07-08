@@ -2,9 +2,6 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
-
-import mdi_rc
 
 sys.path.append('d:/projects/mikrobill/webadmin')
 sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
@@ -12,7 +9,7 @@ sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from django.contrib.auth.models import User
 from billservice.models import SettlementPeriod
-from nas.models import IPAddressPool, Nas
+from helpers import tableFormat
 import datetime, calendar
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
@@ -202,7 +199,7 @@ class AddSettlementPeriod(QtGui.QDialog):
 
 
 
-class SettlementPeriodChild(QMainWindow):
+class SettlementPeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self):
@@ -217,28 +214,10 @@ class SettlementPeriodChild(QMainWindow):
         self.tableWidget = QtGui.QTableWidget(self.centralwidget)
         self.tableWidget.setGeometry(QtCore.QRect(0,0,821,401))
 
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
-        self.tableWidget.setSizePolicy(sizePolicy)
-        self.tableWidget.setLineWidth(1)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        
         self.setCentralWidget(self.tableWidget)
-        vh = self.tableWidget.verticalHeader()
-        vh.setVisible(False)
-        hh = self.tableWidget.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
-        #hh.setClickable(False)
-        hh.ResizeMode(QtGui.QHeaderView.Stretch)
-        hh.setMovable(True)
+
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,827,21))
@@ -265,7 +244,7 @@ class SettlementPeriodChild(QMainWindow):
 
         self.retranslateUi()
         self.refresh()
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
         self.connect(self.addAction,  QtCore.SIGNAL("triggered()"), self.add_period)
         self.connect(self.delAction,  QtCore.SIGNAL("triggered()"), self.del_period)
@@ -374,112 +353,13 @@ class SettlementPeriodChild(QMainWindow):
             self.addrow(period.id, i,0)
             self.addrow(period.name, i,1)
             self.addrow(period.autostart, i,2)
-            self.addrow(period.time_start, i,3)
+            self.addrow(period.time_start.strftime("%d-%m-%Y %H:%M:%S"), i,3)
             self.addrow(period.length_in, i,4)
             self.addrow(period.length, i,5)
             self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)
-
-
+            self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.rowHeight(10)
-
-    def newFile(self):
-        self.isUntitled = True
-        #self.curFile = self.tr("iplist").arg(MdiChild.sequenceNumber)
-        #MdiChild.sequenceNumber += 1
-        #self.setWindowTitle(self.curFile+"[*]")
-
-    def loadFile(self, fileName):
-        file = QtCore.QFile(fileName)
-        if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                        self.tr("Cannot read file %1:\n%2.")
-                        .arg(fileName)
-                        .arg(file.errorString()))
-            return False
-
-        instr = QtCore.QTextStream(file)
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.setPlainText(instr.readAll())
-        QtGui.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def save(self):
-        if self.isUntitled:
-            return self.saveAs()
-        else:
-            return self.saveFile(self.curFile)
-
-    def saveAs(self):
-        fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("Save As"),
-                        self.curFile)
-        if fileName.isEmpty:
-            return False
-
-        return self.saveFile(fileName)
-
-    def saveFile(self, fileName):
-        file = QtCore.QFile(fileName)
-
-        if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("Cannot write file %1:\n%2.")
-                    .arg(fileName)
-                    .arg(file.errorString()))
-            return False
-
-        outstr = QtCore.QTextStream(file)
-        QtCore.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        outstr << self.toPlainText()
-        QtCore.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def userFriendlyCurrentFile(self):
-        return self.strippedName(self.curFile)
-
-    def currentFile(self):
-        return self.curFile
-
-    def closeEvent(self, event):
-        #if self.maybeSave():
-        #    event.accept()
-        #else:
-        #    event.ignore()
-        pass
-
-    def documentWasModified(self):
-        self.setWindowModified(self.document().isModified())
-
-    def maybeSave(self):
-        if self.document().isModified():
-            ret = QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("'%1' has been modified.\n"\
-                            "Do you want to save your changes?")
-                    .arg(self.userFriendlyCurrentFile()),
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.Default,
-                    QtGui.QMessageBox.No,
-                    QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape)
-            if ret == QtGui.QMessageBox.Yes:
-                return self.save()
-            elif ret == QtGui.QMessageBox.Cancel:
-                return False
-
-        return True
-
-    def setCurrentFile(self, fileName):
-        self.curFile = QtCore.QFileInfo(fileName).canonicalFilePath()
-        self.isUntitled = False
-        self.document().setModified(False)
-        self.setWindowModified(False)
-        self.setWindowTitle(self.userFriendlyCurrentFile() + "[*]")
-
-    def strippedName(self, fullFileName):
-        return QtCore.QFileInfo(fullFileName).fileName()
-
+            
 
