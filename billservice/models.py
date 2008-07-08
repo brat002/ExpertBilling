@@ -691,7 +691,9 @@ class SheduleLog(models.Model):
     account = models.ForeignKey(to=Account, unique=True)
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
+    prepaid_traffic_accrued = models.DateTimeField(blank=True, null=True)
     prepaid_time_reset = models.DateTimeField(blank=True, null=True)
+    prepaid_time_accrued = models.DateTimeField(blank=True, null=True)
 
     class Admin:
         pass
