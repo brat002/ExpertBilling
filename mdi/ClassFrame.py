@@ -2,7 +2,7 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
+
 
 import mdi_rc
 
@@ -14,6 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 from nas.models import TrafficClass, TrafficNode
 from time import mktime
 import datetime, calendar
+from helpers import tableFormat
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -279,10 +280,10 @@ class ClassNodeFrame(QtGui.QDialog):
            self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
            self.src_ip_edit.setText(unicode(self.model.src_ip))
            self.src_mask_edit.setText(unicode(self.model.src_mask))
-           self.src_port_edit.setText(unicode(self.model.src_port))
+           self.src_port_edit.setText(unicode(self.model.src_port or 0))
            self.dst_ip_edit.setText(unicode(self.model.dst_ip))
            self.dst_mask_edit.setText(unicode(self.model.dst_mask))
-           self.dst_port_edit.setText(unicode(self.model.dst_port))
+           self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
            #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
            self.next_hop_edit.setText(unicode(self.model.next_hop))
 
@@ -323,18 +324,16 @@ class ClassNodeFrame(QtGui.QDialog):
         dst_mask = unicode(self.dst_mask_edit.text())
         if dst_mask=='...':
             dst_mask='0.0.0.0'
+
         model.dst_mask = dst_mask
             
         src_port = unicode(self.src_port_edit.text())
-        if src_port=='':
-            src_port=0
-            
-        model.src_port = src_port
+           
+        model.src_port = src_port or 0
         
         dst_port = unicode(self.dst_port_edit.text())
-        if dst_port=='':
-            dst_port=0        
-        model.dst_port = dst_port
+
+        model.dst_port = dst_port or 0
         
         model.next_hop = unicode(self.next_hop_edit.text()) 
 
@@ -342,7 +341,7 @@ class ClassNodeFrame(QtGui.QDialog):
         QtGui.QDialog.accept(self)
 
 
-class ClassChild(QMainWindow):
+class ClassChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self):
@@ -371,46 +370,17 @@ class ClassChild(QMainWindow):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
-        self.listWidget = QListWidget(self.splitter)
+        self.listWidget = QtGui.QListWidget(self.splitter)
         self.listWidget.setMaximumSize(QtCore.QSize(220,16777215))
-        #self.listWidget.setMouseTracking(True)
-        #self.listWidget.setAcceptDrops(True)
-        #self.listWidget.setDragEnabled(True)
-        self.listWidget.setDropIndicatorShown(True)
-        
-        self.listWidget.setDragDropMode(QAbstractItemView.InternalMove)
+
         
         self.listWidget.setFrameShape(QtGui.QFrame.Panel)
         self.listWidget.setFrameShadow(QtGui.QFrame.Sunken)
         self.listWidget.setObjectName("listWidget")
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
-        self.tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.tableWidget.setFrameShadow(QtGui.QFrame.Sunken)
-        self.tableWidget.setLineWidth(1)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        
-        self.tableWidget.setAlternatingRowColors(True)
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
-        
-        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
         self.setCentralWidget(self.splitter)
-        
-        vh = self.tableWidget.verticalHeader()
-        vh.setVisible(False)
-        hh = self.tableWidget.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
-        #hh.setClickable(False)
-        hh.ResizeMode(QtGui.QHeaderView.Stretch)
-        hh.setMovable(True)
-        hh.setMaximumHeight(18)
-        
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,801,21))
@@ -635,7 +605,7 @@ class ClassChild(QMainWindow):
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(clas.name)
             #item.setTextColor(QColor(clas.color))
-            item.setBackgroundColor(QColor(clas.color))
+            item.setBackgroundColor(QtGui.QColor(clas.color))
             self.listWidget.addItem(item)
             
             
@@ -711,20 +681,12 @@ class ClassChild(QMainWindow):
             self.addrow(node.dst_port, i,9)
             self.addrow(node.next_hop, i,10)
             self.tableWidget.setRowHeight(i, 17)
-            #self.tableWidget.setColumnHidden(0, True)
+            self.tableWidget.setColumnHidden(0, True)
 # 
  
             i+=1
-        #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.rowHeight(10)
-
-
-        #child=AddSettlementPeriod(model=model)
-        #child.exec_()
-
-        #self.refresh()
-
-
+        self.tableWidget.resizeColumnsToContents()
+        
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
@@ -741,7 +703,6 @@ class ClassChild(QMainWindow):
             model=None
 
         addf = AddNasFrame(model)
-        #addf.show()
         addf.exec_()
         self.refresh()
 
@@ -751,7 +712,7 @@ class ClassChild(QMainWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
-        #self.tablewidget.setShowGrid(False)
+
 
     def refresh(self):
         self.timeperiod_list_edit.clear()

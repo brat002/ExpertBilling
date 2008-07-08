@@ -10,7 +10,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 
 from radius.models import ActiveSession
 #from nas.models import TrafficClass, TrafficNode
-
+from helpers import tableFormat
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self):
@@ -23,22 +23,7 @@ class MonitorFrame(QtGui.QMainWindow):
 
         self.tableWidget = QtGui.QTableWidget()
         self.tableWidget.setGeometry(QtCore.QRect(0,0,801,541))
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.tableWidget.setFrameShadow(QtGui.QFrame.Sunken)
-        self.tableWidget.setLineWidth(1)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        
-        self.tableWidget.setAlternatingRowColors(True)
-        self.tableWidget.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
-        self.tableWidget.setSelectionBehavior(QtGui.QTableWidget.SelectRows)
-        self.tableWidget.setSelectionMode(QtGui.QTableWidget.SingleSelection)        
-        hh = self.tableWidget.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
+        self.tableWidget = tableFormat(self.tableWidget)
         self.setCentralWidget(self.tableWidget)
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -186,7 +171,7 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.bytes_in, i, 8)
             self.addrow(self.tableWidget, session.session_time, i, 9)
             self.addrow(self.tableWidget, session.session_status, i, 10)
-            self.tableWidget.setRowHeight(i, 17)
+            self.tableWidget.setRowHeight(i, 14)
             i+=1
             
         self.tableWidget.resizeColumnsToContents()

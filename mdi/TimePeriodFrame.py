@@ -2,18 +2,21 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
 
-import mdi_rc
+from helpers import tableFormat
+
 
 sys.path.append('d:/projects/mikrobill/webadmin')
 sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-from django.contrib.auth.models import User
+
 from billservice.models import TimePeriod, TimePeriodNode
+
 from time import mktime
+
 import datetime, calendar
+
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -160,7 +163,7 @@ class AddTimePeriod(QtGui.QDialog):
 
 
 
-class TimePeriodChild(QMainWindow):
+class TimePeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self):
@@ -181,26 +184,9 @@ class TimePeriodChild(QMainWindow):
         self.timeperiod_list_edit.setObjectName("timeperiod_list_edit")
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.tableWidget = tableFormat(self.tableWidget)
         self.setCentralWidget(self.splitter)
         
-        vh = self.tableWidget.verticalHeader()
-        vh.setVisible(False)
-
-        hh = self.tableWidget.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
-        #hh.setClickable(False)
-        hh.ResizeMode(QtGui.QHeaderView.Stretch)
-        #hh.setCascadingSectionResizes(True)
-        hh.setMovable(True)
-        print hh.offset()
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,692,19))
@@ -389,14 +375,11 @@ class TimePeriodChild(QMainWindow):
             self.addrow(node.time_start.strftime("%d-%m-%Y %H:%M:%S"), i,2)
             self.addrow((node.time_start+datetime.timedelta(seconds=node.length)).strftime("%d-%m-%Y %H:%M:%S"), i,3)
             self.addrow(node.repeat_after, i,4)
-            
-            self.tableWidget.setRowHeight(i, 17)
-            #self.tableWidget.setColumnHidden(0, True)
-# 
- 
+            self.tableWidget.setRowHeight(i, 14)
             i+=1
-        #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.rowHeight(10)
+        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.resizeColumnsToContents()
+
 
 
         #child=AddSettlementPeriod(model=model)
@@ -421,7 +404,7 @@ class TimePeriodChild(QMainWindow):
             model=None
 
         addf = AddNasFrame(model)
-        #addf.show()
+        
         addf.exec_()
         self.refresh()
 
@@ -429,7 +412,7 @@ class TimePeriodChild(QMainWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
-        #self.tablewidget.setShowGrid(False)
+        
 
     def refresh(self):
         self.timeperiod_list_edit.clear()
@@ -440,106 +423,6 @@ class TimePeriodChild(QMainWindow):
             item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item.setText(period.name)
             self.timeperiod_list_edit.addItem(item)
-            
         
-
-        
-
-    def newFile(self):
-        self.isUntitled = True
-        #self.curFile = self.tr("iplist").arg(MdiChild.sequenceNumber)
-        #MdiChild.sequenceNumber += 1
-        #self.setWindowTitle(self.curFile+"[*]")
-
-    def loadFile(self, fileName):
-        file = QtCore.QFile(fileName)
-        if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                        self.tr("Cannot read file %1:\n%2.")
-                        .arg(fileName)
-                        .arg(file.errorString()))
-            return False
-
-        instr = QtCore.QTextStream(file)
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.setPlainText(instr.readAll())
-        QtGui.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def save(self):
-        if self.isUntitled:
-            return self.saveAs()
-        else:
-            return self.saveFile(self.curFile)
-
-    def saveAs(self):
-        fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("Save As"),
-                        self.curFile)
-        if fileName.isEmpty:
-            return False
-
-        return self.saveFile(fileName)
-
-    def saveFile(self, fileName):
-        file = QtCore.QFile(fileName)
-
-        if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("Cannot write file %1:\n%2.")
-                    .arg(fileName)
-                    .arg(file.errorString()))
-            return False
-
-        outstr = QtCore.QTextStream(file)
-        QtCore.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        outstr << self.toPlainText()
-        QtCore.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def userFriendlyCurrentFile(self):
-        return self.strippedName(self.curFile)
-
-    def currentFile(self):
-        return self.curFile
-
-    def closeEvent(self, event):
-        #if self.maybeSave():
-        #    event.accept()
-        #else:
-        #    event.ignore()
-        pass
-
-    def documentWasModified(self):
-        self.setWindowModified(self.document().isModified())
-
-    def maybeSave(self):
-        if self.document().isModified():
-            ret = QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("'%1' has been modified.\n"\
-                            "Do you want to save your changes?")
-                    .arg(self.userFriendlyCurrentFile()),
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.Default,
-                    QtGui.QMessageBox.No,
-                    QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape)
-            if ret == QtGui.QMessageBox.Yes:
-                return self.save()
-            elif ret == QtGui.QMessageBox.Cancel:
-                return False
-
-        return True
-
-    def setCurrentFile(self, fileName):
-        self.curFile = QtCore.QFileInfo(fileName).canonicalFilePath()
-        self.isUntitled = False
-        self.document().setModified(False)
-        self.setWindowModified(False)
-        self.setWindowTitle(self.userFriendlyCurrentFile() + "[*]")
-
-    def strippedName(self, fullFileName):
-        return QtCore.QFileInfo(fullFileName).fileName()
 
 

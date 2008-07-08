@@ -5,13 +5,15 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import *
 import Pyro.core
 
-import mdi_rc
+from types import BooleanType
 
 sys.path.append('d:/projects/mikrobill/webadmin')
 sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
+
 from django.contrib.auth.models import User
+
 from billservice.models import Account, AccountTarif,  Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
 from nas.models import IPAddressPool, Nas, TrafficClass
 from django.db import transaction
@@ -19,7 +21,11 @@ from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
 from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
+
 from Reports import TransactionsReport
+
+from helpers import tableFormat
+
 
 class CashType(object):
     def __init__(self, name):
@@ -28,7 +34,7 @@ class CashType(object):
 cash_types = [CashType("AT_START"), CashType("AT_END"), CashType("GRADUAL")]
 
 class CustomWidget(QtGui.QTableWidgetItem):
-    def __init__(self, parent, models):
+    def __init__(self, parent, models, *args, **kwargs):
         super(CustomWidget, self).__init__()
         self.models=models
         label=""
@@ -36,23 +42,6 @@ class CustomWidget(QtGui.QTableWidgetItem):
             label += "%s \n" % model.name
         
         self.setText(label[0:-2])
-        
-#===============================================================================
-# 
-#        labels={}
-#        for x in models:
-#            label = QtGui.QLabel(self)
-#            label.setText(unicode(x.name))
-#            labels[x]=label
-#            
-#        layout = QtGui.QVBoxLayout(self)
-#        for key in labels:
-#            #print key
-#            layout.addWidget(labels[key])
-#        self.setLayout(layout)
-#===============================================================================
-        #self.setGeometry(QtCore.QRect(0,0,100,411))
-        #self.setMinimumHeight(15*len(models))
         
 
 class AddAccountTarif(QtGui.QDialog):
@@ -363,20 +352,10 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table = QtGui.QTableWidget(self.tab_2)
         self.speed_table.setGeometry(QtCore.QRect(9,290,595,239))
         self.speed_table.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
-        self.speed_table.setFrameShape(QtGui.QFrame.Panel)
-        self.speed_table.setFrameShadow(QtGui.QFrame.Sunken)
-        self.speed_table.setAlternatingRowColors(True)
-        self.speed_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.speed_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.speed_table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.speed_table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.speed_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.speed_table.setGridStyle(QtCore.Qt.DotLine)
-        self.speed_table.setSortingEnabled(False)
-        self.speed_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.speed_table.setObjectName("speed_table")
-        self.speed_table.verticalHeader().setHidden(True)
-
+        #-------------
+        self.speed_table = tableFormat(self.speed_table)
+        #-------------
+        
         self.speed_panel = QtGui.QFrame(self.tab_2)
         self.speed_panel.setGeometry(QtCore.QRect(9,260,597,27))
         self.speed_panel.setFrameShape(QtGui.QFrame.Box)
@@ -406,16 +385,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.timeaccess_table = QtGui.QTableWidget(self.tab_3)
         self.timeaccess_table.setGeometry(QtCore.QRect(10,90,595,436))
-        self.timeaccess_table.setFrameShape(QtGui.QFrame.Panel)
-        self.timeaccess_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.timeaccess_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.timeaccess_table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.timeaccess_table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.timeaccess_table.setGridStyle(QtCore.Qt.DotLine)
-        self.timeaccess_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.timeaccess_table.setObjectName("timeaccess_table")
-        self.timeaccess_table.verticalHeader().setHidden(True)
-        self.timeaccess_table.setColumnHidden(0, True)
+        #----------------
+        self.timeaccess_table = tableFormat(self.timeaccess_table)
+        #----------------
 
         self.timeaccess_panel = QtGui.QFrame(self.tab_3)
         self.timeaccess_panel.setGeometry(QtCore.QRect(10,60,596,27))
@@ -446,16 +418,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.trafficcost_tableWidget = QtGui.QTableWidget(self.tab_4)
         self.trafficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
-        self.trafficcost_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.trafficcost_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.trafficcost_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.trafficcost_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.trafficcost_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.trafficcost_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.trafficcost_tableWidget.setObjectName("trafficcost_tableWidget")
-        #self.trafficcost_tableWidget.verticalHeader().setHidden(True)
-        self.trafficcost_tableWidget.setColumnHidden(0, True)
-        self.trafficcost_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        #--------------
+        self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget)
+        #--------------
         
         
         self.trafficcost_label = QtGui.QLabel(self.tab_4)
@@ -481,16 +446,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.prepaid_tableWidget = QtGui.QTableWidget(self.tab_4)
         self.prepaid_tableWidget.setGeometry(QtCore.QRect(10,370,599,121))
-        self.prepaid_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.prepaid_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.prepaid_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.prepaid_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.prepaid_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.prepaid_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.prepaid_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.prepaid_tableWidget.setObjectName("prepaid_tableWidget")
-        self.prepaid_tableWidget.verticalHeader().setHidden(True)
-        self.prepaid_tableWidget.setColumnHidden(0, True)
+        #--------------
+        self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget)
+        #--------------
 
         self.prepaid_traffic_cost_label = QtGui.QLabel(self.tab_4)
         self.prepaid_traffic_cost_label.setGeometry(QtCore.QRect(10,320,203,16))
@@ -521,16 +479,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.onetime_tableWidget = QtGui.QTableWidget(self.tab_6)
         self.onetime_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
-        self.onetime_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.onetime_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.onetime_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.onetime_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.onetime_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.onetime_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.onetime_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.onetime_tableWidget.setObjectName("onetime_tableWidget")
-        self.onetime_tableWidget.verticalHeader().setHidden(True)
-        self.onetime_tableWidget.setColumnHidden(0, True)
+        #--------------
+        self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
+        #--------------
 
 
         self.onetime_panel = QtGui.QFrame(self.tab_6)
@@ -554,16 +505,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.periodical_tableWidget = QtGui.QTableWidget(self.tab_5)
         self.periodical_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
-        self.periodical_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.periodical_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.periodical_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.periodical_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.periodical_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.periodical_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.periodical_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.periodical_tableWidget.setObjectName("periodical_tableWidget")
-        self.periodical_tableWidget.verticalHeader().setHidden(True)
-        self.periodical_tableWidget.setColumnHidden(0, True)
+        #--------------
+        self.periodical_tableWidget = tableFormat(self.periodical_tableWidget)
+        #--------------
 
         self.periodical_panel = QtGui.QFrame(self.tab_5)
         self.periodical_panel.setGeometry(QtCore.QRect(10,10,596,27))
@@ -585,16 +529,9 @@ class TarifFrame(QtGui.QDialog):
 
         self.limit_tableWidget = QtGui.QTableWidget(self.tab_7)
         self.limit_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
-        self.limit_tableWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.limit_tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.limit_tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.limit_tableWidget.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.limit_tableWidget.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        self.limit_tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.limit_tableWidget.setGridStyle(QtCore.Qt.DotLine)
-        self.limit_tableWidget.setObjectName("limit_tableWidget")
-        self.limit_tableWidget.verticalHeader().setHidden(True)
-        self.limit_tableWidget.setColumnHidden(0, True)
+        #--------------------
+        self.limit_tableWidget = tableFormat(self.limit_tableWidget)
+
 
         self.limit_panel = QtGui.QFrame(self.tab_7)
         self.limit_panel.setGeometry(QtCore.QRect(10,10,596,27))
@@ -988,16 +925,22 @@ class TarifFrame(QtGui.QDialog):
     def addrow(self, widget, value, x, y, item_type=None):
         if value==None:
             value=''
+            
         if not item_type:
-            item_type = QtGui.QTableWidgetItem()
-            item_type.setText(unicode(value))
-            widget.setItem(x, y, item_type)
-        
+            item = QtGui.QTableWidgetItem()
+            item.setText(unicode(value))               
+            widget.setItem(x, y, item)
+            
         if item_type=='checkbox':
-            item_type = QtGui.QCheckBox()
-            #widget.setItem(x, y, item_type)
-            item_type.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            widget.setCellWidget(x,y, item_type)
+            item = QtGui.QCheckBox()
+            item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            widget.setCellWidget(x,y, item)
+            
+
+        #if type(value)==BooleanType and value==True:
+        #    item.setIcon(QtGui.QIcon("images/ok.png"))
+        #elif type(value)==BooleanType and value==False:
+        #    item.setIcon(QtGui.QIcon("images/false.png"))
             
     def timeAccessRowEdit(self):
         pass
@@ -1676,7 +1619,6 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
                         self.trafficcost_tableWidget.setItem(i,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_periods))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 8)
-                        #self.trafficcost_tableWidget.setRowHeight(i, len(classes)*25)
                         i+=1
                     self.trafficcost_tableWidget.resizeRowsToContents()
                     self.trafficcost_tableWidget.resizeColumnsToContents()
@@ -2278,14 +2220,9 @@ class AddAccountFrame(QtGui.QDialog):
 
         self.accounttarif_table = QtGui.QTableWidget(self.tab_3)
         self.accounttarif_table.setGeometry(QtCore.QRect(0,90,411,291))
-        vh = self.accounttarif_table.verticalHeader()
-        vh.setVisible(False)
+        self.accounttarif_table = tableFormat(self.accounttarif_table)
 
-        hh = self.accounttarif_table.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
-        hh.setClickable(False)
-        hh.ResizeMode(QtGui.QHeaderView.Stretch)
+
 
 
 
@@ -2479,7 +2416,7 @@ class AddAccountFrame(QtGui.QDialog):
         понаставить проверок
         """
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
-
+        
         if self.model:
 
             model=self.model
@@ -2541,8 +2478,8 @@ class AddAccountFrame(QtGui.QDialog):
 
         model.nas = Nas.objects.get(name=str(self.nas_edit.currentText()))
 
-        model.ballance = unicode(self.ballance_edit.text())
-        model.credit = unicode(self.credit_edit.text())
+        model.ballance = unicode(self.ballance_edit.text()) or 0
+        model.credit = unicode(self.credit_edit.text()) or 0
 
         model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == 2
         model.assign_vpn_ip_from_dhcp = self.assign_vpn_ip_from_dhcp_edit.checkState() == 2
@@ -2550,7 +2487,7 @@ class AddAccountFrame(QtGui.QDialog):
         model.status = self.status_edit.checkState() == 2
 
         try:
-            model.save()
+            self.model=model.save()
             transaction.commit()
         except Exception, e:
             transaction.rollback()
@@ -2576,6 +2513,12 @@ class AddAccountFrame(QtGui.QDialog):
         nasses = Nas.objects.all()
         for nas in nasses:
             self.nas_edit.addItem(nas.name)
+        
+        if not self.model:
+            self.add_accounttarif_toolButton.setDisabled(True)
+            self.del_accounttarif_toolButton.setDisabled(True)
+            self.ballance_edit.setText(u"0")
+            self.credit_edit.setText(u"0")
 
         if self.model:
             self.username_edit.setText(unicode(self.model.username))
@@ -2624,8 +2567,6 @@ class AddAccountFrame(QtGui.QDialog):
             #self.tabWidget.resizeColumnsToContents()
 
 
-    def save(self):
-        print 'Saved'
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
@@ -2664,30 +2605,10 @@ class AccountsMdiChild(QMainWindow):
         self.tableWidget = QTableWidget(self.splitter)
 
         self.tableWidget.setAlternatingRowColors(True)
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
-        self.tableWidget.setSelectionMode(QTableWidget.SingleSelection)
+        self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        
-
-        
-
-        
-        #self.tablewidget.setSortingEnabled(True)
-        vh = self.tableWidget.verticalHeader()
-        vh.setVisible(False)
-
-        hh = self.tableWidget.horizontalHeader()
-        hh.setStretchLastSection(True)
-        hh.setHighlightSections(False)
-        #hh.setClickable(False)
-        hh.ResizeMode(QtGui.QHeaderView.Stretch)
-        #hh.setCascadingSectionResizes(True)
-        hh.setMovable(False)
-        #hh.setOffset(200)
-
-
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u""]
+  
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u"Дата создания", u""]
         
         self.tableWidget.setColumnCount(len(columns))
         self.tableWidget.setHorizontalHeaderLabels(columns)
@@ -2778,17 +2699,6 @@ class AccountsMdiChild(QMainWindow):
     def retranslateUi(self):
         self.tarif_treeWidget.clear()
 
-#===============================================================================
-#        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-#        item.setText(0,QtGui.QApplication.translate("MainWindow", "Анлим 20", None, QtGui.QApplication.UnicodeUTF8))
-# 
-#        item1 = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-#        item1.setText(0,QtGui.QApplication.translate("MainWindow", "Анлим 15", None, QtGui.QApplication.UnicodeUTF8))
-# 
-#        item2 = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-#        item2.setText(0,QtGui.QApplication.translate("MainWindow", "Траффик 60", None, QtGui.QApplication.UnicodeUTF8))
-#===============================================================================
-
     def addTarif(self):
         tarifframe = TarifFrame()
         tarifframe.exec_()
@@ -2804,17 +2714,20 @@ class AccountsMdiChild(QMainWindow):
         tarifframe = TarifFrame(model=model)
         self.parent.workspace.addWindow(tarifframe)
         tarifframe.show()
-        print 123
+        
         self.refresh()
         #print num
 
     def addframe(self):
-
-        model = None
-        addf = AddAccountFrame(model)
-        #addf.show()
-        addf.exec_()
-        self.refresh()
+        tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
+        child = AddAccountFrame()
+        
+        if child.exec_()==1:
+            a=AccountTarif.objects.create(account=child.model, tarif=tarif, datetime=datetime.datetime.now())
+            a.save()
+            print tarif, child.model, a
+            
+            self.refresh()
 
     def makeTransation(self):
         account = Account.objects.get(id = self.getSelectedId())
@@ -2876,7 +2789,13 @@ class AccountsMdiChild(QMainWindow):
         
         if not enabled:
             headerItem.setTextColor(QColor('#FF0100'))
-
+        
+        if type(value)==BooleanType and value==True:
+            headerItem.setIcon(QtGui.QIcon("images/ok.png"))
+        elif type(value)==BooleanType and value==False:
+            headerItem.setIcon(QtGui.QIcon("images/false.png"))
+            
+        
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
@@ -2892,21 +2811,22 @@ class AccountsMdiChild(QMainWindow):
             
     def refresh(self, item=None, k=''):
         print item
-        #if item:
-        #    tarif = Tariff.objects.get(name=unicode(item.text(0)))
-        #else:
-        tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
-        print tarif.id
-        #accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
-        accounts=Account.objects.all()
+        if item:
+            tarif = Tariff.objects.get(name=unicode(item.text(0)))
+        else:
+            tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
+        
+        #accounttarifs=AccountTarif.objects.filter(tarif=tarif, datetime__lte=datetime.datetime.now()).order_by("-datetime")
+        #print tarif.id
+        accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
+        accounts=Account.objects.all().order_by("id")
         self.tableWidget.setRowCount(accounts.count())
         
-        #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
+        
         i=0
         for a in accounts:
             
             self.addrow(a.id, i,0, enabled=a.status)
-            #self.addrow(a.user, i,1)
             self.addrow(a.username, i,1, enabled=a.status)
             self.addrow(a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(a.credit, i,3, enabled=a.status)
@@ -2917,13 +2837,15 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.suspended, i,9, enabled=a.status)
             self.addrow(a.status, i,10, enabled=a.status)
+            self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
+            
             self.tableWidget.setRowHeight(i, 14)
             self.tableWidget.setColumnHidden(0, True)
             if self.selected_account:
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
             i+=1
-        #self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.resizeColumnsToContents()
 
     def accountDisable(self):
         id=self.getSelectedId()
@@ -2962,94 +2884,4 @@ class AccountsMdiChild(QMainWindow):
         else:
             QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
-
-    def loadFile(self, fileName):
-        file = QtCore.QFile(fileName)
-        if not file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                        self.tr("Cannot read file %1:\n%2.")
-                        .arg(fileName)
-                        .arg(file.errorString()))
-            return False
-
-        instr = QtCore.QTextStream(file)
-        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.setPlainText(instr.readAll())
-        QtGui.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def save(self):
-        if self.isUntitled:
-            return self.saveAs()
-        else:
-            return self.saveFile(self.curFile)
-
-    def saveAs(self):
-        fileName = QtGui.QFileDialog.getSaveFileName(self, self.tr("Save As"),
-                        self.curFile)
-        if fileName.isEmpty:
-            return False
-
-        return self.saveFile(fileName)
-
-    def saveFile(self, fileName):
-        file = QtCore.QFile(fileName)
-
-        if not file.open(QtCore.QFile.WriteOnly | QtCore.QFile.Text):
-            QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("Cannot write file %1:\n%2.")
-                    .arg(fileName)
-                    .arg(file.errorString()))
-            return False
-
-        outstr = QtCore.QTextStream(file)
-        QtCore.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        outstr << self.toPlainText()
-        QtCore.QApplication.restoreOverrideCursor()
-
-        self.setCurrentFile(fileName)
-        return True
-
-    def userFriendlyCurrentFile(self):
-        return self.strippedName(self.curFile)
-
-    def currentFile(self):
-        return self.curFile
-
-    def closeEvent(self, event):
-        if self.maybeSave():
-            event.accept()
-        else:
-            event.ignore()
-
-    def documentWasModified(self):
-        self.setWindowModified(self.document().isModified())
-
-    def maybeSave(self):
-        if self.document().isModified():
-            ret = QtGui.QMessageBox.warning(self, self.tr("MDI"),
-                    self.tr("'%1' has been modified.\n"\
-                            "Do you want to save your changes?")
-                    .arg(self.userFriendlyCurrentFile()),
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.Default,
-                    QtGui.QMessageBox.No,
-                    QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape)
-            if ret == QtGui.QMessageBox.Yes:
-                return self.save()
-            elif ret == QtGui.QMessageBox.Cancel:
-                return False
-
-        return True
-
-    def setCurrentFile(self, fileName):
-        self.curFile = QtCore.QFileInfo(fileName).canonicalFilePath()
-        self.isUntitled = False
-        self.document().setModified(False)
-        self.setWindowModified(False)
-        self.setWindowTitle(self.userFriendlyCurrentFile() + "[*]")
-
-    def strippedName(self, fullFileName):
-        return QtCore.QFileInfo(fullFileName).fileName()
 
