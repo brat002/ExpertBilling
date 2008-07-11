@@ -7,9 +7,10 @@ from threading import Thread
 import threading
 from db import get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 import Pyro.core
-
+import mdi.orm.models as models
 import settings
 import psycopg2
+import psycopg2.extras
 from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
@@ -22,6 +23,7 @@ pool = PooledDB(
                                                             settings.DATABASE_HOST,
                                                             settings.DATABASE_PASSWORD)
 )
+
 
 
 class check_vpn_access(Thread):
@@ -782,7 +784,6 @@ class NetFlowAggregate(Thread):
             """
             Берём строку, ищем пользователя, у которого адрес совпадает или с dst или с src.
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
-
             """
 
             for stream in raw_streams:
@@ -794,7 +795,7 @@ class NetFlowAggregate(Thread):
 
                 if traffic_transmit_service:
 
-                #Выбираем временыне интервалы из услуги по трафику
+                #Выбираем временные интервалы из услуги по трафику
                     cur.execute(
                     """
                     SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
@@ -861,7 +862,7 @@ class NetFlowAggregate(Thread):
                     UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
                     """ % nf_id
                     )
-            connection.commit()
+                connection.commit()
             cur.close()
             connection.close()
             time.sleep(60)
@@ -1651,12 +1652,43 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         return True
         
-    def get_cursor(self):
+    def get_object(self, name):
+        try:
+            model = models.__getattribute__(name)()
+        except:
+            return None
+
+
+        return model
+    
+    def get(self, obj, action, *args,**kwargs):
+        #try:
         connection = pool.connection()
         cur = connection.cursor()
-        return [1,2,3]
-             
-print 123
+        print obj.__getattribute__(action)(**kwargs)
+        sql=obj.__getattribute__(action)(**kwargs)
+        cur.execute(sql[0])
+        connection.commit()
+        if sql[1]:
+            result=cur.fetchall()
+            return obj.parse(result=result)
+        
+        #except Exception, e:
+        #    print e
+        #    return False
+        
+        
+    def sql(self, sql, return_response=True):
+        connection = pool.connection()
+        print dir(connection)
+        cur = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)        
+        cur.execute(sql)
+        if return_response:
+            return cur.fetchone()
+        return
+        
+
+
 
 
 

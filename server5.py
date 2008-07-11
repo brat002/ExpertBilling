@@ -20,12 +20,13 @@ def RefreshClasses():
     cur.execute("SELECT id, name, weight, store FROM nas_trafficclass ORDER BY weight DESC;")
     traffic_classes=cur.fetchall()
     for traffic_class in traffic_classes:
+        #ORDER BY tn.direction DESC - для того, чтобы сравнение начиналось с нод, описывающих транзитное направление.
         cur.execute(
         """
         SELECT tn.name, tn.direction, tn.protocol, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
         tn.next_hop
         FROM nas_trafficnode as tn
-        WHERE tn.traffic_class_id=%s
+        WHERE tn.traffic_class_id=%s ORDER BY tn.direction DESC
         """ % traffic_class[0]
         )
         traffic_nodes=cur.fetchall()
@@ -34,6 +35,9 @@ def RefreshClasses():
     return trafficclasses_pool
 
 class TrafficNode(object):
+    """
+    В src или dst не должны попадать строки статистики, которые описаны как транзитные
+    """
     def __init__(self, node_data):
         self.name, \
         self.direction, \
