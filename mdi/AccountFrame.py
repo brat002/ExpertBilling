@@ -107,6 +107,7 @@ class AddAccountTarif(QtGui.QDialog):
             self.model.save()
         else:
             model=AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+            model.save()
 
         QDialog.accept(self)
 

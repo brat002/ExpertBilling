@@ -253,7 +253,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         if repeat_after_seconds>0:
             #print 1
             delta_days=now - time_start
-            length=repeat_after
+            length=repeat_after_seconds
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
