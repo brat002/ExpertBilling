@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from billservice.models import SettlementPeriod
 from helpers import tableFormat
 import datetime, calendar
+from helpers import Object as Object
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -20,9 +21,10 @@ NAS_LIST=(
                 )
 
 class AddSettlementPeriod(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection,model=None):
         super(AddSettlementPeriod, self).__init__()
         self.model=model
+        self.connection=connection
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()).expandedTo(self.minimumSizeHint()))
@@ -138,7 +140,7 @@ class AddSettlementPeriod(QtGui.QDialog):
             model=self.model
         else:
             print 'New sp'
-            model=SettlementPeriod()
+            model=Object()
 
         if unicode(self.name_edit.text())==u"":
             QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано название"))
@@ -161,14 +163,14 @@ class AddSettlementPeriod(QtGui.QDialog):
         model.time_start=self.datetime_edit.dateTime().toPyDateTime()
 
         try:
-            model.save()
+            self.connection.create(model.save("billservice_settlementperiod"))
         except Exception, e:
             print e
             return
 
 
 
-        QDialog.accept(self)
+        QtGui.QDialog.accept(self)
 
     def fixtures(self):
         now=datetime.datetime.now()
@@ -202,9 +204,9 @@ class AddSettlementPeriod(QtGui.QDialog):
 class SettlementPeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self):
+    def __init__(self, connection):
         super(SettlementPeriodChild, self).__init__()
-
+        self.connection=connection
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,827,476).size()).expandedTo(self.minimumSizeHint()))
 
@@ -289,19 +291,15 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
 
     def add_period(self):
-        child=AddSettlementPeriod()
+        child=AddSettlementPeriod(connection=self.connection)
         child.exec_()
         self.refresh()
 
     def del_period(self):
         id=self.getSelectedId()
-        try:
-            model=SettlementPeriod.objects.get(id=id)
-        except:
-            return
 
-        if id>0 and QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            model.delete()
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_settlementperiod WHERE id=%d" % id)
 
         self.refresh()
 
@@ -309,12 +307,12 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def edit_period(self):
         id=self.getSelectedId()
         try:
-            model=SettlementPeriod.objects.get(id=id)
+            model=self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" %id)
         except:
             return
 
 
-        child=AddSettlementPeriod(model=model)
+        child=AddSettlementPeriod(connection=self.connection, model=model)
         child.exec_()
 
         self.refresh()
@@ -323,19 +321,6 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
-    def editframe(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-        try:
-            model=Nas.objects.get(id=self.getSelectedId())
-        except:
-            model=None
-
-        addf = AddNasFrame(model)
-        #addf.show()
-        addf.exec_()
-        self.refresh()
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
@@ -345,8 +330,10 @@ class SettlementPeriodChild(QtGui.QMainWindow):
 
     def refresh(self):
 
-        periods=SettlementPeriod.objects.all().order_by('id')
-        self.tableWidget.setRowCount(periods.count())
+        #periods=SettlementPeriod.objects.all().order_by('id')
+        periods=self.connection.sql("SELECT * FROM billservice_settlementperiod ORDER BY id")
+        #self.tableWidget.setRowCount(periods.count())
+        self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
         for period in periods:
