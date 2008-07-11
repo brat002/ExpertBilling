@@ -3,9 +3,6 @@
 import os, sys
 from PyQt4 import QtCore, QtGui
 
-
-
-
 sys.path.append('d:/projects/mikrobill/webadmin')
 sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
@@ -14,7 +11,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 
 from helpers import tableFormat
 from nas.models import IPAddressPool, Nas
-
+from helpers import Object as Object
+   
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -24,9 +22,10 @@ NAS_LIST=(
                 )
 
 class AddNasFrame(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection, model=None):
         super(AddNasFrame, self).__init__()
-        self.model=model
+        self.model = model
+        self.connection = connection
 
 
         #self.setObjectName("self")
@@ -236,14 +235,9 @@ class AddNasFrame(QtGui.QDialog):
         #QtCore.QMetaObject.connectSlotsByName(self)
 
     def testNAS(self):
-        import Pyro.core
-
-        # you have to change the URI below to match your own host/port.
-        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
-
-        if not connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
+        if not self.connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
             QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
-        print connection.get_cursor()
+        
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование", None, QtGui.QApplication.UnicodeUTF8))
@@ -286,7 +280,7 @@ class AddNasFrame(QtGui.QDialog):
             model=self.model
         else:
             print 'New nas'
-            model=Nas()
+            model=Object()
 
         if unicode(self.nas_name_edit.text())==u"":
             QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан идентификатор сервера доступа"))
@@ -319,21 +313,19 @@ class AddNasFrame(QtGui.QDialog):
         model.allow_pppoe = self.pppoe_edit.checkState()==2
         model.allow_ipn = self.ipn_edit.checkState()==2
 
-        model.user_add_action= unicode(self.user_add_edit.toPlainText())
-        model.user_delete_action= unicode(self.user_remove_edit.toPlainText())
-        model.user_enable_action= unicode(self.user_enable_edit.toPlainText())
-        model.user_disable_action= unicode(self.user_disable_edit.toPlainText())
+        model.user_add_action= unicode(self.user_add_edit.toPlainText() or "")
+        model.user_delete_action= unicode(self.user_remove_edit.toPlainText() or "")
+        model.user_enable_action= unicode(self.user_enable_edit.toPlainText() or "")
+        model.user_disable_action= unicode(self.user_disable_edit.toPlainText() or "")
 
+        
 
-        try:
-            model.save()
-        except Exception, e:
-            print e
-            return
+        print self.connection.create(model.save(table="nas_nas"))
 
 
 
-        QDialog.accept(self)
+
+        QtGui.QDialog.accept(self)
 
     def fixtures(self):
 
@@ -369,9 +361,10 @@ class AddNasFrame(QtGui.QDialog):
 class NasMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self):
+    def __init__(self, connection):
         super(NasMdiChild, self).__init__()
-
+        #global connection
+        self.connection=connection
         #MainWindow.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,300,300).size()).expandedTo(self.minimumSizeHint()))
 
@@ -445,7 +438,7 @@ class NasMdiChild(QtGui.QMainWindow):
     def addframe(self):
 
         model=None
-        addf = AddNasFrame(model)
+        addf = AddNasFrame(connection=self.connection, model=model)
         #addf.show()
         addf.exec_()
         self.refresh()
@@ -455,15 +448,12 @@ class NasMdiChild(QtGui.QMainWindow):
         if id==0:
             return
         try:
-            model=Nas.objects.get(id=self.getSelectedId())
+            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
         except:
             return
         import Pyro.core
 
-        # you have to change the URI below to match your own host/port.
-        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
-
-        if connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
+        if self.connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
             QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
         else:
             QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
@@ -474,26 +464,21 @@ class NasMdiChild(QtGui.QMainWindow):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
     def delete(self):
-        id=self.getSelectedId()
-        if id>0 and QMessageBox.question(self, u"Удалить сервер доступа?" , u"Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. Вы уверены, что хотите это сделать?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u"Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. Вы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                model=Nas.objects.get(id=self.getSelectedId())
-                model.delete()
+                self.connection.delete("DELETE FROM nas_nas WHERE id=%d" % self.getSelectedId())
             except Exception, e:
                 print e
         self.refresh()
 
 
     def editframe(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
         try:
-            model=Nas.objects.get(id=self.getSelectedId())
+            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
         except:
             model=None
 
-        addf = AddNasFrame(model)
+        addf = AddNasFrame(connection=self.connection, model=model)
         #addf.show()
         addf.exec_()
         self.refresh()
@@ -506,8 +491,10 @@ class NasMdiChild(QtGui.QMainWindow):
 
     def refresh(self):
 
-        nasses=Nas.objects.all().order_by('id')
-        self.tableWidget.setRowCount(nasses.count())
+        #nasses=Nas.objects.all().order_by('id')
+        nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
+        #self.tableWidget.setRowCount(nasses.count())
+        self.tableWidget.setRowCount(len(nasses))
         i=0
         for nas in nasses:
             self.addrow(nas.id, i,0)

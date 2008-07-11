@@ -11,7 +11,10 @@ import mdi.orm.models as models
 import settings
 import psycopg2
 import psycopg2.extras
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+
 from DBUtils.PooledDB import PooledDB
+#from mdi.helpers import Object as Object
 
 pool = PooledDB(
      mincached=1,
@@ -24,6 +27,24 @@ pool = PooledDB(
                                                             settings.DATABASE_PASSWORD)
 )
 
+class Object(object):
+    def __init__(self, result=[]):
+        #self.result=result
+        for key in result:
+            setattr(self, key, result[key])
+            
+    def save(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                fields.append(field)
+        try:
+            self.__dict__['id']
+            sql="UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, self.__dict__[x]) for x in fields ]), self.__dict__['id'])
+        except:
+            sql="INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([str(self.__dict__[x]) for x in fields ]))
+        #print sql
+        return sql
 
 
 class check_vpn_access(Thread):
@@ -1610,7 +1631,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def __init__ (self):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
-        
+        self.connection = pool.connection()
+        print dir(self.connection)
+        self.connection._con._con.set_client_encoding('UTF8')
+        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)        
+
     def run(self):
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
@@ -1661,33 +1686,42 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         return model
     
-    def get(self, obj, action, *args,**kwargs):
-        #try:
-        connection = pool.connection()
-        cur = connection.cursor()
-        print obj.__getattribute__(action)(**kwargs)
-        sql=obj.__getattribute__(action)(**kwargs)
-        cur.execute(sql[0])
-        connection.commit()
-        if sql[1]:
-            result=cur.fetchall()
-            return obj.parse(result=result)
+    def get(self, sql):
+        self.cur.execute(sql)
+        self.connection.commit()
+        result=[]
+        r=self.cur.fetchall()
+        if len(r)>1:
+            raise Exception
         
-        #except Exception, e:
-        #    print e
-        #    return False
+        if r==[]:
+             return None
+        return Object(r[0])
+        
+    def delete(self, sql):
+   
+        self.cur.execute(sql)
+        self.connection.commit()
+        return 
         
         
     def sql(self, sql, return_response=True):
-        connection = pool.connection()
-        print dir(connection)
-        cur = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)        
-        cur.execute(sql)
+      
+        self.cur.execute(sql)
+        self.connection.commit()
+        result=[]
         if return_response:
-            return cur.fetchone()
-        return
+            for r in self.cur.fetchall():
+                result.append(Object(r))
+                
+        return result
         
-
+    def create(self, sql):
+    
+        self.cur.execute(sql)
+        self.connection.commit()
+               
+        return True
 
 
 
@@ -1701,23 +1735,23 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    threads.append(check_vpn_access(timeout=60, dict=dict))
+    #threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    threads.append(periodical_service_bill())
+    #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
+    #threads.append(NetFlowAggregate())
+    #threads.append(NetFlowBill())
 
-    threads.append(limit_checker())
-
-
-    threads.append(ipn_service())
+    #threads.append(limit_checker())
 
 
-    threads.append(settlement_period_service_dog())
+    #threads.append(ipn_service())
+
+
+    #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
     for th in threads:

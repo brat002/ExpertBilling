@@ -26,6 +26,10 @@
 import sys
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import *
+from helpers import Object
+import Pyro.core
+
+connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
 
 
 
@@ -41,6 +45,9 @@ sys.path.append('k:/mikrobill/current/webadmin')
 sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 sys.path.append('d:/projects/mikrobill/webadmin')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
+
+    
+
 from django.contrib.auth.models import User
 from billservice.models import Account
 from nas.models import IPAddressPool
@@ -94,14 +101,14 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def open(self):
-        child = NasMdiChild()
+        child = NasMdiChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
         return child
 
 
     def save(self):
-        child=SettlementPeriodChild()
+        child=SettlementPeriodChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 

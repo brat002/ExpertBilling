@@ -1,4 +1,7 @@
-from PyQt4 import QtGui        
+#-*-encoding:utf-8-*-
+
+from PyQt4 import QtGui     
+from types import InstanceType   
 def tableFormat(table):        
     table.setFrameShape(QtGui.QFrame.Panel)
     table.setFrameShadow(QtGui.QFrame.Sunken)
@@ -21,5 +24,24 @@ def tableFormat(table):
     hh.ResizeMode(QtGui.QHeaderView.Stretch)
     return table
 
+class Object(object):
+    def __init__(self, result=[]):
+        for key in result:
+            setattr(self, key, result[key])
+            
+    def save(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType and self.__dict__[field]!=None:
+                fields.append(field)
+        try:
+            self.__dict__['id']
+            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
+        except:
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]))
 
-        
+        return sql
+    
+
+    
+    
