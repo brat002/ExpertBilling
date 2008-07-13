@@ -2889,8 +2889,8 @@ WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
         except:
             return
 
-        if self.connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'disable', model.id):
-            QtGui.QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
+        if self.connection.accountActions(str(model.nas_ipaddress), str(model.nas_login), str(model.nas_password), 'disable', model.id):
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
@@ -2908,8 +2908,8 @@ WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
         except:
             return
 
-        if self.connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'enable', model.id):
-            QtGui.QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
+        if self.connection.accountActions(str(model.nas_ipaddress), str(model.nas_login), str(model.nas_password), 'enable', model.id):
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 

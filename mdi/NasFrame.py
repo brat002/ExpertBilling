@@ -229,7 +229,9 @@ class AddNasFrame(QtGui.QDialog):
 
     def testNAS(self):
         if not self.connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
+        else:
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok"))
         
 
     def retranslateUi(self):

@@ -1656,7 +1656,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def configureNAS(self, host, login, password, configuration):
         try:
             a=SSHClient(host, 22,login, password)
-            a.send_command(configuration)
+            print a.send_command(configuration)
             a.close()
         except Exception, e:
             print e
@@ -1670,7 +1670,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             command = '/ip firewall address-list set [find comment="%s"] disabled=no' % account_id
         try:
             a=SSHClient(host, 22,login, password)
-            a.send_command(command)
+            print a.send_command(command)
             a.close()
         except Exception, e:
             print e
