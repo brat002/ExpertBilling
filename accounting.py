@@ -1687,6 +1687,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return model
     
     def get(self, sql):
+        print sql
         self.cur.execute(sql)
         self.connection.commit()
         result=[]
@@ -1706,7 +1707,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         
     def sql(self, sql, return_response=True):
-      
+        print sql
         self.cur.execute(sql)
         self.connection.commit()
         result=[]
@@ -1717,11 +1718,17 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
         
     def create(self, sql):
-    
+        print sql
         self.cur.execute(sql)
+        id=True
+        #print self.cur.fetchone()
+        try:
+            id = self.cur.fetchone()['id']
+        except:
+            pass
         self.connection.commit()
                
-        return True
+        return id
 
 
 

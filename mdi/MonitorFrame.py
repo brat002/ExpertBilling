@@ -1,21 +1,15 @@
 #-*-coding=utf-8-*-
 
-import os, sys
 from PyQt4 import QtCore, QtGui
 
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-from radius.models import ActiveSession
 #from nas.models import TrafficClass, TrafficNode
 from helpers import tableFormat
+from helpers import Object as Object
 
 class MonitorFrame(QtGui.QMainWindow):
-    def __init__(self):
+    def __init__(self, connection):
         super(MonitorFrame, self).__init__()
-        
+        self.connection = connection
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
 
@@ -151,20 +145,28 @@ class MonitorFrame(QtGui.QMainWindow):
         self.tableWidget.clearContents()
         
         if self.allTimeCheckbox.checkState()==2:
-            sessions = ActiveSession.objects.all()
+            sessions = self.connection.sql("""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
+                                              JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
+                                              JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
+                                
+                                             """)
         elif self.allTimeCheckbox.checkState()==0:
-            sessions = ActiveSession.objects.filter(session_status="ACTIVE")
+            sessions = self.connection.sql("""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
+                                              JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
+                                              JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
+                                              WHERE radius_activesession.session_status='ACTIVE'"""
+                                              )
         i=0
 
         
-        self.tableWidget.setRowCount(sessions.count())
+        self.tableWidget.setRowCount(len(sessions))
         
         for session in sessions:
             print i
             self.addrow(self.tableWidget, session.id, i, 0)
-            self.addrow(self.tableWidget, session.account.username, i, 1)
+            self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
-            self.addrow(self.tableWidget, session.nas_id, i, 3)
+            self.addrow(self.tableWidget, session.nas_name, i, 3)
             self.addrow(self.tableWidget, session.framed_protocol, i, 4)
             self.addrow(self.tableWidget, session.date_start.strftime("%Y-%m-%d %H:%M:%S"), i, 6)
             self.addrow(self.tableWidget, session.bytes_out, i, 7)

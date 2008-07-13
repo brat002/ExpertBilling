@@ -1,35 +1,16 @@
 #-*-coding=utf-8-*-
 
-import os, sys
+
 from PyQt4 import QtCore, QtGui
-
-
-import mdi_rc
-
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-from nas.models import TrafficClass, TrafficNode
-from time import mktime
-import datetime, calendar
 from helpers import tableFormat
-NAS_LIST=(
-                (u'mikrotik2.8', u'MikroTik 2.8'),
-                (u'mikrotik2.9',u'MikroTik 2.9'),
-                (u'mikrotik3',u'Mikrotik 3'),
-                (u'common_radius',u'Общий RADIUS интерфейс'),
-                (u'common_ssh',u'common_ssh'),
-                )
-
+from helpers import Object as Object
 
 class ClassEdit(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection, model=None):
         super(ClassEdit, self).__init__()
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()).expandedTo(self.minimumSizeHint()))
-        
+        self.connection = connection
         self.model=model
         self.color=''
 
@@ -92,13 +73,34 @@ class ClassEdit(QtGui.QDialog):
             
             #self.store_editself.pptp_edit.checkState()==2
         
+    def accept(self):
+        if self.model:
+            model=self.model
+        else:
+            print 'New class'
+            model=Object()
+            try:
+                maxweight = self.connection.get("SELECT MAX(weight) as weight FROM nas_trafficclass;").weight+1
+            except Exception, e:
+                maxweight = 0
+            model.weight = maxweight
             
+        model.name=unicode(self.name_edit.text())
+            
+        model.color=self.color
+           
+        model.store=self.store_edit.checkState()==2
+        #model.save()
+        self.connection.create(model.save("nas_trafficclass"))
+        QtGui.QDialog.accept(self)
         
 
 class ClassNodeFrame(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection, model=None):
         super(ClassNodeFrame, self).__init__()
         self.model=model
+        self.connection = connection
+        
         self.protocols={'':0,
            'ddp':37,
            'encap':98, 
@@ -298,7 +300,7 @@ class ClassNodeFrame(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = TrafficNode()
+            model = Object()
             
         model.name = unicode(self.name_edit.text())
         model.direction = unicode(self.direction_edit.currentText())
@@ -336,7 +338,7 @@ class ClassNodeFrame(QtGui.QDialog):
         model.dst_port = dst_port or 0
         
         model.next_hop = unicode(self.next_hop_edit.text()) 
-
+        
         self.model=model
         QtGui.QDialog.accept(self)
 
@@ -344,8 +346,9 @@ class ClassNodeFrame(QtGui.QDialog):
 class ClassChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self):
+    def __init__(self, connection):
         super(ClassChild, self).__init__()
+        self.connection = connection
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,801,597).size()).expandedTo(self.minimumSizeHint()))
 
@@ -503,51 +506,31 @@ class ClassChild(QtGui.QMainWindow):
 
     def addClass(self):
         #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),Dialog.accept)
-        child=ClassEdit()
+        child=ClassEdit(connection=self.connection)
         if child.exec_()==1:
-            try:
-                clc=TrafficClass.objects.all().order_by("-weight")[0]
-                max_weight=clc.weight
-            except:
-                max_weight=0
-            
-            print "color=", child.color
-            TrafficClass.objects.create(name=unicode(child.name_edit.text()), weight=max_weight+1, color=unicode(child.color), store=child.store_edit.checkState()==2)
-            
-        self.refresh_list()
+            self.refresh_list()
         
     
     def editClass(self):
         name=self.getSelectedName()
         try:
-            model=TrafficClass.objects.get(name=unicode(name))
-        except:
-            return
+            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+        except Exception, e:
+            print e
         
-        child=ClassEdit(model=model)
+        child=ClassEdit(connection=self.connection, model=model)
         
         if child.exec_()==1:
-            model.name=unicode(child.name_edit.text())
-            
-            model.color=child.color
-            
-            model.store=child.store_edit.checkState()==2
-            model.save()
-            
-            
-        self.refresh_list()
+            self.refresh_list()
             
     def delClass(self):
         name=self.getSelectedName()
-        try:
-            model=TrafficClass.objects.get(name=unicode(name))
-        except:
-            return
+        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
+            self.connection.delete("DELETE FROM nas_trafficclass WHERE id=%d" % model.id)
 
-        if id>0 and QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            model.delete()
-
-        self.refresh_list()
+            self.refresh_list()
         
         
     def savePosition(self, direction):
@@ -558,24 +541,24 @@ class ClassChild(QtGui.QMainWindow):
             item_swap_name = unicode(self.listWidget.item(self.listWidget.currentRow()-1).text())
             
         
-        model1 = TrafficClass.objects.get(name = item_changed_name)
-        model2 = TrafficClass.objects.get(name = item_swap_name)
+        model1 = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % item_changed_name)
+        model2 = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % item_swap_name)
         a=model1.weight+0
         b=model2.weight+0
         
         model1.weight=1000001
-        model1.save()
+        self.connection.create(model1.save("nas_trafficclass"))
         
         model2.weight=a
         model1.weight=b
         
-        model2.save()
+        self.connection.create(model2.save("nas_trafficclass"))
         
-        model1.save()
+        self.connection.create(model1.save("nas_trafficclass"))
         
-        model2.save()
+        self.connection.create(model2.save("nas_trafficclass"))
         
-        print model1.weight, model2.weight
+        #print model1.weight, model2.weight
             
 
     
@@ -599,7 +582,8 @@ class ClassChild(QtGui.QMainWindow):
     def refresh_list(self):
         self.listWidget.clear()
 
-        classes=TrafficClass.objects.all().order_by('-weight')
+        #classes=TrafficClass.objects.all().order_by('-weight')
+        classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC")
         
         for clas in classes:
             item = QtGui.QListWidgetItem(self.listWidget)
@@ -619,38 +603,34 @@ class ClassChild(QtGui.QMainWindow):
     def addNode(self):
         name=self.getSelectedName()
         try:
-            model=TrafficClass.objects.get(name=unicode(name))
-        except:
-            return
+            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+        except Exception, e:
+            print e
 
-        child=ClassNodeFrame()
+        child=ClassNodeFrame(connection = self.connection)
         if child.exec_()==1:
-            child.model.traffic_class=model
-            child.model.save()
+            child.model.traffic_class_id=model.id
+            self.connection.create(child.model.save("nas_trafficnode"))
             
             self.refreshTable()
         
     def delNode(self):
-        id = self.getSelectedId()
-        try:
-            nodemodel = TrafficNode.objects.get(id=id)
-        except:
-            return
-        if QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            nodemodel.delete()
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
             self.refreshTable()
         
     def editNode(self):
         try:
-            model=TrafficNode.objects.get(id=self.getSelectedId())
-        except:
-            return
+            model=self.connection.get("SELECT * FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
+        except Exception, e:
+            print e
+            #return
         
         
-        child=ClassNodeFrame(model=model)
+        child=ClassNodeFrame(connection=self.connection, model=model)
         if child.exec_()==1:
-            child.model.save()
-        self.refreshTable()
+            self.connection.create(child.model.save("nas_trafficnode"))
+            self.refreshTable()
         
     def refreshTable(self, widget=None):
         if not widget:
@@ -659,10 +639,10 @@ class ClassChild(QtGui.QMainWindow):
             text=unicode(widget.text())
         self.tableWidget.clearContents()
         #print text
-        model = TrafficClass.objects.get(name=text)
-        nodes = TrafficNode.objects.filter(traffic_class = model).order_by("id")
+        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % text)
+        nodes = self.connection.sql("SELECT * FROM nas_trafficnode WHERE traffic_class_id=%d ORDER BY id" % model.id)
 
-        self.tableWidget.setRowCount(nodes.count())
+        self.tableWidget.setRowCount(len(nodes))
         
         i=0        
         ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
@@ -713,16 +693,6 @@ class ClassChild(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
 
-
-    def refresh(self):
-        self.timeperiod_list_edit.clear()
-
-        periods=TimePeriod.objects.all().order_by('id')
-        
-        for period in periods:
-            item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
-            item.setText(period.name)
-            self.timeperiod_list_edit.addItem(item)
 
 
 

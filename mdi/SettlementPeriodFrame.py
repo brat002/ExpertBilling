@@ -1,24 +1,18 @@
 #-*-coding=utf-8-*-
 
-import os, sys
+#import os, sys
 from PyQt4 import QtCore, QtGui
 
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
+#sys.path.append('d:/projects/mikrobill/webadmin')
+#sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-from django.contrib.auth.models import User
-from billservice.models import SettlementPeriod
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
+#from django.contrib.auth.models import User
+#from billservice.models import SettlementPeriod
 from helpers import tableFormat
 import datetime, calendar
 from helpers import Object as Object
-NAS_LIST=(
-                (u'mikrotik2.8', u'MikroTik 2.8'),
-                (u'mikrotik2.9',u'MikroTik 2.9'),
-                (u'mikrotik3',u'Mikrotik 3'),
-                (u'common_radius',u'Общий RADIUS интерфейс'),
-                (u'common_ssh',u'common_ssh'),
-                )
+
 
 class AddSettlementPeriod(QtGui.QDialog):
     def __init__(self, connection,model=None):

@@ -1,34 +1,18 @@
 #-*-coding=utf-8-*-
 
-import os, sys
 from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
-
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-from billservice.models import TimePeriod, TimePeriodNode
-
+from helpers import Object as Object
 from time import mktime
 
 import datetime, calendar
 
-NAS_LIST=(
-                (u'mikrotik2.8', u'MikroTik 2.8'),
-                (u'mikrotik2.9',u'MikroTik 2.9'),
-                (u'mikrotik3',u'Mikrotik 3'),
-                (u'common_radius',u'Общий RADIUS интерфейс'),
-                (u'common_ssh',u'common_ssh'),
-                )
-
 class AddTimePeriod(QtGui.QDialog):
-    def __init__(self, timemodel, nodemodel=None):
+    def __init__(self, connection, nodemodel=None):
         super(AddTimePeriod, self).__init__()
-        self.timemodel=timemodel
+        self.connection = connection
         self.nodemodel=nodemodel
         
         self.setObjectName("Dialog")
@@ -113,29 +97,27 @@ class AddTimePeriod(QtGui.QDialog):
         if self.nodemodel:
             model=self.nodemodel
         else:
-            print 'New sp'
-            model=TimePeriodNode()
+            model=Object()
         
         model.name=unicode(self.name_edit.text())
         model.time_start=self.start_date_edit.dateTime().toPyDateTime()
 
         model.length=self.start_date_edit.dateTime().secsTo(self.end_date_edit.dateTime())
-        print model.length
+        #print model.length
         
         model.repeat_after=unicode(self.repeat_edit.currentText())
-        try:
-            id=model.id
-            model.save()
-            #Если редактируем
-            if not id:
-                self.timemodel.time_period_nodes.add(model)
-        except Exception, e:
-            print e
-            return
+
+        if 'id' in model.__dict__:
+            #Update
+            self.connection.create(model.save("billservice_timeperiodnode"))
+        else:
+            #Insert
+            self.nodemodel=model
+            self.nodemodel.id = self.connection.create(model.save("billservice_timeperiodnode"))
+            #print self.nodemodel.id
 
 
-
-        QDialog.accept(self)
+        QtGui.QDialog.accept(self)
 
     def fixtures(self):
         start=datetime.datetime.now()
@@ -158,16 +140,16 @@ class AddTimePeriod(QtGui.QDialog):
         self.start_date_edit.setDateTime(start)
         self.end_date_edit.setDateTime(end)
 
-    def save(self):
-        print 'Saved'
 
 
 
 class TimePeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self):
+    def __init__(self, connection):
         super(TimePeriodChild, self).__init__()
+        self.connection = connection
+        
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
 
@@ -274,45 +256,46 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
 
     def addPeriod(self):
-        text = QInputDialog.getText(self,u"Введите название периода", u"Название:", QLineEdit.Normal);        
+        text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);        
         if text[0].isEmpty()==True and text[2]:
             QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return
-            
-        try:
-            TimePeriod.objects.create(name=unicode(text[0]))
-        except:
+
+        model = Object()
+        model.name=unicode(text[0])
+                        
+        if not self.connection.create(model.save(table="billservice_timeperiod")):
             QtGui.QMessageBox.warning(self, u"Ошибка",
                         u"Вероятно, такое название уже есть в списке.")
-            return
-
         
         self.refresh()
 
     def delPeriod(self):
         name=self.getSelectedName()
         try:
-            model=TimePeriod.objects.get(name=unicode(name))
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(name))
+
         except:
             return
 
-        if id>0 and QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            model.delete()
-
-        self.refresh()
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
+            self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
+            #self.timeperiod_list_edit.setCurrentIndex(0)
+            self.refresh()
 
 
     def editPeriod(self):
         name=unicode(self.getSelectedName())
-        text = QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QLineEdit.Normal,name);
+        text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,name);
         if text[0].isEmpty()==True and text[2]:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                     u"Введено пустое название.")
             return
         try:
-            model=TimePeriod.objects.get(name=name)
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % name)
             model.name=unicode(text[0])
-            model.save()                
+            self.connection.create(model.save('billservice_timeperiod'))                
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                         u"Введено недопустимое значение.")
@@ -322,40 +305,39 @@ class TimePeriodChild(QtGui.QMainWindow):
     def addNode(self):
         name=self.getSelectedName()
         try:
-            model=TimePeriod.objects.get(name=unicode(name))
-        except:
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(name))
+        except Exception, e:
             return
-
-        child=AddTimePeriod(timemodel=model)
-        child.exec_()
-        self.refreshTable()
+        #print model.id
+        child=AddTimePeriod(connection=self.connection)
+        if child.exec_()==1:
+            self.connection.create("INSERT INTO billservice_timeperiod_time_period_nodes(timeperiod_id, timeperiodnode_id) VALUES(%d, %d)" % (model.id, child.nodemodel.id))
+            self.refreshTable()
         
     def delNode(self):
         id = self.getSelectedId()
-        try:
-            nodemodel = TimePeriodNode.objects.get(id=id)
-        except:
-            return
-        if QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            nodemodel.delete()
+
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
+            self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
             self.refreshTable()
         
     def editNode(self):
         id = self.getSelectedId()
         try:
-            nodemodel = TimePeriodNode.objects.get(id=id)
+            nodemodel = self.connection.get("SELECT * FROM billservice_timeperiodnode WHERE id=%d" % id)
         except:
             pass
         
-        name=self.getSelectedName()
-        try:
-            model=TimePeriod.objects.get(name=unicode(name))
-        except:
+        name=unicode(self.getSelectedName())
+        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name = '%s'" % name)
+        if not model:
             return
         
-        child=AddTimePeriod(timemodel=model, nodemodel=nodemodel)
-        child.exec_()
-        self.refreshTable()
+        child=AddTimePeriod(connection=self.connection, nodemodel=nodemodel)
+        if child.exec_()==1:
+            
+            self.refreshTable()
         
     def refreshTable(self, widget=None):
         if not widget:
@@ -364,11 +346,17 @@ class TimePeriodChild(QtGui.QMainWindow):
             text=unicode(widget.text())
         self.tableWidget.clearContents()
         #print text
-        model=TimePeriod.objects.get(name=text)
+        #model=TimePeriod.objects.get(name=text)
+        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name = '%s'" % text)
 
-        self.tableWidget.setRowCount(model.time_period_nodes.count())
+        #self.tableWidget.setRowCount(model.time_period_nodes.count())
+        nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
+        JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
+        WHERE tpn.timeperiod_id=%d
+        """ % model.id)
+        self.tableWidget.setRowCount(len(nodes))
         i=0        
-        for node in model.time_period_nodes.all().order_by('id'):
+        for node in nodes:
 
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
@@ -382,11 +370,6 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
 
-        #child=AddSettlementPeriod(model=model)
-        #child.exec_()
-
-        #self.refresh()
-
 
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
@@ -394,19 +377,6 @@ class TimePeriodChild(QtGui.QMainWindow):
     def getSelectedName(self):
         return self.timeperiod_list_edit.currentItem().text()
     
-    def editframe(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-        try:
-            model=Nas.objects.get(id=self.getSelectedId())
-        except:
-            model=None
-
-        addf = AddNasFrame(model)
-        
-        addf.exec_()
-        self.refresh()
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
@@ -417,8 +387,8 @@ class TimePeriodChild(QtGui.QMainWindow):
     def refresh(self):
         self.timeperiod_list_edit.clear()
 
-        periods=TimePeriod.objects.all().order_by('id')
-
+        #periods=TimePeriod.objects.all().order_by('id')
+        periods=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY id ASC")
         for period in periods:
             item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item.setText(period.name)
