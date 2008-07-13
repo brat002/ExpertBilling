@@ -2,8 +2,10 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
+
 import Pyro.core
+
+from helpers import Object as Object
 
 from types import BooleanType
 
@@ -45,10 +47,11 @@ class CustomWidget(QtGui.QTableWidgetItem):
         
 
 class AddAccountTarif(QtGui.QDialog):
-    def __init__(self, account, model=None):
+    def __init__(self, connection,account=None, model=None):
         super(AddAccountTarif, self).__init__()
         self.model=model
         self.account=account
+        self.connection = connection
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()).expandedTo(self.minimumSizeHint()))
@@ -98,18 +101,21 @@ class AddAccountTarif(QtGui.QDialog):
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
 
     def accept(self):
-        tarif=Tariff.objects.get(name=unicode(self.tarif_edit.currentText()))
+        tarif=self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_edit.currentText()))
         date=self.date_edit.dateTime().toPyDateTime()
-
         if self.model:
-            self.model.tarif=tarif
-            self.model.datetime=date
-            self.model.save()
+            model=self.model
+            model.datetime = date
         else:
-            model=AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
-            model.save()
+            model = Object()
+            model.account_id = self.account.id
+            model.tarif_id =tarif.id 
+            model.datetime = date
+            
+            #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+        self.connection.create(model.save("billservice_accounttarif"))
 
-        QDialog.accept(self)
+        QtGui.QDialog.accept(self)
 
 
     def retranslateUi(self):
@@ -137,10 +143,11 @@ class AddAccountTarif(QtGui.QDialog):
         self.date_edit.setDateTime(now)
 
 class TarifFrame(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection, model=None):
         super(TarifFrame, self).__init__()
         
         self.model=model
+        self.connetion = connection
         
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()).expandedTo(self.minimumSizeHint()))
@@ -2024,9 +2031,10 @@ class TarifFrame(QtGui.QDialog):
         QtGui.QDialog.accept(self)
                     
 class AddAccountFrame(QtGui.QDialog):
-    def __init__(self, model=None):
+    def __init__(self, connection, model=None):
         super(AddAccountFrame, self).__init__()
         self.model=model
+        self.connection = connection
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,427,476).size()).expandedTo(self.minimumSizeHint()))
 
@@ -2298,38 +2306,35 @@ class AddAccountFrame(QtGui.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
 
-        self.accounttarif_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.accounttarif_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.accounttarif_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.accounttarif_table.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
+        self.accounttarif_table.setSelectionBehavior(QtGui.QTableWidget.SelectRows)
+        self.accounttarif_table.setSelectionMode(QtGui.QTableWidget.SingleSelection)
 
     def getSelectedId(self):
         return int(self.accounttarif_table.item(self.accounttarif_table.currentRow(), 0).text())
 
     def add_accounttarif(self):
 
-        child=AddAccountTarif(self.model)
-        child.exec_()
-        self.accountTarifRefresh()
+        child=AddAccountTarif(connection=self.connection, account=self.model)
+        
+        if child.exec_()==1:
+            self.accountTarifRefresh()
 
     def del_accounttarif(self):
         i=self.getSelectedId()
-        try:
-            model=AccountTarif.objects.get(id=i)
-        except:
-            return
-
+        model = self.connection.get("SELECT * FROM billservice_accounttarif WHERE id=%d" % i)
         if model.datetime<datetime.datetime.now():
-            QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
+            QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
             return
 
-        if QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            model.delete()
-        self.accountTarifRefresh()
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_accounttarif WHERE id=%d" % i)
+            self.accountTarifRefresh()
 
     def edit_accounttarif(self):
         i=self.getSelectedId()
         try:
-            model=AccountTarif.objects.get(id=i)
+            model=self.connection.get("SELECT * FROM billservice_accounttarif WHERE id=%d" % i)
         except:
             return
 
@@ -2337,9 +2342,9 @@ class AddAccountFrame(QtGui.QDialog):
             QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
             return
 
-        child=AddAccountTarif(account=self.model, model=model)
-        child.exec_()
-        self.accountTarifRefresh()
+        child=AddAccountTarif(model=model)
+        if child.exec_()==1:
+            self.accountTarifRefresh()
 
 
 
@@ -2371,7 +2376,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.ipn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_mac_address_label.setText(QtGui.QApplication.translate("Dialog", "Аппаратный адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "00:00:00:00:00:00;0", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
         self.get_mac_address_toolButton.setText(QtGui.QApplication.translate("Dialog", "Получить", None, QtGui.QApplication.UnicodeUTF8))
         self.assign_vpn_ip_from_dhcp_edit.setText(QtGui.QApplication.translate("Dialog", "Выдавать VPN адрес с помощью DHCP", None, QtGui.QApplication.UnicodeUTF8))
         self.vpn_dhcp_pool_label.setText(QtGui.QApplication.translate("Dialog", "DHCP пул", None, QtGui.QApplication.UnicodeUTF8))
@@ -2411,7 +2416,7 @@ class AddAccountFrame(QtGui.QDialog):
 
         self.fixtures()
 
-    @transaction.commit_manually
+
     def accept(self):
         """
         понаставить проверок
@@ -2419,23 +2424,22 @@ class AddAccountFrame(QtGui.QDialog):
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
         
         if self.model:
-
             model=self.model
-            if self.username_edit.text()!=model.username:
-                if User.objects.filter(username=unicode(self.username_edit.text())).count()>0 or Account.objects.filter(username=unicode(self.username_edit.text())).count()>0:
-                    QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
-                    return
-            model.user.username=unicode(self.username_edit.text())
+            model = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % self.model.id)
+            
+            
         else:
             print 'New account'
-            if User.objects.filter(username=unicode(self.username_edit.text())).count()>0 or Account.objects.filter(username=unicode(self.username_edit.text())).count()>0:
-                QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
+            if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.username_edit.text())).count>0:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                 return
 
-            model=Account()
-            model.user = User.objects.create(username=unicode(self.username_edit.text()), password=unicode(self.password_edit.text()))
+            model=Object()
+            model.created = datetime.datetime.now()
 
-
+        model.user_id=1
+        model.ipn_status = False
+        model.disabled_by_limit = False
         model.username = unicode(self.username_edit.text())
 
         model.password = unicode(self.password_edit.text())
@@ -2444,40 +2448,53 @@ class AddAccountFrame(QtGui.QDialog):
         model.address = unicode(self.address_edit.toPlainText())
 
 
-        if unicode(self.ipn_ip_address_edit.text())==u"...":
-            value = None
+
+        if unicode(self.ipn_ip_address_edit.text())!="...":
+            try:
+                ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
+                if ipn_address_account.username!=model.username:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                    return  
+                                      
+            except:
+                pass
+            model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
         else:
-            if (self.ipn_ip_address_edit.text()!=model.ipn_ip_address or model.ipn_ip_address==None) and  Account.objects.filter(ipn_ip_address=unicode(self.ipn_ip_address_edit.text())).count()>0:
-               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-               return
-            value = unicode(self.ipn_ip_address_edit.text())
-
-        model.ipn_ip_address = value
-
-
-        if unicode(self.vpn_ip_address_edit.text()) == u'...':
-            value = None
+            model.ipn_ip_address = '0.0.0.0'
+            
+        
+        if unicode(self.vpn_ip_address_edit.text())!="...":
+            print 'ok'
+            try:
+                vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
+                if vpn_address_account.username!=model.username:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                    return    
+                      
+            except Exception, e:
+                pass
+            
+            model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
         else:
-            if (model.vpn_ip_address!=self.vpn_ip_address_edit.text() or model.vpn_ip_address==None) and  Account.objects.filter(vpn_ip_address=unicode(self.vpn_ip_address_edit.text())).count()>0:
-               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-               return
-            value = unicode(self.vpn_ip_address_edit.text())
+            model.vpn_ip_address = '0.0.0.0'
+            
+                
 
-        model.vpn_ip_address = value
-
-
-        if unicode(self.ipn_mac_address_edit.text()) == u'00:00:00:00:00:00':
-            value = None
+        if unicode(self.ipn_mac_address_edit.text()) != u'00:00:00:00:00:00':
+            try:
+                ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
+                if ipn_mac_address_account.username!=model.username:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+                    return
+            except Exception, e:
+                pass
+            model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
         else:
-            if (model.ipn_mac_address!=self.ipn_mac_address_edit.text() and self.ipn_mac_address_edit.text()!= '00:00:00:00:00:00') and  Account.objects.filter(ipn_mac_address=unicode(self.ipn_mac_address_edit.text())).count()>0:
-               QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC адрес."))
-               return
+            model.ipn_mac_address = ''
+                
 
-            value = unicode(self.ipn_mac_address_edit.text())
-
-        model.ipn_mac_address = value
-
-        model.nas = Nas.objects.get(name=str(self.nas_edit.currentText()))
+        
+        model.nas_id = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % str(self.nas_edit.currentText())).id
 
         model.ballance = unicode(self.ballance_edit.text()) or 0
         model.credit = unicode(self.credit_edit.text()) or 0
@@ -2486,17 +2503,16 @@ class AddAccountFrame(QtGui.QDialog):
         model.assign_vpn_ip_from_dhcp = self.assign_vpn_ip_from_dhcp_edit.checkState() == 2
         model.suspended = self.suspended_edit.checkState() == 2
         model.status = self.status_edit.checkState() == 2
-
-        try:
-            self.model=model.save()
-            transaction.commit()
-        except Exception, e:
-            transaction.rollback()
-            return
-
-
-
-        QDialog.accept(self)
+        
+        
+        if self.model:
+            self.connection.create(model.save("billservice_account"))
+        else:
+            
+            model.id=self.connection.create(model.save("billservice_account"))
+        
+        self.model=model
+        QtGui.QDialog.accept(self)
 
     def fixtures(self):
 
@@ -2505,13 +2521,14 @@ class AddAccountFrame(QtGui.QDialog):
         #for user in users:
         #    self.user_edit.addItem(user.username)
 
-        pools = IPAddressPool.objects.all()
+        #pools = IPAddressPool.objects.all()
+        pools = []
 
         for pool in pools:
             self.ipn_pool_edit.addItem(pool.name)
             self.vpn_pool_edit.addItem(pool.name)
 
-        nasses = Nas.objects.all()
+        nasses = self.connection.sql("SELECT * FROM nas_nas")
         for nas in nasses:
             self.nas_edit.addItem(nas.name)
         
@@ -2524,13 +2541,13 @@ class AddAccountFrame(QtGui.QDialog):
         if self.model:
             self.username_edit.setText(unicode(self.model.username))
 
-            self.nas_edit.setCurrentIndex(self.nas_edit.findText(self.model.nas.name, QtCore.Qt.MatchCaseSensitive))
+            self.nas_edit.setCurrentIndex(self.nas_edit.findText(self.model.nas_name, QtCore.Qt.MatchCaseSensitive))
 
-            if self.model.vpn_pool:
-                self.vpn_pool_edit.setCurrentIndex(self.vpn_pool_edit.findText(self.model.vpn_pool.name, QtCore.Qt.MatchFlags())[0])
+            #if self.model.vpn_pool:
+            #    self.vpn_pool_edit.setCurrentIndex(self.vpn_pool_edit.findText(self.model.vpn_pool.name, QtCore.Qt.MatchFlags())[0])
 
-            if self.model.ipn_pool:
-                self.ipn_pool_edit.setCurrentIndex(self.ipn_pool_edit.findText(self.model.ipn_pool.name, QtCore.Qt.MatchFlags())[0])
+            #if self.model.ipn_pool:
+            #    self.ipn_pool_edit.setCurrentIndex(self.ipn_pool_edit.findText(self.model.ipn_pool.name, QtCore.Qt.MatchFlags())[0])
 
             self.password_edit.setText(unicode(self.model.password))
             self.firstname_edit.setText(unicode(self.model.firstname))
@@ -2554,13 +2571,15 @@ class AddAccountFrame(QtGui.QDialog):
 
     def accountTarifRefresh(self):
         if self.model:
-            ac=AccountTarif.objects.filter(account=self.model).order_by('datetime')
-            self.accounttarif_table.setRowCount(ac.count())
+            ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name FROM billservice_accounttarif as accounttarif 
+            JOIN billservice_tariff as tarif ON tarif.id=accounttarif.tarif_id
+            WHERE account_id=%d ORDER BY datetime ASC""" % self.model.id)
+            self.accounttarif_table.setRowCount(len(ac))
             i=0
             for a in ac:
 
                 self.addrow(a.id, i,0)
-                self.addrow(a.tarif.name, i,1)
+                self.addrow(a.tarif_name, i,1)
                 self.addrow(a.datetime.strftime("%d-%m-%Y %H:%M:%S"), i,2)
                 self.accounttarif_table.setRowHeight(i, 17)
                 self.accounttarif_table.setColumnHidden(0, True)
@@ -2578,12 +2597,13 @@ class AddAccountFrame(QtGui.QDialog):
 
 
 
-class AccountsMdiChild(QMainWindow):
+class AccountsMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
-    def __init__(self, parent, selected_account=None):
+    def __init__(self, connection, parent, selected_account=None):
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
+        self.connection = connection
         self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
         
@@ -2603,7 +2623,7 @@ class AccountsMdiChild(QMainWindow):
         tree_header.setHidden(True)
 
 
-        self.tableWidget = QTableWidget(self.splitter)
+        self.tableWidget = QtGui.QTableWidget(self.splitter)
 
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget = tableFormat(self.tableWidget) 
@@ -2616,7 +2636,7 @@ class AccountsMdiChild(QMainWindow):
         self.setCentralWidget(self.splitter)
 
 
-        self.statusbar = QStatusBar(self)
+        self.statusbar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusbar)
 
         self.toolBar = QtGui.QToolBar(self)
@@ -2682,7 +2702,7 @@ class AccountsMdiChild(QMainWindow):
         
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
-        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemChanged(QTreeWidgetItem *,int)"), self.refresh)
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh)
         
         self.connect(self.transactionAction, QtCore.SIGNAL("triggered()"), self.makeTransation)
         
@@ -2720,14 +2740,15 @@ class AccountsMdiChild(QMainWindow):
         #print num
 
     def addframe(self):
-        tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
-        child = AddAccountFrame()
+        tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
+        child = AddAccountFrame(connection=self.connection)
         
         if child.exec_()==1:
-            a=AccountTarif.objects.create(account=child.model, tarif=tarif, datetime=datetime.datetime.now())
-            a.save()
-            print tarif, child.model, a
-            
+            accounttarif = Object()
+            accounttarif.account_id=child.model.id
+            accounttarif.tarif_id=tarif.id
+            accounttarif.datetime = datetime.datetime.now()
+            self.connection.create(accounttarif.save("billservice_accounttarif"))
             self.refresh()
 
     def makeTransation(self):
@@ -2756,29 +2777,31 @@ class AccountsMdiChild(QMainWindow):
 
     def delete(self):
         id=self.getSelectedId()
-        if id>0 and QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QMessageBox.Yes|QMessageBox.No)==QMessageBox.Yes:
-            try:
-                model = Account.objects.get(id=self.getSelectedId())
-                model.delete()
-                model.user.delete()
-            except Exception, e:
-                print e
-        self.refresh()
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
+            self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
+            self.refresh()
 
 
     def editframe(self):
+        print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
+        print id
         if id == 0:
             return
         try:
-            model = Account.objects.get(id=self.getSelectedId())
-        except:
+            model = self.connection.get("""SELECT account.*, nas.name as nas_name 
+            FROM billservice_account as account
+            JOIN nas_nas as nas ON  nas.id = account.nas_id
+            WHERE account.id=%d""" % id)
+        except Exception, e:
+            print e
             model = None
-
-        addf = AddAccountFrame(model)
+        print 'model', model
+        addf = AddAccountFrame(connection=self.connection, model=model)
         #addf.show()
-        addf.exec_()
-        self.refresh()
+        if addf.exec_()==1:
+            self.refresh()
 
     def addrow(self, value, x, y, color=None, enabled=True):
         headerItem = QtGui.QTableWidgetItem()
@@ -2789,7 +2812,7 @@ class AccountsMdiChild(QMainWindow):
                 headerItem.setBackgroundColor(QColor(color))
         
         if not enabled:
-            headerItem.setTextColor(QColor('#FF0100'))
+            headerItem.setTextColor(QtGui.QColor('#FF0100'))
         
         if type(value)==BooleanType and value==True:
             headerItem.setIcon(QtGui.QIcon("images/ok.png"))
@@ -2803,7 +2826,8 @@ class AccountsMdiChild(QMainWindow):
 
     def refreshTree(self):
         self.tarif_treeWidget.clear()
-        tariffs = Tariff.objects.all().order_by("id")
+        #tariffs = Tariff.objects.all().order_by("id")
+        tariffs = self.connection.sql("SELECT * FROM billservice_tariff ORDER BY id ASC")
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.setText(0, u"%s" % tarif.name)
@@ -2811,17 +2835,21 @@ class AccountsMdiChild(QMainWindow):
         self.tarif_treeWidget.setCurrentItem(item)
             
     def refresh(self, item=None, k=''):
-        print item
+        #print item
         if item:
-            tarif = Tariff.objects.get(name=unicode(item.text(0)))
+            name=unicode(item.text(0))
         else:
-            tarif = Tariff.objects.get(name=unicode(self.tarif_treeWidget.currentItem().text(0)))
-        
+            name=unicode(self.tarif_treeWidget.currentItem().text(0))
+        print name
+        tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % name)
         #accounttarifs=AccountTarif.objects.filter(tarif=tarif, datetime__lte=datetime.datetime.now()).order_by("-datetime")
         #print tarif.id
-        accounts=Account.objects.select_related().filter(related_accounttarif__tarif__id=1, related_accounttarif__datetime__lte=datetime.datetime.now())
-        accounts=Account.objects.all().order_by("id")
-        self.tableWidget.setRowCount(accounts.count())
+        accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
+JOIN nas_nas ON nas_nas.id=account.nas_id
+JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
+WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
+        #accounts=Account.objects.all().order_by("id")
+        self.tableWidget.setRowCount(len(accounts))
         
         
         i=0
@@ -2833,7 +2861,7 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.credit, i,3, enabled=a.status)
             self.addrow(a.firstname, i,4, enabled=a.status)
             self.addrow(a.lastname, i,5, enabled=a.status)
-            self.addrow(a.nas.name,i,6, enabled=a.status)
+            self.addrow(a.nas_name,i,6, enabled=a.status)
             self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.suspended, i,9, enabled=a.status)
@@ -2841,7 +2869,7 @@ class AccountsMdiChild(QMainWindow):
             self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 14)
-            self.tableWidget.setColumnHidden(0, True)
+            #self.tableWidget.setColumnHidden(0, True)
             if self.selected_account:
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
@@ -2853,18 +2881,18 @@ class AccountsMdiChild(QMainWindow):
         if id==0:
             return
         try:
-            model=Account.objects.get(id=self.getSelectedId())
+            model=self.connection.get("""
+            SELECT account.id, nas.ipaddress as nas_ipaddress, nas.login as nas_login, nas.password as nas_password
+            FROM billservice_account as account 
+            JOIN nas_nas as nas ON nas.id=account.nas_id
+            WHERE account.id=%d""" % id)
         except:
             return
-        
 
-        # you have to change the URI below to match your own host/port.
-        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
-
-        if connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'disable', model.id):
-            QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
+        if self.connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'disable', model.id):
+            QtGui.QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
         else:
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
 
     def accountEnable(self):
@@ -2872,17 +2900,17 @@ class AccountsMdiChild(QMainWindow):
         if id==0:
             return
         try:
-            model=Account.objects.get(id=self.getSelectedId())
+            model=self.connection.get("""
+            SELECT account.id, nas.ipaddress as nas_ipaddress, nas.login as nas_login, nas.password as nas_password
+            FROM billservice_account as account 
+            JOIN nas_nas as nas ON nas.id=account.nas_id
+            WHERE account.id=%d""" % id)
         except:
             return
-        
 
-        # you have to change the URI below to match your own host/port.
-        connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
-
-        if connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'enable', model.id):
-            QMessageBox.Information(self, u"Ok", unicode(u"Ok."))
+        if self.connection.accountActions(str(model.nas.ipaddress), str(model.nas.login), str(model.nas.password), 'enable', model.id):
+            QtGui.QMessageBox.Warning(self, u"Ok", unicode(u"Ok."))
         else:
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
 

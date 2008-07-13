@@ -1,57 +1,13 @@
 ﻿#-*-coding=utf-8*-
-
-############################################################################
-#
-#  Copyright (C) 2004-2005 Trolltech AS. All rights reserved.
-#
-#  This file is part of the example classes of the Qt Toolkit.
-#
-#  This file may be used under the terms of the GNU General Public
-#  License version 2.0 as published by the Free Software Foundation
-#  and appearing in the file LICENSE.GPL included in the packaging of
-#  self file.  Please review the following information to ensure GNU
-#  General Public Licensing requirements will be met:
-#  http://www.trolltech.com/products/qt/opensource.html
-#
-#  If you are unsure which license is appropriate for your use, please
-#  review the following information:
-#  http://www.trolltech.com/products/qt/licensing.html or contact the
-#  sales department at sales@trolltech.com.
-#
-#  This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-#  WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-#
-############################################################################
-
 import sys
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import *
+
 from helpers import Object
 import Pyro.core
 
 connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
 
-
-
 import mdi_rc
-#-*-coding=utf-8-*-
-
-import os, sys
-
-sys.path.append('k:/mikrobill/current/webadmin')
-sys.path.append('k:/mikrobill/current/webadmin/mikrobill')
-sys.path.append('k:/mikrobill/current/webadmin')
-
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-sys.path.append('d:/projects/mikrobill/webadmin')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-    
-
-from django.contrib.auth.models import User
-from billservice.models import Account
-from nas.models import IPAddressPool
-
 
 from AccountFrame import AccountsMdiChild
 from NasFrame import NasMdiChild
@@ -96,7 +52,7 @@ class MainWindow(QtGui.QMainWindow):
             event.accept()
 
     def newFile(self):
-        child =  AccountsMdiChild(parent=self)
+        child =  AccountsMdiChild(connection=connection, parent=self)
         self.workspace.addWindow(child)
         child.show()
 
@@ -122,17 +78,17 @@ class MainWindow(QtGui.QMainWindow):
         #child.show()
 
     def cut(self):
-        child=TimePeriodChild()
+        child=TimePeriodChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
     def copy(self):
-        child=ClassChild()
+        child=ClassChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
     def paste(self):
-        child = MonitorFrame()
+        child = MonitorFrame(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 

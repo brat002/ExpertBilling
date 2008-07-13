@@ -1,16 +1,9 @@
 #-*-coding=utf-8-*-
 
-import os, sys
 from PyQt4 import QtCore, QtGui
-
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 
 
 from helpers import tableFormat
-from nas.models import IPAddressPool, Nas
 from helpers import Object as Object
    
 NAS_LIST=(

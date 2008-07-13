@@ -17,6 +17,7 @@ def tableFormat(table):
     table.verticalHeader().setHidden(True)
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
+    #hh.setVerticalSize(10)
     hh.setStretchLastSection(True)
     hh.setHighlightSections(False)
     hh.setClickable(False)
@@ -39,7 +40,7 @@ class Object(object):
             sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
             sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]))
-
+        
         return sql
     
 
