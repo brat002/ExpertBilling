@@ -43,6 +43,9 @@ class Object(object):
         
         return sql
     
+    def get(self, table):
+        return "SELECT * FROM %s WHERE id=%d" % (table, self.id)
+    
 
     
     

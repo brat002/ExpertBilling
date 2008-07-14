@@ -29,23 +29,24 @@ pool = PooledDB(
 
 class Object(object):
     def __init__(self, result=[]):
-        #self.result=result
         for key in result:
             setattr(self, key, result[key])
             
     def save(self, table):
         fields=[]
         for field in self.__dict__:
-            if type(field)!=InstanceType:
+            if type(field)!=InstanceType and self.__dict__[field]!=None:
                 fields.append(field)
         try:
             self.__dict__['id']
-            sql="UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, self.__dict__[x]) for x in fields ]), self.__dict__['id'])
+            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql="INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([str(self.__dict__[x]) for x in fields ]))
-        #print sql
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]))
+        
         return sql
-
+    
+    def get(self, table):
+        return "SELECT * FROM %s WHERE id=%d" % (table, self.id)
 
 class check_vpn_access(Thread):
         def __init__ (self, dict, timeout=30):
@@ -1190,6 +1191,7 @@ class NetFlowBill(Thread):
                     WHERE id=%s;
                     """ % nf_id
                     )
+                    
       
             for l in pays.get_list():
                 #Производим списывание денег
@@ -1720,7 +1722,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def create(self, sql):
         print sql
         self.cur.execute(sql)
-        id=True
+        id=-1
         #print self.cur.fetchone()
         try:
             id = self.cur.fetchone()['id']

@@ -147,7 +147,7 @@ class TarifFrame(QtGui.QDialog):
         super(TarifFrame, self).__init__()
         
         self.model=model
-        self.connetion = connection
+        self.connection = connection
         
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()).expandedTo(self.minimumSizeHint()))
@@ -1141,7 +1141,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 models = []
             
-            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            child = CheckBoxDialog(all_items=self.connection.sql("SELECT * FROM nas_trafficclass ORDER BY name ASC"), selected_items = models)
             if child.exec_()==1:
                 self.prepaid_tableWidget.setItem(y,x, CustomWidget(parent=self.prepaid_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
@@ -1154,9 +1154,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getDouble(self, u"Объём:", u"Введите количество предоплаченных мегабайт", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Объём:", u"Введите количество предоплаченных мегабайт", default_text)        
            
-            self.prepaid_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.prepaid_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
  
  
     def speedEdit(self,y,x):
@@ -1167,9 +1167,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
                 
-            child = ComboBoxDialog(items=TimePeriod.objects.all(), selected_item = default_text )
+            child = ComboBoxDialog(items=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY name ASC"), selected_item = default_text )
             if child.exec_()==1:
-                self.speed_table.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+                self.speed_table.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
         if x in (2, 3, 4, 5, 6):
             item = self.speed_table.item(y,x)
             try:
@@ -1188,7 +1188,7 @@ class TarifFrame(QtGui.QDialog):
                 child = SpeedEditDialog(item=text, title=u"Время для подсчёта средней скорости")                                
                                 
             if child.exec_()==1:
-                self.speed_table.setItem(y,x, QTableWidgetItem(child.resultstring))
+                self.speed_table.setItem(y,x, QtGui.QTableWidgetItem(child.resultstring))
             
         if x==7:
             item = self.speed_table.item(y,x)
@@ -1197,9 +1197,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getInteger(self, u"Приоритет", u"Введите приоритет от 1 до 8", default_text)        
+            text = QtGui.QInputDialog.getInteger(self, u"Приоритет", u"Введите приоритет от 1 до 8", default_text)        
            
-            self.speed_table.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.speed_table.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
 
     def limitClassEdit(self,y,x):
@@ -1209,7 +1209,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 models = []
             
-            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            child = CheckBoxDialog(all_items=self.connection.sql("SELECT * FROM nas_trafficclass ORDER BY name ASC"), selected_items = models)
             if child.exec_()==1:
                 self.limit_tableWidget.setItem(y,x, CustomWidget(parent=self.limit_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
@@ -1221,9 +1221,9 @@ class TarifFrame(QtGui.QDialog):
                 default_text = item.text()
             except:
                 default_text=u""
-            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = default_text )
+            child = ComboBoxDialog(items=self.connection.sql("SELECT * FROM billservice_settlementperiod ORDER BY name ASC"), selected_item = default_text )
             if child.exec_()==1:
-                self.limit_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+                self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
 
         if x==1:
             item = self.limit_tableWidget.item(y,x)
@@ -1232,12 +1232,12 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             
-            text = QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
+            text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
             if text[0].isEmpty()==True and text[2]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
             
-            self.limit_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))
+            self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
              
         if x==8:
             item = self.limit_tableWidget.item(y,x)
@@ -1246,9 +1246,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getInteger(self, u"Размер:", u"Введите размер лимита в МБ, после которого произойдёт отключение", default_text)        
+            text = QtGui.QInputDialog.getInteger(self, u"Размер:", u"Введите размер лимита в МБ, после которого произойдёт отключение", default_text)        
            
-            self.limit_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
     def oneTimeServicesEdit(self,y,x):
         if x==1:
@@ -1258,12 +1258,12 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             
-            text = QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
+            text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QLineEdit.Normal, default_text)        
             if text[0].isEmpty()==True and text[2]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
             
-            self.onetime_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))        
+            self.onetime_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))        
 
         if x==2:
             item = self.onetime_tableWidget.item(y,x)
@@ -1272,9 +1272,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0.00
             
-            text = QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость разовой услуги", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость разовой услуги", default_text)        
            
-            self.onetime_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.onetime_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
 
     def timeAccessServiceEdit(self,y,x):
@@ -1284,9 +1284,9 @@ class TarifFrame(QtGui.QDialog):
                 default_text = item.text()
             except:
                 default_text=u""
-            child = ComboBoxDialog(items=TimePeriod.objects.all(), selected_item = default_text )
+            child = ComboBoxDialog(items=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY name ASC"), selected_item = default_text )
             if child.exec_()==1:
-                self.timeaccess_table.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))    
+                self.timeaccess_table.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))    
 
         if x==2:
             item = self.timeaccess_table.item(y,x)
@@ -1295,9 +1295,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0.00
             
-            text = QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость", default_text)        
            
-            self.timeaccess_table.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.timeaccess_table.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
                                      
    
@@ -1308,10 +1308,11 @@ class TarifFrame(QtGui.QDialog):
         if x==3:
             try:
                 models = self.trafficcost_tableWidget.item(y,x).models
-            except:
+            except Exception, e:
+                print e
                 models = []
-            
-            child = CheckBoxDialog(all_items=TrafficClass.objects.all(), selected_items = models)
+            #print models
+            child = CheckBoxDialog(all_items=self.connection.sql("SELECT * FROM nas_trafficclass"), selected_items = models)
             if child.exec_()==1:
                 self.trafficcost_tableWidget.setItem(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
                 self.trafficcost_tableWidget.resizeColumnsToContents()
@@ -1322,7 +1323,7 @@ class TarifFrame(QtGui.QDialog):
                 models = self.trafficcost_tableWidget.item(y,x).models
             except:
                 models = []
-            child = CheckBoxDialog(all_items=TimePeriod.objects.all(), selected_items = models)
+            child = CheckBoxDialog(all_items=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY name ASC"), selected_items = models)
             if child.exec_()==1:
                 self.trafficcost_tableWidget.setItem(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
 
@@ -1334,9 +1335,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text)        
            
-            self.trafficcost_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
             
         if x==1:
             item = self.trafficcost_tableWidget.item(y,x)
@@ -1345,9 +1346,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getDouble(self, u"От (МБ):", u"Укажите нижнюю границу в МБ, после которой настройки цены будут актуальны", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"От (МБ):", u"Укажите нижнюю границу в МБ, после которой настройки цены будут актуальны", default_text)        
            
-            self.trafficcost_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
         if x==2:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
@@ -1355,9 +1356,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getDouble(self, u"До (МБ):", u"Укажите верхнюю границу в МБ, до которой настройки цены будут актуальны", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"До (МБ):", u"Укажите верхнюю границу в МБ, до которой настройки цены будут актуальны", default_text)        
            
-            self.trafficcost_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
     def periodicalServicesEdit(self,y,x):
         
@@ -1369,9 +1370,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
                 
-            child = ComboBoxDialog(items=SettlementPeriod.objects.all(), selected_item = default_text )
+            child = ComboBoxDialog(items=self.connection.sql("SELECT * FROM billservice_settlementperiod ORDER BY name ASC"), selected_item = default_text )
             if child.exec_()==1:
-                self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+                self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
 
         if x==1:
             item = self.periodical_tableWidget.item(y,x)
@@ -1380,12 +1381,12 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             
-            text = QInputDialog.getText(self,u"Введите название", u"Название:", QLineEdit.Normal, default_text)        
+            text = QtGui.QInputDialog.getText(self,u"Введите название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
             if text[0].isEmpty()==True and text[2]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
             
-            self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(text[0]))
+            self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
 
         if x==3:
             item = self.periodical_tableWidget.item(y,x)
@@ -1396,7 +1397,7 @@ class TarifFrame(QtGui.QDialog):
                 
             child = ComboBoxDialog(items=cash_types, selected_item = default_text )
             if child.exec_()==1:
-                self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(child.comboBox.currentText()))
+                self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
              
         if x==4:
             item = self.periodical_tableWidget.item(y,x)
@@ -1405,9 +1406,9 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QInputDialog.getDouble(self, u"Цена:", u"Введите цену", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Цена:", u"Введите цену", default_text)        
            
-            self.periodical_tableWidget.setItem(y,x, QTableWidgetItem(unicode(text[0])))
+            self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
 
 #----------------------------
@@ -1422,12 +1423,12 @@ class TarifFrame(QtGui.QDialog):
     def fixtures(self):
         try:
             if self.model.settlement_period.autostart==True:
-                settlement_periods = SettlementPeriod.objects.filter(autostart=True)
+                settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
                 self.sp_type_edit.setChecked()
             else:
-                settlement_periods = SettlementPeriod.objects.filter(autostart=False)
+                settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
         except:
-            settlement_periods = SettlementPeriod.objects.filter(autostart=False)
+            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
         
         self.sp_name_edit.addItem("")        
         for sp in settlement_periods:
@@ -1435,7 +1436,8 @@ class TarifFrame(QtGui.QDialog):
         
             
         try:
-            self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(self.model.settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+            settlement_period = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" % self.model.settlement_period.id)
+            self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
         except:
             print "sp not found"
             
@@ -1443,7 +1445,7 @@ class TarifFrame(QtGui.QDialog):
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
         
-        access_time = TimePeriod.objects.all()
+        access_time = self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY name ASC")
         
         for at in access_time:
             self.access_time_edit.addItem(unicode(at.name))
@@ -1498,16 +1500,21 @@ class TarifFrame(QtGui.QDialog):
             self.speed_burst_time_in_edit.setText(burst_time_in)
             self.speed_burst_time_out_edit.setText(burst_time_out)
 
-
-            self.speed_priority_edit.setText(unicode(self.model.access_parameters.priority))   
+            access_parameters = self.connection.get("""SELECT accessparameters.*,timeperiod.name as time_name  FROM billservice_accessparameters as accessparameters 
+            JOIN billservice_timeperiod as timeperiod ON timeperiod.id=accessparameters.access_time_id
+            WHERE accessparameters.id=%d""" % self.model.access_parameters_id)
+            self.speed_priority_edit.setText(unicode(access_parameters.priority))   
             
             #self.speed_table.clear()
-            speeds = self.model.access_parameters.access_speed.all()
-            self.speed_table.setRowCount(speeds.count())
+            speeds = self.connection.sql("""SELECT timespeed.*, timeperiod.name as time_name FROM billservice_timespeed as timespeed 
+            JOIN billservice_timeperiod as timeperiod ON timeperiod.id=timespeed.time_id
+            WHERE timespeed.access_parameters_id=%d""" % access_parameters.id)
+            #speeds = self.model.access_parameters.access_speed.all()
+            self.speed_table.setRowCount(len(speeds))
             i=0
             for speed in speeds:
                 self.addrow(self.speed_table, speed.id,i, 0)
-                self.addrow(self.speed_table, speed.time.name,i, 1)
+                self.addrow(self.speed_table, speed.time_name,i, 1)
                 self.addrow(self.speed_table, speed.max_limit,i, 2)
                 self.addrow(self.speed_table, speed.min_limit,i, 3)
                 self.addrow(self.speed_table, speed.burst_limit,i, 4)
@@ -1519,40 +1526,54 @@ class TarifFrame(QtGui.QDialog):
             self.speed_table.resizeColumnsToContents()
             
             #Time Access Service
-            if self.model.time_access_service:
+            if self.model.time_access_service_id:
                 self.time_access_service_checkbox.setChecked(True)
-                self.prepaid_time_edit.setValue(self.model.time_access_service.prepaid_time)
-                self.reset_time_checkbox.setCheckState(self.model.time_access_service.reset_time == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-                nodes = self.model.time_access_service.time_access_nodes.all()
-                self.timeaccess_table.setRowCount(nodes.count())
+                time_access_service = self.connection.get("SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
+                self.prepaid_time_edit.setValue(time_access_service.prepaid_time)
+                self.reset_time_checkbox.setCheckState(time_access_service.reset_time == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+                #nodes = self.model.time_access_service.time_access_nodes.all()
+                nodes = self.connection.sql("""SELECT timeaccessnode.*, timeperiod.name as time_period_name FROM billservice_timeaccessnode as timeaccessnode  
+                JOIN billservice_timeperiod as timeperiod ON timeperiod.id=timeaccessnode.time_period_id
+                WHERE timeaccessnode.time_access_service_id=%d""" % self.model.time_access_service_id)
+                self.timeaccess_table.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
                     self.addrow(self.timeaccess_table, node.id,i, 0)
-                    self.addrow(self.timeaccess_table, node.time_period,i, 1)
+                    self.addrow(self.timeaccess_table, node.time_period_name,i, 1)
                     self.addrow(self.timeaccess_table, node.cost,i, 2)
                     i+=1                
             self.timeaccess_table.setColumnHidden(0, True)
             
             #PeriodicalService
-            if self.model.periodical_services.all().count()>0:
+            periodical_services = self.connection.sql("""SELECT periodicalservice.*, settlementperiod.name as settlement_period_name
+            FROM billservice_periodicalservice as periodicalservice
+            JOIN billservice_tariff_periodical_services as tps ON tps.periodicalservice_id=periodicalservice.id
+            LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id = periodicalservice.settlement_period_id
+            WHERE tps.tariff_id = %d   
+            """ % self.model.id)
+            if len(periodical_services)>0:
                 self.periodical_services_checkbox.setChecked(True)
-                nodes = self.model.periodical_services.all()
-                self.periodical_tableWidget.setRowCount(nodes.count())
+                nodes = periodical_services
+                self.periodical_tableWidget.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
                     self.addrow(self.periodical_tableWidget, node.id,i, 0)
                     self.addrow(self.periodical_tableWidget, node.name,i, 1)
-                    self.addrow(self.periodical_tableWidget, node.settlement_period.name,i, 2)
+                    self.addrow(self.periodical_tableWidget, node.settlement_period_name,i, 2)
                     self.addrow(self.periodical_tableWidget, node.cash_method, i, 3)
                     self.addrow(self.periodical_tableWidget, node.cost,i, 4)
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
             
             #Onetime Service
-            if self.model.onetime_services.all().count()>0:
+            onetime_services = self.connection.sql("""SELECT onetimeservice.* FROM billservice_onetimeservice as onetimeservice
+            JOIN billservice_tariff_onetime_services as ots ON ots.onetimeservice_id=onetimeservice.id
+            WHERE ots.tariff_id=%d
+             """ % self.model.id)
+            if len(onetime_services)>0:
                 self.onetime_services_checkbox.setChecked(True)
-                nodes = self.model.onetime_services.all()
-                self.onetime_tableWidget.setRowCount(nodes.count())
+                nodes = onetime_services
+                self.onetime_tableWidget.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
                     self.addrow(self.onetime_tableWidget, node.id,i, 0)
@@ -1562,40 +1583,58 @@ class TarifFrame(QtGui.QDialog):
             self.onetime_tableWidget.setColumnHidden(0, True)
             
             #Limites
-            if self.model.traffic_limit.all().count()>0:
+            traffic_limites = self.connection.sql(""" SELECT trafficlimit.*, settlementperiod.name as settlement_period_name FROM billservice_trafficlimit as trafficlimit
+            JOIN billservice_tariff_traffic_limit as ttl ON ttl.trafficlimit_id= trafficlimit.id
+            LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id=trafficlimit.settlement_period_id
+            WHERE ttl.tariff_id=%d
+            """ % self.model.id)
+             
+            
+            if len(traffic_limites)>0:
+
                 self.limites_checkbox.setChecked(True)
-                nodes = self.model.traffic_limit.all()
-                self.limit_tableWidget.setRowCount(nodes.count())
+                nodes = traffic_limites
+                self.limit_tableWidget.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
-                    classes = [clas for clas in node.traffic_class.all()]
+                    traffic_classes = self.connection.sql(""" 
+                    SELECT trafficclass.* FROM nas_trafficclass as trafficclass
+                    JOIN billservice_trafficlimit_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
+                    WHERE ttc.trafficlimit_id=%d
+                    """ % node.id)
+                
                     self.addrow(self.limit_tableWidget, node.id,i, 0)
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
-                    self.addrow(self.limit_tableWidget, node.settlement_period.name,i, 3)
-                    self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=classes))
+                    self.addrow(self.limit_tableWidget, node.settlement_period_name,i, 3)
+                    self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
                     self.addrow(self.limit_tableWidget, node.size,i, 8)
                     
                     self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
-                    if len(classes)>1:
-                        self.limit_tableWidget.setRowHeight(i, len(classes)*25) 
+                    
                     i+=1
             self.limit_tableWidget.setColumnHidden(0, True)
             
             #Prepaid Traffic
-            if self.model.traffic_transmit_service:
+            if self.model.traffic_transmit_service_id:
                 self.transmit_service_checkbox.setChecked(True)
-                
-                if self.model.traffic_transmit_service.prepaid_traffic.all().count()>0:
-                    nodes = self.model.traffic_transmit_service.prepaid_traffic.all()
-                    self.prepaid_tableWidget.setRowCount(nodes.count())
+                prepaid_traffic = self.connection.sql("""SELECT * FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
+                if len(prepaid_traffic)>0:
+                    nodes = prepaid_traffic
+                    #self.model.traffic_transmit_service.prepaid_traffic.all()
+                    
+                    self.prepaid_tableWidget.setRowCount(len(nodes))
                     i=0
                     for node in nodes:
-                        classes = [clas for clas in node.traffic_class.all()]
+                        traffic_classes = self.connection.sql(""" 
+                        SELECT trafficclass.* FROM nas_trafficclass as trafficclass
+                        JOIN billservice_prepaidtraffic_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
+                        WHERE ttc.trafficlimit_id=%d
+                        """ % node.id)
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
-                        self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=classes))
+                        self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=traffic_classes))
 
                         self.addrow(self.prepaid_tableWidget, node.in_direction, i, 2, item_type='checkbox')
                         self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
@@ -1607,33 +1646,49 @@ class TarifFrame(QtGui.QDialog):
                         i+=1 
                 self.prepaid_tableWidget.setColumnHidden(0, True)
                 
-                if self.model.traffic_transmit_service.traffic_transmit_nodes.all().count()>0:
-                    self.reset_traffic_edit.setCheckState(self.model.traffic_transmit_service.reset_traffic == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-                    nodes = self.model.traffic_transmit_service.traffic_transmit_nodes.all()
-                    self.trafficcost_tableWidget.setRowCount(nodes.count())
+                traffic_transmit_nodes = self.connection.sql("""
+                SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
+                WHERE traffictransmitnodes.traffic_transmit_service_id=%d 
+                """ % self.model.traffic_transmit_service_id)
+                
+                if len(traffic_transmit_nodes)>0:
+                    traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
+                    self.reset_traffic_edit.setCheckState(traffic_transmit_service.reset_traffic == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+                    nodes = traffic_transmit_nodes
+                    self.trafficcost_tableWidget.setRowCount(len(nodes))
                     i = 0
                     for node in nodes:
+                        traffic_classes = self.connection.sql(""" 
+                        SELECT trafficclass.* FROM nas_trafficclass as trafficclass
+                        JOIN billservice_traffictransmitnodes_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
+                        WHERE ttc.traffictransmitnodes_id=%d
+                        """ % node.id)           
+              
                         
-                        classes = [clas for clas in node.traffic_class.all()]
                         
-                        time_periods = [tp for tp in node.time_nodes.all()]
-                        print node.id
+                        time_nodes = self.connection.sql(""" 
+                        SELECT timeperiod.* FROM billservice_timeperiod as timeperiod
+                        JOIN billservice_traffictransmitnodes_time_nodes as tn ON tn.timeperiod_id=timeperiod.id
+                        WHERE tn.traffictransmitnodes_id=%d  
+                        """ % node.id)
+                        
+                        #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
                         self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
-                        self.trafficcost_tableWidget.setItem(i,3, CustomWidget(parent=self.trafficcost_tableWidget, models=classes))
+                        self.trafficcost_tableWidget.setItem(i,3, CustomWidget(parent=self.trafficcost_tableWidget, models=traffic_classes))
                         self.addrow(self.trafficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
                         self.addrow(self.trafficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
                         self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.trafficcost_tableWidget.setItem(i,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_periods))
+                        self.trafficcost_tableWidget.setItem(i,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 8)
                         i+=1
                     self.trafficcost_tableWidget.resizeRowsToContents()
                     self.trafficcost_tableWidget.resizeColumnsToContents()
                     self.trafficcost_tableWidget.setColumnHidden(0, True)
         
-            self.access_type_edit.setCurrentIndex(self.access_type_edit.findText(self.model.access_parameters.access_type, QtCore.Qt.MatchCaseSensitive))
-            self.access_time_edit.setCurrentIndex(self.access_time_edit.findText(self.model.access_parameters.access_time.name, QtCore.Qt.MatchCaseSensitive))
+            self.access_type_edit.setCurrentIndex(self.access_type_edit.findText(access_parameters.access_type, QtCore.Qt.MatchCaseSensitive))
+            self.access_time_edit.setCurrentIndex(self.access_time_edit.findText(access_parameters.time_name, QtCore.Qt.MatchCaseSensitive))
             
         self.timeaccessTabActivityActions()
         self.transmitTabActivityActions()
@@ -1681,10 +1736,12 @@ class TarifFrame(QtGui.QDialog):
     def accept(self):
         if self.model:
             model=self.model
-            access_parameters = self.model.access_parameters
+            access_parameters = Object()
+            access_parameters.id=self.model.access_parameters_id
+            access_parameters = self.connection.get(access_parameters.get("billservice_acessparameters"))
         else:
-            model=Tariff()
-            access_parameters = AccessParameters()
+            model=Object()
+            access_parameters = Object()
             
         model.name = unicode(self.tarif_name_edit.text())
         model.cost = unicode(self.tarif_cost_edit.text()) or 0
@@ -1700,17 +1757,22 @@ class TarifFrame(QtGui.QDialog):
         access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or '', self.speed_burst_treshold_out_edit.text() or '')
         access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or '', self.speed_burst_time_out_edit.text() or '')
         access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
-        access_parameters.save()
-        model.access_parameters=access_parameters
+        access_parameters_id = self.connection.create(access_parameters.save("billservice_acessparameters"))
+        if self.model:
+            #Если просто обновляем запись
+            self.connection.create(access_parameters.save("billservice_accessparameters"))
+        else:
+            #Если создаём новую
+            model.access_parameters_id=self.connection.create(access_parameters.save("billservice_accessparameters"))
         
         #Таблица скоростей
         
         for i in xrange(0, self.speed_table.rowCount()):
             id = self.getIdFromtable(self.speed_table, i)
             if id!=-1:
-                speed = TimeSpeed.objects.get(id=id)
+                speed = self.connection.get("SELECT * FROM billservice_timespeed WHERE id=%d" % id)
             else:
-                speed = TimeSpeed()
+                speed = Object()
             speed.access_parameters=model.access_parameters
 
             try:
@@ -1754,87 +1816,101 @@ class TarifFrame(QtGui.QDialog):
             try:
                 if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
-                    print 1
+                    #print 1
                     #transaction.rollback()
                     
                     return
 
                 if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
-                    print 2
+                    #print 2
                     #transaction.rollback()
                     
                     return
             except:
                 print "speed compare error"
-            speed.save()
-        model.save()
+            self.connection.create(speed.save("billservice_timespeed"))
+        #model.save()
         
         #Период
         if unicode(self.sp_name_edit.currentText())!="":
-            model.settlement_period = SettlementPeriod.objects.get(name = unicode(self.sp_name_edit.currentText()))
+            model.settlement_period_id = self.connection.get( "SELECT * FROM billservice_settlement_period WHERE name='%s'" % unicode(self.sp_name_edit.currentText()))
         else:
-            model.settlement_period=None
+            model.settlement_period_id=None
+        
+        model_id = self.connection.create(model.save("billservice_tariff"))
+        if model_id>0:
+            model.id = model_id
         
         #Доступ по времени
-        if model.time_access_service is not None:
-            time_access_service = model.time_access_service
+        if 'time_access_service_id' in model.__dict__ :
+            time_access_service = Object()
+            time_access_service.id = model.time_access_service_id
+            time_access_service = self.connection.get(time_access_service.get("billservice_timeaccessservice"))
+            #time_access_service = model.time_access_service_id
         else:
-            time_access_service=TimeAccessService()
+            time_access_service=Object()
             
             
         if self.time_access_service_checkbox.checkState()==0:
-            if time_access_service.id is not None:
-                model.time_access_service = None
-                model.save()
-                TimeAccessService.objects.get(id=time_access_service.id).delete()
+            if 'time_access_service_id' in model.__dict__:
+                #model.save()
+                self.connection.delete("DELETE FROM timeaccessservice WHERE id=%d" % model.time_access_service_id)
+                model.time_access_service_id = None
+        
             else:
                 model.time_access_service=None
+                
         elif self.time_access_service_checkbox.checkState()==2:
             if self.timeaccess_table.rowCount()>0:
-                print 1
+                #print 1
                 time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
                 time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
-                time_access_service.save()
-                model.time_access_service = time_access_service
+                if model.time_access_service_id:
+                    self.connection.create(time_access_service.save("billservice_timeaccessservice"))
+                else:
+                    model.time_access_service_id = self.connection.create(time_access_service.save("billservice_timeaccessservice"))
+                    
+                
                 for i in xrange(0, self.timeaccess_table.rowCount()):
                     print 2
                     id = self.getIdFromtable(self.timeaccess_table, i)
                     if id!=-1:
-                        time_access_node = TimeAccessNode.objects.get(id=id)
+                        time_access_node = self.conenction.get("SELECT * FROM billservice_timeaccessnode WHERE id=%d" % id )
                     else:
-                        time_access_node = TimeAccessNode()
+                        time_access_node = Object()
                     
                     time_access_node.time_access_service=time_access_service
-                    time_access_node.time_period = TimePeriod.objects.get(name=unicode(self.timeaccess_table.item(i,1).text()))
+                    time_access_node.time_period = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.timeaccess_table.item(i,1).text()))
                     time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
-                    time_access_node.save()
+                    self.connection.create(time_access_node.save("billservice_timeperiodnode"))
         
         #Разовые услуги
+        onetimeservices = self.connectin.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model.id)
         if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:
             for i in xrange(0, self.onetime_tableWidget.rowCount()):
-                print 2
+                #print 2
                 id = self.getIdFromtable(self.onetime_tableWidget, i)
                 
                 if id!=-1:
-                    onetime_service = OneTimeService.objects.get(id=id)
+                    onetime_service = self.connection.get("SELECT * FROM billservice_onetimeservice WHERE id=%d" % id)
                 else:
-                    onetime_service = OneTimeService()
+                    onetime_service = Object()
                 
                 onetime_service.name=unicode(self.onetime_tableWidget.item(i, 1).text())
                 onetime_service.cost=unicode(self.onetime_tableWidget.item(i, 2).text())
                 
-                onetime_service.save()     
-                  
+                id = self.connection.create(onetime_service.save("billservice_onetimeservice"))
+                
                 #Если это новая запись
-                if id==-1:      
-                    model.save() 
-                    onetime_service.tariff_set.add(model)
-        elif self.onetime_services_checkbox.checkState()==0 and model.onetime_services.all().count()>0:
-            for service in model.onetime_services.all():
-                service.tariff_set.remove(model)
+                if id>0:
+                    self.connection.sql("INSERT INTO billservice_tariff_onetime_services(tariff_id, onetimeservice_id) VALUES(%d, %d)" % (model.id, id))
+                    #onetime_service.tariff_set.add(model)
+        elif self.onetime_services_checkbox.checkState()==0 and len(onetimeservices)>0:
+             #сделать удаление самих сущностей
+             self.connection.delete("DELETE FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model.id)
                                                
-        
+        peridical_services = self.connection.sql("SELECT * FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model.id)
         #Периодические услуги
         if self.periodical_tableWidget.rowCount()>0 and self.periodical_services_checkbox.checkState()==2:
             for i in xrange(0, self.periodical_tableWidget.rowCount()):
@@ -1842,37 +1918,35 @@ class TarifFrame(QtGui.QDialog):
                 id = self.getIdFromtable(self.periodical_tableWidget, i)
                 
                 if id!=-1:
-                    periodical_service = PeriodicalService.objects.get(id=id)
+                    periodical_service = self.connection.get("SELECT * FROM billservice_periodicalservice WHERE id=%d" % id)
                 else:
-                    periodical_service = PeriodicalService()
+                    periodical_service = Object()
                 
                 periodical_service.name=unicode(self.periodical_tableWidget.item(i, 1).text())
                 periodical_service.settlement_period = SettlementPeriod.objects.get(name = unicode(self.periodical_tableWidget.item(i, 2).text()))
                 periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
                 periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
                 
-                periodical_service.save()     
+                id = self.connection.create(periodical_service.save("billservice_periodicalservice"))     
                   
                 #Если это новая запись
-                if id==-1:      
-                    model.save() 
-                    periodical_service.tariff_set.add(model)
-        elif self.periodical_services_checkbox.checkState()==0 and model.periodical_services.all().count()>0:
-            for service in model.periodical_services.all():
-                service.tariff_set.remove(model)                
+                if id>0:      
+                    self.connection.sql("INSERT INTO billservice_tariff_periodical_services(tariff_id, periodicalservice_id) VALUES(%d, %d)" % (model.id, id))
+        elif self.periodical_services_checkbox.checkState()==0 and len(peridical_services)>0:
+            self.connection.delete("DELETE FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model.id) 
             
 
         #Лимиты
         if self.limit_tableWidget.rowCount()>0 and self.limites_checkbox.checkState()==2:
             for i in xrange(0, self.limit_tableWidget.rowCount()):
-                print 2
+                #print 2
                 id = self.getIdFromtable(self.limit_tableWidget, i)
                 
                 if id!=-1:
                     
-                    limit = TrafficLimit.objects.get(id=id)
+                    limit = self.connection.get("SELECT * FROM billservice_trafficlimit WHERE id=%d" % id)
                 else:
-                    limit = TrafficLimit()
+                    limit = Object()
                 
                 limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                 limit.settlement_period = SettlementPeriod.objects.get(name = unicode(self.limit_tableWidget.item(i, 3).text()))
@@ -1887,34 +1961,34 @@ class TarifFrame(QtGui.QDialog):
                 if len(traffic_class_models)==0:
                     return
                 
-                limit.save()
+                limit_id = self.connection.create(limit.save("billservice_trafficlimit"))
                 for cl in traffic_class_models:
                     if cl not in limit.traffic_class.all():
-                        cl.trafficlimit_set.add(limit)
+                        #cl.trafficlimit_set.add(limit)
+                        self.connection.sql("INSERT INTO billservice_trafficlimit_traffic_class(trafficlimit_id, trafficclass_id) VALUES(%d, %d)" % (limit_id, cl.id))
 
                 for cl in limit.traffic_class.all():
                     if cl not in traffic_class_models:
-                        cl.trafficlimit_set.remove(limit)
+                        self.connection.sql("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d and trafficclass_id=%d " % (limit_id, cl.id))
                                         
-                limit.save()     
+#                limit.save()     
                   
                 #Если это новая запись
-                if id==-1:      
-                    model.save() 
-                    limit.tariff_set.add(model)
+                if id>0:      
+                    self.connection.sql("INSERT INTO billservice_tariff_traffic_limit(tariff_id, trafficlimit_id) VALUES (%d, %d);" % (id, limit_id)) 
+                    #limit.tariff_set.add(model)
         elif self.limites_checkbox.checkState()==0 and model.traffic_limit.all().count()>0:
-            for service in model.traffic_limit.all():
-                service.tariff_set.remove(model)  
+                self.connection.delete("DELETE FROM billservice_tariff_traffic_limit WHERE tariff_id=%d and trafficlimit_id=%d;" % (id, limit_id))
                             
         #Доступ по трафику 
         if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
-            if self.model.traffic_transmit_service is not None:
-                traffic_transmit_service = self.model.traffic_transmit_service
+            if 'traffic_transmit_service' in model.__dict__:
+                traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
             else:
-                traffic_transmit_service = TrafficTransmitService()
+                traffic_transmit_service = Object()
             
             traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
-            traffic_transmit_service.save()
+            self.connection.create(traffic_transmit_service.save("billservice_traffictransmitservice"))
             
             for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
                 id = self.getIdFromtable(self.trafficcost_tableWidget, i)
@@ -2721,7 +2795,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tarif_treeWidget.clear()
 
     def addTarif(self):
-        tarifframe = TarifFrame()
+        tarifframe = TarifFrame(connection=self.connection)
         tarifframe.exec_()
         self.refresh()
         
@@ -2730,9 +2804,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         pass
     
     def editTarif(self, item, num):
-        model = Tariff.objects.get(name=unicode(item.text(0)))
+        model = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(item.text(0)))
         
-        tarifframe = TarifFrame(model=model)
+        tarifframe = TarifFrame(connection=self.connection, model=model)
         self.parent.workspace.addWindow(tarifframe)
         tarifframe.show()
         
@@ -2809,7 +2883,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             value=''
         if color:
             if int(value)<0:
-                headerItem.setBackgroundColor(QColor(color))
+                headerItem.setBackgroundColor(QtGui.QColor(color))
         
         if not enabled:
             headerItem.setTextColor(QtGui.QColor('#FF0100'))
