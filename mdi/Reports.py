@@ -1,23 +1,24 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
+from helpers import Object as Object
+#import mdi_rc
 
-import mdi_rc
+#sys.path.append('d:/projects/mikrobill/webadmin')
+#sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-from billservice.models import Transaction, Account, TransactionType
+#from billservice.models import Transaction, Account, TransactionType
 
 
 class TransactionsReport(QtGui.QDialog):
-    def __init__(self, account=None):
+    def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
         self.account = account
+        self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,703,483).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -147,7 +148,7 @@ class TransactionsReport(QtGui.QDialog):
         self.ballance.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
         
     def fixtures(self):
-        accounts = Account.objects.all()
+        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
         for account in accounts:
             self.user_edit.addItem(account.username)
         
@@ -167,16 +168,18 @@ class TransactionsReport(QtGui.QDialog):
         end_date = self.date_end.dateTime().toPyDateTime()
         
         if self.system_transactions_checkbox.checkState()==2:
-            transactions = Transaction.objects.filter(account = Account.objects.get(username = unicode(self.user_edit.currentText())),
-                                                      created__gte=start_date,
-                                                      created__lte=end_date)
+            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
+                                            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+                                            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
+                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
         else:
-            transactions = Transaction.objects.filter(account = Account.objects.get(username = unicode(self.user_edit.currentText())),
-                                                      created__gte=start_date,
-                                                      created__lte=end_date,
-                                                      type = "MANUAL_TRANSACTION")            
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name
+            FROM billservice_transaction as transaction
+            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
+            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
 
-        self.tableWidget.setRowCount(transactions.count())
+        self.tableWidget.setRowCount(len(transactions))
         i=0
         ballance = 0
         write_on = 0
@@ -185,8 +188,8 @@ class TransactionsReport(QtGui.QDialog):
             self.addrow(transaction.id, i, 0)
             self.addrow(transaction.created.strftime("%d-%m-%Y %H:%M:%S"), i, 1)
             self.addrow(transaction.bill, i, 2)
-            self.addrow(transaction.type.name, i, 3)
-            self.addrow(transaction.tarif, i, 4)
+            self.addrow(transaction.transaction_type_name, i, 3)
+            self.addrow(transaction.tariff_name, i, 4)
             self.addrow(transaction.summ, i, 5)
             self.addrow(transaction.description, i, 6)
             i+=1

@@ -204,10 +204,11 @@ class SpeedEditDialog(QtGui.QDialog):
         QtGui.QDialog.accept(self)
         
 class TransactionForm(QtGui.QDialog):
-    def __init__(self, model=None, account=None):
+    def __init__(self, connection, model=None, account=None):
         super(TransactionForm, self).__init__()
         self.model = model
         self.account = account
+        self.connection = connection
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()).expandedTo(self.minimumSizeHint()))
 
@@ -287,6 +288,6 @@ class TransactionForm(QtGui.QDialog):
         
     def transactions_report(self):
         if self.account:
-            child = TransactionsReport(account = self.account)
+            child = TransactionsReport(connection=self.connection, account = self.account)
             child.exec_()
             
