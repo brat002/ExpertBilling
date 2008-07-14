@@ -43,10 +43,10 @@ class CheckBoxDialog(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
         
     def fixtures(self):
-       
+        selected_items = [x.id for x in self.selected_items]
         for ai in self.all_items:
             item = QtGui.QListWidgetItem(ai.name)
-            if ai in self.selected_items:
+            if ai.id in selected_items:
                 if self.select_mode == 'checkbox':
                     item.setCheckState(QtCore.Qt.Checked)
                 else:

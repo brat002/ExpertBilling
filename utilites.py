@@ -244,7 +244,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         Функция возвращает дату начала и дату конца текущегопериода
         """
         
-        print time_start, repeat_after, repeat_after_seconds,  now
+        #print time_start, repeat_after, repeat_after_seconds,  now
         
         if not now:
             now=datetime.datetime.now()
