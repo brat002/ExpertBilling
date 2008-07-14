@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -9,16 +9,12 @@ from helpers import Object as Object
 
 from types import BooleanType
 
-sys.path.append('d:/projects/mikrobill/webadmin')
-sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
+#from django.contrib.auth.models import User
 
-from django.contrib.auth.models import User
-
-from billservice.models import Account, AccountTarif,  Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
-from nas.models import IPAddressPool, Nas, TrafficClass
-from django.db import transaction
+#from billservice.models import Account, AccountTarif,  Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
+#from nas.models import IPAddressPool, Nas, TrafficClass
+#from django.db import transaction
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
@@ -1738,7 +1734,7 @@ class TarifFrame(QtGui.QDialog):
             model=self.model
             access_parameters = Object()
             access_parameters.id=self.model.access_parameters_id
-            access_parameters = self.connection.get(access_parameters.get("billservice_acessparameters"))
+            access_parameters = self.connection.get(access_parameters.get("billservice_accessparameters"))
         else:
             model=Object()
             access_parameters = Object()
@@ -2826,8 +2822,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.refresh()
 
     def makeTransation(self):
-        account = Account.objects.get(id = self.getSelectedId())
-        child = TransactionForm(account = account)
+        id = self.getSelectedId()
+        account = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % id)
+        child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
             tr = Transaction.objects.create(account = account, 
                                        type = TransactionType.objects.get(internal_name = u"MANUAL_TRANSACTION"),
@@ -2841,10 +2838,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
                                        
             
     def transactionReport(self):
-            account = Account.objects.get(id = self.getSelectedId())
-            tr = TransactionsReport(account = account)
-            self.parent.workspace.addWindow(tr)
-            tr.show()
+        id = self.getSelectedId()
+        account = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % id)
+        tr = TransactionsReport(connection=self.connection, account = account)
+        self.parent.workspace.addWindow(tr)
+        tr.show()
             
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
@@ -2858,7 +2856,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
 
     def editframe(self):
-        print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
+        #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
         print id
         if id == 0:
