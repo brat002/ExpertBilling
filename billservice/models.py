@@ -38,7 +38,7 @@ CHOISE_METHODS=(
 
 
 CHECK_PERIODS=(
-        (u"SP_START",u"С начала расчётного периода"),
+        (u"period_checkSP_START",u"С начала расчётного периода"),
         (u"AG_START",u"С начала интервала агрегации"),
         )
 
