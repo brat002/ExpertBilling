@@ -11,7 +11,12 @@ import mdi.orm.models as models
 import settings
 import psycopg2
 import psycopg2.extras
+from types import InstanceType  
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+
+
+
+#from mdi.helpers import Object
 
 from DBUtils.PooledDB import PooledDB
 #from mdi.helpers import Object as Object
@@ -27,26 +32,51 @@ pool = PooledDB(
                                                             settings.DATABASE_PASSWORD)
 )
 
+def format_update (x,y):
+    if y!='Null':
+        return "%s='%s'" % (x,y)
+    else:
+        return "%s=%s" % (x,y)
+
+def format_insert(y):
+    if y=='Null':
+        return 
+
 class Object(object):
-    def __init__(self, result=[]):
+    def __init__(self, result=[], *args, **kwargs):
         for key in result:
-            setattr(self, key, result[key])
+            if result[key]!=None:
+                setattr(self, key, result[key])
+
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])  
+        
+        print dir(self)          
             
+         
     def save(self, table):
+        
+        
         fields=[]
         for field in self.__dict__:
-            if type(field)!=InstanceType and self.__dict__[field]!=None:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
                 fields.append(field)
         try:
             self.__dict__['id']
-            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join(["%s='%s'" % (x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
+            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), "%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]))
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]).replace("'Null'", 'Null')))
         
         return sql
     
     def get(self, table):
-        return "SELECT * FROM %s WHERE id=%d" % (table, self.id)
+        return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
+    
+    def __call__(self):
+        return self.id
+
 
 class check_vpn_access(Thread):
         def __init__ (self, dict, timeout=30):
@@ -1691,7 +1721,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def get(self, sql):
         print sql
         self.cur.execute(sql)
-        self.connection.commit()
+        #self.connection.commit()
         result=[]
         r=self.cur.fetchall()
         if len(r)>1:
@@ -1706,7 +1736,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.cur.execute(sql)
         self.connection.commit()
         return 
-        
+
+    def command(self, sql):
+   
+        self.cur.execute(sql)
+        self.connection.commit()
+        return         
         
     def sql(self, sql, return_response=True):
         print sql
