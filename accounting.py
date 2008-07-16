@@ -47,6 +47,8 @@ class Object(object):
         for key in result:
             if result[key]!=None:
                 setattr(self, key, result[key])
+            else:
+                setattr(self, key, 'Null')
 
 
         for key in kwargs:
