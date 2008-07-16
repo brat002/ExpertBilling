@@ -43,8 +43,8 @@ def format_insert(y):
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
-            if result[key]!=None:
-                setattr(self, key, result[key])
+            #if result[key]!=None:
+            setattr(self, key, result[key])
 
 
         for key in kwargs:
