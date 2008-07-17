@@ -54,7 +54,7 @@ class Object(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])  
         
-        print dir(self)          
+        #print dir(self)          
             
          
     def save(self, table):
@@ -1736,19 +1736,27 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def delete(self, sql):
    
         self.cur.execute(sql)
-        self.connection.commit()
+        #self.connection.commit()
         return 
 
     def command(self, sql):
    
         self.cur.execute(sql)
-        self.connection.commit()
+        #self.connection.commit()
         return         
+        
+    def commit(self):
+        self.connection.commit()
+        
+    def rollback(self):
+        self.connection.rollback()
         
     def sql(self, sql, return_response=True):
         print sql
         self.cur.execute(sql)
-        self.connection.commit()
+        #self.connection.commit()
+        
+        #print dir(self.connection)
         result=[]
         if return_response:
             for r in self.cur.fetchall():
@@ -1765,7 +1773,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             id = self.cur.fetchone()['id']
         except:
             pass
-        self.connection.commit()
+        #self.connection.commit()
                
         return id
 

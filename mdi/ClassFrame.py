@@ -11,6 +11,7 @@ class ClassEdit(QtGui.QDialog):
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()).expandedTo(self.minimumSizeHint()))
         self.connection = connection
+        self.connection.commit()
         self.model=model
         self.color=''
 
@@ -91,7 +92,12 @@ class ClassEdit(QtGui.QDialog):
            
         model.store=self.store_edit.checkState()==2
         #model.save()
-        self.connection.create(model.save("nas_trafficclass"))
+        try:
+            self.connection.create(model.save("nas_trafficclass"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
         QtGui.QDialog.accept(self)
         
 
@@ -100,6 +106,7 @@ class ClassNodeFrame(QtGui.QDialog):
         super(ClassNodeFrame, self).__init__()
         self.model=model
         self.connection = connection
+        self.connection.commit()
         
         self.protocols={'':0,
            'ddp':37,
@@ -270,7 +277,7 @@ class ClassNodeFrame(QtGui.QDialog):
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "TRANSIT", None, QtGui.QApplication.UnicodeUTF8))
         
         for protocol in self.protocols:
-            print protocol
+            #print protocol
             self.protocol_edit.addItem(QtGui.QApplication.translate("Dialog", protocol, None, QtGui.QApplication.UnicodeUTF8))
 
 
@@ -383,6 +390,8 @@ class ClassChild(QtGui.QMainWindow):
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
         self.setCentralWidget(self.splitter)
 
         self.menubar = QtGui.QMenuBar(self)
@@ -432,8 +441,13 @@ class ClassChild(QtGui.QMainWindow):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.upClassAction)
         self.toolBar.addAction(self.downClassAction)
-
+        
+        
         self.retranslateUi()
+        
+        self.tableWidget.addAction(self.addClassNodeAction)
+        self.tableWidget.addAction(self.delClassNodeAction)
+        
         self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
         self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
         
@@ -526,9 +540,16 @@ class ClassChild(QtGui.QMainWindow):
     def delClass(self):
         name=self.getSelectedName()
         model = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+        
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
-            self.connection.delete("DELETE FROM nas_trafficclass WHERE id=%d" % model.id)
+            try:
+                
+                self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
+                self.connection.delete("DELETE FROM nas_trafficclass WHERE id=%d" % model.id)
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
 
             self.refresh_list()
         
@@ -547,16 +568,22 @@ class ClassChild(QtGui.QMainWindow):
         b=model2.weight+0
         
         model1.weight=1000001
-        self.connection.create(model1.save("nas_trafficclass"))
-        
-        model2.weight=a
-        model1.weight=b
-        
-        self.connection.create(model2.save("nas_trafficclass"))
-        
-        self.connection.create(model1.save("nas_trafficclass"))
-        
-        self.connection.create(model2.save("nas_trafficclass"))
+        try:
+            
+            self.connection.create(model1.save("nas_trafficclass"))
+            
+            model2.weight=a
+            model1.weight=b
+            
+            self.connection.create(model2.save("nas_trafficclass"))
+            
+            self.connection.create(model1.save("nas_trafficclass"))
+            
+            self.connection.create(model2.save("nas_trafficclass"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
         
         #print model1.weight, model2.weight
             
@@ -610,13 +637,23 @@ class ClassChild(QtGui.QMainWindow):
         child=ClassNodeFrame(connection = self.connection)
         if child.exec_()==1:
             child.model.traffic_class_id=model.id
-            self.connection.create(child.model.save("nas_trafficnode"))
+            try:
+                self.connection.create(child.model.save("nas_trafficnode"))
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
             
             self.refreshTable()
         
     def delNode(self):
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
+            try:
+                self.connection.delete("DELETE FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
             self.refreshTable()
         
     def editNode(self):
@@ -629,7 +666,12 @@ class ClassChild(QtGui.QMainWindow):
         
         child=ClassNodeFrame(connection=self.connection, model=model)
         if child.exec_()==1:
-            self.connection.create(child.model.save("nas_trafficnode"))
+            try:
+                self.connection.create(child.model.save("nas_trafficnode"))
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
             self.refreshTable()
         
     def refreshTable(self, widget=None):
@@ -673,18 +715,6 @@ class ClassChild(QtGui.QMainWindow):
     def getSelectedName(self):
         return self.listWidget.currentItem().text()
     
-    def editframe(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-        try:
-            model=Nas.objects.get(id=self.getSelectedId())
-        except:
-            model=None
-
-        addf = AddNasFrame(model)
-        addf.exec_()
-        self.refresh()
 
     def addrow(self, value, x, y):
         if value==None:

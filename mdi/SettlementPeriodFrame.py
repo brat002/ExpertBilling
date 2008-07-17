@@ -19,6 +19,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         super(AddSettlementPeriod, self).__init__()
         self.model=model
         self.connection=connection
+        self.connection.commit()
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()).expandedTo(self.minimumSizeHint()))
@@ -158,8 +159,10 @@ class AddSettlementPeriod(QtGui.QDialog):
 
         try:
             self.connection.create(model.save("billservice_settlementperiod"))
+            self.connection.commit()
         except Exception, e:
             print e
+            self.connection.rollback()
             return
 
 
