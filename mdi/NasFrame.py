@@ -19,6 +19,7 @@ class AddNasFrame(QtGui.QDialog):
         super(AddNasFrame, self).__init__()
         self.model = model
         self.connection = connection
+        self.connection.commit()
 
 
         #self.setObjectName("self")
@@ -315,10 +316,12 @@ class AddNasFrame(QtGui.QDialog):
 
         
 
-        print self.connection.create(model.save(table="nas_nas"))
-
-
-
+        try:
+            self.connection.create(model.save(table="nas_nas"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
 
         QtGui.QDialog.accept(self)
 
@@ -348,8 +351,7 @@ class AddNasFrame(QtGui.QDialog):
             self.pppoe_edit.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.ipn_edit.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
 
-    def save(self):
-        print 'Saved'
+
 
 
 
@@ -449,9 +451,9 @@ class NasMdiChild(QtGui.QMainWindow):
         import Pyro.core
 
         if self.connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
-            QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
         else:
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
 
 
 
@@ -462,8 +464,10 @@ class NasMdiChild(QtGui.QMainWindow):
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u"Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. Вы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 self.connection.delete("DELETE FROM nas_nas WHERE id=%d" % self.getSelectedId())
+                self.connection.commit()
             except Exception, e:
                 print e
+                self.connection.rollback()
         self.refresh()
 
 

@@ -13,6 +13,7 @@ class AddTimePeriod(QtGui.QDialog):
     def __init__(self, connection, nodemodel=None):
         super(AddTimePeriod, self).__init__()
         self.connection = connection
+        self.connection.commit()
         self.nodemodel=nodemodel
         
         self.setObjectName("Dialog")
@@ -98,24 +99,28 @@ class AddTimePeriod(QtGui.QDialog):
             model=self.nodemodel
         else:
             model=Object()
-        
-        model.name=unicode(self.name_edit.text())
-        model.time_start=self.start_date_edit.dateTime().toPyDateTime()
-
-        model.length=self.start_date_edit.dateTime().secsTo(self.end_date_edit.dateTime())
-        #print model.length
-        
-        model.repeat_after=unicode(self.repeat_edit.currentText())
-
-        if 'id' in model.__dict__:
-            #Update
-            self.connection.create(model.save("billservice_timeperiodnode"))
-        else:
-            #Insert
-            self.nodemodel=model
-            self.nodemodel.id = self.connection.create(model.save("billservice_timeperiodnode"))
-            #print self.nodemodel.id
-
+        try:
+            
+            model.name=unicode(self.name_edit.text())
+            model.time_start=self.start_date_edit.dateTime().toPyDateTime()
+    
+            model.length=self.start_date_edit.dateTime().secsTo(self.end_date_edit.dateTime())
+            #print model.length
+            
+            model.repeat_after=unicode(self.repeat_edit.currentText())
+    
+            if 'id' in model.__dict__:
+                #Update
+                self.connection.create(model.save("billservice_timeperiodnode"))
+            else:
+                #Insert
+                self.nodemodel=model
+                self.nodemodel.id = self.connection.create(model.save("billservice_timeperiodnode"))
+                #print self.nodemodel.id
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
 
         QtGui.QDialog.accept(self)
 
@@ -263,10 +268,17 @@ class TimePeriodChild(QtGui.QMainWindow):
 
         model = Object()
         model.name=unicode(text[0])
-                        
-        if not self.connection.create(model.save(table="billservice_timeperiod")):
-            QtGui.QMessageBox.warning(self, u"Ошибка",
-                        u"Вероятно, такое название уже есть в списке.")
+        
+        try:      
+            self.connection.commit()
+            if not self.connection.create(model.save(table="billservice_timeperiod")):
+                QtGui.QMessageBox.warning(self, u"Ошибка",
+                            u"Вероятно, такое название уже есть в списке.")
+            self.connection.commit()
+        except Exception, e:
+            print e
+            print "rollback"
+            self.connection.rollback()
         
         self.refresh()
 
@@ -279,8 +291,14 @@ class TimePeriodChild(QtGui.QMainWindow):
             return
 
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
-            self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
+            try:
+                self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
+                self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+                
             #self.timeperiod_list_edit.setCurrentIndex(0)
             self.refresh()
 
@@ -295,10 +313,12 @@ class TimePeriodChild(QtGui.QMainWindow):
         try:
             model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % name)
             model.name=unicode(text[0])
-            self.connection.create(model.save('billservice_timeperiod'))                
+            self.connection.create(model.save('billservice_timeperiod'))    
+            self.conection.commit()            
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                         u"Введено недопустимое значение.")
+            self.connection.rollback()
             return
         self.refresh()
 
@@ -311,15 +331,25 @@ class TimePeriodChild(QtGui.QMainWindow):
         #print model.id
         child=AddTimePeriod(connection=self.connection)
         if child.exec_()==1:
-            self.connection.create("INSERT INTO billservice_timeperiod_time_period_nodes(timeperiod_id, timeperiodnode_id) VALUES(%d, %d)" % (model.id, child.nodemodel.id))
+            try:
+                self.connection.create("INSERT INTO billservice_timeperiod_time_period_nodes(timeperiod_id, timeperiodnode_id) VALUES(%d, %d)" % (model.id, child.nodemodel.id))
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+                
             self.refreshTable()
         
     def delNode(self):
         id = self.getSelectedId()
 
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
-            self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
+            try:
+                self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
+                self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
+                self.connection.commit()
+            except Exception, e:
+                self.connection.rollback()
             self.refreshTable()
         
     def editNode(self):

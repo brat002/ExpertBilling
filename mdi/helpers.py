@@ -2,7 +2,7 @@
 
 from PyQt4 import QtGui     
 from types import InstanceType
-   
+import datetime
 
 
 def tableFormat(table):        
@@ -50,7 +50,7 @@ class Object(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])  
         
-        print dir(self)          
+        #print dir(self)          
             
          
     def save(self, table):
@@ -75,6 +75,22 @@ class Object(object):
     def __call__(self):
         return self.id
     
+
+def transaction(account_id, type_id, approved, description, summ, bill):
+    
+    o = Object()
+    o.account_id = account_id
+    o.type_id = type_id
+    o.approved = approved
+    o.description = description
+    o.summ = summ
+    o.bill = bill
+    o.created = datetime.datetime.now()
+    
+    sql = o.save("billservice_transaction")
+    sql += "UPDATE billservice_account SET ballance = ballance - %d WHERE id = %d;" % (summ, account_id)
+     
+    return sql 
 
     
     

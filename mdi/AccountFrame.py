@@ -24,6 +24,7 @@ from Reports import TransactionsReport
 
 from helpers import tableFormat
 
+from helpers import transaction
 
 class CashType(object):
     def __init__(self, name):
@@ -48,6 +49,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.model=model
         self.account=account
         self.connection = connection
+        self.connection.commit()
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()).expandedTo(self.minimumSizeHint()))
@@ -109,7 +111,12 @@ class AddAccountTarif(QtGui.QDialog):
             model.datetime = date
             
             #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
-        self.connection.create(model.save("billservice_accounttarif"))
+        try:
+            self.connection.create(model.save("billservice_accounttarif"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.conection.rollback()
 
         QtGui.QDialog.accept(self)
 
@@ -144,6 +151,7 @@ class TarifFrame(QtGui.QDialog):
         
         self.model=model
         self.connection = connection
+        self.connection.commit()
         
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()).expandedTo(self.minimumSizeHint()))
@@ -658,7 +666,7 @@ class TarifFrame(QtGui.QDialog):
 
         
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_description_label.setText(QtGui.QApplication.translate("Dialog", "Описание тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
@@ -1264,7 +1272,7 @@ class TarifFrame(QtGui.QDialog):
                 default_text=u""
             
             text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
-            if text[0].isEmpty()==True and text[2]:
+            if text[0].isEmpty()==True and text[1]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
             
@@ -1458,6 +1466,7 @@ class TarifFrame(QtGui.QDialog):
 
         
         if self.model:
+            self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.tarif_name_edit.setText(self.model.name)
             self.tarif_cost_edit.setText(unicode(self.model.cost))
             self.tarif_description_edit.setText(self.model.description)
@@ -1622,10 +1631,13 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
                     
                     i+=1
+                    self.limit_tableWidget.resizeColumnsToContents()
+                    self.limit_tableWidget.resizeRowsToContents()
             self.limit_tableWidget.setColumnHidden(0, True)
             
+            print "self.model.traffic_transmit_service_id=", self.model.traffic_transmit_service_id 
             #Prepaid Traffic
-            if 'traffic_transmit_service_id' in self.model.__dict__:
+            if 'traffic_transmit_service_id' in self.model.__dict__ and self.model.traffic_transmit_service_id!=0 and self.model.traffic_transmit_service_id!='Null':
                 self.transmit_service_checkbox.setChecked(True)
                 prepaid_traffic = self.connection.sql("""SELECT * FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
                 print 'self.model.traffic_transmit_service_id', self.model.traffic_transmit_service_id
@@ -1650,9 +1662,10 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
                         
                         self.addrow(self.prepaid_tableWidget, float(node.size)/(1024*1024),i, 5)
-                               
-                        self.prepaid_tableWidget.setRowHeight(i, len(traffic_classes)*22) 
-                        i+=1 
+                        i+=1       
+                    
+                    self.prepaid_tableWidget.resizeRowsToContents() 
+                         
                 self.prepaid_tableWidget.setColumnHidden(0, True)
                 
                 
@@ -1660,7 +1673,9 @@ class TarifFrame(QtGui.QDialog):
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
                 WHERE traffictransmitnodes.traffic_transmit_service_id=%d 
                 """ % self.model.traffic_transmit_service_id)
+                print "traffic_transmit_nodes=", traffic_transmit_nodes
                 print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
+               
                 if len(traffic_transmit_nodes)>0:
                     traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
                     self.reset_traffic_edit.setCheckState(traffic_transmit_service.reset_traffic == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
@@ -1744,7 +1759,7 @@ class TarifFrame(QtGui.QDialog):
           
     #@transaction.commit_manually            
     def accept(self):
-        self.connection.command("BEGIN TRANSACTION;")
+        #self.connection.command("BEGIN;")
         if self.model:
             model=self.model
             access_parameters = Object()
@@ -1755,448 +1770,450 @@ class TarifFrame(QtGui.QDialog):
             access_parameters = Object()
             
 
-            
-        model.name = unicode(self.tarif_name_edit.text())
-        model.cost = unicode(self.tarif_cost_edit.text()) or 0
-        model.description = unicode(self.tarif_description_edit.toPlainText())
-        model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
-        model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
-        
-        access_parameters.access_type = unicode(self.access_type_edit.currentText())
-        access_parameters.access_time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.access_time_edit.currentText())).id
-        access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or '', self.speed_max_out_edit.text() or '')
-        access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text() or '', self.speed_min_out_edit.text() or '')
-        access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text() or '', self.speed_burst_out_edit.text() or '')
-        access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or '', self.speed_burst_treshold_out_edit.text() or '')
-        access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or '', self.speed_burst_time_out_edit.text() or '')
-        access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
-        access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
-        
-        if self.model:
-            #Просто обновляем запись
-            self.connection.create(access_parameters.save("billservice_accessparameters"))
-        else:
-            #Если создаём новую
-            model.access_parameters_id=self.connection.create(access_parameters.save("billservice_accessparameters"))
-        
-        #Таблица скоростей
-        
-        for i in xrange(0, self.speed_table.rowCount()):
-            id = self.getIdFromtable(self.speed_table, i)
-            if id!=-1:
-                #Если такая запись уже есть
-                speed = self.connection.get("SELECT * FROM billservice_timespeed WHERE id=%d" % id)
-            else:
-                #Иначе создаём новую
-                speed = Object()
-            speed.access_parameters_id=model.access_parameters_id
-
-            try:
-                speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
-            except:
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали максимальную скорость")
-                return
-            
-            try:
-                speed.min_limit = u"%s" % self.speed_table.item(i,3).text() or ''
-            except:
-                speed.min_limit=""
-            try:
-                speed.burst_limit = u"%s" % self.speed_table.item(i,4).text() or ''
-            except:
-                speed.burst_limit = ""
-            try:
-                speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text() or ''
-            except:
-                speed.burst_treshold = ""
-            try:
-                speed.burst_time = u"%s" % self.speed_table.item(i,6).text() or ''
-            except:
-                speed.burst_time = ""
-            try:
-                speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
-            except:
-                speed.priority = 8
-            
-            if speed.max_limit=="" and speed.priority==8 and (speed.min_limit!="" or speed.burst_limit!="" or speed.burst_treshold!="" or speed.burst_time!=""):
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Проверьте настройки скорости в таблице")
-                return                 
-
-            if unicode(self.speed_table.item(i,1).text())=="":
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Укажите периоды времени для настроек скорости")
-
-                #transaction.rollback()
-                
-                return
-            speed.time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.speed_table.item(i,1).text())).id
-            try:
-                if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
-                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
-                    #print 1
-                    #transaction.rollback()
-                    
-                    return
-
-                if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
-                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
-                    #print 2
-                    #transaction.rollback()
-                    
-                    return
-            except:
-                print "speed compare error"
-            self.connection.create(speed.save("billservice_timespeed"))
-        #model.save()
-        
-        #Период
-        if unicode(self.sp_name_edit.currentText())!="":
-            model.settlement_period_id = self.connection.get( "SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.sp_name_edit.currentText())).id
-        else:
-            model.settlement_period_id='Null'
-        
-        
-        model_id = self.connection.create(model.save("billservice_tariff"))
-        if model_id==-1:
-            #Если не создали новую сущность
-            model_id = model.id
-        else:
-            model.id = model_id 
-        
-        #Доступ по времени
-        if self.model and 'time_access_service_id' in self.model.__dict__ and  model.time_access_service_id!="Null":
-            
-            #time_access_service = Object()
-            #time_access_service.id = model.time_access_service_id
-            time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % model.time_access_service_id)
-            #time_access_service = model.time_access_service_id
-        else:
-            time_access_service=Object()
-            
-            
-        if self.time_access_service_checkbox.checkState()==0:
-            if 'time_access_service_id' in model.__dict__ and model.time_access_service_id!="Null":
-                #model.save()
-                self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % model.time_access_service_id)
-                
-                time_access_service_id=model.time_access_service_id
-                model.time_access_service_id='Null'
-                self.connection.create(model.save("billservice_tariff"))
-                self.connection.delete("DELETE FROM billservice_timeaccessservice WHERE id=%d" % time_access_service_id)
-                
-                model.time_access_service_id = 'Null'
-        
-            else:
-                model.time_access_service_id = 'Null'
-                
-        elif self.time_access_service_checkbox.checkState()==2:
-            if self.timeaccess_table.rowCount()>0:
-                #print 1
-                time_access_service.name = ""
-                time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
-                time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
-                if self.model and 'time_access_service_id'  in model.__dict__:
-                    self.connection.create(time_access_service.save("billservice_timeaccessservice"))
-                    time_access_service_id = time_access_service.id
-                else:
-                    model.time_access_service_id = self.connection.create(time_access_service.save("billservice_timeaccessservice"))
-                    time_access_service_id = model.time_access_service_id
-                
-                for i in xrange(0, self.timeaccess_table.rowCount()):
-                    #print 2
-                    id = self.getIdFromtable(self.timeaccess_table, i)
-                    if id!=-1:
-                        time_access_node = self.connection.get("SELECT * FROM billservice_timeaccessnode WHERE id=%d" % id )
-                    else:
-                        time_access_node = Object()
-                    
-                    time_access_node.time_access_service_id=time_access_service_id
-                    
-                    time_access_node.time_period_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.timeaccess_table.item(i,1).text())).id
-                    time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
-                    self.connection.create(time_access_node.save("billservice_timeaccessnode"))
-        
-        #Разовые услуги
-        
-        if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:
-            onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
-            for i in xrange(0, self.onetime_tableWidget.rowCount()):
-                #print 2
-                id = self.getIdFromtable(self.onetime_tableWidget, i)
-                
-                if id!=-1:
-                    onetime_service = self.connection.get("SELECT * FROM billservice_onetimeservice WHERE id=%d" % id)
-                else:
-                    onetime_service = Object()
-                
-                onetime_service.name=unicode(self.onetime_tableWidget.item(i, 1).text())
-                onetime_service.cost=unicode(self.onetime_tableWidget.item(i, 2).text())
-                
-                onetime_service_id = self.connection.create(onetime_service.save("billservice_onetimeservice"))
-                
-                #Если это новая запись
-                if onetime_service_id>0:
-                    self.connection.create("INSERT INTO billservice_tariff_onetime_services(tariff_id, onetimeservice_id) VALUES(%d, %d)" % (model.id, onetime_service_id))
-                    #onetime_service.tariff_set.add(model)
-        elif self.onetime_services_checkbox.checkState()==0:
-             onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
-             if len(onetimeservices)>0:
-                 #сделать удаление самих сущностей
-                 self.connection.delete("DELETE FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model_id)
-                 for onetimeservice in onetimeservices:
-                     self.connection.delete("DELETE FROM billservice_onetimeservice WHERE onetimeservice_id=%d" % onetimeservice.onetimeservice_id)
-                                               
-        
-        #Периодические услуги
-        if self.periodical_tableWidget.rowCount()>0 and self.periodical_services_checkbox.checkState()==2:
-            peridical_services = self.connection.sql("SELECT * FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id)
-            for i in xrange(0, self.periodical_tableWidget.rowCount()):
-                #print 2
-                id = self.getIdFromtable(self.periodical_tableWidget, i)
-                
-                if id!=-1:
-                    periodical_service = self.connection.get("SELECT * FROM billservice_periodicalservice WHERE id=%d" % id)
-                else:
-                    periodical_service = Object()
-                
-                periodical_service.name=unicode(self.periodical_tableWidget.item(i, 1).text())
-                periodical_service.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.periodical_tableWidget.item(i, 2).text())).id
-                periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
-                periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
-                
-                periodical_service_id = self.connection.create(periodical_service.save("billservice_periodicalservice"))     
-                  
-                #Если это новая запись
-                if periodical_service_id>0:      
-                    self.connection.create("INSERT INTO billservice_tariff_periodical_services(tariff_id, periodicalservice_id) VALUES(%d, %d)" % (model.id, periodical_service_id))
-        elif self.periodical_services_checkbox.checkState()==0:
-            peridical_services = self.connection.sql("SELECT * FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id)
-            if len(peridical_services)>0:
-                self.connection.delete("DELETE FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id) 
-                for periodical_service in periodical_services:
-                    self.connection.delete("DELETE FROM billservice_tariff_periodical_services WHERE periodicalservice_id=%d" % periodical_service.periodicalservice_id)
-            
-
-        #Лимиты
-        if self.limit_tableWidget.rowCount()>0 and self.limites_checkbox.checkState()==2:
-            for i in xrange(0, self.limit_tableWidget.rowCount()):
-                #print 2
-                id = self.getIdFromtable(self.limit_tableWidget, i)
-                
-                traffic_class_models = [x.id for x in self.limit_tableWidget.item(i, 4).models]
-
-                if len(traffic_class_models)==0:
-                    return
-                
-                if id!=-1:
-                    
-                    limit = self.connection.get("SELECT * FROM billservice_trafficlimit WHERE id=%d" % id)
-                else:
-                    limit = Object()
-                
-                limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
-                limit.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.limit_tableWidget.item(i, 3).text())).id
-                limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                limit.size=unicode(self.limit_tableWidget.item(i, 8).text())
-
-                limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
-                limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
-                limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
-                
-                limit_id = self.connection.create(limit.save("billservice_trafficlimit"))
-                
-                if limit_id==-1:
-                    limit_id=limit.id
-                
-                print 'limit_id=', limit_id
-                
-                traffic_classes_for_limit = self.connection.sql("""SELECT class.* FROM nas_trafficclass as class
-                JOIN billservice_trafficlimit_traffic_class as tc ON tc.trafficclass_id = class.id
-                WHERE tc.trafficlimit_id=%d
-                """ % limit_id)
-
-                traffic_classes_for_limit= [x.id for x in traffic_classes_for_limit]
-                for cl in traffic_class_models:
-                    if cl not in traffic_classes_for_limit:
-                        self.connection.create("INSERT INTO billservice_trafficlimit_traffic_class(trafficlimit_id, trafficclass_id) VALUES(%d, %d)" % (limit_id, cl))
-
-                for cl in traffic_classes_for_limit:
-                    if cl not in traffic_class_models:
-                        self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d and trafficclass_id=%d " % (limit_id, cl))
-                                        
-#                limit.save()     
-                  
-                #Если это новая запись
-                print 'id', id
-                if id==-1:   
-                    print u"Сохраняем связь"   
-                    self.connection.create("INSERT INTO billservice_tariff_traffic_limit(tariff_id, trafficlimit_id) VALUES (%d, %d);" % (model_id, limit_id)) 
-                    #limit.tariff_set.add(model)
-        elif self.limites_checkbox.checkState()==0:
-            limites = self.connection.sql("SELECT * FROM billservice_tariff_traffic_limit WHERE tariff_id=%d" % model_id)
-            for limit in limites:
-                self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d" % limit.id)
-            self.connection.delete("DELETE FROM billservice_tariff_traffic_limit WHERE tariff_id=%d;" % model_id)
-                            
-        #Доступ по трафику 
-        if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
-            if 'traffic_transmit_service' in model.__dict__:
-                traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
-            else:
-                traffic_transmit_service = Object()
-            
-            traffic_transmit_service.period_check='SP_START'
-            traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
-            traffic_transmit_service_id = self.connection.create(traffic_transmit_service.save("billservice_traffictransmitservice"))
-            if traffic_transmit_service_id==-1:
-                traffic_transmit_service_id = traffic_transmit_service.id
-                
-            if traffic_transmit_service_id==-1:
-                #print traffic_transmit_service.id
-                traffic_transmit_service_id=traffic_transmit_service.id
-            
-            for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
-                id = self.getIdFromtable(self.trafficcost_tableWidget, i)
-                
-                if id!=-1:
-                    transmit_node = self.connection.get("SELECT * FROM billservice_traffictransmitnodes WHERE id=%d" % id)
-                else:
-                    transmit_node = Object()
-                
-                
-                transmit_node.traffic_transmit_service_id = traffic_transmit_service_id
-                transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
-                transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
-                transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
-                transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
-                transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
-                transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,8).text())
-                
-                
-                
-                traffic_class_models = self.trafficcost_tableWidget.item(i, 3).models
-                
-                traffic_class_models = [x.id for x in traffic_class_models]
-                
-                if len(traffic_class_models)==0:
-                    return
-                
-                transmit_node_id = self.connection.create(transmit_node.save("billservice_traffictransmitnodes"))
-                
-                if transmit_node_id==-1:
-                    transmit_node_id=transmit_node.id
-                    
-                traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
-                
-                JOIN billservice_traffictransmitnodes_traffic_class as tc ON tc.trafficclass_id =  trafficclass.id
-                WHERE tc.traffictransmitnodes_id=%d""" % transmit_node_id)
-                
-                traffic_classes = [x.id for x in traffic_classes_for_node]
-                for cl in traffic_class_models:
-                    #print (transmit_node_id, cl.id)
-                    if cl not in traffic_classes:
-                        print cl, traffic_classes
-                        self.connection.create("""INSERT INTO billservice_traffictransmitnodes_traffic_class(traffictransmitnodes_id, trafficclass_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
-                        #cl.traffictransmitnodes_set.add(transmit_node)
-                        
-                        print "add"
-
-                for cl in traffic_classes:
-                    if cl not in traffic_class_models:
-                        self.connection.delete("DELETE FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=%d and trafficclass_id=%d" % (transmit_node_id, cl))
-                        #cl.traffictransmitnodes_set.remove(transmit_node)
-#                        print "del"
-                        
-                time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 7).models]
-                if len(time_period_models)==0:
-                    return
-                
-                time_periods_for_node = self.connection.sql("""SELECT timeperiod.* FROM billservice_timeperiod as timeperiod
-                                                            JOIN billservice_traffictransmitnodes_time_nodes as tn ON tn.timeperiod_id=timeperiod.id
-                                                            WHERE tn.traffictransmitnodes_id=%d
-                                                            """ % transmit_node_id)
-                time_periods_for_node = [x.id for x in time_periods_for_node]
-                for cl in time_period_models:
-                    if cl not in time_periods_for_node:
-                        #cl.traffictransmitnodes_set.add(transmit_node)
-                        self.connection.create("""INSERT INTO billservice_traffictransmitnodes_time_nodes(traffictransmitnodes_id, timeperiod_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
-
-                for cl in time_periods_for_node:
-                    if cl not in time_period_models:
-                        #cl.traffictransmitnodes_set.remove(transmit_node)
-                        self.connection.delete("DELETE FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=%d and timeperiod_id=%d" % (transmit_node_id, cl))
-                                                                
-                #transmit_node.save() 
-                #traffic_transmit_service.save()  
- 
-            model.traffic_transmit_service_id = traffic_transmit_service_id
-            #self.model.save() 
-                  
-            #Предоплаченный трафик
-            for i in xrange(self.prepaid_tableWidget.rowCount()):
-                id = self.getIdFromtable(self.prepaid_tableWidget, i)
-                
-                if id!=-1:
-                    prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
-                else:
-                    prepaid_node = Object()
-                
-                #print "i=", self.prepaid_tableWidget.item(i,2)
-                
-                prepaid_node.traffic_transmit_service_id = traffic_transmit_service_id
-                prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
-                prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
-                prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,5).text())*1024*1024)
-                
-                 
-                traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
-                if len(traffic_class_models)==0:
-                    return
-                
-                prepaid_node_id = self.connection.create(prepaid_node.save("billservice_prepaidtraffic"))
-                if prepaid_node_id==-1:
-                    prepaid_node_id = prepaid_node.id 
-
-                traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
-                
-                JOIN billservice_prepaidtraffic_traffic_class as tc ON tc.trafficclass_id = trafficclass.id
-                WHERE tc.prepaidtraffic_id=%d""" % prepaid_node_id)
-                
-                traffic_classes_for_node = [x.id for x in traffic_classes_for_node]
-                
-                for cl in traffic_class_models:
-                    if cl not in traffic_classes_for_node:
-                        self.connection.create("INSERT INTO billservice_prepaidtraffic_traffic_class(prepaidtraffic_id, trafficclass_id) VALUES(%d,%d)" % (prepaid_node_id, cl))
-                        #cl.prepaidtraffic_set.add(prepaid_node)
-                        #print "add"
-
-                for cl in traffic_classes_for_node:
-                    if cl not in traffic_class_models:
-                        self.connection.delete("DELETE FROM billservice_prepaidtraffic_traffic_class WHERE prepaidtraffic_id=%d and trafficclass_id=%d " % (prepaid_node_id, cl))
-                        #cl.prepaidtraffic_set.remove(prepaidt_node)
-                        #print "del"
-                        
-                                                                
-                self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
-
-        elif self.transmit_service_checkbox.checkState()==0:
-            if 'traffic_transmit_service' in model.__dict__:
-                self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
-            model.traffic_transmit_service_id=0
-            
-                            
         try:
             
+            model.name = unicode(self.tarif_name_edit.text())
+            model.cost = unicode(self.tarif_cost_edit.text()) or 0
+            model.description = unicode(self.tarif_description_edit.toPlainText())
+            model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
+            model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
+            
+            model.active = self.tarif_status_edit.checkState()==2
+            
+            access_parameters.access_type = unicode(self.access_type_edit.currentText())
+            access_parameters.access_time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.access_time_edit.currentText())).id
+            access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or '', self.speed_max_out_edit.text() or '')
+            access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text() or '', self.speed_min_out_edit.text() or '')
+            access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text() or '', self.speed_burst_out_edit.text() or '')
+            access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or '', self.speed_burst_treshold_out_edit.text() or '')
+            access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or '', self.speed_burst_time_out_edit.text() or '')
+            access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
+            access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
+            
+            if self.model:
+                #Просто обновляем запись
+                self.connection.create(access_parameters.save("billservice_accessparameters"))
+            else:
+                #Если создаём новую
+                model.access_parameters_id=self.connection.create(access_parameters.save("billservice_accessparameters"))
+            
+            #Таблица скоростей
+            
+            for i in xrange(0, self.speed_table.rowCount()):
+                id = self.getIdFromtable(self.speed_table, i)
+                if id!=-1:
+                    #Если такая запись уже есть
+                    speed = self.connection.get("SELECT * FROM billservice_timespeed WHERE id=%d" % id)
+                else:
+                    #Иначе создаём новую
+                    speed = Object()
+                speed.access_parameters_id=model.access_parameters_id
+    
+                try:
+                    speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
+                except:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали максимальную скорость")
+                    return
+                
+                try:
+                    speed.min_limit = u"%s" % self.speed_table.item(i,3).text() or ''
+                except:
+                    speed.min_limit=""
+                try:
+                    speed.burst_limit = u"%s" % self.speed_table.item(i,4).text() or ''
+                except:
+                    speed.burst_limit = ""
+                try:
+                    speed.burst_treshold = u"%s" % self.speed_table.item(i,5).text() or ''
+                except:
+                    speed.burst_treshold = ""
+                try:
+                    speed.burst_time = u"%s" % self.speed_table.item(i,6).text() or ''
+                except:
+                    speed.burst_time = ""
+                try:
+                    speed.priority = unicode(self.speed_table.item(i,7).text()) or 8
+                except:
+                    speed.priority = 8
+                
+                if speed.max_limit=="" and speed.priority==8 and (speed.min_limit!="" or speed.burst_limit!="" or speed.burst_treshold!="" or speed.burst_time!=""):
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Проверьте настройки скорости в таблице")
+                    return                 
+    
+                if unicode(self.speed_table.item(i,1).text())=="":
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Укажите периоды времени для настроек скорости")
+    
+                    #transaction.rollback()
+                    
+                    return
+                speed.time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.speed_table.item(i,1).text())).id
+                try:
+                    if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
+                        #print 1
+                        #transaction.rollback()
+                        
+                        return
+    
+                    if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
+                        #print 2
+                        #transaction.rollback()
+                        
+                        return
+                except:
+                    print "speed compare error"
+                self.connection.create(speed.save("billservice_timespeed"))
+            #model.save()
+            
+            #Период
+            if unicode(self.sp_name_edit.currentText())!="":
+                model.settlement_period_id = self.connection.get( "SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.sp_name_edit.currentText())).id
+            else:
+                model.settlement_period_id='Null'
+            
+            
+            model_id = self.connection.create(model.save("billservice_tariff"))
+            if model_id==-1:
+                #Если не создали новую сущность
+                model_id = model.id
+            else:
+                model.id = model_id 
+            
+            #Доступ по времени
+            if self.model and 'time_access_service_id' in self.model.__dict__ and  model.time_access_service_id!="Null":
+                
+                #time_access_service = Object()
+                #time_access_service.id = model.time_access_service_id
+                time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % model.time_access_service_id)
+                #time_access_service = model.time_access_service_id
+            else:
+                time_access_service=Object()
+                
+                
+            if self.time_access_service_checkbox.checkState()==0:
+                if 'time_access_service_id' in model.__dict__ and model.time_access_service_id!="Null":
+                    #model.save()
+                    self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % model.time_access_service_id)
+                    
+                    time_access_service_id=model.time_access_service_id
+                    model.time_access_service_id='Null'
+                    self.connection.create(model.save("billservice_tariff"))
+                    self.connection.delete("DELETE FROM billservice_timeaccessservice WHERE id=%d" % time_access_service_id)
+                    
+                    model.time_access_service_id = 'Null'
+            
+                else:
+                    model.time_access_service_id = 'Null'
+                    
+            elif self.time_access_service_checkbox.checkState()==2:
+                if self.timeaccess_table.rowCount()>0:
+                    #print 1
+                    time_access_service.name = ""
+                    time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
+                    time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
+                    if self.model and 'time_access_service_id'  in model.__dict__:
+                        self.connection.create(time_access_service.save("billservice_timeaccessservice"))
+                        time_access_service_id = time_access_service.id
+                    else:
+                        model.time_access_service_id = self.connection.create(time_access_service.save("billservice_timeaccessservice"))
+                        time_access_service_id = model.time_access_service_id
+                    
+                    for i in xrange(0, self.timeaccess_table.rowCount()):
+                        #print 2
+                        id = self.getIdFromtable(self.timeaccess_table, i)
+                        if id!=-1:
+                            time_access_node = self.connection.get("SELECT * FROM billservice_timeaccessnode WHERE id=%d" % id )
+                        else:
+                            time_access_node = Object()
+                        
+                        time_access_node.time_access_service_id=time_access_service_id
+                        
+                        time_access_node.time_period_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.timeaccess_table.item(i,1).text())).id
+                        time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
+                        self.connection.create(time_access_node.save("billservice_timeaccessnode"))
+            
+            #Разовые услуги
+            
+            if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:
+                onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
+                for i in xrange(0, self.onetime_tableWidget.rowCount()):
+                    #print 2
+                    id = self.getIdFromtable(self.onetime_tableWidget, i)
+                    
+                    if id!=-1:
+                        onetime_service = self.connection.get("SELECT * FROM billservice_onetimeservice WHERE id=%d" % id)
+                    else:
+                        onetime_service = Object()
+                    
+                    onetime_service.name=unicode(self.onetime_tableWidget.item(i, 1).text())
+                    onetime_service.cost=unicode(self.onetime_tableWidget.item(i, 2).text())
+                    
+                    onetime_service_id = self.connection.create(onetime_service.save("billservice_onetimeservice"))
+                    
+                    #Если это новая запись
+                    if onetime_service_id>0:
+                        self.connection.create("INSERT INTO billservice_tariff_onetime_services(tariff_id, onetimeservice_id) VALUES(%d, %d)" % (model.id, onetime_service_id))
+                        #onetime_service.tariff_set.add(model)
+            elif self.onetime_services_checkbox.checkState()==0:
+                 onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
+                 if len(onetimeservices)>0:
+                     #сделать удаление самих сущностей
+                     self.connection.delete("DELETE FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model_id)
+                     for onetimeservice in onetimeservices:
+                         self.connection.delete("DELETE FROM billservice_onetimeservice WHERE onetimeservice_id=%d" % onetimeservice.onetimeservice_id)
+                                                   
+            
+            #Периодические услуги
+            if self.periodical_tableWidget.rowCount()>0 and self.periodical_services_checkbox.checkState()==2:
+                peridical_services = self.connection.sql("SELECT * FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id)
+                for i in xrange(0, self.periodical_tableWidget.rowCount()):
+                    #print 2
+                    id = self.getIdFromtable(self.periodical_tableWidget, i)
+                    
+                    if id!=-1:
+                        periodical_service = self.connection.get("SELECT * FROM billservice_periodicalservice WHERE id=%d" % id)
+                    else:
+                        periodical_service = Object()
+                    
+                    periodical_service.name=unicode(self.periodical_tableWidget.item(i, 1).text())
+                    periodical_service.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.periodical_tableWidget.item(i, 2).text())).id
+                    periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
+                    periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
+                    
+                    periodical_service_id = self.connection.create(periodical_service.save("billservice_periodicalservice"))     
+                      
+                    #Если это новая запись
+                    if periodical_service_id>0:      
+                        self.connection.create("INSERT INTO billservice_tariff_periodical_services(tariff_id, periodicalservice_id) VALUES(%d, %d)" % (model.id, periodical_service_id))
+            elif self.periodical_services_checkbox.checkState()==0:
+                peridical_services = self.connection.sql("SELECT * FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id)
+                if len(peridical_services)>0:
+                    self.connection.delete("DELETE FROM billservice_tariff_periodical_services WHERE tariff_id=%d" % model_id) 
+                    for periodical_service in periodical_services:
+                        self.connection.delete("DELETE FROM billservice_tariff_periodical_services WHERE periodicalservice_id=%d" % periodical_service.periodicalservice_id)
+                
+    
+            #Лимиты
+            if self.limit_tableWidget.rowCount()>0 and self.limites_checkbox.checkState()==2:
+                for i in xrange(0, self.limit_tableWidget.rowCount()):
+                    #print 2
+                    id = self.getIdFromtable(self.limit_tableWidget, i)
+                    
+                    traffic_class_models = [x.id for x in self.limit_tableWidget.item(i, 4).models]
+    
+                    if len(traffic_class_models)==0:
+                        return
+                    
+                    if id!=-1:
+                        
+                        limit = self.connection.get("SELECT * FROM billservice_trafficlimit WHERE id=%d" % id)
+                    else:
+                        limit = Object()
+                    
+                    limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
+                    limit.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.limit_tableWidget.item(i, 3).text())).id
+                    limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
+                    limit.size=unicode(self.limit_tableWidget.item(i, 8).text())
+    
+                    limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
+                    limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
+                    limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
+                    
+                    limit_id = self.connection.create(limit.save("billservice_trafficlimit"))
+                    
+                    if limit_id==-1:
+                        limit_id=limit.id
+                    
+                    print 'limit_id=', limit_id
+                    
+                    traffic_classes_for_limit = self.connection.sql("""SELECT class.* FROM nas_trafficclass as class
+                    JOIN billservice_trafficlimit_traffic_class as tc ON tc.trafficclass_id = class.id
+                    WHERE tc.trafficlimit_id=%d
+                    """ % limit_id)
+    
+                    traffic_classes_for_limit= [x.id for x in traffic_classes_for_limit]
+                    for cl in traffic_class_models:
+                        if cl not in traffic_classes_for_limit:
+                            self.connection.create("INSERT INTO billservice_trafficlimit_traffic_class(trafficlimit_id, trafficclass_id) VALUES(%d, %d)" % (limit_id, cl))
+    
+                    for cl in traffic_classes_for_limit:
+                        if cl not in traffic_class_models:
+                            self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d and trafficclass_id=%d " % (limit_id, cl))
+                                            
+    #                limit.save()     
+                      
+                    #Если это новая запись
+                    print 'id', id
+                    if id==-1:   
+                        print u"Сохраняем связь"   
+                        self.connection.create("INSERT INTO billservice_tariff_traffic_limit(tariff_id, trafficlimit_id) VALUES (%d, %d);" % (model_id, limit_id)) 
+                        #limit.tariff_set.add(model)
+            elif self.limites_checkbox.checkState()==0:
+                limites = self.connection.sql("SELECT * FROM billservice_tariff_traffic_limit WHERE tariff_id=%d" % model_id)
+                for limit in limites:
+                    self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d" % limit.id)
+                self.connection.delete("DELETE FROM billservice_tariff_traffic_limit WHERE tariff_id=%d;" % model_id)
+                                
+            #Доступ по трафику 
+            if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
+                if 'traffic_transmit_service' in model.__dict__:
+                    traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
+                else:
+                    traffic_transmit_service = Object()
+                
+                traffic_transmit_service.period_check='SP_START'
+                traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
+                traffic_transmit_service_id = self.connection.create(traffic_transmit_service.save("billservice_traffictransmitservice"))
+                if traffic_transmit_service_id==-1:
+                    traffic_transmit_service_id = traffic_transmit_service.id
+                    
+                if traffic_transmit_service_id==-1:
+                    #print traffic_transmit_service.id
+                    traffic_transmit_service_id=traffic_transmit_service.id
+                
+                for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
+                    id = self.getIdFromtable(self.trafficcost_tableWidget, i)
+                    
+                    if id!=-1:
+                        transmit_node = self.connection.get("SELECT * FROM billservice_traffictransmitnodes WHERE id=%d" % id)
+                    else:
+                        transmit_node = Object()
+                    
+                    
+                    transmit_node.traffic_transmit_service_id = traffic_transmit_service_id
+                    transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
+                    transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
+                    transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
+                    transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
+                    transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
+                    transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,8).text())
+                    
+                    
+                    
+                    traffic_class_models = self.trafficcost_tableWidget.item(i, 3).models
+                    
+                    traffic_class_models = [x.id for x in traffic_class_models]
+                    
+                    if len(traffic_class_models)==0:
+                        return
+                    
+                    transmit_node_id = self.connection.create(transmit_node.save("billservice_traffictransmitnodes"))
+                    
+                    if transmit_node_id==-1:
+                        transmit_node_id=transmit_node.id
+                        
+                    traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
+                    
+                    JOIN billservice_traffictransmitnodes_traffic_class as tc ON tc.trafficclass_id =  trafficclass.id
+                    WHERE tc.traffictransmitnodes_id=%d""" % transmit_node_id)
+                    
+                    traffic_classes = [x.id for x in traffic_classes_for_node]
+                    for cl in traffic_class_models:
+                        #print (transmit_node_id, cl.id)
+                        if cl not in traffic_classes:
+                            print cl, traffic_classes
+                            self.connection.create("""INSERT INTO billservice_traffictransmitnodes_traffic_class(traffictransmitnodes_id, trafficclass_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
+                            #cl.traffictransmitnodes_set.add(transmit_node)
+                            
+                            print "add"
+    
+                    for cl in traffic_classes:
+                        if cl not in traffic_class_models:
+                            self.connection.delete("DELETE FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=%d and trafficclass_id=%d" % (transmit_node_id, cl))
+                            #cl.traffictransmitnodes_set.remove(transmit_node)
+    #                        print "del"
+                            
+                    time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 7).models]
+                    if len(time_period_models)==0:
+                        return
+                    
+                    time_periods_for_node = self.connection.sql("""SELECT timeperiod.* FROM billservice_timeperiod as timeperiod
+                                                                JOIN billservice_traffictransmitnodes_time_nodes as tn ON tn.timeperiod_id=timeperiod.id
+                                                                WHERE tn.traffictransmitnodes_id=%d
+                                                                """ % transmit_node_id)
+                    time_periods_for_node = [x.id for x in time_periods_for_node]
+                    for cl in time_period_models:
+                        if cl not in time_periods_for_node:
+                            #cl.traffictransmitnodes_set.add(transmit_node)
+                            self.connection.create("""INSERT INTO billservice_traffictransmitnodes_time_nodes(traffictransmitnodes_id, timeperiod_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
+    
+                    for cl in time_periods_for_node:
+                        if cl not in time_period_models:
+                            #cl.traffictransmitnodes_set.remove(transmit_node)
+                            self.connection.delete("DELETE FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=%d and timeperiod_id=%d" % (transmit_node_id, cl))
+                                                                    
+                    #transmit_node.save() 
+                    #traffic_transmit_service.save()  
+     
+                model.traffic_transmit_service_id = traffic_transmit_service_id
+                #self.model.save() 
+                      
+                #Предоплаченный трафик
+                for i in xrange(self.prepaid_tableWidget.rowCount()):
+                    id = self.getIdFromtable(self.prepaid_tableWidget, i)
+                    
+                    if id!=-1:
+                        prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
+                    else:
+                        prepaid_node = Object()
+                    
+                    #print "i=", self.prepaid_tableWidget.item(i,2)
+                    
+                    prepaid_node.traffic_transmit_service_id = traffic_transmit_service_id
+                    prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
+                    prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
+                    prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
+                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,5).text())*1024*1024)
+                    
+                     
+                    traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
+                    if len(traffic_class_models)==0:
+                        return
+                    
+                    prepaid_node_id = self.connection.create(prepaid_node.save("billservice_prepaidtraffic"))
+                    if prepaid_node_id==-1:
+                        prepaid_node_id = prepaid_node.id 
+    
+                    traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
+                    
+                    JOIN billservice_prepaidtraffic_traffic_class as tc ON tc.trafficclass_id = trafficclass.id
+                    WHERE tc.prepaidtraffic_id=%d""" % prepaid_node_id)
+                    
+                    traffic_classes_for_node = [x.id for x in traffic_classes_for_node]
+                    
+                    for cl in traffic_class_models:
+                        if cl not in traffic_classes_for_node:
+                            self.connection.create("INSERT INTO billservice_prepaidtraffic_traffic_class(prepaidtraffic_id, trafficclass_id) VALUES(%d,%d)" % (prepaid_node_id, cl))
+                            #cl.prepaidtraffic_set.add(prepaid_node)
+                            #print "add"
+    
+                    for cl in traffic_classes_for_node:
+                        if cl not in traffic_class_models:
+                            self.connection.delete("DELETE FROM billservice_prepaidtraffic_traffic_class WHERE prepaidtraffic_id=%d and trafficclass_id=%d " % (prepaid_node_id, cl))
+                            #cl.prepaidtraffic_set.remove(prepaidt_node)
+                            #print "del"
+                            
+                                                                    
+                    self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
+    
+            elif self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0:
+                if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id!='Null' and model.traffic_transmit_service_id!=0:
+                    self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
+                model.traffic_transmit_service_id=0
+                
+                            
+        
+            
             self.connection.create(model.save("billservice_tariff"))
-            #self.connection.command("ROLLBACK;")
-            #self.
+            self.connection.commit()
+        
             print True
-            #transaction.commit()
+            
         except Exception, e:
             print e
-            #transaction.rollback()
-            #return
-            pass
+            self.connection.rollback()
+
         QtGui.QDialog.accept(self)
                     
 class AddAccountFrame(QtGui.QDialog):
@@ -2204,6 +2221,7 @@ class AddAccountFrame(QtGui.QDialog):
         super(AddAccountFrame, self).__init__()
         self.model=model
         self.connection = connection
+        self.connection.commit()
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,427,476).size()).expandedTo(self.minimumSizeHint()))
 
@@ -2591,96 +2609,99 @@ class AddAccountFrame(QtGui.QDialog):
         понаставить проверок
         """
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
-        
-        if self.model:
-            model=self.model
-            model = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % self.model.id)
+        try:
             
-            
-        else:
-            print 'New account'
-            if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.username_edit.text())).count>0:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
-                return
-
-            model=Object()
-            model.created = datetime.datetime.now()
-
-        model.user_id=1
-        model.ipn_status = False
-        model.disabled_by_limit = False
-        model.username = unicode(self.username_edit.text())
-
-        model.password = unicode(self.password_edit.text())
-        model.firstname = unicode(self.firstname_edit.text())
-        model.lastname = unicode(self.lastname_edit.text())
-        model.address = unicode(self.address_edit.toPlainText())
-
-
-
-        if unicode(self.ipn_ip_address_edit.text())!="...":
-            try:
-                ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
-                if ipn_address_account.username!=model.username:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                    return  
-                                      
-            except:
-                pass
-            model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
-        else:
-            model.ipn_ip_address = '0.0.0.0'
-            
-        
-        if unicode(self.vpn_ip_address_edit.text())!="...":
-            print 'ok'
-            try:
-                vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
-                if vpn_address_account.username!=model.username:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                    return    
-                      
-            except Exception, e:
-                pass
-            
-            model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
-        else:
-            model.vpn_ip_address = '0.0.0.0'
-            
+            if self.model:
+                model=self.model
+                model = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % self.model.id)
                 
-
-        if unicode(self.ipn_mac_address_edit.text()) != u'00:00:00:00:00:00':
-            try:
-                ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
-                if ipn_mac_address_account.username!=model.username:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+                
+            else:
+                print 'New account'
+                if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.username_edit.text())).count>0:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                     return
-            except Exception, e:
-                pass
-            model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
-        else:
-            model.ipn_mac_address = ''
+    
+                model=Object()
+                model.created = datetime.datetime.now()
+    
+            model.user_id=1
+            model.ipn_status = False
+            model.disabled_by_limit = False
+            model.username = unicode(self.username_edit.text())
+    
+            model.password = unicode(self.password_edit.text())
+            model.firstname = unicode(self.firstname_edit.text())
+            model.lastname = unicode(self.lastname_edit.text())
+            model.address = unicode(self.address_edit.toPlainText())
+    
+    
+    
+            if unicode(self.ipn_ip_address_edit.text())!="...":
+                try:
+                    ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
+                    if ipn_address_account.username!=model.username:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        return  
+                                          
+                except:
+                    pass
+                model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
+            else:
+                model.ipn_ip_address = '0.0.0.0'
                 
-
-        
-        model.nas_id = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % str(self.nas_edit.currentText())).id
-
-        model.ballance = unicode(self.ballance_edit.text()) or 0
-        model.credit = unicode(self.credit_edit.text()) or 0
-
-        model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == 2
-        model.assign_vpn_ip_from_dhcp = self.assign_vpn_ip_from_dhcp_edit.checkState() == 2
-        model.suspended = self.suspended_edit.checkState() == 2
-        model.status = self.status_edit.checkState() == 2
-        
-        
-        if self.model:
-            self.connection.create(model.save("billservice_account"))
-        else:
             
-            model.id=self.connection.create(model.save("billservice_account"))
-        
-        self.model=model
+            if unicode(self.vpn_ip_address_edit.text())!="...":
+                print 'ok'
+                try:
+                    vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
+                    if vpn_address_account.username!=model.username:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        return    
+                          
+                except Exception, e:
+                    pass
+                
+                model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
+            else:
+                model.vpn_ip_address = '0.0.0.0'
+                
+                    
+    
+            if unicode(self.ipn_mac_address_edit.text()) != u'00:00:00:00:00:00':
+                try:
+                    ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
+                    if ipn_mac_address_account.username!=model.username:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+                        return
+                except Exception, e:
+                    pass
+                model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
+            else:
+                model.ipn_mac_address = ''
+                    
+    
+            
+            model.nas_id = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % str(self.nas_edit.currentText())).id
+    
+            model.ballance = unicode(self.ballance_edit.text()) or 0
+            model.credit = unicode(self.credit_edit.text()) or 0
+    
+            model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == 2
+            model.assign_vpn_ip_from_dhcp = self.assign_vpn_ip_from_dhcp_edit.checkState() == 2
+            model.suspended = self.suspended_edit.checkState() == 2
+            model.status = self.status_edit.checkState() == 2
+            
+            
+            if self.model:
+                self.connection.create(model.save("billservice_account"))
+            else:
+                
+                model.id=self.connection.create(model.save("billservice_account"))
+            self.connection.commit()
+            self.model=model
+        except:
+            self.connection.rollback()
         QtGui.QDialog.accept(self)
 
     def fixtures(self):
@@ -2907,18 +2928,26 @@ class AccountsMdiChild(QtGui.QMainWindow):
         tarifframe.show()
         
         self.refresh()
+        self.refreshTree()
         #print num
 
     def addframe(self):
-        tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
+        
         child = AddAccountFrame(connection=self.connection)
         
         if child.exec_()==1:
+            tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
             accounttarif = Object()
             accounttarif.account_id=child.model.id
             accounttarif.tarif_id=tarif.id
             accounttarif.datetime = datetime.datetime.now()
-            self.connection.create(accounttarif.save("billservice_accounttarif"))
+            try:
+                self.connection.create(accounttarif.save("billservice_accounttarif"))
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+                
             self.refresh()
 
     def makeTransation(self):
@@ -2926,13 +2955,21 @@ class AccountsMdiChild(QtGui.QMainWindow):
         account = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % id)
         child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
-            tr = Transaction.objects.create(account = account, 
-                                       type = TransactionType.objects.get(internal_name = u"MANUAL_TRANSACTION"),
-                                       approved = True,
-                                       description = unicode(child.comment_edit.toPlainText()),
-                                       summ = child.result,
-                                       bill = unicode(child.payed_document_edit.text()))
-            tr.save()
+            #tr = Transaction.objects.create(account = account, 
+            #                           type = TransactionType.objects.get(internal_name = u"MANUAL_TRANSACTION"),
+            #                           approved = True,
+            #                           description = unicode(child.comment_edit.toPlainText()),
+            #                           summ = child.result,
+            #                           bill = unicode(child.payed_document_edit.text()))
+            #tr.save()
+            tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = unicode(child.comment_edit.toPlainText()), summ=child.result, bill=unicode(child.payed_document_edit.text()))
+            try:
+                
+                self.connection.create(tr)
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
             #Если будем переделывать - здесь нужно списывать со счёта пользователя указанную сумму денег.
             self.refresh()
                                        
@@ -2950,8 +2987,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def delete(self):
         id=self.getSelectedId()
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            
             self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
             self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
+            self.connection.commit()
             self.refresh()
 
 
@@ -3000,26 +3039,36 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tarif_treeWidget.clear()
         #tariffs = Tariff.objects.all().order_by("id")
         tariffs = self.connection.sql("SELECT * FROM billservice_tariff ORDER BY id ASC;")
+        
+        index = self.tarif_treeWidget.currentItem()
+        print 'index=', index
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.setText(0, u"%s" % tarif.name)
             
-        self.tarif_treeWidget.setCurrentItem(item)
+            if not tarif.active:
+                item.setDisabled(True)
+            
+            if index == item:
+                self.tarif_treeWidget.setCurrentItem(item)
             
     def refresh(self, item=None, k=''):
         #print item
         if item:
             name=unicode(item.text(0))
         else:
-            name=unicode(self.tarif_treeWidget.currentItem().text(0))
+            try:
+                name=unicode(self.tarif_treeWidget.currentItem().text(0))
+            except:
+                return
         print name
         tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % name)
         #accounttarifs=AccountTarif.objects.filter(tarif=tarif, datetime__lte=datetime.datetime.now()).order_by("-datetime")
         #print tarif.id
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
-JOIN nas_nas ON nas_nas.id=account.nas_id
-JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
-WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
+        JOIN nas_nas ON nas_nas.id=account.nas_id
+        JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
+        WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
         #accounts=Account.objects.all().order_by("id")
         self.tableWidget.setRowCount(len(accounts))
         
