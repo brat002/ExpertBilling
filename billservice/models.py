@@ -306,7 +306,7 @@ class PrepaidTraffic(models.Model):
 
 
 class TrafficTransmitService(models.Model):
-    name              = models.CharField(max_length=255, verbose_name=u'Название услуги', blank=True, default="Transmit Service")
+    #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', blank=True, default="Transmit Service")
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     #Не реализовано в GUI
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
@@ -419,7 +419,7 @@ class Tariff(models.Model):
     reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, null=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
-
+    active            = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u"%s" % self.name
