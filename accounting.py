@@ -33,14 +33,24 @@ pool = PooledDB(
 )
 
 def format_update (x,y):
+    print 'y', y, type(y)
     if y!='Null':
+        if type(y)==StringType or type(y)==UnicodeType:
+            print True
+            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            #print 'y', y
         return "%s='%s'" % (x,y)
     else:
         return "%s=%s" % (x,y)
 
 def format_insert(y):
     if y=='Null':
-        return 
+        return y
+    elif type(y)==StringType or type(y)==UnicodeType:
+        print True
+        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+    else:
+        return y
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -69,7 +79,7 @@ class Object(object):
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([unicode(self.__dict__[x]) for x in fields ]).replace("'Null'", 'Null')))
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'Null'", 'Null')))
         
         return sql
     
@@ -1794,18 +1804,18 @@ if __name__ == "__main__":
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    #threads.append(periodical_service_bill())
+    threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    #threads.append(NetFlowAggregate())
-    #threads.append(NetFlowBill())
+    threads.append(NetFlowAggregate())
+    threads.append(NetFlowBill())
 
-    #threads.append(limit_checker())
-
-
-    #threads.append(ipn_service())
+    threads.append(limit_checker())
 
 
-    #threads.append(settlement_period_service_dog())
+    threads.append(ipn_service())
+
+
+    threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
     for th in threads:
