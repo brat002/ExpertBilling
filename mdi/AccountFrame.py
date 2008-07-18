@@ -132,13 +132,13 @@ class AddAccountTarif(QtGui.QDialog):
         self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        tarifs=Tariff.objects.all()
+        tarifs=self.connection.sql("SELECT * FROM billservice_tariff WHERE active=True")
         for tarif in tarifs:
             self.tarif_edit.addItem(tarif.name)
         now=datetime.datetime.now()
 
         if self.model:
-            self.tarif_edit.setCurrentIndex(self.tarif_edit.findText(self.model.tarif.name, QtCore.Qt.MatchCaseSensitive))
+            self.tarif_edit.setCurrentIndex(self.tarif_edit.findText(self.model.tarif_name, QtCore.Qt.MatchCaseSensitive))
 
             now = QtCore.QDateTime()
 
@@ -217,6 +217,7 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_cost_edit = QtGui.QLineEdit(self.sp_groupbox)
         self.tarif_cost_edit.setGeometry(QtCore.QRect(139,80,241,21))
         self.tarif_cost_edit.setObjectName("tarif_cost_edit")
+        self.tarif_cost_edit.setValidator(QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9]+)([\.]?)([0-9]+)"), self))
 
         self.ps_null_ballance_checkout_edit = QtGui.QCheckBox(self.tab_1)
         self.ps_null_ballance_checkout_edit.setGeometry(QtCore.QRect(10,230,451,30))
@@ -1541,8 +1542,8 @@ class TarifFrame(QtGui.QDialog):
             self.speed_table.resizeColumnsToContents()
             
             #Time Access Service
-            #print self.model.time_access_service_id
-            if 'time_access_service_id' in self.model.__dict__ and self.model.time_access_service_id!="Null":
+            print "self.model.time_access_service_id=", self.model.time_access_service_id
+            if 'time_access_service_id' in self.model.__dict__ and self.model.time_access_service_id!="Null" and self.model.time_access_service_id!=0:
                 self.time_access_service_checkbox.setChecked(True)
                 time_access_service = self.connection.get("SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
                 self.prepaid_time_edit.setValue(time_access_service.prepaid_time)
@@ -2137,51 +2138,51 @@ class TarifFrame(QtGui.QDialog):
                         if cl not in time_periods_for_node:
                             #cl.traffictransmitnodes_set.add(transmit_node)
                             self.connection.create("""INSERT INTO billservice_traffictransmitnodes_time_nodes(traffictransmitnodes_id, timeperiod_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
-    
+
                     for cl in time_periods_for_node:
                         if cl not in time_period_models:
                             #cl.traffictransmitnodes_set.remove(transmit_node)
                             self.connection.delete("DELETE FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=%d and timeperiod_id=%d" % (transmit_node_id, cl))
-                                                                    
+
                     #transmit_node.save() 
                     #traffic_transmit_service.save()  
-     
+
                 model.traffic_transmit_service_id = traffic_transmit_service_id
                 #self.model.save() 
-                      
+
                 #Предоплаченный трафик
                 for i in xrange(self.prepaid_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.prepaid_tableWidget, i)
-                    
+
                     if id!=-1:
                         prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
                     else:
                         prepaid_node = Object()
-                    
+
                     #print "i=", self.prepaid_tableWidget.item(i,2)
-                    
+
                     prepaid_node.traffic_transmit_service_id = traffic_transmit_service_id
                     prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
                     prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
                     prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
                     prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,5).text())*1024*1024)
-                    
-                     
+
+
                     traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
                     if len(traffic_class_models)==0:
                         return
-                    
+
                     prepaid_node_id = self.connection.create(prepaid_node.save("billservice_prepaidtraffic"))
                     if prepaid_node_id==-1:
                         prepaid_node_id = prepaid_node.id 
-    
+
                     traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
-                    
+
                     JOIN billservice_prepaidtraffic_traffic_class as tc ON tc.trafficclass_id = trafficclass.id
                     WHERE tc.prepaidtraffic_id=%d""" % prepaid_node_id)
-                    
+
                     traffic_classes_for_node = [x.id for x in traffic_classes_for_node]
-                    
+
                     for cl in traffic_class_models:
                         if cl not in traffic_classes_for_node:
                             self.connection.create("INSERT INTO billservice_prepaidtraffic_traffic_class(prepaidtraffic_id, trafficclass_id) VALUES(%d,%d)" % (prepaid_node_id, cl))
@@ -2195,7 +2196,7 @@ class TarifFrame(QtGui.QDialog):
                             #print "del"
                             
                                                                     
-                    self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
+                    #self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
     
             elif self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0:
                 if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id!='Null' and model.traffic_transmit_service_id!=0:
@@ -2924,11 +2925,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         model = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(item.text(0)))
         
         tarifframe = TarifFrame(connection=self.connection, model=model)
-        self.parent.workspace.addWindow(tarifframe)
-        tarifframe.show()
-        
-        self.refresh()
-        self.refreshTree()
+        #self.parent.workspace.addWindow(tarifframe)
+        if tarifframe.exec_()==1:
+            self.refreshTree()
+            self.refresh()
+            
         #print num
 
     def addframe(self):
@@ -3030,7 +3031,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         elif type(value)==BooleanType and value==False:
             headerItem.setIcon(QtGui.QIcon("images/false.png"))
             
-        
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/account.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
@@ -3040,17 +3042,20 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #tariffs = Tariff.objects.all().order_by("id")
         tariffs = self.connection.sql("SELECT * FROM billservice_tariff ORDER BY id ASC;")
         
-        index = self.tarif_treeWidget.currentItem()
-        print 'index=', index
+        #index = self.tarif_treeWidget.index
+  
+        #print 'index=', index
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+            item.id = tarif.id
             item.setText(0, u"%s" % tarif.name)
             
             if not tarif.active:
                 item.setDisabled(True)
             
-            if index == item:
-                self.tarif_treeWidget.setCurrentItem(item)
+            #if index is not None and index.id == item.id:
+            #    #self.tarif_treeWidget.setCurrentItem(item)
+            #    item.setSelected(True)
             
     def refresh(self, item=None, k=''):
         #print item
@@ -3090,7 +3095,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 14)
-            #self.tableWidget.setColumnHidden(0, True)
+            self.tableWidget.setColumnHidden(0, True)
             if self.selected_account:
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
