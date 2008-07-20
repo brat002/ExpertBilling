@@ -702,3 +702,11 @@ class SheduleLog(models.Model):
         verbose_name = u"Периодическая операция"
         verbose_name_plural = u"Периодиеские операции"
 
+class OneTimeServiceHistory(models.Model):
+    accounttarif = models.ForeignKey(AccountTarif)
+    onetimeservice = models.ForeignKey(OneTimeService)
+    datetime = models.DateTimeField()
+    
+    class Admin:
+        pass
+    
