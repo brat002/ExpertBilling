@@ -763,34 +763,42 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget.setHorizontalHeaderItem(0,headerItem16)
 
         headerItem17 = QtGui.QTableWidgetItem()
+        headerItem17.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem17.setText(QtGui.QApplication.translate("Dialog", "От МБ", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(1,headerItem17)
 
         headerItem18 = QtGui.QTableWidgetItem()
+        headerItem18.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem18.setText(QtGui.QApplication.translate("Dialog", "До МБ", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(2,headerItem18)
 
         headerItem19 = QtGui.QTableWidgetItem()
+        headerItem19.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem19.setText(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(3,headerItem19)
 
         headerItem20 = QtGui.QTableWidgetItem()
+        headerItem20.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem20.setText(QtGui.QApplication.translate("Dialog", "Входящий", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(4,headerItem20)
 
         headerItem21 = QtGui.QTableWidgetItem()
+        headerItem21.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem21.setText(QtGui.QApplication.translate("Dialog", "Исходящий", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(5,headerItem21)
 
         headerItem22 = QtGui.QTableWidgetItem()
+        headerItem22.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem22.setText(QtGui.QApplication.translate("Dialog", "Транзитный", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(6,headerItem22)
 
         headerItem23 = QtGui.QTableWidgetItem()
+        headerItem23.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem23.setText(QtGui.QApplication.translate("Dialog", "Время", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(7,headerItem23)
 
         headerItem24 = QtGui.QTableWidgetItem()
+        headerItem24.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem24.setText(QtGui.QApplication.translate("Dialog", "Цена", None, QtGui.QApplication.UnicodeUTF8))
         self.trafficcost_tableWidget.setHorizontalHeaderItem(8,headerItem24)
 
@@ -806,22 +814,27 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_tableWidget.setHorizontalHeaderItem(0,headerItem25)
 
         headerItem26 = QtGui.QTableWidgetItem()
+        headerItem26.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem26.setText(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(1,headerItem26)
 
         headerItem27 = QtGui.QTableWidgetItem()
+        headerItem27.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem27.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(2,headerItem27)
         
         headerItem28 = QtGui.QTableWidgetItem()
+        headerItem28.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem28.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(3,headerItem28)
 
         headerItem29 = QtGui.QTableWidgetItem()
+        headerItem29.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem29.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(4,headerItem29)
         
         headerItem30 = QtGui.QTableWidgetItem()
+        headerItem30.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem30.setText(QtGui.QApplication.translate("Dialog", "Количество МБ", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_tableWidget.setHorizontalHeaderItem(5,headerItem30)
                 
@@ -834,6 +847,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget.setRowCount(0)
 
         headerItem28 = QtGui.QTableWidgetItem()
+        headerItem28.setTextAlignment(QtCore.Qt.AlignVCenter)
         headerItem28.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
         self.onetime_tableWidget.setHorizontalHeaderItem(0,headerItem28)
 
@@ -946,9 +960,11 @@ class TarifFrame(QtGui.QDialog):
             
         if item_type=='checkbox':
             item = QtGui.QCheckBox()
-            
+
             item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+
             widget.setCellWidget(x,y, item)
+
             
 
         #if type(value)==BooleanType and value==True:
@@ -2067,20 +2083,21 @@ class TarifFrame(QtGui.QDialog):
                                 
             #Доступ по трафику 
             if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
-                if 'traffic_transmit_service' in model.__dict__:
+                if 'traffic_transmit_service_id' in model.__dict__:
+                    #print "'traffic_transmit_service'1"
                     traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
                 else:
+                    #print 'traffic_transmit_service2'
                     traffic_transmit_service = Object()
                 
                 traffic_transmit_service.period_check='SP_START'
                 traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
                 traffic_transmit_service_id = self.connection.create(traffic_transmit_service.save("billservice_traffictransmitservice"))
+                
                 if traffic_transmit_service_id==-1:
                     traffic_transmit_service_id = traffic_transmit_service.id
                     
-                if traffic_transmit_service_id==-1:
-                    #print traffic_transmit_service.id
-                    traffic_transmit_service_id=traffic_transmit_service.id
+     
                 
                 for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.trafficcost_tableWidget, i)
@@ -2164,6 +2181,7 @@ class TarifFrame(QtGui.QDialog):
                     id = self.getIdFromtable(self.prepaid_tableWidget, i)
 
                     if id!=-1:
+                        print "prepaid_id=", id
                         prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
                     else:
                         prepaid_node = Object()
@@ -2210,7 +2228,7 @@ class TarifFrame(QtGui.QDialog):
             elif self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0:
                 if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id!='Null' and model.traffic_transmit_service_id!=0:
                     self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
-                model.traffic_transmit_service_id=0
+                model.traffic_transmit_service_id="Null"
                 
                             
         
@@ -2900,9 +2918,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
+        
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh)
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
         
         self.connect(self.transactionAction, QtCore.SIGNAL("triggered()"), self.makeTransation)
         
@@ -2915,6 +2936,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.retranslateUi()
         self.refreshTree()
         self.refresh()
+        
+        self.delNodeLocalAction()
+        self.addNodeLocalAction()
         
             
     def retranslateUi(self):
@@ -2980,6 +3004,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             except Exception, e:
                 print e
                 self.connection.rollback()
+            
             #Если будем переделывать - здесь нужно списывать со счёта пользователя указанную сумму денег.
             self.refresh()
                                        
@@ -3110,6 +3135,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
             i+=1
         self.tableWidget.resizeColumnsToContents()
+        self.delNodeLocalAction()
 
     def accountDisable(self):
         id=self.getSelectedId()
@@ -3148,4 +3174,21 @@ class AccountsMdiChild(QtGui.QMainWindow):
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
+#---------------Local actions
+    def delNodeLocalAction(self):
+        #print self.tableWidget.currentRow()
+        if self.tableWidget.currentRow()==-1:
+            self.delAction.setDisabled(True)
+        else:
+            self.delAction.setDisabled(False)
 
+
+    def addNodeLocalAction(self):
+        #print self.tableWidget.currentRow()
+        #print self.tarif_treeWidget.currentItem()
+        if self.tarif_treeWidget.currentItem() is None:
+            self.addAction.setDisabled(True)
+        else:
+            self.addAction.setDisabled(False)
+
+#---------------------------
