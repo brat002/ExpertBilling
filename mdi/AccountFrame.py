@@ -946,6 +946,7 @@ class TarifFrame(QtGui.QDialog):
             
         if item_type=='checkbox':
             item = QtGui.QCheckBox()
+            
             item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             widget.setCellWidget(x,y, item)
             
@@ -962,6 +963,8 @@ class TarifFrame(QtGui.QDialog):
     def addTrafficCostRow(self):
         current_row = self.trafficcost_tableWidget.currentRow()+1
         self.trafficcost_tableWidget.insertRow(current_row)
+        self.addrow(self.trafficcost_tableWidget, '0', current_row, 1)
+        self.addrow(self.trafficcost_tableWidget, '0', current_row, 2)
         self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
         self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
         self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
@@ -1159,7 +1162,9 @@ class TarifFrame(QtGui.QDialog):
             if child.exec_()==1:
                 self.prepaid_tableWidget.setItem(y,x, CustomWidget(parent=self.prepaid_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
-                    self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    #self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    self.prepaid_tableWidget.resizeColumnsToContents()
+                    self.prepaid_tableWidget.resizeRowsToContents()
         
         if x==5:
             item = self.prepaid_tableWidget.item(y,x)
@@ -1227,7 +1232,9 @@ class TarifFrame(QtGui.QDialog):
             if child.exec_()==1:
                 self.limit_tableWidget.setItem(y,x, CustomWidget(parent=self.limit_tableWidget, models=child.selected_items))
                 if len(child.selected_items)>0:
-                    self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    #self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    self.limit_tableWidget.resizeColumnsToContents()
+                    self.limit_tableWidget.resizeRowsToContents()
                     
         if x==3:
             item = self.limit_tableWidget.item(y,x)
@@ -1330,6 +1337,7 @@ class TarifFrame(QtGui.QDialog):
             if child.exec_()==1:
                 self.trafficcost_tableWidget.setItem(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
                 self.trafficcost_tableWidget.resizeColumnsToContents()
+                self.trafficcost_tableWidget.resizeRowsToContents()
                     
                 
         if x==7:
@@ -1340,7 +1348,8 @@ class TarifFrame(QtGui.QDialog):
             child = CheckBoxDialog(all_items=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY name ASC"), selected_items = models)
             if child.exec_()==1:
                 self.trafficcost_tableWidget.setItem(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
-
+                self.trafficcost_tableWidget.resizeColumnsToContents()
+                self.trafficcost_tableWidget.resizeRowsToContents()
 
         if x==8:
             item = self.trafficcost_tableWidget.item(y,x)
