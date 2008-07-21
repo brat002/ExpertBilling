@@ -3179,8 +3179,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #print self.tableWidget.currentRow()
         if self.tableWidget.currentRow()==-1:
             self.delAction.setDisabled(True)
+            self.transactionAction.setDisabled(True)
+            self.transactionReportAction.setDisabled(True)
         else:
             self.delAction.setDisabled(False)
+            self.transactionAction.setDisabled(False)
+            self.transactionReportAction.setDisabled(False)
 
 
     def addNodeLocalAction(self):
@@ -3188,7 +3192,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #print self.tarif_treeWidget.currentItem()
         if self.tarif_treeWidget.currentItem() is None:
             self.addAction.setDisabled(True)
+            self.delTarifAction.setDisabled(True)
         else:
             self.addAction.setDisabled(False)
+            self.delTarifAction.setDisabled(False)
+            
+
 
 #---------------------------

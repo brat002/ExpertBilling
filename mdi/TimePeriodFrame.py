@@ -166,10 +166,14 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
-        self.timeperiod_list_edit = QtGui.QListWidget(self.splitter)
-        self.timeperiod_list_edit.setMaximumSize(QtCore.QSize(150,16777215))
-        self.timeperiod_list_edit.setObjectName("timeperiod_list_edit")
+        #self.timeperiod_list_edit = QtGui.QListWidget(self.splitter)
+        #self.timeperiod_list_edit = QtGui.QListWidget()
+        #self.timeperiod_list_edit.setMaximumSize(QtCore.QSize(150,16777215))
+        #self.timeperiod_list_edit.setObjectName("timeperiod_list_edit")
 
+        self.treeWidget = QtGui.QTreeWidget(self.splitter)
+        tree_header = self.treeWidget.headerItem()
+        tree_header.setHidden(True)
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         self.setCentralWidget(self.splitter)
@@ -217,14 +221,25 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.connect(self.addConsAction, QtCore.SIGNAL("triggered()"),  self.addNode)
         self.connect(self.delConsAction, QtCore.SIGNAL("triggered()"),  self.delNode)
         
-        self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editPeriod)
-        self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
+        #self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editPeriod)
+        #self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
+
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editPeriod)
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refreshTable)
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.delNodeLocalAction)
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
-
+        
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+        self.addNodeLocalAction()
+        self.delNodeLocalAction()
+        
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Периоды тарификации", None, QtGui.QApplication.UnicodeUTF8))
-        self.timeperiod_list_edit.clear()
+        #self.timeperiod_list_edit.clear()
 
         self.tableWidget.clear()
         self.tableWidget.setColumnCount(6)
@@ -283,9 +298,9 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.refresh()
 
     def delPeriod(self):
-        name=self.getSelectedName()
+
         try:
-            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(name))
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % self.getTimeperiodId())
 
         except:
             return
@@ -304,14 +319,15 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
     def editPeriod(self):
-        name=unicode(self.getSelectedName())
-        text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,name);
+        model = self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d;" % self.getTimeperiodId())
+        text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,model.name);
+
         if text[0].isEmpty()==True and text[2]:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                     u"Введено пустое название.")
             return
         try:
-            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % name)
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % model.id)
             model.name=unicode(text[0])
             self.connection.create(model.save('billservice_timeperiod'))    
             self.conection.commit()            
@@ -323,9 +339,9 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.refresh()
 
     def addNode(self):
-        name=self.getSelectedName()
+
         try:
-            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(name))
+            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % self.getTimeperiodId())
         except Exception, e:
             return
         #print model.id
@@ -359,8 +375,8 @@ class TimePeriodChild(QtGui.QMainWindow):
         except:
             pass
         
-        name=unicode(self.getSelectedName())
-        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name = '%s'" % name)
+        #name=unicode(self.getSelectedName())
+        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % self.getTimeperiodId())
         if not model:
             return
         
@@ -371,15 +387,16 @@ class TimePeriodChild(QtGui.QMainWindow):
         
     def refreshTable(self, widget=None):
         if not widget:
-            text=unicode(self.getSelectedName())
+            period_id=self.getTimeperiodId()
         else:
-            text=unicode(widget.text())
+            period_id = widget.id
+            
         self.tableWidget.clearContents()
-        #print text
-        #model=TimePeriod.objects.get(name=text)
-        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE name = '%s'" % text)
 
-        #self.tableWidget.setRowCount(model.time_period_nodes.count())
+
+        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % period_id)
+
+        
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
         JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
         WHERE tpn.timeperiod_id=%d
@@ -404,8 +421,8 @@ class TimePeriodChild(QtGui.QMainWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
-    def getSelectedName(self):
-        return self.timeperiod_list_edit.currentItem().text()
+    def getTimeperiodId(self):
+        return self.treeWidget.currentItem().id
     
 
     def addrow(self, value, x, y):
@@ -415,14 +432,34 @@ class TimePeriodChild(QtGui.QMainWindow):
         
 
     def refresh(self):
-        self.timeperiod_list_edit.clear()
+        #self.timeperiod_list_edit.clear()
+        self.treeWidget.clear()
 
-        #periods=TimePeriod.objects.all().order_by('id')
         periods=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY id ASC")
         for period in periods:
-            item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
-            item.setText(period.name)
-            self.timeperiod_list_edit.addItem(item)
+            #item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
+            item = QtGui.QTreeWidgetItem(self.treeWidget)
+            
+            item.setText(0, period.name)
+            item.id = period.id
+            #self.timeperiod_list_edit.addItem(item)
+            #self.
         
+    def delNodeLocalAction(self):
+        if self.tableWidget.currentRow()==-1:
+            self.delConsAction.setDisabled(True)
+        else:
+            self.delConsAction.setDisabled(False)
 
+
+    def addNodeLocalAction(self):
+        if self.treeWidget.currentItem() is None:
+            self.addConsAction.setDisabled(True)
+            self.delConsAction.setDisabled(True)
+            self.delPeriodAction.setDisabled(True)
+        else:
+            self.addConsAction.setDisabled(False)
+            self.delConsAction.setDisabled(False)
+            self.delPeriodAction.setDisabled(False)
+            
 

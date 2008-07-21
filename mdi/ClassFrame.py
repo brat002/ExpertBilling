@@ -380,14 +380,11 @@ class ClassChild(QtGui.QMainWindow):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
-        self.listWidget = QtGui.QListWidget(self.splitter)
-        self.listWidget.setMaximumSize(QtCore.QSize(220,16777215))
-
+        self.treeWidget = QtGui.QTreeWidget(self.splitter)
+        self.treeWidget.setColumnCount(2)
+        tree_header = self.treeWidget.headerItem()
+        tree_header.setHidden(True)
         
-        self.listWidget.setFrameShape(QtGui.QFrame.Panel)
-        self.listWidget.setFrameShadow(QtGui.QFrame.Sunken)
-        self.listWidget.setObjectName("listWidget")
-
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -457,18 +454,23 @@ class ClassChild(QtGui.QMainWindow):
         self.connect(self.addClassNodeAction, QtCore.SIGNAL("triggered()"), self.addNode)
         self.connect(self.delClassNodeAction, QtCore.SIGNAL("triggered()"), self.delNode)
         
-        self.connect(self.listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editClass)
-        self.connect(self.listWidget, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editClass)
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refreshTable)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.delNodeLocalAction)
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         
         self.refresh_list()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        self.delNodeLocalAction()
+        self.addNodeLocalAction()
 
     
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Направления трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
         self.tableWidget.setColumnCount(7)
         self.tableWidget.setRowCount(0)
@@ -525,10 +527,10 @@ class ClassChild(QtGui.QMainWindow):
             self.refresh_list()
         
     
-    def editClass(self):
-        name=self.getSelectedName()
+    def editClass(self, item, index):
+        
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item.id)
         except Exception, e:
             print e
         
@@ -538,8 +540,8 @@ class ClassChild(QtGui.QMainWindow):
             self.refresh_list()
             
     def delClass(self):
-        name=self.getSelectedName()
-        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+        
+        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.getClassId())
         
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
@@ -555,18 +557,22 @@ class ClassChild(QtGui.QMainWindow):
         
         
     def savePosition(self, direction):
-        item_changed_name = unicode(self.listWidget.item(self.listWidget.currentRow()).text())
-        if direction == u"up":
-            item_swap_name = unicode(self.listWidget.item(self.listWidget.currentRow()+1).text())
-        elif direction == u"down":
-            item_swap_name = unicode(self.listWidget.item(self.listWidget.currentRow()-1).text())
-            
+        item_changed_id = self.treeWidget.currentItem().id
+        print "item_changed_id", item_changed_id 
         
-        model1 = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % item_changed_name)
-        model2 = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % item_swap_name)
+        if direction == u"up":
+            item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())+1).id
+        elif direction == u"down":
+            item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())-1).id
+            
+        print "item_swap_id=", item_swap_id
+        
+        model1 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_changed_id)
+        model2 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_swap_id)
+        print model1.name, model2.name
         a=model1.weight+0
         b=model2.weight+0
-        
+        print "a,b", a,b, model1.id, model2.id
         model1.weight=1000001
         try:
             
@@ -579,58 +585,55 @@ class ClassChild(QtGui.QMainWindow):
             
             self.connection.create(model1.save("nas_trafficclass"))
             
-            self.connection.create(model2.save("nas_trafficclass"))
+            #self.connection.create(model2.save("nas_trafficclass"))
             self.connection.commit()
         except Exception, e:
             print e
             self.connection.rollback()
         
-        #print model1.weight, model2.weight
+        #self.refresh_list()
             
 
     
     def upClass(self):
-        #self.listWidget.currentItem()
-        row=self.listWidget.currentRow()
-        item = self.listWidget.takeItem(row)
-        self.listWidget.insertItem(row-1,item)
-        self.listWidget.setCurrentItem(item)
+        index=self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        if index==0:
+            return
+        item = self.treeWidget.takeTopLevelItem(index)
+        self.treeWidget.insertTopLevelItem(index-1,item)
+        self.treeWidget.setCurrentItem(item)
         self.savePosition(direction=u"up")
         #pass
     
+
+
     def downClass(self):
-        row=self.listWidget.currentRow()
-        item = self.listWidget.takeItem(row)
-        self.listWidget.insertItem(row+1,item)
-        self.listWidget.setCurrentItem(item)
+        index=self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        print "index, self.treeWidget.topLevelItemCount()", index, self.treeWidget.topLevelItemCount()
+        if index==self.treeWidget.topLevelItemCount()-1:
+            return
+        
+        item = self.treeWidget.takeTopLevelItem(index)
+        self.treeWidget.insertTopLevelItem(index+1,item)
+        self.treeWidget.setCurrentItem(item)
         self.savePosition(direction=u"down")
         
-        
     def refresh_list(self):
-        self.listWidget.clear()
-
-        #classes=TrafficClass.objects.all().order_by('-weight')
-        classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC")
+        self.treeWidget.clear()
+        classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC;")
         
         for clas in classes:
-            item = QtGui.QListWidgetItem(self.listWidget)
-            item.setText(clas.name)
-            #item.setTextColor(QColor(clas.color))
-            item.setBackgroundColor(QtGui.QColor(clas.color))
-            self.listWidget.addItem(item)
+            item = QtGui.QTreeWidgetItem(self.treeWidget)
+            item.id = clas.id
+            item.setText(0, clas.name)
             
-            
+            item.setBackgroundColor(1, QtGui.QColor(clas.color))
 
-#    def nodeCreator(self, model, child, nodemodel=None):
-        
-
-            
-           
 
     def addNode(self):
-        name=self.getSelectedName()
+
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % unicode(name))
+            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.getClassId())
         except Exception, e:
             print e
 
@@ -676,18 +679,18 @@ class ClassChild(QtGui.QMainWindow):
         
     def refreshTable(self, widget=None):
         if not widget:
-            text=unicode(self.getSelectedName())
+            class_id=self.getClassId()
         else:
-            text=unicode(widget.text())
+            class_id=widget.id
         self.tableWidget.clearContents()
         #print text
-        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE name='%s'" % text)
+        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % class_id)
         nodes = self.connection.sql("SELECT * FROM nas_trafficnode WHERE traffic_class_id=%d ORDER BY id" % model.id)
 
         self.tableWidget.setRowCount(len(nodes))
         
         i=0        
-        ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        #['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
         for node in nodes:
 
             self.addrow(node.id, i,0)
@@ -704,16 +707,15 @@ class ClassChild(QtGui.QMainWindow):
             self.addrow(node.next_hop, i,10)
             self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)
-# 
- 
+
             i+=1
         self.tableWidget.resizeColumnsToContents()
         
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
-    def getSelectedName(self):
-        return self.listWidget.currentItem().text()
+    def getClassId(self):
+        return self.treeWidget.currentItem().id
     
 
     def addrow(self, value, x, y):
@@ -723,6 +725,23 @@ class ClassChild(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
 
+    def delNodeLocalAction(self):
+        if self.tableWidget.currentRow()==-1:
+            self.delClassNodeAction.setDisabled(True)
+        else:
+            self.delClassNodeAction.setDisabled(False)
 
 
+    def addNodeLocalAction(self):
+        if self.treeWidget.currentItem() is None:
+            self.addClassNodeAction.setDisabled(True)
+            self.delClassAction.setDisabled(True)
+            self.upClassAction.setDisabled(True)
+            self.downClassAction.setDisabled(True)
+        else:
+            self.addClassNodeAction.setDisabled(False)
+            self.delClassAction.setDisabled(False)
+            self.upClassAction.setDisabled(False)
+            self.downClassAction.setDisabled(False)
+                        
 
