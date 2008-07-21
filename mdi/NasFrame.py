@@ -404,9 +404,10 @@ class NasMdiChild(QtGui.QMainWindow):
         self.retranslateUi()
         self.refresh()
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-
+        self.delNodeLocalAction()
         #self.show()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -507,3 +508,11 @@ class NasMdiChild(QtGui.QMainWindow):
             
         self.tableWidget.resizeColumnsToContents()
 
+    def delNodeLocalAction(self):
+        if self.tableWidget.currentRow()==-1:
+            self.delAction.setDisabled(True)
+            self.configureAction.setDisabled(True)
+        else:
+            self.delAction.setDisabled(False)
+            self.configureAction.setDisabled(False)
+            

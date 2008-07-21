@@ -1,14 +1,7 @@
 #-*-coding=utf-8-*-
 
-#import os, sys
 from PyQt4 import QtCore, QtGui
 
-#sys.path.append('d:/projects/mikrobill/webadmin')
-#sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-#os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-#from django.contrib.auth.models import User
-#from billservice.models import SettlementPeriod
 from helpers import tableFormat
 import datetime, calendar
 from helpers import Object as Object
@@ -249,7 +242,9 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.connect(self.delAction,  QtCore.SIGNAL("triggered()"), self.del_period)
 
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_period)
-
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+        self.delNodeLocalAction()
+        
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Расчётные периоды", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
@@ -346,4 +341,9 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             i+=1
         self.tableWidget.resizeColumnsToContents()
             
+    def delNodeLocalAction(self):
+        if self.tableWidget.currentRow()==-1:
+            self.delAction.setDisabled(True)
+        else:
+            self.delAction.setDisabled(False)
 
