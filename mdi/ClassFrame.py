@@ -10,6 +10,9 @@ class ClassEdit(QtGui.QDialog):
         super(ClassEdit, self).__init__()
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()).expandedTo(self.minimumSizeHint()))
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()))
+        
         self.connection = connection
         self.connection.commit()
         self.model=model
@@ -127,7 +130,9 @@ class ClassNodeFrame(QtGui.QDialog):
             
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()))
+        
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(80,290,160,26))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
