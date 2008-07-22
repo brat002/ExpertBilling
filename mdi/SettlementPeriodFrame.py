@@ -16,7 +16,9 @@ class AddSettlementPeriod(QtGui.QDialog):
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()))
+        
         self.start_label = QtGui.QLabel(self)
         self.start_label.setGeometry(QtCore.QRect(12,67,73,20))
         self.start_label.setObjectName("start_label")

@@ -306,16 +306,13 @@ class PrepaidTraffic(models.Model):
 
 
 class TrafficTransmitService(models.Model):
-    #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', blank=True, default="Transmit Service")
+    name              = models.CharField(max_length=255, default='', blank=True)
     reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
     #Не реализовано в GUI
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
     #Не реализовано в GUI
     period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START', editable=False)
 
-
-    def __unicode__(self):
-        return u"%s" % self.name
 
     class Admin:
         ordering = ['name']
@@ -709,4 +706,14 @@ class OneTimeServiceHistory(models.Model):
     
     class Admin:
         pass
+    
+class SystemUser(models.Model):
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    last_ip  = models.CharField(max_length=64, blank=True, null=True)
+    last_login = models.DateTimeField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    created = models.DateTimeField()
+    status = models.BooleanField(default=True)
+    
     

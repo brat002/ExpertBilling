@@ -19,6 +19,9 @@ class AddTimePeriod(QtGui.QDialog):
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()).expandedTo(self.minimumSizeHint()))
 
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()))
+
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(110,160,161,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -158,6 +161,9 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
 
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
+        
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
 

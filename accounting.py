@@ -1788,7 +1788,17 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return id
 
 
-
+    def connection_request(self, username, password):
+        try:
+            obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
+        except Exception, e:
+            print e
+            return False
+        if obj is not None and obj.password==password:
+            return True
+        else:
+            return False
+        
 
 
 

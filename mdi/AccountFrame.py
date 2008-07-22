@@ -53,7 +53,9 @@ class AddAccountTarif(QtGui.QDialog):
 
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()))
+                            
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(130,140,161,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -155,7 +157,9 @@ class TarifFrame(QtGui.QDialog):
         
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()).expandedTo(self.minimumSizeHint()))
-
+        
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,623,630).size()))
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(210,590,191,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -2260,7 +2264,7 @@ class AddAccountFrame(QtGui.QDialog):
 
 
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(0,10,421,421))
+        self.tabWidget.setGeometry(QtCore.QRect(0,10,421,433))
 
 
         self.tab = QtGui.QWidget()
@@ -2274,8 +2278,10 @@ class AddAccountFrame(QtGui.QDialog):
 
 
         self.status_edit = QtGui.QCheckBox(self.tab)
-        self.status_edit.setGeometry(QtCore.QRect(10,370,70,19))
+        self.status_edit.setGeometry(QtCore.QRect(10,365,70,19))
 
+        #self.is_admin_edit = QtGui.QCheckBox(self.tab)
+        #self.is_admin_edit.setGeometry(QtCore.QRect(10,385,180,19))
 
         self.suspended_edit = QtGui.QCheckBox(self.tab)
         self.suspended_edit.setGeometry(QtCore.QRect(10,210,345,19))
@@ -2600,6 +2606,8 @@ class AddAccountFrame(QtGui.QDialog):
         self.vpn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Настройки доступа", None, QtGui.QApplication.UnicodeUTF8))
+        #self.is_admin_edit.setText(u"Является администратором")
+        
         self.accounttarif_table.clear()
         self.accounttarif_table.setColumnCount(4)
 

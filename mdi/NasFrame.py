@@ -24,7 +24,9 @@ class AddNasFrame(QtGui.QDialog):
 
         #self.setObjectName("self")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()))
+        
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(70,300,341,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -406,6 +408,10 @@ class NasMdiChild(QtGui.QMainWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
+        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
+        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
+        self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
         #self.show()
@@ -424,13 +430,13 @@ class NasMdiChild(QtGui.QMainWindow):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
 
         self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
-        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
+        
 
         self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
+        
 
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "Конфигурировать", None, QtGui.QApplication.UnicodeUTF8))
-        self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        
 
 
     def addframe(self):

@@ -66,7 +66,7 @@
        <x>58</x>
        <y>240</y>
        <width>333</width>
-       <height>111</height>
+       <height>101</height>
       </rect>
      </property>
     </widget>
@@ -74,7 +74,7 @@
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>370</y>
+       <y>350</y>
        <width>70</width>
        <height>19</height>
       </rect>
@@ -214,6 +214,19 @@
        <widget class="QLineEdit" name="lineEdit" />
       </item>
      </layout>
+    </widget>
+    <widget class="QCheckBox" name="is_administrator_checkBox" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>370</y>
+       <width>341</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Является администратором</string>
+     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_3" >

@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import Object
 import Pyro.core
 
-connection = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/rpc")
+
 
 import mdi_rc
 
@@ -15,6 +15,9 @@ from SettlementPeriodFrame import SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
+from SystemUser import SystemUserChild
+from CustomForms import ConnectDialog
+
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -72,10 +75,10 @@ class MainWindow(QtGui.QMainWindow):
         #    self.statusBar().showMessage(self.tr("File saved"), 2000)
 
     def saveAs(self):
-        pass
-        #child = TarifChild()
-        #self.workspace.addWindow(child)
-        #child.show()
+
+        child = SystemUserChild(connection=connection)
+        self.workspace.addWindow(child)
+        child.show()
 
     def cut(self):
         child=TimePeriodChild(connection=connection)
@@ -311,6 +314,21 @@ class MainWindow(QtGui.QMainWindow):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
+    
+    child = ConnectDialog()
+    if child.exec_()==1:
+        try:
+            connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address_edit.text()))
+            if connection.connection_request(username=unicode(child.name_edit.text()), password=unicode(child.password_edit.text()))==False:
+                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
+                sys.exit()
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+            sys.exit()
+    else:
+        sys.exit()
+
     mainwindow = MainWindow()
     mainwindow.show()
     #app.setStyle("cleanlooks")

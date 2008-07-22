@@ -13,7 +13,9 @@ class CheckBoxDialog(QtGui.QDialog):
         
         self.setObjectName("Dialog")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,400,300).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,400,300).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,400,300).size()))
+        
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(30,240,341,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -74,7 +76,9 @@ class ComboBoxDialog(QtGui.QDialog):
         self.selected_item = selected_item
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,318,89).size()).expandedTo(self.minimumSizeHint()))
-
+        
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,318,89).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,318,89).size()))
 
         self.vboxlayout = QtGui.QVBoxLayout()
 
@@ -114,7 +118,9 @@ class SpeedEditDialog(QtGui.QDialog):
         self.title = title
         self.resultstring = ""
         self.resize(QtCore.QSize(QtCore.QRect(0,0,415,132).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,415,132).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,415,132).size()))
+        
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(120,95,171,25))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -211,7 +217,8 @@ class TransactionForm(QtGui.QDialog):
         self.connection = connection
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()))
         self.widget = QtGui.QWidget(self)
         self.widget.setGeometry(QtCore.QRect(11,12,481,173))
         self.widget.setObjectName("widget")
@@ -291,3 +298,134 @@ class TransactionForm(QtGui.QDialog):
             child = TransactionsReport(connection=self.connection, account = self.account)
             child.exec_()
             
+class ConnectDialog(QtGui.QDialog):
+    def __init__(self):
+        super(ConnectDialog, self).__init__()
+        
+        self.setObjectName("MainWindow")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,341,280).size()).expandedTo(self.minimumSizeHint()))
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,341,280).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,341,280).size()))
+        
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
+
+        self.encryption_checkBox = QtGui.QCheckBox(self.centralwidget)
+        self.encryption_checkBox.setGeometry(QtCore.QRect(60,100,191,18))
+        self.encryption_checkBox.setObjectName("encryption_checkBox")
+
+        self.compress_checkbox = QtGui.QCheckBox(self.centralwidget)
+        self.compress_checkbox.setGeometry(QtCore.QRect(60,124,191,18))
+        self.compress_checkbox.setObjectName("compress_checkbox")
+
+        self.connect_pushButton = QtGui.QPushButton(self.centralwidget)
+        self.connect_pushButton.setGeometry(QtCore.QRect(260,10,75,24))
+        self.connect_pushButton.setObjectName("connect_pushButton")
+
+        self.remove_pushButton = QtGui.QPushButton(self.centralwidget)
+        self.remove_pushButton.setGeometry(QtCore.QRect(260,140,75,24))
+        self.remove_pushButton.setObjectName("remove_pushButton")
+
+        self.save_checkBox = QtGui.QCheckBox(self.centralwidget)
+        self.save_checkBox.setGeometry(QtCore.QRect(60,148,191,18))
+        self.save_checkBox.setObjectName("save_checkBox")
+
+        self.exit_pushButton = QtGui.QPushButton(self.centralwidget)
+        self.exit_pushButton.setGeometry(QtCore.QRect(260,40,75,24))
+        self.exit_pushButton.setObjectName("exit_pushButton")
+
+        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
+        self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
+        self.tableWidget.setObjectName("tableWidget")
+
+        self.save_pushButton = QtGui.QPushButton(self.centralwidget)
+        self.save_pushButton.setGeometry(QtCore.QRect(260,70,75,23))
+        self.save_pushButton.setObjectName("save_pushButton")
+
+        self.password_label = QtGui.QLabel(self.centralwidget)
+        self.password_label.setGeometry(QtCore.QRect(11,70,41,20))
+        self.password_label.setObjectName("password_label")
+
+        self.password_edit = QtGui.QLineEdit(self.centralwidget)
+        self.password_edit.setGeometry(QtCore.QRect(58,70,192,20))
+        self.password_edit.setObjectName("password_edit")
+
+        self.name_edit = QtGui.QLineEdit(self.centralwidget)
+        self.name_edit.setGeometry(QtCore.QRect(58,40,192,20))
+        self.name_edit.setObjectName("name_edit")
+
+        self.address_edit = QtGui.QLineEdit(self.centralwidget)
+        self.address_edit.setGeometry(QtCore.QRect(58,11,192,20))
+        self.address_edit.setObjectName("address_edit")
+
+        self.name_label = QtGui.QLabel(self.centralwidget)
+        self.name_label.setGeometry(QtCore.QRect(11,40,41,20))
+        self.name_label.setObjectName("name_label")
+
+        self.address_label = QtGui.QLabel(self.centralwidget)
+        self.address_label.setGeometry(QtCore.QRect(11,11,41,20))
+        self.address_label.setObjectName("address_label")
+        #self.setCentralWidget(self.centralwidget)
+
+        #self.statusbar = QtGui.QStatusBar(self)
+        #self.statusbar.setObjectName("statusbar")
+        #self.setStatusBar(self.statusbar)
+
+        self.setTabOrder(self.address_edit,self.name_edit)
+        self.setTabOrder(self.name_edit,self.password_edit)
+        self.setTabOrder(self.password_edit,self.encryption_checkBox)
+        self.setTabOrder(self.encryption_checkBox,self.compress_checkbox)
+        self.setTabOrder(self.compress_checkbox,self.save_checkBox)
+        self.setTabOrder(self.save_checkBox,self.connect_pushButton)
+        self.setTabOrder(self.connect_pushButton,self.exit_pushButton)
+        self.setTabOrder(self.exit_pushButton,self.save_pushButton)
+        self.setTabOrder(self.save_pushButton,self.remove_pushButton)
+        self.setTabOrder(self.remove_pushButton,self.tableWidget)
+        
+        self.retranslateUi()
+        self.fixtures()
+        QtCore.QObject.connect(self.connect_pushButton, QtCore.SIGNAL("clicked()"), self.accept)
+        QtCore.QObject.connect(self.exit_pushButton, QtCore.SIGNAL("clicked()"), self.reject)
+
+        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Expert Billing Client", None, QtGui.QApplication.UnicodeUTF8))
+        self.encryption_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Использовать шифрование", None, QtGui.QApplication.UnicodeUTF8))
+        self.compress_checkbox.setText(QtGui.QApplication.translate("MainWindow", "Использовать сжатие", None, QtGui.QApplication.UnicodeUTF8))
+        self.connect_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.remove_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
+        self.save_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Запомнить", None, QtGui.QApplication.UnicodeUTF8))
+        self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.clear()
+        self.tableWidget.setColumnCount(2)
+        self.tableWidget.setRowCount(0)
+
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(QtGui.QApplication.translate("MainWindow", "IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
+
+        headerItem1 = QtGui.QTableWidgetItem()
+        headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Username", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
+        self.save_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.password_label.setText(QtGui.QApplication.translate("MainWindow", "Пароль:", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("MainWindow", "Имя:", None, QtGui.QApplication.UnicodeUTF8))
+        self.address_label.setText(QtGui.QApplication.translate("MainWindow", "Адрес:", None, QtGui.QApplication.UnicodeUTF8))
+
+    def fixtures(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        print settings.value("ip", QtCore.QVariant(""))
+        self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
+        self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
+        self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
+        
+    def accept(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("ip", QtCore.QVariant(self.address_edit.text()))
+        settings.setValue("user", QtCore.QVariant(self.name_edit.text()))
+        settings.setValue("password", QtCore.QVariant(self.password_edit.text()))
+        QtGui.QDialog.accept(self)
+        #pass
+
+        
