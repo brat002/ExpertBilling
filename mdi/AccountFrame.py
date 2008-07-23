@@ -8,7 +8,7 @@ import Pyro.core
 from helpers import Object as Object
 
 from types import BooleanType
-
+import copy
 
 #from django.contrib.auth.models import User
 
@@ -24,7 +24,7 @@ from Reports import TransactionsReport
 
 from helpers import tableFormat
 
-from helpers import transaction
+from helpers import transaction, makeHeaders
 
 class CashType(object):
     def __init__(self, name):
@@ -699,240 +699,71 @@ class TarifFrame(QtGui.QDialog):
         self.speed_in_label.setText(QtGui.QApplication.translate("Dialog", "IN", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_max_label.setText(QtGui.QApplication.translate("Dialog", "MAX", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_min_label.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.speed_table.clear()
-        self.speed_table.setColumnCount(8)
-        self.speed_table.setRowCount(0)
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(0,headerItem)
-
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("Dialog", "Time", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(1,headerItem1)
-
-        headerItem2 = QtGui.QTableWidgetItem()
-        headerItem2.setText(QtGui.QApplication.translate("Dialog", "MAX", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(2,headerItem2)
-
-        headerItem3 = QtGui.QTableWidgetItem()
-        headerItem3.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(3,headerItem3)
-
-        headerItem4 = QtGui.QTableWidgetItem()
-        headerItem4.setText(QtGui.QApplication.translate("Dialog", "BURST", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(4,headerItem4)
-
-        headerItem5 = QtGui.QTableWidgetItem()
-        headerItem5.setText(QtGui.QApplication.translate("Dialog", "Burst Tr", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(5,headerItem5)
-
-        headerItem6 = QtGui.QTableWidgetItem()
-        headerItem6.setText(QtGui.QApplication.translate("Dialog", "Burst time", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(6,headerItem6)
-
-        headerItem7 = QtGui.QTableWidgetItem()
-        headerItem7.setText(QtGui.QApplication.translate("Dialog", "Priority", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_table.setHorizontalHeaderItem(7,headerItem7)
+        columns=[u'Id', u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
+        
+        makeHeaders(columns, self.speed_table) 
+        
         self.del_speed_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_speed_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Настройки скорости", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_time_label.setText(QtGui.QApplication.translate("Dialog", "Предоплачено, с", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_time_checkbox.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце расчётного периода предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
         self.timeaccess_table.clear()
-        self.timeaccess_table.setColumnCount(3)
-        self.timeaccess_table.setRowCount(0)
 
-        headerItem8 = QtGui.QTableWidgetItem()
-        headerItem8.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.timeaccess_table.setHorizontalHeaderItem(0,headerItem8)
-
-        headerItem9 = QtGui.QTableWidgetItem()
-        headerItem9.setText(QtGui.QApplication.translate("Dialog", "Время", None, QtGui.QApplication.UnicodeUTF8))
-        self.timeaccess_table.setHorizontalHeaderItem(1,headerItem9)
-
-        headerItem10 = QtGui.QTableWidgetItem()
-        headerItem10.setText(QtGui.QApplication.translate("Dialog", "Цена", None, QtGui.QApplication.UnicodeUTF8))
-        self.timeaccess_table.setHorizontalHeaderItem(2,headerItem10)
+        columns=[u'Id', u'Время', u'Цена']
+        
+        makeHeaders(columns, self.timeaccess_table)     
+        
         self.del_timecost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_timecost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.trafficcost_tableWidget.clear()
-        self.trafficcost_tableWidget.setColumnCount(9)
-        self.trafficcost_tableWidget.setRowCount(0)
-
-        headerItem16 = QtGui.QTableWidgetItem()
-        headerItem16.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(0,headerItem16)
-
-        headerItem17 = QtGui.QTableWidgetItem()
-        headerItem17.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem17.setText(QtGui.QApplication.translate("Dialog", "От МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(1,headerItem17)
-
-        headerItem18 = QtGui.QTableWidgetItem()
-        headerItem18.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem18.setText(QtGui.QApplication.translate("Dialog", "До МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(2,headerItem18)
-
-        headerItem19 = QtGui.QTableWidgetItem()
-        headerItem19.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem19.setText(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(3,headerItem19)
-
-        headerItem20 = QtGui.QTableWidgetItem()
-        headerItem20.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem20.setText(QtGui.QApplication.translate("Dialog", "Входящий", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(4,headerItem20)
-
-        headerItem21 = QtGui.QTableWidgetItem()
-        headerItem21.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem21.setText(QtGui.QApplication.translate("Dialog", "Исходящий", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(5,headerItem21)
-
-        headerItem22 = QtGui.QTableWidgetItem()
-        headerItem22.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem22.setText(QtGui.QApplication.translate("Dialog", "Транзитный", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(6,headerItem22)
-
-        headerItem23 = QtGui.QTableWidgetItem()
-        headerItem23.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem23.setText(QtGui.QApplication.translate("Dialog", "Время", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(7,headerItem23)
-
-        headerItem24 = QtGui.QTableWidgetItem()
-        headerItem24.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem24.setText(QtGui.QApplication.translate("Dialog", "Цена", None, QtGui.QApplication.UnicodeUTF8))
-        self.trafficcost_tableWidget.setHorizontalHeaderItem(8,headerItem24)
+        columns=[u'Id', u'От МБ', u'До МБ', u'Класс трафика', u'Входящий', u'Исходящий', u'Транзитный', u'Время', u'Цена']
+        
+        makeHeaders(columns, self.trafficcost_tableWidget)      
 
         self.trafficcost_label.setText(QtGui.QApplication.translate("Dialog", "Цена за МБ трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.del_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.prepaid_tableWidget.clear()
-        self.prepaid_tableWidget.setColumnCount(6)
-        self.prepaid_tableWidget.setRowCount(0)
-
-        headerItem25 = QtGui.QTableWidgetItem()
-        headerItem25.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(0,headerItem25)
-
-        headerItem26 = QtGui.QTableWidgetItem()
-        headerItem26.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem26.setText(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(1,headerItem26)
-
-        headerItem27 = QtGui.QTableWidgetItem()
-        headerItem27.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem27.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(2,headerItem27)
+        columns=[u'Id', u'Класс трафика', u'Входящий', u'Исходящий', u'Транзитный', u'МБ']
         
-        headerItem28 = QtGui.QTableWidgetItem()
-        headerItem28.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem28.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(3,headerItem28)
-
-        headerItem29 = QtGui.QTableWidgetItem()
-        headerItem29.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem29.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(4,headerItem29)
-        
-        headerItem30 = QtGui.QTableWidgetItem()
-        headerItem30.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem30.setText(QtGui.QApplication.translate("Dialog", "Количество МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.prepaid_tableWidget.setHorizontalHeaderItem(5,headerItem30)
+        makeHeaders(columns, self.prepaid_tableWidget)                
                 
         self.prepaid_traffic_cost_label.setText(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.del_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_prepaid_traffic_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.onetime_tableWidget.clear()
-        self.onetime_tableWidget.setColumnCount(3)
-        self.onetime_tableWidget.setRowCount(0)
 
-        headerItem28 = QtGui.QTableWidgetItem()
-        headerItem28.setTextAlignment(QtCore.Qt.AlignVCenter)
-        headerItem28.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.onetime_tableWidget.setHorizontalHeaderItem(0,headerItem28)
-
-        headerItem29 = QtGui.QTableWidgetItem()
-        headerItem29.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.onetime_tableWidget.setHorizontalHeaderItem(1,headerItem29)
-
-        headerItem30 = QtGui.QTableWidgetItem()
-        headerItem30.setText(QtGui.QApplication.translate("Dialog", "Стоимость", None, QtGui.QApplication.UnicodeUTF8))
-        self.onetime_tableWidget.setHorizontalHeaderItem(2,headerItem30)
+        columns=[u'Id', u'Название', u'Стоимость']
+        
+        makeHeaders(columns, self.onetime_tableWidget)
+        
         self.del_onetime_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_onetime_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.periodical_tableWidget.clear()
-        self.periodical_tableWidget.setColumnCount(5)
-        self.periodical_tableWidget.setRowCount(0)
-
-        headerItem31 = QtGui.QTableWidgetItem()
-        headerItem31.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(0,headerItem31)
-
-        headerItem32 = QtGui.QTableWidgetItem()
-        headerItem32.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(1,headerItem32)
-
-        headerItem33 = QtGui.QTableWidgetItem()
-        headerItem33.setText(QtGui.QApplication.translate("Dialog", "Период", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(2,headerItem33)
-
-        headerItem34 = QtGui.QTableWidgetItem()
-        headerItem34.setText(QtGui.QApplication.translate("Dialog", "Стоимость", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(4,headerItem34)
-
-        headerItem35 = QtGui.QTableWidgetItem()
-        headerItem35.setText(QtGui.QApplication.translate("Dialog", "Способ снятия", None, QtGui.QApplication.UnicodeUTF8))
-        self.periodical_tableWidget.setHorizontalHeaderItem(3,headerItem35)
+        columns=[u'Id', u'Название', u'Период', u'Стоимость', u'Способ снятия']
+        
+        makeHeaders(columns, self.periodical_tableWidget)
         
         self.del_periodical_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_periodical_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
-        self.limit_tableWidget.setColumnCount(9)
-        self.limit_tableWidget.setRowCount(0)
 
-        headerItem36 = QtGui.QTableWidgetItem()
-        headerItem36.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(0,headerItem36)
-
-        headerItem37 = QtGui.QTableWidgetItem()
-        headerItem37.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(1,headerItem37)
-
-        headerItem38 = QtGui.QTableWidgetItem()
-        headerItem38.setText(QtGui.QApplication.translate("Dialog", "За поледний", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(2,headerItem38)
-
-        headerItem39 = QtGui.QTableWidgetItem()
-        headerItem39.setText(QtGui.QApplication.translate("Dialog", "Период", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(3,headerItem39)
-
-        headerItem40 = QtGui.QTableWidgetItem()
-        headerItem40.setText(QtGui.QApplication.translate("Dialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(4,headerItem40)
+        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Классы трафика', u'Входящий', u'Исходящий', u'Транзитный', u'МБ']
         
-        headerItem50 = QtGui.QTableWidgetItem()
-        headerItem50.setText(QtGui.QApplication.translate("Dialog", "Вх", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(5,headerItem50)
-
-        headerItem51 = QtGui.QTableWidgetItem()
-        headerItem51.setText(QtGui.QApplication.translate("Dialog", "Исх", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(6,headerItem51)
+        makeHeaders(columns, self.limit_tableWidget)
         
-        headerItem52 = QtGui.QTableWidgetItem()
-        headerItem52.setText(QtGui.QApplication.translate("Dialog", "Тр", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(7,headerItem52)
-
-               
-        headerItem53 = QtGui.QTableWidgetItem()
-        headerItem53.setText(QtGui.QApplication.translate("Dialog", "Объём МБ", None, QtGui.QApplication.UnicodeUTF8))
-        self.limit_tableWidget.setHorizontalHeaderItem(8,headerItem53)
-                        
         self.del_limit_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_limit_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
@@ -966,7 +797,7 @@ class TarifFrame(QtGui.QDialog):
             item = QtGui.QCheckBox()
 
             item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-
+            
             widget.setCellWidget(x,y, item)
 
             
@@ -1174,7 +1005,7 @@ class TarifFrame(QtGui.QDialog):
     def prepaidTrafficEdit(self,y,x):
         if x==1:
             try:
-                models = self.prepaid_tableWidget.cellItem(y,x).models
+                models = self.prepaid_tableWidget.item(y,x).models
             except:
                 models = []
             
@@ -1571,7 +1402,7 @@ class TarifFrame(QtGui.QDialog):
             self.speed_table.resizeColumnsToContents()
             
             #Time Access Service
-            print "self.model.time_access_service_id=", self.model.time_access_service_id
+            #print "self.model.time_access_service_id=", self.model.time_access_service_id
             if 'time_access_service_id' in self.model.__dict__ and self.model.time_access_service_id!="Null" and self.model.time_access_service_id!=0:
                 self.time_access_service_checkbox.setChecked(True)
                 time_access_service = self.connection.get("SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
@@ -1665,16 +1496,16 @@ class TarifFrame(QtGui.QDialog):
                     self.limit_tableWidget.resizeRowsToContents()
             self.limit_tableWidget.setColumnHidden(0, True)
             
-            print "self.model.traffic_transmit_service_id=", self.model.traffic_transmit_service_id 
+            #print "self.model.traffic_transmit_service_id=", self.model.traffic_transmit_service_id 
             #Prepaid Traffic
             if 'traffic_transmit_service_id' in self.model.__dict__ and self.model.traffic_transmit_service_id!=0 and self.model.traffic_transmit_service_id!='Null':
                 self.transmit_service_checkbox.setChecked(True)
                 prepaid_traffic = self.connection.sql("""SELECT * FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
-                print 'self.model.traffic_transmit_service_id', self.model.traffic_transmit_service_id
+                #print 'self.model.traffic_transmit_service_id', self.model.traffic_transmit_service_id
                 if len(prepaid_traffic)>0:
                     nodes = prepaid_traffic
                     #self.model.traffic_transmit_service.prepaid_traffic.all()
-                    print nodes
+                    #print nodes
                     self.prepaid_tableWidget.setRowCount(len(nodes))
                     i=0
                     for node in nodes:
@@ -1703,8 +1534,8 @@ class TarifFrame(QtGui.QDialog):
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
                 WHERE traffictransmitnodes.traffic_transmit_service_id=%d 
                 """ % self.model.traffic_transmit_service_id)
-                print "traffic_transmit_nodes=", traffic_transmit_nodes
-                print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
+                #print "traffic_transmit_nodes=", traffic_transmit_nodes
+                #print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
                
                 if len(traffic_transmit_nodes)>0:
                     traffic_transmit_service = self.connection.get("SELECT * FROM billservice_traffictransmitservice WHERE id=%d" % self.model.traffic_transmit_service_id)
@@ -1791,7 +1622,7 @@ class TarifFrame(QtGui.QDialog):
     def accept(self):
         #self.connection.command("BEGIN;")
         if self.model:
-            model=self.model
+            model=copy.deepcopy(self.model)
             access_parameters = Object()
             access_parameters.id=self.model.access_parameters_id
             access_parameters = self.connection.get(access_parameters.get("billservice_accessparameters"))
@@ -1824,7 +1655,7 @@ class TarifFrame(QtGui.QDialog):
                 #Просто обновляем запись
                 self.connection.create(access_parameters.save("billservice_accessparameters"))
             else:
-                #Если создаём новую
+                #Иначе создаём новую
                 model.access_parameters_id=self.connection.create(access_parameters.save("billservice_accessparameters"))
             
             #Таблица скоростей
@@ -1843,6 +1674,7 @@ class TarifFrame(QtGui.QDialog):
                     speed.max_limit = u"%s" % self.speed_table.item(i,2).text()
                 except:
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали максимальную скорость")
+                    self.connection.rollback()
                     return
                 
                 try:
@@ -1868,27 +1700,27 @@ class TarifFrame(QtGui.QDialog):
                 
                 if speed.max_limit=="" and speed.priority==8 and (speed.min_limit!="" or speed.burst_limit!="" or speed.burst_treshold!="" or speed.burst_time!=""):
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Проверьте настройки скорости в таблице")
+                    self.connection.rollback()
                     return                 
     
                 if unicode(self.speed_table.item(i,1).text())=="":
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Укажите периоды времени для настроек скорости")
-    
-                    #transaction.rollback()
-                    
+                    self.connection.rollback()
                     return
+                
                 speed.time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.speed_table.item(i,1).text())).id
                 try:
                     if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
                         #print 1
-                        #transaction.rollback()
+                        self.connection.rollback()
                         
                         return
     
                     if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
                         #print 2
-                        #transaction.rollback()
+                        self.connection.rollback()
                         
                         return
                 except:
@@ -1911,20 +1743,20 @@ class TarifFrame(QtGui.QDialog):
                 model.id = model_id 
             
             #Доступ по времени
-            if self.model and 'time_access_service_id' in self.model.__dict__ and  model.time_access_service_id!="Null":
+            if self.model.time_access_service_id!="Null":
                 
                 #time_access_service = Object()
                 #time_access_service.id = model.time_access_service_id
-                time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % model.time_access_service_id)
+                time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
                 #time_access_service = model.time_access_service_id
             else:
                 time_access_service=Object()
                 
                 
             if self.time_access_service_checkbox.checkState()==0:
-                if 'time_access_service_id' in model.__dict__ and model.time_access_service_id!="Null":
+                if  self.model.time_access_service_id!="Null" and self.model.time_access_service_id!=0:
                     #model.save()
-                    self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % model.time_access_service_id)
+                    self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % self.model.time_access_service_id)
                     
                     time_access_service_id=model.time_access_service_id
                     model.time_access_service_id='Null'
@@ -1942,15 +1774,24 @@ class TarifFrame(QtGui.QDialog):
                     time_access_service.name = ""
                     time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
                     time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
-                    if self.model and 'time_access_service_id'  in model.__dict__:
+                    
+                    if self.model.time_access_service_id!='Null' and self.model.time_access_service_id!=0:
                         self.connection.create(time_access_service.save("billservice_timeaccessservice"))
-                        time_access_service_id = time_access_service.id
+                        time_access_service_id = self.model.time_access_service_id
                     else:
                         model.time_access_service_id = self.connection.create(time_access_service.save("billservice_timeaccessservice"))
                         time_access_service_id = model.time_access_service_id
                     
                     for i in xrange(0, self.timeaccess_table.rowCount()):
-                        #print 2
+                        print "pre save"
+                        if self.timeaccess_table.item(i,1)==None or self.timeaccess_table.item(i,2)==None:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки оплаты за время")
+                            self.connection.rollback()
+                            return
+                        else:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Сохранение настроек стоимости за время")
+                            
+                        print "post save"
                         id = self.getIdFromtable(self.timeaccess_table, i)
                         if id!=-1:
                             time_access_node = self.connection.get("SELECT * FROM billservice_timeaccessnode WHERE id=%d" % id )
@@ -2001,6 +1842,11 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.periodical_tableWidget, i)
                     
+                    if self.periodical_tableWidget.item(i, 1)==None or self.periodical_tableWidget.item(i, 2)==None or self.periodical_tableWidget.item(i, 3)==None or self.periodical_tableWidget.item(i, 4)==None:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки периодических услуг")
+                        self.connection.rollback()
+                        return
+                    
                     if id!=-1:
                         periodical_service = self.connection.get("SELECT * FROM billservice_periodicalservice WHERE id=%d" % id)
                     else:
@@ -2029,6 +1875,16 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.limit_tableWidget.rowCount()):
                     #print 2
                     id = self.getIdFromtable(self.limit_tableWidget, i)
+                    #print self.limit_tableWidget.item(i, 1), self.limit_tableWidget.item(i, 3), self.limit_tableWidget.item(i, 8), self.limit_tableWidget.cellWidget(i, 4)
+                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 8)==None or self.limit_tableWidget.item(i, 4)==None:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
+                        self.connection.rollback()
+                        return
+                    elif self.limit_tableWidget.item(i, 4)!=None:
+                        if self.limit_tableWidget.item(i, 4)==[]:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                            self.connection.rollback()
+                            return                            
                     
                     traffic_class_models = [x.id for x in self.limit_tableWidget.item(i, 4).models]
     
@@ -2055,7 +1911,7 @@ class TarifFrame(QtGui.QDialog):
                     if limit_id==-1:
                         limit_id=limit.id
                     
-                    print 'limit_id=', limit_id
+                    #print 'limit_id=', limit_id
                     
                     traffic_classes_for_limit = self.connection.sql("""SELECT class.* FROM nas_trafficclass as class
                     JOIN billservice_trafficlimit_traffic_class as tc ON tc.trafficclass_id = class.id
@@ -2106,6 +1962,21 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.trafficcost_tableWidget, i)
                     
+                    if self.trafficcost_tableWidget.item(i, 1)==None or self.trafficcost_tableWidget.item(i, 2)==None or self.trafficcost_tableWidget.item(i, 3)==None or self.trafficcost_tableWidget.item(i, 7)==None or self.trafficcost_tableWidget.item(i, 8)==None:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
+                        self.connection.rollback()
+                        return
+                    elif self.trafficcost_tableWidget.item(i, 3)!=None:
+                        if self.trafficcost_tableWidget.item(i, 3)==[]:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                            self.connection.rollback()
+                            return    
+                    elif self.trafficcost_tableWidget.item(i, 7)!=None:
+                        if self.trafficcost_tableWidget.item(i, 7)==[]:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                            self.connection.rollback()
+                            return
+                                                   
                     if id!=-1:
                         transmit_node = self.connection.get("SELECT * FROM billservice_traffictransmitnodes WHERE id=%d" % id)
                     else:
@@ -2183,7 +2054,17 @@ class TarifFrame(QtGui.QDialog):
                 #Предоплаченный трафик
                 for i in xrange(self.prepaid_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.prepaid_tableWidget, i)
-
+                    
+                    if self.prepaid_tableWidget.item(i, 1)==None or self.prepaid_tableWidget.item(i, 5)==None:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для предоплаченного трафика")
+                        self.connection.rollback()
+                        return
+                    elif self.prepaid_tableWidget.item(i, 1)!=None:
+                        if self.prepaid_tableWidget.item(i, 1)==[]:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                            self.connection.rollback()
+                            return    
+                        
                     if id!=-1:
                         print "prepaid_id=", id
                         prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
@@ -2245,6 +2126,8 @@ class TarifFrame(QtGui.QDialog):
         except Exception, e:
             print e
             self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка сохранения тарифного плана")
+            return
 
         QtGui.QDialog.accept(self)
                     
@@ -2530,6 +2413,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.accounttarif_table.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
         self.accounttarif_table.setSelectionBehavior(QtGui.QTableWidget.SelectRows)
         self.accounttarif_table.setSelectionMode(QtGui.QTableWidget.SingleSelection)
+        self.fixtures()
 
     def getSelectedId(self):
         return int(self.accounttarif_table.item(self.accounttarif_table.currentRow(), 0).text())
@@ -2611,24 +2495,6 @@ class AddAccountFrame(QtGui.QDialog):
         self.accounttarif_table.clear()
         self.accounttarif_table.setColumnCount(4)
 
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("Dialog", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.accounttarif_table.setHorizontalHeaderItem(0,headerItem)
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
-        self.accounttarif_table.setHorizontalHeaderItem(1,headerItem)
-
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("Dialog", "Дата ", None, QtGui.QApplication.UnicodeUTF8))
-        self.accounttarif_table.setHorizontalHeaderItem(2,headerItem1)
-
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
-        self.accounttarif_table.setHorizontalHeaderItem(3,headerItem1)
-
-
         self.add_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.del_accounttarif_toolButton.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Здесь вы можете просмотреть историю тарифных планов\n"
@@ -2637,7 +2503,12 @@ class AddAccountFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "История тарифных планов", None, QtGui.QApplication.UnicodeUTF8))
 
 
-        self.fixtures()
+        columns=[u'id', u'Тарифный план', u'Дата', u""]
+
+        #self.accounttarif_table.setColumnCount(len(columns))
+        makeHeaders(columns, self.accounttarif_table)
+            
+        
 
 
     def accept(self):
@@ -2856,10 +2727,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
         columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u"Дата создания", u""]
+        #self.tableWidget.setColumnCount(len(columns))
         
-        self.tableWidget.setColumnCount(len(columns))
-        self.tableWidget.setHorizontalHeaderLabels(columns)
+        makeHeaders(columns, self.tableWidget)
+            
         self.setCentralWidget(self.splitter)
+
 
 
         self.statusbar = QtGui.QStatusBar(self)
@@ -2997,13 +2870,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
         account = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % id)
         child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
-            #tr = Transaction.objects.create(account = account, 
-            #                           type = TransactionType.objects.get(internal_name = u"MANUAL_TRANSACTION"),
-            #                           approved = True,
-            #                           description = unicode(child.comment_edit.toPlainText()),
-            #                           summ = child.result,
-            #                           bill = unicode(child.payed_document_edit.text()))
-            #tr.save()
             tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = unicode(child.comment_edit.toPlainText()), summ=child.result, bill=unicode(child.payed_document_edit.text()))
             try:
                 
@@ -3091,6 +2957,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
             item.setText(0, u"%s" % tarif.name)
+            item.setIcon(0,QtGui.QIcon("images/folder.png"))
             
             if not tarif.active:
                 item.setDisabled(True)

@@ -4,14 +4,7 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
-#import mdi_rc
-
-#sys.path.append('d:/projects/mikrobill/webadmin')
-#sys.path.append('d:/projects/mikrobill/webadmin/mikrobill')
-
-#os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-
-#from billservice.models import Transaction, Account, TransactionType
+from helpers import makeHeaders
 
 
 class TransactionsReport(QtGui.QDialog):
@@ -107,36 +100,11 @@ class TransactionsReport(QtGui.QDialog):
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
         self.user_label.setText(QtGui.QApplication.translate("Dialog", "Пользователь", None, QtGui.QApplication.UnicodeUTF8))
         self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Пыщь", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
-        self.tableWidget.setColumnCount(7)
-
-        headerItem2 = QtGui.QTableWidgetItem()
-        headerItem2.setText(QtGui.QApplication.translate("Dialog", "id", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem2)
-
-        headerItem3 = QtGui.QTableWidgetItem()
-        headerItem3.setText(QtGui.QApplication.translate("Dialog", "Дата", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem3)
-
-        headerItem4 = QtGui.QTableWidgetItem()
-        headerItem4.setText(QtGui.QApplication.translate("Dialog", "Платёжный документ", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(2,headerItem4)
-
-        headerItem5 = QtGui.QTableWidgetItem()
-        headerItem5.setText(QtGui.QApplication.translate("Dialog", "Вид платежа", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(3,headerItem5)
-
-        headerItem6 = QtGui.QTableWidgetItem()
-        headerItem6.setText(QtGui.QApplication.translate("Dialog", "По тарифу", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(4,headerItem6)
-
-        headerItem7 = QtGui.QTableWidgetItem()
-        headerItem7.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(5,headerItem7)
         
-        headerItem8 = QtGui.QTableWidgetItem()
-        headerItem8.setText(QtGui.QApplication.translate("Dialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(6,headerItem8)
+        self.tableWidget.clear()
+
+        columns = [u'Id', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
+        makeHeaders(columns, self.tableWidget)
         
         self.save_pushButton.setText(QtGui.QApplication.translate("Dialog", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))

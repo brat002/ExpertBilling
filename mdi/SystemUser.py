@@ -5,14 +5,8 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 from helpers import Object as Object
-   
-NAS_LIST=(
-                (u'mikrotik2.8', u'MikroTik 2.8'),
-                (u'mikrotik2.9',u'MikroTik 2.9'),
-                (u'mikrotik3',u'Mikrotik 3'),
-                (u'common_radius',u'Общий RADIUS интерфейс'),
-                (u'common_ssh',u'common_ssh'),
-                )
+from helpers import makeHeaders
+
 
 class PasswordEditFrame(QtGui.QDialog):
     def __init__(self):
@@ -61,6 +55,7 @@ class SystemUserFrame(QtGui.QDialog):
         
         self.connection = connection
         self.model = model
+        self.password = ''
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,344,122).size()).expandedTo(self.minimumSizeHint()))
 
@@ -98,8 +93,9 @@ class SystemUserFrame(QtGui.QDialog):
 
         self.retranslateUi()
         self.fixtures()
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.password_pushButton, QtCore.SIGNAL("clicked()"),self.setPassword)
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self):
@@ -111,6 +107,11 @@ class SystemUserFrame(QtGui.QDialog):
 
         
 
+    def setPassword(self):
+        child = PasswordEditFrame()
+        
+        if child.exec_()==1:
+            self.password = unicode(child.password_lineEdit.text())
         
 
     def accept(self):
@@ -121,9 +122,12 @@ class SystemUserFrame(QtGui.QDialog):
 
         if self.model:
             model=self.model
+            if self.password!='':
+                model.password=self.password
         else:
             print 'New nas'
             model=Object()
+            model.password=self.password
 
 
         model.username = unicode(self.username_edit.text())
@@ -189,39 +193,20 @@ class SystemUserChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.delUserAction)
         
         self.connect(self.addUserAction, QtCore.SIGNAL("triggered()"), self.addframe)
+        self.connect(self.delUserAction, QtCore.SIGNAL("triggered()"), self.delete)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.retranslateUi()
         self.refresh()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.tableWidget.clear()
-        self.tableWidget.setColumnCount(6)
-        self.tableWidget.setRowCount(0)
+        columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP']
+        makeHeaders(columns, self.tableWidget)
 
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("MainWindow", "id", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
 
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Username", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
-
-        headerItem2 = QtGui.QTableWidgetItem()
-        headerItem2.setText(QtGui.QApplication.translate("MainWindow", "Status", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(2,headerItem2)
-
-        headerItem3 = QtGui.QTableWidgetItem()
-        headerItem3.setText(QtGui.QApplication.translate("MainWindow", "Created", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(3,headerItem3)
-
-        headerItem4 = QtGui.QTableWidgetItem()
-        headerItem4.setText(QtGui.QApplication.translate("MainWindow", "Last Login", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(4,headerItem4)
-
-        headerItem5 = QtGui.QTableWidgetItem()
-        headerItem5.setText(QtGui.QApplication.translate("MainWindow", "Last IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(5,headerItem5)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
         self.addUserAction.setText(QtGui.QApplication.translate("MainWindow", "addUser", None, QtGui.QApplication.UnicodeUTF8))
         self.delUserAction.setText(QtGui.QApplication.translate("MainWindow", "delUserAction", None, QtGui.QApplication.UnicodeUTF8))
@@ -229,33 +214,17 @@ class SystemUserChild(QtGui.QMainWindow):
     def addframe(self):
         addf = SystemUserFrame(connection=self.connection)
         #addf.show()
-        addf.exec_()
-        self.refresh()
-
-    def configure(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-        try:
-            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
-        except:
-            return
-        import Pyro.core
-
-        if self.connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
-            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
-
+        if addf.exec_()==1:
+            self.refresh()
 
 
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
     def delete(self):
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u"Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. Вы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM nas_nas WHERE id=%d" % self.getSelectedId())
+                self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -265,14 +234,15 @@ class SystemUserChild(QtGui.QMainWindow):
 
     def editframe(self):
         try:
-            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
+            model=self.connection.get("SELECT * FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
         except:
-            model=None
+            return
+            
 
-        addf = AddNasFrame(connection=self.connection, model=model)
-        #addf.show()
-        addf.exec_()
-        self.refresh()
+        addf = SystemUserFrame(connection=self.connection, model=model)
+        
+        if addf.exec_()==1:
+            self.refresh()
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()

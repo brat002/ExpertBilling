@@ -3,7 +3,7 @@
 
 from PyQt4 import QtCore, QtGui
 from Reports import TransactionsReport
-
+from helpers import makeHeaders
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
         super(CheckBoxDialog, self).__init__()
@@ -398,16 +398,10 @@ class ConnectDialog(QtGui.QDialog):
         self.save_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Запомнить", None, QtGui.QApplication.UnicodeUTF8))
         self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
-        self.tableWidget.setColumnCount(2)
-        self.tableWidget.setRowCount(0)
 
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("MainWindow", "IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
-
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Username", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
+        columns = [u'IP', 'Username']
+        makeHeaders(columns, self.tableWidget)
+        
         self.save_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.password_label.setText(QtGui.QApplication.translate("MainWindow", "Пароль:", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("MainWindow", "Имя:", None, QtGui.QApplication.UnicodeUTF8))
@@ -415,7 +409,7 @@ class ConnectDialog(QtGui.QDialog):
 
     def fixtures(self):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-        print settings.value("ip", QtCore.QVariant(""))
+        #print settings.value("ip", QtCore.QVariant(""))
         self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
         self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
         self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
