@@ -1676,7 +1676,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
         self.connection = pool.connection()
-        print dir(self.connection)
+        #print dir(self.connection)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)        
 
@@ -1814,18 +1814,18 @@ if __name__ == "__main__":
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
-    threads.append(periodical_service_bill())
+    #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
+    #threads.append(NetFlowAggregate())
+    #threads.append(NetFlowBill())
 
-    threads.append(limit_checker())
-
-
-    threads.append(ipn_service())
+    #threads.append(limit_checker())
 
 
-    threads.append(settlement_period_service_dog())
+    #threads.append(ipn_service())
+
+
+    #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
     for th in threads:

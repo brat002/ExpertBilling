@@ -4,6 +4,7 @@
 from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
+from helpers import makeHeaders
 
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -476,47 +477,10 @@ class ClassChild(QtGui.QMainWindow):
     
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Направления трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
-        self.tableWidget.setColumnCount(7)
-        self.tableWidget.setRowCount(0)
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem)
-
-        headerItem1 = QtGui.QTableWidgetItem()
         
-        headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Group", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
-
-        headerItem2 = QtGui.QTableWidgetItem()
-        
-        headerItem2.setText(QtGui.QApplication.translate("MainWindow", "Protocol", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(2,headerItem2)
-
-        headerItem3 = QtGui.QTableWidgetItem()
-        
-        headerItem3.setText(QtGui.QApplication.translate("MainWindow", "Src-IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(3,headerItem3)
-
-        headerItem4 = QtGui.QTableWidgetItem()
-        
-        headerItem4.setText(QtGui.QApplication.translate("MainWindow", "Src-mask", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(4,headerItem4)
-
-        headerItem5 = QtGui.QTableWidgetItem()
-        
-        headerItem5.setText(QtGui.QApplication.translate("MainWindow", "Dst-IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(5,headerItem5)
-
-        headerItem6 = QtGui.QTableWidgetItem()
-        
-        headerItem6.setText(QtGui.QApplication.translate("MainWindow", "Dst-Mask", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(6,headerItem6)
+        self.tableWidget.clear()        
         columns = ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
-        self.tableWidget.setColumnCount(len(columns))
-        self.tableWidget.setHorizontalHeaderLabels(columns)
-        self.tableWidget.setColumnHidden(0, True)
+        makeHeaders(columns, self.tableWidget)
 
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.addClassAction.setText(QtGui.QApplication.translate("MainWindow", "Add class", None, QtGui.QApplication.UnicodeUTF8))

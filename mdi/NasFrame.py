@@ -5,7 +5,8 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 from helpers import Object as Object
-   
+from helpers import makeHeaders
+
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -418,13 +419,11 @@ class NasMdiChild(QtGui.QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Управление серевами доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
+
         self.tableWidget.clear()
-
-        columns=["id", "Name", "Type", "IP", '']
-        self.tableWidget.setColumnCount(len(columns))
-        self.tableWidget.setHorizontalHeaderLabels(columns)
-
+        columns=[u"id", u"Имя", u"Тип", u"IP"]
+        makeHeaders(columns, self.tableWidget)
 
 
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))

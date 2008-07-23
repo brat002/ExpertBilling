@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 #from nas.models import TrafficClass, TrafficNode
 from helpers import tableFormat
 from helpers import Object as Object
+from helpers import makeHeaders
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -76,53 +77,9 @@ class MonitorFrame(QtGui.QMainWindow):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
-        self.tableWidget.setColumnCount(11)
-        self.tableWidget.setRowCount(0)
 
-        headerItem0 = QtGui.QTableWidgetItem()
-        headerItem0.setText(QtGui.QApplication.translate("MainWindow", "Id", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(0,headerItem0)
-        
-        headerItem1 = QtGui.QTableWidgetItem()
-        headerItem1.setText(QtGui.QApplication.translate("MainWindow", "Аккаунт", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(1,headerItem1)
-
-        headerItem21 = QtGui.QTableWidgetItem()
-        headerItem21.setText(QtGui.QApplication.translate("MainWindow", "Адрес пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(2,headerItem21)
-        
-        headerItem2 = QtGui.QTableWidgetItem()
-        headerItem2.setText(QtGui.QApplication.translate("MainWindow", "NAS", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(3,headerItem2)
-
-        headerItem3 = QtGui.QTableWidgetItem()
-        headerItem3.setText(QtGui.QApplication.translate("MainWindow", "Протокол", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(4,headerItem3)
-
-        headerItem4 = QtGui.QTableWidgetItem()
-        headerItem4.setText(QtGui.QApplication.translate("MainWindow", "ТП", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(5,headerItem4)
-
-        headerItem6 = QtGui.QTableWidgetItem()
-        headerItem6.setText(QtGui.QApplication.translate("MainWindow", "Дата начала", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(6,headerItem6)
-
-        headerItem7 = QtGui.QTableWidgetItem()
-        headerItem7.setText(QtGui.QApplication.translate("MainWindow", "Передано b", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(7,headerItem7)
-
-        headerItem8 = QtGui.QTableWidgetItem()
-        headerItem8.setText(QtGui.QApplication.translate("MainWindow", "Принято b", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(8,headerItem8)
-        
-        headerItem9 = QtGui.QTableWidgetItem()
-        headerItem9.setText(QtGui.QApplication.translate("MainWindow", "Длительность", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(9,headerItem9)
-
-       
-        headerItem11 = QtGui.QTableWidgetItem()
-        headerItem11.setText(QtGui.QApplication.translate("MainWindow", "Статус", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.setHorizontalHeaderItem(10,headerItem11)
+        columns = [u'Id', u'Аккаунт', u'IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
+        makeHeaders(columns, self.tableWidget)
         
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionResetSession.setText(QtGui.QApplication.translate("MainWindow", "Сбросить сессию", None, QtGui.QApplication.UnicodeUTF8))

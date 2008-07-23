@@ -1,6 +1,6 @@
 #-*-encoding:utf-8-*-
 
-from PyQt4 import QtGui     
+from PyQt4 import QtGui, QtCore
 from types import InstanceType, StringType, UnicodeType
 import datetime
 
@@ -20,7 +20,7 @@ def tableFormat(table):
     table.verticalHeader().setHidden(True)
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
-    #hh.setVerticalSize(10)
+    hh.setMaximumHeight(20)
     hh.setStretchLastSection(True)
     hh.setHighlightSections(False)
     hh.setClickable(False)
@@ -28,8 +28,21 @@ def tableFormat(table):
     hh.ResizeMode(QtGui.QHeaderView.Stretch)
     return table
 
+def createHeader(text):
+    headerItem = QtGui.QTableWidgetItem()
+    headerItem.setTextAlignment(QtCore.Qt.AlignVCenter)
+    headerItem.setText(text)
+    return headerItem
   
-
+def makeHeaders(columns, table):
+    
+    table.setColumnCount(len(columns))
+    
+    i=0
+    for header in map(createHeader, columns):
+        table.setHorizontalHeaderItem(i, header)
+        i+=1
+            
 def format_update (x,y):
     if y!='Null':
         if type(y)==StringType or type(y)==UnicodeType:
