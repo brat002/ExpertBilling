@@ -722,7 +722,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'Id', u'От МБ', u'До МБ', u'Класс трафика', u'Входящий', u'Исходящий', u'Транзитный', u'Время', u'Цена']
+        columns=[u'Id', u'От МБ', u'До МБ', u'Класс трафика', u'Вх', u'Исх', u'Тр', u'Время', u'Цена']
         
         makeHeaders(columns, self.trafficcost_tableWidget)      
 
@@ -731,7 +731,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         
         self.prepaid_tableWidget.clear()
-        columns=[u'Id', u'Класс трафика', u'Входящий', u'Исходящий', u'Транзитный', u'МБ']
+        columns=[u'Id', u'Класс трафика', u'Вх', u'Исх', u'Тр', u'МБ']
         
         makeHeaders(columns, self.prepaid_tableWidget)                
                 
@@ -760,7 +760,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Классы трафика', u'Входящий', u'Исходящий', u'Транзитный', u'МБ']
+        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Классы трафика', u'Вх', u'Исх', u'Тр', u'МБ']
         
         makeHeaders(columns, self.limit_tableWidget)
         
@@ -2503,7 +2503,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "История тарифных планов", None, QtGui.QApplication.UnicodeUTF8))
 
 
-        columns=[u'id', u'Тарифный план', u'Дата', u""]
+        columns=[u'id', u'Тарифный план', u'Дата']
 
         #self.accounttarif_table.setColumnCount(len(columns))
         makeHeaders(columns, self.accounttarif_table)
@@ -2726,7 +2726,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u"Дата создания", u""]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u"Дата создания"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -2953,6 +2953,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #index = self.tarif_treeWidget.index
   
         #print 'index=', index
+        self.tableWidget.setColumnHidden(0, True)
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -3004,11 +3005,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 14)
-            self.tableWidget.setColumnHidden(0, True)
+            
             if self.selected_account:
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
             i+=1
+        self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.resizeColumnsToContents()
         self.delNodeLocalAction()
 

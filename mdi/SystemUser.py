@@ -54,6 +54,7 @@ class SystemUserFrame(QtGui.QDialog):
         super(SystemUserFrame, self).__init__()
         
         self.connection = connection
+        self.connection.commit()
         self.model = model
         self.password = ''
         

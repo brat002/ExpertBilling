@@ -4,6 +4,8 @@
 from PyQt4 import QtCore, QtGui
 from Reports import TransactionsReport
 from helpers import makeHeaders
+from helpers import tableFormat
+
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
         super(CheckBoxDialog, self).__init__()
@@ -337,6 +339,7 @@ class ConnectDialog(QtGui.QDialog):
         self.tableWidget = QtGui.QTableWidget(self.centralwidget)
         self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
         self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
 
         self.save_pushButton = QtGui.QPushButton(self.centralwidget)
         self.save_pushButton.setGeometry(QtCore.QRect(260,70,75,23))

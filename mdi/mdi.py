@@ -17,7 +17,7 @@ from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog
-
+from Reports import ReportPropertiesDialog, NetFlowReport
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -99,6 +99,16 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMessageBox.about(self, self.tr("About MDI"),
             self.tr("The <b>MDI</b> example demonstrates how to write multiple "
                     "document interface applications using Qt."))
+
+    def reportProperties(self):
+        child = ReportPropertiesDialog(connection = connection)
+        self.workspace.addWindow(child)
+        child.show()
+
+    def netflowReport(self):
+        child = NetFlowReport(connection = connection)
+        self.workspace.addWindow(child)
+        child.show()
 
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)
@@ -198,7 +208,24 @@ class MainWindow(QtGui.QMainWindow):
         self.pasteAct.setShortcut(self.tr("Ctrl+V"))
         self.pasteAct.setStatusTip(self.tr("Paste the clipboard's contents "
                                            "into the current selection"))
+
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
+
+        self.reportPropertiesAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
+                        self.tr("&Paste"), self)
+        #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
+        self.reportPropertiesAct.setStatusTip(self.tr("Настройка отчёта "))
+
+        self.connect(self.reportPropertiesAct, QtCore.SIGNAL("triggered()"), self.reportProperties)
+        
+        self.netflowReportAct=QtGui.QAction(QtGui.QIcon(":/images/paste.png"), self.tr("&NetFlow"), self)
+        
+        self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
+
+        self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
+
+
+
 
         self.closeAct = QtGui.QAction(self.tr("Cl&ose"), self)
         self.closeAct.setShortcut(self.tr("Ctrl+F4"))
@@ -284,7 +311,8 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.cutAct)
         self.editToolBar.addAction(self.copyAct)
         self.editToolBar.addAction(self.pasteAct)
-
+        self.editToolBar.addAction(self.reportPropertiesAct)
+        self.editToolBar.addAction(self.netflowReportAct)
     def createStatusBar(self):
         self.statusBar().showMessage(self.tr("Ready"))
 
