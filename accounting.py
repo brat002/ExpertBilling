@@ -16,6 +16,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 
 
+
 #from mdi.helpers import Object
 
 from DBUtils.PooledDB import PooledDB
@@ -1768,10 +1769,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         #print dir(self.connection)
         result=[]
+        a=time.clock()
         if return_response:
             for r in self.cur.fetchall():
                 result.append(Object(r))
-                
+        print "Query length=", time.clock()-a
         return result
         
     def create(self, sql):
@@ -1795,6 +1797,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             print e
             return False
         if obj is not None and obj.password==password:
+            self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+            
             return True
         else:
             return False
