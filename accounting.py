@@ -1771,11 +1771,26 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result=[]
         a=time.clock()
         if return_response:
-            for r in self.cur.fetchall():
-                result.append(Object(r))
+            result = map(Object, self.cur.fetchall())
         print "Query length=", time.clock()-a
         return result
+
+    def sql_as_dict(self, sql, return_response=True):
+        print sql
+        self.cur.execute(sql)
+        #self.connection.commit()
         
+        #print dir(self.connection)
+        result=[]
+        a=time.clock()
+        if return_response:
+            #for r in self.cur.fetchall():
+            #    result.append(Object(r))
+            result =self.cur.fetchall()
+        print "Query length=", time.clock()-a
+        return result
+      
+  
     def create(self, sql):
         print sql
         self.cur.execute(sql)
@@ -1798,6 +1813,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         if obj is not None and obj.password==password:
             self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+            #Pyro.constants.
             
             return True
         else:
