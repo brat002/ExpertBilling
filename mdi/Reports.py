@@ -6,6 +6,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 import datetime
+import socket 
 
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
@@ -182,10 +183,10 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.start_date = datetime.datetime.now()
         self.end_date = datetime.datetime.now()
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,382,398).size()).expandedTo(self.minimumSizeHint()))
-        
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,381,450).size()).expandedTo(self.minimumSizeHint()))
+
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(0,8,381,341))
+        self.tabWidget.setGeometry(QtCore.QRect(0,8,381,391))
         self.tabWidget.setObjectName("tabWidget")
 
         self.general_tab = QtGui.QWidget()
@@ -205,7 +206,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
 
         self.to_dateTimeEdit = QtGui.QDateTimeEdit(self.general_tab)
         self.to_dateTimeEdit.setGeometry(QtCore.QRect(100,36,134,20))
-        self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2007,1,1))
+        self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.to_dateTimeEdit.setCalendarPopup(True)
         self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
 
@@ -222,7 +223,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
 
         self.from_dateTimeEdit = QtGui.QDateTimeEdit(self.general_tab)
         self.from_dateTimeEdit.setGeometry(QtCore.QRect(100,10,134,20))
-        self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2007,1,1))
+        self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.from_dateTimeEdit.setCalendarPopup(True)
         self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
 
@@ -245,6 +246,14 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.select_user_toolButton = QtGui.QToolButton(self.general_tab)
         self.select_user_toolButton.setGeometry(QtCore.QRect(181,181,21,20))
         self.select_user_toolButton.setObjectName("select_user_toolButton")
+
+        self.with_grouping_checkBox = QtGui.QCheckBox(self.general_tab)
+        self.with_grouping_checkBox.setGeometry(QtCore.QRect(10,320,231,19))
+        self.with_grouping_checkBox.setObjectName("with_grouping_checkBox")
+
+        self.only_unique_checkBox = QtGui.QCheckBox(self.general_tab)
+        self.only_unique_checkBox.setGeometry(QtCore.QRect(10,340,231,19))
+        self.only_unique_checkBox.setObjectName("only_unique_checkBox")
         self.tabWidget.addTab(self.general_tab,"")
 
         self.classes_tab = QtGui.QWidget()
@@ -279,10 +288,9 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.tabWidget.addTab(self.classes_tab,"")
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(40,360,341,32))
+        self.buttonBox.setGeometry(QtCore.QRect(100,410,171,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName("buttonBox")
         
         self.retranslateUi()
@@ -318,8 +326,11 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.all_classes_label.setText(QtGui.QApplication.translate("Dialog", "Доступные классы", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные классы", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.classes_tab), QtGui.QApplication.translate("Dialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
-
-
+        self.with_grouping_checkBox.setText(QtGui.QApplication.translate("Dialog", "С группировкой", None, QtGui.QApplication.UnicodeUTF8))
+        self.only_unique_checkBox.setText(QtGui.QApplication.translate("Dialog", "Только уникальные значения", None, QtGui.QApplication.UnicodeUTF8))
+        self.with_grouping_checkBox.setCheckState(QtCore.Qt.Checked)
+        self.only_unique_checkBox.setCheckState(QtCore.Qt.Checked)
+        
     def fixtures(self):
         users = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
         
@@ -391,6 +402,7 @@ class NetFlowReport(QtGui.QMainWindow):
         super(NetFlowReport, self).__init__()
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
+        self.current_page=0
         self.protocols={'':0,
            'ddp':37,
            'encap':98, 
@@ -407,9 +419,33 @@ class NetFlowReport(QtGui.QMainWindow):
            'tcp':6, 
            'udp':17
            }
+        self.child = None
+        self.label = QtGui.QLabel(u"Навигатор")
+        self.button_start = QtGui.QPushButton()
+        self.button_start.setText(u"|<<")
+        self.button_start.setMaximumHeight(19)
+        self.button_start.setMaximumWidth(28)
+        #self.button_start.setFlat(True)
+        
+        self.button_back = QtGui.QPushButton()
+        self.button_back.setText(u"<")
+        self.button_back.setMaximumHeight(19)
+        self.button_back.setMaximumWidth(28)
+        #self.button_back.setFlat(True)
+        self.button_forward = QtGui.QPushButton()
+        self.button_forward.setText(u">")
+        self.button_forward.setMaximumHeight(19)
+        self.button_forward.setMaximumWidth(28)
+        #self.button_forward.setFlat(True)
+
+        #self.button.setMaximumHeight(17)
+        self.status_label= QtGui.QLabel()
+        #self.status_label.setMinimumWidth(600)
         
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget = tableFormat(self.tableWidget)
+        #self.tableWidget.setColumnHidden(0, False)
+        
         self.setCentralWidget(self.tableWidget)
 
         self.statusbar = QtGui.QStatusBar(self)
@@ -418,6 +454,15 @@ class NetFlowReport(QtGui.QMainWindow):
 
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setObjectName("toolBar")
+        
+        #self.toolBar.addWidget(self.combobox)
+        self.statusBar().addWidget(self.label)
+        self.statusBar().addWidget(self.button_start)
+        self.statusBar().addWidget(self.button_back)
+        self.statusBar().addWidget(self.button_forward)
+        #self.statusBar().addWidget(self.button_end)
+
+        
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
         self.configureAction = QtGui.QAction(self)
@@ -425,7 +470,11 @@ class NetFlowReport(QtGui.QMainWindow):
         self.configureAction.setObjectName("configureAction")
         self.toolBar.addAction(self.configureAction)
         
-        QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.refresh)
+        QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        
+        QtCore.QObject.connect(self.button_start, QtCore.SIGNAL("clicked()"), self.startPage)
+        QtCore.QObject.connect(self.button_forward, QtCore.SIGNAL("clicked()"), self.addPage)
+        QtCore.QObject.connect(self.button_back, QtCore.SIGNAL("clicked()"), self.delPage)
         self.retranslateUi()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -435,7 +484,7 @@ class NetFlowReport(QtGui.QMainWindow):
 
         columns = ['id', u'Сервер доступа', u'Аккаунт', u'Тариф', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
         makeHeaders(columns, self.tableWidget)
-        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(0, False)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -448,28 +497,61 @@ class NetFlowReport(QtGui.QMainWindow):
 
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
-  
-    def refresh(self):
-        child = ReportPropertiesDialog(connection = self.connection)
+ 
+    def startPage(self):
+        self.current_page=0
+        self.refresh()
+         
+    def addPage(self):
+        self.current_page+=1
+        self.refresh()
+        
+    def delPage(self):
+        if self.current_page-1>=0:
+            self.current_page-=1
+            self.refresh()
+        
+        
+    def configure(self):
+        if not self.child:
+            child = ReportPropertiesDialog(connection = self.connection)
+        else:
+            child = self.child
 
         if child.exec_()!=1:
             return
             #print 123
             pass
+        self.child = child
+        self.current_page=0
+        self.refresh()
+                
+    def refresh(self):
         
-        print child.users
-        print child.classes
-        print child.nas
-        print child.start_date
-        print child.end_date
+        child = self.child
+
+
         
-        sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, nas.name as nas_name, account.username as account_username, class.name as class_name, tarif.name as tarif_name, class.color as class_color 
-        FROM billservice_netflowstream as netflowstream
-        JOIN nas_nas as nas ON nas.id=netflowstream.nas_id
-        JOIN billservice_account as account ON account.id = netflowstream.account_id
-        JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
-        JOIN billservice_tariff as tarif ON tarif.id=get_tarif(netflowstream.account_id, netflowstream.date_start) 
-        WHERE date_start between '%s' and '%s'""" % (child.start_date, child.end_date) 
+        if child.with_grouping_checkBox.checkState()==0:
+            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, nas.name as nas_name, account.username as account_username, class.name as class_name, tarif.name as tarif_name, class.color as class_color 
+            FROM billservice_netflowstream as netflowstream
+            JOIN nas_nas as nas ON nas.id=netflowstream.nas_id
+            JOIN billservice_account as account ON account.id = netflowstream.account_id
+            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
+            JOIN billservice_tariff as tarif ON tarif.id=get_tarif(netflowstream.account_id, netflowstream.date_start) 
+            WHERE date_start between '%s' and '%s'""" % (child.start_date, child.end_date) 
+            print 1
+        elif child.with_grouping_checkBox.checkState()==2:
+            sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
+            FROM billservice_netflowstream as netflowstream
+
+            JOIN billservice_account as account ON account.id = netflowstream.account_id
+            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
+            
+            WHERE date_start between '%s' and '%s'
+            
+            """ % (child.start_date, child.end_date)
+            print 2            
         
         if len(child.users)>0 or len(child.classes)>0:
             sql+=" AND " 
@@ -482,39 +564,78 @@ class NetFlowReport(QtGui.QMainWindow):
         
         if len(child.classes)>0:
             sql+=""" netflowstream.traffic_class_id in (%s)"""  % ','.join(map(str, child.classes))
+            
+        if child.with_grouping_checkBox.checkState()==2:
+            sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
+        
+        if self.current_page==0:
+            sql+=" LIMIT 100"
+        else:
+            
+            sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
+            
         import time
         a=time.clock()
         flows = self.connection.sql(sql)
         print "request time=", time.clock()-a
         i=0
+        self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
         octets_in_summ=0
         octets_out_summ=0
         octets_transit_summ=0
+        c=self.current_page*100
         for flow in flows:
-            self.addrow(flow.id, i, 0)
-            self.addrow(flow.nas_name, i, 1)
+            self.addrow(c, i, 0)
+            if child.with_grouping_checkBox.checkState()==0:
+                
+                
+                self.addrow(flow.src_port, i, 10)
+                self.addrow(flow.dst_port, i, 11)
+                
+                self.addrow(flow.nas_name, i, 1)
+                self.addrow(flow.tarif_name, i, 3)
+                
+                if flow.direction=='INPUT':
+                    octets_in_summ+=int(flow.octets)
+                elif flow.direction=='OUTPUT':
+                    octets_out_summ+=int(flow.octets)
+                elif flow.direction=='TRANSIT':
+                    octets_transit_summ+=int(flow.octets)
+                    
+                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 4)
+
             self.addrow(flow.account_username, i, 2)
-            self.addrow(flow.tarif_name, i, 3)
-            self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 4)
+            
+            self.addrow(flow.octets, i, 12)
             self.addrow(flow.class_name, i, 5, color=flow.class_color)
             self.addrow(flow.direction, i, 6)
             self.addrow(flow.protocol, i, 7)
-            self.addrow(flow.src_addr, i, 8)
-            self.addrow(flow.dst_addr, i, 9)
-            self.addrow(flow.src_port, i, 10)
-            self.addrow(flow.dst_port, i, 11)
-            self.addrow(flow.octets, i, 12)
-            i+=1
-            if flow.direction=='INPUT':
-                octets_in_summ+=int(flow.octets)
-            elif flow.direction=='OUTPUT':
-                octets_out_summ+=int(flow.octets)
-            elif flow.direction=='TRANSIT':
-                octets_transit_summ+=int(flow.octets)
             
-        self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
+            
+            #print dns.reversename.to_address(n)
+            try:
+                self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 8)
+            except:
+                self.addrow(flow.src_addr, i, 8)
+                
+            try:
+                self.addrow(socket.gethostbyaddr(flow.dst_addr), i, 9)
+            except:
+                self.addrow(flow.dst_addr, i, 9)
+
+            
+            i+=1
+            c+=1
+
+        #self.tableWidget.sortByColumn(3)        
+        #self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.resizeRowsToContents()
+        #self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
+        self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
+        
         print "Interface generation time=", time.clock()-a    
         
         
+    
         

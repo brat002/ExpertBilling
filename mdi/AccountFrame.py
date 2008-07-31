@@ -2745,10 +2745,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
 
-        self.addAction = QtGui.QAction(self)
+        self.addAction = QtGui.QAction(u"Добавить польователя", self)
         self.addAction.setIcon(QtGui.QIcon("images/add.png"))
 
-        self.delAction = QtGui.QAction(self)
+        self.delAction = QtGui.QAction(u"Удалить пользователя",self)
         self.delAction.setIcon(QtGui.QIcon("images/del.png"))
 
         self.addTarifAction = QtGui.QAction(self)
@@ -2769,8 +2769,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.actionEnableSession = QtGui.QAction(u'Включить на сервере доступа',self)
         self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
                 
-        self.tableWidget.addAction(self.transactionAction)
         
+        
+        self.tableWidget.addAction(self.addAction)
+        self.tableWidget.addAction(self.delAction)
+        self.tableWidget.addAction(self.transactionAction)
         self.tableWidget.addAction(self.actionEnableSession)
         self.tableWidget.addAction(self.actionDisableSession)
                         
