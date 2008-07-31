@@ -56,7 +56,7 @@ class ClassEdit(QtGui.QDialog):
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Направление трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить всю статистику", None, QtGui.QApplication.UnicodeUTF8))
@@ -254,7 +254,7 @@ class ClassNodeFrame(QtGui.QDialog):
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Name", None, QtGui.QApplication.UnicodeUTF8))
         self.name_edit.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
         self.group_label.setText(QtGui.QApplication.translate("Dialog", "Group", None, QtGui.QApplication.UnicodeUTF8))

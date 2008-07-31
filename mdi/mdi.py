@@ -361,4 +361,5 @@ if __name__ == "__main__":
     mainwindow.show()
     #app.setStyle("cleanlooks")
     app.setStyleSheet(open("./style.qss","r").read())
+    #QtGui.QStyle.SH_Table_GridLineColor
     sys.exit(app.exec_())

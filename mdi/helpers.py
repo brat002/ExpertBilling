@@ -8,7 +8,7 @@ import datetime
 def tableFormat(table):        
     table.setFrameShape(QtGui.QFrame.Panel)
     table.setFrameShadow(QtGui.QFrame.Sunken)
-    table.setAlternatingRowColors(True)
+    #table.setAlternatingRowColors(True)
     table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
     table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
     table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)

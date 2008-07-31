@@ -13,6 +13,7 @@ import psycopg2
 import psycopg2.extras
 from types import InstanceType  
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+import pickle
 
 
 
@@ -1762,7 +1763,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def rollback(self):
         self.connection.rollback()
         
-    def sql(self, sql, return_response=True):
+    def sql(self, sql, return_response=True, pickler=False):
         print sql
         self.cur.execute(sql)
         #self.connection.commit()
@@ -1773,6 +1774,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if return_response:
             result = map(Object, self.cur.fetchall())
         print "Query length=", time.clock()-a
+        if pickler:
+            output = open('data.pkl', 'wb')
+            b=time.clock()-a
+            
+            pickle.dump(result, output)
+            output.close()
+            print "Pickle length=", time.clock()-a
         return result
 
     def sql_as_dict(self, sql, return_response=True):
