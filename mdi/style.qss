@@ -1,4 +1,6 @@
 QWidget {
     selection-color: black;
     selection-background-color: #9dc0ea;
+
 }
+

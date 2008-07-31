@@ -479,10 +479,10 @@ class NetFlowReport(QtGui.QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Сетевая статистика", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = ['id', u'Сервер доступа', u'Аккаунт', u'Тариф', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
+        columns = ['#',  u'Аккаунт', u'Дата', u'Трафик', u'Сетевой протокол', u'IP источника', u'Порт источника', u'IP получателя',  u'Порт получателя', u'Передано байт']
         makeHeaders(columns, self.tableWidget)
         self.tableWidget.setColumnHidden(0, False)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -533,12 +533,12 @@ class NetFlowReport(QtGui.QMainWindow):
 
         
         if child.with_grouping_checkBox.checkState()==0:
-            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, nas.name as nas_name, account.username as account_username, class.name as class_name, tarif.name as tarif_name, class.color as class_color 
+            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  account.username as account_username, class.name as class_name, class.color as class_color 
             FROM billservice_netflowstream as netflowstream
-            JOIN nas_nas as nas ON nas.id=netflowstream.nas_id
+            
             JOIN billservice_account as account ON account.id = netflowstream.account_id
             JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
-            JOIN billservice_tariff as tarif ON tarif.id=get_tarif(netflowstream.account_id, netflowstream.date_start) 
+             
             WHERE date_start between '%s' and '%s'""" % (child.start_date, child.end_date) 
             print 1
         elif child.with_grouping_checkBox.checkState()==2:
@@ -568,6 +568,9 @@ class NetFlowReport(QtGui.QMainWindow):
         if child.with_grouping_checkBox.checkState()==2:
             sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
         
+        if child.with_grouping_checkBox.checkState()==0:
+            sql+="ORDER BY netflowstream.date_start ASC"
+            
         if self.current_page==0:
             sql+=" LIMIT 100"
         else:
@@ -585,16 +588,17 @@ class NetFlowReport(QtGui.QMainWindow):
         octets_out_summ=0
         octets_transit_summ=0
         c=self.current_page*100
+        #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
         for flow in flows:
             self.addrow(c, i, 0)
             if child.with_grouping_checkBox.checkState()==0:
                 
                 
-                self.addrow(flow.src_port, i, 10)
-                self.addrow(flow.dst_port, i, 11)
+                self.addrow(flow.src_port, i, 6)
+                self.addrow(flow.dst_port, i, 8)
                 
-                self.addrow(flow.nas_name, i, 1)
-                self.addrow(flow.tarif_name, i, 3)
+                #self.addrow(flow.nas_name, i, 1)
+                #self.addrow(flow.tarif_name, i, 3)
                 
                 if flow.direction=='INPUT':
                     octets_in_summ+=int(flow.octets)
@@ -603,34 +607,38 @@ class NetFlowReport(QtGui.QMainWindow):
                 elif flow.direction=='TRANSIT':
                     octets_transit_summ+=int(flow.octets)
                     
-                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 4)
+                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 2)
 
-            self.addrow(flow.account_username, i, 2)
+            self.addrow(flow.account_username, i, 1)
             
-            self.addrow(flow.octets, i, 12)
-            self.addrow(flow.class_name, i, 5, color=flow.class_color)
-            self.addrow(flow.direction, i, 6)
-            self.addrow(flow.protocol, i, 7)
+            self.addrow("%s KB" % (float(flow.octets)/1024), i, 9)
+            self.addrow(flow.class_name, i, 3, color=flow.class_color)
+            #self.addrow(flow.direction, i, 4)
+            self.addrow(flow.protocol==6 and "TCP" or flow.protocol, i, 4)
+            self.tableWidget.item(i,4).setTextAlignment(QtCore.Qt.AlignCenter)
             
             
             #print dns.reversename.to_address(n)
-            try:
-                self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 8)
-            except:
-                self.addrow(flow.src_addr, i, 8)
+            #try:
+           #     self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 5)
+            #except:
+            #    self.addrow(flow.src_addr, i, 5)
+            self.addrow(flow.src_addr, i, 5)
                 
-            try:
-                self.addrow(socket.gethostbyaddr(flow.dst_addr), i, 9)
-            except:
-                self.addrow(flow.dst_addr, i, 9)
-
+            #try:
+            #    self.addrow(socket.gethostbyaddr(flow.dst_addr)[0], i, 7)
+            #except:
+            #    self.addrow(flow.dst_addr, i, 7)
+            self.addrow(flow.dst_addr, i, 7)
+            
+            self.tableWidget.setRowHeight(i, 14)
             
             i+=1
             c+=1
 
         #self.tableWidget.sortByColumn(3)        
-        #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.resizeRowsToContents()
+        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeRowsToContents()
         #self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         

@@ -722,7 +722,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'Id', u'От МБ', u'До МБ', u'Класс трафика', u'Вх', u'Исх', u'Тр', u'Время', u'Цена']
+        columns=[u'Id', u'От МБ', u'До МБ', u'Направления', u'Вх', u'Исх', u'Тр', u'Время', u'Цена']
         
         makeHeaders(columns, self.trafficcost_tableWidget)      
 
@@ -731,7 +731,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         
         self.prepaid_tableWidget.clear()
-        columns=[u'Id', u'Класс трафика', u'Вх', u'Исх', u'Тр', u'МБ']
+        columns=[u'Id', u'Направления', u'Вх', u'Исх', u'Тр', u'МБ']
         
         makeHeaders(columns, self.prepaid_tableWidget)                
                 
@@ -760,7 +760,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Классы трафика', u'Вх', u'Исх', u'Тр', u'МБ']
+        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Направления', u'Вх', u'Исх', u'Тр', u'МБ']
         
         makeHeaders(columns, self.limit_tableWidget)
         
