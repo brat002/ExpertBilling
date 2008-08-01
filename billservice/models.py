@@ -716,4 +716,10 @@ class SystemUser(models.Model):
     created = models.DateTimeField()
     status = models.BooleanField(default=True)
     
+class Ports(models.Model):
+    port = models.IntegerField()
+    protocol = models.IntegerField()
+    name = models.CharField(max_length=32)
+    description = models.CharField(max_length=255)
+    
     
