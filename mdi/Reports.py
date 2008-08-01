@@ -302,10 +302,16 @@ class ReportPropertiesDialog(QtGui.QDialog):
         QtCore.QObject.connect(self.select_user_toolButton, QtCore.SIGNAL("clicked()"),self.addUser)
         QtCore.QObject.connect(self.remove_user_toolButton, QtCore.SIGNAL("clicked()"),self.delUser)
 
-        QtCore.QObject.connect(self.select_class_toolButton, QtCore.SIGNAL("clicked()"), self.addClass)
+        QtCore.QObject.connect(self.all_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addUser)
+        QtCore.QObject.connect(self.selected_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delUser)        
         
+
+        QtCore.QObject.connect(self.select_class_toolButton, QtCore.SIGNAL("clicked()"), self.addClass)
         QtCore.QObject.connect(self.remove_class_toolButton, QtCore.SIGNAL("clicked()"), self.delClass)
         
+        QtCore.QObject.connect(self.all_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
+        QtCore.QObject.connect(self.selected_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
+
         self.fixtures()
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
 
@@ -362,26 +368,32 @@ class ReportPropertiesDialog(QtGui.QDialog):
             self.all_users_listWidget.takeItem(self.all_users_listWidget.row(item))
             self.selected_users_listWidget.addItem(item)
             
+        self.selected_users_listWidget.sortItems()
+        
     def delUser(self):
         selected_items = self.selected_users_listWidget.selectedItems()
         
         for item in selected_items:
             self.selected_users_listWidget.takeItem(self.selected_users_listWidget.row(item))
             self.all_users_listWidget.addItem(item)
-    
+        self.all_users_listWidget.sortItems()
+        
     def addClass(self):
         selected_items = self.all_classes_listWidget.selectedItems()
         print 1
         for item in selected_items:
             self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
             self.selected_classes_listWidget.addItem(item)
-    
+        self.selected_classes_listWidget.sortItems()
+        
     def delClass(self):
         selected_items = self.selected_classes_listWidget.selectedItems()
         #print 2
         for item in selected_items:
             self.selected_classes_listWidget.takeItem(self.selected_classes_listWidget.row(item))
             self.all_classes_listWidget.addItem(item)
+        self.all_classes_listWidget.sortItems()
+        
         
     def accept(self):
         for x in xrange(0, self.selected_users_listWidget.count()):
@@ -419,6 +431,23 @@ class NetFlowReport(QtGui.QMainWindow):
            'tcp':6, 
            'udp':17
            }
+        self.protocols_reverse = {
+                                  '0':'',
+                                  '37': 'ddp',
+                                  '98': 'encap',
+                                  '3': 'ggp',
+                                  '47': 'gre',
+                                  '20': 'hmp',
+                                  '1' : 'ICMP',
+                                  '38':'idpr-cmtp',
+                                  '2': 'igmp',
+                                  '4': 'ipencap',
+                                  '94': 'ipip',
+                                  '89': 'ospf',
+                                  '27': 'rdp',
+                                  '6' : 'TCP',
+                                  '17': 'UDP'
+                                  }
         self.child = None
         self.label = QtGui.QLabel(u"Навигатор")
         self.button_start = QtGui.QPushButton()
@@ -460,6 +489,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.statusBar().addWidget(self.button_start)
         self.statusBar().addWidget(self.button_back)
         self.statusBar().addWidget(self.button_forward)
+        self.statusBar().addWidget(self.status_label)
         #self.statusBar().addWidget(self.button_end)
 
         
@@ -482,7 +512,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Сетевая статистика", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = ['#',  u'Аккаунт', u'Дата', u'Трафик', u'Сетевой протокол', u'IP источника', u'Порт источника', u'IP получателя',  u'Порт получателя', u'Передано байт']
+        columns = ['#', u'Аккаунт', u'Трафик', u'Сетевой протокол', u'IP источника', u'Порт источника', u'IP получателя',  u'Порт получателя', u'Передано байт', u'Дата']
         makeHeaders(columns, self.tableWidget)
         self.tableWidget.setColumnHidden(0, False)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -494,7 +524,8 @@ class NetFlowReport(QtGui.QMainWindow):
             value=''
         if color:
             headerItem.setBackgroundColor(QtGui.QColor(color))
-
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/account.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
  
@@ -511,6 +542,10 @@ class NetFlowReport(QtGui.QMainWindow):
             self.current_page-=1
             self.refresh()
         
+    def getProtocol(self, value):
+        if str(value) in self.protocols_reverse:
+            return self.protocols_reverse['%s' % value]
+        return value
         
     def configure(self):
         if not self.child:
@@ -529,13 +564,17 @@ class NetFlowReport(QtGui.QMainWindow):
     def refresh(self):
         
         child = self.child
-
+        self.status_label.setText(u"Подождите, идёт обработка.")
 
         
         if child.with_grouping_checkBox.checkState()==0:
-            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  account.username as account_username, class.name as class_name, class.color as class_color 
+            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
+            netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
+            account.username as account_username, class.name as class_name, class.color as class_color, ports.name as port_name, 
+            ports.description as port_description, ports1.name as port_name1, ports1.description as port_description1
             FROM billservice_netflowstream as netflowstream
-            
+            LEFT JOIN billservice_ports as ports ON ports.protocol = netflowstream.protocol and netflowstream.src_port = ports.port
+            LEFT JOIN billservice_ports as ports1 ON ports1.protocol = netflowstream.protocol and netflowstream.dst_port = ports1.port
             JOIN billservice_account as account ON account.id = netflowstream.account_id
             JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
              
@@ -594,8 +633,8 @@ class NetFlowReport(QtGui.QMainWindow):
             if child.with_grouping_checkBox.checkState()==0:
                 
                 
-                self.addrow(flow.src_port, i, 6)
-                self.addrow(flow.dst_port, i, 8)
+                self.addrow(flow.src_port, i, 5)
+                self.addrow(flow.dst_port, i, 7)
                 
                 #self.addrow(flow.nas_name, i, 1)
                 #self.addrow(flow.tarif_name, i, 3)
@@ -606,16 +645,47 @@ class NetFlowReport(QtGui.QMainWindow):
                     octets_out_summ+=int(flow.octets)
                 elif flow.direction=='TRANSIT':
                     octets_transit_summ+=int(flow.octets)
+                
+                if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1=="Null"):
+                
+                    if flow.port_name=="Null" and flow.port_name1!="Null":
+                        flow.port_name=flow.port_name1
+                        flow.port_description=flow.port_description1
+                    elif flow.port_name=="Null":
+                        flow.port_description=''
+    
+                        
                     
-                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 2)
+                    self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                    self.tableWidget.item(i,3).setToolTip(flow.port_description)
+                
+                 
+                elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name=="Null"):
+                
+                    if flow.port_name1=="Null" and flow.port_name!="Null":
+                        flow.port_name1 = flow.port_name
+                        flow.port_description1 = flow.port_description
+                    elif flow.port_name1=="Null": 
+                        flow.port_name1=""    
+                        flow.port_description1 = ""   
+    
+                    self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
+                    self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
+                else:
+                    self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
 
+
+                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 9)
+            else:
+                self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
+                
             self.addrow(flow.account_username, i, 1)
             
-            self.addrow("%s KB" % (float(flow.octets)/1024), i, 9)
-            self.addrow(flow.class_name, i, 3, color=flow.class_color)
+            self.addrow("%s KB" % (float(flow.octets)/1024), i, 8)
+            self.addrow(flow.class_name, i, 2, color=flow.class_color)
             #self.addrow(flow.direction, i, 4)
-            self.addrow(flow.protocol==6 and "TCP" or flow.protocol, i, 4)
-            self.tableWidget.item(i,4).setTextAlignment(QtCore.Qt.AlignCenter)
+            
+            
             
             
             #print dns.reversename.to_address(n)
@@ -623,15 +693,15 @@ class NetFlowReport(QtGui.QMainWindow):
            #     self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 5)
             #except:
             #    self.addrow(flow.src_addr, i, 5)
-            self.addrow(flow.src_addr, i, 5)
+            self.addrow(flow.src_addr, i, 4)
                 
             #try:
             #    self.addrow(socket.gethostbyaddr(flow.dst_addr)[0], i, 7)
             #except:
             #    self.addrow(flow.dst_addr, i, 7)
-            self.addrow(flow.dst_addr, i, 7)
+            self.addrow(flow.dst_addr, i, 6)
             
-            self.tableWidget.setRowHeight(i, 14)
+            self.tableWidget.setRowHeight(i, 16)
             
             i+=1
             c+=1
@@ -640,8 +710,8 @@ class NetFlowReport(QtGui.QMainWindow):
         self.tableWidget.resizeColumnsToContents()
         #self.tableWidget.resizeRowsToContents()
         #self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
-        self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
-        
+        #self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
+        self.status_label.setText(u"Готово")
         print "Interface generation time=", time.clock()-a    
         
         

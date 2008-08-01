@@ -163,21 +163,14 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
 
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
-        
-        self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
+        #self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
+        #self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
 
-        self.splitter = QtGui.QSplitter(self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0,0,691,411))
+        self.splitter = QtGui.QSplitter(self)
+        self.splitter.setGeometry(QtCore.QRect(0,0,191,411))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
-        #self.timeperiod_list_edit = QtGui.QListWidget(self.splitter)
-        #self.timeperiod_list_edit = QtGui.QListWidget()
-        #self.timeperiod_list_edit.setMaximumSize(QtCore.QSize(150,16777215))
-        #self.timeperiod_list_edit.setObjectName("timeperiod_list_edit")
 
         self.treeWidget = QtGui.QTreeWidget(self.splitter)
         tree_header = self.treeWidget.headerItem()
@@ -228,16 +221,15 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         self.connect(self.addConsAction, QtCore.SIGNAL("triggered()"),  self.addNode)
         self.connect(self.delConsAction, QtCore.SIGNAL("triggered()"),  self.delNode)
-        
-        #self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.editPeriod)
-        #self.connect(self.timeperiod_list_edit, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refreshTable)
 
         self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editPeriod)
         
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refreshTable)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refreshTable)
         
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.delNodeLocalAction)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
+        
+        
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
         
@@ -247,7 +239,6 @@ class TimePeriodChild(QtGui.QMainWindow):
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Периоды тарификации", None, QtGui.QApplication.UnicodeUTF8))
-        #self.timeperiod_list_edit.clear()
 
         self.tableWidget.clear()
         columns=['Id', u'Название', u'Начало', u'Окончание', u'Повторяется через']
@@ -264,6 +255,8 @@ class TimePeriodChild(QtGui.QMainWindow):
         text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);        
         if text[0].isEmpty()==True and text[2]:
             QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+            return
+        elif text[2]:
             return
 
         model = Object()

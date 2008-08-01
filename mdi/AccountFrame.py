@@ -2147,7 +2147,7 @@ class AddAccountFrame(QtGui.QDialog):
 
 
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(0,10,421,433))
+        self.tabWidget.setGeometry(QtCore.QRect(0,10,421,423))
 
 
         self.tab = QtGui.QWidget()
@@ -2722,7 +2722,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
 
-        self.tableWidget.setAlternatingRowColors(True)
+        #self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
@@ -2808,6 +2808,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh)
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
+
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.refresh)
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.addNodeLocalAction)        
+        
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refresh)
+        self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)    
+        
         
         self.connect(self.transactionAction, QtCore.SIGNAL("triggered()"), self.makeTransation)
         
@@ -3007,7 +3014,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.status, i,10, enabled=a.status)
             self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
             
-            self.tableWidget.setRowHeight(i, 14)
+            self.tableWidget.setRowHeight(i, 16)
             
             if self.selected_account:
                 if self.selected_account.id == a.id:
