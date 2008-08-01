@@ -99,6 +99,9 @@
       <property name="text" >
        <string>Начало</string>
       </property>
+      <property name="buddy" >
+       <cstring>daet_start_dateTimeEdit</cstring>
+      </property>
      </widget>
      <widget class="QDateTimeEdit" name="daet_start_dateTimeEdit" >
       <property name="geometry" >
@@ -127,6 +130,9 @@
       </property>
       <property name="text" >
        <string>Конец</string>
+      </property>
+      <property name="buddy" >
+       <cstring>date_end_dateTimeEdit</cstring>
       </property>
      </widget>
     </widget>
@@ -499,6 +505,30 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>daet_start_dateTimeEdit</tabstop>
+  <tabstop>date_end_dateTimeEdit</tabstop>
+  <tabstop>grid_checkBox</tabstop>
+  <tabstop>antialiasing_checkBox</tabstop>
+  <tabstop>read_only_checkBox</tabstop>
+  <tabstop>send_to_printer_checkBox</tabstop>
+  <tabstop>all_users_listWidget</tabstop>
+  <tabstop>add_user_toolButton</tabstop>
+  <tabstop>del_user_toolButton</tabstop>
+  <tabstop>selected_users_listWidget</tabstop>
+  <tabstop>all_servers_listWidget</tabstop>
+  <tabstop>add_server_toolButton</tabstop>
+  <tabstop>del_server_toolButton</tabstop>
+  <tabstop>selected_servers_listWidget</tabstop>
+  <tabstop>all_classes_listWidget</tabstop>
+  <tabstop>add_class_toolButton</tabstop>
+  <tabstop>del_class_toolButton</tabstop>
+  <tabstop>selected_classes_listWidget</tabstop>
+  <tabstop>ports_listWidget</tabstop>
+  <tabstop>extra_ports_lineEdit</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
