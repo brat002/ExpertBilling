@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
+<report xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="report_schema.xsd">
+  <textformat name="tf1" setFontWeight="96" setFontPointSize="18" setFontItalic="true" setForeground="#00ff00"/>
+  <textformat name="tf2" setFontWeight="72" setFontPointSize="12" setFontItalic="true" />
+  <blockformat name="bf1" setAlignment="22" />
+  <frame name="topframe" type="current" format="currentedit" fname="tff" padding="16">
+	<insertblock blockformat="bf1"/>
+	<chart library="pychartdir" name="chart1" type="userstrafpie">
+		<getdata>
+			<frame name="ch1fr1" datasource="chart1_return" type="current" format="current">
+				<insertblock/>
+				<inserttext text="               "/>
+				<table name="tbl2" columns="2" type="normal"  fname="tf2" ftype="new" setCellPadding="2"  setBackground="#c0a0c0" >
+					<column name="Имя пользователя" type="string" />
+					<column name="Траффик" type="int" />
+				</table>
+			</frame>			
+		</getdata>
+	</chart>
+	<frame name="fr2" datasource="args" type="current" format="currentnew" fname="tff1">
+		<insertblock />
+		<insertblock />
+		<inserttext text="Дата начала: " textformat="tf2" />
+		<insertdatanontext index = '1' />
+		<insertblock />
+		<inserttext text="Дата окончания: "/>
+		<insertdatanontext index = '2' />
+		<insertblock />
+		<insertblock />
+	</frame>
+  </frame>
+</report>
