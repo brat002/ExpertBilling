@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<report>
+	<frame name="topframe" type="current" format="currentedit" fname="tff" padding="16">
+			<inserttext text="Фрейм1"/>
+			<insertblock/>
+		<frame name="referenceframe" type="insert" format="new" fname="rff" formattype="textframe" padding="16">
+			<inserttext text="Newframe2"/>
+			<insertblock/>
+			<insertblock/>
+		</frame>
+		<chart library="pychartdir" name="chart1" type="nfs_user_traf"/>
+	</frame>
+</report>
