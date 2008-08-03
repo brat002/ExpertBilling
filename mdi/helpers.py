@@ -20,10 +20,10 @@ def tableFormat(table):
     table.verticalHeader().setHidden(True)
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
-    hh.setMaximumHeight(20)
+    hh.setMaximumHeight(17)
     hh.setStretchLastSection(True)
     hh.setHighlightSections(False)
-    hh.setClickable(False)
+    hh.setClickable(True)
     hh.setMovable(False)
     hh.ResizeMode(QtGui.QHeaderView.Stretch)
     return table
