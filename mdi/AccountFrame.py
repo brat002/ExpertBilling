@@ -203,7 +203,7 @@ class TarifFrame(QtGui.QDialog):
         self.sp_type_edit.setObjectName("sp_type_edit")
 
         self.sp_name_label = QtGui.QLabel(self.sp_groupbox)
-        self.sp_name_label.setGeometry(QtCore.QRect(10,50,71,21))
+        self.sp_name_label.setGeometry(QtCore.QRect(10,50,100,21))
         self.sp_name_label.setObjectName("sp_name_label")
 
         self.sp_name_edit = QtGui.QComboBox(self.sp_groupbox)
@@ -675,9 +675,9 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_description_label.setText(QtGui.QApplication.translate("Dialog", "Описание тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
+        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Фиксированный расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_type_edit.setText(QtGui.QApplication.translate("Dialog", "Начать при активации у пользователя данного тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
-        self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_cost_label.setText(QtGui.QApplication.translate("Dialog", "Стоимость пакета", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Производить доснятие суммы до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом баллансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
