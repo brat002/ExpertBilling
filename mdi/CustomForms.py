@@ -72,10 +72,11 @@ class CheckBoxDialog(QtGui.QDialog):
         
             
 class ComboBoxDialog(QtGui.QDialog):
-    def __init__(self, items, selected_item=None):
+    def __init__(self, items, selected_item=None, title=''):
         super(ComboBoxDialog, self).__init__()
         self.items = items
         self.selected_item = selected_item
+        self.title = title
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,318,89).size()).expandedTo(self.minimumSizeHint()))
         
@@ -103,7 +104,11 @@ class ComboBoxDialog(QtGui.QDialog):
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Диалог выбора", None, QtGui.QApplication.UnicodeUTF8))
+        if self.title=="":
+            self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Диалог выбора", None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.setWindowTitle(unicode(self.title))
+        
 
     def fixtures(self):
         i=0
