@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
@@ -1856,6 +1856,7 @@ if __name__ == "__main__":
     #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
+    print rosClient("10.20.3.1", 'dolphinik', 'Wind0za', r"/user/getall")
     for th in threads:
         th.start()
 

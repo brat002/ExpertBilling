@@ -3,7 +3,7 @@
 import psycopg2
 
 #database connect string
-cstr = "dbname=mikrobill user=mikrobill password=1234 host=10.10.1.1"
+cstr = "dbname=mikrobill user=mikrobill password=1234 host=localhost"
 
 
 
