@@ -347,7 +347,7 @@ class TrafficTransmitNodes(models.Model):
         verbose_name_plural = u"Цены за направления трафика"
 
 
-class AccountPrepays(models.Model):
+class AccountPrepaysTrafic(models.Model):
     """
     При подключении пользователю тарифного плана, у которого есть предоплаченный трафик
     в таблице должны создаваться записи
@@ -417,6 +417,7 @@ class Tariff(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
     active            = models.BooleanField(default=False)
+    deleted           = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -458,6 +459,7 @@ class Account(models.Model):
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
+    speed = models.CharField(max_length=96, blank=True, default="")
 
 
 
