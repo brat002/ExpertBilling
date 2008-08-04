@@ -145,6 +145,15 @@ class cdDrawer(object):
 				       'autoticks': False, \
 				       'antialias': False, \
 				       'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
+		      "nfs_total_classes_speed":\
+		                      {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
+				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), \
+				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+				       'autoticks': False, \
+				       'antialias': False, \
+				       'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
 		      "userstrafpie":     {'piechart':(360, 300), 'setpiesize': (180, 140, 100), 'addtitle': ('Объем трафика', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
 		      "sessions":         {'xychart':(640, 280), 'addtitle':("Сессии", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(160, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
 					   'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
@@ -255,7 +264,9 @@ class cdDrawer(object):
     def cddraw_nfs_user_speed(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % args[0], args[1].isoformat(' '), args[2].isoformat(' '), (((len(args)-3)==1) and ("AND nas_id IN (%s)" % ', '.join([str(int) for int in args[3]]))) or  (((len(args)-3)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % args[0], args[1].isoformat(' '), args[2].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -317,7 +328,9 @@ class cdDrawer(object):
     def cddraw_nfs_total_traf_bydir(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', direction', '',  args[0].isoformat(' '), args[1].isoformat(' '), (((len(args)-2)==1) and ("AND nas_id IN (%s)" % ', '.join([str(int) for int in args[2]]))) or  (((len(args)-2)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', direction', '',  args[0].isoformat(' '), args[1].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -379,7 +392,9 @@ class cdDrawer(object):
     def cddraw_nfs_total_speed_bydir(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', direction', '', args[0].isoformat(' '), args[1].isoformat(' '), (((len(args)-2)==1) and ("AND nas_id IN (%s)" % ', '.join([str(int) for int in args[2]]))) or  (((len(args)-2)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', direction', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -441,7 +456,9 @@ class cdDrawer(object):
     def cddraw_nfs_total_users_traf(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(int) for int in args[0]]), args[1].isoformat(' '), args[2].isoformat(' '), (((len(args)-3)==1) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in args[3]]))) or  (((len(args)-3)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(int) for int in args[0]]), args[1].isoformat(' '), args[2].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -510,7 +527,9 @@ class cdDrawer(object):
     def cddraw_nfs_total_users_speed(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(int) for int in args[0]]), args[1].isoformat(' '), args[2].isoformat(' '), (((len(args)-3)==1) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in args[3]]))) or  (((len(args)-3)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(int) for int in args[0]]), args[1].isoformat(' '), args[2].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -886,14 +905,7 @@ class cdDrawer(object):
         data = bpbl.get_usernames(selstr)
 	print "----------------------------"
 	print data
-	if not data: print "Dataset is empty"; return []
-
-	#Add in line layer 
-	#for key in y_total_n.iterkeys():
-	    #layer = c.addLineLayer(y_total_n[key], -1, key)
-	    #layer.setXData(times)        
-	    ## Set the line width	
-	    #layer.setLineWidth(optdict['setlinewidth_total'])    
+	if not data: print "Dataset is empty"; return [] 
 	
 	for tuple in data:
 	    try:
@@ -908,6 +920,69 @@ class cdDrawer(object):
         retlist.append(c.makeChart2(0))	
 	return retlist
     
+    def cddraw_nfs_total_classes_speed(self, *args, **kwargs):
+	try:
+	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
+	    selstr = selstrdict['nfs'] % (', traffic_class_id', '', args[1].isoformat(' '), args[2].isoformat(' '), ("AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in args[0]])))
+	except Exception, ex:
+	    raise ex
+        data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
+	print "----------------------------"
+	print data
+	if not data: print "Dataset is empty"; return []
+	(times, y_total_n, bstr, sec) = data
+	kwargs['return']['sec'] = sec
+        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
+	optdict = self.cdchartoptdict['nfs_total_classes_speed']
+	retlist = []
+        c = XYChart(*optdict['xychart']) 
+	if not optdict['antialias']:
+	    c.setAntiAlias(0)
+        c.setPlotArea(*optdict['setplotarea'])
+        c.setColors(optdict['setcolors'])
+        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
+        
+	if not optdict['autoticks']:
+	    xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
+	    yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
+	    c.xAxis().setTickDensity(yplen / 5, yplen / 25)
+	    c.yAxis().setTickDensity(yplen / 5, yplen / 25)
+        # Add a title to the chart 
+        c.addTitle(*optdict['addtitle'])        
+        # Add a title to the y axis 
+        c.yAxis().setTitle(*optdict['yaxissettitle'])        
+        # Set the y axis line width 
+        c.yAxis().setWidth(optdict['yaxissetwidth'])        
+        # Add a title to the x axis 
+        c.xAxis().setTitle(*optdict['xaxissettitle'])        
+        # Set the x axis line width
+        c.xAxis().setWidth(optdict['xaxissetwidth'])
+	c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
+	c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
+	c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
+	if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+        try:
+	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
+	    selstr = selstrdict['classes'] % ("IN (%s)" % ', '.join([str(int) for int in args[0]]))
+	except Exception, ex:
+	    raise ex
+        data = bpbl.get_usernames(selstr)
+	print "----------------------------"
+	print data
+	if not data: print "Dataset is empty"; return [] 
+	
+	for tuple in data:
+	    try:
+		layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0])
+		layer.setXData(times)        
+		# Set the line width	
+		layer.setLineWidth(optdict['setlinewidth_total'])
+	    except Exception, ex:
+		print ex     
+
+        # output the chart
+        retlist.append(c.makeChart2(0))	
+	return retlist
    
     def cddraw_userstrafpie(self, *args, **kwargs):
 	'''Plots pie chart of traffic values on

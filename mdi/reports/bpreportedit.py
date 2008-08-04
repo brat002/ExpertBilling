@@ -20,7 +20,8 @@ dssdict = {"get_accounts" : "SELECT id, username, vpn_ip_address, ipn_ip_address
                              AS data FROM billservice_accounttarif AS batf 
                              GROUP BY account_id HAVING (account_id NOTNULL) %s;''', \
 	   "get_nas"      : "SELECT name, type, ipaddress FROM nas_nas WHERE (id IN (%s)) ORDER BY name;", \
-	   "get_usernames": "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;"}
+	   "get_usernames": "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
+           "classes"      : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
 
 
 borderstyles = [QtGui.QTextFrameFormat.BorderStyle_None, QtGui.QTextFrameFormat.BorderStyle_Dotted, QtGui.QTextFrameFormat.BorderStyle_Dashed, QtGui.QTextFrameFormat.BorderStyle_Solid, QtGui.QTextFrameFormat.BorderStyle_Double, QtGui.QTextFrameFormat.BorderStyle_DotDash, QtGui.QTextFrameFormat.BorderStyle_DotDotDash, QtGui.QTextFrameFormat.BorderStyle_Groove, QtGui.QTextFrameFormat.BorderStyle_Ridge, QtGui.QTextFrameFormat.BorderStyle_Inset, QtGui.QTextFrameFormat.BorderStyle_Outset]
@@ -258,6 +259,8 @@ class reportConstructor(Dispatcher, ContentHandler):
 	    self.chkwargs[self.chcount]['return'] = {}
 	#kwargs = {'return':{}}
 	#rargs = self.chargs[self.chcount]
+	if self.chkwargs[self.chcount].has_key('options'):
+	    self.drawer.set_options(attrs['type'], self.chkwargs[self.chcount]['options'])
         qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
 	#print kwargs['return']['sec']
 	
@@ -594,6 +597,14 @@ class getData(object):
 	    except Exception, ex:
 		print ex
 		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
 	if queryname == 'get_tarifs':
 	    selstr = dssdict[queryname] % (args[1].isoformat(' '), args[1].isoformat(' '), args[2].isoformat(' '), "AND (account_id = %s)" % str(args[0]) )
 	    data   = bpplotAdapter.getdata(selstr)
@@ -606,14 +617,22 @@ class getData(object):
 	    return data
 	return None
 	
-    def getdata_nfs_user_speed(self, queryname, *args):
+    def getdata_nfs_user_speed(self, queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % '= %d' % args[0]
 	    data   = bpplotAdapter.getdata(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
-		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[3]])
+		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
 		data   = bpplotAdapter.getdata(selstr)
 		return data
 	    except Exception, ex:
@@ -631,32 +650,48 @@ class getData(object):
 	    return data
 	return None
 	
-    def getdata_nfs_total_traf(self,  queryname, *args):
-	    if queryname == 'get_nas':
-		try:
-		    selstr = dssdict[queryname] % ', '.join([str(int) for int in args[2]])
-		    data   = bpplotAdapter.getdata(selstr)
-		    return data
-		except Exception, ex:
-		    print ex
-		    return None
-	    return None
+    def getdata_nfs_total_traf(self,  queryname, *args, **kwargs):
+	if queryname == 'get_nas':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	return None
 		
-    def getdata_nfs_total_speed(self, queryname, *args):
-	    if queryname == 'get_nas':
-		try:
-		    selstr = dssdict[queryname] % ', '.join([str(int) for int in args[2]])
-		    data   = bpplotAdapter.getdata(selstr)
-		    return data
-		except Exception, ex:
-		    print ex
-		    return None
-	    return None
+    def getdata_nfs_total_speed(self, queryname, *args, **kwargs):
+	if queryname == 'get_nas':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	return None
   	
-    def getdata_nfs_total_traf_bydir(self,  queryname, *args):
+    def getdata_nfs_total_traf_bydir(self,  queryname, *args, **kwargs):
 	    if queryname == 'get_nas':
 		try:
-		    selstr = dssdict[queryname] % ', '.join([str(int) for int in args[2]])
+		    selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
 		    data   = bpplotAdapter.getdata(selstr)
 		    return data
 		except Exception, ex:
@@ -664,10 +699,10 @@ class getData(object):
 		    return None
 	    return None
 		
-    def getdata_nfs_total_speed_bydir(self, queryname, *args):
+    def getdata_nfs_total_speed_bydir(self, queryname, *args, **kwargs):
 	    if queryname == 'get_nas':
 		try:
-		    selstr = dssdict[queryname] % ', '.join([str(int) for int in args[2]])
+		    selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
 		    data   = bpplotAdapter.getdata(selstr)
 		    return data
 		except Exception, ex:
@@ -677,7 +712,7 @@ class getData(object):
 		    
   	
     
-    def getdata_nfs_total_users_traf(self,  queryname, *args):
+    def getdata_nfs_total_users_traf(self,  queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
 	    data   = bpplotAdapter.getdata(selstr)
@@ -685,7 +720,15 @@ class getData(object):
 	    return data
 	if queryname == 'get_nas':
 	    try:
-		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in args[3]])
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
 		data   = bpplotAdapter.getdata(selstr)
 		return data
 	    except Exception, ex:
@@ -706,14 +749,22 @@ class getData(object):
 	    return data
 	return None
     
-    def getdata_nfs_total_users_speed(self,  queryname, *args):
+    def getdata_nfs_total_users_speed(self,  queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
 	    data   = bpplotAdapter.getdata(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
-		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in args[3]])
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
 		data   = bpplotAdapter.getdata(selstr)
 		return data
 	    except Exception, ex:
@@ -733,7 +784,7 @@ class getData(object):
 			break
 	    return data
 	return None
-    def getdata_nfs_nas_traf(self, queryname, *args):
+    def getdata_nfs_nas_traf(self, queryname, *args, **kwargs):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % str(args[0])
@@ -743,7 +794,7 @@ class getData(object):
 		print ex
 		return None
 	return None
-    def getdata_nfs_total_nass_traf(self, queryname, *args):
+    def getdata_nfs_total_nass_traf(self, queryname, *args, **kwargs):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[0]])
@@ -753,11 +804,30 @@ class getData(object):
 		print ex
 		return None
 	return None
-    def getdata_usertrafpie(self, queryname, *args):
+    
+    def getdata_nfs_total_classes_speed(self, queryname, *args, **kwargs):
+	if queryname == 'get_classes':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[0]])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
+    	if queryname == 'get_nas':
+	    try:
+		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
+		data   = bpplotAdapter.getdata(selstr)
+		return data
+	    except Exception, ex:
+		print ex
+		return None
 	return None
-    def getdata_sessions(self, queryname, *args):
+    def getdata_usertrafpie(self, queryname, *args, **kwargs):
 	return None
-    def getdata_trans_deb(self, queryname, *args):
+    def getdata_sessions(self, queryname, *args, **kwargs):
 	return None
-    def getdata_trans_crd(self, queryname, *args):
+    def getdata_trans_deb(self, queryname, *args, **kwargs):
+	return None
+    def getdata_trans_crd(self, queryname, *args, **kwargs):
 	return None
