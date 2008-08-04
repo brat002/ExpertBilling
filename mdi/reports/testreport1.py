@@ -43,16 +43,16 @@ class MainWindow(QtGui.QMainWindow):
         tm6 = datetime.strptime('2008-07-19 20:15:01', sfm)
         tm7 = datetime.strptime('2008-06-27 16:17:30', sfm)
         tm8 = datetime.strptime('2008-06-30 16:57:30', sfm)
-        tm9 = datetime.strptime('2008-07-10 00:00:00', sfm)
-        tm10 = datetime.strptime('2008-07-10 07:00:30', sfm)
+        tm9 = datetime.strptime('2008-07-04 00:00:00', sfm)
+        tm10 = datetime.strptime('2008-07-04 00:01:30', sfm)
         
         aa = time.clock()
-        editor = self.createLetter("xml/report3_nas.xml", [(17, tm9, tm10)], [{'options':{'autoticks': False}}])
+        #editor = self.createLetter("xml/report3_nas.xml", [(1, tm9, tm10)], [{'options':{'autoticks': False}}])
         #editor = self.createLetter("xml/report3_nas2.xml", [(20, tm4, tm6), (17, tm5, tm6)], [{'nas':(1,2,3), 'trclass':(13,2, 12), 'options':{'antialias': True, 'autoticks': True}}, {}])
         #editor = self.createLetter("xml/report3_nas_nas.xml", [(2, tm5, tm6)], [{}])
         #editor = self.createLetter("xml/report3_nass.xml", [((1,2,3), tm7, tm6)], [{}])
         #editor = self.createLetter("xml/report3_ttr_nas.xml", [(tm7, tm6)], [{'nas':(1,2,3)}])
-        #editor = self.createLetter("xml/report3_tutr_nas.xml", [(tm7, tm6)], [{'nas':(1,2,3)}])
+        editor = self.createLetter("xml/report3_tutr_nas.xml", [(tm9, tm10)], [{'nas':(1,2)}])
         #editor = self.createLetter("xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm1, tm6)], [{'nas':(1,2,3)}])
         
 
@@ -64,8 +64,8 @@ class MainWindow(QtGui.QMainWindow):
         #f = open('tmpp.html', 'wb')
         #f.write(tdoc.toHtml())
         #f.close()
-        #editor = self.createLetter("xml/report3_pie.xml", [((15, 16, 17, 18, 19, 20, 21, 22), tm7, tm6)], [{}])
-        #editor = self.createLetter("xml/report3_sess.xml", [((15, 16, 17, 18, 19, 20, 21, 22), tm7, tm6)], [{}])
+        #editor = self.createLetter("xml/report3_pie.xml", [((1, 2, 4), tm9, tm10)], [{}])
+        #editor = self.createLetter("xml/report3_sess.xml", [((1, 2), tm9, tm10)], [{}])
         #editor = self.createLetter("xml/report3_tr.xml", [(tm3, tm6)], [{}])
         print time.clock() - aa
         tabIndex = self.letters.addTab(editor, "zomg")
