@@ -178,9 +178,14 @@ class cdDrawer(object):
     
     def cddraw_nfs_user_traf(self, *args, **kwargs):
 	try:
-	    
+	    #qu
+	    #if kwargs.has_key('nas'):
+		
 	    #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % args[0], args[1].isoformat(' '), args[2].isoformat(' '), (((len(args)-3)==1) and ("AND nas_id IN (%s)" % ', '.join([str(int) for int in args[3]]))) or  (((len(args)-3)==0) and ' '))
+	    selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % args[0], args[1].isoformat(' '), args[2].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
+	    print selstr
 	except Exception, ex:
 	    raise ex
 	data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	

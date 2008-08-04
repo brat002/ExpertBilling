@@ -26,9 +26,9 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle(self.tr("Order Form"))
 
 
-    def createLetter(self, datafile, rargs):
+    def createLetter(self, datafile, rargs, rkwargs):
         brep = bpReportEdit()
-        editor = brep.createreport(datafile, rargs)
+        editor = brep.createreport(datafile, rargs, rkwargs)
 
         self.printAction.setEnabled(True)
         return editor
@@ -40,17 +40,17 @@ class MainWindow(QtGui.QMainWindow):
         tm3 = datetime.strptime('2008-07-17 16:17:30', sfm)
         tm4 = datetime.strptime('2008-06-30 16:57:30', sfm)
         tm5 = datetime.strptime('2008-07-08 11:02:30', sfm)
-        tm6 = datetime.strptime('2008-07-18 20:15:01', sfm)
+        tm6 = datetime.strptime('2008-07-19 20:15:01', sfm)
         tm7 = datetime.strptime('2008-06-27 16:17:30', sfm)
         tm8 = datetime.strptime('2008-06-30 16:57:30', sfm)
-        tm6 = datetime.strptime('2008-07-16 20:15:01', sfm)
+
         
         aa = time.clock()
-        #editor = self.createLetter("xml/report3_nas.xml", [(17, tm5, tm6, (1,2,3))])
+        editor = self.createLetter("xml/report3_nas.xml", [(20, tm4, tm6)], [{'nas':(1,2,3), 'trclass':(13,2, 12)}])
         #editor = self.createLetter("xml/report3_nas_nas.xml", [(2, tm5, tm6)])
         #editor = self.createLetter("xml/report3_nass.xml", [((1,2,3), tm5, tm6)])
         #editor = self.createLetter("xml/report3_ttr_nas.xml", [(tm7, tm6, (1,2,3))])
-        editor = self.createLetter("xml/report3_tutr_nas.xml", [(tm7, tm6, (1,2,3))])
+        #editor = self.createLetter("xml/report3_tutr_nas.xml", [(tm7, tm6, (1,2,3))])
         #editor = self.createLetter("xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm1, tm6, (1, 2, 3))])
         
         #editor = self.createLetter("xml/report3_nas.xml", [(17, tm5, tm6), (1,2,3)])

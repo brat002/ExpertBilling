@@ -30,9 +30,9 @@ alignments   = [[QtCore.Qt.AlignLeft, QtCore.Qt.AlignRight, QtCore.Qt.AlignHCent
 class bpReportEdit(object):
     
     
-    def createreport(self, datafile, rargs):
+    def createreport(self, datafile, rargs, rkwargs):
         editor = QtGui.QTextEdit()
-        parse(datafile, reportConstructor(editor, rargs))
+        parse(datafile, reportConstructor(editor, rargs, rkwargs))
         return editor
     
     
@@ -62,12 +62,13 @@ class reportConstructor(Dispatcher, ContentHandler):
 
     passthrough = False
 
-    def __init__(self, editor, rargs):
+    def __init__(self, editor, rargs, rkwargs):
         self.editor = editor
         self.cursor = self.editor.textCursor()
         if 0:
             assert isinstance(self.cursor, QtGui.QTextCursor)
         self.chargs  = rargs
+	self.chkwargs = rkwargs
 	self.chcount = 0
         self.objdict = {}
         self.objdict['curchart'] = {}
@@ -87,6 +88,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 	self.isData = ''
 	self.drawer = bpQImage()
 	self.objdict['data']['args'] = self.chargs[0]
+	self.objdict['data']['chkwargs'] = self.chkwargs[0]
 	
         
     def startReport(self, attrs):
@@ -252,12 +254,14 @@ class reportConstructor(Dispatcher, ContentHandler):
         cname = attrs['name']
         
         self.objdict['curchart']['type'] = attrs['type']
-	kwargs = {'return':{}}
+	if not self.chkwargs[self.chcount].has_key('return'):
+	    self.chkwargs[self.chcount]['return'] = {}
+	#kwargs = {'return':{}}
 	#rargs = self.chargs[self.chcount]
-        qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **kwargs)
+        qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
 	#print kwargs['return']['sec']
 	
-	try   : self.objdict['data'][attrs['name'] + "_return"] = kwargs['return']['data']
+	try   : self.objdict['data'][attrs['name'] + "_return"] = self.chkwargs[self.chcount]['return']['data']
 	except Exception, ex: 
 	    self.objdict['data'][attrs['name'] + "_return"] = None
 	    print "<chart> exception: " + str(ex) 
@@ -272,7 +276,9 @@ class reportConstructor(Dispatcher, ContentHandler):
 	    
     def endChart(self):
 	self.chcount += 1
-	try: self.objdict['data']['args'] = self.chargs[self.chcount]
+	try: 
+	    self.objdict['data']['args'] = self.chargs[self.chcount]
+	    self.objdict['data']['kwargs'] = self.chkwargs[self.chcount]
 	except: pass
 
     def startGetdata(self, attrs):
@@ -280,7 +286,7 @@ class reportConstructor(Dispatcher, ContentHandler):
     
     def startSelstring(self, attrs):
 	gq = getData()
-        data = gq.getdata(self.objdict['curchart']['type'], attrs['name'], *self.chargs[self.chcount])
+        data = gq.getdata(self.objdict['curchart']['type'], attrs['name'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
 	#data = bpplotAdapter.getdata(selstr)
 	#---------remove
 	try:
@@ -568,21 +574,21 @@ class reportConstructor(Dispatcher, ContentHandler):
     
 class getData(object):
     
-    def getdata(self, chtype, queryname, *args):
+    def getdata(self, chtype, queryname, *args, **kwargs):
 	method = getattr(self, "getdata_" + chtype, None)
 	if callable(method):
-	    return method(queryname, *args)
+	    return method(queryname, *args, **kwargs)
 	else:
 	    raise Exception("Method #" + chtype + "# does not exist in class getData!" )
     
-    def getdata_nfs_user_traf(self, queryname, *args):
+    def getdata_nfs_user_traf(self, queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % '= %d' % args[0]
 	    data   = bpplotAdapter.getdata(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
-		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[3]])
+		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
 		data   = bpplotAdapter.getdata(selstr)
 		return data
 	    except Exception, ex:
