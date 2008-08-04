@@ -10,7 +10,8 @@ selstrdict = {\
 	      'sessions'      : "SELECT sessionid, date_start, date_end, username, framed_protocol FROM radius_activesession AS ras JOIN billservice_account AS bas ON (ras.account_id = bas.id) WHERE ((account_id IN (%s)) AND ((date_start BETWEEN '%s' AND '%s') OR (date_end BETWEEN '%s' AND '%s'))) ORDER BY date_start;", \
 	      'trans'         : "SELECT created, summ FROM billservice_transaction WHERE ((summ %s) AND (created BETWEEN '%s' AND '%s')) ORDER BY created;",\
 	      'nas'           : "SELECT name, id FROM nas_nas WHERE (id %s) ORDER BY name;", \
-	      'usernames'     : "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;"}
+	      'usernames'     : "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
+	      'classes'       : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
 
 class bpbl(object):
     #get data methods
@@ -493,6 +494,16 @@ class bpbl(object):
     
     @staticmethod
     def get_usernames(selstr):
+	data = bpplotAdapter.getdata(selstr)
+	try:
+	    datetm = data[0][0]
+	except Exception, ex:
+	    print ex
+	    return 0
+	return data
+    
+    @staticmethod
+    def get_nas(selstr):
 	data = bpplotAdapter.getdata(selstr)
 	try:
 	    datetm = data[0][0]
