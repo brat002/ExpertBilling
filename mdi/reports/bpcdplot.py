@@ -31,7 +31,7 @@ class cdDrawer(object):
 		      "nfs_user_traf":\
 		                      {'xychart': (800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Трафик", "LiberationMono-Regular.ttf", 18), \
-				       'yaxissettitle':("Трафик", "LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
+				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
 				       'xaxissettitle':("Время", "LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '', \
 				       'xaxissetlabelstyle':("LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("LiberationMono-Regular.ttf",), \
 				       'autoticks': False, \
