@@ -534,7 +534,7 @@ class TimeAccessBill(Thread):
                     elif total_time>=prepaid:
                         total_time=total_time-prepaid
                         prepaid=0
-                    cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                    cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
 
                 # Получаем список временных периодов и их стоимость у периодической услуги
@@ -840,7 +840,7 @@ class NetFlowAggregate(Thread):
             tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
             LEFT JOIN billservice_account as ba ON ba.vpn_ip_address=nf.src_addr OR ba.vpn_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
-            JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_accounttarif as account_tariff ON account_tariff.id=(SELECT id FROM billservice_accounttarif as at WHERE at.account_id=ba.id and at.datetime<now() ORDER BY datetime DESC LIMIT 1)
             JOIN billservice_tariff as tariff ON tariff.id=account_tariff.tarif_id
             JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
             WHERE nf.fetched=False;
@@ -1196,7 +1196,7 @@ class NetFlowBill(Thread):
                     #Исправить запрос
                     #print (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
                     query="""
-                    SELECT prepais.id, prepais.size FROM billservice_accountprepays as prepais
+                    SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
                     JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
                     JOIN billservice_prepaidtraffic_traffic_class ON billservice_prepaidtraffic_traffic_class.prepaidtraffic_id=prepaidtraffic.id
                     WHERE prepais.size>0 and prepais.account_tarif_id=%s and billservice_prepaidtraffic_traffic_class.trafficclass_id=%s and prepaidtraffic.traffic_transmit_service_id=%s and prepaidtraffic.%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
@@ -1221,7 +1221,7 @@ class NetFlowBill(Thread):
                             octets=octets-prepaid
                             prepaid=0
                         #print prepaid/1024/1024
-                        cur.execute("""UPDATE billservice_accountprepays SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                        cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
                     summ=(trafic_cost*octets)/(1024*1024)
                     print "summ=", summ
@@ -1503,7 +1503,7 @@ class settlement_period_service_dog(Thread):
                     if reset_traffic:
                         cur.execute(
                             """
-                            UPDATE billservice_accountprepays SET size=0 WHERE account_tarif_id=%s
+                            UPDATE billservice_accountprepaystrafic SET size=0 WHERE account_tarif_id=%s
                             """ % accounttarif_id
                             )
                     #сбросить предоплаченный трафик и начислить новый
@@ -1519,7 +1519,7 @@ class settlement_period_service_dog(Thread):
 
                         cur.execute(
                                     """
-                                    UPDATE billservice_accountprepays SET size=size+%s, datetime=now()
+                                    UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
                                     WHERE account_tarif_id=%s and prepaid_traffic_id=%s
                                     """ % (size, accounttarif_id, prepaid_traffic_id)
                                     )
@@ -1844,7 +1844,7 @@ if __name__ == "__main__":
 
     #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    #threads.append(NetFlowAggregate())
+    threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
 
     #threads.append(limit_checker())

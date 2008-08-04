@@ -413,24 +413,8 @@ class NetFlowReport(QtGui.QMainWindow):
     def __init__(self, connection):
         super(NetFlowReport, self).__init__()
         self.connection = connection
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
+        
         self.current_page=0
-        self.protocols={'':0,
-           'ddp':37,
-           'encap':98, 
-           'ggp':3, 
-           'gre':47, 
-           'hmp':20, 
-           'icmp':1, 
-           'idpr-cmtp':38, 
-           'igmp':2, 
-           'ipencap':4, 
-           'ipip':94,  
-           'ospf':89, 
-           'rdp':27, 
-           'tcp':6, 
-           'udp':17
-           }
         self.protocols_reverse = {
                                   '0':'',
                                   '37': 'ddp',
@@ -448,7 +432,8 @@ class NetFlowReport(QtGui.QMainWindow):
                                   '6' : 'TCP',
                                   '17': 'UDP'
                                   }
-        self.child = None
+        self.child = ReportPropertiesDialog(connection = self.connection)
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
         self.label = QtGui.QLabel(u"Навигатор")
         self.button_start = QtGui.QPushButton()
         self.button_start.setText(u"|<<")
@@ -548,26 +533,18 @@ class NetFlowReport(QtGui.QMainWindow):
         return value
         
     def configure(self):
-        if not self.child:
-            child = ReportPropertiesDialog(connection = self.connection)
-        else:
-            child = self.child
-
-        if child.exec_()!=1:
+        if self.child.exec_()!=1:
             return
-            #print 123
-            pass
-        self.child = child
+
         self.current_page=0
         self.refresh()
                 
     def refresh(self):
         
-        child = self.child
         self.status_label.setText(u"Подождите, идёт обработка.")
 
         
-        if child.with_grouping_checkBox.checkState()==0:
+        if self.child.with_grouping_checkBox.checkState()==0:
             sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
             netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
             account.username as account_username, class.name as class_name, class.color as class_color, ports.name as port_name, 
@@ -578,9 +555,9 @@ class NetFlowReport(QtGui.QMainWindow):
             JOIN billservice_account as account ON account.id = netflowstream.account_id
             JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
              
-            WHERE date_start between '%s' and '%s'""" % (child.start_date, child.end_date) 
+            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date) 
             print 1
-        elif child.with_grouping_checkBox.checkState()==2:
+        elif self.child.with_grouping_checkBox.checkState()==2:
             sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
             FROM billservice_netflowstream as netflowstream
 
@@ -589,25 +566,25 @@ class NetFlowReport(QtGui.QMainWindow):
             
             WHERE date_start between '%s' and '%s'
             
-            """ % (child.start_date, child.end_date)
+            """ % (self.child.start_date, self.child.end_date)
             print 2            
         
-        if len(child.users)>0 or len(child.classes)>0:
+        if len(self.child.users)>0 or len(self.child.classes)>0:
             sql+=" AND " 
         
-        if len(child.users)>0:
-            sql+= """ netflowstream.account_id IN (%s) """ % ','.join(map(str, child.users))
+        if len(self.child.users)>0:
+            sql+= """ netflowstream.account_id IN (%s) """ % ','.join(map(str, self.child.users))
             
-        if len(child.users)>0 and len(child.classes)>0:
+        if len(self.child.users)>0 and len(self.child.classes)>0:
             sql+=""" and """
         
-        if len(child.classes)>0:
-            sql+=""" netflowstream.traffic_class_id in (%s)"""  % ','.join(map(str, child.classes))
+        if len(self.child.classes)>0:
+            sql+=""" netflowstream.traffic_class_id in (%s)"""  % ','.join(map(str, self.child.classes))
             
-        if child.with_grouping_checkBox.checkState()==2:
+        if self.child.with_grouping_checkBox.checkState()==2:
             sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
         
-        if child.with_grouping_checkBox.checkState()==0:
+        if self.child.with_grouping_checkBox.checkState()==0:
             sql+="ORDER BY netflowstream.date_start ASC"
             
         if self.current_page==0:
@@ -630,7 +607,7 @@ class NetFlowReport(QtGui.QMainWindow):
         #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
         for flow in flows:
             self.addrow(c, i, 0)
-            if child.with_grouping_checkBox.checkState()==0:
+            if self.child.with_grouping_checkBox.checkState()==0:
                 
                 
                 self.addrow(flow.src_port, i, 5)

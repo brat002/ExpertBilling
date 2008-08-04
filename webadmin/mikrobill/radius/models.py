@@ -4,7 +4,6 @@ from django.db import models
 from mikrobill.billservice.models import Account
 SERVICE_TYPES=(
         (u"PPTP",u"PPTP"),
-        (u"L2TP",u"L2TP"),
         (u"PPPOE",u"PPPOE"),
         )
 SESSION_STATUS=(
