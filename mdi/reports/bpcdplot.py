@@ -178,9 +178,7 @@ class cdDrawer(object):
     
     def cddraw_nfs_user_traf(self, *args, **kwargs):
 	try:
-	    #qu
-	    #if kwargs.has_key('nas'):
-		
+
 	    #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
 	    selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % args[0], args[1].isoformat(' '), args[2].isoformat(' '), \
 					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
