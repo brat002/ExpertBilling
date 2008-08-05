@@ -2,7 +2,7 @@
 import pychartdir
 from pychartdir import *
 from bpbl import bpbl, selstrdict
-import sys
+import sys, copy
 
 portdict = {\
 	    '1'    : 'tcpmux', '5': 'rje', '7': 'echo', '9': 'discard', '11': 'systat', '13': 'daytime', '15': 'netstat', '17': 'qotd', '18': 'send/rwp', '19': 'chargen', '20': 'ftp-data', '21': 'ftp', '22': 'ssh, pcAnywhere',\
@@ -176,6 +176,8 @@ class cdDrawer(object):
 				           'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'yaxissetlabelformat':'{value}', 'currency':''}
 		    }
 
+    
+        
     def cddraw(self, *args, **kwargs):
 	'''Plotting methods' handler
 	@args[0] - method identifier'''
@@ -1212,8 +1214,7 @@ class cdDrawer(object):
 	except:
 	    return {'errormessage': "No such chart: "+chartname}
 	
-    def set_options(self, chartname, optdict):	
+    def set_options(self, chartname, optdict):
 	for key in optdict.iterkeys():
 	    if self.cdchartoptdict[chartname].has_key(key): self.cdchartoptdict[chartname][key] = optdict[key]
-
-    
+	    

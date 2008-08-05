@@ -7,6 +7,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 import datetime
 import socket 
+from reports.bpreportedit import bpReportEdit
 
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
@@ -702,13 +703,30 @@ class StatReport(QtGui.QMainWindow):
         self.connection = connection
         
         
-        self.child = Report_Options_Dialog(self.connection, "")
+        self.child = ReportOptionsDialog(self.connection, "")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
 
-        self.textedit = QtGui.QTextEdit(self)
-        
+        sfm = '%Y-%m-%d %H:%M:%S'
+        tm1 = datetime.datetime.strptime('2008-07-01 11:02:30', sfm)
+        tm2 = datetime.datetime.strptime('2008-07-03 11:02:30', sfm)
+        tm3 = datetime.datetime.strptime('2008-07-17 16:17:30', sfm)
+        tm4 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
+        tm5 = datetime.datetime.strptime('2008-07-08 11:02:30', sfm)
+        tm6 = datetime.datetime.strptime('2008-07-19 20:15:01', sfm)
+        tm7 = datetime.datetime.strptime('2008-06-27 16:17:30', sfm)
+        tm8 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
+        tm9 = datetime.datetime.strptime('2008-07-10 00:00:00', sfm)
+        tm10 = datetime.datetime.strptime('2008-07-10 07:00:30', sfm)
+        tm11 = datetime.datetime.strptime('2008-07-18 18:17:30', sfm)
+        #self.textedit = QtGui.QTextEdit(self)
+        import time
+        aa = time.clock()
+        brep = bpReportEdit()
+        #editor = brep.createreport("xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm3, tm11)], [{}], connection=self.connection)
+        editor = brep.createreport("reports/xml/report3_nas.xml", [(17, tm7, tm11)], [{'options':{'autoticks': False}}], connection=self.connection)
+        self.textedit = editor
         self.setCentralWidget(self.textedit)
-
+        print time.clock() - aa
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
@@ -750,9 +768,9 @@ class StatReport(QtGui.QMainWindow):
     def refresh(self):
         pass
         
-class Report_Options_Dialog(QtGui.QDialog):
+class ReportOptionsDialog(QtGui.QDialog):
     def __init__(self, connection, reportname):
-        super(Report_Options_Dialog, self).__init__()
+        super(ReportOptionsDialog, self).__init__()
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
 
@@ -790,7 +808,7 @@ class Report_Options_Dialog(QtGui.QDialog):
         self.daet_start_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
         self.daet_start_dateTimeEdit.setGeometry(QtCore.QRect(120,30,194,23))
         self.daet_start_dateTimeEdit.setCalendarPopup(True)
-        self.daet_start_dateTimeEdit.setObjectName("daet_start_dateTimeEdit")
+        self.daet_start_dateTimeEdit.setObjectName("date_start_dateTimeEdit")
 
         self.date_end_label = QtGui.QLabel(self.intervals_groupBox)
         self.date_end_label.setGeometry(QtCore.QRect(20,60,91,18))
