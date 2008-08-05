@@ -28,9 +28,9 @@ class HandleBase(object):
         """
         if self.packetobject['NAS-Port-Type'][0]=='Virtual':
             return 'PPTP'
-        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and self.packetboject.has_key('Service-Type'):
+        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and self.packetobject.has_key('Service-Type'):
             return 'PPPOE'
-        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and not self.packetboject.has_key('Service-Type'):
+        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and not self.packetobject.has_key('Service-Type'):
             return 'DHCP'
         return
 
@@ -54,6 +54,7 @@ class HandleAuth(HandleBase):
     def __init__(self,  packetobject):
         self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject
+
         self.access_type=self.get_accesstype()
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
@@ -70,30 +71,33 @@ class HandleAuth(HandleBase):
         self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
 
 
-    def create_speed(self, tarif_id):
-        defaults = get_default_speed_parameters(self.cur, tarif_id)
-        speeds = get_speed_parameters(self.cur, tarif_id)
-        if defaults is None:
-            return None
-        result=[]
-        i=0
-        for speed in speeds:
-            print speed[0],speed[1],speed[2]
-            if in_period(speed[0],speed[1],speed[2])==True:
-                for s in speed[3:]:
-                    if s==0:
-                        res=0
-                    elif s=='':
-                        res=defaults[i]
-                    else:
-                        res=s
-                    result.append(res)
-                    i+=1
-        if speeds==[]:
-            result=defaults
+    def create_speed(self, tarif_id, speed=''):
+        result_params=speed
+        if speed=='':
+            defaults = get_default_speed_parameters(self.cur, tarif_id)
+            speeds = get_speed_parameters(self.cur, tarif_id)
+            if defaults is None:
+                return None
+            result=[]
+            i=0
+            for speed in speeds:
+                print speed[0],speed[1],speed[2]
+                if in_period(speed[0],speed[1],speed[2])==True:
+                    for s in speed[3:]:
+                        if s==0:
+                            res=0
+                        elif s=='':
+                            res=defaults[i]
+                        else:
+                            res=s
+                        result.append(res)
+                        i+=1
+            if speeds==[]:
+                result=defaults
+    
+            result_params=create_speed_string(result, self.nas_type, True)
+            print "params=", result_params
 
-        result_params=create_speed_string(result, self.nas_type, True)
-        print "params=", result_params
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
 
@@ -115,7 +119,7 @@ class HandleAuth(HandleBase):
                 print 1
                 return self.auth_NA()
 
-            username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit = row
+            username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
             #Проверка на то, указан ли сервер доступа
             #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
             #if row==None:
@@ -149,7 +153,7 @@ class HandleAuth(HandleBase):
                self.replypacket.AddAttribute('Framed-Protocol', 1)
                self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
                self.replypacket.AddAttribute('Framed-Routing', 0)
-               self.create_speed(tarif_id)
+               self.create_speed(tarif_id, speed=speed)
                self.cur.close()
                self.connection.close()
             else:
@@ -420,3 +424,4 @@ if __name__ == "__main__":
 
     server_acct = Starter(("0.0.0.0", 1813), RadiusAcct)
     server_acct.start()
+print 123

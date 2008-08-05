@@ -2624,7 +2624,7 @@ class AddAccountFrame(QtGui.QDialog):
         if not self.model:
             self.add_accounttarif_toolButton.setDisabled(True)
             self.del_accounttarif_toolButton.setDisabled(True)
-            self.ballance_edit.setText(u"0")
+            self.balance_edit.setText(u"0")
             self.credit_edit.setText(u"0")
 
         if self.model:
@@ -2720,12 +2720,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.centralwidget = QtGui.QWidget(self)
         
         self.splitter = QtGui.QSplitter(self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0,0,691,411))
+        self.splitter.setGeometry(QtCore.QRect(0,0,391,411))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         
+        
         self.tarif_treeWidget = QtGui.QTreeWidget(self.splitter)
-        self.tarif_treeWidget.setGeometry(QtCore.QRect(0,0,221,551))
-        self.tarif_treeWidget.setMaximumSize(QtCore.QSize(150,16777215))
+        #self.tarif_treeWidget.setGeometry(QtCore.QRect(0,0,221,551))
+        #self.tarif_treeWidget.setFixedSize(QtCore.QSize(150,551))
         self.tarif_treeWidget.setObjectName("tarif_treeWidget")
         self.tarif_treeWidget.headerItem().setText(0,"")
         
@@ -2745,7 +2746,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget)
             
         self.setCentralWidget(self.splitter)
-
+        
+        self.splitter.setSizes([self.width() / 5, self.width() - (self.width() / 5)])
 
 
         self.statusbar = QtGui.QStatusBar(self)

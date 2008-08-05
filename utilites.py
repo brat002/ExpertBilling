@@ -65,7 +65,7 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
             query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
         elif code==40:
             query='/interface %s-server remove [find user="%s"]' % (access_type, username)
-        #query="/interface print"
+
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
             print 'ssh connected'
@@ -74,7 +74,7 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
             sshclient.close_chanel()
         except:
             print 'SSH ERROR'
-        #print res[1].readlines()
+
         return res[1].readlines()==[]
 
 def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data={}):
@@ -571,12 +571,18 @@ def rosClient(host, login, password, command):
     @param password: Password os system user
     @param commant: command for execution    
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, 8728))
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, 8728))
+    except Exception, e:
+        print e
+        return []
+        
     apiros = ApiRos(s);
-    apiros.login(login, password);
+    apiros.login(login, password)
     x=['']
     commands = command.split(" ")
+
     commands.append(" ")
     result = []
     apiros.writeSentence(commands)
@@ -589,4 +595,31 @@ def rosClient(host, login, password, command):
         
     s.close()
     return result
+
+def get_sessions_for_nas(nas):
+    sessions = []
+    if nas['type'] in ['mikrotik2.8', 'mikrotik2.9']:
+        #Use SSH For fetching sessions
+        ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
+        response=ssh.send_command("/ppp active print terse without-paging")[0]
+        response = response.readlines()
+        #print response
+        if nas['type']=='mikrotik2.9':
+            sessions=ActiveSessionsParser(response).parse()
+        ssh.close_chanel()
+        
+    elif nas['type']==u'mikrotik3':
+        #Use ROS API for fetching sessions
+
+        sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
+
+    return sessions
+
+def get_active_sessions(nas):
+
+    return get_sessions_for_nas(nas)
+
+
+def convert(alist):
+    return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
 
