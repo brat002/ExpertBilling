@@ -15,8 +15,8 @@ from types import InstanceType
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 import pickle
 
-
-
+from chartprovider.bpplotadapter import bpplotAdapter
+from chartprovider.bpcdplot import cdDrawer
 
 #from mdi.helpers import Object
 
@@ -33,6 +33,8 @@ pool = PooledDB(
                                                             settings.DATABASE_HOST,
                                                             settings.DATABASE_PASSWORD)
 )
+
+
 
 def format_update (x,y):
     print 'y', y, type(y)
@@ -568,6 +570,7 @@ class TimeAccessBill(Thread):
             connection.close()
             time.sleep(30)
 
+'''#class etc
 ##class TraficAccessBill(Thread):
 ##    """
 ##    Услуга применима только для VPN доступа, когда точно известна дата авторизации
@@ -775,7 +778,7 @@ class TimeAccessBill(Thread):
 ##
 ##                connection.commit()
 ##            time.sleep(30)
-
+'''
 class NetFlowAggregate(Thread):
     """
     TO-DO: Вынести в NetFlow коллектор
@@ -1655,8 +1658,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection = pool.connection()
         #print dir(self.connection)
         self.connection._con._con.set_client_encoding('UTF8')
+        self.listcur = self.connection.cursor()
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)        
-
+        self._cddrawer = cdDrawer()
+        
     def run(self):
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
@@ -1718,9 +1723,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
         
         if r==[]:
-             return None
+            return None
         return Object(r[0])
-        
+    
+    def get_list(self, sql):
+        print sql
+        self.listcur.execute(sql)
+        return self.listcur.fetchall()
+    
     def delete(self, sql):
    
         self.cur.execute(sql)
@@ -1735,6 +1745,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
     def commit(self):
         self.connection.commit()
+        
+    def makeChart(self, *args, **kwargs):
+        bpplotAdapter.rCursor = self.listcur
+        imgs =  self._cddrawer.cddraw(*args, **kwargs)
+        return imgs
+    def setChartOptions(self, chartname, optdict):
+        #self._cddrawer.set_options(chartname, optdict)
+        pass
         
     def rollback(self):
         self.connection.rollback()

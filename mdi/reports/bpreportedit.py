@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from xml.sax.handler import ContentHandler
 from xml.sax import parse
 from bpcdQImage import bpcdQImage as bpQImage
-from bpplotadapter import bpplotAdapter
+#from bpplotadapter import bpplotAdapter
 
 import time
 
@@ -31,9 +31,9 @@ alignments   = [[QtCore.Qt.AlignLeft, QtCore.Qt.AlignRight, QtCore.Qt.AlignHCent
 class bpReportEdit(object):
     
     
-    def createreport(self, datafile, rargs, rkwargs):
+    def createreport(self, datafile, rargs, rkwargs, connection):
         editor = QtGui.QTextEdit()
-        parse(datafile, reportConstructor(editor, rargs, rkwargs))
+        parse(datafile, reportConstructor(editor, rargs, rkwargs, connection=connection))
         return editor
     
     
@@ -63,8 +63,11 @@ class reportConstructor(Dispatcher, ContentHandler):
 
     passthrough = False
 
-    def __init__(self, editor, rargs, rkwargs):
+    def __init__(self, editor, rargs, rkwargs, **kwargs):
         self.editor = editor
+	self.connection = None
+	if kwargs.has_key('connection'):
+	    self.connection = kwargs['connection']
         self.cursor = self.editor.textCursor()
         if 0:
             assert isinstance(self.cursor, QtGui.QTextCursor)
@@ -87,9 +90,10 @@ class reportConstructor(Dispatcher, ContentHandler):
 	self.curtable = 0
 	self.isOptions = False
 	self.isData = ''
-	self.drawer = bpQImage()
+	self.drawer = bpQImage(self.connection)
 	self.objdict['data']['args'] = self.chargs[0]
 	self.objdict['data']['chkwargs'] = self.chkwargs[0]
+	self.gq = getData(self.connection)
 	
         
     def startReport(self, attrs):
@@ -288,9 +292,8 @@ class reportConstructor(Dispatcher, ContentHandler):
         pass
     
     def startSelstring(self, attrs):
-	gq = getData()
-        data = gq.getdata(self.objdict['curchart']['type'], attrs['name'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
-	#data = bpplotAdapter.getdata(selstr)
+	
+        data = self.gq.getdata(self.objdict['curchart']['type'], attrs['name'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
 	#---------remove
 	try:
 	    if attrs['type'] == 'row':
@@ -431,7 +434,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 		for colcnt in range(self.objdict['curtable']['colcount']):
 		    self.cursor = table.cellAt(row, colcnt).firstCursorPosition()
 		    if self.objdict['curtable']['coltypes'][colcnt] == 'string':
-			self.cursor.insertText(QtCore.QString.fromUtf8(rowdata[colcnt]), celltf)
+			self.cursor.insertText(rowdata[colcnt], celltf)
 		    elif self.objdict['curtable']['coltypes'][colcnt] == 'table':
 			print rowdata[colcnt]
 			if not rowdata[colcnt]:
@@ -576,7 +579,8 @@ class reportConstructor(Dispatcher, ContentHandler):
 	return text
     
 class getData(object):
-    
+    def __init__(self, connection):
+	self.connection = connection
     def getdata(self, chtype, queryname, *args, **kwargs):
 	method = getattr(self, "getdata_" + chtype, None)
 	if callable(method):
@@ -587,12 +591,12 @@ class getData(object):
     def getdata_nfs_user_traf(self, queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % '= %d' % args[0]
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -600,17 +604,17 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
 		return None
 	if queryname == 'get_tarifs':
 	    selstr = dssdict[queryname] % (args[1].isoformat(' '), args[1].isoformat(' '), args[2].isoformat(' '), "AND (account_id = %s)" % str(args[0]) )
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    data   = [list(tuple) for tuple in data]
 	    selstr = dssdict["get_usernames"] % '= %d' % args[0]
-	    users  = bpplotAdapter.getdata(selstr)
+	    users  = self.connection.get_list(selstr)
 	    if not data: data = [['', []]]
 	    for user in users:
 		data[0][0] = user[0]
@@ -620,12 +624,12 @@ class getData(object):
     def getdata_nfs_user_speed(self, queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % '= %d' % args[0]
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -633,17 +637,17 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
 		return None
 	if queryname == 'get_tarifs':
 	    selstr = dssdict[queryname] % (args[1].isoformat(' '), args[1].isoformat(' '), args[2].isoformat(' '), "AND (account_id = %s)" % str(args[0]) )
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    data   = [list(tuple) for tuple in data]
 	    selstr = dssdict["get_usernames"] % '= %d' % args[0]
-	    users   = bpplotAdapter.getdata(selstr)
+	    users   = self.connection.get_list(selstr)
 	    if not data: data = [['', []]]
 	    for user in users:
 		data[0][0] = user[0]
@@ -654,7 +658,7 @@ class getData(object):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -662,7 +666,7 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -673,7 +677,7 @@ class getData(object):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -681,7 +685,7 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -692,7 +696,7 @@ class getData(object):
 	    if queryname == 'get_nas':
 		try:
 		    selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		    data   = bpplotAdapter.getdata(selstr)
+		    data   = self.connection.get_list(selstr)
 		    return data
 		except Exception, ex:
 		    print ex
@@ -703,7 +707,7 @@ class getData(object):
 	    if queryname == 'get_nas':
 		try:
 		    selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['nas']])
-		    data   = bpplotAdapter.getdata(selstr)
+		    data   = self.connection.get_list(selstr)
 		    return data
 		except Exception, ex:
 		    print ex
@@ -715,13 +719,13 @@ class getData(object):
     def getdata_nfs_total_users_traf(self,  queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    print data
 	    return data
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -729,17 +733,17 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
 		return None
 	if queryname == 'get_tarifs':
 	    selstr = dssdict[queryname] % (args[1].isoformat(' '), args[1].isoformat(' '), args[2].isoformat(' '), "AND (account_id IN (%s))" % ', '.join([str(aint) for aint in args[0]]))
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    data   = [list(tuple) for tuple in data]
 	    selstr = dssdict["get_usernames"] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
-	    users   = bpplotAdapter.getdata(selstr)
+	    users   = self.connection.get_list(selstr)
 	    if not data: data = [['', []]]
 	    for i in range(len(data)):		
 		for valtup in users:
@@ -752,12 +756,12 @@ class getData(object):
     def getdata_nfs_total_users_speed(self,  queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    return data
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -765,17 +769,17 @@ class getData(object):
 	if queryname == 'get_classes':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
 		return None
 	if queryname == 'get_tarifs':
 	    selstr = dssdict[queryname] % (args[1].isoformat(' '), args[1].isoformat(' '), args[2].isoformat(' '), "AND (account_id IN (%s))" % ', '.join([str(aint) for aint in args[0]]))
-	    data   = bpplotAdapter.getdata(selstr)
+	    data   = self.connection.get_list(selstr)
 	    data   = [list(tuple) for tuple in data]
 	    selstr = dssdict["get_usernames"] % 'IN (%s)' % ', '.join([str(aint) for aint in args[0]])
-	    users   = bpplotAdapter.getdata(selstr)
+	    users   = self.connection.get_list(selstr)
 	    if not data: data = [['', []]]
 	    for i in range(len(data)):		
 		for valtup in users:
@@ -788,7 +792,7 @@ class getData(object):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % str(args[0])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -798,7 +802,7 @@ class getData(object):
 	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[0]])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -812,7 +816,7 @@ class getData(object):
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[0]])
 		print "^^^^^^^^^^^^^^^^^^^^^^^^"
 		print selstr
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
@@ -820,7 +824,7 @@ class getData(object):
     	if queryname == 'get_nas':
 	    try:
 		selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['nas']])
-		data   = bpplotAdapter.getdata(selstr)
+		data   = self.connection.get_list(selstr)
 		return data
 	    except Exception, ex:
 		print ex
