@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8*-
+#-*-coding=utf-8*-
 import sys
 from PyQt4 import QtCore, QtGui
 
@@ -17,7 +17,7 @@ from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog
-from Reports import ReportPropertiesDialog, NetFlowReport
+from Reports import ReportPropertiesDialog, NetFlowReport, StatReport
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -161,6 +161,11 @@ class MainWindow(QtGui.QMainWindow):
 
 
 
+    def openstatWin(self):
+        child=StatReport(connection=connection)
+        self.workspace.addWindow(child)
+        child.show()
+        
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
                             self.tr("&New"), self)
@@ -276,6 +281,12 @@ class MainWindow(QtGui.QMainWindow):
         self.aboutQtAct.setStatusTip(self.tr("Show the Qt library's About box"))
         self.connect(self.aboutQtAct, QtCore.SIGNAL("triggered()"),
                      QtGui.qApp, QtCore.SLOT("aboutQt()"))
+        
+        self.statwinAct = QtGui.QAction(self.tr("Statwin"), self)
+
+        self.statwinAct.setStatusTip(self.tr("Open the reports window"))
+        self.connect(self.statwinAct, QtCore.SIGNAL("triggered()"),
+                     self.openstatWin)
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -313,6 +324,8 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.pasteAct)
         self.editToolBar.addAction(self.reportPropertiesAct)
         self.editToolBar.addAction(self.netflowReportAct)
+        self.editToolBar.addAction(self.statwinAct)
+        
     def createStatusBar(self):
         self.statusBar().showMessage(self.tr("Ready"))
 

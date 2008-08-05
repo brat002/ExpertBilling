@@ -21,7 +21,7 @@ dssdict = {"get_accounts" : "SELECT id, username, vpn_ip_address, ipn_ip_address
                              GROUP BY account_id HAVING (account_id NOTNULL) %s;''', \
 	   "get_nas"      : "SELECT name, type, ipaddress FROM nas_nas WHERE (id IN (%s)) ORDER BY name;", \
 	   "get_usernames": "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
-           "classes"      : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
+           "get_classes"  : "SELECT name, weight FROM nas_trafficclass WHERE (id IN (%s)) ORDER BY name;"}
 
 
 borderstyles = [QtGui.QTextFrameFormat.BorderStyle_None, QtGui.QTextFrameFormat.BorderStyle_Dotted, QtGui.QTextFrameFormat.BorderStyle_Dashed, QtGui.QTextFrameFormat.BorderStyle_Solid, QtGui.QTextFrameFormat.BorderStyle_Double, QtGui.QTextFrameFormat.BorderStyle_DotDash, QtGui.QTextFrameFormat.BorderStyle_DotDotDash, QtGui.QTextFrameFormat.BorderStyle_Groove, QtGui.QTextFrameFormat.BorderStyle_Ridge, QtGui.QTextFrameFormat.BorderStyle_Inset, QtGui.QTextFrameFormat.BorderStyle_Outset]
@@ -431,7 +431,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 		for colcnt in range(self.objdict['curtable']['colcount']):
 		    self.cursor = table.cellAt(row, colcnt).firstCursorPosition()
 		    if self.objdict['curtable']['coltypes'][colcnt] == 'string':
-			self.cursor.insertText(rowdata[colcnt], celltf)
+			self.cursor.insertText(QtCore.QString.fromUtf8(rowdata[colcnt]), celltf)
 		    elif self.objdict['curtable']['coltypes'][colcnt] == 'table':
 			print rowdata[colcnt]
 			if not rowdata[colcnt]:
@@ -808,7 +808,10 @@ class getData(object):
     def getdata_nfs_total_classes_speed(self, queryname, *args, **kwargs):
 	if queryname == 'get_classes':
 	    try:
+		print "^^^^^^^^^^^^^^^^^^^^^^^^"
 		selstr = dssdict[queryname] % ', '.join([str(int) for int in args[0]])
+		print "^^^^^^^^^^^^^^^^^^^^^^^^"
+		print selstr
 		data   = bpplotAdapter.getdata(selstr)
 		return data
 	    except Exception, ex:
