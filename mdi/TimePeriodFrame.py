@@ -178,7 +178,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         self.setCentralWidget(self.splitter)
-        
+        self.splitter.setSizes([self.width() / 5, self.width() - (self.width() / 5)])
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,692,19))

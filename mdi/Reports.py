@@ -251,9 +251,9 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.with_grouping_checkBox.setGeometry(QtCore.QRect(10,320,231,19))
         self.with_grouping_checkBox.setObjectName("with_grouping_checkBox")
 
-        self.only_unique_checkBox = QtGui.QCheckBox(self.general_tab)
-        self.only_unique_checkBox.setGeometry(QtCore.QRect(10,340,231,19))
-        self.only_unique_checkBox.setObjectName("only_unique_checkBox")
+        self.order_by_desc = QtGui.QCheckBox(self.general_tab)
+        self.order_by_desc.setGeometry(QtCore.QRect(10,340,231,19))
+        self.order_by_desc.setObjectName("order_by_desc")
         self.tabWidget.addTab(self.general_tab,"")
 
         self.classes_tab = QtGui.QWidget()
@@ -333,9 +333,9 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные классы", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.classes_tab), QtGui.QApplication.translate("Dialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.with_grouping_checkBox.setText(QtGui.QApplication.translate("Dialog", "С группировкой", None, QtGui.QApplication.UnicodeUTF8))
-        self.only_unique_checkBox.setText(QtGui.QApplication.translate("Dialog", "Только уникальные значения", None, QtGui.QApplication.UnicodeUTF8))
-        self.with_grouping_checkBox.setCheckState(QtCore.Qt.Checked)
-        self.only_unique_checkBox.setCheckState(QtCore.Qt.Checked)
+        self.order_by_desc.setText(QtGui.QApplication.translate("Dialog", "Выводить в обратном порядке", None, QtGui.QApplication.UnicodeUTF8))
+        #self.with_grouping_checkBox.setCheckState(QtCore.Qt.Checked)
+        #self.order_by_desc.setCheckState(QtCore.Qt.Checked)
         
     def fixtures(self):
         users = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
@@ -415,23 +415,24 @@ class NetFlowReport(QtGui.QMainWindow):
         self.connection = connection
         
         self.current_page=0
+        
         self.protocols_reverse = {
-                                  '0':'',
-                                  '37': 'ddp',
-                                  '98': 'encap',
-                                  '3': 'ggp',
-                                  '47': 'gre',
-                                  '20': 'hmp',
-                                  '1' : 'ICMP',
-                                  '38':'idpr-cmtp',
-                                  '2': 'igmp',
-                                  '4': 'ipencap',
-                                  '94': 'ipip',
-                                  '89': 'ospf',
-                                  '27': 'rdp',
-                                  '6' : 'TCP',
-                                  '17': 'UDP'
-                                  }
+                  '0':'',
+                  '37': 'ddp',
+                  '98': 'encap',
+                  '3': 'ggp',
+                  '47': 'gre',
+                  '20': 'hmp',
+                  '1' : 'ICMP',
+                  '38':'idpr-cmtp',
+                  '2': 'igmp',
+                  '4': 'ipencap',
+                  '94': 'ipip',
+                  '89': 'ospf',
+                  '27': 'rdp',
+                  '6' : 'TCP',
+                  '17': 'UDP'
+                  }
         self.child = ReportPropertiesDialog(connection = self.connection)
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
         self.label = QtGui.QLabel(u"Навигатор")
@@ -584,8 +585,10 @@ class NetFlowReport(QtGui.QMainWindow):
         if self.child.with_grouping_checkBox.checkState()==2:
             sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
         
-        if self.child.with_grouping_checkBox.checkState()==0:
+        if self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==0:
             sql+="ORDER BY netflowstream.date_start ASC"
+        elif self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==2:
+            sql+="ORDER BY netflowstream.date_start DESC"
             
         if self.current_page==0:
             sql+=" LIMIT 100"

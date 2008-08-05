@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
@@ -136,80 +136,53 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
-            from utilites import ActiveSessionsParser
+
             self.connection = pool.connection()
-            self.cur = self.connection.cursor()
+            self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
 
             self.cur.execute(
                              """
-                             SELECT name, "type", ipaddress, secret, "login", "password" FROM nas_nas;
+                             SELECT id, name, "type", ipaddress, secret, "login", "password" FROM nas_nas;
                              """
                              )
             nasses=self.cur.fetchall()
-            print 0
-            for nas_name, nas_type, nas_ipaddress, nas_secret, nas_login, nas_password in nasses:
-                print 1
-                if nas_type[:8]==u'mikrotik':
-                    try:
-                        ssh=SSHClient(host=nas_ipaddress, port=22, username=nas_login, password=nas_password)
-                        print 2
-                    except:
-                        print 3
-                        continue
-                    response=ssh.send_command("/ppp active print terse without-paging")[0]
-                    #print response.readlines()
-                    response=response.readlines()[0:-1]
-                    result=[]
-                    #print response
-                    if nas_type=='mikrotik2.9':
-                        print 111
-                        for r in xrange(0,len(response)-1,4):
-                            result.append(response[r].strip()+response[r+1].strip()+' '+response[r+2].strip())
-                    if nas_type==u"mikrotik3":
-                        print 222
-                        result=response
-                    #print response
-                    print result
-                    sessions=ActiveSessionsParser(result).parse()
-                    ssh.close_chanel()
-                    print sessions
-                    #перебираем активные сессии на сервере
-                    session=None
-                    for session in sessions:
-
-                        self.cur.execute("""
-                                        SELECT id FROM billservice_account WHERE vpn_ip_address='%s'
-                                        """ % session['address'])
-
-
-                        if self.cur.fetchone() is not None:
-                            DAE(dict=self.dict,
-                                code=40,
-                                nas_secret=nas_secret,
-                                nas_ip=nas_ipaddress,
-                                nas_id=nas_name,
-                                username=session['name'],
-                                session_id=session['session-id'][2:],
-                                login=nas_login,
-                                password=nas_password)
-
+            
+            
+            for nas in nasses:
+                sessions = get_active_sessions(nas)
+                for session in sessions:
                     self.cur.execute("""
-                    UPDATE radius_activesession
-                    SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='ACK'
-                    WHERE date_end is Null and nas_id='%s';""" % nas_ipaddress)
-                    self.connection.commit()
-                        #print type(nas_ipaddress), type(session['name']), type(nas_secret), type(nas_name), type(session['session-id'])
+                                    SELECT id FROM billservice_account WHERE vpn_ip_address='%s'
+                                    """ % session['address'])
+                    if self.cur.fetchone() is not None:
+                        
+                        DAE(dict=self.dict,
+                            code=40,
+                            nas_secret=str(nas['secret']),
+                            nas_ip=str(nas['ipaddress']),
+                            nas_id=str(nas['name']),
+                            username=str(session['name']),
+                            session_id=str(session['session-id'][2:]),
+                            login=str(nas['login']),
+                            password=str(nas['password']))
+    
+                self.cur.execute("""
+                UPDATE radius_activesession
+                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='ACK'
+                WHERE date_end is Null and nas_id='%s';""" % nas['ipaddress'])
+                self.connection.commit()
+                
 
             time.sleep(10)
             while True:
 
                 #Закрываем подвисшие сессии
                 self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
-
+                self.connection.commit()
                 self.cur.execute("""
                 SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol),
                 nas.name, nas.secret, nas.support_pod, nas.login, nas.password, nas.type, nas.support_coa,
-                account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit
+                account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit, account.speed
                 FROM radius_activesession as rs
                 JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id
                 JOIN billservice_account as account ON account.id=rs.account_id
@@ -217,23 +190,24 @@ class check_vpn_access(Thread):
                 """)
                 rows=self.cur.fetchall()
                 for row in rows:
-                    activesession_id=row[0]
-                    account_id=row[1]
-                    session_id=row[2]
-                    nas_id=row[3]
-                    speed_string=row[6]
-                    access_type=row[7]
-                    nas_name = row[8]
-                    nas_secret = row[9]
-                    nas_support_pod =row[10]
-                    nas_login =row[11]
-                    nas_password =row[12]
-                    nas_type = row[13]
-                    nas_coa = row[14]
-                    username=row[15]
-                    tarif_id = row[16]
-                    ballance=row[17]
-                    disabled_by_limit=row[18]
+                    activesession_id, \
+                    account_id, \
+                    session_id, \
+                    nas_id, \
+                    speed_string, \
+                    access_type, \
+                    nas_name, \
+                    nas_secret, \
+                    nas_support_pod, \
+                    nas_login, \
+                    nas_password, \
+                    nas_type, \
+                    nas_coa, \
+                    username, \
+                    tarif_id, \
+                    ballance, \
+                    disabled_by_limit, \
+                    speed = row
                     result=None
 
                     if ballance>0:
@@ -243,8 +217,9 @@ class check_vpn_access(Thread):
                            """
                            Делаем проверку на то, изменилась ли скорость.
                            """
-                           speed=self.create_speed(tarif_id, nas_type)
-                           #print speed, speed_string
+                           if speed=='':
+                               speed=self.create_speed(tarif_id, nas_type)
+                           
                            if speed_string!=speed:
 
                                coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, coa=nas_coa, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
@@ -518,7 +493,7 @@ class TimeAccessBill(Thread):
 
                 cur.execute(
                             """
-                            SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif=%s
+                            SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
                             """ % accountt_tarif_id
                             )
 
@@ -576,7 +551,7 @@ class TimeAccessBill(Thread):
                                 approved=True,
                                 tarif=tarif_id,
                                 summ=summ,
-                                description="Снятие денег за время по RADIUS сессии %s" % session_id,
+                                description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
                                 )
                                 #print u"Снятие денег за время %s" % query
 
@@ -1702,6 +1677,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def configureNAS(self, host, login, password, configuration):
         try:
             a=SSHClient(host, 22,login, password)
+            print configuration
             print a.send_command(configuration)
             a.close()
         except Exception, e:
@@ -1837,13 +1813,13 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    #threads.append(check_vpn_access(timeout=60, dict=dict))
+    threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
     #threads.append(periodical_service_bill())
-    #threads.append(TimeAccessBill())
+    threads.append(TimeAccessBill())
     threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
 
@@ -1856,7 +1832,7 @@ if __name__ == "__main__":
     #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-
+    #print rosClient("10.10.1.100", 'admin', 'admin', r"/ppp/active/getall")
     for th in threads:
         th.start()
 
