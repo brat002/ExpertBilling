@@ -4,30 +4,32 @@ from pychartdir import *
 from bpbl import bpbl, selstrdict
 import sys
 
-portdict = {'1': 'tcpmux', '5': 'rje', '7': 'echo', '9': 'discard', '11': 'systat', '13': 'daytime', '15': 'netstat', '17': 'qotd', '18': 'send/rwp', '19': 'chargen', '20': 'ftp-data', '21': 'ftp', '22': 'ssh, pcAnywhere',\
-	    '23': 'Telnet', '25': 'SMTP', '27': 'ETRN', '29': 'msg-icp', '31': 'msg-auth', '33': 'dsp', '37': 'time', '38': 'RAP', '39': 'rlp', '42': 'nameserv', '43': 'whois', '49': 'TACACS', '50': 'RMCP', '53': 'DNS', '57': 'MTP',\
-	    '59': 'NFILE', '63': 'whois++', '66': 'sql*net', '67': 'bootps', '68': 'bootpd/dhcp', '69': 'tftp', '70': 'Gopher', '79': 'finger', '80': 'www-http', '81': 'torpark', '88': 'Kerberos, WWW', '95': 'supdup', '96': 'DIXIE', '98': 'linuxconf',\
-	    '101': 'HOSTNAME', '102': 'ISO, X.400, ITOT', '105': 'cso', '106': 'poppassd', '109': 'POP2', '110': 'POP3', '111': 'Sun RPC Portmapper', '113': 'identd/auth', '115': 'sftp', '117': 'uucp', '119': 'NNTP', '120': 'CFDP', \
-	    '123': 'NTP', '124': 'SecureID', '129': 'PWDGEN', '133': 'statsrv', '135': 'loc-srv/epmap', '137': 'netbios-ns', '138': 'netbios-dgm (UDP)', '139': 'NetBIOS', '143': 'IMAP', '144': 'NewS', '152': 'BFTP', '153': 'SGMP', \
-	    '161': 'SNMP', '175': 'vmnet', '177': 'XDMCP', '178': 'NextStep', '179': 'BGP', '180': 'SLmail', '199': 'smux', '210': 'Z39.50', '218': 'MPP', '220': 'IMAP3', '259': 'ESRO', '264': 'FW1_topo', '311': 'Apple WA', \
-	    '350': 'MATIP type A', '351': 'MATIP type B', '363': 'RSVP tunnel', '366': 'ODMR)', '387': 'AURP', '389': 'LDAP', '407': 'Timbuktu', '412': 'DCC', '434': 'Mobile IP', '443': 'ssl/HTTPS', '444': 'snpp', '445': 'SMB', '458': 'QuickTime TV/C', \
-	    '468': 'Photuris', '500': 'ISAKMP, pluto', '512': 'biff, rexec', '513': 'who, rlogin', '514': 'syslog, rsh', '515': 'lp, lpr, line printer', '517': 'talk', '520': 'RIP', '521': 'RIPng', '522': 'ULS', '530': 'RPC', '531': 'IRC', '540': 'UUCP',\
-	    '543': 'KLogin, ASoIP', '545': 'QuickTime', '546': 'DHCPv6 cli', '547': 'DHCPv6 ser', '548': 'AFP', '554': 'RTSP', '555': 'phAse Zero', '563': 'NNTP over SSL', '575': 'VEMMI', '581': 'BDP', '593': 'MS-RPC', '608': 'SIFT/UFT', '626': 'Apple ASIA', '631': 'IPP', \
-	    '635': 'mountd', '636': 'sldap', '642': 'EMSD', '648': 'RRP ', '655': 'tinc', '660': 'Apple MacOS SA', '666': 'Doom', '674': 'ACAP', '687': 'AS IPReg', '700': 'buddyphone', '705': 'AgentX for SNMP', '901': 'swat, realsecure', \
-	    '993': 's-imap', '995': 's-pop', '1062': 'Veracity', '1080': 'SOCKS', '1085': 'WebObjects', '1227': 'DNS2Go', '1243': 'SubSeven', '1338': 'Millennium Worm', '1352': 'Lotus Notes', '1381': 'ANLM', '1417': 'Timbuktu', '1418': 'Timbuktu', '1419': 'Timbuktu', \
-	    '1433': 'MSSQL Server', '1434': 'MSSQL Monitor', '1494': 'Citrix ICA', '1503': 'T.120', '1521': 'Oracle SQL', '1525': 'prospero', '1526': 'prospero', '1527': 'tlisrv', '1604': 'Citrix ICA, MS TS', '1645': 'RADIUS Auth', '1646': 'RADIUS Acc', \
-	    '1680': 'Carbon Copy', '1701': 'L2TP/LSF', '1717': 'Convoy', '1720': 'H.323/Q.931', '1723': 'PPTP cport', '1755': 'WM.asf', '1758': 'TFTP mcast', '1812': 'RADIUS serv', '1813': 'RADIUS acc', '1818': 'ETFTP', '1973': 'DLSw DCAP/DRAP', '1985': 'HSRP', \
-	    '1999': 'Cisco AUTH', '2001': 'glimpse', '2049': 'NFS', '2064': 'distributed.net', '2065': 'DLSw', '2066': 'DLSw', '2106': 'MZAP', '2140': 'DeepThroat', '2327': 'Netscape Conf', '2336': 'Apple UG', '2427': 'MGCP gateway', '2504': 'WLBS', '2535': 'MADCAP', \
-	    '2543': 'sip', '2592': 'netrek', '2628': 'DICT', '2727': 'MGCP agent', '2998': 'ISS RSC', '3000': 'Firstclass', '3031': 'Apple AgentVU', '3128': 'squid', '3130': 'ICP', '3150': 'DeepThroat', '3264': 'ccmail', '3283': 'Apple NA', '3288': 'COPS', '3305': 'ODETTE', \
-	    '3306': 'mySQL', '3389': 'RDP', '3521': 'netrek', '4000': 'icq, Diablo', '4321': 'rwhois', '4333': 'mSQL', '4662': 'eMule', '4827': 'HTCP', '5004': 'RTP', '5005': 'RTP', '5010': 'Y!M', '5050': 'Y!M','5060': 'SIP', '5190': 'ICQ, AIM', '5423': 'Apple VU', '5500': 'securid', '5501': 'securidprop', '5631': 'PCAnywhere', \
-	    '5632': 'PCAnywhere', '5800': 'VNC', '5801': 'VNC', '5900': 'VNC', '5901': 'VNC', '6000': 'X Windows', '6112': 'BattleNet', '6502': 'Netscape Conf', '6667': 'IRC', '6668': 'IRC', '6669': 'IRC', '6776': 'Sub7', '6970': 'RTP', '7007': 'MSBD', '7070': 'RealServer/QT', \
-	    '7648': 'CU-SeeMe', '7649': 'CU-SeeMe', '7778': 'Unreal', '8010': 'WinGate 2.1', '8080': 'HTTP', '8181': 'HTTP', '8383': 'IMail WWW', '8875': 'napster', '8888': 'napster', '9050': 'tor', '10008': 'cheese worm', '11371': 'PGP5 Keyserv', '13223': 'PowWow', '13224': 'PowWow', '14237': 'Palm', '14238': 'Palm', \
+portdict = {\
+	    '1'    : 'tcpmux', '5': 'rje', '7': 'echo', '9': 'discard', '11': 'systat', '13': 'daytime', '15': 'netstat', '17': 'qotd', '18': 'send/rwp', '19': 'chargen', '20': 'ftp-data', '21': 'ftp', '22': 'ssh, pcAnywhere',\
+	    '23'   : 'Telnet', '25': 'SMTP', '27': 'ETRN', '29': 'msg-icp', '31': 'msg-auth', '33': 'dsp', '37': 'time', '38': 'RAP', '39': 'rlp', '42': 'nameserv', '43': 'whois', '49': 'TACACS', '50': 'RMCP', '53': 'DNS', '57': 'MTP',\
+	    '59'   : 'NFILE', '63': 'whois++', '66': 'sql*net', '67': 'bootps', '68': 'bootpd/dhcp', '69': 'tftp', '70': 'Gopher', '79': 'finger', '80': 'www-http', '81': 'torpark', '88': 'Kerberos, WWW', '95': 'supdup', '96': 'DIXIE', '98': 'linuxconf',\
+	    '101'  : 'HOSTNAME', '102': 'ISO, X.400, ITOT', '105': 'cso', '106': 'poppassd', '109': 'POP2', '110': 'POP3', '111': 'Sun RPC Portmapper', '113': 'identd/auth', '115': 'sftp', '117': 'uucp', '119': 'NNTP', '120': 'CFDP', \
+	    '123'  : 'NTP', '124': 'SecureID', '129': 'PWDGEN', '133': 'statsrv', '135': 'loc-srv/epmap', '137': 'netbios-ns', '138': 'netbios-dgm (UDP)', '139': 'NetBIOS', '143': 'IMAP', '144': 'NewS', '152': 'BFTP', '153': 'SGMP', \
+	    '161'  : 'SNMP', '175': 'vmnet', '177': 'XDMCP', '178': 'NextStep', '179': 'BGP', '180': 'SLmail', '199': 'smux', '210': 'Z39.50', '218': 'MPP', '220': 'IMAP3', '259': 'ESRO', '264': 'FW1_topo', '311': 'Apple WA', \
+	    '350'  : 'MATIP type A', '351': 'MATIP type B', '363': 'RSVP tunnel', '366': 'ODMR)', '387': 'AURP', '389': 'LDAP', '407': 'Timbuktu', '412': 'DCC', '434': 'Mobile IP', '443': 'ssl/HTTPS', '444': 'snpp', '445': 'SMB', '458': 'QuickTime TV/C', \
+	    '468'  : 'Photuris', '500': 'ISAKMP, pluto', '512': 'biff, rexec', '513': 'who, rlogin', '514': 'syslog, rsh', '515': 'lp, lpr, line printer', '517': 'talk', '520': 'RIP', '521': 'RIPng', '522': 'ULS', '530': 'RPC', '531': 'IRC', '540': 'UUCP',\
+	    '543'  : 'KLogin, ASoIP', '545': 'QuickTime', '546': 'DHCPv6 cli', '547': 'DHCPv6 ser', '548': 'AFP', '554': 'RTSP', '555': 'phAse Zero', '563': 'NNTP over SSL', '575': 'VEMMI', '581': 'BDP', '593': 'MS-RPC', '608': 'SIFT/UFT', '626': 'Apple ASIA', '631': 'IPP', \
+	    '635'  : 'mountd', '636': 'sldap', '642': 'EMSD', '648': 'RRP ', '655': 'tinc', '660': 'Apple MacOS SA', '666': 'Doom', '674': 'ACAP', '687': 'AS IPReg', '700': 'buddyphone', '705': 'AgentX for SNMP', '901': 'swat, realsecure', \
+	    '993'  : 's-imap', '995': 's-pop', '1062': 'Veracity', '1080': 'SOCKS', '1085': 'WebObjects', '1227': 'DNS2Go', '1243': 'SubSeven', '1338': 'Millennium Worm', '1352': 'Lotus Notes', '1381': 'ANLM', '1417': 'Timbuktu', '1418': 'Timbuktu', '1419': 'Timbuktu', \
+	    '1433' : 'MSSQL Server', '1434': 'MSSQL Monitor', '1494': 'Citrix ICA', '1503': 'T.120', '1521': 'Oracle SQL', '1525': 'prospero', '1526': 'prospero', '1527': 'tlisrv', '1604': 'Citrix ICA, MS TS', '1645': 'RADIUS Auth', '1646': 'RADIUS Acc', \
+	    '1680' : 'Carbon Copy', '1701': 'L2TP/LSF', '1717': 'Convoy', '1720': 'H.323/Q.931', '1723': 'PPTP cport', '1755': 'WM.asf', '1758': 'TFTP mcast', '1812': 'RADIUS serv', '1813': 'RADIUS acc', '1818': 'ETFTP', '1973': 'DLSw DCAP/DRAP', '1985': 'HSRP', \
+	    '1999' : 'Cisco AUTH', '2001': 'glimpse', '2049': 'NFS', '2064': 'distributed.net', '2065': 'DLSw', '2066': 'DLSw', '2106': 'MZAP', '2140': 'DeepThroat', '2327': 'Netscape Conf', '2336': 'Apple UG', '2427': 'MGCP gateway', '2504': 'WLBS', '2535': 'MADCAP', \
+	    '2543' : 'sip', '2592': 'netrek', '2628': 'DICT', '2727': 'MGCP agent', '2998': 'ISS RSC', '3000': 'Firstclass', '3031': 'Apple AgentVU', '3128': 'squid', '3130': 'ICP', '3150': 'DeepThroat', '3264': 'ccmail', '3283': 'Apple NA', '3288': 'COPS', '3305': 'ODETTE', \
+	    '3306' : 'mySQL', '3389': 'RDP', '3521': 'netrek', '4000': 'icq, Diablo', '4321': 'rwhois', '4333': 'mSQL', '4662': 'eMule', '4827': 'HTCP', '5004': 'RTP', '5005': 'RTP', '5010': 'Y!M', '5050': 'Y!M','5060': 'SIP', '5190': 'ICQ, AIM', '5423': 'Apple VU', '5500': 'securid', '5501': 'securidprop', '5631': 'PCAnywhere', \
+	    '5632' : 'PCAnywhere', '5800': 'VNC', '5801': 'VNC', '5900': 'VNC', '5901': 'VNC', '6000': 'X Windows', '6112': 'BattleNet', '6502': 'Netscape Conf', '6667': 'IRC', '6668': 'IRC', '6669': 'IRC', '6776': 'Sub7', '6970': 'RTP', '7007': 'MSBD', '7070': 'RealServer/QT', \
+	    '7648' : 'CU-SeeMe', '7649': 'CU-SeeMe', '7778': 'Unreal', '8010': 'WinGate 2.1', '8080': 'HTTP', '8181': 'HTTP', '8383': 'IMail WWW', '8875': 'napster', '8888': 'napster', '9050': 'tor', '10008': 'cheese worm', '11371': 'PGP5 Keyserv', '13223': 'PowWow', '13224': 'PowWow', '14237': 'Palm', '14238': 'Palm', \
 	    '18888': 'LiquidAudio', '21157': 'Activision', '23213': 'PowWow', '23214': 'PowWow', '23456': 'EvilFTP', '26000': 'Quake', '27001': 'QuakeWorld', '27010': 'Half-Life', '27015': 'Half-Life', '27960': 'QuakeIII', '30029': 'AOL Admin', '31337': 'Back Orifice', \
-	    '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'}
+	    '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'\
+	   }
 
 
 class cdDrawer(object):
-    cdchartoptdict = {"default": {'xychart':(800, 450)},\
+    cdchartoptdict = {\
 		      "nfs_user_traf":\
 		                      {'xychart': (800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), \

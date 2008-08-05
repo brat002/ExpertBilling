@@ -107,9 +107,6 @@ class bpbl(object):
 	y_max /= sec
 	#calculate speed and normalize
 	if y_max < 8000:
-	    '''y_in  = [float(y) / sec for y in y_in]
-	    y_out = [float(y) / sec for y in y_out]
-	    y_tr  = [float(y) / sec for y in y_tr]'''
 	    nf = lambda y: float (y) / sec
 	    y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
 	    bstr  = 'b\\s'
