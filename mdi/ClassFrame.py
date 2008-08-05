@@ -395,7 +395,13 @@ class ClassChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
+        self.splitterHandle = self.splitter.createHandle()
+        wwidth =  self.width()
+        self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
+        #self.splitter.moveSplitter(150, 0)
+        
         self.setCentralWidget(self.splitter)
+        #self.setCentralWidget(self.splitterHandle)
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,801,21))

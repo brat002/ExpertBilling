@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -692,5 +692,298 @@ class NetFlowReport(QtGui.QMainWindow):
         print "Interface generation time=", time.clock()-a    
         
         
+    
+class StatReport(QtGui.QMainWindow):
+    def __init__(self, connection):
+        super(StatReport, self).__init__()
+        self.connection = connection
+        
+        
+        self.child = Report_Options_Dialog(self.connection, "")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
+
+        self.textedit = QtGui.QTextEdit(self)
+        
+        self.setCentralWidget(self.textedit)
+
+        self.statusbar = QtGui.QStatusBar(self)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        
+ 
+        #self.statusBar().addWidget(self.button_end)
+
+        
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+
+        self.configureAction = QtGui.QAction(self)
+        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.configureAction.setObjectName("configureAction")
+        self.toolBar.addAction(self.configureAction)
+        
+        QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        
+        self.retranslateUi()
+        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Сетевая статистика", None, QtGui.QApplication.UnicodeUTF8))
+    
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))
+
+        
+    def configure(self):
+        
+        if self.child.exec_()!=1:
+            return
+
+    
+        self.refresh()
+                
+    def refresh(self):
+        pass
+        
+class Report_Options_Dialog(QtGui.QDialog):
+    def __init__(self, connection, reportname):
+        super(Report_Options_Dialog, self).__init__()
+        self.connection = connection
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
+
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(270,490,160,32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.tabWidget = QtGui.QTabWidget(self)
+        self.tabWidget.setGeometry(QtCore.QRect(0,10,441,471))
+        self.tabWidget.setTabPosition(QtGui.QTabWidget.North)
+        self.tabWidget.setTabShape(QtGui.QTabWidget.Rounded)
+        self.tabWidget.setObjectName("tabWidget")
+
+        self.tab = QtGui.QWidget()
+        self.tab.setObjectName("tab")
+
+        self.intervals_groupBox = QtGui.QGroupBox(self.tab)
+        self.intervals_groupBox.setGeometry(QtCore.QRect(10,10,411,101))
+        self.intervals_groupBox.setFlat(False)
+        self.intervals_groupBox.setCheckable(False)
+        self.intervals_groupBox.setChecked(False)
+        self.intervals_groupBox.setObjectName("intervals_groupBox")
+
+        self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
+        self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
+        self.date_end_dateTimeEdit.setCalendarPopup(True)
+        self.date_end_dateTimeEdit.setObjectName("date_end_dateTimeEdit")
+
+        self.date_start_label = QtGui.QLabel(self.intervals_groupBox)
+        self.date_start_label.setGeometry(QtCore.QRect(20,30,91,18))
+        self.date_start_label.setObjectName("date_start_label")
+
+        self.daet_start_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
+        self.daet_start_dateTimeEdit.setGeometry(QtCore.QRect(120,30,194,23))
+        self.daet_start_dateTimeEdit.setCalendarPopup(True)
+        self.daet_start_dateTimeEdit.setObjectName("daet_start_dateTimeEdit")
+
+        self.date_end_label = QtGui.QLabel(self.intervals_groupBox)
+        self.date_end_label.setGeometry(QtCore.QRect(20,60,91,18))
+        self.date_end_label.setObjectName("date_end_label")
+
+        self.settings_groupBox = QtGui.QGroupBox(self.tab)
+        self.settings_groupBox.setGeometry(QtCore.QRect(10,120,411,151))
+        self.settings_groupBox.setObjectName("settings_groupBox")
+
+        self.grid_checkBox = QtGui.QCheckBox(self.settings_groupBox)
+        self.grid_checkBox.setGeometry(QtCore.QRect(20,20,191,21))
+        self.grid_checkBox.setObjectName("grid_checkBox")
+
+        self.antialiasing_checkBox = QtGui.QCheckBox(self.settings_groupBox)
+        self.antialiasing_checkBox.setGeometry(QtCore.QRect(20,50,191,21))
+        self.antialiasing_checkBox.setObjectName("antialiasing_checkBox")
+
+        self.read_only_checkBox = QtGui.QCheckBox(self.settings_groupBox)
+        self.read_only_checkBox.setGeometry(QtCore.QRect(20,80,191,21))
+        self.read_only_checkBox.setObjectName("read_only_checkBox")
+
+        self.send_to_printer_checkBox = QtGui.QCheckBox(self.settings_groupBox)
+        self.send_to_printer_checkBox.setGeometry(QtCore.QRect(20,110,261,21))
+        self.send_to_printer_checkBox.setObjectName("send_to_printer_checkBox")
+        self.tabWidget.addTab(self.tab,"")
+
+        self.tab_2 = QtGui.QWidget()
+        self.tab_2.setObjectName("tab_2")
+
+        self.all_users_listWidget = QtGui.QListWidget(self.tab_2)
+        self.all_users_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
+        self.all_users_listWidget.setObjectName("all_users_listWidget")
+
+        self.selected_users_listWidget = QtGui.QListWidget(self.tab_2)
+        self.selected_users_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
+        self.selected_users_listWidget.setObjectName("selected_users_listWidget")
+
+        self.add_user_toolButton = QtGui.QToolButton(self.tab_2)
+        self.add_user_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
+        self.add_user_toolButton.setObjectName("add_user_toolButton")
+
+        self.del_user_toolButton = QtGui.QToolButton(self.tab_2)
+        self.del_user_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
+        self.del_user_toolButton.setObjectName("del_user_toolButton")
+
+        self.all_users_label = QtGui.QLabel(self.tab_2)
+        self.all_users_label.setGeometry(QtCore.QRect(10,10,171,18))
+        self.all_users_label.setObjectName("all_users_label")
+
+        self.selected_users_label = QtGui.QLabel(self.tab_2)
+        self.selected_users_label.setGeometry(QtCore.QRect(240,10,191,18))
+        self.selected_users_label.setObjectName("selected_users_label")
+        self.tabWidget.addTab(self.tab_2,"")
+
+        self.tab_3 = QtGui.QWidget()
+        self.tab_3.setObjectName("tab_3")
+
+        self.selected_servers_listWidget = QtGui.QListWidget(self.tab_3)
+        self.selected_servers_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
+        self.selected_servers_listWidget.setObjectName("selected_servers_listWidget")
+
+        self.all_servers_listWidget = QtGui.QListWidget(self.tab_3)
+        self.all_servers_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
+        self.all_servers_listWidget.setObjectName("all_servers_listWidget")
+
+        self.del_server_toolButton = QtGui.QToolButton(self.tab_3)
+        self.del_server_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
+        self.del_server_toolButton.setObjectName("del_server_toolButton")
+
+        self.add_server_toolButton = QtGui.QToolButton(self.tab_3)
+        self.add_server_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
+        self.add_server_toolButton.setObjectName("add_server_toolButton")
+
+        self.all_servers_label = QtGui.QLabel(self.tab_3)
+        self.all_servers_label.setGeometry(QtCore.QRect(10,10,151,18))
+        self.all_servers_label.setObjectName("all_servers_label")
+
+        self.selected_servers_label = QtGui.QLabel(self.tab_3)
+        self.selected_servers_label.setGeometry(QtCore.QRect(240,10,151,18))
+        self.selected_servers_label.setObjectName("selected_servers_label")
+        self.tabWidget.addTab(self.tab_3,"")
+
+        self.tab_5 = QtGui.QWidget()
+        self.tab_5.setObjectName("tab_5")
+
+        self.all_classes_label = QtGui.QLabel(self.tab_5)
+        self.all_classes_label.setGeometry(QtCore.QRect(10,10,151,18))
+        self.all_classes_label.setObjectName("all_classes_label")
+
+        self.all_classes_listWidget = QtGui.QListWidget(self.tab_5)
+        self.all_classes_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
+        self.all_classes_listWidget.setObjectName("all_classes_listWidget")
+
+        self.del_class_toolButton = QtGui.QToolButton(self.tab_5)
+        self.del_class_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
+        self.del_class_toolButton.setObjectName("del_class_toolButton")
+
+        self.add_class_toolButton = QtGui.QToolButton(self.tab_5)
+        self.add_class_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
+        self.add_class_toolButton.setObjectName("add_class_toolButton")
+
+        self.selected_classes_label = QtGui.QLabel(self.tab_5)
+        self.selected_classes_label.setGeometry(QtCore.QRect(240,10,191,18))
+        self.selected_classes_label.setObjectName("selected_classes_label")
+
+        self.selected_classes_listWidget = QtGui.QListWidget(self.tab_5)
+        self.selected_classes_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
+        self.selected_classes_listWidget.setObjectName("selected_classes_listWidget")
+        self.tabWidget.addTab(self.tab_5,"")
+
+        self.tab_4 = QtGui.QWidget()
+        self.tab_4.setObjectName("tab_4")
+
+        self.ports_groupBox = QtGui.QGroupBox(self.tab_4)
+        self.ports_groupBox.setGeometry(QtCore.QRect(10,10,421,361))
+        self.ports_groupBox.setObjectName("ports_groupBox")
+
+        self.ports_listWidget = QtGui.QListWidget(self.ports_groupBox)
+        self.ports_listWidget.setGeometry(QtCore.QRect(10,20,251,331))
+        self.ports_listWidget.setObjectName("ports_listWidget")
+
+        self.ports_description_label = QtGui.QLabel(self.ports_groupBox)
+        self.ports_description_label.setGeometry(QtCore.QRect(270,20,141,331))
+        self.ports_description_label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.ports_description_label.setWordWrap(True)
+        self.ports_description_label.setObjectName("ports_description_label")
+
+        self.extra_ports_lineEdit = QtGui.QLineEdit(self.tab_4)
+        self.extra_ports_lineEdit.setGeometry(QtCore.QRect(10,400,391,23))
+        self.extra_ports_lineEdit.setObjectName("extra_ports_lineEdit")
+
+        self.extra_ports_label = QtGui.QLabel(self.tab_4)
+        self.extra_ports_label.setGeometry(QtCore.QRect(10,380,287,18))
+        self.extra_ports_label.setObjectName("extra_ports_label")
+        self.tabWidget.addTab(self.tab_4,"")
+        self.date_start_label.setBuddy(self.daet_start_dateTimeEdit)
+        self.date_end_label.setBuddy(self.date_end_dateTimeEdit)
+
+        self.retranslateUi()
+        self.tabWidget.setCurrentIndex(0)
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        self.setTabOrder(self.tabWidget,self.daet_start_dateTimeEdit)
+        self.setTabOrder(self.daet_start_dateTimeEdit,self.date_end_dateTimeEdit)
+        self.setTabOrder(self.date_end_dateTimeEdit,self.grid_checkBox)
+        self.setTabOrder(self.grid_checkBox,self.antialiasing_checkBox)
+        self.setTabOrder(self.antialiasing_checkBox,self.read_only_checkBox)
+        self.setTabOrder(self.read_only_checkBox,self.send_to_printer_checkBox)
+        self.setTabOrder(self.send_to_printer_checkBox,self.all_users_listWidget)
+        self.setTabOrder(self.all_users_listWidget,self.add_user_toolButton)
+        self.setTabOrder(self.add_user_toolButton,self.del_user_toolButton)
+        self.setTabOrder(self.del_user_toolButton,self.selected_users_listWidget)
+        self.setTabOrder(self.selected_users_listWidget,self.all_servers_listWidget)
+        self.setTabOrder(self.all_servers_listWidget,self.add_server_toolButton)
+        self.setTabOrder(self.add_server_toolButton,self.del_server_toolButton)
+        self.setTabOrder(self.del_server_toolButton,self.selected_servers_listWidget)
+        self.setTabOrder(self.selected_servers_listWidget,self.all_classes_listWidget)
+        self.setTabOrder(self.all_classes_listWidget,self.add_class_toolButton)
+        self.setTabOrder(self.add_class_toolButton,self.del_class_toolButton)
+        self.setTabOrder(self.del_class_toolButton,self.selected_classes_listWidget)
+        self.setTabOrder(self.selected_classes_listWidget,self.ports_listWidget)
+        self.setTabOrder(self.ports_listWidget,self.extra_ports_lineEdit)
+        self.setTabOrder(self.extra_ports_lineEdit,self.buttonBox)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
+        self.intervals_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Интервал дат", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
+        self.daet_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
+        self.settings_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.grid_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сетка", None, QtGui.QApplication.UnicodeUTF8))
+        self.antialiasing_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сглаживание", None, QtGui.QApplication.UnicodeUTF8))
+        self.read_only_checkBox.setText(QtGui.QApplication.translate("Dialog", "Запретить редактирование", None, QtGui.QApplication.UnicodeUTF8))
+        self.send_to_printer_checkBox.setText(QtGui.QApplication.translate("Dialog", "Отправить на печать после создания", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_user_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_user_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_users_label.setText(QtGui.QApplication.translate("Dialog", "Доступные пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_users_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_server_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_server_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_servers_label.setText(QtGui.QApplication.translate("Dialog", "Доступные серверы", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_servers_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные серверы", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label.setText(QtGui.QApplication.translate("Dialog", "Доступные направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_class_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_class_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.ports_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Выберите порты", None, QtGui.QApplication.UnicodeUTF8))
+        self.ports_description_label.setText(QtGui.QApplication.translate("Dialog", "Отметьте флажками нужные порты", None, QtGui.QApplication.UnicodeUTF8))
+        self.extra_ports_label.setText(QtGui.QApplication.translate("Dialog", "Введите дополнительные порты через запятую:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("Dialog", "Порты", None, QtGui.QApplication.UnicodeUTF8))
+
     
         
