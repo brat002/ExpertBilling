@@ -1856,7 +1856,7 @@ if __name__ == "__main__":
     #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-    print rosClient("10.20.3.1", 'dolphinik', 'Wind0za', r"/user/getall")
+
     for th in threads:
         th.start()
 
