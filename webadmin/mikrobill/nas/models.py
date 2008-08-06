@@ -45,10 +45,12 @@ class Nas(models.Model):
     user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True)
     support_pod = models.BooleanField(verbose_name=u'Сервер поддерживает PoD', help_text=u"Технология, позволяющая сбрасывать пользователя с линии средствами RADIUS. Подробно описана в RFC 3576", blank=True, null=True, default=True)
     support_netflow = models.BooleanField(verbose_name=u'Сервер поддерживает экспорт NetFlow', help_text=u"Сервер доступа поддерживает экспорт статистики через NetFlow", blank=True, null=True, default=True)
-    netflow_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
+    speed_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
     support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", default=True)
     confstring = models.TextField(verbose_name="Конфигурация по запросу", blank=True, default='')
-
+    speed_action = models.TextField(max_length=255, blank=True, default="")
+    reset_action = models.TextField(max_length=255, blank=True, default="")
+    
     def save(self):
         if self.configure_nas==True:
             self.configure_nas=False
