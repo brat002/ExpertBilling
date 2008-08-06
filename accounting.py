@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import PoD, get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
@@ -144,7 +144,7 @@ class check_vpn_access(Thread):
 
             self.cur.execute(
                              """
-                             SELECT id, name, "type", ipaddress, secret, "login", "password" FROM nas_nas;
+                             SELECT id, name, "type", ipaddress, secret, "login", "password", reset_action FROM nas_nas;
                              """
                              )
             nasses=self.cur.fetchall()
@@ -152,21 +152,31 @@ class check_vpn_access(Thread):
             
             for nas in nasses:
                 sessions = get_active_sessions(nas)
+                print 123
                 for session in sessions:
                     self.cur.execute("""
-                                    SELECT id FROM billservice_account WHERE vpn_ip_address='%s'
+                                    SELECT id, vpn_ip_address, ipn_ip_address, ipn_mac_address FROM billservice_account WHERE vpn_ip_address='%s'
                                     """ % session['address'])
-                    if self.cur.fetchone() is not None:
-                        
-                        DAE(dict=self.dict,
-                            code=40,
-                            nas_secret=str(nas['secret']),
-                            nas_ip=str(nas['ipaddress']),
-                            nas_id=str(nas['name']),
-                            username=str(session['name']),
-                            session_id=str(session['session-id'][2:]),
-                            login=str(nas['login']),
-                            password=str(nas['password']))
+                    account = self.cur.fetchone()
+                    #print "account", account
+                    if account is not None:
+                        print 'send pod'
+                        PoD(dict=self.dict,
+                            account_id=account['id'], 
+                            account_name=str(session['name']), 
+                            account_vpn_ip=account['vpn_ip_address'], 
+                            account_ipn_ip=account['ipn_ip_address'], 
+                            account_mac_address=account['ipn_mac_address'], 
+                            access_type=str(session['service']), 
+                            nas_ip=nas['ipaddress'], 
+                            nas_type=nas['type'], 
+                            nas_name=nas['name'], 
+                            nas_secret=nas['secret'], 
+                            nas_login=nas['login'], 
+                            nas_password=nas['password'], 
+                            session_id=str(session['session-id'][2:]), 
+                            format_string=str(nas['reset_action'])
+                            )
     
                 self.cur.execute("""
                 UPDATE radius_activesession
@@ -181,10 +191,12 @@ class check_vpn_access(Thread):
                 #Закрываем подвисшие сессии
                 self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:03:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
                 self.connection.commit()
+                
                 self.cur.execute("""
-                SELECT rs.id, rs.account_id, rs.sessionid, rs.nas_id, rs.date_start, rs.date_end, rs.speed_string, lower(rs.framed_protocol),
-                nas.name, nas.secret, nas.support_pod, nas.login, nas.password, nas.type, nas.support_coa,
-                account.username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, (ballance+credit) as ballance, account.disabled_by_limit, account.speed
+                SELECT rs.id as id, rs.sessionid as session,  rs.speed_string as speed_string, lower(rs.framed_protocol) as access_type,
+                nas.name as nas_name, nas.ipaddress as nas_ip, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password, nas.type as nas_type,
+                account.username as username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, 
+                (ballance+credit) as balance, account.disabled_by_limit as disabled_by_limit, account.speed
                 FROM radius_activesession as rs
                 JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id
                 JOIN billservice_account as account ON account.id=rs.account_id
@@ -192,39 +204,21 @@ class check_vpn_access(Thread):
                 """)
                 rows=self.cur.fetchall()
                 for row in rows:
-                    activesession_id, \
-                    account_id, \
-                    session_id, \
-                    nas_id, \
-                    speed_string, \
-                    access_type, \
-                    nas_name, \
-                    nas_secret, \
-                    nas_support_pod, \
-                    nas_login, \
-                    nas_password, \
-                    nas_type, \
-                    nas_coa, \
-                    username, \
-                    tarif_id, \
-                    ballance, \
-                    disabled_by_limit, \
-                    speed = row
                     result=None
 
-                    if ballance>0:
-                       if self.check_period(time_periods_by_tarif_id(self.cur, tarif_id))==False or disabled_by_limit==True:
-                              result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password)
+                    if row['balance']>0:
+                       if self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True:
+                              result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'], login=row['nas_login'], password=row['nas_password'])
                        else:
                            """
                            Делаем проверку на то, изменилась ли скорость.
                            """
                            if speed=='':
-                               speed=self.create_speed(tarif_id, nas_type)
+                               speed=self.create_speed(row['tarif_id'], row['nas_type'])
                            
-                           if speed_string!=speed:
+                           if row['speed_string']!=row['speed']:
 
-                               coa_result=DAE(dict=self.dict, code=43, nas_secret=nas_secret, coa=nas_coa, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id, login=nas_login, password=nas_password, access_type=access_type, speed_string=speed)
+                               coa_result=DAE(dict=self.dict, code=43, nas_secret=row['nas_secret'], nas_ip=row['nas_ip'], nas_id=row['nas_name'], username=row['username'], session_id=row['session'], login=row['nas_login'], password=row['nas_password'], access_type=row['access_type'], speed_string=speed)
                                print "coa_result=", coa_result
                                if coa_result==True:
                                    self.cur.execute(
@@ -232,11 +226,12 @@ class check_vpn_access(Thread):
                                             UPDATE radius_activesession
                                             SET speed_string='%s'
                                             WHERE id=%s;
-                                            """ % (speed, activesession_id)
+                                            """ % (speed, row['id'])
                                             )
                                continue
                     else:
-                        result = DAE(dict=self.dict, code=40, nas_secret=nas_secret, nas_ip=nas_id, nas_id=nas_name, username=username, session_id=session_id,  login=nas_login, password=nas_password)
+                        result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'],  login=row['nas_login'], password=row['nas_password'])
+                    
                     if result==True:
                         disconnect_result='ACK'
                     elif result==False:
@@ -246,7 +241,7 @@ class check_vpn_access(Thread):
                         self.cur.execute(
                         """
                         UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
-                        """, (disconnect_result, session_id)
+                        """, (disconnect_result, row['id'])
                         )
 
                 self.connection.commit()
@@ -1831,14 +1826,14 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    threads.append(check_vpn_access(timeout=60, dict=dict))
+    #threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
     #threads.append(periodical_service_bill())
-    threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
+    #threads.append(TimeAccessBill())
+    #threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
 
     #threads.append(limit_checker())
@@ -1850,7 +1845,7 @@ if __name__ == "__main__":
     #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-    #print rosClient("10.10.1.100", 'admin', 'admin', r"/ppp/active/getall")
+    print rosClient("10.10.1.100", 'admin', 'admin', '/interface/pppoe-server/remove [/interface/pppoe-server/find user="dolphinik"]')
     for th in threads:
         th.start()
 

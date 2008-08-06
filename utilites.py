@@ -19,6 +19,137 @@ class IPNAccount(object):
         ipaddress=''
         mac_address=''
 
+def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name='', nas_secret='', nas_login='', nas_password='', session_id='', format_string=''):
+    """
+    @param account_id: ID of account
+    @param account_name: name of account
+    @param account_vpn_ip: VPN Address
+    @param account_ipn_ip: IPN Address
+    @param account_mac_address: Hardware address of account computer  
+    @param nas_ip: IP address of NAS
+    @param nas_name: Network Identify NAS
+    @param nas_secret: Secret phrase
+    @param nas_login: Login for SSH
+    @param nas_password: Password for SSH
+    @param session_id: ID of VPN session
+    @param format_string: format string       
+    """
+    access_type = access_type.lower()
+    if format_string=='' and access_type in ['pptp', 'pppoe']:
+        
+        #Send PoD
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('0.0.0.0',24000))
+        doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
+        doc.AddAttribute('NAS-IP-Address', str(nas_ip))
+        doc.AddAttribute('NAS-Identifier', str(nas_name))
+        doc.AddAttribute('User-Name', str(account_name))
+        doc.AddAttribute('Acct-Session-Id', str(session_id))
+        doc_data=doc.RequestPacket()
+        sock.sendto(doc_data,(str(nas_ip), 1700))
+        (data, addrport) = sock.recvfrom(8192)
+        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+
+        #for key,value in doc.items():
+        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
+
+        sock.close()
+        #try:
+        #    print doc['Error-Cause'][0]
+        #except:
+        #    pass
+        return doc.has_key("Error-Cause")==False
+    elif format_string!='' and access_type in ['pptp', 'pppoe']:
+        #ssh
+        print 'POD ROS'
+        command_string=command_string_parser(command_string=format_string, command_dict=
+                            {
+                             'access_type':access_type,
+                             'username': account_name,
+                             'user_id':account_id,
+                             'account_ipn_ip': account_ipn_ip,
+                             'account_vpn_ip': account_vpn_ip,
+                             'account_mac_address':account_mac_address,
+                             'session': session_id
+                             }
+                            )
+        print command_string
+        if nas_type=='mikrotik3':
+            """
+            ДОбавить проверку что вернул сервер доступа
+            """
+            print 'POD ROS3'
+            rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
+            return True
+        else:
+            try:
+                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                #print 'ssh connected'
+                res=sshclient.send_command(command_string)
+                sshclient.close_chanel()
+                print 'POD SSH'
+                return True
+            except Exception, e:
+                print e
+                return False
+
+def change_speed(account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, access_type, format_string, speed):
+    if format_string=='' and access_type in ['PPTP', 'PPPOE'] and nas_type in ['mikrotik2.8', 'mikrotik2.9', 'mikrotik3']:
+        #Send PoD
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('0.0.0.0',24000))
+        doc = packet.AcctPacket(code=40, secret=nas_secret, dict=dict)
+        doc.AddAttribute('NAS-IP-Address', nas_ip)
+        doc.AddAttribute('NAS-Identifier', nas_name)
+        doc.AddAttribute('User-Name', account_name)
+        doc.AddAttribute('Acct-Session-Id', session_id)
+        if speed_string:
+            #Пока только для микротика
+            doc.AddAttribute((14988,8), speed)
+            
+        doc_data=doc.RequestPacket()
+        sock.sendto(doc_data,(nas_ip, 1700))
+        (data, addrport) = sock.recvfrom(8192)
+        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+
+        #for key,value in doc.items():
+        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
+
+        sock.close()
+        #try:
+        #    print doc['Error-Cause'][0]
+        #except:
+        #    pass
+        return doc.has_key("Error-Cause")==False
+    elif format_string!='' and access_type in ['PPTP', 'PPPOE', 'IPN']:
+        #ssh
+        
+        command_string=command_string_parser(command_string=format_string, command_dict=
+                            {
+                             'access_type':access_type,
+                             'username': account_name,
+                             'user_id':account_id,
+                             'account_ipn_ip': account_ipn_ip,
+                             'account_vpn_ip': account_vpn_ip,
+                             'account_mac_address':account_mac_address,
+                             'session': session_id,
+                             'speed': speed, 
+                             }
+                            )
+        try:
+            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+            print 'ssh connected'
+            res=sshclient.send_command(command_string)
+            sshclient.close_chanel()
+            return True
+        except Exception, e:
+            print e
+            return False
+
+
+
+
+
 def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
     """
     Dynamic Authorization Extensions
@@ -579,7 +710,7 @@ def rosClient(host, login, password, command):
         return []
         
     apiros = ApiRos(s);
-    apiros.login(login, password)
+    apiros.login(str(login), str(password))
     x=['']
     commands = command.split(" ")
 
@@ -588,7 +719,7 @@ def rosClient(host, login, password, command):
     apiros.writeSentence(commands)
     while True:
         x = apiros.readSentence()
-        #print x
+        print x
         if x[0]=='!done':
             break
         result.append(x)
@@ -600,9 +731,15 @@ def get_sessions_for_nas(nas):
     sessions = []
     if nas['type'] in ['mikrotik2.8', 'mikrotik2.9']:
         #Use SSH For fetching sessions
-        ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
-        response=ssh.send_command("/ppp active print terse without-paging")[0]
-        response = response.readlines()
+        try:
+            
+            ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
+            response=ssh.send_command("/ppp active print terse without-paging")[0]
+            response = response.readlines()
+        except Exception, e:
+            print e
+            return []
+            
         #print response
         if nas['type']=='mikrotik2.9':
             sessions=ActiveSessionsParser(response).parse()

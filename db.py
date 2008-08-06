@@ -67,6 +67,7 @@ def get_account_data_by_username(cursor, username):
 #    return cursor.fetchone()
 
 def time_periods_by_tarif_id(cursor, tarif_id):
+    print 'tarif_id', tarif_id
     cursor.execute("""
     SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
     FROM billservice_timeperiodnode as tpn

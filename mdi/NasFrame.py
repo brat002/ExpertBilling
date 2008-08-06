@@ -15,6 +15,51 @@ NAS_LIST=(
                 (u'common_ssh',u'common_ssh'),
                 )
 
+actions = {
+'mikrotik2.8':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
+               'remove':'/ip firewall address-list remove $user_id',
+               'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
+               'disable': '/ip firewall address-list remove $user_id',
+               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
+               'pod': '/interface %s-server remove [find user="%s"]'
+               },
+'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
+               'remove':'/ip firewall address-list remove $user_id',
+               'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
+               'disable': '/ip firewall address-list remove $user_id',
+               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
+               'pod': '/interface %s-server remove [find user="%s"]'
+               },
+'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
+               'remove':'/ip firewall address-list remove $user_id',
+               'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
+               'disable': '/ip firewall address-list remove $user_id',
+               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
+               'pod': '/interface %s-server remove [find user="%s"]'
+               },
+'common_ssh':{'create':'',
+               'remove':'',
+               'enable':'',
+               'disable':'',
+               'speed': '',
+               'pod': ''
+               },
+'common_radius':{'create':'',
+               'remove':'',
+               'enable':'',
+               'disable':'',
+               'speed': '',
+               'pod': ''
+               },
+'---':{'create':'',
+               'remove':'',
+               'enable':'',
+               'disable':'',
+               'speed': '',
+               'pod': ''
+               },
+}
+
 class AddNasFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(AddNasFrame, self).__init__()
@@ -23,299 +68,288 @@ class AddNasFrame(QtGui.QDialog):
         self.connection.commit()
 
 
-        #self.setObjectName("self")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,422,338).size()))
-        
+        self.setObjectName("Dialog")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,403,395).size()).expandedTo(self.minimumSizeHint()))
+
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(70,300,341,32))
+        self.buttonBox.setGeometry(QtCore.QRect(60,360,341,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.maintabWidget = QtGui.QTabWidget(self)
+        self.maintabWidget.setGeometry(QtCore.QRect(10,10,391,341))
+        self.maintabWidget.setObjectName("maintabWidget")
+
+        self.general_tab = QtGui.QWidget()
+        self.general_tab.setObjectName("general_tab")
 
+        self.ssh_groupBox = QtGui.QGroupBox(self.general_tab)
+        self.ssh_groupBox.setGeometry(QtCore.QRect(210,150,171,111))
+        self.ssh_groupBox.setObjectName("ssh_groupBox")
 
-        self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(10,10,401,281))
+        self.pushButton = QtGui.QPushButton(self.ssh_groupBox)
+        self.pushButton.setGeometry(QtCore.QRect(50,80,75,24))
+        self.pushButton.setObjectName("pushButton")
 
-        self.tab = QtGui.QWidget()
+        self.ssh_name_label = QtGui.QLabel(self.ssh_groupBox)
+        self.ssh_name_label.setGeometry(QtCore.QRect(11,22,37,20))
+        self.ssh_name_label.setObjectName("ssh_name_label")
 
+        self.ssh_name_lineEdit = QtGui.QLineEdit(self.ssh_groupBox)
+        self.ssh_name_lineEdit.setGeometry(QtCore.QRect(54,22,106,20))
+        self.ssh_name_lineEdit.setObjectName("ssh_name_lineEdit")
 
-        self.groupBox = QtGui.QGroupBox(self.tab)
-        self.groupBox.setGeometry(QtCore.QRect(210,130,171,121))
+        self.ssh_password_label = QtGui.QLabel(self.ssh_groupBox)
+        self.ssh_password_label.setGeometry(QtCore.QRect(11,49,37,20))
+        self.ssh_password_label.setObjectName("ssh_password_label")
 
-
-        self.testButton = QtGui.QPushButton(self.groupBox)
-        self.testButton.setGeometry(QtCore.QRect(50,80,75,24))
-
-
-        self.widget = QtGui.QWidget(self.groupBox)
-        self.widget.setGeometry(QtCore.QRect(10,20,161,58))
-
-
-        self.gridlayout = QtGui.QGridLayout(self.widget)
-
-
-        self.label_5 = QtGui.QLabel(self.widget)
-
-        self.gridlayout.addWidget(self.label_5,0,0,1,1)
-
-        self.ssh_name_edit = QtGui.QLineEdit(self.widget)
-
-        self.gridlayout.addWidget(self.ssh_name_edit,0,1,1,1)
-
-        self.label_6 = QtGui.QLabel(self.widget)
-        self.gridlayout.addWidget(self.label_6,1,0,1,1)
-
-        self.ssh_password_edit = QtGui.QLineEdit()
-
-        self.gridlayout.addWidget(self.ssh_password_edit,1,1,1,1)
-
-        self.groupBox_2 = QtGui.QGroupBox(self.tab)
-        self.groupBox_2.setGeometry(QtCore.QRect(10,140,171,111))
-
-
-        self.widget1 = QtGui.QWidget(self.groupBox_2)
-        self.widget1.setGeometry(QtCore.QRect(10,20,88,78))
-
-
-        self.gridlayout1 = QtGui.QGridLayout(self.widget1)
-
-
-        self.pptp_edit = QtGui.QCheckBox(self.widget1)
-
-        self.gridlayout1.addWidget(self.pptp_edit,0,0,1,1)
-
-        self.pppoe_edit = QtGui.QCheckBox(self.widget1)
-
-        self.gridlayout1.addWidget(self.pppoe_edit,1,0,1,1)
-
-        self.ipn_edit = QtGui.QCheckBox(self.widget1)
-
-        self.gridlayout1.addWidget(self.ipn_edit,2,0,1,1)
-
-        self.widget2 = QtGui.QWidget(self.tab)
-        self.widget2.setGeometry(QtCore.QRect(10,20,371,120))
-
-
-        self.gridlayout2 = QtGui.QGridLayout(self.widget2)
-
-
-        self.label = QtGui.QLabel(self.widget2)
-
-        self.gridlayout2.addWidget(self.label,0,0,1,1)
-
-        self.nas_type_edit = QtGui.QComboBox(self.widget2)
-
-        self.gridlayout2.addWidget(self.nas_type_edit,0,1,1,1)
-
-        self.label_2 = QtGui.QLabel(self.widget2)
-
-        self.gridlayout2.addWidget(self.label_2,1,0,1,1)
-
-        self.nas_name_edit = QtGui.QLineEdit()
-
-        self.gridlayout2.addWidget(self.nas_name_edit,1,1,1,1)
-
-        self.label_3 = QtGui.QLabel(self.widget2)
-
-        self.gridlayout2.addWidget(self.label_3,2,0,1,1)
-
-        self.nas_ip_edit = QtGui.QLineEdit(self.widget2)
-
-        self.gridlayout2.addWidget(self.nas_ip_edit,2,1,1,1)
-
-        self.label_4 = QtGui.QLabel(self.widget2)
-
-        self.gridlayout2.addWidget(self.label_4,3,0,1,1)
-
-        self.nas_secret_edit = QtGui.QLineEdit(self.widget2)
-
-        self.gridlayout2.addWidget(self.nas_secret_edit,3,1,1,1)
-        self.tabWidget.addTab(self.tab,"")
-
-        self.tab_2 = QtGui.QWidget()
-
-        self.tabWidget_2 = QtGui.QTabWidget(self.tab_2)
-        self.tabWidget_2.setGeometry(QtCore.QRect(10,10,381,480))
-
-
-        self.tab_3 = QtGui.QWidget()
-
-
-        self.widget3 = QtGui.QWidget(self.tab_3)
-        self.widget3.setGeometry(QtCore.QRect(10,110,361,91))
-
-
-        self.vboxlayout = QtGui.QVBoxLayout(self.widget3)
-
-
-        self.label_8 = QtGui.QLabel(self.widget3)
-
-        self.vboxlayout.addWidget(self.label_8)
-
-        self.user_remove_edit = QtGui.QTextEdit(self.widget3)
-
-        self.vboxlayout.addWidget(self.user_remove_edit)
-
-        self.widget4 = QtGui.QWidget(self.tab_3)
-        self.widget4.setGeometry(QtCore.QRect(10,10,361,91))
-
-
-        self.vboxlayout1 = QtGui.QVBoxLayout(self.widget4)
-
-
-        self.label_7 = QtGui.QLabel(self.widget4)
-
-        self.vboxlayout1.addWidget(self.label_7)
-
-        self.user_add_edit = QtGui.QTextEdit("")
-
-        self.vboxlayout1.addWidget(self.user_add_edit)
-        self.tabWidget_2.addTab(self.tab_3,"")
-
-        self.tab_4 = QtGui.QWidget()
-
-
-        self.widget5 = QtGui.QWidget(self.tab_4)
-        self.widget5.setGeometry(QtCore.QRect(10,110,361,91))
-
-
-        self.vboxlayout2 = QtGui.QVBoxLayout(self.widget5)
-
-
-        self.label_10 = QtGui.QLabel(self.widget5)
-
-        self.vboxlayout2.addWidget(self.label_10)
-
-        self.user_disable_edit = QtGui.QTextEdit(self.widget5)
-
-        self.vboxlayout2.addWidget(self.user_disable_edit)
-
-        self.widget6 = QtGui.QWidget(self.tab_4)
-        self.widget6.setGeometry(QtCore.QRect(10,10,361,91))
-
-        self.vboxlayout3 = QtGui.QVBoxLayout(self.widget6)
-
-
-
-        self.label_9 = QtGui.QLabel(self.widget6)
-
-        self.vboxlayout3.addWidget(self.label_9)
-
-        self.user_enable_edit = QtGui.QTextEdit(self.widget6)
-        self.vboxlayout3.addWidget(self.user_enable_edit)
-
-        self.tabWidget_2.addTab(self.tab_4,"")
-        self.tabWidget.addTab(self.tab_2,"")
-
-
-        self.label_5.setBuddy(self.ssh_name_edit)
-        self.label_6.setBuddy(self.ssh_password_edit)
-        self.label.setBuddy(self.nas_type_edit)
-        self.label_2.setBuddy(self.nas_name_edit)
-        self.label_3.setBuddy(self.nas_ip_edit)
-        self.label_4.setBuddy(self.nas_secret_edit)
-        self.label_8.setBuddy(self.user_remove_edit)
-        self.label_7.setBuddy(self.user_add_edit)
-        self.label_10.setBuddy(self.user_disable_edit)
-        self.label_9.setBuddy(self.user_enable_edit)
-
-        self.retranslateUi()
-        self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(0)
+        self.ssh_password_lineEdit = QtGui.QLineEdit(self.ssh_groupBox)
+        self.ssh_password_lineEdit.setGeometry(QtCore.QRect(54,49,106,20))
+        self.ssh_password_lineEdit.setEchoMode(QtGui.QLineEdit.Password)
+        self.ssh_password_lineEdit.setObjectName("ssh_password_lineEdit")
+
+        self.services_groupBox = QtGui.QGroupBox(self.general_tab)
+        self.services_groupBox.setGeometry(QtCore.QRect(10,150,171,111))
+        self.services_groupBox.setObjectName("services_groupBox")
+
+        self.pptp_checkBox = QtGui.QCheckBox(self.services_groupBox)
+        self.pptp_checkBox.setGeometry(QtCore.QRect(11,21,56,18))
+        self.pptp_checkBox.setObjectName("pptp_checkBox")
+
+        self.pppoe_checkBox = QtGui.QCheckBox(self.services_groupBox)
+        self.pppoe_checkBox.setGeometry(QtCore.QRect(11,45,56,18))
+        self.pppoe_checkBox.setObjectName("pppoe_checkBox")
+
+        self.ipn_checkBox = QtGui.QCheckBox(self.services_groupBox)
+        self.ipn_checkBox.setGeometry(QtCore.QRect(11,69,56,18))
+        self.ipn_checkBox.setObjectName("ipn_checkBox")
+
+        self.identify_groupBox = QtGui.QGroupBox(self.general_tab)
+        self.identify_groupBox.setGeometry(QtCore.QRect(10,10,371,131))
+        self.identify_groupBox.setObjectName("identify_groupBox")
+
+        self.name_label = QtGui.QLabel(self.identify_groupBox)
+        self.name_label.setGeometry(QtCore.QRect(10,50,131,20))
+        self.name_label.setObjectName("name_label")
+
+        self.nas_ip = QtGui.QLineEdit(self.identify_groupBox)
+        self.nas_ip.setGeometry(QtCore.QRect(140,76,221,20))
+        self.nas_ip.setObjectName("nas_ip")
+
+        self.nas_comboBox = QtGui.QComboBox(self.identify_groupBox)
+        self.nas_comboBox.setGeometry(QtCore.QRect(140,24,221,20))
+        self.nas_comboBox.setObjectName("nas_comboBox")
+
+        self.ip_label = QtGui.QLabel(self.identify_groupBox)
+        self.ip_label.setGeometry(QtCore.QRect(10,76,131,20))
+        self.ip_label.setObjectName("ip_label")
+
+        self.secret_label = QtGui.QLabel(self.identify_groupBox)
+        self.secret_label.setGeometry(QtCore.QRect(10,102,131,20))
+        self.secret_label.setObjectName("secret_label")
+
+        self.nas_name = QtGui.QLineEdit(self.identify_groupBox)
+        self.nas_name.setGeometry(QtCore.QRect(140,50,221,20))
+        self.nas_name.setObjectName("nas_name")
+
+        self.type_label = QtGui.QLabel(self.identify_groupBox)
+        self.type_label.setGeometry(QtCore.QRect(10,24,131,20))
+        self.type_label.setObjectName("type_label")
+
+        self.nas_secret = QtGui.QLineEdit(self.identify_groupBox)
+        self.nas_secret.setGeometry(QtCore.QRect(140,102,221,20))
+        self.nas_secret.setObjectName("nas_secret")
+        self.maintabWidget.addTab(self.general_tab,"")
+
+        self.commands_tab = QtGui.QWidget()
+        self.commands_tab.setObjectName("commands_tab")
+
+        self.create_user_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.create_user_textEdit.setGeometry(QtCore.QRect(10,30,371,20))
+        self.create_user_textEdit.setObjectName("create_user_textEdit")
+
+        self.create_user_label = QtGui.QLabel(self.commands_tab)
+        self.create_user_label.setGeometry(QtCore.QRect(10,10,371,16))
+        self.create_user_label.setObjectName("create_user_label")
+
+        self.remove_user_label = QtGui.QLabel(self.commands_tab)
+        self.remove_user_label.setGeometry(QtCore.QRect(10,60,371,16))
+        self.remove_user_label.setObjectName("remove_user_label")
+
+        self.remove_user_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.remove_user_textEdit.setGeometry(QtCore.QRect(10,80,371,20))
+        self.remove_user_textEdit.setObjectName("remove_user_textEdit")
+
+        self.enable_user_label = QtGui.QLabel(self.commands_tab)
+        self.enable_user_label.setGeometry(QtCore.QRect(10,110,371,16))
+        self.enable_user_label.setObjectName("enable_user_label")
+
+        self.enable_user_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.enable_user_textEdit.setGeometry(QtCore.QRect(10,130,371,20))
+        self.enable_user_textEdit.setObjectName("enable_user_textEdit")
+
+        self.disable_user_label = QtGui.QLabel(self.commands_tab)
+        self.disable_user_label.setGeometry(QtCore.QRect(10,160,371,16))
+        self.disable_user_label.setObjectName("disable_user_label")
+
+        self.disable_user_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.disable_user_textEdit.setGeometry(QtCore.QRect(10,180,371,20))
+        self.disable_user_textEdit.setObjectName("disable_user_textEdit")
+
+        self.pod_label = QtGui.QLabel(self.commands_tab)
+        self.pod_label.setGeometry(QtCore.QRect(10,210,371,16))
+        self.pod_label.setObjectName("pod_label")
+
+        self.pod_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.pod_textEdit.setGeometry(QtCore.QRect(10,230,371,20))
+        self.pod_textEdit.setObjectName("pod_textEdit")
+
+        self.set_speed_label = QtGui.QLabel(self.commands_tab)
+        self.set_speed_label.setGeometry(QtCore.QRect(10,260,371,16))
+        self.set_speed_label.setObjectName("set_speed_label")
+
+        self.set_speed_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.set_speed_textEdit.setGeometry(QtCore.QRect(10,280,371,20))
+        self.set_speed_textEdit.setObjectName("set_speed_textEdit")
+        self.maintabWidget.addTab(self.commands_tab,"")
+        self.ssh_name_label.setBuddy(self.ssh_name_lineEdit)
+        self.ssh_password_label.setBuddy(self.ssh_password_lineEdit)
+        self.name_label.setBuddy(self.nas_name)
+        self.ip_label.setBuddy(self.nas_ip)
+        self.secret_label.setBuddy(self.nas_secret)
+        self.type_label.setBuddy(self.nas_comboBox)
+
+        
+        self.setTabOrder(self.maintabWidget,self.nas_comboBox)
+        self.setTabOrder(self.nas_comboBox,self.nas_name)
+        self.setTabOrder(self.nas_name,self.nas_ip)
+        self.setTabOrder(self.nas_ip,self.nas_secret)
+        self.setTabOrder(self.nas_secret,self.pptp_checkBox)
+        self.setTabOrder(self.pptp_checkBox,self.pppoe_checkBox)
+        self.setTabOrder(self.pppoe_checkBox,self.ipn_checkBox)
+        self.setTabOrder(self.ipn_checkBox,self.ssh_name_lineEdit)
+        self.setTabOrder(self.ssh_name_lineEdit,self.ssh_password_lineEdit)
+        self.setTabOrder(self.ssh_password_lineEdit,self.pushButton)
+        self.setTabOrder(self.pushButton,self.buttonBox)
 
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        QtCore.QObject.connect(self.testButton,QtCore.SIGNAL("clicked()"),self.testNAS)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        QtCore.QObject.connect(self.pushButton,QtCore.SIGNAL("clicked()"),self.testNAS)
 
-        #QtCore.QMetaObject.connectSlotsByName(self)
+                
+        
+        
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.fixtures()
+        QtCore.QObject.connect(self.nas_comboBox,QtCore.SIGNAL("currentIndexChanged(int)"),self.refillActions)
+        self.retranslateUi()
+
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.ssh_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "SSH", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
+        self.ssh_name_label.setText(QtGui.QApplication.translate("Dialog", "Имя", None, QtGui.QApplication.UnicodeUTF8))
+        self.ssh_password_label.setText(QtGui.QApplication.translate("Dialog", "Пароль", None, QtGui.QApplication.UnicodeUTF8))
+        self.services_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Разрешённые сервисы", None, QtGui.QApplication.UnicodeUTF8))
+        self.pptp_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPTP", None, QtGui.QApplication.UnicodeUTF8))
+        self.pppoe_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPPOE", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_checkBox.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
+        self.identify_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сетевая идентификация", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Сетевое имя", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.ip_label.setText(QtGui.QApplication.translate("Dialog", "IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.secret_label.setText(QtGui.QApplication.translate("Dialog", "Секретная фраза", None, QtGui.QApplication.UnicodeUTF8))
+        self.type_label.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.general_tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.create_user_label.setText(QtGui.QApplication.translate("Dialog", "Создать пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.remove_user_label.setText(QtGui.QApplication.translate("Dialog", "Удалить пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.enable_user_label.setText(QtGui.QApplication.translate("Dialog", "Активировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.disable_user_label.setText(QtGui.QApplication.translate("Dialog", "Деактивировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.pod_label.setText(QtGui.QApplication.translate("Dialog", "Сбросить сессию пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.set_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость", None, QtGui.QApplication.UnicodeUTF8))
+        self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.commands_tab), QtGui.QApplication.translate("Dialog", "Команды", None, QtGui.QApplication.UnicodeUTF8))
+
+
 
     def testNAS(self):
-        if not self.connection.testCredentials(str(self.nas_ip_edit.text()), str(self.ssh_name_edit.text()), str(self.ssh_password_edit.text())):
+        if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
         else:
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok"))
+         
+    def refillActions(self):
+        self.maintabWidget.setCurrentIndex(1)
+        nas_type = unicode(self.nas_comboBox.currentText())
+        if nas_type=='---':
+            return
         
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры SSH", None, QtGui.QApplication.UnicodeUTF8))
-        self.testButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Dialog", "<b>Имя</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("Dialog", "<b>Пароль</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Разрешённые сервисы", None, QtGui.QApplication.UnicodeUTF8))
-        self.pptp_edit.setText(QtGui.QApplication.translate("Dialog", "PPTP", None, QtGui.QApplication.UnicodeUTF8))
-        self.pppoe_edit.setText(QtGui.QApplication.translate("Dialog", "PPPOE", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_edit.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "<b>Тип</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "<b>Identify</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Dialog", "<b>IP</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("Dialog", "<b>Secret</b>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Настройки доступа", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("Dialog", "Действие при удалении пользователя: ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("Dialog", "Действие при создании пользователя: ", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Создание/Удаление", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_10.setText(QtGui.QApplication.translate("Dialog", "Действие при запрещении работы пользователя: ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_9.setText(QtGui.QApplication.translate("Dialog", "Действие при разрешении работы пользователя:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), QtGui.QApplication.translate("Dialog", "Активация/Деактивация", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Команды управления", None, QtGui.QApplication.UnicodeUTF8))
-
-
-        #self.connect(self.button_add,  QtCore.SIGNAL("clicked()"), self.save)
-        #self.connect(self.button_add, QtCore.SIGNAL("clicked()"), self, QtCore.SLOT("accept()"))
-
-
-        self.fixtures()
-
+        self.create_user_textEdit.setText(actions[nas_type]['create'])
+        self.remove_user_textEdit.setText(actions[nas_type]['remove'])
+        
+        self.enable_user_textEdit.setText(actions[nas_type]['enable'])
+        self.disable_user_textEdit.setText(actions[nas_type]['disable'])
+        
+        self.set_speed_textEdit.setText(actions[nas_type]['speed'])
+        self.pod_textEdit.setText(actions[nas_type]['pod'])
+        pass
+    
     def accept(self):
         """
         понаставить проверок
         """
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
 
+        if unicode(self.nas_comboBox.currentText())==u"---":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не выбрали тип сервера доступа"))
+            return
+            
         if self.model:
             model=self.model
         else:
             print 'New nas'
             model=Object()
 
-        if unicode(self.nas_name_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан идентификатор сервера доступа"))
+        if unicode(self.nas_name.text())==u"":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан идентификатор сервера доступа"))
             return
 
-        if unicode(self.ssh_name_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано имя пользователя для SSH"))
+        if unicode(self.ssh_name_lineEdit.text())==u"":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано имя пользователя для SSH"))
             return
 
-        if unicode(self.ssh_password_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан пароль для SSH"))
+        if unicode(self.ssh_password_lineEdit.text())==u"":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан пароль для SSH"))
             return
 
-        if unicode(self.nas_ip_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан IP адрес сервера доступа"))
+        if unicode(self.nas_ip.text())==u"":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан IP адрес сервера доступа"))
             return
 
-        if unicode(self.nas_secret_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана секретная фраза"))
+        if unicode(self.nas_secret.text())==u"":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана секретная фраза"))
             return
 
-        model.login = unicode(self.ssh_name_edit.text())
-        model.password = unicode(self.ssh_password_edit.text())
-        model.type = unicode(self.nas_type_edit.currentText())
-        model.name = unicode(self.nas_name_edit.text())
-        model.ipaddress = unicode(self.nas_ip_edit.text())
-        model.secret = unicode(self.nas_secret_edit.text())
+        model.login = unicode(self.ssh_name_lineEdit.text())
+        model.password = unicode(self.ssh_password_lineEdit.text())
+        model.type = unicode(self.nas_comboBox.currentText())
+        model.name = unicode(self.nas_name.text())
+        model.ipaddress = unicode(self.nas_ip.text())
+        model.secret = unicode(self.nas_secret.text())
 
-        model.allow_pptp = self.pptp_edit.checkState()==2
-        model.allow_pppoe = self.pppoe_edit.checkState()==2
-        model.allow_ipn = self.ipn_edit.checkState()==2
+        model.allow_pptp = self.pptp_checkBox.checkState()==2
+        model.allow_pppoe = self.pppoe_checkBox.checkState()==2
+        model.allow_ipn = self.ipn_checkBox.checkState()==2
 
-        model.user_add_action= unicode(self.user_add_edit.toPlainText() or "")
-        model.user_delete_action= unicode(self.user_remove_edit.toPlainText() or "")
-        model.user_enable_action= unicode(self.user_enable_edit.toPlainText() or "")
-        model.user_disable_action= unicode(self.user_disable_edit.toPlainText() or "")
+        model.user_add_action= unicode(self.create_user_textEdit.text() or "")
+        model.user_delete_action= unicode(self.remove_user_textEdit.text() or "")
+        model.user_enable_action= unicode(self.enable_user_textEdit.text() or "")
+        model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
+        model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
+        model.speed_action = unicode(self.set_speed_textEdit.text() or "")
+        model.reset_action = unicode(self.pod_textEdit.text() or "")
+        
 
         
 
@@ -332,27 +366,32 @@ class AddNasFrame(QtGui.QDialog):
 
 
         nasses = NAS_LIST
+        self.nas_comboBox.addItem('---')
         for nas, value in nasses:
-            self.nas_type_edit.addItem(nas)
+            self.nas_comboBox.addItem(nas)
 
         if self.model:
-            self.nas_name_edit.setText(unicode(self.model.name))
-            self.nas_ip_edit.setText(unicode(self.model.ipaddress))
-            self.nas_secret_edit.setText(unicode(self.model.secret))
-            self.nas_ip_edit.setText(unicode(self.model.ipaddress))
-            self.ssh_name_edit.setText(unicode(self.model.login))
-            self.ssh_password_edit.setText(unicode(self.model.password))
+            self.nas_name.setText(unicode(self.model.name))
+            self.nas_ip.setText(unicode(self.model.ipaddress))
+            self.nas_secret.setText(unicode(self.model.secret))
+            self.ssh_name_lineEdit.setText(unicode(self.model.login))
+            self.ssh_password_lineEdit.setText(unicode(self.model.password))
 
-            self.user_add_edit.setText(unicode(self.model.user_add_action))
-            self.user_remove_edit.setText(unicode(self.model.user_delete_action))
-            self.user_enable_edit.setText(unicode(self.model.user_enable_action))
-            self.user_disable_edit.setText(unicode(self.model.user_disable_action))
+            self.create_user_textEdit.setText(unicode(self.model.user_add_action))
+            self.remove_user_textEdit.setText(unicode(self.model.user_delete_action))
+            self.enable_user_textEdit.setText(unicode(self.model.user_enable_action))
+            self.disable_user_textEdit.setText(unicode(self.model.user_disable_action))
+            
+            
+            self.set_speed_textEdit.setText(unicode(self.model.speed_action))
+            self.pod_textEdit.setText(unicode(self.model.reset_action))
+            
 
-            self.nas_type_edit.setCurrentIndex(self.nas_type_edit.findText(self.model.type, QtCore.Qt.MatchCaseSensitive))
+            self.nas_comboBox.setCurrentIndex(self.nas_comboBox.findText(self.model.type, QtCore.Qt.MatchCaseSensitive))
 
-            self.pptp_edit.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.pppoe_edit.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.ipn_edit.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.pppoe_checkBox.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
 
 
 
