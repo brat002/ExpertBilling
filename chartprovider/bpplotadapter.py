@@ -18,7 +18,7 @@ class bpplotAdapter(object):
             raise oerr
         #conn.set_client_encoding('UTF8')        
         curs = conn.cursor()'''
-        
+        print "query: " + selstr 
         curs = bpplotAdapter.rCursor
         try:
             curs.execute(selstr)

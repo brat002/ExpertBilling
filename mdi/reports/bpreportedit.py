@@ -265,6 +265,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 	#rargs = self.chargs[self.chcount]
 	if self.chkwargs[self.chcount].has_key('options'):
 	    self.drawer.set_options(attrs['type'], self.chkwargs[self.chcount]['options'])
+	    
         qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
 	#print kwargs['return']['sec']
 	

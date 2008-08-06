@@ -1,10 +1,10 @@
 #-*-encoding:utf-8-*-
 
 import sys, time
-from bpcanvas import staticMplCanvas, staticQtMplCanvas
+
 from datetime import datetime, tzinfo
 import random
-from bpcdplot import cdDrawer
+
 from bpbl import bpbl
 from itertools import chain
 import copy
@@ -17,6 +17,15 @@ tm4 = datetime.strptime('2008-06-28 16:36:01', sfm)
 tm5 = datetime.strptime('2008-07-06 11:02:30', sfm)
 tm6 = datetime.strptime('2008-07-10 18:15:01', sfm)
 print datetime.now().isoformat(' ')
+
+
+us1 = u"оттакая хуйня малята"
+print us1.encode("unicode_escape")
+print us1.encode("raw_unicode_escape")
+#print us1.encode("native")
+print us1.encode('ascii', 'backslashreplace')
+print us1.encode("utf-8")
+#print us1.decode("unicode_escape")
 #smg = (1, 2, 3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9)
 #smg1 = (1,0)
 #data = ((1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3))
@@ -47,7 +56,7 @@ print datetime.now().isoformat(' ')
 #itt = [[],[],[],[0]]
 #tdl = [{'a':[], 'b':[]}, {'c':[0]}]
 tdd = {'a':[], 'b':[]}
-print tdd.keys()
+#print tdd.keys()
 #tdl2 = tdl[:]
 #tdl3 = copy.deepcopy(tdl)
 #tdl[0]['a'].append(0)
@@ -68,7 +77,7 @@ a2 = [22, 33, 55, 66]
 ad = {'1':a1, '3':"aaa", '75':6, '564':5, '2':a2}
 dkey = '7'
 #print str(*a2[1:])
-print (ad.has_key(dkey) and (dkey + "zomg" + str(ad[dkey]))) or dkey 
+#print (ad.has_key(dkey) and (dkey + "zomg" + str(ad[dkey]))) or dkey 
 #for it in ad: print it
 aa = time.clock()
 #print sorted(ad.keys())

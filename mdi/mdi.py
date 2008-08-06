@@ -1,5 +1,5 @@
 #-*-coding=utf-8*-
-import sys
+import sys, os
 from PyQt4 import QtCore, QtGui
 
 from helpers import Object
@@ -17,7 +17,9 @@ from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog
-from Reports import ReportPropertiesDialog, NetFlowReport, StatReport
+from Reports import ReportPropertiesDialog, NetFlowReport, StatReport, ReportSelectDialog
+
+
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -162,6 +164,10 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def openstatWin(self):
+        self.reportseldg = ReportSelectDialog(connection=connection)
+        if self.reportseldg.exec_()!=1: return
+        #print self.reportseldg.zomgdata
+        print self.reportseldg.chartinfo
         child=StatReport(connection=connection)
         self.workspace.addWindow(child)
         child.show()

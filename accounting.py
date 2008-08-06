@@ -1655,7 +1655,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection._con._con.set_client_encoding('UTF8')
         self.listcur = self.connection.cursor()
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)        
-        self._cddrawer = cdDrawer()
+        #self._cddrawer = cdDrawer()
         
     def run(self):
         Pyro.core.initServer()
@@ -1743,11 +1743,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
     def makeChart(self, *args, **kwargs):
         bpplotAdapter.rCursor = self.listcur
-        imgs =  self._cddrawer.cddraw(*args, **kwargs)
+        cddrawer = cdDrawer()
+        imgs = cddrawer.cddraw(*args, **kwargs)
         return imgs
-    def setChartOptions(self, chartname, optdict):
+    '''def setChartOptions(self, chartname, optdict):
         #self._cddrawer.set_options(chartname, optdict)
-        pass
+        pass'''
         
     def rollback(self):
         self.connection.rollback()
