@@ -9,6 +9,9 @@ import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
 
+_xmlpath = "reports/xml"
+_infofilename = "info"
+
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
@@ -696,7 +699,49 @@ class NetFlowReport(QtGui.QMainWindow):
         print "Interface generation time=", time.clock()-a    
         
         
+
+class ReportSelectDialog(QtGui.QDialog):
+    def __init__(self,  connection):
+        super(ReportSelectDialog, self).__init__()
+        self.setObjectName("reportSelectDialog")
+        self.chartinfo = []
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,482,510).size()).expandedTo(self.minimumSizeHint()))
+
+        self.reportSelectButtonBox = QtGui.QDialogButtonBox(self)
+        self.reportSelectButtonBox.setGeometry(QtCore.QRect(-20,460,340,30))
+        self.reportSelectButtonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.reportSelectButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.reportSelectButtonBox.setObjectName("reportSelectButtonBox")
+
+        self.reportSelectList = QtGui.QListWidget(self)
+        self.reportSelectList.setGeometry(QtCore.QRect(10,10,461,430))
+        self.reportSelectList.setObjectName("reportSelectList")
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("rejected()"), self.reject)
+        #QtCore.QMetaObject.connectSlotsByName(reportSelectDialog)
+        self.fixtures()
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("reportSelectDialog", "Выберите отчет", None, QtGui.QApplication.UnicodeUTF8))
     
+    def fixtures(self):
+        try:
+            f = open(_xmlpath+ "/" + _infofilename)
+            for infoline in f:
+                self.chartinfo.append(infoline.split(' | '))
+        except Exception, ex:
+            print ex
+        
+        i = 0
+        for infotuple in self.chartinfo:
+            item = QtGui.QListWidgetItem()
+            item.setText(QtCore.QString.fromUtf8(infotuple[2]))
+            item.id = i
+            self.reportSelectList.addItem(item)
+            i += 1
+
 class StatReport(QtGui.QMainWindow):
     def __init__(self, connection):
         super(StatReport, self).__init__()
@@ -705,14 +750,15 @@ class StatReport(QtGui.QMainWindow):
         
         self.child = ReportOptionsDialog(self.connection, "")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
-
-        sfm = '%Y-%m-%d %H:%M:%S'
+        self.textedit = QtGui.QTextEdit(self)
+        
+        '''sfm = '%Y-%m-%d %H:%M:%S'
         tm1 = datetime.datetime.strptime('2008-07-01 11:02:30', sfm)
         tm2 = datetime.datetime.strptime('2008-07-03 11:02:30', sfm)
         tm3 = datetime.datetime.strptime('2008-07-17 16:17:30', sfm)
         tm4 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
         tm5 = datetime.datetime.strptime('2008-07-08 11:02:30', sfm)
-        tm6 = datetime.datetime.strptime('2008-07-19 20:15:01', sfm)
+        tm6 = datetime.datetime.strptime('2008-08-19 20:15:01', sfm)
         tm7 = datetime.datetime.strptime('2008-06-27 16:17:30', sfm)
         tm8 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
         tm9 = datetime.datetime.strptime('2008-07-10 00:00:00', sfm)
@@ -722,11 +768,14 @@ class StatReport(QtGui.QMainWindow):
         import time
         aa = time.clock()
         brep = bpReportEdit()
-        #editor = brep.createreport("xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm3, tm11)], [{}], connection=self.connection)
-        editor = brep.createreport("reports/xml/report3_nas.xml", [(17, tm7, tm11)], [{'options':{'autoticks': False}}], connection=self.connection)
-        self.textedit = editor
+        print "zOMG"
+        #editor = brep.createreport("reports/xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm7, tm11)], [{}], connection=self.connection)
+        #editor = brep.createreport("reports/xml/report3_classes.xml", [((1, 2, 13, 15, 17, 14, 12,), tm7, tm6)], [{'options':{'autoticks': True}}], connection=self.connection)
+        #editor = brep.createreport("reports/xml/report3_nass.xml", [((1,2,3), tm7, tm6)], [{}], connection=self.connection)
+        editor  = brep.createreport("reports/xml/report3_nas.xml", [(17, tm7, tm11)], [{'options':{'autoticks': False, 'antialias':False}}], connection=self.connection)
+        self.textedit = editor'''
         self.setCentralWidget(self.textedit)
-        print time.clock() - aa
+        #print time.clock() - aa
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
@@ -769,7 +818,7 @@ class StatReport(QtGui.QMainWindow):
         pass
         
 class ReportOptionsDialog(QtGui.QDialog):
-    def __init__(self, connection, reportname):
+    def __init__(self, connection, reportclass):
         super(ReportOptionsDialog, self).__init__()
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))

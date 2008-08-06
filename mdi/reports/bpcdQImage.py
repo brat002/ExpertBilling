@@ -11,13 +11,18 @@ class bpcdQImage(object):
         
     def bpdraw(self, *args, **kwargs):
         #imgs = self._cddrawer.cddraw(*args, **kwargs)
+        if kwargs.has_key('options'):
+            kwargs['options'].update(self.options)
+        else:
+            kwargs['options'] = self.options
         imgs  = self.connection.makeChart(*args, **kwargs)
+        self.options = {}
         qimgs = []
         for img in imgs:
             qimg = QtGui.QImage()
             qimg.loadFromData(img, 'png')
             qimgs.append(qimg)
-        self.options = {}
+        
         return qimgs
         
     def get_options(self, chartname):
@@ -26,7 +31,8 @@ class bpcdQImage(object):
     
     def set_options(self, chartname, optdict):
         #self._cddrawer.set_options(chartname, optdict)
-        self.connection.setChartOptions(chartname, optdict)
+        #self.connection.setChartOptions(chartname, optdict)
+        self.options.update(optdict)
         
         
         

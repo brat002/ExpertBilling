@@ -1,4 +1,4 @@
-#-*-encoding:utf-8-*-
+#-*-coding=utf-8-*-
 import pychartdir
 from pychartdir import *
 from bpbl import bpbl, selstrdict
@@ -178,11 +178,16 @@ class cdDrawer(object):
 
     
         
+    def __init__(self):
+	pass
+	#self.defoptdict = copy.deepcopy(self.cdchartoptdict)
     def cddraw(self, *args, **kwargs):
 	'''Plotting methods' handler
 	@args[0] - method identifier'''
 	method = getattr(self, "cddraw_" + args[0], None)
-	if callable(method): 
+	if callable(method):
+	    self.set_options(args[0], kwargs['options'])
+	    print args
 	    args = args[1:]
 	    return method(*args, **kwargs)
 	else:
@@ -463,7 +468,10 @@ class cdDrawer(object):
 	    selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(int) for int in args[0]]), args[1].isoformat(' '), args[2].isoformat(' '), \
 					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['nas']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
 				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
+	    print selstr
 	except Exception, ex:
+	    print "Query exception!"
+	    print ex
 	    raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
 	if not data: print "Dataset is empty"; return []
@@ -514,9 +522,11 @@ class cdDrawer(object):
 	    ## Set the line width	
 	    #layer.setLineWidth(optdict['setlinewidth_total'])
         # Add in line layer 
+	print "data------------------------"
+	print data
 	for tuple in data:
 	    try:
-		layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0])
+		layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
 		layer.setXData(times)        
 		# Set the line width	
 		layer.setLineWidth(optdict['setlinewidth_total'])
@@ -586,7 +596,7 @@ class cdDrawer(object):
         # Add in line layer 
 	for tuple in data:
 	    try:
-		layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0])
+		layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
 		layer.setXData(times)        
 		# Set the line width	
 		layer.setLineWidth(optdict['setlinewidth_total'])
@@ -868,7 +878,6 @@ class cdDrawer(object):
 	    raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
 	print "----------------------------"
-	print data
 	if not data: print "Dataset is empty"; return []
 	(times, y_total_n, bstr, sec) = data
 	kwargs['return']['sec'] = sec
@@ -906,14 +915,14 @@ class cdDrawer(object):
 	    selstr = selstrdict['nas'] % ("IN (%s)" % ', '.join([str(int) for int in args[0]]))
 	except Exception, ex:
 	    raise ex
-        data = bpbl.get_usernames(selstr)
+        data = bpbl.get_nas(selstr)
 	print "----------------------------"
 	print data
 	if not data: print "Dataset is empty"; return [] 
 	
 	for tuple in data:
 	    try:
-		layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0])
+		layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
 		layer.setXData(times)        
 		# Set the line width	
 		layer.setLineWidth(optdict['setlinewidth_total'])
@@ -972,14 +981,14 @@ class cdDrawer(object):
 	    raise ex
         data = bpbl.get_usernames(selstr)
 	print "----------------------------"
-	print data
 	if not data: print "Dataset is empty"; return [] 
 	
 	for tuple in data:
 	    try:
-		layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0])
+		layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
 		layer.setXData(times)        
-		# Set the line width	
+		# Set the line width
+		print "tuple###----------------------------------"
 		layer.setLineWidth(optdict['setlinewidth_total'])
 	    except Exception, ex:
 		print ex     
