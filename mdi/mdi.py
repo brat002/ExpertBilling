@@ -1,5 +1,5 @@
 #-*-coding=utf-8*-
-import sys, os
+import sys
 from PyQt4 import QtCore, QtGui
 
 from helpers import Object
