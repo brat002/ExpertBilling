@@ -167,7 +167,7 @@ class MainWindow(QtGui.QMainWindow):
         self.reportseldg = ReportSelectDialog(connection=connection)
         if self.reportseldg.exec_()!=1: return
         #print self.reportseldg.zomgdata
-        print self.reportseldg.chartinfo
+        print self.reportseldg.selectedId
         child=StatReport(connection=connection)
         self.workspace.addWindow(child)
         child.show()
