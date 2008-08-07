@@ -8,10 +8,14 @@ from helpers import makeHeaders
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
-
+#TODO: nullify the arguments lists (self.users, self.classes) after each report generation
 _xmlpath = "reports/xml"
 _infofilename = "info"
-
+_querydict = {\
+              "get_nas"      : "SELECT name, type, ipaddress FROM nas_nas ORDER BY name;", \
+	      "get_usernames": "SELECT username, id FROM billservice_account ORDER BY username;", \
+              "get_classes"  : "SELECT name, weight FROM nas_trafficclass WHERE ORDER BY name;"
+             }
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
@@ -408,7 +412,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
             
         if self.nas_comboBox.currentText()!='':
             self.nas = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % unicode(self.nas_comboBox.currentText()))
-            
+        print self.users
         self.start_date = self.from_dateTimeEdit.dateTime().toPyDateTime()
         self.end_date = self.to_dateTimeEdit.dateTime().toPyDateTime()
         QtGui.QDialog.accept(self)
@@ -705,12 +709,13 @@ class ReportSelectDialog(QtGui.QDialog):
         super(ReportSelectDialog, self).__init__()
         self.setObjectName("reportSelectDialog")
         self.chartinfo = []
+        self.selectedId = -1
         self.resize(QtCore.QSize(QtCore.QRect(0,0,482,510).size()).expandedTo(self.minimumSizeHint()))
 
         self.reportSelectButtonBox = QtGui.QDialogButtonBox(self)
         self.reportSelectButtonBox.setGeometry(QtCore.QRect(-20,460,340,30))
         self.reportSelectButtonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.reportSelectButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.reportSelectButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton)
         self.reportSelectButtonBox.setObjectName("reportSelectButtonBox")
 
         self.reportSelectList = QtGui.QListWidget(self)
@@ -718,7 +723,9 @@ class ReportSelectDialog(QtGui.QDialog):
         self.reportSelectList.setObjectName("reportSelectList")
 
         self.retranslateUi()
-        QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("accepted()"), self.accept)
+        
+        QtCore.QObject.connect(self.reportSelectList, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.accept)
+        #QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("rejected()"), self.reject)
         #QtCore.QMetaObject.connectSlotsByName(reportSelectDialog)
         self.fixtures()
@@ -728,12 +735,61 @@ class ReportSelectDialog(QtGui.QDialog):
     
     def fixtures(self):
         try:
-            f = open(_xmlpath+ "/" + _infofilename)
-            for infoline in f:
-                self.chartinfo.append(infoline.split(' | '))
+            philes = os.listdir(_xmlpath)
         except Exception, ex:
             print ex
+            return None
+        philes = [phile for phile in philes if phile.endswith(".xml")]
+        self.chartinfo = []
+        #ilelement
+        for phile in philes:
+            try:
+                f = open(_xmlpath+ "/" + phile)
+                descstate = -3
+                descstr = ''
+                chtype  = []
+                for infoline in f:
+                    if descstate == -3:
+                        if infoline.find("<description>") != -1:
+                            descstate = infoline.find("<description>") + len("<description>")
+                            descstr   = infoline.rstrip()[descstate:]
+
+                        
+                    if descstate != -2 and descstate != -3:
+                        if infoline.find("</description>") != -1:
+                            descend = infoline.find("</description>")
+                            if descstate == -1: 
+                                descstr += " " + infoline[0:descend].lstrip()
+                                descstate = -2
+                            else:
+                                descstr   = infoline[descstate:descend]
+                                descstate = -2
+                        else:
+                            if descstate == -1:
+                                descstr += " " + infoline.lstrip().rstrip()
+                                descstate = -1
+                            descstate = -1
+                        
+                    
+                    chindex = infoline.find("<chart")
+                    if  chindex != -1:
+                        chindex += len("<chart")
+                        #attribs = infoline[chindex:infoline.find(">", chindex)]
+                        chtypes = infoline.find('''type="''', chindex) + len('''type="''')
+                        chtype.append(infoline[chtypes:infoline.find('''"''', chtypes)])
+                        break
+                        
+                if not chtype:
+                    break
+                
+                if not descstr:
+                    descstr = phile
+                self.chartinfo.append([phile, chtype, descstr])
+                            
+            except Exception, ex:
+                print ex
         
+        print self.chartinfo
         i = 0
         for infotuple in self.chartinfo:
             item = QtGui.QListWidgetItem()
@@ -741,6 +797,10 @@ class ReportSelectDialog(QtGui.QDialog):
             item.id = i
             self.reportSelectList.addItem(item)
             i += 1
+    
+    def accept(self):
+        self.selectedId = self.reportSelectList.selectedItems()[0].id
+        QtGui.QDialog.accept(self)
 
 class StatReport(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -821,6 +881,11 @@ class ReportOptionsDialog(QtGui.QDialog):
     def __init__(self, connection, reportclass):
         super(ReportOptionsDialog, self).__init__()
         self.connection = connection
+        self.users   = []
+        self.classes = []
+        self.servers = []
+        self.start_date = datetime.datetime.now()
+        self.end_date   = datetime.datetime.now()
         self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -835,10 +900,10 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.tabWidget.setTabShape(QtGui.QTabWidget.Rounded)
         self.tabWidget.setObjectName("tabWidget")
 
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName("tab")
+        self.mainTab = QtGui.QWidget()
+        self.mainTab.setObjectName("mainTab")
 
-        self.intervals_groupBox = QtGui.QGroupBox(self.tab)
+        self.intervals_groupBox = QtGui.QGroupBox(self.mainTab)
         self.intervals_groupBox.setGeometry(QtCore.QRect(10,10,411,101))
         self.intervals_groupBox.setFlat(False)
         self.intervals_groupBox.setCheckable(False)
@@ -847,6 +912,7 @@ class ReportOptionsDialog(QtGui.QDialog):
 
         self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
         self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
+        self.date_end_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.date_end_dateTimeEdit.setCalendarPopup(True)
         self.date_end_dateTimeEdit.setObjectName("date_end_dateTimeEdit")
 
@@ -854,16 +920,17 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.date_start_label.setGeometry(QtCore.QRect(20,30,91,18))
         self.date_start_label.setObjectName("date_start_label")
 
-        self.daet_start_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
-        self.daet_start_dateTimeEdit.setGeometry(QtCore.QRect(120,30,194,23))
-        self.daet_start_dateTimeEdit.setCalendarPopup(True)
-        self.daet_start_dateTimeEdit.setObjectName("date_start_dateTimeEdit")
-
+        self.date_start_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
+        self.date_start_dateTimeEdit.setGeometry(QtCore.QRect(120,30,194,23))
+        self.date_start_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
+        self.date_start_dateTimeEdit.setCalendarPopup(True)
+        self.date_start_dateTimeEdit.setObjectName("date_start_dateTimeEdit")
+        
         self.date_end_label = QtGui.QLabel(self.intervals_groupBox)
         self.date_end_label.setGeometry(QtCore.QRect(20,60,91,18))
         self.date_end_label.setObjectName("date_end_label")
 
-        self.settings_groupBox = QtGui.QGroupBox(self.tab)
+        self.settings_groupBox = QtGui.QGroupBox(self.mainTab)
         self.settings_groupBox.setGeometry(QtCore.QRect(10,120,411,151))
         self.settings_groupBox.setObjectName("settings_groupBox")
 
@@ -882,96 +949,96 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.send_to_printer_checkBox = QtGui.QCheckBox(self.settings_groupBox)
         self.send_to_printer_checkBox.setGeometry(QtCore.QRect(20,110,261,21))
         self.send_to_printer_checkBox.setObjectName("send_to_printer_checkBox")
-        self.tabWidget.addTab(self.tab,"")
+        self.tabWidget.addTab(self.mainTab,"")
 
-        self.tab_2 = QtGui.QWidget()
-        self.tab_2.setObjectName("tab_2")
+        self.usersTab = QtGui.QWidget()
+        self.usersTab.setObjectName("usersTab")
 
-        self.all_users_listWidget = QtGui.QListWidget(self.tab_2)
+        self.all_users_listWidget = QtGui.QListWidget(self.usersTab)
         self.all_users_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_users_listWidget.setObjectName("all_users_listWidget")
 
-        self.selected_users_listWidget = QtGui.QListWidget(self.tab_2)
+        self.selected_users_listWidget = QtGui.QListWidget(self.usersTab)
         self.selected_users_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_users_listWidget.setObjectName("selected_users_listWidget")
 
-        self.add_user_toolButton = QtGui.QToolButton(self.tab_2)
+        self.add_user_toolButton = QtGui.QToolButton(self.usersTab)
         self.add_user_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
         self.add_user_toolButton.setObjectName("add_user_toolButton")
 
-        self.del_user_toolButton = QtGui.QToolButton(self.tab_2)
+        self.del_user_toolButton = QtGui.QToolButton(self.usersTab)
         self.del_user_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
         self.del_user_toolButton.setObjectName("del_user_toolButton")
 
-        self.all_users_label = QtGui.QLabel(self.tab_2)
+        self.all_users_label = QtGui.QLabel(self.usersTab)
         self.all_users_label.setGeometry(QtCore.QRect(10,10,171,18))
         self.all_users_label.setObjectName("all_users_label")
 
-        self.selected_users_label = QtGui.QLabel(self.tab_2)
+        self.selected_users_label = QtGui.QLabel(self.usersTab)
         self.selected_users_label.setGeometry(QtCore.QRect(240,10,191,18))
         self.selected_users_label.setObjectName("selected_users_label")
-        self.tabWidget.addTab(self.tab_2,"")
+        self.tabWidget.addTab(self.usersTab,"")
 
-        self.tab_3 = QtGui.QWidget()
-        self.tab_3.setObjectName("tab_3")
+        self.nasTab = QtGui.QWidget()
+        self.nasTab.setObjectName("nasTab")
 
-        self.selected_servers_listWidget = QtGui.QListWidget(self.tab_3)
+        self.selected_servers_listWidget = QtGui.QListWidget(self.nasTab)
         self.selected_servers_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_servers_listWidget.setObjectName("selected_servers_listWidget")
 
-        self.all_servers_listWidget = QtGui.QListWidget(self.tab_3)
+        self.all_servers_listWidget = QtGui.QListWidget(self.nasTab)
         self.all_servers_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_servers_listWidget.setObjectName("all_servers_listWidget")
 
-        self.del_server_toolButton = QtGui.QToolButton(self.tab_3)
+        self.del_server_toolButton = QtGui.QToolButton(self.nasTab)
         self.del_server_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
         self.del_server_toolButton.setObjectName("del_server_toolButton")
 
-        self.add_server_toolButton = QtGui.QToolButton(self.tab_3)
+        self.add_server_toolButton = QtGui.QToolButton(self.nasTab)
         self.add_server_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
         self.add_server_toolButton.setObjectName("add_server_toolButton")
 
-        self.all_servers_label = QtGui.QLabel(self.tab_3)
+        self.all_servers_label = QtGui.QLabel(self.nasTab)
         self.all_servers_label.setGeometry(QtCore.QRect(10,10,151,18))
         self.all_servers_label.setObjectName("all_servers_label")
 
-        self.selected_servers_label = QtGui.QLabel(self.tab_3)
+        self.selected_servers_label = QtGui.QLabel(self.nasTab)
         self.selected_servers_label.setGeometry(QtCore.QRect(240,10,151,18))
         self.selected_servers_label.setObjectName("selected_servers_label")
-        self.tabWidget.addTab(self.tab_3,"")
+        self.tabWidget.addTab(self.nasTab,"")
 
-        self.tab_5 = QtGui.QWidget()
-        self.tab_5.setObjectName("tab_5")
+        self.classesTab = QtGui.QWidget()
+        self.classesTab.setObjectName("classesTab")
 
-        self.all_classes_label = QtGui.QLabel(self.tab_5)
+        self.all_classes_label = QtGui.QLabel(self.classesTab)
         self.all_classes_label.setGeometry(QtCore.QRect(10,10,151,18))
         self.all_classes_label.setObjectName("all_classes_label")
 
-        self.all_classes_listWidget = QtGui.QListWidget(self.tab_5)
+        self.all_classes_listWidget = QtGui.QListWidget(self.classesTab)
         self.all_classes_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_classes_listWidget.setObjectName("all_classes_listWidget")
 
-        self.del_class_toolButton = QtGui.QToolButton(self.tab_5)
+        self.del_class_toolButton = QtGui.QToolButton(self.classesTab)
         self.del_class_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
         self.del_class_toolButton.setObjectName("del_class_toolButton")
 
-        self.add_class_toolButton = QtGui.QToolButton(self.tab_5)
+        self.add_class_toolButton = QtGui.QToolButton(self.classesTab)
         self.add_class_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
         self.add_class_toolButton.setObjectName("add_class_toolButton")
 
-        self.selected_classes_label = QtGui.QLabel(self.tab_5)
+        self.selected_classes_label = QtGui.QLabel(self.classesTab)
         self.selected_classes_label.setGeometry(QtCore.QRect(240,10,191,18))
         self.selected_classes_label.setObjectName("selected_classes_label")
 
-        self.selected_classes_listWidget = QtGui.QListWidget(self.tab_5)
+        self.selected_classes_listWidget = QtGui.QListWidget(self.classesTab)
         self.selected_classes_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_classes_listWidget.setObjectName("selected_classes_listWidget")
-        self.tabWidget.addTab(self.tab_5,"")
+        self.tabWidget.addTab(self.classesTab,"")
 
-        self.tab_4 = QtGui.QWidget()
-        self.tab_4.setObjectName("tab_4")
+        self.portsTab = QtGui.QWidget()
+        self.portsTab.setObjectName("portsTab")
 
-        self.ports_groupBox = QtGui.QGroupBox(self.tab_4)
+        self.ports_groupBox = QtGui.QGroupBox(self.portsTab)
         self.ports_groupBox.setGeometry(QtCore.QRect(10,10,421,361))
         self.ports_groupBox.setObjectName("ports_groupBox")
 
@@ -985,75 +1052,135 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.ports_description_label.setWordWrap(True)
         self.ports_description_label.setObjectName("ports_description_label")
 
-        self.extra_ports_lineEdit = QtGui.QLineEdit(self.tab_4)
+        self.extra_ports_lineEdit = QtGui.QLineEdit(self.portsTab)
         self.extra_ports_lineEdit.setGeometry(QtCore.QRect(10,400,391,23))
         self.extra_ports_lineEdit.setObjectName("extra_ports_lineEdit")
 
-        self.extra_ports_label = QtGui.QLabel(self.tab_4)
+        self.extra_ports_label = QtGui.QLabel(self.portsTab)
         self.extra_ports_label.setGeometry(QtCore.QRect(10,380,287,18))
         self.extra_ports_label.setObjectName("extra_ports_label")
-        self.tabWidget.addTab(self.tab_4,"")
-        self.date_start_label.setBuddy(self.daet_start_dateTimeEdit)
+        self.tabWidget.addTab(self.portsTab,"")
+        self.date_start_label.setBuddy(self.date_start_dateTimeEdit)
         self.date_end_label.setBuddy(self.date_end_dateTimeEdit)
 
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        self.setTabOrder(self.tabWidget,self.daet_start_dateTimeEdit)
-        self.setTabOrder(self.daet_start_dateTimeEdit,self.date_end_dateTimeEdit)
-        self.setTabOrder(self.date_end_dateTimeEdit,self.grid_checkBox)
-        self.setTabOrder(self.grid_checkBox,self.antialiasing_checkBox)
-        self.setTabOrder(self.antialiasing_checkBox,self.read_only_checkBox)
-        self.setTabOrder(self.read_only_checkBox,self.send_to_printer_checkBox)
-        self.setTabOrder(self.send_to_printer_checkBox,self.all_users_listWidget)
-        self.setTabOrder(self.all_users_listWidget,self.add_user_toolButton)
-        self.setTabOrder(self.add_user_toolButton,self.del_user_toolButton)
-        self.setTabOrder(self.del_user_toolButton,self.selected_users_listWidget)
-        self.setTabOrder(self.selected_users_listWidget,self.all_servers_listWidget)
-        self.setTabOrder(self.all_servers_listWidget,self.add_server_toolButton)
-        self.setTabOrder(self.add_server_toolButton,self.del_server_toolButton)
-        self.setTabOrder(self.del_server_toolButton,self.selected_servers_listWidget)
-        self.setTabOrder(self.selected_servers_listWidget,self.all_classes_listWidget)
-        self.setTabOrder(self.all_classes_listWidget,self.add_class_toolButton)
-        self.setTabOrder(self.add_class_toolButton,self.del_class_toolButton)
-        self.setTabOrder(self.del_class_toolButton,self.selected_classes_listWidget)
-        self.setTabOrder(self.selected_classes_listWidget,self.ports_listWidget)
-        self.setTabOrder(self.ports_listWidget,self.extra_ports_lineEdit)
-        self.setTabOrder(self.extra_ports_lineEdit,self.buttonBox)
+        if 1:
+            self.setTabOrder(self.tabWidget,self.date_start_dateTimeEdit)
+            self.setTabOrder(self.date_start_dateTimeEdit,self.date_end_dateTimeEdit)
+            self.setTabOrder(self.date_end_dateTimeEdit,self.grid_checkBox)
+            self.setTabOrder(self.grid_checkBox,self.antialiasing_checkBox)
+            self.setTabOrder(self.antialiasing_checkBox,self.read_only_checkBox)
+            self.setTabOrder(self.read_only_checkBox,self.send_to_printer_checkBox)
+            self.setTabOrder(self.send_to_printer_checkBox,self.all_users_listWidget)
+            self.setTabOrder(self.all_users_listWidget,self.add_user_toolButton)
+            self.setTabOrder(self.add_user_toolButton,self.del_user_toolButton)
+            self.setTabOrder(self.del_user_toolButton,self.selected_users_listWidget)
+            self.setTabOrder(self.selected_users_listWidget,self.all_servers_listWidget)
+            self.setTabOrder(self.all_servers_listWidget,self.add_server_toolButton)
+            self.setTabOrder(self.add_server_toolButton,self.del_server_toolButton)
+            self.setTabOrder(self.del_server_toolButton,self.selected_servers_listWidget)
+            self.setTabOrder(self.selected_servers_listWidget,self.all_classes_listWidget)
+            self.setTabOrder(self.all_classes_listWidget,self.add_class_toolButton)
+            self.setTabOrder(self.add_class_toolButton,self.del_class_toolButton)
+            self.setTabOrder(self.del_class_toolButton,self.selected_classes_listWidget)
+            self.setTabOrder(self.selected_classes_listWidget,self.ports_listWidget)
+            self.setTabOrder(self.ports_listWidget,self.extra_ports_lineEdit)
+            self.setTabOrder(self.extra_ports_lineEdit,self.buttonBox)
+        self.fixtures()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
         self.intervals_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Интервал дат", None, QtGui.QApplication.UnicodeUTF8))
         self.date_end_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
         self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
-        self.daet_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
         self.settings_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
         self.grid_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сетка", None, QtGui.QApplication.UnicodeUTF8))
         self.antialiasing_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сглаживание", None, QtGui.QApplication.UnicodeUTF8))
         self.read_only_checkBox.setText(QtGui.QApplication.translate("Dialog", "Запретить редактирование", None, QtGui.QApplication.UnicodeUTF8))
         self.send_to_printer_checkBox.setText(QtGui.QApplication.translate("Dialog", "Отправить на печать после создания", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.mainTab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.add_user_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.del_user_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.all_users_label.setText(QtGui.QApplication.translate("Dialog", "Доступные пользователи", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_users_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные пользователи", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.usersTab), QtGui.QApplication.translate("Dialog", "Пользователи", None, QtGui.QApplication.UnicodeUTF8))
         self.del_server_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.add_server_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.all_servers_label.setText(QtGui.QApplication.translate("Dialog", "Доступные серверы", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_servers_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные серверы", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.nasTab), QtGui.QApplication.translate("Dialog", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.all_classes_label.setText(QtGui.QApplication.translate("Dialog", "Доступные направления", None, QtGui.QApplication.UnicodeUTF8))
         self.del_class_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.add_class_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные направления", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.classesTab), QtGui.QApplication.translate("Dialog", "Направления", None, QtGui.QApplication.UnicodeUTF8))
         self.ports_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Выберите порты", None, QtGui.QApplication.UnicodeUTF8))
         self.ports_description_label.setText(QtGui.QApplication.translate("Dialog", "Отметьте флажками нужные порты", None, QtGui.QApplication.UnicodeUTF8))
         self.extra_ports_label.setText(QtGui.QApplication.translate("Dialog", "Введите дополнительные порты через запятую:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("Dialog", "Порты", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.portsTab), QtGui.QApplication.translate("Dialog", "Порты", None, QtGui.QApplication.UnicodeUTF8))
 
-    
+    def fixtures(self):
+        import random
+        i = random.randint(2, 22)
+        objj = getattr(self, "date_start_dateTimeEdit", None)
+        obj2 = getattr(self, "classesTab", None)
+        print "zomg"
+        objj.hide()
+        self.tabWidget.removeTab(self.tabWidget.indexOf(obj2))
+        print self.date_end_dateTimeEdit.isVisible()
+        print self.date_start_dateTimeEdit.isVisible()
+        for x in xrange(0, self.selected_classes_listWidget.count()):
+            self.classes.append(self.selected_classes_listWidget.item(x).id)
+        print self.classes
         
+    def addUser(self):
+        selected_items = self.all_users_listWidget.selectedItems()        
+        for item in selected_items:
+            self.all_users_listWidget.takeItem(self.all_users_listWidget.row(item))
+            self.selected_users_listWidget.addItem(item)
+            
+        self.selected_users_listWidget.sortItems()
+        
+    def delUser(self):
+        selected_items = self.selected_users_listWidget.selectedItems()        
+        for item in selected_items:
+            self.selected_users_listWidget.takeItem(self.selected_users_listWidget.row(item))
+            self.all_users_listWidget.addItem(item)
+        self.all_users_listWidget.sortItems()
+        
+    def addServer(self):
+        selected_items = self.all_servers_listWidget.selectedItems()        
+        for item in selected_items:
+            self.all_servers_listWidget.takeItem(self.all_servers_listWidget.row(item))
+            self.selected_servers_listWidget.addItem(item)
+            
+        self.selected_servers_listWidget.sortItems()
+        
+    def delServer(self):
+        selected_items = self.selected_servers_listWidget.selectedItems()        
+        for item in selected_items:
+            self.selected_servers_listWidget.takeItem(self.selected_servers_listWidget.row(item))
+            self.all_servers_listWidget.addItem(item)
+        self.all_servers_listWidget.sortItems()
+        
+    def addClass(self):
+        selected_items = self.all_classes_listWidget.selectedItems()
+        for item in selected_items:
+            self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
+            self.selected_classes_listWidget.addItem(item)
+        self.selected_classes_listWidget.sortItems()
+        
+    def delClass(self):
+        selected_items = self.selected_classes_listWidget.selectedItems()
+        for item in selected_items:
+            self.selected_classes_listWidget.takeItem(self.selected_classes_listWidget.row(item))
+            self.all_classes_listWidget.addItem(item)
+        self.all_classes_listWidget.sortItems()
+        
+        
+    
