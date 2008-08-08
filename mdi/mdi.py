@@ -168,9 +168,10 @@ class MainWindow(QtGui.QMainWindow):
         if self.reportseldg.exec_()!=1: return
         #print self.reportseldg.zomgdata
         print self.reportseldg.selectedId
-        child=StatReport(connection=connection)
-        self.workspace.addWindow(child)
-        child.show()
+        if self.reportseldg.selectedId != -1:
+            child=StatReport(connection=connection, chartinfo=self.reportseldg.chartinfo[self.reportseldg.selectedId])
+            self.workspace.addWindow(child)
+            child.show()
         
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
