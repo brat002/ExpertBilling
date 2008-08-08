@@ -19,10 +19,10 @@ portdict = {\
 	    '1433' : 'MSSQL Server', '1434': 'MSSQL Monitor', '1494': 'Citrix ICA', '1503': 'T.120', '1521': 'Oracle SQL', '1525': 'prospero', '1526': 'prospero', '1527': 'tlisrv', '1604': 'Citrix ICA, MS TS', '1645': 'RADIUS Auth', '1646': 'RADIUS Acc', \
 	    '1680' : 'Carbon Copy', '1701': 'L2TP/LSF', '1717': 'Convoy', '1720': 'H.323/Q.931', '1723': 'PPTP cport', '1755': 'WM.asf', '1758': 'TFTP mcast', '1812': 'RADIUS serv', '1813': 'RADIUS acc', '1818': 'ETFTP', '1973': 'DLSw DCAP/DRAP', '1985': 'HSRP', \
 	    '1999' : 'Cisco AUTH', '2001': 'glimpse', '2049': 'NFS', '2064': 'distributed.net', '2065': 'DLSw', '2066': 'DLSw', '2106': 'MZAP', '2140': 'DeepThroat', '2327': 'Netscape Conf', '2336': 'Apple UG', '2427': 'MGCP gateway', '2504': 'WLBS', '2535': 'MADCAP', \
-	    '2543' : 'sip', '2592': 'netrek', '2628': 'DICT', '2727': 'MGCP agent', '2998': 'ISS RSC', '3000': 'Firstclass', '3031': 'Apple AgentVU', '3128': 'squid', '3130': 'ICP', '3150': 'DeepThroat', '3264': 'ccmail', '3283': 'Apple NA', '3288': 'COPS', '3305': 'ODETTE', \
-	    '3306' : 'mySQL', '3389': 'RDP', '3521': 'netrek', '4000': 'icq, Diablo', '4321': 'rwhois', '4333': 'mSQL', '4662': 'eMule', '4827': 'HTCP', '5004': 'RTP', '5005': 'RTP', '5010': 'Y!M', '5050': 'Y!M','5060': 'SIP', '5190': 'ICQ, AIM', '5423': 'Apple VU', '5500': 'securid', '5501': 'securidprop', '5631': 'PCAnywhere', \
+	    '2543' : 'sip', '2592': 'netrek', '2628': 'DICT', '2727': 'MGCP agent', '2998': 'ISS RSC', '3000': 'Firstclass', '3031': 'Apple AgentVU', '3128': 'web cache', '3130': 'ICP', '3150': 'DeepThroat', '3264': 'ccmail', '3283': 'Apple NA', '3288': 'COPS', '3305': 'ODETTE', \
+	    '3306' : 'mySQL', '3389': 'RDP', '3521': 'netrek', '3724': "WoW", '4000': 'icq, Diablo', '4321': 'rwhois', '4333': 'mSQL', '4662': 'eMule', '4827': 'HTCP', '5004': 'RTP', '5005': 'RTP', '5010': 'Y!M', '5050': 'Y!M','5060': 'SIP', '5190': 'ICQ, AIM', '5222': 'Jabber', '5432': 'PostgreSQL', '5423': 'Apple VU', '5500': 'securid', '5501': 'securidprop', '5631': 'PCAnywhere', \
 	    '5632' : 'PCAnywhere', '5800': 'VNC', '5801': 'VNC', '5900': 'VNC', '5901': 'VNC', '6000': 'X Windows', '6112': 'BattleNet', '6502': 'Netscape Conf', '6667': 'IRC', '6668': 'IRC', '6669': 'IRC', '6776': 'Sub7', '6970': 'RTP', '7007': 'MSBD', '7070': 'RealServer/QT', \
-	    '7648' : 'CU-SeeMe', '7649': 'CU-SeeMe', '7778': 'Unreal', '8010': 'WinGate 2.1', '8080': 'HTTP', '8181': 'HTTP', '8383': 'IMail WWW', '8875': 'napster', '8888': 'napster', '9050': 'tor', '10008': 'cheese worm', '11371': 'PGP5 Keyserv', '13223': 'PowWow', '13224': 'PowWow', '14237': 'Palm', '14238': 'Palm', \
+	    '7648' : 'CU-SeeMe', '7649': 'CU-SeeMe', '7778': 'Unreal', '8010': 'WinGate 2.1', '8080': 'HTTP Proxy', '8181': 'HTTP', '8383': 'IMail WWW', '8875': 'napster', '8888': 'napster', '9050': 'tor', '10008': 'cheese worm', '11371': 'PGP5 Keyserv', '13223': 'PowWow', '13224': 'PowWow', '14237': 'Palm', '14238': 'Palm', \
 	    '18888': 'LiquidAudio', '21157': 'Activision', '23213': 'PowWow', '23214': 'PowWow', '23456': 'EvilFTP', '26000': 'Quake', '27001': 'QuakeWorld', '27010': 'Half-Life', '27015': 'Half-Life', '27960': 'QuakeIII', '30029': 'AOL Admin', '31337': 'Back Orifice', \
 	    '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'\
 	   }
@@ -721,7 +721,7 @@ class cdDrawer(object):
 	    selstr = selstrdict['nfs_port_speed'] % (pts, pts, args[0].isoformat(' '), args[1].isoformat(' '))
 	except Exception, ex:
 	    raise ex
-	data = bpbl.get_port_speed(selstr, args[0], kwargs.has_key('sec') and kwargs['sec'])
+	data = bpbl.get_port_speed(selstr, kwargs['ports'], kwargs.has_key('sec') and kwargs['sec'])
 	if not data: print "Dataset is empty"; return []
 	(times, y_ps, bstr, sec) = data
 	kwargs['return']['sec'] = sec
