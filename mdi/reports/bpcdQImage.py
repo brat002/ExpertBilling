@@ -16,7 +16,10 @@ class bpcdQImage(object):
         else:
             kwargs['options'] = self.options
         imgs  = self.connection.makeChart(*args, **kwargs)
+        ret = imgs.pop()
         self.options = {}
+        kwargs['return'].update(ret)
+        
         qimgs = []
         for img in imgs:
             qimg = QtGui.QImage()
