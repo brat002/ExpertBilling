@@ -635,7 +635,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.tableWidget.setRowCount(len(flows))
         octets_in_summ=0
         octets_out_summ=0
-        octets_transit_summ=0
+
         c=self.current_page*100
         #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
         for flow in flows:
@@ -653,8 +653,7 @@ class NetFlowReport(QtGui.QMainWindow):
                     octets_in_summ+=int(flow.octets)
                 elif flow.direction=='OUTPUT':
                     octets_out_summ+=int(flow.octets)
-                elif flow.direction=='TRANSIT':
-                    octets_transit_summ+=int(flow.octets)
+
                 
                 if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1=="Null"):
                 

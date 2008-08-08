@@ -20,22 +20,22 @@ actions = {
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
-               'pod': '/interface %s-server remove [find user="%s"]'
+               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
-               'pod': '/interface %s-server remove [find user="%s"]'
+               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000',
-               'pod': '/interface %s-server remove [find user="%s"]'
+               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'common_ssh':{'create':'',
                'remove':'',

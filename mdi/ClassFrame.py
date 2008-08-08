@@ -280,7 +280,6 @@ class ClassNodeFrame(QtGui.QDialog):
         
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
-        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "TRANSIT", None, QtGui.QApplication.UnicodeUTF8))
         
         for protocol in self.protocols:
             #print protocol

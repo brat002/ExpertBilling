@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import PoD, get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import create_speed_string, change_speed, PoD, get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
@@ -93,7 +93,12 @@ class Object(object):
     def __call__(self):
         return self.id
 
-
+def comparator(d, s):
+    for key in s:
+        if s[key]!='' and s[key]!='Null' and s[key]!='None':
+           d[key]=s[key] 
+    return d
+    
 class check_vpn_access(Thread):
         def __init__ (self, dict, timeout=30):
             self.dict=dict
@@ -102,30 +107,19 @@ class check_vpn_access(Thread):
 
         def check_period(self, rows):
             for row in rows:
-                if in_period(row[0],row[1],row[2])==True:
+                if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
                     return True
             return False
 
         def create_speed(self, tarif_id, nas_type):
             defaults = get_default_speed_parameters(self.cur, tarif_id)
             speeds = get_speed_parameters(self.cur, tarif_id)
-            result=[]
-            i=0
             for speed in speeds:
-                if in_period(speed[0],speed[1],speed[2])==True:
-                    for s in speed[3:]:
-                        if s==0:
-                            res=0
-                        elif s=='' or s==None:
-                            res=defaults[i]
-                        else:
-                            res=s
-                        result.append(res)
-                        i+=1
-            if speeds==[]:
-                result=defaults
-
-            return create_speed_string(result, nas_type, coa=False)
+                if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
+                    defaults = comparator(defaults, speed)
+                        
+            print "speed_result=", defaults
+            return defaults
 
         def check_acces(self):
             """
@@ -149,14 +143,18 @@ class check_vpn_access(Thread):
                              )
             nasses=self.cur.fetchall()
             
-            
+
             for nas in nasses:
                 sessions = get_active_sessions(nas)
-                print 123
+                print sessions
                 for session in sessions:
+                    print 'session', session
                     self.cur.execute("""
-                                    SELECT id, vpn_ip_address, ipn_ip_address, ipn_mac_address FROM billservice_account WHERE vpn_ip_address='%s'
-                                    """ % session['address'])
+                                    SELECT account.id, account.vpn_ip_address, account.ipn_ip_address, account.ipn_mac_address 
+                                    FROM billservice_account as account
+                                    JOIN radius_activesession as radius ON radius.account_id=account.id
+                                    WHERE radius.sessionid='%s'
+                                    """ % session['session-id'][2:])
                     account = self.cur.fetchone()
                     #print "account", account
                     if account is not None:
@@ -185,7 +183,7 @@ class check_vpn_access(Thread):
                 self.connection.commit()
                 
 
-            time.sleep(10)
+            #time.sleep(10)
             while True:
 
                 #Закрываем подвисшие сессии
@@ -193,10 +191,11 @@ class check_vpn_access(Thread):
                 self.connection.commit()
                 
                 self.cur.execute("""
-                SELECT rs.id as id, rs.sessionid as session,  rs.speed_string as speed_string, lower(rs.framed_protocol) as access_type,
+                SELECT rs.id as id, rs.account_id as account_id, rs.sessionid as session,  rs.speed_string as speed_string, lower(rs.framed_protocol) as access_type,
                 nas.name as nas_name, nas.ipaddress as nas_ip, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password, nas.type as nas_type,
                 account.username as username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, 
-                (ballance+credit) as balance, account.disabled_by_limit as disabled_by_limit, account.speed
+                (ballance+credit) as balance, account.disabled_by_limit as disabled_by_limit, account.speed, nas.reset_action as reset_action, nas.speed_action as speed_action,
+                account.vpn_ip_address as vpn_ip_address,  account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address
                 FROM radius_activesession as rs
                 JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id
                 JOIN billservice_account as account ON account.id=rs.account_id
@@ -206,32 +205,67 @@ class check_vpn_access(Thread):
                 for row in rows:
                     result=None
 
-                    if row['balance']>0:
-                       if self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True:
-                              result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'], login=row['nas_login'], password=row['nas_password'])
+                    if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True:
+                       """
+                       Делаем проверку на то, изменилась ли скорость.
+                       """
+                       speed_parameters=self.create_speed(row['tarif_id'], row['nas_type'])
+                       if row['speed']=='':
+                           speed=create_speed_string(speed_parameters, coa=True)
                        else:
-                           """
-                           Делаем проверку на то, изменилась ли скорость.
-                           """
-                           if speed=='':
-                               speed=self.create_speed(row['tarif_id'], row['nas_type'])
+                           speed=row['speed'] 
                            
-                           if row['speed_string']!=row['speed']:
+                       #print row['speed_string'], row['speed']
+                       if row['speed_string']!=row['speed']:
 
-                               coa_result=DAE(dict=self.dict, code=43, nas_secret=row['nas_secret'], nas_ip=row['nas_ip'], nas_id=row['nas_name'], username=row['username'], session_id=row['session'], login=row['nas_login'], password=row['nas_password'], access_type=row['access_type'], speed_string=speed)
-                               print "coa_result=", coa_result
-                               if coa_result==True:
-                                   self.cur.execute(
-                                            """
-                                            UPDATE radius_activesession
-                                            SET speed_string='%s'
-                                            WHERE id=%s;
-                                            """ % (speed, row['id'])
-                                            )
-                               continue
+                           #coa_result=DAE(dict=self.dict, code=43, nas_secret=str(row['nas_secret']), nas_ip=str(row['nas_ip']), nas_id=str(row['nas_name']), username=str(row['username']), session_id=str(row['session']), login=row['nas_login'], password=row['nas_password'], access_type=row['access_type'], speed_string=speed, coa=False)
+
+                           coa_result=change_speed(dict=self.dict, account_id=row['account_id'], 
+                                account_name=str(row['username']), 
+                                account_vpn_ip=row['vpn_ip_address'], 
+                                account_ipn_ip=row['ipn_ip_address'], 
+                                account_mac_address=row['ipn_mac_address'], 
+                                access_type=str(row['access_type']), 
+                                nas_ip=str(row['nas_ip']), 
+                                nas_type=row['nas_type'], 
+                                nas_name=str(row['nas_name']), 
+                                nas_secret=str(row['nas_secret']), 
+                                nas_login=str(row['nas_login']), 
+                                nas_password=row['nas_password'], 
+                                session_id=str(row['session']), 
+                                format_string=str(row['speed_action']),
+                                speed=speed_parameters)                           
+                           
+                           
+                           print "coa_result=", coa_result
+                           if coa_result==True:
+                               self.cur.execute(
+                                        """
+                                        UPDATE radius_activesession
+                                        SET speed_string='%s'
+                                        WHERE id=%s;
+                                        """ % (speed, row['id'])
+                                        )
                     else:
-                        result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'],  login=row['nas_login'], password=row['nas_password'])
-                    
+                        #result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'],  login=row['nas_login'], password=row['nas_password'])
+                        
+                        PoD(dict=self.dict,
+                            account_id=row['account_id'], 
+                            account_name=str(row['username']), 
+                            account_vpn_ip=row['vpn_ip_address'], 
+                            account_ipn_ip=row['ipn_ip_address'], 
+                            account_mac_address=row['ipn_mac_address'], 
+                            access_type=str(row['access_type']), 
+                            nas_ip=row['nas_ip'], 
+                            nas_type=row['nas_type'], 
+                            nas_name=row['nas_name'], 
+                            nas_secret=row['nas_secret'], 
+                            nas_login=row['nas_login'], 
+                            nas_password=row['nas_password'], 
+                            session_id=str(row['session']), 
+                            format_string=str(row['reset_action'])
+                            )
+                        
                     if result==True:
                         disconnect_result='ACK'
                     elif result==False:
@@ -435,7 +469,7 @@ class periodical_service_bill(Thread):
             connection.commit()
             cur.close()
             connection.close()
-            time.sleep(60)
+            time.sleep(180)
 
 class TimeAccessBill(Thread):
     """
@@ -936,16 +970,18 @@ class NetFlowBill(Thread):
     def get_actual_cost(self, cur, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date):
         """
         Метод возвращает актуальную цену для направления трафика для пользователя:
-
         """
+        
         if direction=="INPUT":
             d = "in_direction=True"
         elif direction=="OUTPUT":
             d = "out_direction=True"
-        if direction=="TRANSIT":
-            d = "transit_direction=True"
+        else:
+            
+            return 0
+        print direction
         
-        print octets_summ, trafic_transmit_service_id, traffic_class_id, d    
+        #print octets_summ, trafic_transmit_service_id, traffic_class_id, d    
         cur.execute(
         """
         SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
@@ -954,7 +990,7 @@ class NetFlowBill(Thread):
         JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
         JOIN billservice_timeperiod_time_period_nodes ON billservice_timeperiod_time_period_nodes.timeperiod_id=tns.timeperiod_id
         JOIN billservice_timeperiodnode AS tpn on tpn.id=billservice_timeperiod_time_period_nodes.timeperiodnode_id 
-        WHERE ((ttsn.edge_start>='%s' and ttsn.edge_end<='%s') or (ttsn.edge_start>='%s' and ttsn.edge_end='0' ) ) and ttsn.traffic_transmit_service_id='%s' and tcn.trafficclass_id='%s' and ttsn.%s;
+        WHERE ((ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end<='%s'/(1024*1024)) or (ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end='0' ) ) and ttsn.traffic_transmit_service_id='%s' and tcn.trafficclass_id='%s' and ttsn.%s;
         """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id, d)
         )
         
@@ -1057,7 +1093,7 @@ class NetFlowBill(Thread):
                     else:
                         octets_summ=0
                     
-                    print "octets_summ", octets_summ
+                    #print "octets_summ", octets_summ
                     trafic_cost=self.get_actual_cost(cur,trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
                     """
                     Использован т.н. дифференциальный подход к начислению денег за трафик
@@ -1163,8 +1199,9 @@ class NetFlowBill(Thread):
                         d = "in_direction=True"
                     elif direction=="OUTPUT":
                         d = "out_direction=True"
-                    if direction=="TRANSIT":
-                        d = "transit_direction=True"
+                    else:
+                        d = "out_direction=True"
+
                     
                     #Исправить запрос
                     #print (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
@@ -1221,6 +1258,7 @@ class NetFlowBill(Thread):
                 summ=l['summ'],
                 description=u"",
                 )
+                connection.commit()
 
 
 
@@ -1275,7 +1313,7 @@ class limit_checker(Thread):
                 #Выбираем лимит для аккаунта
                 cur.execute(
                 """
-                SELECT ttl.trafficlimit_id, tl.size, tl.mode, tl.in_direction, tl.out_direction, tl.transit_direction, sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
+                SELECT ttl.trafficlimit_id, tl.size, tl.mode, tl.in_direction, tl.out_direction,  sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
                 FROM billservice_tariff_traffic_limit as ttl
                 JOIN billservice_trafficlimit as tl ON tl.id=ttl.trafficlimit_id
                 LEFT JOIN billservice_settlementperiod as sp ON sp.id=tl.settlement_period_id
@@ -1283,7 +1321,7 @@ class limit_checker(Thread):
                 """ % tarif_id
                 )
                 limit=cur.fetchone()
-                limit_id, limit_size, limit_mode, in_direction, out_direction, transit_direction, sp_time_start, sp_length, sp_length_in, autostart_sp=limit
+                limit_id, limit_size, limit_mode, in_direction, out_direction, sp_time_start, sp_length, sp_length_in, autostart_sp=limit
                 """
                 Если в тарифном плане указан расчётный период,
                 то за длинну периода
@@ -1333,10 +1371,6 @@ class limit_checker(Thread):
                     if in_direction:
                         d+=","
                     d+="'OUTPUT'"
-                if transit_direction:
-                    if in_direction or out_direction:
-                        d+=", "
-                    d+="'TRANSIT'"
                     
                 query="""
                SELECT sum(octets) as size FROM billservice_netflowstream as nf
@@ -1471,7 +1505,7 @@ class settlement_period_service_dog(Thread):
                                 UPDATE billservice_account SET status=False WHERE id=%s and ballance+credit<%s
                                 """ % (account_id, cost)
                                 )
-                if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and traffic_transmit_service_id:
+                if (prepaid_traffic_reset is None or prepaid_traffic_reset>period_start) and traffic_transmit_service_id:
 
                     if reset_traffic:
                         cur.execute(
@@ -1489,13 +1523,23 @@ class settlement_period_service_dog(Thread):
                                 )
                     prepais=cur.fetchall()
                     for prepaid_traffic_id, size in prepais:
-
+                        print "SET PREPAID TRAFIC"
                         cur.execute(
                                     """
                                     UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
-                                    WHERE account_tarif_id=%s and prepaid_traffic_id=%s
+                                    WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id
                                     """ % (size, accounttarif_id, prepaid_traffic_id)
                                     )
+                        if cur.fetchone() is None:
+                            print 'INSERT'
+                            print accounttarif_id, prepaid_traffic_id, size
+                            cur.execute(
+                                        """
+                                        INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
+                                        VALUES(%d,%d, %f*1024*1024, now())
+                                        """ % (accounttarif_id, prepaid_traffic_id, size)
+                                        )                            
+                        
                     cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s" % account_id)
 
                 if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
@@ -1518,7 +1562,7 @@ class settlement_period_service_dog(Thread):
                                 )
 
                     cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s" % account_id)
-
+            connection.commit()
             time.sleep(60)
 
 class ipn_service(Thread):
@@ -1818,7 +1862,34 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         
 
-
+    def pod(self, session):
+        
+        session = self.cur.execute("""
+        SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
+        nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
+        account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address, session.framed_protocol as framed_protocol
+        FROM radius_activesession as session
+        JOIN billservice_account as account ON account.id=session.account_id
+        JOIN nas_nas as nas ON nas.id=account.nas_id
+        WHERE  session.sessionid='%s'
+        """ % session)
+        row = self.cur.fetchone()
+        PoD(dict=dict,
+            account_id=row['account_id'], 
+            account_name=str(row['account_name']), 
+            account_vpn_ip=row['vpn_ip_address'], 
+            account_ipn_ip=row['ipn_ip_address'], 
+            account_mac_address=row['ipn_mac_address'], 
+            access_type=str(row['framed_protocol']), 
+            nas_ip=row['nas_ip'], 
+            nas_type=row['nas_type'], 
+            nas_name=row['nas_name'], 
+            nas_secret=row['nas_secret'], 
+            nas_login=row['nas_login'], 
+            nas_password=row['nas_password'], 
+                session_id=str(session), 
+                format_string=str(row['reset_action'])
+                )
 
 
 
@@ -1827,15 +1898,15 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    #threads.append(check_vpn_access(timeout=60, dict=dict))
+    threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
     #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    #threads.append(NetFlowAggregate())
-    #threads.append(NetFlowBill())
+    threads.append(NetFlowAggregate())
+    threads.append(NetFlowBill())
 
     #threads.append(limit_checker())
 
@@ -1843,10 +1914,10 @@ if __name__ == "__main__":
     #threads.append(ipn_service())
 
 
-    #threads.append(settlement_period_service_dog())
+    threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-    print rosClient("10.10.1.100", 'admin', 'admin', '/interface/pppoe-server/remove [/interface/pppoe-server/find user="dolphinik"]')
+    #print rosClient("10.10.1.100", 'admin', 'admin', '/interface/pppoe-server/remove [/interface/pppoe-server/find user="dolphinik"]')
     for th in threads:
         th.start()
 
