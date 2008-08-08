@@ -10,12 +10,34 @@ import socket
 from reports.bpreportedit import bpReportEdit
 #TODO: nullify the arguments lists (self.users, self.classes) after each report generation
 _xmlpath = "reports/xml"
-_infofilename = "info"
 _querydict = {\
-              "get_nas"      : "SELECT name, type, ipaddress FROM nas_nas ORDER BY name;", \
+              "get_nas"      : "SELECT name, type, ipaddress, id FROM nas_nas ORDER BY name;", \
 	      "get_usernames": "SELECT username, id FROM billservice_account ORDER BY username;", \
-              "get_classes"  : "SELECT name, weight FROM nas_trafficclass WHERE ORDER BY name;"
+              "get_classes"  : "SELECT name, weight, id FROM nas_trafficclass ORDER BY name;"
              }
+_charthidetabs = {\
+             "nfs_user_traf"  : ("portsTab",),\
+             "nfs_user_speed" : ("portsTab",),\
+             "nfs_total_users_traf" : ("portsTab",),\
+             "nfs_total_users_speed" : ("portsTab",),\
+             "nfs_total_traf" : ("portsTab", "usersTab"),\
+             "nfs_total_speed" : ("portsTab", "usersTab"),\
+             "nfs_total_traf_bydir" : ("portsTab", "usersTab"),\
+             "nfs_total_speed_bydir" : ("portsTab", "usersTab"),\
+             "nfs_port_speed" : ("usersTab", "serversTab", "classesTab"),\
+             "nfs_nas_traf" : ("usersTab", "classesTab", "portsTab"),\
+             "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
+             "nfs_total_classes_speed" : ("usersTab", "serversTab", "portsTab"),\
+             "userstrafpie" : ("serversTab", "classesTab", "portsTab"),\
+             "sessions" : ("serversTab", "classesTab", "portsTab"),\
+             "trans_deb" : ("usersTab", "serversTab", "classesTab", "portsTab"),\
+             "trans_crd" : ("usersTab", "serversTab", "classesTab", "portsTab")
+            }
+_restrictions = {\
+                 "one_user"  :("nfs_user_traf", "nfs_user_speed"),\
+                 "one_server":("nfs_nas_traf"),\
+                 "one_class" :()\
+                }
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
@@ -803,39 +825,16 @@ class ReportSelectDialog(QtGui.QDialog):
         QtGui.QDialog.accept(self)
 
 class StatReport(QtGui.QMainWindow):
-    def __init__(self, connection):
+    def __init__(self, connection, chartinfo):
         super(StatReport, self).__init__()
         self.connection = connection
+        self.chartinfo = chartinfo
         
-        
-        self.child = ReportOptionsDialog(self.connection, "")
+        self.child = ReportOptionsDialog(self.connection, self.chartinfo[1][0])
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
         self.textedit = QtGui.QTextEdit(self)
         
-        '''sfm = '%Y-%m-%d %H:%M:%S'
-        tm1 = datetime.datetime.strptime('2008-07-01 11:02:30', sfm)
-        tm2 = datetime.datetime.strptime('2008-07-03 11:02:30', sfm)
-        tm3 = datetime.datetime.strptime('2008-07-17 16:17:30', sfm)
-        tm4 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
-        tm5 = datetime.datetime.strptime('2008-07-08 11:02:30', sfm)
-        tm6 = datetime.datetime.strptime('2008-08-19 20:15:01', sfm)
-        tm7 = datetime.datetime.strptime('2008-06-27 16:17:30', sfm)
-        tm8 = datetime.datetime.strptime('2008-06-30 16:57:30', sfm)
-        tm9 = datetime.datetime.strptime('2008-07-10 00:00:00', sfm)
-        tm10 = datetime.datetime.strptime('2008-07-10 07:00:30', sfm)
-        tm11 = datetime.datetime.strptime('2008-07-18 18:17:30', sfm)
-        #self.textedit = QtGui.QTextEdit(self)
-        import time
-        aa = time.clock()
-        brep = bpReportEdit()
-        print "zOMG"
-        #editor = brep.createreport("reports/xml/report3_tus_nas.xml", [((15, 16, 17, 20, 21, 22), tm7, tm11)], [{}], connection=self.connection)
-        #editor = brep.createreport("reports/xml/report3_classes.xml", [((1, 2, 13, 15, 17, 14, 12,), tm7, tm6)], [{'options':{'autoticks': True}}], connection=self.connection)
-        #editor = brep.createreport("reports/xml/report3_nass.xml", [((1,2,3), tm7, tm6)], [{}], connection=self.connection)
-        editor  = brep.createreport("reports/xml/report3_nas.xml", [(17, tm7, tm11)], [{'options':{'autoticks': False, 'antialias':False}}], connection=self.connection)
-        self.textedit = editor'''
         self.setCentralWidget(self.textedit)
-        #print time.clock() - aa
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
@@ -875,17 +874,52 @@ class StatReport(QtGui.QMainWindow):
         self.refresh()
                 
     def refresh(self):
-        pass
+        kwargs = {}
+        kwargs['options'] = {}
+        if self.child.antialiasing_checkBox.checkState() == 0:
+            kwargs['options']['antialias'] = False
+        else:
+            kwargs['options']['antialias'] = True
+            
+        if self.child.grid_checkBox.checkState() == 0:
+            kwargs['options']['autoticks'] = True
+        else:
+            kwargs['options']['autoticks'] = False
+          
+        if self.child.users:
+            kwargs['users']   = self.child.users
+            
+        if self.child.classes:
+            kwargs['classes'] = self.child.classes
+            
+        if self.child.servers:
+            kwargs['servers'] = self.child.servers
+        if self.child.ports:
+            kwargs['ports']   = self.child.ports
+        
+        print kwargs
+        brep = bpReportEdit()
+        editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
+        self.textedit = None
+        #self.textedit.setDocument(editor.document())
+        self.setCentralWidget(editor)
+
+        
         
 class ReportOptionsDialog(QtGui.QDialog):
-    def __init__(self, connection, reportclass):
+    def __init__(self, connection, chartclass):
         super(ReportOptionsDialog, self).__init__()
         self.connection = connection
+        self.chartclass = chartclass
         self.users   = []
         self.classes = []
         self.servers = []
+        self.ports = []
         self.start_date = datetime.datetime.now()
         self.end_date   = datetime.datetime.now()
+        self.one_user   = False
+        self.one_server = False
+        self.one_class  = False
         self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -912,7 +946,9 @@ class ReportOptionsDialog(QtGui.QDialog):
 
         self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
         self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
+        dt_now = datetime.datetime.now()
         self.date_end_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
+        self.date_end_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
         self.date_end_dateTimeEdit.setCalendarPopup(True)
         self.date_end_dateTimeEdit.setObjectName("date_end_dateTimeEdit")
 
@@ -979,33 +1015,33 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.selected_users_label.setObjectName("selected_users_label")
         self.tabWidget.addTab(self.usersTab,"")
 
-        self.nasTab = QtGui.QWidget()
-        self.nasTab.setObjectName("nasTab")
+        self.serversTab = QtGui.QWidget()
+        self.serversTab.setObjectName("serversTab")
 
-        self.selected_servers_listWidget = QtGui.QListWidget(self.nasTab)
+        self.selected_servers_listWidget = QtGui.QListWidget(self.serversTab)
         self.selected_servers_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_servers_listWidget.setObjectName("selected_servers_listWidget")
 
-        self.all_servers_listWidget = QtGui.QListWidget(self.nasTab)
+        self.all_servers_listWidget = QtGui.QListWidget(self.serversTab)
         self.all_servers_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_servers_listWidget.setObjectName("all_servers_listWidget")
 
-        self.del_server_toolButton = QtGui.QToolButton(self.nasTab)
+        self.del_server_toolButton = QtGui.QToolButton(self.serversTab)
         self.del_server_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
         self.del_server_toolButton.setObjectName("del_server_toolButton")
 
-        self.add_server_toolButton = QtGui.QToolButton(self.nasTab)
+        self.add_server_toolButton = QtGui.QToolButton(self.serversTab)
         self.add_server_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
         self.add_server_toolButton.setObjectName("add_server_toolButton")
 
-        self.all_servers_label = QtGui.QLabel(self.nasTab)
+        self.all_servers_label = QtGui.QLabel(self.serversTab)
         self.all_servers_label.setGeometry(QtCore.QRect(10,10,151,18))
         self.all_servers_label.setObjectName("all_servers_label")
 
-        self.selected_servers_label = QtGui.QLabel(self.nasTab)
+        self.selected_servers_label = QtGui.QLabel(self.serversTab)
         self.selected_servers_label.setGeometry(QtCore.QRect(240,10,151,18))
         self.selected_servers_label.setObjectName("selected_servers_label")
-        self.tabWidget.addTab(self.nasTab,"")
+        self.tabWidget.addTab(self.serversTab,"")
 
         self.classesTab = QtGui.QWidget()
         self.classesTab.setObjectName("classesTab")
@@ -1067,6 +1103,25 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        
+        QtCore.QObject.connect(self.add_user_toolButton, QtCore.SIGNAL("clicked()"),self.addUser)
+        QtCore.QObject.connect(self.del_user_toolButton, QtCore.SIGNAL("clicked()"),self.delUser)
+
+        QtCore.QObject.connect(self.all_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addUser)
+        QtCore.QObject.connect(self.selected_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delUser)        
+        
+
+        QtCore.QObject.connect(self.add_class_toolButton, QtCore.SIGNAL("clicked()"), self.addClass)
+        QtCore.QObject.connect(self.del_class_toolButton, QtCore.SIGNAL("clicked()"), self.delClass)
+        
+        QtCore.QObject.connect(self.all_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
+        QtCore.QObject.connect(self.selected_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
+        
+        QtCore.QObject.connect(self.add_server_toolButton, QtCore.SIGNAL("clicked()"), self.addServer)
+        QtCore.QObject.connect(self.del_server_toolButton, QtCore.SIGNAL("clicked()"), self.delServer)
+        
+        QtCore.QObject.connect(self.all_servers_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addServer)
+        QtCore.QObject.connect(self.selected_servers_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delServer)
         if 1:
             self.setTabOrder(self.tabWidget,self.date_start_dateTimeEdit)
             self.setTabOrder(self.date_start_dateTimeEdit,self.date_end_dateTimeEdit)
@@ -1113,7 +1168,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.add_server_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.all_servers_label.setText(QtGui.QApplication.translate("Dialog", "Доступные серверы", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_servers_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные серверы", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.nasTab), QtGui.QApplication.translate("Dialog", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.serversTab), QtGui.QApplication.translate("Dialog", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.all_classes_label.setText(QtGui.QApplication.translate("Dialog", "Доступные направления", None, QtGui.QApplication.UnicodeUTF8))
         self.del_class_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.add_class_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
@@ -1125,7 +1180,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.portsTab), QtGui.QApplication.translate("Dialog", "Порты", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        import random
+        '''import random
         i = random.randint(2, 22)
         objj = getattr(self, "date_start_dateTimeEdit", None)
         obj2 = getattr(self, "classesTab", None)
@@ -1136,9 +1191,64 @@ class ReportOptionsDialog(QtGui.QDialog):
         print self.date_start_dateTimeEdit.isVisible()
         for x in xrange(0, self.selected_classes_listWidget.count()):
             self.classes.append(self.selected_classes_listWidget.item(x).id)
-        print self.classes
+        print self.classes'''
+        
+        if self.chartclass in _restrictions['one_user']:
+            self.one_user = True
+            
+        if self.chartclass in _restrictions['one_server']:
+            self.one_server = True
+            
+        if self.chartclass in _restrictions['one_class']:
+            self.one_class = True
+        
+        
+        hidetabs = _charthidetabs[self.chartclass]
+        
+        for hidetab in hidetabs:
+            htObj = getattr(self, hidetab, None)
+            print hidetab
+            self.tabWidget.removeTab(self.tabWidget.indexOf(htObj))
+            
+            
+        if "usersTab" not in hidetabs:
+            users = self.connection.sql(_querydict['get_usernames'])
+            
+            for user in users:
+                item = QtGui.QListWidgetItem()
+                item.setText(user.username)
+                item.id = user.id
+                self.all_users_listWidget.addItem(item)
+            
+        if "classesTab" not in hidetabs:
+            classes = self.connection.sql(_querydict['get_classes'])
+            
+            for clas in classes:
+                item = QtGui.QListWidgetItem()
+                item.setText(clas.name)
+                item.id = clas.id
+                self.all_classes_listWidget.addItem(item)
+          
+        if "serversTab" not in hidetabs:        
+            servers = self.connection.sql(_querydict['get_nas'])
+            
+            for serv in servers:
+                item = QtGui.QListWidgetItem()
+                item.setText(serv.name)
+                item.id = serv.id
+                self.all_servers_listWidget.addItem(item)
         
     def addUser(self):
+        if self.one_user:
+            if self.selected_users_listWidget.count() == 1:
+                return
+            else:
+                selected_items = self.all_users_listWidget.selectedItems()
+                if selected_items:
+                    self.all_users_listWidget.takeItem(self.all_users_listWidget.row(selected_items[0]))
+                    self.selected_users_listWidget.addItem(selected_items[0])
+                    return
+                
         selected_items = self.all_users_listWidget.selectedItems()        
         for item in selected_items:
             self.all_users_listWidget.takeItem(self.all_users_listWidget.row(item))
@@ -1181,6 +1291,26 @@ class ReportOptionsDialog(QtGui.QDialog):
             self.selected_classes_listWidget.takeItem(self.selected_classes_listWidget.row(item))
             self.all_classes_listWidget.addItem(item)
         self.all_classes_listWidget.sortItems()
+        
+    def accept(self):
+        self.users   = []
+        self.classes = []
+        self.servers = []
+        for x in xrange(0, self.selected_users_listWidget.count()):
+            self.users.append(self.selected_users_listWidget.item(x).id)
+            
+        for x in xrange(0, self.selected_classes_listWidget.count()):
+            self.classes.append(self.selected_classes_listWidget.item(x).id)
+            
+        for x in xrange(0, self.selected_servers_listWidget.count()):
+            self.servers.append(self.selected_servers_listWidget.item(x).id)
+            
+        self.start_date = self.date_start_dateTimeEdit.dateTime().toPyDateTime()
+        self.end_date   = self.date_end_dateTimeEdit.dateTime().toPyDateTime()
+        print self.users  
+        print self.classes
+        print self.servers 
+        QtGui.QDialog.accept(self)
         
         
     
