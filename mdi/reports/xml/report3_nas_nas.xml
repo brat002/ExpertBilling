@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
 <report xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="report_schema.xsd">
-    <description>Отчёт: трафик по 
-  таки серверам
-  серверам
-  серверам</description>
+    <description>Отчёт: трафик по серверу доступа</description>
   <textformat name="tf1" setFontWeight="96" setFontPointSize="14" />
   <textformat name="tf2" setFontWeight="72" setFontPointSize="12" setFontItalic="true" />
   <blockformat name="bf1" setAlignment="22" />
@@ -22,10 +19,10 @@
 		<frame name="fr2" datasource="args" type="current" format="currentnew" fname="tff1">
 			<insertblock />
 			<inserttext text="Дата начала: " textformat="tf2" />
-			<insertdatanontext index = '1' />
+			<insertdatanontext index = '0' />
 			<insertblock />
 			<inserttext text="Дата окончания: "/>
-			<insertdatanontext index = '2' />
+			<insertdatanontext index = '1' />
 			<insertblock />
 		</frame>
 		<getdata>
