@@ -147,7 +147,7 @@ class TransactionsReport(QtGui.QDialog):
         self.write_off.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
         self.write_on_label.setText(QtGui.QApplication.translate("Dialog", "Начислено", None, QtGui.QApplication.UnicodeUTF8))
         self.write_on.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Балланс на конец периода", None, QtGui.QApplication.UnicodeUTF8))
+        self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Баланс на конец периода", None, QtGui.QApplication.UnicodeUTF8))
         self.ballance.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
         
     def fixtures(self):
