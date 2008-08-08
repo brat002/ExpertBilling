@@ -69,7 +69,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.toolBar.addWidget(self.pushbutton)
 
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)
-        
+        QtCore.QObject.connect(self.actionResetSession, QtCore.SIGNAL("triggered()"), self.reset_action)
         self.retranslateUi()
         self.fixtures()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -78,7 +78,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = [u'Id', u'Аккаунт', u'IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
+        columns = [u'#', u'Аккаунт', u'IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
         makeHeaders(columns, self.tableWidget)
         
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -96,7 +96,9 @@ class MonitorFrame(QtGui.QMainWindow):
             item_type.setText(unicode(value))
             widget.setItem(x, y, item_type)
         
-    
+    def reset_action(self):
+        self.connection.pod(session=unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).text()))
+        
     def fixtures(self):
         
         self.tableWidget.clearContents()
@@ -120,7 +122,7 @@ class MonitorFrame(QtGui.QMainWindow):
         
         for session in sessions:
             print i
-            self.addrow(self.tableWidget, session.id, i, 0)
+            self.addrow(self.tableWidget, session.sessionid, i, 0)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
             self.addrow(self.tableWidget, session.nas_name, i, 3)

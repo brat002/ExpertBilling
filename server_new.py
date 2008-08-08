@@ -95,7 +95,7 @@ class HandleAuth(HandleBase):
             if speeds==[]:
                 result=defaults
     
-            result_params=create_speed_string(result, self.nas_type, True)
+            result_params=create_speed_string(result)
             print "params=", result_params
 
         if self.nas_type[:8]==u'mikrotik' and result_params!='':

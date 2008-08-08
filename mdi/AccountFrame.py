@@ -4,7 +4,7 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 
 import Pyro.core
-
+import traceback
 from helpers import Object as Object
 
 from types import BooleanType
@@ -722,7 +722,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'Id', u'От МБ', u'До МБ', u'Направления', u'Вх', u'Исх', u'Тр', u'Время', u'Цена']
+        columns=[u'Id', u'От МБ', u'До МБ', u'Направления', u'Вх', u'Исх', u'Время', u'Цена']
         
         makeHeaders(columns, self.trafficcost_tableWidget)      
 
@@ -731,7 +731,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         
         self.prepaid_tableWidget.clear()
-        columns=[u'Id', u'Направления', u'Вх', u'Исх', u'Тр', u'МБ']
+        columns=[u'Id', u'Направления', u'Вх', u'Исх',  u'МБ']
         
         makeHeaders(columns, self.prepaid_tableWidget)                
                 
@@ -760,7 +760,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Направления', u'Вх', u'Исх', u'Тр', u'МБ']
+        columns=[u'Id', u'Название', u'За поледний', u'Период', u'Направления', u'Вх', u'Исх', u'МБ']
         
         makeHeaders(columns, self.limit_tableWidget)
         
@@ -818,7 +818,7 @@ class TarifFrame(QtGui.QDialog):
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 2)
         self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
         self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
-        self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
+        #self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
         
     
     def delTrafficCostRow(self):
@@ -839,7 +839,7 @@ class TarifFrame(QtGui.QDialog):
 
         self.addrow(self.limit_tableWidget, True, current_row, 5, item_type='checkbox')
         self.addrow(self.limit_tableWidget, True, current_row, 6, item_type='checkbox')
-        self.addrow(self.limit_tableWidget, True, current_row, 7, item_type='checkbox')
+        #self.addrow(self.limit_tableWidget, True, current_row, 7, item_type='checkbox')
 
     
     def delLimitRow(self):
@@ -886,7 +886,7 @@ class TarifFrame(QtGui.QDialog):
         
         self.addrow(self.prepaid_tableWidget, True, current_row, 2, item_type='checkbox')
         self.addrow(self.prepaid_tableWidget, True, current_row, 3, item_type='checkbox')
-        self.addrow(self.prepaid_tableWidget, True, current_row, 4, item_type='checkbox')
+        #self.addrow(self.prepaid_tableWidget, True, current_row, 4, item_type='checkbox')
     
     def delPrepaidTrafficRow(self):
         current_row = self.prepaid_tableWidget.currentRow()  
@@ -1019,7 +1019,7 @@ class TarifFrame(QtGui.QDialog):
                     self.prepaid_tableWidget.resizeColumnsToContents()
                     self.prepaid_tableWidget.resizeRowsToContents()
         
-        if x==5:
+        if x==4:
             item = self.prepaid_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -1113,7 +1113,7 @@ class TarifFrame(QtGui.QDialog):
             
             self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
              
-        if x==8:
+        if x==7:
             item = self.limit_tableWidget.item(y,x)
             try:
                 default_text=int(item.text())
@@ -1193,7 +1193,7 @@ class TarifFrame(QtGui.QDialog):
                 self.trafficcost_tableWidget.resizeRowsToContents()
                     
                 
-        if x==7:
+        if x==6:
             try:
                 models = self.trafficcost_tableWidget.item(y,x).models
             except:
@@ -1204,7 +1204,7 @@ class TarifFrame(QtGui.QDialog):
                 self.trafficcost_tableWidget.resizeColumnsToContents()
                 self.trafficcost_tableWidget.resizeRowsToContents()
 
-        if x==8:
+        if x==7:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -1487,11 +1487,11 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period_name,i, 3)
                     self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
-                    self.addrow(self.limit_tableWidget, node.size,i, 8)
+                    self.addrow(self.limit_tableWidget, node.size,i, 7)
                     
                     self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
-                    self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
+                    #self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
                     
                     i+=1
                     self.limit_tableWidget.resizeColumnsToContents()
@@ -1516,15 +1516,15 @@ class TarifFrame(QtGui.QDialog):
                         JOIN billservice_prepaidtraffic_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
                         WHERE ttc.prepaidtraffic_id=%d
                         """ % node.id)
-                        print traffic_classes
+              
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
                         self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=traffic_classes))
 
                         self.addrow(self.prepaid_tableWidget, node.in_direction, i, 2, item_type='checkbox')
                         self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
-                        self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
+                        #self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
                         
-                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1024*1024),i, 5)
+                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1024*1024),i, 4)
                         i+=1       
                     
                     self.prepaid_tableWidget.resizeRowsToContents() 
@@ -1534,7 +1534,7 @@ class TarifFrame(QtGui.QDialog):
                 
                 traffic_transmit_nodes = self.connection.sql("""
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
-                WHERE traffictransmitnodes.traffic_transmit_service_id=%d 
+                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_start ASC
                 """ % self.model.traffic_transmit_service_id)
                 #print "traffic_transmit_nodes=", traffic_transmit_nodes
                 #print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
@@ -1567,9 +1567,9 @@ class TarifFrame(QtGui.QDialog):
                         self.trafficcost_tableWidget.setItem(i,3, CustomWidget(parent=self.trafficcost_tableWidget, models=traffic_classes))
                         self.addrow(self.trafficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
                         self.addrow(self.trafficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
-                        self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.trafficcost_tableWidget.setItem(i,7, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
-                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 8)
+                        #self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
+                        self.trafficcost_tableWidget.setItem(i,6, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
+                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 7)
                         i+=1
                     self.trafficcost_tableWidget.resizeRowsToContents()
                     self.trafficcost_tableWidget.resizeColumnsToContents()
@@ -1878,7 +1878,7 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.limit_tableWidget, i)
                     #print self.limit_tableWidget.item(i, 1), self.limit_tableWidget.item(i, 3), self.limit_tableWidget.item(i, 8), self.limit_tableWidget.cellWidget(i, 4)
-                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 8)==None or self.limit_tableWidget.item(i, 4)==None:
+                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 7)==None or self.limit_tableWidget.item(i, 4)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
                         self.connection.rollback()
                         return
@@ -1902,11 +1902,11 @@ class TarifFrame(QtGui.QDialog):
                     limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                     limit.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.limit_tableWidget.item(i, 3).text())).id
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                    limit.size=unicode(self.limit_tableWidget.item(i, 8).text())
+                    limit.size=unicode(self.limit_tableWidget.item(i, 7).text())
     
                     limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
                     limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
-                    limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
+                    #limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
                     
                     limit_id = self.connection.create(limit.save("billservice_trafficlimit"))
                     
@@ -1964,18 +1964,18 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.trafficcost_tableWidget, i)
                     
-                    if self.trafficcost_tableWidget.item(i, 1)==None or self.trafficcost_tableWidget.item(i, 2)==None or self.trafficcost_tableWidget.item(i, 3)==None or self.trafficcost_tableWidget.item(i, 7)==None or self.trafficcost_tableWidget.item(i, 8)==None:
+                    if self.trafficcost_tableWidget.item(i, 1)==None or self.trafficcost_tableWidget.item(i, 2)==None or self.trafficcost_tableWidget.item(i, 3)==None or self.trafficcost_tableWidget.item(i, 6)==None or self.trafficcost_tableWidget.item(i, 7)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
                         self.connection.rollback()
                         return
                     elif self.trafficcost_tableWidget.item(i, 3)!=None:
                         if self.trafficcost_tableWidget.item(i, 3)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
                             self.connection.rollback()
                             return    
-                    elif self.trafficcost_tableWidget.item(i, 7)!=None:
-                        if self.trafficcost_tableWidget.item(i, 7)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
+                    elif self.trafficcost_tableWidget.item(i, 6)!=None:
+                        if self.trafficcost_tableWidget.item(i, 6)==[]:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
                             self.connection.rollback()
                             return
                                                    
@@ -1990,8 +1990,8 @@ class TarifFrame(QtGui.QDialog):
                     transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
                     transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
                     transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
-                    transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
-                    transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,8).text())
+                    #transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
+                    transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,7).text())
                     
                     
                     
@@ -2028,7 +2028,7 @@ class TarifFrame(QtGui.QDialog):
                             #cl.traffictransmitnodes_set.remove(transmit_node)
     #                        print "del"
                             
-                    time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 7).models]
+                    time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 6).models]
                     if len(time_period_models)==0:
                         return
                     
@@ -2057,7 +2057,7 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(self.prepaid_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.prepaid_tableWidget, i)
                     
-                    if self.prepaid_tableWidget.item(i, 1)==None or self.prepaid_tableWidget.item(i, 5)==None:
+                    if self.prepaid_tableWidget.item(i, 1)==None or self.prepaid_tableWidget.item(i, 4)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для предоплаченного трафика")
                         self.connection.rollback()
                         return
@@ -2078,8 +2078,8 @@ class TarifFrame(QtGui.QDialog):
                     prepaid_node.traffic_transmit_service_id = traffic_transmit_service_id
                     prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
                     prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
-                    prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,5).text())*1024*1024)
+                    #prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
+                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,4).text())*1024*1024)
 
 
                     traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
@@ -2127,6 +2127,7 @@ class TarifFrame(QtGui.QDialog):
             
         except Exception, e:
             print e
+            traceback.print_exc()
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка сохранения тарифного плана")
             return

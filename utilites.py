@@ -34,6 +34,8 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     @param session_id: ID of VPN session
     @param format_string: format string       
     """
+    print account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string
+    
     access_type = access_type.lower()
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         
@@ -93,19 +95,24 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 print e
                 return False
 
-def change_speed(account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, access_type, format_string, speed):
-    if format_string=='' and access_type in ['PPTP', 'PPPOE'] and nas_type in ['mikrotik2.8', 'mikrotik2.9', 'mikrotik3']:
-        #Send PoD
+def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, access_type, format_string, speed):
+    
+    access_type = access_type.lower()
+    print access_type
+    if format_string=='' and access_type in ['pptp', 'pppoe'] and nas_type in ['mikrotik2.8', 'mikrotik2.9', 'mikrotik3']:
+        #Send CoA
+        
+        speed_string= create_speed_string(speed, coa=True)
+        print speed_string
+        print 'send CoA'
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=40, secret=nas_secret, dict=dict)
+        doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
         doc.AddAttribute('NAS-IP-Address', nas_ip)
         doc.AddAttribute('NAS-Identifier', nas_name)
         doc.AddAttribute('User-Name', account_name)
-        doc.AddAttribute('Acct-Session-Id', session_id)
-        if speed_string:
-            #Пока только для микротика
-            doc.AddAttribute((14988,8), speed)
+        doc.AddAttribute('Acct-Session-Id', str(session_id))
+        doc.AddAttribute((14988,8), speed_string)
             
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(nas_ip, 1700))
@@ -121,11 +128,10 @@ def change_speed(account_id, account_name, account_vpn_ip, account_ipn_ip, accou
         #except:
         #    pass
         return doc.has_key("Error-Cause")==False
-    elif format_string!='' and access_type in ['PPTP', 'PPPOE', 'IPN']:
+    elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
-        
-        command_string=command_string_parser(command_string=format_string, command_dict=
-                            {
+        print 'SetSpeed Via SSH'
+        command_dict={
                              'access_type':access_type,
                              'username': account_name,
                              'user_id':account_id,
@@ -133,9 +139,13 @@ def change_speed(account_id, account_name, account_vpn_ip, account_ipn_ip, accou
                              'account_vpn_ip': account_vpn_ip,
                              'account_mac_address':account_mac_address,
                              'session': session_id,
-                             'speed': speed, 
                              }
-                            )
+        speed = get_decimals_speeds(speed)
+        command_dict.update(speed)
+        print 'command_dict=', command_dict
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
+        
+        print command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
@@ -192,6 +202,7 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
         #сначала проверить есть ли, если нет-создать, если есть-установить
         /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
         """
+        print speed_string
         if code==43:
             query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
         elif code==40:
@@ -442,7 +453,7 @@ def command_string_parser(command_string='', command_dict={}):
     for p in params :
         if p in command_dict.keys() :
             s = re.compile( '\$%s' % p)
-            command_string = s.sub(command_dict[p],command_string)
+            command_string = s.sub(str(command_dict[p]),command_string)
     print command_string
     return command_string
 
@@ -470,48 +481,49 @@ def create_nulls(param):
     if param=="None":
         return 0
 
-def create_speed_string(params, nas_type, coa=False):
-    params=map(lambda x: x=='None' and 0 or x, params)
+def create_speed_string(params, coa=False):
+    print params
+    #params=map(lambda x: params[x]=='None' and 0 or x, params)
     result=''
-    if nas_type[:8]==u'mikrotik':
-        #max_limit
-        if coa==True:
-            result+="%s" % params[0]
 
-            #burst_limit
-            result+=" %s" % params[1]
+    if coa==True:
+        result+="%s" % params['max_limit']
 
-            #burst_treshold
-            result+=" %s" % params[2]
+        #burst_limit
+        result+=" %s" % params['burst_limit']
 
-            #burst_time
-            result+=" %s" % params[3]
+        #burst_treshold
+        result+=" %s" % params['burst_treshold']
 
-            #priority
-            result+=" %s" % params[4]
+        #burst_time
+        result+=" %s" % params['burst_time']
 
-            #burst_time
-            result+=" %s" % params[5]
-        else:
-            result+="max-limit=%s" % params[0]
+        #priority
+        result+=" %s" % params['priority']
 
-            #burst_limit
-            result+=" burst-limit=%s" % params[1]
+        
+        result+=" %s" % params['min_limit']
+        
+    else:
+        result+="%s" % params[0]
 
-            #burst_treshold
-            result+=" burst-treshold=%s" % params[2]
+        #burst_limit
+        result+=" %s" % params[1]
 
-            #burst_time
-            result+=" burst-time=%s" % params[3]
+        #burst_treshold
+        result+=" %s" % params[2]
 
-            #priority
-            result+=" priority=%s" % params[4]
+        #burst_time
+        result+=" %s" % params[3]
 
-            #burst_time
-            result+=" limit-at=%s" % params[5]
+        #priority
+        result+=" %s" % params[4]
+
+        
+        result+=" %s" % params[5]
 
 
-    return result
+    return str(result)
 
 # Parsers
 
@@ -547,6 +559,7 @@ class ActiveSessionsParser:
                 self.strings.append(m.groups()[0])
             except:
                 pass
+        print self.strings
 
 
     def parse(self):
@@ -736,12 +749,13 @@ def get_sessions_for_nas(nas):
             ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
             response=ssh.send_command("/ppp active print terse without-paging")[0]
             response = response.readlines()
+            print response
         except Exception, e:
             print e
             return []
             
         #print response
-        if nas['type']=='mikrotik2.9':
+        if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
             sessions=ActiveSessionsParser(response).parse()
         ssh.close_chanel()
         
@@ -760,3 +774,21 @@ def get_active_sessions(nas):
 def convert(alist):
     return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
 
+def convert_values(value):
+    if str(value).endswith('k'):
+        return str(int(str(value)[0:-1])*1000)
+    elif str(value).endswith('M'):
+        return str(int(str(value)[0:-1])*1000*1000)
+    else:
+        return str(value)
+                
+def get_decimals_speeds(params):
+    print "before", params
+    for param in params:
+        values = map(convert_values, str(params[param]).split('/'))
+        #print values
+
+        params[param]='/'.join(values)
+    print 'after', params
+    return params
+            
