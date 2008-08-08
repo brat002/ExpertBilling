@@ -886,16 +886,16 @@ class StatReport(QtGui.QMainWindow):
         else:
             kwargs['options']['autoticks'] = False
           
-        if self.child.users:
-            kwargs['users']   = self.child.users
+        #if self.child.users:
+        kwargs['users']   = self.child.users
             
-        if self.child.classes:
-            kwargs['classes'] = self.child.classes
+        #if self.child.classes:
+        kwargs['classes'] = self.child.classes
             
-        if self.child.servers:
-            kwargs['servers'] = self.child.servers
-        if self.child.ports:
-            kwargs['ports']   = self.child.ports
+        #if self.child.servers:
+        kwargs['servers'] = self.child.servers
+        #if self.child.ports:
+        kwargs['ports']   = self.child.ports
         
         print kwargs
         brep = bpReportEdit()
@@ -1264,6 +1264,16 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.all_users_listWidget.sortItems()
         
     def addServer(self):
+        if self.one_server:
+            if self.selected_servers_listWidget.count() == 1:
+                return
+            else:
+                selected_items = self.all_servers_listWidget.selectedItems()
+                if selected_items:
+                    self.all_servers_listWidget.takeItem(self.all_servers_listWidget.row(selected_items[0]))
+                    self.selected_servers_listWidget.addItem(selected_items[0])
+                    return
+        
         selected_items = self.all_servers_listWidget.selectedItems()        
         for item in selected_items:
             self.all_servers_listWidget.takeItem(self.all_servers_listWidget.row(item))
@@ -1279,6 +1289,16 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.all_servers_listWidget.sortItems()
         
     def addClass(self):
+        if self.one_class:
+            if self.selected_classes_listWidget.count() == 1:
+                return
+            else:
+                selected_items = self.all_classes_listWidget.selectedItems()
+                if selected_items:
+                    self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(selected_items[0]))
+                    self.selected_classes_listWidget.addItem(selected_items[0])
+                    return        
+        
         selected_items = self.all_classes_listWidget.selectedItems()
         for item in selected_items:
             self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
