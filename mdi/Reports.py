@@ -8,6 +8,9 @@ from helpers import makeHeaders
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
+import thread
+import time
+
 #TODO: nullify the arguments lists (self.users, self.classes) after each report generation
 _xmlpath = "reports/xml"
 _querydict = {\
@@ -38,6 +41,7 @@ _restrictions = {\
                  "one_server":("nfs_nas_traf"),\
                  "one_class" :()\
                 }
+_ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 class TransactionsReport(QtGui.QDialog):
     def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
@@ -900,10 +904,27 @@ class StatReport(QtGui.QMainWindow):
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
+        
+        if self.child.read_only_checkBox.checkState() == 2:
+            editor.setReadOnly(True)
         #self.textedit.setDocument(editor.document())
         self.setCentralWidget(editor)
 
-        
+        if self.child.send_to_printer_checkBox.checkState() == 2:
+            print "arrgh"
+            #self.print_report(self.centralWidget().document(), 5)
+            thread.start_new_thread(self.print_report, (self.centralWidget().document(), 2))
+            
+    def print_report(self, printdoc, sleeptime):
+        time.sleep(sleeptime)
+        document = printdoc
+        printer = QtGui.QPrinter()
+    
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        document.print_(printer)
         
 class ReportOptionsDialog(QtGui.QDialog):
     def __init__(self, connection, chartclass):
@@ -913,7 +934,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.users   = []
         self.classes = []
         self.servers = []
-        self.ports = []
+        self.ports   = []
         self.start_date = datetime.datetime.now()
         self.end_date   = datetime.datetime.now()
         self.one_user   = False
@@ -1236,6 +1257,14 @@ class ReportOptionsDialog(QtGui.QDialog):
                 item.setText(serv.name)
                 item.id = serv.id
                 self.all_servers_listWidget.addItem(item)
+                
+        if "portsTab" not in hidetabs:  
+            for port in _ports:
+                item = QtGui.QListWidgetItem()
+                item.setText(port[1])
+                item.id = port[0]
+                item.setCheckState(QtCore.Qt.Unchecked)
+                self.ports_listWidget.addItem(item)
         
     def addUser(self):
         if self.one_user:
@@ -1315,6 +1344,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.users   = []
         self.classes = []
         self.servers = []
+        self.ports   = []
         for x in xrange(0, self.selected_users_listWidget.count()):
             self.users.append(self.selected_users_listWidget.item(x).id)
             
@@ -1324,11 +1354,22 @@ class ReportOptionsDialog(QtGui.QDialog):
         for x in xrange(0, self.selected_servers_listWidget.count()):
             self.servers.append(self.selected_servers_listWidget.item(x).id)
             
+        for x in xrange(0, self.ports_listWidget.count()):
+            if self.ports_listWidget.item(x).checkState() == 2:
+                self.ports.append(self.ports_listWidget.item(x).id)
+                
+        if self.extra_ports_lineEdit.text():
+            extra_ports = [int(eprt) for eprt in self.extra_ports_lineEdit.text().split(',')]
+            for eport in extra_ports:
+                if eport not in self.ports: self.ports.append(eport)
+                    
+            
         self.start_date = self.date_start_dateTimeEdit.dateTime().toPyDateTime()
         self.end_date   = self.date_end_dateTimeEdit.dateTime().toPyDateTime()
         print self.users  
         print self.classes
         print self.servers 
+        print self.ports
         QtGui.QDialog.accept(self)
         
         
