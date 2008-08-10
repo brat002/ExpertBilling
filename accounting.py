@@ -1917,7 +1917,7 @@ if __name__ == "__main__":
     threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-    #print rosClient("10.10.1.100", 'admin', 'admin', '/interface/pppoe-server/remove [/interface/pppoe-server/find user="dolphinik"]')
+    print rosClient("10.20.3.1", 'dolph', '12345', r'/interface/pppoe-server/remove [/interface/pppoe-server/find]')
     for th in threads:
         th.start()
 
