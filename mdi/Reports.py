@@ -11,7 +11,7 @@ from reports.bpreportedit import bpReportEdit
 import thread
 import time
 
-#TODO: nullify the arguments lists (self.users, self.classes) after each report generation
+#TODO: поставить заглушки на единичный/множественный выбор через len(kwargs[key]) == 1 etc
 _xmlpath = "reports/xml"
 _querydict = {\
               "get_nas"      : "SELECT name, type, ipaddress, id FROM nas_nas ORDER BY name;", \
@@ -20,6 +20,7 @@ _querydict = {\
              }
 _charthidetabs = {\
              "nfs_user_traf"  : ("portsTab",),\
+             "nfs_u_traf"  : ("portsTab",),\
              "nfs_user_speed" : ("portsTab",),\
              "nfs_total_users_traf" : ("portsTab",),\
              "nfs_total_users_speed" : ("portsTab",),\
@@ -28,6 +29,7 @@ _charthidetabs = {\
              "nfs_total_traf_bydir" : ("portsTab", "usersTab"),\
              "nfs_total_speed_bydir" : ("portsTab", "usersTab"),\
              "nfs_port_speed" : ("usersTab", "serversTab", "classesTab"),\
+             "nfs_n_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_nas_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_classes_speed" : ("usersTab", "serversTab", "portsTab"),\
@@ -37,9 +39,9 @@ _charthidetabs = {\
              "trans_crd" : ("usersTab", "serversTab", "classesTab", "portsTab")
             }
 _restrictions = {\
-                 "one_user"  :("nfs_user_traf", "nfs_user_speed"),\
-                 "one_server":("nfs_nas_traf"),\
-                 "one_class" :()\
+                 "one_user"  :[],\
+                 "one_server":[],\
+                 "one_class" :[]\
                 }
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 class TransactionsReport(QtGui.QMainWindow):

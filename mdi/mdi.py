@@ -20,18 +20,26 @@ from CustomForms import ConnectDialog
 from Reports import ReportPropertiesDialog, NetFlowReport, StatReport, ReportSelectDialog
 
 
-
-_reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'report3_classes.xml'],\
-                ['report3_nas.xml', ['nfs_user_traf'], 'report3_nas.xml'], \
+#add speed "Загрузка канала пользователем"
+# общая трафик/загрузка по типам
+#динамика прибыли (кредит)
+#трафик пользователей (пирог)
+#скорость по портам
+#сессии пользователей
+#загрузка канала
+#общий трафик/загрузка
+#использование канала пользователями
+_reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'Загрузка по направлениям'],\
+                ['report3_nas.xml', ['nfs_u_traf'], 'Трафик пользователя'], \
                 ['report3_nas2.xml', ['nfs_user_traf'], 'report3_nas2.xml'], \
-                ['report3_nass.xml', ['nfs_total_nass_traf'], 'report3_nass.xml'],\
-                ['report3_nas_nas.xml', ['nfs_nas_traf'], 'report3_nas_nas.xml'], \
+                ['report3_nass.xml', ['nfs_n_traf'], 'report3_nass.xml'],\
+                ['report3_nas_nas.xml', ['nfs_n_traf'], 'report3_nas_nas.xml'], \
                 ['report3_pie.xml', ['userstrafpie'], 'report3_pie.xml'], \
                 ['report3_port.xml', ['nfs_port_speed'], 'report3_port.xml'], \
                 ['report3_sess.xml', ['sessions'], 'report3_sess.xml'], \
                 ['report3_tr.xml', ['trans_deb'], 'report3_tr.xml'], \
                 ['report3_ttr_nas.xml', ['nfs_total_traf'], 'report3_ttr_nas.xml'], \
-                ['report3_tus_nas.xml', ['nfs_total_users_traf'], 'report3_tus_nas.xml'], \
+                ['report3_tus_nas.xml', ['nfs_u_traf'], 'report3_tus_nas.xml'], \
                 ['report3_tutr_nas.xml', ['nfs_total_traf_bydir'], 'report3_tutr_nas.xml']\
                ]
 

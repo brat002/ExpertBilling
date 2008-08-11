@@ -14,7 +14,7 @@
 	<insertblock />
 	<insertblock />
 
-	<chart library="pychartdir" name="chart1" type="nfs_nas_traf">
+	<chart library="pychartdir" name="chart1" type="nfs_n_traf">
 		<frame name="fr2" datasource="args" type="current" format="currentnew" fname="tff1">
 			<insertblock />
 			<inserttext text="Дата начала: " textformat="tf2" />
