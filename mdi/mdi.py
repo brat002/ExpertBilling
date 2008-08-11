@@ -21,6 +21,19 @@ from Reports import ReportPropertiesDialog, NetFlowReport, StatReport, ReportSel
 
 
 
+_reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'report3_classes.xml'],\
+                ['report3_nas.xml', ['nfs_user_traf'], 'report3_nas.xml'], \
+                ['report3_nas2.xml', ['nfs_user_traf'], 'report3_nas2.xml'], \
+                ['report3_nass.xml', ['nfs_total_nass_traf'], 'report3_nass.xml'],\
+                ['report3_nas_nas.xml', ['nfs_nas_traf'], 'report3_nas_nas.xml'], \
+                ['report3_pie.xml', ['userstrafpie'], 'report3_pie.xml'], \
+                ['report3_port.xml', ['nfs_port_speed'], 'report3_port.xml'], \
+                ['report3_sess.xml', ['sessions'], 'report3_sess.xml'], \
+                ['report3_tr.xml', ['trans_deb'], 'report3_tr.xml'], \
+                ['report3_ttr_nas.xml', ['nfs_total_traf'], 'report3_ttr_nas.xml'], \
+                ['report3_tus_nas.xml', ['nfs_total_users_traf'], 'report3_tus_nas.xml'], \
+                ['report3_tutr_nas.xml', ['nfs_total_traf_bydir'], 'report3_tutr_nas.xml']\
+               ]
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -168,6 +181,8 @@ class MainWindow(QtGui.QMainWindow):
         if self.reportseldg.exec_()!=1: return
         #print self.reportseldg.zomgdata
         print self.reportseldg.selectedId
+        #f = open('tmp1', 'wb')
+        #f.write(str(self.reportseldg.chartinfo))
         if self.reportseldg.selectedId != -1:
             child=StatReport(connection=connection, chartinfo=self.reportseldg.chartinfo[self.reportseldg.selectedId])
             self.workspace.addWindow(child)
@@ -236,8 +251,15 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
 
-
-
+        self.reportActs = []
+        i = 0
+        for item in _reportsdict:
+            rAct = QtGui.QAction(self.tr(item[2]), self)
+            rAct.setStatusTip(self.tr("Report"))
+            rAct.setData(QtCore.QVariant(i))
+            self.connect(rAct, QtCore.SIGNAL("triggered()"), self.reportsMenu)
+            self.reportActs.append(rAct)
+            i += 1
 
         self.closeAct = QtGui.QAction(self.tr("Cl&ose"), self)
         self.closeAct.setShortcut(self.tr("Ctrl+F4"))
@@ -312,13 +334,21 @@ class MainWindow(QtGui.QMainWindow):
         self.windowMenu = self.menuBar().addMenu(self.tr("&Window"))
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),
                      self.updateWindowMenu)
-
+        self.reportsMenu = self.menuBar().addMenu(self.tr("&Reports"))
+        for act in self.reportActs:
+            self.reportsMenu.addAction(act)
+            
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
         self.helpMenu.addAction(self.aboutAct)
         self.helpMenu.addAction(self.aboutQtAct)
-
+    
+    def reportsMenu(self):
+        #print self.sender().data().toInt()
+        child=StatReport(connection=connection, chartinfo=_reportsdict[self.sender().data().toInt()[0]])
+        self.workspace.addWindow(child)
+        child.show()
     def createToolBars(self):
         self.fileToolBar = self.addToolBar(self.tr("File"))
         self.fileToolBar.addAction(self.newAct)
