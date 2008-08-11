@@ -591,6 +591,19 @@ class getData(object):
 	else:
 	    raise Exception("Method #" + chtype + "# does not exist in class getData!" )
     
+    def getdata_nfs_u_traf(self, queryname, *args, **kwargs):
+	if len(kwargs['users']) == 1:
+	    return self.getdata_nfs_user_traf(queryname, *args, **kwargs)
+	else:
+	    return self.getdata_nfs_total_users_traf(queryname, *args, **kwargs)
+	
+    def getdata_nfs_n_traf(self, queryname, *args, **kwargs):
+	if len(kwargs['servers']) == 1:
+	    return self.getdata_nfs_nas_traf(queryname, *args, **kwargs)
+	else:
+	    return self.getdata_nfs_total_nass_traf(queryname, *args, **kwargs)
+
+	
     def getdata_nfs_user_traf(self, queryname, *args, **kwargs):
 	if queryname == 'get_accounts':
 	    selstr = dssdict[queryname] % '= %d' % kwargs['users'][0]
