@@ -1359,9 +1359,19 @@ class ReportOptionsDialog(QtGui.QDialog):
                 self.ports.append(self.ports_listWidget.item(x).id)
                 
         if self.extra_ports_lineEdit.text():
-            extra_ports = [int(eprt) for eprt in self.extra_ports_lineEdit.text().split(',')]
+            try:
+                extra_ports_str = self.extra_ports_lineEdit.text().split(',')
+            except Exception, ex:
+                raise ex
+            extra_ports = []
+            for eps in extra_ports_str:
+                try:
+                    extra_ports.append(int(eps))
+                except Exception, ex:
+                    print ex
             for eport in extra_ports:
                 if eport not in self.ports: self.ports.append(eport)
+            
                     
             
         self.start_date = self.date_start_dateTimeEdit.dateTime().toPyDateTime()
