@@ -304,8 +304,32 @@ class reportConstructor(Dispatcher, ContentHandler):
 	#print data
 	self.objdict['data'][attrs['dataid']] = data
 	
+    def getTableFormat(self, attrs, tformat):
+	self.getframeformat(attrs, tformat)
+	if attrs.has_key('setCellPadding'):
+	    tformat.setCellPadding(float(attrs['setCellPadding']))
+	if attrs.has_key('setCellSpacing'):
+	    tformat.setCellSpacing(float(attrs['setCellSpacing']))
+	if attrs.has_key('setAlignment'):
+	    if len(attrs['setAlignment']) == 2:
+		tformat.setAlignment(alignments[0][int(attrs['setAlignment'][1])] | alignments[1][int(attrs['setAlignment'][0])])
+	if attrs.has_key('colConstrType'):
+	    try:
+		if attrs['colConstrType'] == "percentage":
+		    ctype = QtGui.QTextLength.PercentageLength
+		elif attrs['colConstrType'] == "variable":
+		    ctype = QtGui.QTextLength.VariableLength
+		elif attrs['colConstrType'] == "fixed":
+		    ctype = QtGui.QTextLength.FixedLength
+		else: 
+		    raise Exception("No such column constraint type: " + attrs['colConstrType'])
+		tformat.setColumnWidthConstraints([QtGui.QTextLength(ctype, str(constr)) for constr in attrs['colConstraints'].split(", ")])
+		#------------------------------todo
+	    except Exception, ex:
+		print ex
     def startTable(self, attrs):
 	self.objdict['curtable']  = {}
+	self.objdict['curtable']['formats']   = {}
 	self.objdict['curtable']['colnametf'] = self.objdict['textformat']['deftf']
 	self.objdict['curtable']['celltf']    = self.objdict['textformat']['deftf']
 	self.objdict['curtable']['arheadtf']  = self.objdict['textformat']['deftf']
@@ -325,14 +349,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 	    
 	if attrs['ftype'] == 'new':
 	    tformat =  QtGui.QTextTableFormat()
-	    #--------------
-	    if attrs.has_key('setCellPadding'):
-		tformat.setCellPadding(float(attrs['setCellPadding']))
-	    if attrs.has_key('setCellSpacing'):
-		tformat.setCellSpacing(float(attrs['setCellSpacing']))
-	    if attrs.has_key('setAlignment'):
-		if len(attrs['setAlignment']) == 2:
-		    tformat.setAlignment(alignments[0][int(attrs['setAlignment'][1])] | alignments[1][int(attrs['setAlignment'][0])])
+	    self.getTableFormat(attrs, tformat)
 	    self.objdict['tableformat'][attrs['fname']] = tformat
 	    self.objdict['curtable']['format'] = tformat
 	    self.objdict['curtable']['colnum'] = int(attrs['columns'])
@@ -361,6 +378,15 @@ class reportConstructor(Dispatcher, ContentHandler):
 	self.objdict['curtable']['coltypes'].append(attrs['type'])
 	self.objdict['curtable']['colnames'].append(attrs['name'])
 	
+	if (attrs['type'] == 'table') and attrs.has_key('tftype'):
+	    if attrs['tftype'] == 'new':
+		tformat =  QtGui.QTextTableFormat()
+		self.getTableFormat(attrs, tformat)
+		#tformat.setColumnWidthConstraints([QtGui.QTextLength(QtGui.QTextLength.PercentageLength, 70), QtGui.QTextLength(QtGui.QTextLength.PercentageLength, 30)])
+		self.objdict['tableformat'][attrs['tfname']] = tformat
+		self.objdict['curtable']['formats'][str(self.objdict['curtable']['colcount'] - 1)] = tformat
+	    else:
+		self.objdict['curtable']['formats'][str(self.objdict['curtable']['colcount'] - 1)] = self.objdict['tableformat'][attrs['tfname']]
 	if (attrs['type'] == 'table') or (attrs['type'] == 'lines'):
 	    mergedata = self.objdict['data'][attrs['datasource']]
 	    if not (self.curdata and mergedata):
@@ -446,7 +472,10 @@ class reportConstructor(Dispatcher, ContentHandler):
 			strows = len(rowdata[colcnt])
 			curpos = self.cursor.position()
 			print strows, stcols
-			subtable = self.cursor.insertTable(strows, stcols)
+			if self.objdict['curtable']['formats'].has_key(str(colcnt)):
+			    subtable = self.cursor.insertTable(strows, stcols, self.objdict['curtable']['formats'][str(colcnt)])
+			else:
+			    subtable = self.cursor.insertTable(strows, stcols)
 			for i in range(strows):
 			    strow = rowdata[colcnt][i].split(' | ')
 			    print strow

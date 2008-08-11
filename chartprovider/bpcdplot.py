@@ -1034,7 +1034,7 @@ class cdDrawer(object):
 	    raise ex
 	data = bpbl.get_pie_traf(selstr)
 	if not data: print "Dataset is empty"; return []
-	(x, labels) = data
+	(x, labels, bstr) = data
 	optdict = self.cdchartoptdict['userstrafpie']
 	retlist = []
 	c = PieChart(*optdict['piechart'])
@@ -1053,11 +1053,16 @@ class cdDrawer(object):
 	    args[4] = labels
 	except:
 	    pass'''
+	img = c.makeChart2(0)
+	print x
+	formstr = "%.2f " + bstr
+	x = [formstr % numx for numx in x]
+	print x
 	kwargs['return']['data'] = [(labels[i], x[i]) for i in range(len(x))]
 	# Explode the 1st sector (index = 0)
-	#c.setExplode(0)	
+	#c.setExplode(0)
 	# output the chart
-	retlist.append(c.makeChart2(0))	
+	retlist.append(img)	
 	return retlist
     
     def cddraw_sessions(self, *args, **kwargs):	

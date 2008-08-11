@@ -262,7 +262,7 @@ class MainWindow(QtGui.QMainWindow):
         self.reportActs = []
         i = 0
         for item in _reportsdict:
-            rAct = QtGui.QAction(self.tr(item[2]), self)
+            rAct = QtGui.QAction(self.trUtf8(item[2]), self)
             rAct.setStatusTip(self.tr("Report"))
             rAct.setData(QtCore.QVariant(i))
             self.connect(rAct, QtCore.SIGNAL("triggered()"), self.reportsMenu)

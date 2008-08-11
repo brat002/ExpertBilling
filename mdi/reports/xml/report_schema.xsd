@@ -117,9 +117,10 @@
     <xs:attribute name="setMargin" use="optional" />
     <xs:attribute name="setBorderStyle" use="optional" />
     <xs:attribute name="setPadding" use="optional" />
-    <xs:attribute name="format" />
-    <xs:attribute name="fname" />
+    <xs:attribute name="format" use="optional" />
+    <xs:attribute name="fname" use="optional" />
     <xs:attribute name="name" use="optional" />
+    <xs:attribute name="setBorder" use="optional" />
   </xs:complexType>
   <xs:complexType name="textformat">
     <xs:attribute name="name" />
@@ -133,7 +134,7 @@
   </xs:complexType>
   <xs:complexType name="table">
     <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="column">
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="column">
         <xs:complexType>
           <xs:attribute name="name" use="optional" />
           <xs:attribute name="type" />
@@ -142,6 +143,9 @@
           <xs:attribute name="datasource" use="optional" />
           <xs:attribute name="imerge" use="optional" />
           <xs:attribute name="ibase" use="optional" />
+          <xs:attribute name="tftype" use="optional" />
+          <xs:attribute name="tformat" use="optional" />
+          <xs:attribute name="tfname" use="optional" />
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -161,6 +165,8 @@
     <xs:attribute name="arheadtf" />
     <xs:attribute name="celltf" />
     <xs:attribute name="arheadbf" use="optional" />
+    <xs:attribute name="colConstrType" use="optional" />
+    <xs:attribute name="colConstraints" use="optional" />
   </xs:complexType>
   <xs:complexType name="insertNonText">
     <xs:complexContent mixed="false">
