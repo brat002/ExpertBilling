@@ -95,6 +95,19 @@ def transaction(cursor, account, approved, type, tarif, summ, description, creat
 
     return tr_id
 
+def delete_transaction(cursor, id):
+
+    cursor.execute("""
+    DELETE FROM billservice_transaction WHERE id=%d RETURNING account_id, summ;
+    """ % id)
+
+    row=cursor.fetchone()
+    
+    cursor.execute("""
+    UPDATE billservice_account
+    SET ballance=ballance+%s WHERE id=%s""" % (row['summ'], row['account_id']))
+
+
 def ps_history(cursor, ps_id, transaction, created=None):
     if not created:
         created=datetime.datetime.now()

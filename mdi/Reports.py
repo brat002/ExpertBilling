@@ -42,18 +42,13 @@ _restrictions = {\
                  "one_class" :()\
                 }
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
-class TransactionsReport(QtGui.QDialog):
+class TransactionsReport(QtGui.QMainWindow):
     def __init__(self, connection ,account=None):
         super(TransactionsReport, self).__init__()
         self.account = account
         self.connection = connection
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,703,483).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,903,483).size()).expandedTo(self.minimumSizeHint()))
         
-        self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(94,441,346,25))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
 
         self.user_edit = QtGui.QComboBox(self)
         self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
@@ -71,15 +66,15 @@ class TransactionsReport(QtGui.QDialog):
         self.date_end.setObjectName("date_end")
 
         self.date_start_label = QtGui.QLabel(self)
-        self.date_start_label.setGeometry(QtCore.QRect(402,9,43,20))
+        self.date_start_label.setMargin(10)
         self.date_start_label.setObjectName("date_start_label")
 
         self.date_end_label = QtGui.QLabel(self)
-        self.date_end_label.setGeometry(QtCore.QRect(402,42,43,20))
+        self.date_end_label.setMargin(10)
         self.date_end_label.setObjectName("date_end_label")
 
         self.user_label = QtGui.QLabel(self)
-        self.user_label.setGeometry(QtCore.QRect(11,12,202,20))
+        self.user_label.setMargin(10)
         self.user_label.setObjectName("user_label")
 
         self.go_pushButton = QtGui.QPushButton(self)
@@ -87,44 +82,54 @@ class TransactionsReport(QtGui.QDialog):
         self.go_pushButton.setObjectName("go_pushButton")
 
         self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget.setGeometry(QtCore.QRect(10,70,681,331))
         self.tableWidget = tableFormat(self.tableWidget) 
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        
 
-        self.save_pushButton = QtGui.QPushButton(self)
-        self.save_pushButton.setGeometry(QtCore.QRect(11,441,77,25))
-        self.save_pushButton.setObjectName("save_pushButton")
-
+        self.setCentralWidget(self.tableWidget)
+        
         self.system_transactions_checkbox = QtGui.QCheckBox(self)
-        self.system_transactions_checkbox.setGeometry(QtCore.QRect(11,39,409,18))
+        #self.system_transactions_checkbox.setMargin(10)
         self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
 
-        self.write_off_label = QtGui.QLabel(self)
-        self.write_off_label.setGeometry(QtCore.QRect(12,412,103,19))
-        self.write_off_label.setObjectName("write_off_label")
 
-        self.write_off = QtGui.QLabel(self)
-        self.write_off.setGeometry(QtCore.QRect(121,412,103,19))
-        self.write_off.setObjectName("write_off")
-
-        self.write_on_label = QtGui.QLabel(self)
-        self.write_on_label.setGeometry(QtCore.QRect(230,412,102,19))
-        self.write_on_label.setObjectName("write_on_label")
-
-        self.write_on = QtGui.QLabel(self)
-        self.write_on.setGeometry(QtCore.QRect(338,412,103,19))
-        self.write_on.setObjectName("write_on")
-
-        self.ballance_label = QtGui.QLabel(self)
-        self.ballance_label.setGeometry(QtCore.QRect(447,412,135,19))
-        self.ballance_label.setObjectName("ballance_label")
-
-        self.ballance = QtGui.QLabel(self)
-        self.ballance.setGeometry(QtCore.QRect(588,412,103,19))
-        self.ballance.setObjectName("ballance")
-
+        self.toolBar = QtGui.QToolBar(self)
+        
+        self.toolBar.addWidget(self.user_label)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.user_edit)
+        
+        self.toolBar.addWidget(self.date_start_label)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.date_start)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.date_end_label)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.date_end)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.system_transactions_checkbox)
+        #self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.go_pushButton)
+        self.toolBar.addSeparator()
+        
+        
+        
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        
+        self.actionDeleteTransaction = QtGui.QAction(self)
+        self.actionDeleteTransaction.setIcon(QtGui.QIcon("images/del.png"))
+        self.actionDeleteTransaction.setObjectName("actionDeleteTransaction")
+        
+        self.tableWidget.addAction(self.actionDeleteTransaction)
+        
         self.retranslateUi()
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.actionDeleteTransaction, QtCore.SIGNAL("triggered()"), self.delete_transaction)
+
+        #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
         self.fixtures()
@@ -138,17 +143,18 @@ class TransactionsReport(QtGui.QDialog):
         
         self.tableWidget.clear()
 
-        columns = [u'Id', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
+        columns = [u'#', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
         makeHeaders(columns, self.tableWidget)
         
-        self.save_pushButton.setText(QtGui.QApplication.translate("Dialog", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
+        #self.save_pushButton.setText(QtGui.QApplication.translate("Dialog", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))
-        self.write_off_label.setText(QtGui.QApplication.translate("Dialog", "Списано:", None, QtGui.QApplication.UnicodeUTF8))
-        self.write_off.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.write_on_label.setText(QtGui.QApplication.translate("Dialog", "Начислено", None, QtGui.QApplication.UnicodeUTF8))
-        self.write_on.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Баланс на конец периода", None, QtGui.QApplication.UnicodeUTF8))
-        self.ballance.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
+        #self.write_off_label.setText(QtGui.QApplication.translate("Dialog", "Списано:", None, QtGui.QApplication.UnicodeUTF8))
+        #self.write_off.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
+        #self.write_on_label.setText(QtGui.QApplication.translate("Dialog", "Начислено", None, QtGui.QApplication.UnicodeUTF8))
+        #self.write_on.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
+        #self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Баланс на конец периода", None, QtGui.QApplication.UnicodeUTF8))
+        #self.ballance.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionDeleteTransaction.setText(u"Отменить проводку")
         
     def fixtures(self):
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
@@ -197,15 +203,31 @@ class TransactionsReport(QtGui.QDialog):
             self.addrow(transaction.summ, i, 5)
             self.addrow(transaction.description, i, 6)
             i+=1
-            if transaction.summ<0:
-                write_on +=transaction.summ*(-1)                             
-            if transaction.summ>0:
-                write_off +=transaction.summ
+            #if transaction.summ<0:
+            #    write_on +=transaction.summ*(-1)                             
+            #if transaction.summ>0:
+            #    write_off +=transaction.summ
         self.tableWidget.setColumnHidden(0, True)
                 
-        self.write_off.setText(unicode(write_off))
-        self.write_on.setText(unicode(write_on))
-        self.ballance.setText(unicode(write_on-write_off))
+        #self.write_off.setText(unicode(write_off))
+        #self.write_on.setText(unicode(write_on))
+        #self.ballance.setText(unicode(write_on-write_off))
+        
+    def delete_transaction(self):
+        ids = []
+        import Pyro
+        for index in self.tableWidget.selectedIndexes()[0:6]:
+            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            try:
+                ids.append(int(i))
+            except Exception, e:
+                print "can not convert transaction id to int"
+        try:
+            self.connection.transaction_delete(ids)
+        except Exception, e:
+            print ''.join(Pyro.util.getPyroTraceback(e))
+            
+        self.refresh_table()
         
 class ReportPropertiesDialog(QtGui.QDialog):
     def __init__(self, connection):
