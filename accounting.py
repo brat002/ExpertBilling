@@ -5,7 +5,7 @@ from utilites import create_speed_string, change_speed, PoD, get_active_sessions
 import dictionary
 from threading import Thread
 import threading
-from db import get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
+from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 import Pyro.core
 import mdi.orm.models as models
 import settings
@@ -1752,6 +1752,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         return model
     
+    def transaction_delete(self, ids):
+        for i in ids:
+
+            delete_transaction(self.cur, int(i))
+            
+        self.connection.commit()
+        
     def get(self, sql):
         print sql
         self.cur.execute(sql)
@@ -1898,15 +1905,15 @@ if __name__ == "__main__":
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
     threads=[]
-    threads.append(check_vpn_access(timeout=60, dict=dict))
+    #threads.append(check_vpn_access(timeout=60, dict=dict))
 
 #    traficaccessbill = TraficAccessBill()
 #    traficaccessbill.start()
 
     #threads.append(periodical_service_bill())
     #threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
+    #threads.append(NetFlowAggregate())
+    #threads.append(NetFlowBill())
 
     #threads.append(limit_checker())
 
@@ -1914,10 +1921,10 @@ if __name__ == "__main__":
     #threads.append(ipn_service())
 
 
-    threads.append(settlement_period_service_dog())
+    #threads.append(settlement_period_service_dog())
 
     threads.append(RPCServer())
-    print rosClient("10.20.3.1", 'dolph', '12345', r'/interface/pppoe-server/remove [/interface/pppoe-server/find]')
+    #print rosClient("10.20.3.1", 'dolph', '12345', r'/interface/pppoe-server/remove [/interface/pppoe-server/find]')
     for th in threads:
         th.start()
 
