@@ -67,7 +67,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.readSettings()
 
-        self.setWindowTitle(self.tr("MDI"))
+        self.setWindowTitle(u"Expert Billing Client 0.2")
 
     def closeEvent(self, event):
         self.workspace.closeAllWindows()
@@ -119,9 +119,8 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def about(self):
-        QtGui.QMessageBox.about(self, self.tr("About MDI"),
-            self.tr("The <b>MDI</b> example demonstrates how to write multiple "
-                    "document interface applications using Qt."))
+        QtGui.QMessageBox.about(self, self.tr(u"О программе"),
+            self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
 
     def reportProperties(self):
         child = ReportPropertiesDialog(connection = connection)
@@ -188,7 +187,7 @@ class MainWindow(QtGui.QMainWindow):
         self.reportseldg = ReportSelectDialog(connection=connection)
         if self.reportseldg.exec_()!=1: return
         #print self.reportseldg.zomgdata
-        print self.reportseldg.selectedId
+        #print self.reportseldg.selectedId
         #f = open('tmp1', 'wb')
         #f.write(str(self.reportseldg.chartinfo))
         if self.reportseldg.selectedId != -1:
@@ -397,27 +396,31 @@ class MainWindow(QtGui.QMainWindow):
                 return window
         return None
 
-
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    
+def login():
     child = ConnectDialog()
     if child.exec_()==1:
         try:
             connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address_edit.text()))
             if connection.connection_request(username=unicode(child.name_edit.text()), password=unicode(child.password_edit.text()))==False:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
-                sys.exit()
+                login()
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            sys.exit()
+            login()
+        return connection
     else:
         sys.exit()
+                
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+   
+    connection = login() 
 
     mainwindow = MainWindow()
     mainwindow.show()
     #app.setStyle("cleanlooks")
     app.setStyleSheet(open("./style.qss","r").read())
+
     #QtGui.QStyle.SH_Table_GridLineColor
     sys.exit(app.exec_())

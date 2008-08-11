@@ -325,14 +325,16 @@ class periodical_service_bill(Thread):
             for row in rows:
                 #print row
                 tariff_id=row[0]
+                print tariff_id
+                print "start PS"
                 settlement_period_id=row[1]
                 null_ballance_checkout=row[2]
                 # Получаем список аккаунтов на ТП
                 cur.execute("""
                 SELECT a.account_id, a.datetime::timestamp without time zone, (b.ballance+b.credit) as ballance
-                FROM billservice_accounttarif as a
-                LEFT JOIN billservice_account as b ON b.id=a.account_id
-                WHERE datetime<now() and a.tarif_id='%s' and b.suspended=True
+                FROM billservice_account as b
+                JOIN billservice_accounttarif as a ON a.id=(SELECT id FROM billservice_accounttarif WHERE account_id=b.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                WHERE a.tarif_id=%d and b.suspended=False
                 """ % tariff_id)
                 accounts=cur.fetchall()
                 # Получаем параметры каждой перодической услуги в выбранном ТП
@@ -342,7 +344,7 @@ class periodical_service_bill(Thread):
                 FROM billservice_tariff_periodical_services as p
                 JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
 		        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
-                WHERE p.tariff_id='%s'
+                WHERE p.tariff_id=%d
                 """ % tariff_id)
                 rows_ps=cur.fetchall()
                 # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
@@ -358,7 +360,9 @@ class periodical_service_bill(Thread):
                     autostart_sp=row_ps[8]
 
                     for account in accounts:
+                        
                         account_id = account[0]
+                        print "account_id for ps", ps_id, account_id
                         account_datetime = account[1]
                         account_ballance = account[2]
                         # Если балланс>0 или разрешено снятие денег при отрицательном баллансе
@@ -423,11 +427,18 @@ class periodical_service_bill(Thread):
                                 # для всех сотальных False
                                 # Если последняя проводка меньше или равно дате начала периода-делаем снятие
                                 summ=0
-                                if last_checkout<period_start or (last_checkout is None and account_datetime<period_start):
-                                    lc=last_checkout-period_start
-                                    nums, ost=divmod(lc.seconds, n)
-                                    for i in xrange(nums-1):
-                                        summ+=ps_cost
+                                if last_checkout is None:
+                                    first_time=True
+                                    last_checkout=now
+                                else:
+                                    first_time=False
+                                
+                                if (first_time==True and account_datetime<period_start) or last_checkout<period_start:
+                                    if not first_time:
+                                        lc=last_checkout-period_start
+                                        nums, ost=divmod(lc.seconds, n)
+                                        for i in xrange(nums-1):
+                                            summ+=ps_cost
 
                                     transaction_id = transaction(cursor=cur,
                                     account=account_id,
@@ -653,11 +664,11 @@ class NetFlowAggregate(Thread):
             """
             )
             raw_streams=cur.fetchall()
+            
             """
             Берём строку, ищем пользователя, у которого адрес совпадает или с dst или с src.
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
             """
-
             for stream in raw_streams:
                 nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id,\
                 traffic_transmit_service, tarif_id, store = stream
@@ -781,7 +792,7 @@ class NetFlowBill(Thread):
         else:
             
             return 0
-        print direction
+        #print direction
         
         #print octets_summ, trafic_transmit_service_id, traffic_class_id, d    
         cur.execute(
@@ -793,7 +804,7 @@ class NetFlowBill(Thread):
         JOIN billservice_timeperiod_time_period_nodes ON billservice_timeperiod_time_period_nodes.timeperiod_id=tns.timeperiod_id
         JOIN billservice_timeperiodnode AS tpn on tpn.id=billservice_timeperiod_time_period_nodes.timeperiodnode_id 
         WHERE ((ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end<='%s'/(1024*1024)) or (ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end='0' ) ) and ttsn.traffic_transmit_service_id='%s' and tcn.trafficclass_id='%s' and ttsn.%s;
-        """ % (octets_summ,octets_summ,octets_summ,trafic_transmit_service_id, traffic_class_id, d)
+        """ % (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
         )
         
         

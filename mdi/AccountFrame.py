@@ -751,7 +751,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         
         self.periodical_tableWidget.clear()
-        columns=[u'Id', u'Название', u'Период', u'Стоимость', u'Способ снятия']
+        columns=[u'Id', u'Название', u'Период', u'Способ снятия', u'Стоимость']
         
         makeHeaders(columns, self.periodical_tableWidget)
         
