@@ -886,7 +886,7 @@ class StatReport(QtGui.QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Сетевая статистика", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", self.chartinfo[2], None, QtGui.QApplication.UnicodeUTF8))
     
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))

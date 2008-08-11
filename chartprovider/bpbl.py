@@ -402,7 +402,19 @@ class bpbl(object):
 	labels = [tuple[0] for tuple in data]'''
 	x = []; labels = []
 	[(x.append(tuple[1]), labels.append(tuple[0])) for tuple in data]
-	return (x, labels)
+	x_max = max(x)
+	if x_max < 6000:
+	    bstr = 'b'
+	elif x_max < 6000000:
+	    x  = [float(numx) / 1024 for numx in x]
+	    bstr  = 'kb'
+	elif x_max < 6000000000:
+	    x  = [float(numx) / 1048576 for numx in x]
+	    bstr  = 'Mb'
+	else:
+	    x  = [float(numx) / 1073741824 for numx in x]
+	    bstr  = 'Gb'
+	return (x, labels, bstr)
 
     @staticmethod
     def get_trans(selstr, trtype, sec=0):

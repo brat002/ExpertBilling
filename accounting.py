@@ -1697,8 +1697,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection = pool.connection()
         #print dir(self.connection)
         self.connection._con._con.set_client_encoding('UTF8')
-        self.listcur = self.connection.cursor()
-        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)        
+        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        self.listconnection = pool.connection()
+        self.listconnection._con._con.set_client_encoding('UTF8')
+        self.listcur = self.listconnection.cursor()
+              
         #self._cddrawer = cdDrawer()
         
     def run(self):
