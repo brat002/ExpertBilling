@@ -184,10 +184,12 @@ class cdDrawer(object):
     def cddraw(self, *args, **kwargs):
 	'''Plotting methods' handler
 	@args[0] - method identifier'''
-	method = getattr(self, "cddraw_" + args[0], None)
+	methodName = self.translate_args(*args, **kwargs)
+	print args
+	print methodName
+	method = getattr(self, "cddraw_" + methodName, None)
 	if callable(method):
-	    self.set_options(args[0], kwargs['options'])
-	    print args
+	    self.set_options(methodName, kwargs['options'])
 	    args = args[1:]
 	    res =  method(*args, **kwargs)
 	    res.append(kwargs['return'])
@@ -196,6 +198,18 @@ class cdDrawer(object):
 	    raise Exception("Plotting method #" + args[0] + "# does not exist!" )
     
     
+    '''def cddraw_nfs_u_traf(self, *args, **kwargs):
+	if len(kwargs['users']) == 1:
+	    return self.cddraw_nfs_user_traf(*args, **kwargs)
+	else:
+	    return self.cddraw_nfs_total_users_traf(*args, **kwargs)
+	
+    def cddraw_nfs_u_speed(self, *args, **kwargs):
+	if len(kwargs['users']) == 1:
+	    return self.cddraw_nfs_user_speed(*args, **kwargs)
+	else:
+	    return self.cddraw_nfs_total_users_speed(*args, **kwargs)'''
+	
     def cddraw_nfs_user_traf(self, *args, **kwargs):
 	try:
 
@@ -803,6 +817,11 @@ class cdDrawer(object):
 	    
         return retlist
 
+    def cddraw_nfs_n_traf(self, *args, **kwargs):
+	if len(kwargs['servers']) == 1:
+	    return self.cddraw_nfs_nas_traf(*args, **kwargs)
+	else:
+	    return self.cddraw_nfs_total_nass_traf(*args, **kwargs)
     def cddraw_nfs_nas_traf(self, *args, **kwargs):
 	try:	    
 	    #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
@@ -941,7 +960,9 @@ class cdDrawer(object):
     def cddraw_nfs_total_classes_speed(self, *args, **kwargs):
 	try:
 	    #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-	    selstr = selstrdict['nfs'] % (', traffic_class_id', '', args[0].isoformat(' '), args[1].isoformat(' '), ("AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['classes']])))
+	    selstr = selstrdict['nfs'] % (', traffic_class_id', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+					  (((kwargs.has_key('nas')) and ("AND (nas_id IN (%s))" % ', '.join([str(int) for int in kwargs['servers']]))) or  ((not kwargs.has_key('nas')) and ' ')) + \
+				          (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')))
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -1234,4 +1255,27 @@ class cdDrawer(object):
     def set_options(self, chartname, optdict):
 	for key in optdict.iterkeys():
 	    if self.cdchartoptdict[chartname].has_key(key): self.cdchartoptdict[chartname][key] = optdict[key]
-	    
+    
+    def translate_args(self, *args, **kwargs):
+	if '' + args[0] == "nfs_u_traf":
+	    if len(kwargs['users']) == 1:
+		mname = "nfs_user_traf"
+	    else:
+		mname = "nfs_total_users_traf"
+		
+	elif '' + args[0] == "nfs_u_speed":
+	    if len(kwargs['users']) == 1:
+		mname = "nfs_user_speed"
+	    else:
+		mname = "nfs_total_users_speed"
+		
+	elif '' + args[0] == "nfs_n_traf":
+	    if len(kwargs['servers']) == 1:
+		mname = "nfs_nas_traf"
+	    else:
+		mname = "nfs_total_nass_traf"
+	else:
+	    mname = args[0]
+	
+	
+	return mname
