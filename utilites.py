@@ -734,7 +734,7 @@ def rosClient(host, login, password, command):
     apiros.writeSentence(commands)
     while True:
         x = apiros.readSentence()
-        print x
+        #print x
         if x[0]=='!done':
             break
         result.append(x)
