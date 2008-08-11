@@ -459,6 +459,7 @@ class Account(models.Model):
     ballance=models.FloatField(u'Балланс', blank=True)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
+    balance_blocked = models.DateTimeField(blank=True, default=False)
     speed = models.CharField(max_length=96, blank=True, default="")
 
 

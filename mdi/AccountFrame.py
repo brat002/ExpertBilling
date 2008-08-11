@@ -2758,20 +2758,23 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        
+        #self.toolBar.setMaximumHeight(24)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
 
         self.addAction = QtGui.QAction(u"Добавить польователя", self)
-        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.addAction.setIcon(QtGui.QIcon("images/user_add.png"))
+
 
         self.delAction = QtGui.QAction(u"Удалить пользователя",self)
-        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
+        self.delAction.setIcon(QtGui.QIcon("images/user_delete.png"))
 
         self.addTarifAction = QtGui.QAction(self)
-        self.addTarifAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.addTarifAction.setIcon(QtGui.QIcon("images/folder_add.png"))
         
         self.delTarifAction = QtGui.QAction(self)
-        self.delTarifAction.setIcon(QtGui.QIcon("images/del.png"))
+        self.delTarifAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         
         self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
         self.transactionAction.setIcon(QtGui.QIcon("images/add.png"))
@@ -2784,7 +2787,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.actionEnableSession = QtGui.QAction(u'Включить на сервере доступа',self)
         self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
-                
         
         
         self.tableWidget.addAction(self.addAction)
@@ -2989,8 +2991,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         if color:
             if int(value)<0:
                 headerItem.setBackgroundColor(QtGui.QColor(color))
+                headerItem.setTextColor(QtGui.QColor('#ffffff'))
         
-        if not enabled:
+        elif not enabled:
             headerItem.setTextColor(QtGui.QColor('#FF0100'))
         
         if type(value)==BooleanType and value==True:
@@ -2999,7 +3002,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             headerItem.setIcon(QtGui.QIcon("images/false.png"))
             
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/account.png"))
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)

@@ -34,7 +34,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     @param session_id: ID of VPN session
     @param format_string: format string       
     """
-    print account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string
+    #print account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string
     
     access_type = access_type.lower()
     if format_string=='' and access_type in ['pptp', 'pppoe']:
@@ -47,6 +47,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         doc.AddAttribute('NAS-Identifier', str(nas_name))
         doc.AddAttribute('User-Name', str(account_name))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
+        doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas_ip), 1700))
         (data, addrport) = sock.recvfrom(8192)
@@ -75,7 +76,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                              'session': session_id
                              }
                             )
-        print command_string
+        #print command_string
         if nas_type=='mikrotik3':
             """
             ДОбавить проверку что вернул сервер доступа
@@ -98,8 +99,8 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
 def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, access_type, format_string, speed):
     
     access_type = access_type.lower()
-    print access_type
-    if format_string=='' and access_type in ['pptp', 'pppoe'] and nas_type in ['mikrotik2.8', 'mikrotik2.9', 'mikrotik3']:
+    #print access_type
+    if format_string=='' and access_type in ['pptp', 'pppoe']:
         #Send CoA
         
         speed_string= create_speed_string(speed, coa=True)
@@ -112,6 +113,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         doc.AddAttribute('NAS-Identifier', nas_name)
         doc.AddAttribute('User-Name', account_name)
         doc.AddAttribute('Acct-Session-Id', str(session_id))
+        doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
         doc.AddAttribute((14988,8), speed_string)
             
         doc_data=doc.RequestPacket()
@@ -142,7 +144,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
                              }
         speed = get_decimals_speeds(speed)
         command_dict.update(speed)
-        print 'command_dict=', command_dict
+        #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
         print command_string
@@ -783,12 +785,12 @@ def convert_values(value):
         return str(value)
                 
 def get_decimals_speeds(params):
-    print "before", params
+    #print "before", params
     for param in params:
         values = map(convert_values, str(params[param]).split('/'))
         #print values
 
         params[param]='/'.join(values)
-    print 'after', params
+    #print 'after', params
     return params
             

@@ -20,42 +20,48 @@ actions = {
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'ipn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'ipn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$ipaddress disabled=no',
                'remove':'/ip firewall address-list remove $user_id',
                'enable':'/ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id disabled=no',
                'disable': '/ip firewall address-list remove $user_id',
-               'speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
+               'ipn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit ',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'common_ssh':{'create':'',
                'remove':'',
                'enable':'',
                'disable':'',
-               'speed': '',
+               'vpn_speed': '',
+               'ipn_speed': '',
                'pod': ''
                },
 'common_radius':{'create':'',
                'remove':'',
                'enable':'',
                'disable':'',
-               'speed': '',
+               'vpn_speed': '',
+               'ipn_speed': '',
                'pod': ''
                },
 '---':{'create':'',
                'remove':'',
                'enable':'',
                'disable':'',
-               'speed': '',
+               'vpn_speed': '',
+               'ipn_speed': '',
                'pod': ''
                },
 }
@@ -69,16 +75,16 @@ class AddNasFrame(QtGui.QDialog):
 
 
         self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,403,395).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,403,445).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(60,360,341,32))
+        self.buttonBox.setGeometry(QtCore.QRect(60,410,341,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
 
         self.maintabWidget = QtGui.QTabWidget(self)
-        self.maintabWidget.setGeometry(QtCore.QRect(10,10,391,341))
+        self.maintabWidget.setGeometry(QtCore.QRect(10,10,391,391))
         self.maintabWidget.setObjectName("maintabWidget")
 
         self.general_tab = QtGui.QWidget()
@@ -205,13 +211,22 @@ class AddNasFrame(QtGui.QDialog):
         self.pod_textEdit.setGeometry(QtCore.QRect(10,230,371,20))
         self.pod_textEdit.setObjectName("pod_textEdit")
 
-        self.set_speed_label = QtGui.QLabel(self.commands_tab)
-        self.set_speed_label.setGeometry(QtCore.QRect(10,260,371,16))
-        self.set_speed_label.setObjectName("set_speed_label")
+        self.set_vpn_speed_label = QtGui.QLabel(self.commands_tab)
+        self.set_vpn_speed_label.setGeometry(QtCore.QRect(10,260,371,16))
+        self.set_vpn_speed_label.setObjectName("set_vpn_speed_label")
 
-        self.set_speed_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.set_speed_textEdit.setGeometry(QtCore.QRect(10,280,371,20))
-        self.set_speed_textEdit.setObjectName("set_speed_textEdit")
+        self.set_vpn_speed_textEdit = QtGui.QLineEdit(self.commands_tab)
+        self.set_vpn_speed_textEdit.setGeometry(QtCore.QRect(10,280,371,20))
+        self.set_vpn_speed_textEdit.setObjectName("set_vpn_speed_textEdit")
+
+        self.set_ipn_speed_label = QtGui.QLabel(self.commands_tab)
+        self.set_ipn_speed_label.setGeometry(QtCore.QRect(10,310,371,16))
+        self.set_ipn_speed_label.setObjectName("set_ipn_speed_label")
+
+        self.set_ipn_speed_lineEdit = QtGui.QLineEdit(self.commands_tab)
+        self.set_ipn_speed_lineEdit.setGeometry(QtCore.QRect(10,330,371,20))
+        self.set_ipn_speed_lineEdit.setObjectName("set_ipn_speed_lineEdit")
+        
         self.maintabWidget.addTab(self.commands_tab,"")
         self.ssh_name_label.setBuddy(self.ssh_name_lineEdit)
         self.ssh_password_label.setBuddy(self.ssh_password_lineEdit)
@@ -268,7 +283,8 @@ class AddNasFrame(QtGui.QDialog):
         self.enable_user_label.setText(QtGui.QApplication.translate("Dialog", "Активировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.disable_user_label.setText(QtGui.QApplication.translate("Dialog", "Деактивировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.pod_label.setText(QtGui.QApplication.translate("Dialog", "Сбросить сессию пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.set_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость", None, QtGui.QApplication.UnicodeUTF8))
+        self.set_vpn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для VPN клиента", None, QtGui.QApplication.UnicodeUTF8))
+        self.set_ipn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для IPN клиента", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.commands_tab), QtGui.QApplication.translate("Dialog", "Команды", None, QtGui.QApplication.UnicodeUTF8))
 
 
@@ -291,7 +307,8 @@ class AddNasFrame(QtGui.QDialog):
         self.enable_user_textEdit.setText(actions[nas_type]['enable'])
         self.disable_user_textEdit.setText(actions[nas_type]['disable'])
         
-        self.set_speed_textEdit.setText(actions[nas_type]['speed'])
+        self.set_vpn_speed_textEdit.setText(actions[nas_type]['vpn_speed'])
+        self.set_ipn_speed_lineEdit.setText(actions[nas_type]['ipn_speed'])
         self.pod_textEdit.setText(actions[nas_type]['pod'])
         pass
     
@@ -347,7 +364,8 @@ class AddNasFrame(QtGui.QDialog):
         model.user_enable_action= unicode(self.enable_user_textEdit.text() or "")
         model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
         model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
-        model.speed_action = unicode(self.set_speed_textEdit.text() or "")
+        model.vpn_speed_action = unicode(self.set_vpn_speed_textEdit.text() or "")
+        model.ipn_speed_action = unicode(self.set_ipn_speed_lineEdit.text() or "")
         model.reset_action = unicode(self.pod_textEdit.text() or "")
         
 
@@ -383,7 +401,10 @@ class AddNasFrame(QtGui.QDialog):
             self.disable_user_textEdit.setText(unicode(self.model.user_disable_action))
             
             
-            self.set_speed_textEdit.setText(unicode(self.model.speed_action))
+            self.set_vpn_speed_textEdit.setText(unicode(self.model.vpn_speed_action))
+            self.set_ipn_speed_lineEdit.setText(unicode(self.model.ipn_speed_action))
+            
+            
             self.pod_textEdit.setText(unicode(self.model.reset_action))
             
 
