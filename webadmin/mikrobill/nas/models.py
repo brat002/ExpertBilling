@@ -48,7 +48,8 @@ class Nas(models.Model):
     speed_version = models.SmallIntegerField(verbose_name=u'Версия NetFlow', editable=False, blank=True, null=True, default=5)
     support_coa = models.BooleanField(verbose_name=u'Сервер поддерживает CoA', help_text=u"Технология, позволяющая менять клиенту скорость или другие параметры без обрыва сессии. Подробно описана в RFC 3576", default=True)
     confstring = models.TextField(verbose_name="Конфигурация по запросу", blank=True, default='')
-    speed_action = models.TextField(max_length=255, blank=True, default="")
+    vpn_speed_action = models.TextField(max_length=255, blank=True, default="")
+    ipn_speed_action = models.TextField(max_length=255, blank=True, default="")
     reset_action = models.TextField(max_length=255, blank=True, default="")
     
     def save(self):

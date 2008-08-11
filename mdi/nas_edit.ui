@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>395</height>
+    <height>445</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -16,7 +16,7 @@
    <property name="geometry" >
     <rect>
      <x>60</x>
-     <y>360</y>
+     <y>410</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -34,7 +34,7 @@
      <x>10</x>
      <y>10</y>
      <width>391</width>
-     <height>341</height>
+     <height>391</height>
     </rect>
    </property>
    <property name="currentIndex" >
@@ -437,7 +437,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QLabel" name="set_speed_label" >
+    <widget class="QLabel" name="set_vpn_speed_label" >
      <property name="geometry" >
       <rect>
        <x>10</x>
@@ -447,14 +447,37 @@
       </rect>
      </property>
      <property name="text" >
-      <string>Установить скорость</string>
+      <string>Установить скорость для VPN клиента</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="set_speed_textEdit" >
+    <widget class="QLineEdit" name="set_vpn_speed_textEdit" >
      <property name="geometry" >
       <rect>
        <x>10</x>
        <y>280</y>
+       <width>371</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="set_ipn_speed_label" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>310</y>
+       <width>371</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Установить скорость для IPN клиента</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="set_ipn_speed_lineEdit" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>330</y>
        <width>371</width>
        <height>20</height>
       </rect>
