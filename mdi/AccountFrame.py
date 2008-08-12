@@ -2543,42 +2543,40 @@ class AddAccountFrame(QtGui.QDialog):
             #убрать действие с чекбокса "получать адрес по дхцп"
             #проверка уникальности MAC создание/редактирование
             #classframe - validate ip's
-            while 1:
-                if self.ipn_ip_address_edit.text():
-                    try:
-                        ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
-                        if ipn_address_account.username != model.username:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                            self.connection.rollback()
-                            return  
-                                              
-                    except Exception, ex:
-                        print ex
-                    model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
-                else:
-                    model.ipn_ip_address = '0.0.0.0'
-                    
-    
-                if self.vpn_ip_address_edit.text():
-                    try:
-                        vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
-                        if vpn_address_account.username!=model.username:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                            self.connection.rollback()
-                            return    
-                              
-                    except Exception, ex:
-                        print ex
-                    
-                    model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
-                else:
-                    model.vpn_ip_address = '0.0.0.0'
-                    
-                if not ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
-                    break
-                else:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
-                    return
+            #while 1:
+            if self.ipn_ip_address_edit.text():
+                try:
+                    ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
+                    if ipn_address_account.username != model.username:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        self.connection.rollback()
+                        return  
+                                          
+                except Exception, ex:
+                    print ex
+                model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
+            else:
+                model.ipn_ip_address = '0.0.0.0'
+                
+
+            if self.vpn_ip_address_edit.text():
+                try:
+                    vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
+                    if vpn_address_account.username!=model.username:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        self.connection.rollback()
+                        return    
+                          
+                except Exception, ex:
+                    print ex
+                
+                model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
+            else:
+                model.vpn_ip_address = '0.0.0.0'
+                
+            if ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
+                return
     
                 
             if unicode(self.ipn_mac_address_edit.text()) != '00:00:00:00:00:00' and self.assign_ipn_ip_from_dhcp_edit.checkState()==2:
