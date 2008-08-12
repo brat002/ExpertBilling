@@ -6,6 +6,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import dateDelim
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -13,7 +14,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.connection = connection
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
-
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
 
         self.tableWidget = QtGui.QTableWidget()
@@ -127,7 +128,7 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.caller_id, i, 2)
             self.addrow(self.tableWidget, session.nas_name, i, 3)
             self.addrow(self.tableWidget, session.framed_protocol, i, 4)
-            self.addrow(self.tableWidget, session.date_start.strftime("%Y-%m-%d %H:%M:%S"), i, 6)
+            self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
             self.addrow(self.tableWidget, session.bytes_out, i, 7)
             self.addrow(self.tableWidget, session.bytes_in, i, 8)
             self.addrow(self.tableWidget, session.session_time, i, 9)

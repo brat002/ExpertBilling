@@ -5,11 +5,13 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import dateDelim
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
 import thread
 import time
+
 
 #TODO: поставить заглушки на единичный/множественный выбор через len(kwargs[key]) == 1 etc
 _xmlpath = "reports/xml"
@@ -46,11 +48,13 @@ _restrictions = {\
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 class TransactionsReport(QtGui.QMainWindow):
     def __init__(self, connection ,account=None):
+
         super(TransactionsReport, self).__init__()
         self.account = account
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,903,483).size()).expandedTo(self.minimumSizeHint()))
-        
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
         self.user_edit = QtGui.QComboBox(self)
         self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
@@ -60,6 +64,7 @@ class TransactionsReport(QtGui.QMainWindow):
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
+
 
         self.date_end = QtGui.QDateTimeEdit(self)
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
@@ -142,7 +147,8 @@ class TransactionsReport(QtGui.QMainWindow):
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
         self.user_label.setText(QtGui.QApplication.translate("Dialog", "Пользователь", None, QtGui.QApplication.UnicodeUTF8))
         self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Пыщь", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
         columns = [u'#', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
@@ -198,7 +204,7 @@ class TransactionsReport(QtGui.QMainWindow):
         write_off = 0
         for transaction in transactions:
             self.addrow(transaction.id, i, 0)
-            self.addrow(transaction.created.strftime("%d-%m-%Y %H:%M:%S"), i, 1)
+            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 1)
             self.addrow(transaction.bill, i, 2)
             self.addrow(transaction.transaction_type_name, i, 3)
             self.addrow(transaction.tariff_name, i, 4)
@@ -235,6 +241,8 @@ class ReportPropertiesDialog(QtGui.QDialog):
     def __init__(self, connection):
         super(ReportPropertiesDialog, self).__init__()
         self.connection = connection
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.users = []
         self.classes = []
         self.nas = None
@@ -379,8 +387,8 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.remove_user_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.nas_label.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа:", None, QtGui.QApplication.UnicodeUTF8))
         self.to_label.setText(QtGui.QApplication.translate("Dialog", "До:", None, QtGui.QApplication.UnicodeUTF8))
-        self.to_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
-        self.from_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.to_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        self.from_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         self.from_label.setText(QtGui.QApplication.translate("Dialog", "От:", None, QtGui.QApplication.UnicodeUTF8))
         self.all_users_label.setText(QtGui.QApplication.translate("Dialog", "Доступные пользователи", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_users_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные пользователи", None, QtGui.QApplication.UnicodeUTF8))
@@ -471,7 +479,8 @@ class NetFlowReport(QtGui.QMainWindow):
     def __init__(self, connection):
         super(NetFlowReport, self).__init__()
         self.connection = connection
-        
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.current_page=0
         
         self.protocols_reverse = {
@@ -491,6 +500,7 @@ class NetFlowReport(QtGui.QMainWindow):
                   '6' : 'TCP',
                   '17': 'UDP'
                   }
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.child = ReportPropertiesDialog(connection = self.connection)
         self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
         self.label = QtGui.QLabel(u"Навигатор")
@@ -712,7 +722,7 @@ class NetFlowReport(QtGui.QMainWindow):
                     self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
 
 
-                self.addrow(flow.date_start.strftime("%d-%m-%Y %H:%M:%S"), i, 9)
+                self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 9)
             else:
                 self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
                 
@@ -964,6 +974,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.one_user   = False
         self.one_server = False
         self.one_class  = False
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -980,7 +991,7 @@ class ReportOptionsDialog(QtGui.QDialog):
 
         self.mainTab = QtGui.QWidget()
         self.mainTab.setObjectName("mainTab")
-
+        print self.datetimeFormat
         self.intervals_groupBox = QtGui.QGroupBox(self.mainTab)
         self.intervals_groupBox.setGeometry(QtCore.QRect(10,10,411,101))
         self.intervals_groupBox.setFlat(False)
@@ -990,11 +1001,13 @@ class ReportOptionsDialog(QtGui.QDialog):
 
         self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
         self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
+        self.date_end_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
         dt_now = datetime.datetime.now()
         self.date_end_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.date_end_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
         self.date_end_dateTimeEdit.setCalendarPopup(True)
         self.date_end_dateTimeEdit.setObjectName("date_end_dateTimeEdit")
+        
 
         self.date_start_label = QtGui.QLabel(self.intervals_groupBox)
         self.date_start_label.setGeometry(QtCore.QRect(20,30,91,18))
@@ -1193,9 +1206,9 @@ class ReportOptionsDialog(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
         self.intervals_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Интервал дат", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_end_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
         self.settings_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
         self.grid_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сетка", None, QtGui.QApplication.UnicodeUTF8))

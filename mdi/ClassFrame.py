@@ -290,16 +290,16 @@ class ClassNodeFrame(QtGui.QDialog):
         
         if self.model:
             
-           self.name_edit.setText(unicode(self.model.name))
-           self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
-           self.src_ip_edit.setText(unicode(self.model.src_ip))
-           self.src_mask_edit.setText(unicode(self.model.src_mask))
-           self.src_port_edit.setText(unicode(self.model.src_port or 0))
-           self.dst_ip_edit.setText(unicode(self.model.dst_ip))
-           self.dst_mask_edit.setText(unicode(self.model.dst_mask))
-           self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
-           #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
-           self.next_hop_edit.setText(unicode(self.model.next_hop))
+            self.name_edit.setText(unicode(self.model.name))
+            self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
+            self.src_ip_edit.setText(unicode(self.model.src_ip))
+            self.src_mask_edit.setText(unicode(self.model.src_mask))
+            self.src_port_edit.setText(unicode(self.model.src_port or 0))
+            self.dst_ip_edit.setText(unicode(self.model.dst_ip))
+            self.dst_mask_edit.setText(unicode(self.model.dst_mask))
+            self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
+            #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
+            self.next_hop_edit.setText(unicode(self.model.next_hop))
 
                                        
 

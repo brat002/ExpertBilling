@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui
 import Pyro.core
 import traceback
 from helpers import Object as Object
-
+from helpers import dateDelim
 from types import BooleanType
 import copy
 
@@ -1829,12 +1829,12 @@ class TarifFrame(QtGui.QDialog):
                         self.connection.create("INSERT INTO billservice_tariff_onetime_services(tariff_id, onetimeservice_id) VALUES(%d, %d)" % (model.id, onetime_service_id))
                         #onetime_service.tariff_set.add(model)
             elif self.onetime_services_checkbox.checkState()==0:
-                 onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
-                 if len(onetimeservices)>0:
-                     #сделать удаление самих сущностей
-                     self.connection.delete("DELETE FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model_id)
-                     for onetimeservice in onetimeservices:
-                         self.connection.delete("DELETE FROM billservice_onetimeservice WHERE onetimeservice_id=%d" % onetimeservice.onetimeservice_id)
+                onetimeservices = self.connection.sql("SELECT * FROM billservice_tariff_onetime_services WHERE tariff_id=%d" % model_id)
+                if len(onetimeservices)>0:
+                    #сделать удаление самих сущностей
+                    self.connection.delete("DELETE FROM billservice_tariff_onetime_services WHERE tarif_id=%d" % model_id)
+                    for onetimeservice in onetimeservices:
+                        self.connection.delete("DELETE FROM billservice_onetimeservice WHERE onetimeservice_id=%d" % onetimeservice.onetimeservice_id)
                                                    
             
             #Периодические услуги
@@ -2142,7 +2142,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.connection.commit()
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,340,435).size()).expandedTo(self.minimumSizeHint()))
-
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(80,400,251,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -2535,7 +2535,10 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 model.speed = ""
     
-    
+            #проверка на уникальность ipn/vpn + возможность редактирования в случае отрицательного варианта
+            #один из адресов должен быть заполнен полностью
+            #убрать действие с чекбокса "получать адрес по дхцп"
+            #проверка уникальности MAC создание/редактирование
             if unicode(self.ipn_ip_address_edit.text())!="...":
                 try:
                     ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
@@ -2682,7 +2685,7 @@ class AddAccountFrame(QtGui.QDialog):
 
                 self.addrow(a.id, i,0)
                 self.addrow(a.tarif_name, i,1)
-                self.addrow(a.datetime.strftime("%d-%m-%Y %H:%M:%S"), i,2)
+                self.addrow(a.datetime.strftime(self.strftimeFormat), i,2)
                 self.accounttarif_table.setRowHeight(i, 17)
                 self.accounttarif_table.setColumnHidden(0, True)
                 i+=1
@@ -2703,7 +2706,7 @@ class AddAccountFrame(QtGui.QDialog):
             session = self.connection.get("SELECT * FROM radius_activesession WHERE account_id=%d ORDER BY date_start DESC LIMIT 1" % self.model.id)
             print session
             if session:
-                return unicode(session.date_start.strftime("%Y-%m-%d %H:%M:%S"))
+                return unicode(session.date_start.strftime(self.strftimeFormat))
             else:
                 return ""
             
@@ -2717,7 +2720,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connection = connection
         self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
-        
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.centralwidget = QtGui.QWidget(self)
         
         self.splitter = QtGui.QSplitter(self.centralwidget)
@@ -3063,7 +3066,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.suspended, i,9, enabled=a.status)
             self.addrow(a.status, i,10, enabled=a.status)
-            self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,11, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 16)
             
