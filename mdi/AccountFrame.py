@@ -2403,9 +2403,9 @@ class AddAccountFrame(QtGui.QDialog):
         self.ipn_mac_address_label.setText(QtGui.QApplication.translate("Dialog", "Аппаратный адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "00:00:00:00:00:00;0", None, QtGui.QApplication.UnicodeUTF8))
         self.vpn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Виртуальный IP адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.vpn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.vpn_ip_address_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        #self.ipn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.vpn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.vpn_ip_address_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.information_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
         self.last_vpn_login_label.setText(QtGui.QApplication.translate("Dialog", "Последний VPN вход:", None, QtGui.QApplication.UnicodeUTF8))
         self.prepaid_trafic_label.setText(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик:", None, QtGui.QApplication.UnicodeUTF8))
@@ -2426,7 +2426,7 @@ class AddAccountFrame(QtGui.QDialog):
         "", None, QtGui.QApplication.UnicodeUTF8))
         self.nas_label.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Сетевые настройки", None, QtGui.QApplication.UnicodeUTF8))
-
+        
         
         self.accounttarif_table.clear()
         self.accounttarif_table.setColumnCount(4)
@@ -2437,7 +2437,10 @@ class AddAccountFrame(QtGui.QDialog):
         " пользователя и создать задания для перехода на\n"
         " новые тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+        self.ipn_ip_address_edit.setValidator(self.ipValidator)
+        self.vpn_ip_address_edit.setValidator(self.ipValidator)
         columns=[u'#', u'Тарифный план', u'Дата']
 
         makeHeaders(columns, self.accounttarif_table)
@@ -2510,7 +2513,7 @@ class AddAccountFrame(QtGui.QDialog):
                 
             else:
                 print 'New account'
-                if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.username_edit.text())).count>0:
+                if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.username_edit.text())).count > 0:
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                     self.connection.rollback()
                     return
@@ -2539,36 +2542,43 @@ class AddAccountFrame(QtGui.QDialog):
             #один из адресов должен быть заполнен полностью
             #убрать действие с чекбокса "получать адрес по дхцп"
             #проверка уникальности MAC создание/редактирование
-            if unicode(self.ipn_ip_address_edit.text())!="...":
-                try:
-                    ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
-                    if ipn_address_account.username!=model.username:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                        self.connection.rollback()
-                        return  
-                                          
-                except:
-                    pass
-                model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
-            else:
-                model.ipn_ip_address = '0.0.0.0'
-                
-
-            if unicode(self.vpn_ip_address_edit.text())!="...":
-                print 'ok'
-                try:
-                    vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
-                    if vpn_address_account.username!=model.username:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
-                        self.connection.rollback()
-                        return    
-                          
-                except Exception, e:
-                    pass
-                
-                model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
-            else:
-                model.vpn_ip_address = '0.0.0.0'
+            #classframe - validate ip's
+            while 1:
+                if self.ipn_ip_address_edit.text():
+                    try:
+                        ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
+                        if ipn_address_account.username != model.username:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                            self.connection.rollback()
+                            return  
+                                              
+                    except Exception, ex:
+                        print ex
+                    model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
+                else:
+                    model.ipn_ip_address = '0.0.0.0'
+                    
+    
+                if self.vpn_ip_address_edit.text():
+                    try:
+                        vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
+                        if vpn_address_account.username!=model.username:
+                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                            self.connection.rollback()
+                            return    
+                              
+                    except Exception, ex:
+                        print ex
+                    
+                    model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
+                else:
+                    model.vpn_ip_address = '0.0.0.0'
+                    
+                if not ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
+                    break
+                else:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
+                    return
     
                 
             if unicode(self.ipn_mac_address_edit.text()) != '00:00:00:00:00:00' and self.assign_ipn_ip_from_dhcp_edit.checkState()==2:
