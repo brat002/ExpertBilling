@@ -74,7 +74,7 @@ class TrafficNode(object):
             res['protocol']=True
             
         res['direction']=self.direction
-        print res
+        #print res
         return res
 
 
@@ -143,7 +143,7 @@ class Flow5(Flow):
 
 
 	LENGTH = struct.calcsize("!4s4s4sHHIIIIHHBBBBHHBBH")
-	print LENGTH
+	#print LENGTH
 	def __init__(self, data):
 		if len(data) != self.LENGTH:
 			raise ValueError, "Short flow"
@@ -237,7 +237,7 @@ class NetFlowPacket:
                         }
                         );break
 
-            print flows
+            #print flows
    
             cur.executemany("""
                         INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)

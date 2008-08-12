@@ -1076,7 +1076,9 @@ class limit_checker(Thread):
                 if limit_mode==True:
                     settlement_period_start=datetime.datetime.now()-datetime.timedelta(seconds=delta)
                     settlement_period_end=datetime.datetime.now()
+                
                 block=False
+                
                 d=''
                 if in_direction:
                     d+=" 'INPUT'"
@@ -1162,16 +1164,10 @@ class settlement_period_service_dog(Thread):
                         LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
                         LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
                         WHERE 
-                        tariff.cost>0
-                        or now()-shedulelog.ballance_checkout<=interval '23:59:00'
-                        or now()-shedulelog.prepaid_traffic_reset<=interval '23:59:00'
-                        or now()-shedulelog.prepaid_time_reset<=interval '23:59:00'
-                        or now()-shedulelog.prepaid_traffic_accrued<=interval '23:59:00'
-                        or now()-shedulelog.prepaid_time_accrued<=interval '23:59:00'
-                        or shedulelog.ballance_checkout is Null
+                        shedulelog.ballance_checkout is Null
                         or shedulelog.prepaid_traffic_reset is Null
                         or shedulelog.prepaid_time_reset is Null
-            or shedulelog.prepaid_traffic_accrued is Null
+                        or shedulelog.prepaid_traffic_accrued is Null
                         or shedulelog.prepaid_time_accrued is Null
                         """
                         )
@@ -1221,7 +1217,7 @@ class settlement_period_service_dog(Thread):
                             cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s;" % account_id)
                         else:
                             cur.execute("""
-                            INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now()) ;
+                            INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now());
                             """ % account_id)
                             
                     #Если балланса не хватает - отключить пользователя
@@ -1230,19 +1226,25 @@ class settlement_period_service_dog(Thread):
                     #В начале каждого расчётного периода
                     cur.execute(
                                 """
-                                UPDATE billservice_account SET status=False WHERE id=%s and ballance+credit<%s;
+                                UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
                                 """ % (account_id, cost)
                                 )
 
                     if shedulelog_id is not None:
                         cur.execute("""
-                        UPDATE billservice_shedulelog SET balance_blocked = now() WHERE id=%d ;
+                        UPDATE billservice_shedulelog SET balance_blocked = now() WHERE id=%d;
                         """ % shedulelog_id)
                     else:
                         cur.execute("""
                         INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
                         """ % account_id)
-                        
+                else:
+                    #Иначе Убираем отметку
+                    cur.execute(
+                                """
+                                UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
+                                """ % (account_id)
+                                )                            
                      
                     
                 if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start):
@@ -1251,8 +1253,13 @@ class settlement_period_service_dog(Thread):
                         DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
                         """ % accounttarif_id
                         )
-                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s;" % account_id)
-                
+                    if shedulelog_id is not None:
+                        cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                    else:
+                        cur.execute("""
+                            INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_reset) values(%d, now()) ;
+                            """ % account_id)    
+                         
                 if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start):                          
                     #Начислить новый предоплаченный трафик
                     cur.execute(
@@ -1282,8 +1289,12 @@ class settlement_period_service_dog(Thread):
                                         """ % (accounttarif_id, prepaid_traffic_id, size)
                                         )                            
                         
-                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s;" % account_id)
-
+                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                    if cur.fetchone()==None:
+                        cur.execute("""
+                            INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
+                            """ % account_id)  
+                        
                 if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
 
                     if reset_time:
@@ -1294,7 +1305,12 @@ class settlement_period_service_dog(Thread):
                                     WHERE account_tarif=%s;
                                     """ % accounttarif_id
                                     )
-                        cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s;" % account_id)
+                        if shedulelog_id is not None:
+                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        else:
+                            cur.execute("""
+                                INSERT INTO billservice_shedulelog(account_id, prepaid_time_reset) values(%d, now()) ;
+                                """ % account_id)        
                         
                 if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
                     
@@ -1315,10 +1331,14 @@ class settlement_period_service_dog(Thread):
                                     )
                         
                     
-
-                    cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s;" % account_id)
+                    if shedulelog_id is not None:
+                        cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                    else:
+                        cur.execute("""
+                            INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
+                            """ % account_id)
                 connection.commit()
-            time.sleep(60)
+            time.sleep(120)
 
 class ipn_service(Thread):
     """
@@ -1433,7 +1453,7 @@ class ipn_service(Thread):
                 if speed!=ipn_speed and (ipn_static==False or (ipn_static==True and ipn_state==False)):
                     #отправляем на сервер доступа новые настройки скорости, помечаем state=True
                     """
-                    Если настройки скорости изменились и не стоит флажёк "Не менять скорость" ИЛИ
+                    Если настройки скорости изменились и не стоит флажок "Не менять скорость" ИЛИ
                     если изменились настройки скорости и стоит флажёк не менять скорость и настройки скорости не были произведены
                     """
                     sended_speed=ipn_manipulate(nas_ip=nas_ipaddress, nas_login=nas_login, nas_password=nas_password, format_string=speed)
@@ -1684,6 +1704,10 @@ if __name__ == "__main__":
 
     threads.append(RPCServer())
     #print rosClient("10.20.3.1", 'dolph', '12345', r'/interface/pppoe-server/remove [/interface/pppoe-server/find]')
+    ssh=SSHClient(host='10.10.1.100', port=22, username='admin', password='admin')
+    response=ssh.send_command("/queue simple print detail without-paging")[0]
+    response = response.readlines()
+    print response
     for th in threads:
         th.start()
 
