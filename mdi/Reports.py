@@ -13,7 +13,7 @@ import thread
 import time
 
 
-#TODO: поставить заглушки на единичный/множественный выбор через len(kwargs[key]) == 1 etc
+#TODO: заменить сообщение о пустой выборке пустой картинкой
 _xmlpath = "reports/xml"
 _querydict = {\
               "get_nas"      : "SELECT name, type, ipaddress, id FROM nas_nas ORDER BY name;", \

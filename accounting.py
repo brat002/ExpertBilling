@@ -369,7 +369,7 @@ class periodical_service_bill(Thread):
                         if account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0):
                             #Получаем данные из расчётного периода
                             if autostart_sp==True:
-                               time_start_ps=account_datetime
+                                time_start_ps=account_datetime
                             # Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                             period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
                             cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
