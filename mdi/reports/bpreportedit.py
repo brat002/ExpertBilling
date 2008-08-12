@@ -11,7 +11,7 @@ import time
 
 dssdict = {"get_accounts" : "SELECT id, username, vpn_ip_address, ipn_ip_address, ballance FROM billservice_account WHERE (id %s) ORDER BY username;", \
            "get_tarifs"   : '''SELECT account_id, 
-                             ARRAY(SELECT (name || ' | ' || datetime) FROM billservice_accounttarif AS subbatf, billservice_tariff as subbst   
+                             ARRAY(SELECT (name || ' | ' || to_char(datetime, 'DD.MM.YYYY HH24:MI:SS')) FROM billservice_accounttarif AS subbatf, billservice_tariff as subbst   
                              WHERE (subbatf.tarif_id = subbst.id) AND (subbatf.account_id = batf.account_id) 
                              AND ((subbatf.datetime = (select max(subsubbatf.datetime) from billservice_accounttarif AS subsubbatf 
                              WHERE (subsubbatf.account_id = subbatf.account_id) 
@@ -77,7 +77,8 @@ class reportConstructor(Dispatcher, ContentHandler):
         self.objdict = {}
         self.objdict['curchart'] = {}
 	self.objdict['curtable'] = {}
-	
+	self.dateDelim = "."
+	self.strftimeFormat = "%d" + self.dateDelim + "%m" + self.dateDelim + "%Y %H:%M:%S"
         self.objdict['data'] = {}
 	self.objdict['frames'] = {}
 	self.objdict['format'] = {}
@@ -243,8 +244,13 @@ class reportConstructor(Dispatcher, ContentHandler):
     def startInsertdatanontext(self, attrs):
 	text = self.getdatatext(attrs)
 	if text:
-	    try:    self.cursor.insertText(str(text), self.objdict['textformat'][attrs['textformat']])
-	    except: self.cursor.insertText(str(text))
+	    if attrs.has_key('type'):
+		if attrs["type"] == "date":
+		    try:    self.cursor.insertText(text.strftime(self.strftimeFormat), self.objdict['textformat'][attrs['textformat']])
+		    except: self.cursor.insertText(text.strftime(self.strftimeFormat))
+	    else:
+		try:    self.cursor.insertText(str(text), self.objdict['textformat'][attrs['textformat']])
+		except: self.cursor.insertText(str(text))
         
 
     
@@ -323,7 +329,7 @@ class reportConstructor(Dispatcher, ContentHandler):
 		    ctype = QtGui.QTextLength.FixedLength
 		else: 
 		    raise Exception("No such column constraint type: " + attrs['colConstrType'])
-		tformat.setColumnWidthConstraints([QtGui.QTextLength(ctype, str(constr)) for constr in attrs['colConstraints'].split(", ")])
+		tformat.setColumnWidthConstraints([QtGui.QTextLength(ctype, int(constr)) for constr in attrs['colConstraints'].split(", ")])
 		#------------------------------todo
 	    except Exception, ex:
 		print ex
@@ -464,6 +470,8 @@ class reportConstructor(Dispatcher, ContentHandler):
 		    self.cursor = table.cellAt(row, colcnt).firstCursorPosition()
 		    if self.objdict['curtable']['coltypes'][colcnt] == 'string':
 			self.cursor.insertText(rowdata[colcnt], celltf)
+		    elif self.objdict['curtable']['coltypes'][colcnt] == 'date':
+			self.cursor.insertText(rowdata[colcnt].strftime(self.strftimeFormat), celltf)
 		    elif self.objdict['curtable']['coltypes'][colcnt] == 'table':
 			print rowdata[colcnt]
 			if not rowdata[colcnt]:
