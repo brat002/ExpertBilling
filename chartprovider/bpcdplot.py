@@ -34,7 +34,7 @@ class cdDrawer(object):
 		                      {'xychart': (800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), \
 				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '', \
+				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
 				       'autoticks': False, \
 				       'outfill': True, \
@@ -256,8 +256,28 @@ class cdDrawer(object):
 	c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
 	c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
 	c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-	if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+	if optdict['xaxissetlabelformat']:
+	    c.xAxis().setFormatCondition("align", 31104000)	    
+	    c.xAxis().setLabelFormat("{value|yy}")
+	    
+	    delim = "/"
+	    
+	    ddLoc = optdict['xaxissetlabelformat'].find("dd")	    
+	    if ddLoc != -1:
+		delim = optdict['xaxissetlabelformat'][ddLoc + 2]
+
+	    c.xAxis().setFormatCondition("align", 2592000)
+	    c.xAxis().setLabelFormat("{value|mm" + delim + "yy}")
+	    
+	    c.xAxis().setFormatCondition("align", 86400)
+	    c.xAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
+	    
+	    c.xAxis().setFormatCondition("else")
+	    c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+	    
+	    
         
+	
 	#if optdict['outfill']:
 	    # Add out line layer
 	    #layer_out = c.addDataLayer(y_out, *optdict['addlinelayer_out'])
