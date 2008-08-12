@@ -48,7 +48,7 @@ class cdDrawer(object):
 				       'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'outfill': True, \
 				       'antialias': False, \
 				       'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
@@ -60,14 +60,14 @@ class cdDrawer(object):
 				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'antialias': False, \
 				       'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
 		      "nfs_total_users_speed":\
 		                      {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), \
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'antialias': False, \
 				       'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
@@ -78,7 +78,7 @@ class cdDrawer(object):
 				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '', \
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'outfill': True, \
 				       'antialias': False, \
 				       'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
@@ -90,7 +90,7 @@ class cdDrawer(object):
 				       'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'outfill': True, \
 				       'antialias': False, \
 				       'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
@@ -100,7 +100,7 @@ class cdDrawer(object):
 		                      {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), \
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'antialias': False, \
 				       'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
@@ -109,7 +109,7 @@ class cdDrawer(object):
 		                      {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
 				       'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), \
 				       'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-				       'autoticks': True, \
+				       'autoticks': False, \
 				       'antialias': False, \
 				       'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
 				       'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
@@ -163,15 +163,15 @@ class cdDrawer(object):
 		      "trans_deb":        {'xychart':(620, 310), 'addtitle':("Транзакции: дебет", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
 					   'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
 					   'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-					   'autoticks': True, \
-					   'antialias': True, \
+					   'autoticks': False, \
+					   'antialias': False, \
 					   'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
 				           'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'yaxissetlabelformat':'{value}', 'currency':''}, \
 		      "trans_crd":        {'xychart':(620, 310), 'addtitle':("Транзакции: кредит", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
 					   'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
 					   'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-					   'autoticks': True, \
-					   'antialias': True, \
+					   'autoticks': False, \
+					   'antialias': False, \
 					   'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
 				           'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'yaxissetlabelformat':'{value}', 'currency':''}
 		    }
