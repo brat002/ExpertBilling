@@ -1694,7 +1694,7 @@ if __name__ == "__main__":
     threads.append(NetFlowAggregate())
     threads.append(NetFlowBill())
 
-    #threads.append(limit_checker())
+    threads.append(limit_checker())
 
 
     #threads.append(ipn_service())
@@ -1704,10 +1704,10 @@ if __name__ == "__main__":
 
     threads.append(RPCServer())
     #print rosClient("10.20.3.1", 'dolph', '12345', r'/interface/pppoe-server/remove [/interface/pppoe-server/find]')
-    ssh=SSHClient(host='10.10.1.100', port=22, username='admin', password='admin')
-    response=ssh.send_command("/queue simple print detail without-paging")[0]
-    response = response.readlines()
-    print response
+    #ssh=SSHClient(host='10.10.1.100', port=22, username='admin', password='admin')
+    #response=ssh.send_command("/queue simple print detail without-paging")[0]
+    #response = response.readlines()
+    #print response
     for th in threads:
         th.start()
 
