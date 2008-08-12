@@ -21,10 +21,10 @@
 					<insertblock />
 					<insertblock />
 					<inserttext text="Дата начала: " textformat="tf2" />
-					<insertdatanontext index = '0' />
+					<insertdatanontext index = '0' type="date"/>
 					<insertblock />
 					<inserttext text="Дата окончания: "/>
-					<insertdatanontext index = '1' />
+					<insertdatanontext index = '1' type="date"/>
 					<insertblock />
 					<insertblock />
 			</frame>
@@ -39,7 +39,7 @@
 					<column name="username" type="string" />
 					<column name="vpn ip" type="string" />
 					<column name="upn ip" type="string" />
-					<column name="тарифы" type="table" datasource="ch1data2" imerge="0" ibase="1"/>
+					<column name="тарифы" type="table" datasource="ch1data2" imerge="0" ibase="1" tftype="new" tfname="zomg" setBorder="1" colConstrType="percentage" colConstraints="60, 40" setAlignment="22"/>
 				</table>
 			</frame>			
 		</getdata>
