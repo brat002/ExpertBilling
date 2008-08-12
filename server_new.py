@@ -106,6 +106,7 @@ class HandleAuth(HandleBase):
         return row
 
     def handle(self):
+        #TO-DO: Добавить проверку на balance_blocked
 
         #for key,value in self.packetobject.items():
         #    print self.packetobject._DecodeKey(key),self.packetobject[key][0]

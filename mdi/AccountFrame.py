@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -2601,9 +2601,9 @@ class AddAccountFrame(QtGui.QDialog):
             model.ballance = unicode(self.balance_edit.text()) or 0
             model.credit = unicode(self.credit_edit.text())
     
-            model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == 2
-            model.suspended = self.suspended_edit.checkState() == 2
-            model.status = self.status_edit.checkState() == 2
+            model.assign_ipn_ip_from_dhcp = self.assign_ipn_ip_from_dhcp_edit.checkState() == QtCore.Qt.Checked
+            model.suspended = self.suspended_edit.checkState() == QtCore.Qt.Checked
+            model.status = self.status_edit.checkState() == QtCore.Qt.Checked
             
             
             if self.model:
@@ -2626,10 +2626,6 @@ class AddAccountFrame(QtGui.QDialog):
 
 
         pools = []
-
-        for pool in pools:
-            self.ipn_pool_edit.addItem(pool.name)
-            self.vpn_pool_edit.addItem(pool.name)
 
         nasses = self.connection.sql("SELECT * FROM nas_nas")
         for nas in nasses:
@@ -2655,7 +2651,7 @@ class AddAccountFrame(QtGui.QDialog):
             self.ipn_ip_address_edit.setText(unicode(self.model.ipn_ip_address))
             self.vpn_ip_address_edit.setText(unicode(self.model.vpn_ip_address))
             
-            print "self.model.ipn_mac_address", self.model.ipn_mac_address
+            #print "self.model.ipn_mac_address", self.model.ipn_mac_address
             if self.model.ipn_mac_address=="Null" or self.model.ipn_mac_address=="":
                 print "assign True"
                 self.assign_ipn_ip_from_dhcp_edit.setCheckState(QtCore.Qt.Checked)
@@ -2663,8 +2659,8 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 self.ipn_mac_address_edit.setText(unicode(self.model.ipn_mac_address))
 
-
-            self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Checked )
+            print "self.model.status", self.model.status
+            self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
             self.assign_ipn_ip_from_dhcp_edit.setCheckState(self.model.assign_ipn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
@@ -2754,7 +2750,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус в системе', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'Фамилия', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус', u'Недостаточно средств', u'Превышен лимит', u"Дата создания"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -3076,13 +3072,15 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.suspended, i,9, enabled=a.status)
             self.addrow(a.status, i,10, enabled=a.status)
-            self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
+            self.addrow(a.balance_blocked, i,11, enabled=a.status)
+            self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+            self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,13, enabled=a.status)
             
-            self.tableWidget.setRowHeight(i, 16)
+            self.tableWidget.setRowHeight(i, 17)
             
             if self.selected_account:
                 if self.selected_account.id == a.id:
-                    self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,10), True)
+                    self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.resizeColumnsToContents()
