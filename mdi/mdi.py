@@ -43,6 +43,9 @@ _reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'Загру
                 ['report3_tutr_nas.xml', ['nfs_total_traf_bydir'], 'report3_tutr_nas.xml']\
                ]
 
+#разделитель для дат по умолчанию
+dateDelim = "."
+
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)

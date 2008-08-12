@@ -6,7 +6,7 @@ from helpers import tableFormat
 
 from helpers import Object as Object
 from helpers import makeHeaders
-
+from helpers import dateDelim
 from time import mktime
 
 import datetime, calendar
@@ -159,7 +159,7 @@ class TimePeriodChild(QtGui.QMainWindow):
     def __init__(self, connection):
         super(TimePeriodChild, self).__init__()
         self.connection = connection
-        
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
 
@@ -385,8 +385,8 @@ class TimePeriodChild(QtGui.QMainWindow):
 
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
-            self.addrow(node.time_start.strftime("%d-%m-%Y %H:%M:%S"), i,2)
-            self.addrow((node.time_start+datetime.timedelta(seconds=node.length)).strftime("%d-%m-%Y %H:%M:%S"), i,3)
+            self.addrow(node.time_start.strftime(self.strftimeFormat), i,2)
+            self.addrow((node.time_start+datetime.timedelta(seconds=node.length)).strftime(self.strftimeFormat), i,3)
             self.addrow(node.repeat_after, i,4)
             self.tableWidget.setRowHeight(i, 14)
             i+=1

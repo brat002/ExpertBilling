@@ -6,6 +6,7 @@ from helpers import tableFormat
 import datetime, calendar
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import dateDelim
 
 class AddSettlementPeriod(QtGui.QDialog):
     def __init__(self, connection,model=None):
@@ -211,7 +212,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.setCentralWidget(self.tableWidget)
-
+        
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,827,21))
@@ -308,7 +310,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             self.addrow(period.id, i,0)
             self.addrow(period.name, i,1)
             self.addrow(period.autostart, i,2)
-            self.addrow(period.time_start.strftime("%d-%m-%Y %H:%M:%S"), i,3)
+            self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
             self.addrow(period.length_in, i,4)
             self.addrow(period.length, i,5)
             self.tableWidget.setRowHeight(i, 17)

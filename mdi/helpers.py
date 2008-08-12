@@ -4,6 +4,7 @@ from PyQt4 import QtGui, QtCore
 from types import InstanceType, StringType, UnicodeType
 import datetime
 
+dateDelim = "."
 
 def tableFormat(table):        
     table.setFrameShape(QtGui.QFrame.Panel)
