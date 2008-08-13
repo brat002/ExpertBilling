@@ -2443,6 +2443,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.vpn_ip_address_edit.setValidator(self.ipValidator)
         columns=[u'#', u'Тарифный план', u'Дата']
 
+
         makeHeaders(columns, self.accounttarif_table)
         
     '''def dhcpActions(self, newstate):
