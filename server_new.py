@@ -259,18 +259,18 @@ class HandleDHCP(HandleBase):
         res = self.cur.fetchone()
         print res
         if res!=None: 
-            print "break1"
+            #print "break1"
             ip, mask=res
             self.cur.execute("SELECT name, secret FROM nas_nas WHERE ipaddress='%s'" % self.packetobject['NAS-IP-Address'][0])
             res=self.cur.fetchone()
-            print "break2"
+            #print "break2"
             if res==None:
                 self.cur.close()
                 self.connection.close()
                 return self.auth_NA()
             
             nas_name, nas_secret = res 
-            print "break3"
+            #print "break3"
             if nas_name!=self.packetobject['NAS-Identifier'][0]:
                self.cur.close()
                self.connection.close()
@@ -281,7 +281,7 @@ class HandleDHCP(HandleBase):
             self.replypacket.AddAttribute('Framed-IP-Address', ip)
             self.replypacket.AddAttribute('Framed-Routing', 0)
             self.replypacket.AddAttribute('Framed-IP-Netmask', mask)
-            print "break4"
+            #print "break4"
             self.cur.close()
             self.connection.close()
         return self.replypacket
