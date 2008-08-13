@@ -103,7 +103,9 @@ class bpbl(object):
 	@sec - seconds for aggregation'''
 	#get traffic data
 	norm_y=False
-	(times, y_in, y_out, y_tr, bstr, sec) = bpbl.get_traf(selstr, sec, norm_y)
+	data = bpbl.get_traf(selstr, sec, norm_y)
+	if not data: return 0
+	(times, y_in, y_out, y_tr, bstr, sec) = data
 	m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
 	y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	
 	y_max /= sec
@@ -139,6 +141,7 @@ class bpbl(object):
 	try:
 	    tm = data[0][0]
 	except Exception, ex:
+	    print "GUTF: exception"
 	    print ex
 	    return 0
 	
@@ -199,8 +202,12 @@ class bpbl(object):
 	@selstr - query string
 	@sec - seconds for aggregation'''
 	#get traffic data
+	print "GUTS: start"
 	norm_y=False
-	(times, y_total_u, bstr, sec) = bpbl.get_total_users_traf(selstr, sec, norm_y)
+	data = bpbl.get_total_users_traf(selstr, sec, norm_y)
+	if not data:
+	    return 0
+	(times, y_total_u, bstr, sec) = data
 	y_max = max([max(lst) for lst in y_total_u.itervalues()])	
 	y_max /= sec
 	#calculate speed and normalize
@@ -287,7 +294,9 @@ class bpbl(object):
 	@selstr - query string
 	@sec - seconds for aggregation'''
 	norm_y=False
-	(times, y_total, bstr, sec) = bpbl.get_total_traf(selstr, sec, norm_y)
+	data = bpbl.get_total_traf(selstr, sec, norm_y)
+	if not data: return 0
+	(times, y_total, bstr, sec) = data
 	y_max = max(y_total) / sec
 	if y_max < 8000:
 	    y_total  = [float(y) / sec for y in y_total]

@@ -221,7 +221,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
 	data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
 	(times, y_in, y_out, y_tr, bstr, sec) = data 
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -315,7 +315,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
 	(times, y_in, y_out, y_tr, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -378,7 +378,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
 	(times, y_in, y_out, y_tr, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -442,7 +442,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
 	(times, y_in, y_out, y_tr, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -508,7 +508,7 @@ class cdDrawer(object):
 	    print ex
 	    raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total_u, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -581,7 +581,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total_u, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -652,7 +652,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -705,7 +705,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
         data = bpbl.get_total_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total, bstr, sec) = data 
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -756,7 +756,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
 	data = bpbl.get_port_speed(selstr, kwargs['ports'], kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], {'0':[{'input': [], 'output': [], 'transit': []}]}, '', 1)
 	(times, y_ps, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -842,6 +842,7 @@ class cdDrawer(object):
 	    return self.cddraw_nfs_nas_traf(*args, **kwargs)
 	else:
 	    return self.cddraw_nfs_total_nass_traf(*args, **kwargs)
+	
     def cddraw_nfs_nas_traf(self, *args, **kwargs):
 	try:	    
 	    #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
@@ -849,7 +850,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
 	data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
 	(times, y_in, y_out, y_tr, bstr, sec) = data 
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -922,7 +923,7 @@ class cdDrawer(object):
 	    raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
 	print "----------------------------"
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total_n, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -988,7 +989,7 @@ class cdDrawer(object):
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
 	print "----------------------------"
 	print data
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, y_total_n, bstr, sec) = data
 	kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -1053,7 +1054,8 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex
 	data = bpbl.get_pie_traf(selstr)
-	if not data: print "Dataset is empty"; return []
+	
+	if not data: print "Dataset is empty"; data = ([0], ["empty"], '')
 	(x, labels, bstr) = data
 	optdict = self.cdchartoptdict['userstrafpie']
 	retlist = []
@@ -1095,21 +1097,24 @@ class cdDrawer(object):
 	    raise ex
 	
 	data = bpbl.get_sessions(selstr)
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], [], [], [])
 	(t_start, t_end, sessid, username, protocol) = data
 	kwargs['return']['data'] = [(username[i], sessid[i], t_start[i], t_end[i], protocol[i]) for i in range(len(sessid))]
-	print kwargs['return']['data']
-	mins = min([date for date in t_start if date])
-	maxe = max([date for date in t_end if date])
-	for i in range(len(t_start)):
-	    if not t_start[i]: t_start[i] = mins
-	    if not t_end[i]: t_end[i] = maxe
-
+	try:
+	    mins = min([date for date in t_start if date])
+	    maxe = max([date for date in t_end if date])
+	    for i in range(len(t_start)):
+		if not t_start[i]: t_start[i] = mins
+		if not t_end[i]: t_end[i] = maxe
+	except Exception, ex:
+	    print ex
 	t_start = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_start]
 	t_end   = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_end]
 	labels  = [username[i] + ' | ' + sessid[i] for i in range(len(sessid))]
 	startDate = chartTime(args[0].year, args[0].month, args[0].day, args[0].hour, args[0].minute, args[0].second)
 	endDate   = chartTime(args[1].year, args[1].month, args[1].day, args[1].hour, args[1].minute, args[1].second)
+
+	
 	optdict = self.cdchartoptdict['sessions']
 	
 	retlist = []
@@ -1166,7 +1171,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex	
 	data = bpbl.get_trans(selstr, 'deb', kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, summ, bstr, sec) = data
 	kwargs['return']['sec'] = sec
 	times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -1223,7 +1228,7 @@ class cdDrawer(object):
 	except Exception, ex:
 	    raise ex	
 	data = bpbl.get_trans(selstr, 'crd', kwargs.has_key('sec') and kwargs['sec'])
-	if not data: print "Dataset is empty"; return []
+	if not data: print "Dataset is empty"; data = ([], [], '', 1)
 	(times, summ, bstr, sec) = data
 	kwargs['return']['sec'] = sec
 	times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
@@ -1301,6 +1306,5 @@ class cdDrawer(object):
 		mname = "nfs_total_nass_traf"
 	else:
 	    mname = args[0]
-	
-	
+
 	return mname
