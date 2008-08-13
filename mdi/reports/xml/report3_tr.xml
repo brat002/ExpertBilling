@@ -6,7 +6,7 @@
   <blockformat name="bf1" setAlignment="22" />
   <frame name="topframe" type="current" format="currentedit" fname="tff" padding="16">
 	<insertblock blockformat="bf1"/>
-	<chart library="pychartdir" name="chart1" type="trans_deb">
+	<chart library="pychartdir" name="chart1" type="trans_crd">
 	</chart>
 	<frame name="fr2" datasource="args" type="current" format="currentnew" fname="tff1">
 		<insertblock />
