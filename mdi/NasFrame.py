@@ -254,7 +254,8 @@ class AddNasFrame(QtGui.QDialog):
 
                 
         
-        
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.fixtures()
         QtCore.QObject.connect(self.nas_comboBox,QtCore.SIGNAL("currentIndexChanged(int)"),self.refillActions)
@@ -273,7 +274,8 @@ class AddNasFrame(QtGui.QDialog):
         self.ipn_checkBox.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
         self.identify_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сетевая идентификация", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Сетевое имя", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_ip.setValidator(self.ipValidator)
         self.ip_label.setText(QtGui.QApplication.translate("Dialog", "IP", None, QtGui.QApplication.UnicodeUTF8))
         self.secret_label.setText(QtGui.QApplication.translate("Dialog", "Секретная фраза", None, QtGui.QApplication.UnicodeUTF8))
         self.type_label.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
@@ -342,6 +344,10 @@ class AddNasFrame(QtGui.QDialog):
 
         if unicode(self.nas_ip.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан IP адрес сервера доступа"))
+            return
+        
+        if self.ipValidator.validate(self.nas_ip.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IP адрес сервера доступа до конца."))
             return
 
         if unicode(self.nas_secret.text())==u"":

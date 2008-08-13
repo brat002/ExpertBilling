@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -2364,13 +2364,14 @@ class AddAccountFrame(QtGui.QDialog):
         self.setTabOrder(self.accounttarif_table,self.buttonBox)
         self.setTabOrder(self.buttonBox,self.tabWidget)
 
-
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         self.connect(self.generate_login_toolButton,QtCore.SIGNAL("clicked()"),self.generate_login)
         self.connect(self.generate_password_toolButton,QtCore.SIGNAL("clicked()"),self.generate_password)
         
-        self.connect(self.assign_ipn_ip_from_dhcp_edit, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
+        #self.connect(self.assign_ipn_ip_from_dhcp_edit, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
         
         self.connect(self.add_accounttarif_toolButton,QtCore.SIGNAL("clicked()"),self.add_accounttarif)
         self.connect(self.del_accounttarif_toolButton,QtCore.SIGNAL("clicked()"),self.del_accounttarif)
@@ -2401,7 +2402,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.assign_ipn_ip_from_dhcp_edit.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес с помощью DHCP", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Текущий адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_mac_address_label.setText(QtGui.QApplication.translate("Dialog", "Аппаратный адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "00:00:00:00:00:00;0", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", ">HH:HH:HH:HH:HH:HH;0", None, QtGui.QApplication.UnicodeUTF8))
         self.vpn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Виртуальный IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         #self.ipn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
         #self.vpn_ip_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
@@ -2437,20 +2438,19 @@ class AddAccountFrame(QtGui.QDialog):
         " пользователя и создать задания для перехода на\n"
         " новые тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
-        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+
         self.ipn_ip_address_edit.setValidator(self.ipValidator)
         self.vpn_ip_address_edit.setValidator(self.ipValidator)
         columns=[u'#', u'Тарифный план', u'Дата']
 
         makeHeaders(columns, self.accounttarif_table)
         
-    def dhcpActions(self, newstate):
+    '''def dhcpActions(self, newstate):
         
         if newstate==2:
             self.ipn_mac_address_edit.setDisabled(False)
         elif newstate==0:
-            self.ipn_mac_address_edit.setDisabled(True)
+            self.ipn_mac_address_edit.setDisabled(True)'''
             
             
 
@@ -2538,13 +2538,16 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 model.speed = ""
     
-            #проверка на уникальность ipn/vpn + возможность редактирования в случае отрицательного варианта
-            #один из адресов должен быть заполнен полностью
+
             #убрать действие с чекбокса "получать адрес по дхцп"
             #проверка уникальности MAC создание/редактирование
             #classframe - validate ip's
             #while 1:
             if self.ipn_ip_address_edit.text():
+                #print self.ipValidator.validate(self.ipn_ip_address_edit.text(), 0)
+                if self.ipValidator.validate(self.ipn_ip_address_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IP до конца."))
+                    return
                 try:
                     ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
                     if ipn_address_account.username != model.username:
@@ -2560,6 +2563,9 @@ class AddAccountFrame(QtGui.QDialog):
                 
 
             if self.vpn_ip_address_edit.text():
+                if self.ipValidator.validate(self.vpn_ip_address_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IP до конца."))
+                    return
                 try:
                     vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
                     if vpn_address_account.username!=model.username:
@@ -2579,15 +2585,15 @@ class AddAccountFrame(QtGui.QDialog):
                 return
     
                 
-            if unicode(self.ipn_mac_address_edit.text()) != '00:00:00:00:00:00' and self.assign_ipn_ip_from_dhcp_edit.checkState()==2:
+            if unicode(self.ipn_mac_address_edit.text()) != '00:00:00:00:00:00':
                 try:
                     ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
                     if ipn_mac_address_account.username!=model.username:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
                         self.connection.rollback()
                         return
-                except Exception, e:
-                    pass
+                except Exception, ex:
+                    print ex
                 model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
             else:
                 model.ipn_mac_address = ''
@@ -3072,7 +3078,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.status, i,10, enabled=a.status)
             self.addrow(a.balance_blocked, i,11, enabled=a.status)
             self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-            self.addrow(a.created.strftime("%d-%m-%Y %H:%M:%S"), i,13, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,13, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 17)
             

@@ -247,6 +247,8 @@ class ClassNodeFrame(QtGui.QDialog):
         self.next_hop_edit.setObjectName("next_hop_edit")
         self.gridlayout.addWidget(self.next_hop_edit,9,1,1,2)
 
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.retranslateUi()
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
@@ -259,24 +261,29 @@ class ClassNodeFrame(QtGui.QDialog):
         self.name_edit.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
         self.group_label.setText(QtGui.QApplication.translate("Dialog", "Group", None, QtGui.QApplication.UnicodeUTF8))
         self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_edit.setText('0.0.0.0')
+        #self.src_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.src_ip_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_edit.setValidator(self.ipValidator)
+        #self.src_ip_edit.setText('0.0.0.0')
         self.src_mask_label.setText(QtGui.QApplication.translate("Dialog", "Src mask", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_mask_edit.setText('0.0.0.0')
+        #self.src_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_mask_edit.setValidator(self.ipValidator)
+        #self.src_mask_edit.setText('0.0.0.0')
         self.dst_ip_label.setText(QtGui.QApplication.translate("Dialog", "Dst-IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_ip_edit.setText('0.0.0.0')
+        #self.dst_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_ip_edit.setValidator(self.ipValidator)
+        #self.dst_ip_edit.setText('0.0.0.0')
         self.dst_mask_label.setText(QtGui.QApplication.translate("Dialog", "Dst mask", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_mask_edit.setText('0.0.0.0')
+        #self.dst_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_mask_edit.setValidator(self.ipValidator)
+        #self.dst_mask_edit.setText('0.0.0.0')
         self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Protocol", None, QtGui.QApplication.UnicodeUTF8))
         self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
         self.dst_port_label.setText(QtGui.QApplication.translate("Dialog", "Dst port", None, QtGui.QApplication.UnicodeUTF8))
         self.next_hop_label.setText(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
-        self.next_hop_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000;   ", None, QtGui.QApplication.UnicodeUTF8))
-        self.next_hop_edit.setText('0.0.0.0')
+        #self.next_hop_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000;   ", None, QtGui.QApplication.UnicodeUTF8))
+        self.next_hop_edit.setValidator(self.ipValidator)
+        #self.next_hop_edit.setText('0.0.0.0')
         
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
@@ -320,23 +327,43 @@ class ClassNodeFrame(QtGui.QDialog):
         model.protocol = self.protocols[unicode(self.protocol_edit.currentText())]
         
         src_ip = unicode(self.src_ip_edit.text())
-        if src_ip =='...':
+        if src_ip:
+            print src_ip
+            print self.ipValidator.validate(src_ip, 0)
+            if self.ipValidator.validate(src_ip, 0)[0] != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src IP до конца."))
+                return
+        else:
             src_ip='0.0.0.0'
         
         model.src_ip = src_ip
             
         src_mask = unicode(self.src_mask_edit.text())
-        if src_mask == '...':
-            src_mask='0.0.0.0'
+        
+        if src_mask:
+            if self.ipValidator.validate(src_mask, 0)[0]  != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src Mask до конца."))
+                return
+        else:
+            src_mask= '0.0.0.0'
+            
         model.src_mask = src_mask
             
         dst_ip = unicode(self.dst_ip_edit.text())
-        if dst_ip =='...':
-            dst_ip='0.0.0.0'
+        if dst_ip:
+            if self.ipValidator.validate(dst_ip, 0)[0]  != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Dst Ip до конца."))
+                return
+        else:
+            src_mask='0.0.0.0'
         model.dst_ip = dst_ip
         
         dst_mask = unicode(self.dst_mask_edit.text())
-        if dst_mask=='...':
+        if dst_mask:
+            if self.ipValidator.validate(dst_mask, 0)[0]  != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Dst Mask до конца."))
+                return
+        else:
             dst_mask='0.0.0.0'
 
         model.dst_mask = dst_mask
@@ -349,8 +376,16 @@ class ClassNodeFrame(QtGui.QDialog):
 
         model.dst_port = dst_port or 0
         
-        model.next_hop = unicode(self.next_hop_edit.text()) 
+        next_hop = unicode(self.next_hop_edit.text())
         
+        if next_hop:
+            if self.ipValidator.validate(next_hop, 0)[0]  != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Next Hop до конца."))
+                return
+        else:
+            next_hop = '0.0.0.0'
+        
+        model.next_hop = next_hop
         self.model=model
         QtGui.QDialog.accept(self)
 
