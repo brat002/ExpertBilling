@@ -170,7 +170,7 @@
      <property name="title" >
       <string>Информация о пользователе</string>
      </property>
-     <widget class="QLineEdit" name="address_edit" >
+     <widget class="QLineEdit" name="email_lineEdit" >
       <property name="geometry" >
        <rect>
         <x>60</x>
@@ -190,10 +190,10 @@
        </rect>
       </property>
       <property name="text" >
-       <string>Адрес</string>
+       <string>Email</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lastname_lineEdit" >
+     <widget class="QLineEdit" name="address_lineEdit" >
       <property name="geometry" >
        <rect>
         <x>60</x>
@@ -213,13 +213,13 @@
        </rect>
       </property>
       <property name="text" >
-       <string>Имя</string>
+       <string>ФИО</string>
       </property>
       <property name="buddy" >
-       <cstring>firstname_edit</cstring>
+       <cstring>firstname_lineEdit</cstring>
       </property>
      </widget>
-     <widget class="QLineEdit" name="firstname_edit" >
+     <widget class="QLineEdit" name="firstname_lineEdit" >
       <property name="geometry" >
        <rect>
         <x>60</x>
@@ -239,10 +239,10 @@
        </rect>
       </property>
       <property name="text" >
-       <string>Фамилия</string>
+       <string>Адрес</string>
       </property>
       <property name="buddy" >
-       <cstring>lastname_lineEdit</cstring>
+       <cstring>address_lineEdit</cstring>
       </property>
      </widget>
     </widget>
@@ -322,7 +322,7 @@
        <x>10</x>
        <y>40</y>
        <width>321</width>
-       <height>141</height>
+       <height>171</height>
       </rect>
      </property>
      <property name="title" >
@@ -344,14 +344,14 @@
      <widget class="QLabel" name="ipn_ip_address_label" >
       <property name="geometry" >
        <rect>
-        <x>11</x>
-        <y>48</y>
+        <x>10</x>
+        <y>50</y>
         <width>114</width>
         <height>20</height>
        </rect>
       </property>
       <property name="text" >
-       <string>Текущий адрес</string>
+       <string>Текущий IP адрес</string>
       </property>
       <property name="buddy" >
        <cstring>ipn_ip_address_edit</cstring>
@@ -361,7 +361,7 @@
       <property name="geometry" >
        <rect>
         <x>11</x>
-        <y>74</y>
+        <y>110</y>
         <width>114</width>
         <height>20</height>
        </rect>
@@ -377,7 +377,7 @@
       <property name="geometry" >
        <rect>
         <x>131</x>
-        <y>74</y>
+        <y>110</y>
         <width>110</width>
         <height>21</height>
        </rect>
@@ -390,7 +390,7 @@
       <property name="geometry" >
        <rect>
         <x>11</x>
-        <y>100</y>
+        <y>140</y>
         <width>114</width>
         <height>20</height>
        </rect>
@@ -419,7 +419,7 @@
       <property name="geometry" >
        <rect>
         <x>131</x>
-        <y>100</y>
+        <y>140</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -437,63 +437,47 @@
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
-    </widget>
-    <widget class="QGroupBox" name="information_groupBox" >
-     <property name="geometry" >
-      <rect>
-       <x>10</x>
-       <y>250</y>
-       <width>321</width>
-       <height>101</height>
-      </rect>
-     </property>
-     <property name="title" >
-      <string>Информация</string>
-     </property>
-     <widget class="QLabel" name="last_vpn_login_label" >
+     <widget class="QLabel" name="ipn_ip_address_label_2" >
       <property name="geometry" >
        <rect>
         <x>10</x>
-        <y>20</y>
-        <width>111</width>
-        <height>16</height>
+        <y>81</y>
+        <width>114</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="text" >
-       <string>Последний VPN вход:</string>
+       <string>Маска подсети</string>
+      </property>
+      <property name="buddy" >
+       <cstring>ipn_ip_address_edit</cstring>
       </property>
      </widget>
-     <widget class="QLabel" name="prepaid_trafic_label" >
+     <widget class="QLineEdit" name="netmask_edit" >
       <property name="geometry" >
        <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>301</width>
-        <height>51</height>
+        <x>130</x>
+        <y>80</y>
+        <width>110</width>
+        <height>21</height>
        </rect>
       </property>
-      <property name="text" >
-       <string>Предоплаченный трафик:</string>
-      </property>
-      <property name="alignment" >
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-      </property>
-      <property name="wordWrap" >
-       <bool>true</bool>
+      <property name="inputMask" >
+       <string>000.000.000.000; </string>
       </property>
      </widget>
     </widget>
-    <widget class="QGroupBox" name="speed_groupBox" >
+    <widget class="QGroupBox" name="vpn_speed_groupBox" >
      <property name="geometry" >
       <rect>
        <x>10</x>
-       <y>190</y>
+       <y>220</y>
        <width>321</width>
        <height>51</height>
       </rect>
      </property>
      <property name="title" >
-      <string>Индивидуальные настройки скорости</string>
+      <string>Индивидуальные настройки скорости для VPN</string>
      </property>
      <property name="checkable" >
       <bool>true</bool>
@@ -501,7 +485,7 @@
      <property name="checked" >
       <bool>false</bool>
      </property>
-     <widget class="QLineEdit" name="speed_lineEdit" >
+     <widget class="QLineEdit" name="vpn_speed_lineEdit" >
       <property name="geometry" >
        <rect>
         <x>10</x>
@@ -555,6 +539,53 @@
        <height>20</height>
       </rect>
      </property>
+    </widget>
+    <widget class="QGroupBox" name="ipn_speed_groupBox" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>280</y>
+       <width>321</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="title" >
+      <string>Индивидуальные настройки скорости для IPN</string>
+     </property>
+     <property name="checkable" >
+      <bool>true</bool>
+     </property>
+     <property name="checked" >
+      <bool>false</bool>
+     </property>
+     <widget class="QLineEdit" name="ipn_speed_lineEdit" >
+      <property name="geometry" >
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>301</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="toolTip" >
+       <string>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] 
+ Примеры: 
+ 128k  - rx-rate=128000, tx-rate=128000 (no bursts) 
+ 64k/128M - rx-rate=64000, tx-rate=128000000 
+ 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s 
+64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s 
+</string>
+      </property>
+      <property name="whatsThis" >
+       <string>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] 
+ Примеры: 
+ 128k  - rx-rate=128000, tx-rate=128000 (no bursts) 
+ 64k/128M - rx-rate=64000, tx-rate=128000000 
+ 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s 
+64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s 
+</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_3" >
@@ -635,9 +666,9 @@
   <tabstop>generate_login_toolButton</tabstop>
   <tabstop>password_edit</tabstop>
   <tabstop>generate_password_toolButton</tabstop>
-  <tabstop>firstname_edit</tabstop>
-  <tabstop>lastname_lineEdit</tabstop>
-  <tabstop>address_edit</tabstop>
+  <tabstop>firstname_lineEdit</tabstop>
+  <tabstop>address_lineEdit</tabstop>
+  <tabstop>email_lineEdit</tabstop>
   <tabstop>balance_edit</tabstop>
   <tabstop>credit_edit</tabstop>
   <tabstop>suspended_edit</tabstop>
@@ -647,8 +678,8 @@
   <tabstop>ipn_ip_address_edit</tabstop>
   <tabstop>ipn_mac_address_edit</tabstop>
   <tabstop>vpn_ip_address_edit</tabstop>
-  <tabstop>speed_groupBox</tabstop>
-  <tabstop>speed_lineEdit</tabstop>
+  <tabstop>vpn_speed_groupBox</tabstop>
+  <tabstop>vpn_speed_lineEdit</tabstop>
   <tabstop>add_accounttarif_toolButton</tabstop>
   <tabstop>del_accounttarif_toolButton</tabstop>
   <tabstop>accounttarif_table</tabstop>
