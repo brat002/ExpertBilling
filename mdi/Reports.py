@@ -34,7 +34,7 @@ _charthidetabs = {\
              "nfs_n_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_nas_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
-             "nfs_total_classes_speed" : ("usersTab", "serversTab", "portsTab"),\
+             "nfs_total_classes_speed" : ("usersTab", "portsTab"),\
              "userstrafpie" : ("serversTab", "classesTab", "portsTab"),\
              "sessions" : ("serversTab", "classesTab", "portsTab"),\
              "trans_deb" : ("usersTab", "serversTab", "classesTab", "portsTab"),\
