@@ -2553,9 +2553,9 @@ class AddAccountFrame(QtGui.QDialog):
                 model=Object()
                 model.created = datetime.datetime.now()
     
-            model.user_id=1
-            model.ipn_status = False
-            model.disabled_by_limit = False
+                model.user_id=1
+                model.ipn_status = False
+                model.disabled_by_limit = False
             model.username = unicode(self.username_edit.text())
     
             model.password = unicode(self.password_edit.text())
