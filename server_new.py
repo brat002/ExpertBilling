@@ -19,20 +19,20 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
-
+def get_accesstype(packetobject):
+    """
+    Returns access type name by which a user connects to the NAS
+    """
+    if packetobject['NAS-Port-Type'][0]=='Virtual':
+        return 'PPTP'
+    elif packetobject['NAS-Port-Type'][0]=='Ethernet' and packetobject.has_key('Service-Type'):
+        return 'PPPOE'
+    elif packetobject['NAS-Port-Type'][0]=='Ethernet' and not packetobject.has_key('Service-Type'):
+        return 'DHCP'
+    return
+    
 class HandleBase(object):
 
-    def get_accesstype(self):
-        """
-        Returns access type name by which a user connects to the NAS
-        """
-        if self.packetobject['NAS-Port-Type'][0]=='Virtual':
-            return 'PPTP'
-        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and self.packetobject.has_key('Service-Type'):
-            return 'PPPOE'
-        elif self.packetobject['NAS-Port-Type'][0]=='Ethernet' and not self.packetobject.has_key('Service-Type'):
-            return 'DHCP'
-        return
 
     def auth_NA(self):
         """
@@ -55,7 +55,10 @@ class HandleAuth(HandleBase):
         self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject
 
-        self.access_type=self.get_accesstype()
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        
+        self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
 
@@ -112,7 +115,7 @@ class HandleAuth(HandleBase):
         #    print self.packetobject._DecodeKey(key),self.packetobject[key][0]
 
         #simple_log(packet=self.packetobject)
-        if self.get_accesstype() in ('PPTP', 'PPPOE'):
+        if get_accesstype(self.packetobject) in ('PPTP', 'PPPOE'):
             row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
 
             if row==None:
@@ -162,11 +165,126 @@ class HandleAuth(HandleBase):
                  self.connection.close()
                  print 5
                  return self.auth_NA()
-        elif self.get_accesstype()=='DHCP':
+        elif get_accesstype(self.packetobject)=='DHCP':
             pass
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 
+#auth_class
+class HandleDHCP(HandleBase):
+
+    def __init__(self,  packetobject):
+        self.nasip = packetobject['NAS-IP-Address'][0]
+        self.packetobject = packetobject
+
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        
+        #self.access_type=get_accesstype(self.packetobject)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
+
+
+        row=self.get_nas_info()
+
+        if row==None:
+            self.cur.close()
+            return self.auth_NA()
+
+        self.nas_id=str(row[0])
+        self.nas_type=row[2]
+        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
+
+
+    def get_nas_info(self):
+        row = get_nas_by_ip(self.cur, self.nasip)
+        return row
+
+    def handle(self):
+
+
+#===============================================================================
+#        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+# 
+#        if row==None:
+#            self.cur.close()
+#            print 1
+#            return self.auth_NA()
+# 
+#        username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
+#        #Проверка на то, указан ли сервер доступа
+#        #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
+#        #if row==None:
+#        #    self.cur.close()
+#        #    self.connection.close()
+#        #    return self.auth_NA() 
+#        if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
+#           self.cur.close()
+#           self.connection.close()
+#           print 2
+#           return self.auth_NA()
+# 
+# 
+#        #TimeAccess
+#        rows = time_periods_by_tarif_id(self.cur, tarif_id)
+#        allow_dial=False
+#        for row in rows:
+#            #print row[0],row[1],u"%s" % row[2]
+#            if in_period(row[0],row[1],row[2])==True:
+#                allow_dial=True
+#                print 3
+#                break
+# 
+# 
+#        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
+#           print 4
+#           self.replypacket.code=2
+#           self.replypacket.username=str(username) #Нельзя юникод
+#           self.replypacket.password=str(password) #Нельзя юникод
+#           self.replypacket.AddAttribute('Service-Type', 2)
+#           self.replypacket.AddAttribute('Framed-Protocol', 1)
+#           self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+#           self.replypacket.AddAttribute('Framed-Routing', 0)
+#           self.create_speed(tarif_id, speed=speed)
+#           self.cur.close()
+#           self.connection.close()
+#        else:
+#             self.cur.close()
+#             self.connection.close()
+#             print 5
+#             return self.auth_NA()
+#===============================================================================
+        #print "SELECT ipn_ip_address, netmask FROM billservice_account WHERE ipn_mac_address='%s' and assign_ipn_ip_from_dhcp=True" % self.packetobject['User-Name'][0]
+        self.cur.execute("SELECT ipn_ip_address, netmask FROM billservice_account WHERE ipn_mac_address='%s' and assign_ipn_ip_from_dhcp=True" % self.packetobject['User-Name'][0])
+        res = self.cur.fetchone()
+        print res
+        if res!=None: 
+            print "break1"
+            ip, mask=res
+            self.cur.execute("SELECT name, secret FROM nas_nas WHERE ipaddress='%s'" % self.packetobject['NAS-IP-Address'][0])
+            res=self.cur.fetchone()
+            print "break2"
+            if res==None:
+                self.cur.close()
+                self.connection.close()
+                return self.auth_NA()
+            
+            nas_name, nas_secret = res 
+            print "break3"
+            if nas_name!=self.packetobject['NAS-Identifier'][0]:
+               self.cur.close()
+               self.connection.close()
+               return self.auth_NA()
+           
+            self.replypacket.code=2
+            self.replypacket.secret=str(nas_secret)
+            self.replypacket.AddAttribute('Framed-IP-Address', ip)
+            self.replypacket.AddAttribute('Framed-Routing', 0)
+            self.replypacket.AddAttribute('Framed-IP-Netmask', mask)
+            print "break4"
+            self.cur.close()
+            self.connection.close()
+        return self.replypacket
 
 #acct class
 class HandleAcct(HandleBase):
@@ -178,7 +296,7 @@ class HandleAcct(HandleBase):
         self.packetobject=packetobject
         self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
-        self.access_type=self.get_accesstype()
+        self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
 
@@ -338,16 +456,26 @@ class RadiusAuth(BaseAuth):
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
-        simple_log('Auth Request From:%s:%s' % addrport)
+
         packetobject=packet.Packet(dict=dict,packet=data)
-        simple_log('Create Initial response packet Ok')
-        coreconnect = HandleAuth(packetobject=packetobject)
-        packetfromcore=coreconnect.handle()
+        access_type = get_accesstype(packetobject)
+        if access_type in ['PPTP', 'PPPOE']:
+            coreconnect = HandleAuth(packetobject=packetobject)
+            packetfromcore=coreconnect.handle()
+            packetobject.secret=packetfromcore.secret
+            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
+            returndata=authobject.ReturnPacket()
+        elif access_type in ['DHCP'] :
+            coreconnect = HandleDHCP(packetobject=packetobject)
+            packetfromcore=coreconnect.handle()
+            packetobject.secret=packetfromcore.secret
+            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
+            returndata=authobject.ReturnPacket()
+            
+        
 
         #Обавляем Secret
-        packetobject.secret=packetfromcore.secret
-        authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
-        returndata=authobject.ReturnPacket()
+
         self.socket.sendto(returndata,addrport)
 
         del packetfromcore

@@ -198,7 +198,7 @@ class check_vpn_access(Thread):
                 SELECT rs.id as id, rs.account_id as account_id, rs.sessionid as session,  rs.speed_string as speed_string, lower(rs.framed_protocol) as access_type,
                 nas.name as nas_name, nas.ipaddress as nas_ip, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password, nas.type as nas_type,
                 account.username as username, (SELECT tarif_id FROM billservice_accounttarif WHERE datetime<now() and account.id=account_id LIMIT 1) as tarif_id, 
-                (ballance+credit) as balance, account.disabled_by_limit as disabled_by_limit, account.speed, nas.reset_action as reset_action, nas.vpn_speed_action as speed_action,
+                (ballance+credit) as balance, account.disabled_by_limit as disabled_by_limit, account.vpn_speed, nas.reset_action as reset_action, nas.vpn_speed_action as speed_action,
                 account.vpn_ip_address as vpn_ip_address,  account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address
                 FROM radius_activesession as rs
                 JOIN nas_nas as nas ON nas.ipaddress=rs.nas_id

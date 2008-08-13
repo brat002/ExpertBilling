@@ -26,8 +26,13 @@ class Auth:
         self.packet=packetobject
         self.code=packetfromcore.code
         self.typeauth=self._DetectTypeAuth()
-        self.plainusername=packetfromcore.username
-        self.plainpassword=packetfromcore.password
+        try:
+            ##Убрать это говно отсюда! Сделано в тестовых целях
+            self.plainusername=packetfromcore.username
+            self.plainpassword=packetfromcore.password
+        except Exception, e:
+            print e
+            
         self.ident=''
         self.AccessAccept=False
         self.NTResponse=''
