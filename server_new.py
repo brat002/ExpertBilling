@@ -12,7 +12,7 @@ from threading import Thread
 import dictionary, packet
 
 from utilites import in_period, create_speed_string, DAE
-from db import get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
+from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
 
 import settings
@@ -52,11 +52,11 @@ class HandleBase(object):
 class HandleAuth(HandleBase):
 
     def __init__(self,  packetobject):
-        self.nasip = packetobject['NAS-IP-Address'][0]
+        self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
 
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        for key,value in packetobject.items():
+            print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
         self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
@@ -64,7 +64,8 @@ class HandleAuth(HandleBase):
 
 
         row=self.get_nas_info()
-
+        print self.nasip
+        print row
         if row==None:
             self.cur.close()
             return self.auth_NA()
@@ -115,58 +116,58 @@ class HandleAuth(HandleBase):
         #    print self.packetobject._DecodeKey(key),self.packetobject[key][0]
 
         #simple_log(packet=self.packetobject)
-        if get_accesstype(self.packetobject) in ('PPTP', 'PPPOE'):
-            row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
 
-            if row==None:
-                self.cur.close()
-                print 1
-                return self.auth_NA()
-
-            username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
-            #Проверка на то, указан ли сервер доступа
-            #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
-            #if row==None:
-            #    self.cur.close()
-            #    self.connection.close()
-            #    return self.auth_NA() 
-            if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
-               self.cur.close()
-               self.connection.close()
-               print 2
-               return self.auth_NA()
-
-
-            #TimeAccess
-            rows = time_periods_by_tarif_id(self.cur, tarif_id)
-            allow_dial=False
-            for row in rows:
-                #print row[0],row[1],u"%s" % row[2]
-                if in_period(row[0],row[1],row[2])==True:
-                    allow_dial=True
-                    print 3
-                    break
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+        print 1
+        if row==None:
+            self.cur.close()
+            
+            return self.auth_NA()
+        print 2
+        username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
+        #Проверка на то, указан ли сервер доступа
+        #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
+        #if row==None:
+        #    self.cur.close()
+        #    self.connection.close()
+        #    return self.auth_NA() 
+        
+        if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
+           self.cur.close()
+           self.connection.close()
+           print 2
+           return self.auth_NA()
 
 
-            if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
-               print 4
-               self.replypacket.code=2
-               self.replypacket.username=str(username) #Нельзя юникод
-               self.replypacket.password=str(password) #Нельзя юникод
-               self.replypacket.AddAttribute('Service-Type', 2)
-               self.replypacket.AddAttribute('Framed-Protocol', 1)
-               self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-               self.replypacket.AddAttribute('Framed-Routing', 0)
-               self.create_speed(tarif_id, speed=speed)
-               self.cur.close()
-               self.connection.close()
-            else:
-                 self.cur.close()
-                 self.connection.close()
-                 print 5
-                 return self.auth_NA()
-        elif get_accesstype(self.packetobject)=='DHCP':
-            pass
+        #TimeAccess
+        rows = time_periods_by_tarif_id(self.cur, tarif_id)
+        allow_dial=False
+        for row in rows:
+            #print row[0],row[1],u"%s" % row[2]
+            if in_period(row[0],row[1],row[2])==True:
+                allow_dial=True
+                print 3
+                break
+        print 3
+
+        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
+           print 4
+           self.replypacket.code=2
+           self.replypacket.username=str(username) #Нельзя юникод
+           self.replypacket.password=str(password) #Нельзя юникод
+           self.replypacket.AddAttribute('Service-Type', 2)
+           self.replypacket.AddAttribute('Framed-Protocol', 1)
+           self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+           self.replypacket.AddAttribute('Framed-Routing', 0)
+           self.create_speed(tarif_id, speed=speed)
+           self.cur.close()
+           self.connection.close()
+        else:
+             self.cur.close()
+             self.connection.close()
+             print 5
+             return self.auth_NA()
+        print 5
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 
@@ -181,6 +182,7 @@ class HandleDHCP(HandleBase):
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
         #self.access_type=get_accesstype(self.packetobject)
+        
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
 
@@ -200,92 +202,66 @@ class HandleDHCP(HandleBase):
         row = get_nas_by_ip(self.cur, self.nasip)
         return row
 
+    def create_speed(self, tarif_id, speed=''):
+        result_params=speed
+        if speed=='':
+            defaults = get_default_speed_parameters(self.cur, tarif_id)
+            speeds = get_speed_parameters(self.cur, tarif_id)
+            if defaults is None:
+                return None
+            result=[]
+            i=0
+            for speed in speeds:
+                print speed[0],speed[1],speed[2]
+                if in_period(speed[0],speed[1],speed[2])==True:
+                    for s in speed[3:]:
+                        if s==0:
+                            res=0
+                        elif s=='':
+                            res=defaults[i]
+                        else:
+                            res=s
+                        result.append(res)
+                        i+=1
+            if speeds==[]:
+                result=defaults
+    
+            result_params=create_speed_string(result)
+            print "params=", result_params
+
+        if self.nas_type[:8]==u'mikrotik' and result_params!='':
+            self.replypacket.AddAttribute((14988,8),result_params)
+            
     def handle(self):
 
 
 #===============================================================================
-#        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+        row = get_account_data_by_username_dhcp(self.cur, self.packetobject['User-Name'][0])
 # 
-#        if row==None:
-#            self.cur.close()
-#            print 1
-#            return self.auth_NA()
-# 
-#        username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
-#        #Проверка на то, указан ли сервер доступа
-#        #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
-#        #if row==None:
-#        #    self.cur.close()
-#        #    self.connection.close()
-#        #    return self.auth_NA() 
-#        if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
-#           self.cur.close()
-#           self.connection.close()
-#           print 2
-#           return self.auth_NA()
-# 
-# 
-#        #TimeAccess
-#        rows = time_periods_by_tarif_id(self.cur, tarif_id)
-#        allow_dial=False
-#        for row in rows:
-#            #print row[0],row[1],u"%s" % row[2]
-#            if in_period(row[0],row[1],row[2])==True:
-#                allow_dial=True
-#                print 3
-#                break
-# 
-# 
-#        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
-#           print 4
-#           self.replypacket.code=2
-#           self.replypacket.username=str(username) #Нельзя юникод
-#           self.replypacket.password=str(password) #Нельзя юникод
-#           self.replypacket.AddAttribute('Service-Type', 2)
-#           self.replypacket.AddAttribute('Framed-Protocol', 1)
-#           self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-#           self.replypacket.AddAttribute('Framed-Routing', 0)
-#           self.create_speed(tarif_id, speed=speed)
-#           self.cur.close()
-#           self.connection.close()
-#        else:
-#             self.cur.close()
-#             self.connection.close()
-#             print 5
-#             return self.auth_NA()
-#===============================================================================
-        #print "SELECT ipn_ip_address, netmask FROM billservice_account WHERE ipn_mac_address='%s' and assign_ipn_ip_from_dhcp=True" % self.packetobject['User-Name'][0]
-        self.cur.execute("SELECT ipn_ip_address, netmask FROM billservice_account WHERE ipn_mac_address='%s' and assign_ipn_ip_from_dhcp=True" % self.packetobject['User-Name'][0])
-        res = self.cur.fetchone()
-        print res
-        if res!=None: 
-            print "break1"
-            ip, mask=res
-            self.cur.execute("SELECT name, secret FROM nas_nas WHERE ipaddress='%s'" % self.packetobject['NAS-IP-Address'][0])
-            res=self.cur.fetchone()
-            print "break2"
-            if res==None:
-                self.cur.close()
-                self.connection.close()
-                return self.auth_NA()
-            
-            nas_name, nas_secret = res 
-            print "break3"
-            if nas_name!=self.packetobject['NAS-Identifier'][0]:
-               self.cur.close()
-               self.connection.close()
-               return self.auth_NA()
+        if row==None:
             self.cur.close()
-            self.connection.close()
-            
-            self.replypacket.code=2
-            self.replypacket.secret=str(nas_secret)
-            self.replypacket.AddAttribute('Framed-IP-Address', ip)
-            #self.replypacket.AddAttribute('Framed-Routing', 0)
-            self.replypacket.AddAttribute('Framed-IP-Netmask', mask)
-            self.replypacket.AddAttribute('Session-Timeout', 60*60*24)
-            self.replypacket.AddAttribute((14988,8),'128000/128000')
-            print "break4"
+            print 1
+            return self.auth_NA()
+
+    
+        nas_id, ipaddress, netmask, mac_address, tarif_id, speed = row
+
+        if int(nas_id)!=int(self.nas_id):
+           self.cur.close()
+           self.connection.close()
+           print 2
+           return self.auth_NA()
+
+        print 4
+        self.replypacket.code=2
+        self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+        #self.replypacket.AddAttribute('Framed-Routing', 0)
+        self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
+        self.replypacket.AddAttribute('Session-Timeout', 60*60*24)
+        self.create_speed(tarif_id, speed=speed)
+        self.cur.close()
+        self.connection.close()
+
 
         return self.replypacket
 

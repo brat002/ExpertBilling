@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import create_speed_string, change_speed, PoD, get_active_sessions, rosClient, DAE, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
 import dictionary
 from threading import Thread
 import threading
@@ -472,15 +472,15 @@ class periodical_service_bill(Thread):
 
                                     lc=last_checkout-period_start
                                     nums, ost=divmod((period_end-last_checkout).seconds, n)
-                                    for i in xrange(nums-1):
-                                        summ+=ps_cost
+                                    
+                                    summ=ps_cost*nums
 
                                     transaction_id = transaction(cursor=cur,
                                     account=account_id,
                                     approved=True,
                                     type='PS_AT_END',
                                     tarif = tariff_id,
-                                    summ=ps_cost+summ,
+                                    summ=summ,
                                     description=u"Проводка по периодической услуге со нятием суммы в конце периода",
                                     created = now)
                                     ps_history(cur, ps_id, transaction=transaction_id, created=now)
@@ -551,6 +551,7 @@ class TimeAccessBill(Thread):
                 except:
                     prepaid=0
                     prepaid_id=-1
+                    
                 if prepaid>=0:
                     if prepaid>=total_time:
                         total_time=0
@@ -558,7 +559,7 @@ class TimeAccessBill(Thread):
                     elif total_time>=prepaid:
                         total_time=total_time-prepaid
                         prepaid=0
-                    cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                    cur.execute("""UPDATE billservice_accountprepaysttime SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
 
                 # Получаем список временных периодов и их стоимость у периодической услуги
@@ -653,7 +654,7 @@ class NetFlowAggregate(Thread):
             """
             SELECT nf.id, 
             nf.nas_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
-            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.id,
+            nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.id, ba.nas_id,
             tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
             FROM billservice_rawnetflowstream as nf
             LEFT JOIN billservice_account as ba ON ba.vpn_ip_address=nf.src_addr OR ba.vpn_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
@@ -670,13 +671,13 @@ class NetFlowAggregate(Thread):
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
             """
             for stream in raw_streams:
-                nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id,\
+                nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id, account_nas_id, \
                 traffic_transmit_service, tarif_id, store = stream
 
                 tarif_mode=False
                 #print nf_id
 
-                if traffic_transmit_service:
+                if traffic_transmit_service and account_nas_id==nas_id:
 
                 #Выбираем временные интервалы из услуги по трафику
                     cur.execute(
@@ -694,7 +695,7 @@ class NetFlowAggregate(Thread):
                     #Нужно ли списывать деньги за этот трафик
                     tarif_mode=self.check_period(periods)
 
-                if account_id is not None:
+                if account_id is not None and account_nas_id==nas_id:
                     # Если пользователь
                     cur.execute(
                     """
@@ -997,25 +998,34 @@ class limit_checker(Thread):
             """
             cur.execute(
             """
-            SELECT tarif.id, account.id, acctt.datetime::timestamp without time zone, sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
+            SELECT account.id, account.disabled_by_limit, acctt.datetime::timestamp without time zone,  
+            tlimit.id, tlimit.size, tlimit.mode, tlimit.in_direction, tlimit.out_direction,
+            sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
             FROM billservice_tariff as tarif
             JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id and acctt.datetime=(SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
             JOIN billservice_account as account ON account.id=acctt.account_id
             JOIN billservice_tariff_traffic_limit as ttl ON ttl.tariff_id=tarif.id
-            LEFT JOIN billservice_settlementperiod as sp ON sp.id=tarif.settlement_period_id
+            JOIN billservice_trafficlimit as tlimit ON tlimit.id = ttl.trafficlimit_id
+            JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period_id
             WHERE account.status=True ORDER BY account.id ASC;
             """
             )
             account_tarifs=cur.fetchall()
             oldid=-1
-            for account_tarif in account_tarifs:
-                tarif_id=account_tarif[0]
-                account_id=account_tarif[1]
-                tarif_start=account_tarif[2]
-                tarif_sp_start=account_tarif[3]
-                tarif_sp_length=account_tarif[4]
-                tarif_sp_length_in=account_tarif[5]
-                tarif_autostart_sp=account_tarif[6]
+            for row in account_tarifs:
+                account_id, \
+                disabled_by_limit,\
+                account_start, \
+                limit_id, \
+                limit_size, \
+                limit_mode, \
+                in_direction, \
+                out_direction, \
+                sp_time_start, \
+                sp_length, \
+                sp_length_in, \
+                autostart_sp = row 
+                print "limit check", account_id
 
                 if oldid==account_id and block:
                     """
@@ -1023,55 +1033,17 @@ class limit_checker(Thread):
                     то больше для него лимиты не проверяем
                     """
                     continue
-                #Выбираем лимит для аккаунта
-                cur.execute(
-                """
-                SELECT ttl.trafficlimit_id, tl.size, tl.mode, tl.in_direction, tl.out_direction,  sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
-                FROM billservice_tariff_traffic_limit as ttl
-                JOIN billservice_trafficlimit as tl ON tl.id=ttl.trafficlimit_id
-                LEFT JOIN billservice_settlementperiod as sp ON sp.id=tl.settlement_period_id
-                WHERE ttl.tariff_id=%s;
-                """ % tarif_id
-                )
-                limit=cur.fetchone()
-                limit_id, limit_size, limit_mode, in_direction, out_direction, sp_time_start, sp_length, sp_length_in, autostart_sp=limit
-                """
-                Если в тарифном плане указан расчётный период,
-                то за длинну периода
-                """
-                if tarif_sp_length:
-                    st_tarif_period_length=tarif_sp_length
-                elif tarif_sp_length_in:
-                    st_tarif_period_length=tarif_sp_length_in
 
-                if sp_length:
-                    settlement_period_length=sp_length
+                if autostart_sp==True:
+                    sp_start=account_start
                 else:
-                    settlement_period_length=sp_length_in
-
-                #Если в лимите указан период
-                autostart_sp, tarif_autostart_sp
-                if autostart_sp!=None:
-                    period_length=settlement_period_length
-                    if autostart_sp==True:
-                        settlement_period_start=tarif_start
-
-                    elif autostart_sp==False:
-                        period_start=sp_time_start
-                #иначе берём данные о расчётном периоде из тарифного плана
-                elif tarif_autostart_sp:
-                    period_length=st_tarif_period_length
-                    if tarif_autostart_sp==True:
-                        settlement_period_start=tarif_start
-                    elif tarif_autostart_sp==False:
-                        settlement_period_start=sp_time_start
-                else:
-                    #если и там не указан-пропускаем цикл
-                    continue
+                    sp_start = sp_time_start
+                
                 
                 #print settlement_period_start, period_length, datetime.datetime.now()
                 
-                settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=settlement_period_start, repeat_after=period_length, now=datetime.datetime.now())
+                settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length)
+                
                 #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
                 if limit_mode==True:
                     settlement_period_start=datetime.datetime.now()-datetime.timedelta(seconds=delta)
@@ -1088,11 +1060,12 @@ class limit_checker(Thread):
                     d+="'OUTPUT'"
                     
                 query="""
-               SELECT sum(octets) as size FROM billservice_netflowstream as nf
-               JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
-               WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
+                SELECT sum(octets) as size FROM billservice_netflowstream as nf
+                JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
+                WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
 
                 """ % (account_id, limit_id, settlement_period_start, settlement_period_end, d)
+                
                 #print query
                 cur.execute(query)
                 tsize=0
@@ -1107,19 +1080,21 @@ class limit_checker(Thread):
 
 
                 oldid=account_id
-                #пишем в базу состояние пользователя
-                cur.execute(
-                """
-                UPDATE billservice_account
-                SET disabled_by_limit=%s
-                WHERE id=%s;
-                """ % (block, account_id)
-                )
+                if disabled_by_limit!=block:
+                    #пишем в базу состояние пользователя
+                    cur.execute(
+                    """
+                    UPDATE billservice_account
+                    SET disabled_by_limit=%s
+                    WHERE id=%s;
+                    """ % (block, account_id)
+                    )
+                    print "limit_result=", block
 
-            connection.commit()
+                connection.commit() 
             cur.close()
             connection.close()
-            time.sleep(60)
+            time.sleep(30)
 
 
 class settlement_period_service_dog(Thread):
