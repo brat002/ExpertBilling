@@ -792,7 +792,7 @@ class cdDrawer(object):
 	    c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
 	    c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
 	    #-----------------
-	    c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
+	    c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr[ykey])
 	    #-----------------
 	    if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
 	    #------------------
