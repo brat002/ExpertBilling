@@ -373,10 +373,12 @@ class bpbl(object):
 	    except IndexError, ierr:
 		pass
 	#bstr = ''
-	y_max = max([max([max(max(dct.itervalues())) for dct in lstm]) for lstm in y_ps.itervalues()])    
+	#y_max = max([max([max(max(dct.itervalues())) for dct in lstm]) for lstm in y_ps.itervalues()])
+	y_maxmums = [max([max(max(dct.itervalues())) for dct in lstm]) for lstm in y_ps.itervalues()]
+
 	#print y_max
 	#dim = range(len(times))
-	if y_max < 8000:
+	'''if y_max < 8000:
 	    bstr = 'b'
 	elif y_max < 8000000:
 	    for val in y_ps.itervalues():
@@ -395,7 +397,30 @@ class bpbl(object):
 		for dct in val:
 		    for dirk in dct.iterkeys():
 			dct[dirk] = [float(y) / 1073741824 for y in dct[dirk]]
-	    bstr  = 'Gb'
+	    bstr  = 'Gb' '''
+	i = 0
+	bstr = {}
+	bstr['0'] = '' 
+	for val in y_ps.iteritems():
+	    y_max = y_maxmums[i]
+	    if y_max < 6000:
+		bstr[val[0]]  = 'b'
+	    elif y_max < 8000000:
+		for dct in val[1]:
+		    for dirk in dct.iterkeys():
+			dct[dirk] = [float(y) / 1024 for y in dct[dirk]]
+		bstr[val[0]]  = 'kb'
+	    elif y_max < 6000000000:
+		for dct in val[1]:
+		    for dirk in dct.iterkeys():
+			dct[dirk] = [float(y) / 1048576 for y in dct[dirk]]
+		bstr[val[0]]  = 'Mb'
+	    else:
+		for dct in val[1]:
+		    for dirk in dct.iterkeys():
+			dct[dirk] = [float(y) / 1073741824 for y in dct[dirk]]
+		bstr[val[0]]  = 'Gb'
+	    i += 1
 	return (times, y_ps, bstr, sec)
 
     @staticmethod
