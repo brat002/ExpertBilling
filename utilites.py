@@ -162,64 +162,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
 
 
 
-def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
-    """
-    Dynamic Authorization Extensions
-    http://www.rfc-archive.org/getrfc.php?rfc=3576
-    """
 
-    if code==40 or (code==43 and coa==True):
-        print 'disconnect request'
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(('0.0.0.0',24000))
-        #sock.connect('10.20.3.1',1700)
-        doc = packet.AcctPacket(code=code, secret=nas_secret, dict=dict)
-        doc.AddAttribute('NAS-IP-Address', nas_ip)
-        doc.AddAttribute('NAS-Identifier', nas_id)
-        doc.AddAttribute('User-Name', username)
-        doc.AddAttribute('Acct-Session-Id', session_id)
-        #doc.AddAttribute('Framed-IP-Address', '192.168.12.3')
-        if speed_string:
-            #Пока только для микротика
-            doc.AddAttribute((14988,8), speed_string)
-            #doc.AddAttribute((14988,8), "160k")
-
-        doc_data=doc.RequestPacket()
-        sock.sendto(doc_data,(nas_ip, 1700))
-        (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
-
-        #for key,value in doc.items():
-        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
-
-        sock.close()
-        #try:
-        #    print doc['Error-Cause'][0]
-        #except:
-        #    pass
-        return doc.has_key("Error-Cause")==False
-    else:
-
-        """
-        #сначала проверить есть ли, если нет-создать, если есть-установить
-        /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
-        """
-        print speed_string
-        if code==43:
-            query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
-        elif code==40:
-            query='/interface %s-server remove [find user="%s"]' % (access_type, username)
-
-        try:
-            sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
-            print 'ssh connected'
-            #'/interface pptp-server remove [find user="%s"]' % username
-            res=sshclient.send_command(query)
-            sshclient.close_chanel()
-        except:
-            print 'SSH ERROR'
-
-        return res[1].readlines()==[]
 
 def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data={}):
         if account_data!={}:
