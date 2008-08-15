@@ -3,7 +3,6 @@ from log import simple_log
 
 from auth import Auth
 from time import clock
-from threading import Thread
 
 import os,datetime
 from SocketServer import ThreadingUDPServer
@@ -11,7 +10,7 @@ from SocketServer import DatagramRequestHandler
 from threading import Thread
 import dictionary, packet
 
-from utilites import in_period, create_speed_string, DAE
+from utilites import in_period, create_speed_string
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
 
@@ -55,17 +54,15 @@ class HandleAuth(HandleBase):
         self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
 
-        for key,value in packetobject.items():
-            print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
-        self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
 
 
         row=self.get_nas_info()
-        print self.nasip
-        print row
+
         if row==None:
             self.cur.close()
             return self.auth_NA()
@@ -124,7 +121,7 @@ class HandleAuth(HandleBase):
             
             return self.auth_NA()
         print 2
-        username, password, nas_id, ipaddress, tarif_id, access_type, status, ballance, disabled_by_limit, speed = row
+        username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed = row
         #Проверка на то, указан ли сервер доступа
         #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
         #if row==None:
@@ -150,7 +147,7 @@ class HandleAuth(HandleBase):
                 break
         print 3
 
-        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit:
+        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked:
            print 4
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
@@ -234,10 +231,8 @@ class HandleDHCP(HandleBase):
             
     def handle(self):
 
-
-#===============================================================================
         row = get_account_data_by_username_dhcp(self.cur, self.packetobject['User-Name'][0])
-# 
+
         if row==None:
             self.cur.close()
             print 1
@@ -261,8 +256,6 @@ class HandleDHCP(HandleBase):
         self.create_speed(tarif_id, speed=speed)
         self.cur.close()
         self.connection.close()
-
-
         return self.replypacket
 
 #acct class
@@ -324,16 +317,16 @@ class HandleAcct(HandleBase):
 
         if self.packetobject['Acct-Status-Type']==['Start']:
             #Проверяем нет ли такой сессии в базе
-            #self.cur.execute("""
-            #SELECT id
-            #FROM radius_session
-            #WHERE account_id=%s and sessionid='%s' and
-            #caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
-            #""" % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
-            #       self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
-
-            #allow_write = self.cur.fetchone()==[]
-            allow_write=True
+            self.cur.execute("""
+            SELECT id
+            FROM radius_activesession
+            WHERE account_id=%s and sessionid='%s' and
+            caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
+            """ % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
+                   self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
+            
+            allow_write = self.cur.fetchone()==None
+            #allow_write=True
             if time_access and allow_write:
                 self.cur.execute(
                 """
@@ -451,9 +444,6 @@ class RadiusAuth(BaseAuth):
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
             returndata=authobject.ReturnPacket()
             
-        
-
-        #Обавляем Secret
 
         self.socket.sendto(returndata,addrport)
 

@@ -6,7 +6,7 @@ import datetime, calendar
 from dateutil.relativedelta import relativedelta
 import paramiko
 import sys,  time, md5, binascii, socket, select
-
+import re
 class IPNAccount(object):
     def __init__(self):
         nas_ip=''
@@ -96,7 +96,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 print e
                 return False
 
-def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, access_type, format_string, speed):
+def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
     #print access_type
@@ -160,9 +160,91 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
 
 
 
+def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
+        
+        command_dict={
+                             'access_type':access_type,
+                             'username': account_name,
+                             'user_id':account_id,
+                             'account_ipn_ip': account_ipn_ip,
+                             'account_vpn_ip': account_vpn_ip,
+                             'account_mac_address':account_mac_address,
+                             }
 
 
+        #print 'command_dict=', command_dict
+        
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
+        
+        print command_string
+        try:
+            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+            print 'ssh connected'
+            res=sshclient.send_command(command_string)
+            sshclient.close_chanel()
+            return True
+        except Exception, e:
+            print e
+            return False
 
+def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=None, nas_id=None, session_id=None, login=None, password=None, speed_string=None):
+    """
+    Dynamic Authorization Extensions
+    http://www.rfc-archive.org/getrfc.php?rfc=3576
+    """
+
+    if code==40 or (code==43 and coa==True):
+        print 'disconnect request'
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('0.0.0.0',24000))
+        #sock.connect('10.20.3.1',1700)
+        doc = packet.AcctPacket(code=code, secret=nas_secret, dict=dict)
+        doc.AddAttribute('NAS-IP-Address', nas_ip)
+        doc.AddAttribute('NAS-Identifier', nas_id)
+        doc.AddAttribute('User-Name', username)
+        doc.AddAttribute('Acct-Session-Id', session_id)
+        #doc.AddAttribute('Framed-IP-Address', '192.168.12.3')
+        if speed_string:
+            #Пока только для микротика
+            doc.AddAttribute((14988,8), speed_string)
+            #doc.AddAttribute((14988,8), "160k")
+
+        doc_data=doc.RequestPacket()
+        sock.sendto(doc_data,(nas_ip, 1700))
+        (data, addrport) = sock.recvfrom(8192)
+        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+
+        #for key,value in doc.items():
+        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
+
+        sock.close()
+        #try:
+        #    print doc['Error-Cause'][0]
+        #except:
+        #    pass
+        return doc.has_key("Error-Cause")==False
+    else:
+
+        """
+        #сначала проверить есть ли, если нет-создать, если есть-установить
+        /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
+        """
+        print speed_string
+        if code==43:
+            query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
+        elif code==40:
+            query='/interface %s-server remove [find user="%s"]' % (access_type, username)
+
+        try:
+            sshclient=SSHClient(host=nas_ip, port=22, username=login, password=password)
+            print 'ssh connected'
+            #'/interface pptp-server remove [find user="%s"]' % username
+            res=sshclient.send_command(query)
+            sshclient.close_chanel()
+        except:
+            print 'SSH ERROR'
+
+        return res[1].readlines()==[]
 
 def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data={}):
         if account_data!={}:
@@ -714,8 +796,9 @@ def get_sessions_for_nas(nas):
 def get_active_sessions(nas):
 
     return get_sessions_for_nas(nas)
-
-
+ 
+    
+    
 def convert(alist):
     return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
 
@@ -736,4 +819,62 @@ def get_decimals_speeds(params):
         params[param]='/'.join(values)
     #print 'after', params
     return params
+
+def formatator(x,y):
+    if x!=-1 and y==-1:
+        return "%s/%s" % (x,x)
+    elif x==-1 and y==-1:
+        return "0/0"
+    elif x!=-1 and y!=-1:
+        return "%s/%s" % (x,y)
+
+    
+def parse_custom_speed(speed_string):
+    # common variables
+    #print speed_string
+    rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
+    embedded_rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
+    #matchstr = """128k/128k   200k/200k     100k/100k     5/5 1  40k/40k"""
+    
+    # method 1: using a compile object
+    compile_obj = re.compile(rawstr)
+    match_obj = compile_obj.search(speed_string)
+    
+    # method 2: using search function (w/ external flags)
+    match_obj = re.search(rawstr, speed_string)
+    
+    # method 3: using search function (w/ embedded flags)
+    match_obj = re.search(embedded_rawstr, speed_string)
+    
+    # Retrieve group(s) from match_obj
+    all_groups = match_obj.groups()
+    
+    # Retrieve group(s) by index
+    group_1 = match_obj.group(1)
+    group_2 = match_obj.group(2)
+    group_3 = match_obj.group(3)
+    group_4 = match_obj.group(4)
+    group_5 = match_obj.group(5)
+    group_6 = match_obj.group(6)
+    group_7 = match_obj.group(7)
+    group_8 = match_obj.group(8)
+    group_9 = match_obj.group(9)
+    group_10 = match_obj.group(10)
+    group_11 = match_obj.group(11)
+    
+    # Retrieve group(s) by name
+    rxrate = match_obj.group('rxrate') or -1
+    txrate = match_obj.group('txrate') or -1
+    rxbrate = match_obj.group('rxbrate') or -1
+    txbrate = match_obj.group('txbrate') or -1
+    rbthr = match_obj.group('rbthr') or -1
+    tbthr = match_obj.group('tbthr') or -1
+    rbtm = match_obj.group('rbtm') or -1
+    tbtm = match_obj.group('tbtm') or -1
+    prt = match_obj.group('prt') or 8
+    rrm = match_obj.group('rrm') or -1
+    trm = match_obj.group('trm') or -1
+
+    return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
+    
             
