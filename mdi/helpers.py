@@ -1,10 +1,12 @@
 #-*-encoding:utf-8-*-
 
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, QtSql
 from types import InstanceType, StringType, UnicodeType
 import datetime
+import os
 
 dateDelim = "."
+connectDBName = "exbillusers"
 
 def tableFormat(table):        
     table.setFrameShape(QtGui.QFrame.Panel)
@@ -94,6 +96,101 @@ class Object(object):
         return self.id
     
 
+class sqliteDbAccess(object):
+    def __init__(self, dbname, dbtype=''):
+        '''
+    #self.filestat codes for 'system' type:
+    
+    1: HOME
+    2: HOME created
+    3: dbname
+    4: dbname created
+            
+        '''
+        #self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        if dbtype == 'system':
+            if os.name == "nt":
+                if os.environ.has_key('USERPROFILE'):
+                    if os.path.exists(os.environ['USERPROFILE'] + '\\' + dbname):
+                        self.dbfile = os.environ['USERPROFILE'] + '\\' + dbname
+                        self.filestat = 1
+                    elif os.path.exists(dbname):
+                        self.dbfile = dbname
+                        self.filestat = 3
+                    else:
+                        self.dbfile = os.environ['USERPROFILE'] + '\\' + dbname
+                        self.filestat = 2
+                elif os.path.exists(dbname):
+                    self.dbfile = dbname
+                    self.filestat = 3
+                else:
+                    self.dbfile = dbname
+                    self.filestat = 4
+            else:
+                if os.environ.has_key('HOME'):
+                    if os.path.exists(os.environ['HOME'] + '/' + dbname):
+                        self.dbfile = os.environ['HOME'] + '/' + dbname
+                        self.filestat = 1
+                    elif os.path.exists(dbname):
+                        self.dbfile = dbname
+                        self.filestat = 3
+                    else:
+                        self.dbfile = os.environ['HOME'] + '/' + dbname
+                        self.filestat = 2
+                elif os.path.exists(dbname):
+                    self.dbfile = dbname
+                    self.filestat = 3
+                else:
+                    self.dbfile = dbname
+                    self.filestat = 4
+
+        else:
+            self.dbfile = dbname
+            self.filestat = 1
+            
+        self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+        self.db.setDatabaseName(self.dbfile)
+            
+    def action(self, qstr, type, vartuple=None):
+        if vartuple:
+            qstr = qstr % vartuple   
+
+        if not self.db.open():
+            raise Exception("QSQLITE DATABASE CONNECTION ERROR: " + self.dbfile)
+        
+        qquery = QtSql.QSqlQuery(qstr)
+        
+        if not qquery.isActive():
+            raise Exception("QSQLITE DATABASE QUERY EXECUTE ERROR: " + qstr)
+        
+        if type == 'select':
+            res = []
+            while (qquery.next()):
+                res.append(qquery.record())
+            return res
+        
+        return qquery.numRowsAffected()
+    
+    def select(self, qstr, vartuple=None):        
+        return self.action(qstr, 'select', vartuple)
+    
+    def insert(self, qstr, vartuple=None):        
+        return self.action(qstr, 'insert', vartuple)
+    
+    def delete(self, qstr, vartuple=None):        
+        return self.action(qstr, 'delete', vartuple)
+    
+    def update(self, qstr, vartuple=None):        
+        return self.action(qstr, 'update', vartuple)
+    
+    def getTableModel(self, table):
+        self.db.open()
+        tModel = QtSql.QSqlTableModel(None, self.db)
+        tModel.setTable(table)
+        
+        return tModel
+        
+            
 def transaction(account_id, type_id, approved, description, summ, bill):
     
     o = Object()

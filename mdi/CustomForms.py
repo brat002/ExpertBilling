@@ -1,10 +1,13 @@
 #-*-coding=utf-8*-
 
-
-from PyQt4 import QtCore, QtGui
+import os
+from PyQt4 import QtCore, QtGui, QtSql
 from Reports import TransactionsReport
 from helpers import makeHeaders
 from helpers import tableFormat
+from helpers import sqliteDbAccess, connectDBName
+
+
 
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
@@ -306,6 +309,7 @@ class TransactionForm(QtGui.QDialog):
             child.exec_()
             
 class ConnectDialog(QtGui.QDialog):
+    _connectsql = {}
     def __init__(self):
         super(ConnectDialog, self).__init__()
         
@@ -341,10 +345,47 @@ class ConnectDialog(QtGui.QDialog):
         self.exit_pushButton.setGeometry(QtCore.QRect(260,40,75,24))
         self.exit_pushButton.setObjectName("exit_pushButton")
 
-        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget = tableFormat(self.tableWidget)
+        self.tableWidget = QtGui.QTableView(self.centralwidget)
+        try:
+            '''model = self.getModel("exbill_users")
+            model.removeColumn(0)
+            print model.record(0).value(1).toString()
+            print "----------getmodel-------"
+            model.setHeaderData(0, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
+            model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
+            self.tableWidget.setModel(model)
+            print self.tableWidget.model().record(0).value(1).toString()'''
+            '''self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
+            self.db.setDatabaseName("exbillusers")
+            self.db.open()
+            self.model = QtSql.QSqlTableModel()
+            self.model.setTable("exbill_users")
+            self.model.select()
+            self.model.removeColumn(0)
+            self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
+            self.model.setHeaderData(0, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
+            self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
+            self.tableWidget.setModel(self.model)
+            self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
+            self.tableWidget.setObjectName("tableWidget")
+            #self.tableWidget.setColumnHidden(0, True)
+            #self.tableWidget = tableFormat(self.tableWidget)
+            #self.tableWidget.update()
+            self.tableWidget.show()'''
+            self.model = self.getModel("exbill_users")
+            #self.model.removeColumn(0)
+            self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
+            self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
+            self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
+            self.tableWidget.setModel(self.model)
+            self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
+            self.tableWidget.setObjectName("tableWidget")
+            self.tableWidget = tableFormat(self.tableWidget)
+            self.tableWidget.setColumnHidden(3, True)
+            self.tableWidget.show()
+            #columns = [u'IP', 'Username']
+        except Exception, ex:
+            print ex
 
         self.save_pushButton = QtGui.QPushButton(self.centralwidget)
         self.save_pushButton.setGeometry(QtCore.QRect(260,70,75,23))
@@ -389,12 +430,13 @@ class ConnectDialog(QtGui.QDialog):
         self.setTabOrder(self.exit_pushButton,self.save_pushButton)
         self.setTabOrder(self.save_pushButton,self.remove_pushButton)
         self.setTabOrder(self.remove_pushButton,self.tableWidget)
-        
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.retranslateUi()
         self.fixtures()
         QtCore.QObject.connect(self.connect_pushButton, QtCore.SIGNAL("clicked()"), self.accept)
         QtCore.QObject.connect(self.exit_pushButton, QtCore.SIGNAL("clicked()"), self.reject)
-
+        QtCore.QObject.connect(self.save_pushButton, QtCore.SIGNAL("clicked()"), self.save)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -404,11 +446,11 @@ class ConnectDialog(QtGui.QDialog):
         self.connect_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.remove_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
         self.save_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Запомнить", None, QtGui.QApplication.UnicodeUTF8))
+        self.address_edit.setValidator(self.ipValidator)
         self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
+        #self.tableWidget.clear()
 
-        columns = [u'IP', 'Username']
-        makeHeaders(columns, self.tableWidget)
+        #makeHeaders(columns, self.tableWidget)
         
         self.save_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.password_label.setText(QtGui.QApplication.translate("MainWindow", "Пароль:", None, QtGui.QApplication.UnicodeUTF8))
@@ -421,7 +463,18 @@ class ConnectDialog(QtGui.QDialog):
         self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
         self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
         self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
+        '''dbi = self.db.select("select * from exbill_users;")
+        p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
+        p2 = dbi[2].value(3).toByteArray()
+        print p1, p2
+        print p1 == p2'''
         
+    def getModel(self, table):
+        self.db = sqliteDbAccess(connectDBName, 'system')
+        dbmodel = self.db.getTableModel(table)
+        dbmodel.select()
+        return dbmodel
+    
     def accept(self):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("ip", QtCore.QVariant(self.address_edit.text()))
@@ -429,5 +482,33 @@ class ConnectDialog(QtGui.QDialog):
         settings.setValue("password", QtCore.QVariant(self.password_edit.text()))
         QtGui.QDialog.accept(self)
         #pass
-
+    def save(self):
+        try:
+            if self.address_edit.text() and (self.ipValidator.validate(self.address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable):
+                ip = self.address_edit.text()
+            else:
+                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите адрес."))
+                return
+            if self.name_edit.text():
+                name = self.name_edit.text()
+            else:
+                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите имя."))
+                return
+            if self.password_edit.text():
+                password = self.password_edit.text()
+            else:
+                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
+                return
+            model = self.tableWidget.model()
+            record = model.record()
+            print "aaa"
+            record.setValue(1, QtCore.QVariant(ip))
+            print "bbb"
+            record.setValue(2, QtCore.QVariant(name))
+            print "ccc"
+            record.setValue(3, QtCore.QVariant(QtCore.QCryptographicHash.hash(password.toUtf8(), QtCore.QCryptographicHash.Md5)))
+            
+            model.insertRecord(-1, record)
+        except Exception, ex:
+            raise Exception("Couln't save properly: " + str(ex))
         
