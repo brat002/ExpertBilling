@@ -12,6 +12,7 @@ class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
         super(MonitorFrame, self).__init__()
         self.connection = connection
+        self.selected_user=None
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -58,10 +59,10 @@ class MonitorFrame(QtGui.QMainWindow):
 
                 
         self.tableWidget.addAction(self.actionResetSession)
-        self.tableWidget.addAction(self.actionGoToUser)
+        #self.tableWidget.addAction(self.actionGoToUser)
 
         
-        self.toolBar.addAction(self.actionResetSession)
+        #self.toolBar.addAction(self.actionResetSession)
 
         self.toolBar.addWidget(self.user_label)
         self.toolBar.addWidget(self.userCombobox)
@@ -71,8 +72,11 @@ class MonitorFrame(QtGui.QMainWindow):
 
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)
         QtCore.QObject.connect(self.actionResetSession, QtCore.SIGNAL("triggered()"), self.reset_action)
+        
+        QtCore.QObject.connect(self.userCombobox,   QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.fixtures)
         self.retranslateUi()
         self.fixtures()
+        self.refresh_users()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -87,7 +91,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.actionGoToUser.setText(QtGui.QApplication.translate("MainWindow", "Перейти к пользователю", None, QtGui.QApplication.UnicodeUTF8))
 
     def addrow(self, widget, value, x, y):
-        if value==None:
+        if value=='Null':
             value=''
             
         if widget.item(x,y):
@@ -100,29 +104,35 @@ class MonitorFrame(QtGui.QMainWindow):
     def reset_action(self):
         self.connection.pod(session=unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).text()))
         
-    def fixtures(self):
+    def fixtures(self, user=None):
         
         self.tableWidget.clearContents()
         
         if self.allTimeCheckbox.checkState()==2:
-            sessions = self.connection.sql("""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
-                                              JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
-                                              JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
-                                
-                                             """)
+            sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
+            
+                  JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
+                  JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id WHERE billservice_account.id>0    
+                 """
         elif self.allTimeCheckbox.checkState()==0:
-            sessions = self.connection.sql("""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
-                                              JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
-                                              JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
-                                              WHERE radius_activesession.session_status='ACTIVE'"""
-                                              )
+            sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
+                  JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
+                  JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
+                  WHERE radius_activesession.session_status='ACTIVE'"""
+        
+        if user==None:
+            user=unicode(self.userCombobox.currentText())                                      
+        
+        if user!="---":
+            sql+=" AND billservice_account.username='%s'" % unicode(user)
+          
+        sessions = self.connection.sql(sql)  
         i=0
 
         
         self.tableWidget.setRowCount(len(sessions))
         
         for session in sessions:
-            print i
             self.addrow(self.tableWidget, session.sessionid, i, 0)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
@@ -139,5 +149,13 @@ class MonitorFrame(QtGui.QMainWindow):
         self.tableWidget.resizeColumnsToContents()
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.setSortingEnabled(True)
+        
+    def refresh_users(self):
+        if self.selected_user is None:
+            self.userCombobox.addItem('---')
+            users = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+            for user in users:
+                self.userCombobox.addItem(unicode(user.username))
+                
             
         

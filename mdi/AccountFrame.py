@@ -1645,11 +1645,11 @@ class TarifFrame(QtGui.QDialog):
             
             access_parameters.access_type = unicode(self.access_type_edit.currentText())
             access_parameters.access_time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.access_time_edit.currentText())).id
-            access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or '', self.speed_max_out_edit.text() or '')
-            access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text() or '', self.speed_min_out_edit.text() or '')
-            access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text() or '', self.speed_burst_out_edit.text() or '')
-            access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or '', self.speed_burst_treshold_out_edit.text() or '')
-            access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or '', self.speed_burst_time_out_edit.text() or '')
+            access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or 0, self.speed_max_out_edit.text() or 0)
+            access_parameters.min_limit = u"%s/%s" % (self.speed_min_in_edit.text() or 0, self.speed_min_out_edit.text() or 0)
+            access_parameters.burst_limit = u"%s/%s" % (self.speed_burst_in_edit.text() or 0, self.speed_burst_out_edit.text() or 0)
+            access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or 0, self.speed_burst_treshold_out_edit.text() or 0)
+            access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or 0, self.speed_burst_time_out_edit.text() or 0)
             access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
             access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
             
@@ -2630,8 +2630,8 @@ class AddAccountFrame(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
                 return
     
-                
-            if unicode(self.ipn_mac_address_edit.text()) != '00:00:00:00:00:00':
+
+            if unicode(self.ipn_mac_address_edit.text()) != ':::::':
                 try:
                     ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
                     if ipn_mac_address_account.id !=model.id :
@@ -2799,7 +2799,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Статус', u'Недостаточно средств', u'Превышен лимит', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Недостаточно средств', u'Превышен лимит', u"Дата создания"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -2845,7 +2845,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.actionEnableSession = QtGui.QAction(u'Включить на сервере доступа',self)
         self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
-        
+
+        self.actionAddAccount = QtGui.QAction(u'Добавить',self)
+        self.actionAddAccount.setIcon(QtGui.QIcon("images/del.png"))
+
+        self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера',self)
+        self.actionDeleteAccount.setIcon(QtGui.QIcon("images/add.png"))
+                
         
         self.tableWidget.addAction(self.addAction)
         self.tableWidget.addAction(self.delAction)
@@ -2853,7 +2859,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.actionEnableSession)
         self.tableWidget.addAction(self.actionDisableSession)
                         
-
+        self.tableWidget.addAction(self.actionAddAccount)
+        self.tableWidget.addAction(self.actionDeleteAccount)
+        
         self.toolBar.addAction(self.addTarifAction)
         self.toolBar.addAction(self.delTarifAction)
         self.toolBar.addSeparator()        
@@ -2899,6 +2907,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connect(self.actionDisableSession, QtCore.SIGNAL("triggered()"), self.accountDisable)
         
         self.connect(self.actionEnableSession, QtCore.SIGNAL("triggered()"), self.accountEnable)
+
+        self.connect(self.actionAddAccount, QtCore.SIGNAL("triggered()"), self.accountAdd)
+        
+        self.connect(self.actionDeleteAccount, QtCore.SIGNAL("triggered()"), self.accountDelete)
                      
         self.retranslateUi()
         self.refreshTree()
@@ -3056,8 +3068,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         if type(value)==BooleanType and value==True:
             headerItem.setIcon(QtGui.QIcon("images/ok.png"))
+            value=u"Да"
         elif type(value)==BooleanType and value==False:
             headerItem.setIcon(QtGui.QIcon("images/false.png"))
+            value=u"Нет"
             
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/user.png"))
@@ -3120,10 +3134,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.suspended, i,9, enabled=a.status)
-            self.addrow(a.status, i,10, enabled=a.status)
-            self.addrow(a.balance_blocked, i,11, enabled=a.status)
-            self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-            self.addrow(a.created.strftime(self.strftimeFormat), i,13, enabled=a.status)
+            #self.addrow(a.status, i,10, enabled=a.status)
+            self.addrow(a.balance_blocked, i,10, enabled=a.status)
+            self.addrow(a.disabled_by_limit,i,11, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,12, enabled=a.status)
             
             self.tableWidget.setRowHeight(i, 17)
             
@@ -3135,39 +3149,43 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.resizeColumnsToContents()
         self.delNodeLocalAction()
 
-    def accountDisable(self):
+    def accountEnable(self):
         id=self.getSelectedId()
         if id==0:
             return
-        try:
-            model=self.connection.get("""
-            SELECT account.id, nas.ipaddress as nas_ipaddress, nas.login as nas_login, nas.password as nas_password
-            FROM billservice_account as account 
-            JOIN nas_nas as nas ON nas.id=account.nas_id
-            WHERE account.id=%d""" % id)
-        except:
+
+        if self.connection.accountActions(id, 'enable'):
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+
+    def accountAdd(self):
+        id=self.getSelectedId()
+        if id==0:
             return
 
-        if self.connection.accountActions(str(model.nas_ipaddress), str(model.nas_login), str(model.nas_password), 'disable', model.id):
+        if self.connection.accountActions(id, 'create'):
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+
+    def accountDelete(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+
+        if self.connection.accountActions(id, 'delete'):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
 
 
-    def accountEnable(self):
+    def accountDisable(self):
         id=self.getSelectedId()
         if id==0:
             return
-        try:
-            model=self.connection.get("""
-            SELECT account.id, nas.ipaddress as nas_ipaddress, nas.login as nas_login, nas.password as nas_password
-            FROM billservice_account as account 
-            JOIN nas_nas as nas ON nas.id=account.nas_id
-            WHERE account.id=%d""" % id)
-        except:
-            return
 
-        if self.connection.accountActions(str(model.nas_ipaddress), str(model.nas_login), str(model.nas_password), 'enable', model.id):
+        if self.connection.accountActions(id, 'disable'):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))

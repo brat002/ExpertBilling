@@ -52,7 +52,7 @@ def get_speed_parameters(cursor, tarif):
 def get_account_data_by_username(cursor, username):
     cursor.execute(
     """SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
-    bsat.tarif_id, accessparameters.access_type, account.status, (account.ballance+account.credit) as ballance, account.disabled_by_limit, account.vpn_speed
+    bsat.tarif_id, accessparameters.access_type, account.status, account.balance_blocked, (account.ballance+account.credit) as ballance, account.disabled_by_limit, account.vpn_speed
     FROM billservice_account as account
     JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
     JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id

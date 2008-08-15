@@ -15,6 +15,7 @@ from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
+
 class Auth:
     """
     Класс предназначен для реализации проверки авторизации для механизмов
