@@ -434,9 +434,15 @@ class ConnectDialog(QtGui.QDialog):
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.retranslateUi()
         self.fixtures()
+        self.tableSelection = self.tableWidget.selectionModel()
         QtCore.QObject.connect(self.connect_pushButton, QtCore.SIGNAL("clicked()"), self.accept)
         QtCore.QObject.connect(self.exit_pushButton, QtCore.SIGNAL("clicked()"), self.reject)
         QtCore.QObject.connect(self.save_pushButton, QtCore.SIGNAL("clicked()"), self.save)
+        #QtCore.QObject.connect(self.tableSelection, QtCore.SIGNAL("selectionChanged(QModelIndex, QModelIndex)"), self.tableClicked)
+        #self.connect(self.tableWidget, QtCore.SIGNAL("currentChanged(previous, current)"), QtCore.SLOT("self.tableClicked(self, previous, current)"))
+        #QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("clicked(const QModelIndex&)"), self.tableClicked)
+        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("clicked(QModelIndex)"), self.tableClicked)
+        #QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("selectionChanged(const QModelIndex&, const QModelIndex&)"), )"), )"), self.tableClicked)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -463,11 +469,11 @@ class ConnectDialog(QtGui.QDialog):
         self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
         self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
         self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
-        '''dbi = self.db.select("select * from exbill_users;")
+        dbi = self.db.select("select * from exbill_users;")
         p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
-        p2 = dbi[2].value(3).toByteArray()
+        p2 = dbi[4].value(3).toByteArray()
         print p1, p2
-        print p1 == p2'''
+        print p1 == p2
         
     def getModel(self, table):
         self.db = sqliteDbAccess(connectDBName, 'system')
@@ -500,6 +506,13 @@ class ConnectDialog(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
                 return
             model = self.tableWidget.model()
+            update = False
+            row = -1
+            for i in range(model.rowCount()):
+                if model.record(i).value(1).toString() == ip:
+                    update = True
+                    row = i
+                    break
             record = model.record()
             print "aaa"
             record.setValue(1, QtCore.QVariant(ip))
@@ -507,8 +520,17 @@ class ConnectDialog(QtGui.QDialog):
             record.setValue(2, QtCore.QVariant(name))
             print "ccc"
             record.setValue(3, QtCore.QVariant(QtCore.QCryptographicHash.hash(password.toUtf8(), QtCore.QCryptographicHash.Md5)))
-            
-            model.insertRecord(-1, record)
+            if update:
+                model.setRecord(row, record)
+            else:
+                model.insertRecord(-1, record)
         except Exception, ex:
             raise Exception("Couln't save properly: " + str(ex))
         
+    def remove(self):
+        pass
+    
+    def tableClicked(self, *args):
+        print "======="
+        print args
+        print self.tableWidget.selectedIndexes()
