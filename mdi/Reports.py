@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import os, sys
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtSql
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
@@ -988,7 +988,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.tabWidget.setTabPosition(QtGui.QTabWidget.North)
         self.tabWidget.setTabShape(QtGui.QTabWidget.Rounded)
         self.tabWidget.setObjectName("tabWidget")
-
+        
         self.mainTab = QtGui.QWidget()
         self.mainTab.setObjectName("mainTab")
         print self.datetimeFormat
@@ -998,7 +998,8 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.intervals_groupBox.setCheckable(False)
         self.intervals_groupBox.setChecked(False)
         self.intervals_groupBox.setObjectName("intervals_groupBox")
-
+        
+        
         self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
         self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
         self.date_end_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
