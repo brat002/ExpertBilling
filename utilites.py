@@ -104,8 +104,8 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #Send CoA
         
         speed_string= create_speed_string(speed, coa=True)
-        print speed_string
-        print 'send CoA'
+        #print speed_string
+        #print 'send CoA'
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
@@ -147,7 +147,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        print command_string
+        #print command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
@@ -176,7 +176,7 @@ def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, 
         
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        print command_string
+        #print command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
@@ -229,7 +229,7 @@ def DAE(dict, code, nas_ip, username, access_type=None, coa=True, nas_secret=Non
         #сначала проверить есть ли, если нет-создать, если есть-установить
         /queue simple set [find interface=<pptp-dolphinik1>] limit-at=60000/60000 max-limit=200000/200000 burst-limit=600000/600000
         """
-        print speed_string
+        #print speed_string
         if code==43:
             query= """/queue simple set [find interface="<%s-%s>"] %s""" % (access_type, username, speed_string)
         elif code==40:
@@ -264,7 +264,7 @@ def ipn_manipulate(nas_ip, nas_login, nas_password, format_string, account_data=
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
             #'/interface pptp-server remove [find user="%s"]' % username
-            print command_string
+            #print command_string
             res=sshclient.send_command(command_string)
             sshclient.close_chanel()
         except Exception, e:
@@ -481,7 +481,7 @@ def command_string_parser(command_string='', command_dict={}):
         if p in command_dict.keys() :
             s = re.compile( '\$%s' % p)
             command_string = s.sub(str(command_dict[p]),command_string)
-    print command_string
+    #print command_string
     return command_string
 
 class SSHClient(paramiko.SSHClient):
@@ -509,7 +509,7 @@ def create_nulls(param):
         return 0
 
 def create_speed_string(params, coa=False):
-    print params
+    #print params
     #params=map(lambda x: params[x]=='None' and 0 or x, params)
     result=''
 
@@ -586,7 +586,7 @@ class ActiveSessionsParser:
                 self.strings.append(m.groups()[0])
             except:
                 pass
-        print self.strings
+        #print self.strings
 
 
     def parse(self):
@@ -776,7 +776,7 @@ def get_sessions_for_nas(nas):
             ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
             response=ssh.send_command("/ppp active print terse without-paging")[0]
             response = response.readlines()
-            print response
+            #print response
         except Exception, e:
             print e
             return []

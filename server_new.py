@@ -129,7 +129,7 @@ class HandleAuth(HandleBase):
         #    self.connection.close()
         #    return self.auth_NA() 
         
-        if int(nas_id)!=int(self.nas_id) or access_type!=self.access_type:
+        if int(nas_id)!=int(self.nas_id):
            self.cur.close()
            self.connection.close()
            print 2
@@ -253,7 +253,7 @@ class HandleDHCP(HandleBase):
         #self.replypacket.AddAttribute('Framed-Routing', 0)
         self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
         self.replypacket.AddAttribute('Session-Timeout', 60*60*24)
-        self.create_speed(tarif_id, speed=speed)
+        #self.create_speed(tarif_id, speed=speed)
         self.cur.close()
         self.connection.close()
         return self.replypacket
