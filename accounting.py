@@ -1651,6 +1651,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         except Exception, e:
             print e
             return False
+        print "connection_____request"
+        print password
         if obj is not None and obj.password==password:
             self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
             #Pyro.constants.
