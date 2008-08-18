@@ -567,13 +567,13 @@ class ConnectDialog(QtGui.QDialog):
             model = self.tableWidget.model()
             update = False
             row = -1
-            for i in range(model.rowCount()):
-                if model.record(i).value(1).toString() == ip:
+            try:
+                if model.record(self.tableWidget.selectedIndexes()[0].row()).value(1).toString() == ip:
                     update = True
-                    row = i
-                    break
+                    row = self.tableWidget.selectedIndexes()[0].row()
+            except Exception, ex: print ex
+                
             record = model.record()
-
             record.setValue(1, QtCore.QVariant(ip))
  
             record.setValue(2, QtCore.QVariant(name))
@@ -582,7 +582,7 @@ class ConnectDialog(QtGui.QDialog):
             if update:
                 model.setRecord(row, record)
             else:
-                model.insertRecord(-1, record)
+                model.insertRecord(row, record)
         except Exception, ex:
             raise Exception("Couln't save properly: " + str(ex))
         

@@ -400,9 +400,15 @@ def login():
     child = ConnectDialog()
     if child.exec_()==1:
         try:
+            #child.address= '127.0.0.1'
+            #print child.address
+            #print child.name
+            #child.name = 'admin'
             connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-            child.password = "123"
-            if connection.connection_request(username=unicode(child.name), password=unicode(child.password))==False:
+            password = unicode((child.password.toHex()))
+            #f = open('tmp', 'wb')
+            #f.write(child.password.toHex())           
+            if connection.connection_request(username=unicode(child.name), password=password)==False:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
                 login()
         except Exception, e:
