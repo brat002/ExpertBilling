@@ -325,9 +325,9 @@ class ConnectDialog(QtGui.QDialog):
         self.encryption_checkBox.setGeometry(QtCore.QRect(60,100,191,18))
         self.encryption_checkBox.setObjectName("encryption_checkBox")
 
-        self.compress_checkbox = QtGui.QCheckBox(self.centralwidget)
+        '''self.compress_checkbox = QtGui.QCheckBox(self.centralwidget)
         self.compress_checkbox.setGeometry(QtCore.QRect(60,124,191,18))
-        self.compress_checkbox.setObjectName("compress_checkbox")
+        self.compress_checkbox.setObjectName("compress_checkbox")'''
 
         self.connect_pushButton = QtGui.QPushButton(self.centralwidget)
         self.connect_pushButton.setGeometry(QtCore.QRect(260,10,75,24))
@@ -383,6 +383,7 @@ class ConnectDialog(QtGui.QDialog):
             self.tableWidget = tableFormat(self.tableWidget)
             self.tableWidget.setColumnHidden(3, True)
             self.tableWidget.show()
+            self.twIndex = -1
             #columns = [u'IP', 'Username']
         except Exception, ex:
             print ex
@@ -423,8 +424,9 @@ class ConnectDialog(QtGui.QDialog):
         self.setTabOrder(self.address_edit,self.name_edit)
         self.setTabOrder(self.name_edit,self.password_edit)
         self.setTabOrder(self.password_edit,self.encryption_checkBox)
-        self.setTabOrder(self.encryption_checkBox,self.compress_checkbox)
-        self.setTabOrder(self.compress_checkbox,self.save_checkBox)
+        #self.setTabOrder(self.encryption_checkBox,self.compress_checkbox)
+        #self.setTabOrder(self.compress_checkbox,self.save_checkBox)
+        self.setTabOrder(self.encryption_checkBox, self.save_checkBox)
         self.setTabOrder(self.save_checkBox,self.connect_pushButton)
         self.setTabOrder(self.connect_pushButton,self.exit_pushButton)
         self.setTabOrder(self.exit_pushButton,self.save_pushButton)
@@ -432,12 +434,15 @@ class ConnectDialog(QtGui.QDialog):
         self.setTabOrder(self.remove_pushButton,self.tableWidget)
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+        self.passRx = QtCore.QRegExp(r"^\w{3,}")
+        self.passValidator = QtGui.QRegExpValidator(self.passRx, self)
         self.retranslateUi()
         self.fixtures()
         self.tableSelection = self.tableWidget.selectionModel()
         QtCore.QObject.connect(self.connect_pushButton, QtCore.SIGNAL("clicked()"), self.accept)
         QtCore.QObject.connect(self.exit_pushButton, QtCore.SIGNAL("clicked()"), self.reject)
         QtCore.QObject.connect(self.save_pushButton, QtCore.SIGNAL("clicked()"), self.save)
+        QtCore.QObject.connect(self.remove_pushButton, QtCore.SIGNAL("clicked()"), self.remove)
         #QtCore.QObject.connect(self.tableSelection, QtCore.SIGNAL("selectionChanged(QModelIndex, QModelIndex)"), self.tableClicked)
         #self.connect(self.tableWidget, QtCore.SIGNAL("currentChanged(previous, current)"), QtCore.SLOT("self.tableClicked(self, previous, current)"))
         #QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("clicked(const QModelIndex&)"), self.tableClicked)
@@ -448,11 +453,12 @@ class ConnectDialog(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Expert Billing Client", None, QtGui.QApplication.UnicodeUTF8))
         self.encryption_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Использовать шифрование", None, QtGui.QApplication.UnicodeUTF8))
-        self.compress_checkbox.setText(QtGui.QApplication.translate("MainWindow", "Использовать сжатие", None, QtGui.QApplication.UnicodeUTF8))
+        #self.compress_checkbox.setText(QtGui.QApplication.translate("MainWindow", "Использовать сжатие", None, QtGui.QApplication.UnicodeUTF8))
         self.connect_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.remove_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
         self.save_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Запомнить", None, QtGui.QApplication.UnicodeUTF8))
         self.address_edit.setValidator(self.ipValidator)
+        self.password_edit.setValidator(self.passValidator)
         self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         #self.tableWidget.clear()
 
@@ -464,16 +470,28 @@ class ConnectDialog(QtGui.QDialog):
         self.address_label.setText(QtGui.QApplication.translate("MainWindow", "Адрес:", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-        #print settings.value("ip", QtCore.QVariant(""))
-        self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
-        self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
-        self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
-        dbi = self.db.select("select * from exbill_users;")
+        self._password = ''
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            #print settings.value("ip", QtCore.QVariant(""))
+            if settings.value("save", QtCore.QVariant("")).toBool:
+                self.save_checkBox.setCheckState(QtCore.Qt.Checked)
+            else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
+                
+
+            self._address = settings.value("ip", QtCore.QVariant("")).toString()
+            self._name = settings.value("user", QtCore.QVariant("")).toString()
+            self._password = settings.value("password", QtCore.QVariant("")).toByteArray()
+            self.address_edit.setText(self._address)
+            self.name_edit.setText(self._name)
+            self.password_edit.setText("*******")
+        except Exception, ex:
+            print ex
+        '''dbi = self.db.select("select * from exbill_users;")
         p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
         p2 = dbi[4].value(3).toByteArray()
         print p1, p2
-        print p1 == p2
+        print p1 == p2'''
         
     def getModel(self, table):
         self.db = sqliteDbAccess(connectDBName, 'system')
@@ -482,12 +500,47 @@ class ConnectDialog(QtGui.QDialog):
         return dbmodel
     
     def accept(self):
-        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-        settings.setValue("ip", QtCore.QVariant(self.address_edit.text()))
-        settings.setValue("user", QtCore.QVariant(self.name_edit.text()))
-        settings.setValue("password", QtCore.QVariant(self.password_edit.text()))
-        QtGui.QDialog.accept(self)
-        #pass
+        psd = self.passValidator.validate(self.password_edit.text(), 0)[0]
+        try:
+            self.password = ''
+
+            if not ((self.ipValidator.validate(self.address_edit.text(), 0)[0] == QtGui.QValidator.Acceptable) and (self.name_edit)):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите адрес и имя пользователя"))
+                return
+            if (psd == QtGui.QValidator.Acceptable):
+                self.password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+            else:
+                print "aaaa"
+                print self._name
+                print self.name_edit.text()
+                if (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
+                    self.password = self._password
+                else:
+                    model = self.tableWidget.model()
+                    for i in range(model.rowCount()):
+                        if (model.record(i).value(2).toString() == self.name_edit.text()) and (model.record(i).value(1).toString() == self.address_edit.text()):
+                            #print "zomg"
+                            #print model.record(i).value(3).toUtf8()
+                            self.password = model.record(i).value(3).toByteArray()
+                            print self.password
+                            break
+                    if not self.password:
+                        print self.password
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль не совпадает с именем пользователя"))
+                        return
+            
+            self.address = self.address_edit.text()
+            self.name    = self.name_edit.text()
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            if self.save_checkBox.isChecked() == True:
+                settings.setValue("ip", QtCore.QVariant(self.address))
+                settings.setValue("user", QtCore.QVariant(self.name))
+                settings.setValue("password", QtCore.QVariant(self.password))                
+            settings.setValue("save", QtCore.QVariant(self.save_checkBox.isChecked()))
+            QtGui.QDialog.accept(self)
+        except Exception, ex:
+            print "accept error"
+            print ex
     def save(self):
         try:
             if self.address_edit.text() and (self.ipValidator.validate(self.address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable):
@@ -501,7 +554,13 @@ class ConnectDialog(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите имя."))
                 return
             if self.password_edit.text():
-                password = self.password_edit.text()
+                if self.passValidator.validate(self.password_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                    if self._password and (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
+                        password = self._password
+                    else:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 4 и не содержать спецефических символов."))
+                        return
+                else: password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
             else:
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
                 return
@@ -514,12 +573,12 @@ class ConnectDialog(QtGui.QDialog):
                     row = i
                     break
             record = model.record()
-            print "aaa"
+
             record.setValue(1, QtCore.QVariant(ip))
-            print "bbb"
+ 
             record.setValue(2, QtCore.QVariant(name))
-            print "ccc"
-            record.setValue(3, QtCore.QVariant(QtCore.QCryptographicHash.hash(password.toUtf8(), QtCore.QCryptographicHash.Md5)))
+
+            record.setValue(3, QtCore.QVariant(password))
             if update:
                 model.setRecord(row, record)
             else:
@@ -528,9 +587,19 @@ class ConnectDialog(QtGui.QDialog):
             raise Exception("Couln't save properly: " + str(ex))
         
     def remove(self):
-        pass
+        try:
+            print "plz fuck meh gently------------zomg"
+            self.tableWidget.model().removeRow(self.tableWidget.selectedIndexes()[0].row())
+        except Exception, ex:
+            print ex
     
     def tableClicked(self, *args):
-        print "======="
-        print args
-        print self.tableWidget.selectedIndexes()
+        #if args[0].row() != self.twIndex:
+        try:
+            selRec = self.tableWidget.model().record(args[0].row())
+            self.address_edit.setText(selRec.value(1).toString())
+            self.name_edit.setText(selRec.value(2).toString())
+            self.password_edit.setText("*******")
+            
+        except Exception, ex:
+            print ex
