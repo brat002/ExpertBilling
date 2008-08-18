@@ -1354,14 +1354,26 @@ class ipn_service(Thread):
         while True:
             self.cur.execute(
                         """
-                        SELECT account.id as account_id, account.username as account_username, account.ipn_ip_address as account_ipn_ip_address, 
-                        account.vpn_ip_address as account_vpn_ip_address, account.ipn_mac_address as account_ipn_mac_address ,
-                            (account.ballance+account.credit) as ballance, account.disabled_by_limit as account_disabled_by_limit, account.balance_blocked as account_balance_blocked,
-                            account.ipn_status as account_ipn_status, account.ipn_speed as account_ipn_speed, tariff.id as tarif_id, nas.name as nas_name,
-                            nas."type" as nas_type, nas.user_enable_action as nas_user_enable, nas.user_disable_action as nas_user_disable,
-                            nas.ipn_speed_action as nas_ipn_speed, nas."login" as nas_login, nas."password" as nas_password, 
+                        SELECT account.id as account_id,
+                        account.username as account_username, 
+                        account.ipn_ip_address as account_ipn_ip_address, 
+                        account.vpn_ip_address as account_vpn_ip_address, 
+                        account.ipn_mac_address as account_ipn_mac_address ,
+                            (account.ballance+account.credit) as ballance, 
+                            account.disabled_by_limit as account_disabled_by_limit, 
+                            account.balance_blocked as account_balance_blocked,
+                            account.ipn_status as account_ipn_status, 
+                            account.ipn_speed as account_ipn_speed, 
+                            tariff.id as tarif_id, nas.name as nas_name,
+                            nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
+                            nas.user_disable_action as nas_user_disable,
+                            nas.ipn_speed_action as nas_ipn_speed, 
+                            nas."login" as nas_login, nas."password" as nas_password, 
                             nas."ipaddress" as nas_ipaddress,
-                            accessparameters.access_time_id as access_time_id, ipn_speed_table.speed as ipn_speed, ipn_speed_table.state as ipn_state
+                            accessparameters.access_time_id as access_time_id, 
+                            ipn_speed_table.speed as ipn_speed, 
+                            ipn_speed_table.state as ipn_state,
+                            accessparameters.access_type as access_type
                         FROM billservice_account as account
                         JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif
                         WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
@@ -1369,7 +1381,7 @@ class ipn_service(Thread):
                         JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
                         JOIN nas_nas as nas ON nas.id=account.nas_id
                         LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-                        WHERE account.status=True and accessparameters.access_type='IPN'
+                        WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn_speed<>'') and account.ipn_ip_address!='0.0.0.0'
                         ;"""
                         )
             rows=self.cur.fetchall()
@@ -1382,34 +1394,31 @@ class ipn_service(Thread):
                 
                 period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
 
-                if row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
-                    print 1
+                #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
+                #print row['account_disabled_by_limit']==True, row['ballance']<=0, period==False, row['account_balance_blocked']==True, row['account_ipn_status']==True, row['access_type']=='IPN'
+                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False and row['access_type']=='IPN':
+                    print u"ВКЛЮЧАЕМ"
+                    print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
                     #шлём команду, на включение пользователя, account_ipn_status=True
                     sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
+                                  access_type='IPN',
                                   account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
                                   account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                                   nas_password=row['nas_password'], format_string=row['nas_user_enable'])
 
-#===============================================================================
-#                    sended=ipn_manipulate(nas_ip=nas_ipaddress, nas_login=nas_login, nas_password=nas_password, format_string=nas_user_enable,
-#                                   account_data={'access_type':access_type,'username':row['account_username'],
-#                                                 'user_id':account_id,'ipaddress':account_ipaddress,
-#                                                 'mac_address':account_mac,
-#                                                 }
-#                                   )
-#===============================================================================
-                    
 
-                elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
-                    print 2
+                elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True and row['access_type']=='IPN':
+
                     #шлём команду на отключение пользователя,account_ipn_status=False
-                    sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
-                                  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
-                                  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                    print u"ОТКЛЮЧАЕМ"
+                    sended = cred(account_id=row['account_id'], account_name=row['account_username'], \
+                                  access_type='IPN', \
+                                  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], \
+                                  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], \
                                   nas_password=row['nas_password'], format_string=row['nas_user_disable'])
 
                 if sended in (True, False):
-                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (not sended, account_id))
+                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (not sended, row['account_id']))
                 
                 #print account_ipn_speed
                 if row['account_ipn_speed']=='' or row['account_ipn_speed']==None:
@@ -1422,10 +1431,10 @@ class ipn_service(Thread):
                 newspeed=''
                 for key in speed:
                     newspeed+=unicode(speed[key])
-                    
-                #print speed!=ipn_speed or ipn_state==False
-                if speed!=row['ipn_speed'] or row['ipn_state']==False:
-                    print u"МЕНЯЕМ НАСТРЙОКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
+                oldspeed=''
+
+                if newspeed!=row['ipn_speed'] or row['ipn_state']==False:
+                    #print u"МЕНЯЕМ НАСТРЙОКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
                     #отправляем на сервер доступа новые настройки скорости, помечаем state=True
                     """
 
@@ -1452,9 +1461,6 @@ class ipn_service(Thread):
                     #print 'id=', id
                     if id==None:
                         self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %d, '%s',%s , now());" % (row['account_id'], unicode(newspeed), sended_speed))
-                        
-
-
 
                 self.connection.commit()
             time.sleep(60)
@@ -1519,9 +1525,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         """ % account_id)
         
         row = self.cur.fetchone()
+
         if row==None:
             return False
-        
+
+        if row['ipn_ip_address']=="0.0.0.0":
+            return False
+                
         if action=='disable':
             command = row['user_disable_action']
         elif action=='enable':
@@ -1530,6 +1540,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             command = row['user_add_action']
         elif action =='delete':
             command = row['user_delete_action']
+
         
         sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
               account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
@@ -1688,9 +1699,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             nas_secret=row['nas_secret'], 
             nas_login=row['nas_login'], 
             nas_password=row['nas_password'], 
-                session_id=str(session), 
-                format_string=str(row['reset_action'])
-                )
+            session_id=str(session), 
+            format_string=str(row['reset_action'])
+            )
 
 
 

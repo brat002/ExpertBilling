@@ -2847,10 +2847,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
 
         self.actionAddAccount = QtGui.QAction(u'Добавить',self)
-        self.actionAddAccount.setIcon(QtGui.QIcon("images/del.png"))
+        self.actionAddAccount.setIcon(QtGui.QIcon("images/add.png"))
 
         self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера',self)
-        self.actionDeleteAccount.setIcon(QtGui.QIcon("images/add.png"))
+        self.actionDeleteAccount.setIcon(QtGui.QIcon("images/del.png"))
                 
         
         self.tableWidget.addAction(self.addAction)
@@ -3177,7 +3177,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         if self.connection.accountActions(id, 'delete'):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
 
 
     def accountDisable(self):
