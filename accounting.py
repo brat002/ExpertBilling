@@ -96,7 +96,7 @@ class Object(object):
 def comparator(d, s):
     for key in s:
         if s[key]!='' and s[key]!='Null' and s[key]!='None':
-           d[key]=s[key] 
+            d[key]=s[key] 
     return d
     
 class check_vpn_access(Thread):
