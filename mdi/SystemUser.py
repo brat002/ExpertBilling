@@ -37,7 +37,9 @@ class PasswordEditFrame(QtGui.QDialog):
         self.repeat_password_lineEdit.setGeometry(QtCore.QRect(80,40,113,20))
         self.repeat_password_lineEdit.setEchoMode(QtGui.QLineEdit.Password)
         self.repeat_password_lineEdit.setObjectName("repeat_password_lineEdit")
-
+        self.password = ''
+        self.passRx = QtCore.QRegExp(r"^\w{3,}")
+        self.passValidator = QtGui.QRegExpValidator(self.passRx, self)
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
@@ -47,7 +49,20 @@ class PasswordEditFrame(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Изменить пароль", None, QtGui.QApplication.UnicodeUTF8))
         self.password_label.setText(QtGui.QApplication.translate("Dialog", "Пароль:", None, QtGui.QApplication.UnicodeUTF8))
         self.repeat_password_label.setText(QtGui.QApplication.translate("Dialog", "Повторите:", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.password_lineEdit.setValidator(self.passValidator)
+        
+    def accept(self):
+        if self.password_lineEdit.text():
+            if self.password_lineEdit.text() == self.repeat_password_lineEdit.text():
+                self.password = QtCore.QCryptographicHash.hash(self.password_lineEdit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                QtGui.QDialog.accept(self)
+            else:
+                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введенные пароли не совпадают"))
+                return
+        else:
+            QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль"))
+            return
+            
 
 class SystemUserFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -112,7 +127,8 @@ class SystemUserFrame(QtGui.QDialog):
         child = PasswordEditFrame()
         
         if child.exec_()==1:
-            self.password = unicode(child.password_lineEdit.text())
+            if child.password:
+                self.password = unicode(child.password.toHex())
         
 
     def accept(self):
@@ -120,32 +136,35 @@ class SystemUserFrame(QtGui.QDialog):
         понаставить проверок
         """
         #QMessageBox.warning(self, u"Сохранение", unicode(u"Осталось написать сохранение :)"))
-
-        if self.model:
-            model=self.model
-            if self.password!='':
+        if self.username_edit.text() and self.password:
+            if self.model:
+                model=self.model
+                if self.password!='':
+                    model.password=self.password
+            else:
+                print 'New nas'
+                model=Object()
                 model.password=self.password
+    
+    
+            model.username = unicode(self.username_edit.text())
+            model.description = unicode(self.comment_edit.text())
+    
+            model.status = self.status_checkBox.checkState()==2
+    
+            
+    
+            try:
+                self.connection.create(model.save(table="billservice_systemuser"))
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+    
+            QtGui.QDialog.accept(self)
         else:
-            print 'New nas'
-            model=Object()
-            model.password=self.password
-
-
-        model.username = unicode(self.username_edit.text())
-        model.description = unicode(self.comment_edit.text())
-
-        model.status = self.status_checkBox.checkState()==2
-
-        
-
-        try:
-            self.connection.create(model.save(table="billservice_systemuser"))
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()
-
-        QtGui.QDialog.accept(self)
+            QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите необходимые данные"))
+            return
 
     def fixtures(self):
 
