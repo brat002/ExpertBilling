@@ -334,11 +334,11 @@ class ConnectDialog(QtGui.QDialog):
         self.connect_pushButton.setObjectName("connect_pushButton")
 
         self.remove_pushButton = QtGui.QPushButton(self.centralwidget)
-        self.remove_pushButton.setGeometry(QtCore.QRect(260,140,75,24))
+        self.remove_pushButton.setGeometry(QtCore.QRect(260,124,75,24))
         self.remove_pushButton.setObjectName("remove_pushButton")
 
         self.save_checkBox = QtGui.QCheckBox(self.centralwidget)
-        self.save_checkBox.setGeometry(QtCore.QRect(60,148,191,18))
+        self.save_checkBox.setGeometry(QtCore.QRect(60,124,191,18))
         self.save_checkBox.setObjectName("save_checkBox")
 
         self.exit_pushButton = QtGui.QPushButton(self.centralwidget)
@@ -378,10 +378,12 @@ class ConnectDialog(QtGui.QDialog):
             self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
             self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
             self.tableWidget.setModel(self.model)
-            self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
+            self.tableWidget.setGeometry(QtCore.QRect(0,150,341,113))
             self.tableWidget.setObjectName("tableWidget")
             self.tableWidget = tableFormat(self.tableWidget)
             self.tableWidget.setColumnHidden(3, True)
+            #self.tableWidget.setRowHeight(-1, 17)
+            #self.tableWidget.resizeRowsToContents()
             self.tableWidget.show()
             self.twIndex = -1
             #columns = [u'IP', 'Username']
@@ -560,7 +562,7 @@ class ConnectDialog(QtGui.QDialog):
                     if self._password and (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
                         password = self._password
                     else:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 4 и не содержать спецефических символов."))
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 3 и не содержать спецефических символов."))
                         return
                 else: password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
             else:
@@ -591,7 +593,7 @@ class ConnectDialog(QtGui.QDialog):
         
     def remove(self):
         try:
-            print "plz fuck meh gently------------zomg"
+            print "------------zomg"
             self.tableWidget.model().removeRow(self.tableWidget.selectedIndexes()[0].row())
         except Exception, ex:
             print ex
