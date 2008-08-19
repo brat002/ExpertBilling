@@ -495,6 +495,8 @@ class ConnectDialog(QtGui.QDialog):
         
     def getModel(self, table):
         self.db = sqliteDbAccess(connectDBName, 'system')
+        if (self.db.filestat == 2) or (self.db.filestat == 4):
+            self.db.action("CREATE TABLE exbill_users (ID INTEGER PRIMARY KEY, IP TEXT, Username TEXT, Password Text);", '')
         dbmodel = self.db.getTableModel(table)
         dbmodel.select()
         return dbmodel
@@ -568,9 +570,10 @@ class ConnectDialog(QtGui.QDialog):
             update = False
             row = -1
             try:
-                if model.record(self.tableWidget.selectedIndexes()[0].row()).value(1).toString() == ip:
-                    update = True
-                    row = self.tableWidget.selectedIndexes()[0].row()
+                if self.tableWidget.selectedIndexes():
+                    if model.record(self.tableWidget.selectedIndexes()[0].row()).value(1).toString() == ip:
+                        update = True
+                        row = self.tableWidget.selectedIndexes()[0].row()
             except Exception, ex: print ex
                 
             record = model.record()
