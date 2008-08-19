@@ -103,7 +103,7 @@ def transaction(cursor, account, approved, type, tarif, summ, description, creat
 
     cursor.execute("""
     UPDATE billservice_account
-    SET ballance=ballance-%s WHERE id=%s""" % (summ, account))
+    SET ballance=ballance-%s WHERE id=%s;""" % (summ, account))
 
     return tr_id
 
