@@ -377,6 +377,8 @@ class ConnectDialog(QtGui.QDialog):
             self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
             self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
             self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
+            height = self.tableWidget.fontMetrics().height()
+            self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
             self.tableWidget.setModel(self.model)
             self.tableWidget.setGeometry(QtCore.QRect(0,150,341,113))
             self.tableWidget.setObjectName("tableWidget")
@@ -384,6 +386,7 @@ class ConnectDialog(QtGui.QDialog):
             self.tableWidget.setColumnHidden(3, True)
             #self.tableWidget.setRowHeight(-1, 17)
             #self.tableWidget.resizeRowsToContents()
+            self.tableWidget.setr
             self.tableWidget.show()
             self.twIndex = -1
             #columns = [u'IP', 'Username']
