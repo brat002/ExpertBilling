@@ -197,6 +197,7 @@ class TarifFrame(QtGui.QDialog):
         self.sp_groupbox = QtGui.QGroupBox(self.tab_1)
         self.sp_groupbox.setGeometry(QtCore.QRect(10,60,395,161))
         self.sp_groupbox.setObjectName("sp_groupbox")
+        self.sp_groupbox.setCheckable(True)
 
         self.sp_type_edit = QtGui.QCheckBox(self.sp_groupbox)
         self.sp_type_edit.setGeometry(QtCore.QRect(11,20,466,19))
@@ -572,7 +573,9 @@ class TarifFrame(QtGui.QDialog):
         self.speed_min_label.setBuddy(self.speed_min_in_edit)
 
         self.retranslateUi()
+        self.fixtures()
         self.tabWidget.setCurrentIndex(0)
+        
 #------------Connects
 
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
@@ -667,7 +670,7 @@ class TarifFrame(QtGui.QDialog):
         self.setTabOrder(self.limit_tableWidget,self.del_limit_button)
         self.setTabOrder(self.del_limit_button,self.add_limit_button)
         self.setTabOrder(self.add_limit_button,self.buttonBox)  
-        self.fixtures()
+        
 
         
     def retranslateUi(self):
@@ -1116,7 +1119,7 @@ class TarifFrame(QtGui.QDialog):
         if x==7:
             item = self.limit_tableWidget.item(y,x)
             try:
-                default_text=int(item.text())
+                default_text=float(item.text())
             except:
                 default_text=0
             
@@ -1297,25 +1300,35 @@ class TarifFrame(QtGui.QDialog):
         
     
     def fixtures(self):
-        try:
-            if self.model.settlement_period.autostart==True:
+
+        if self.model.settlement_period_id!='Null':
+            settlement_period=self.connection.get("""SELECT * FROM billservice_settlementperiod WHERE id =%s""" % self.model.settlement_period_id)
+            self.sp_groupbox.setChecked(True)
+            if settlement_period.autostart==True:
+                
+                self.sp_type_edit.setChecked(True)
+                    
                 settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
-                self.sp_type_edit.setChecked()
+            
             else:
                 settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
-        except:
+            
+            
+        else:
+            self.sp_groupbox.setChecked(False)
             settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
         
-        self.sp_name_edit.addItem("")        
+
+        
+        
         for sp in settlement_periods:
             self.sp_name_edit.addItem(sp.name)
-        
             
-        try:
-            settlement_period = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" % self.model.settlement_period_id)
+        #print settlement_period.name
+        if self.model.settlement_period_id!='Null':
             self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
-        except:
-            print "sp not found"
+
+
             
         access_types = ["PPTP", "PPPOE", "IPN"]
         for access_type in access_types:
@@ -1487,7 +1500,7 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period_name,i, 3)
                     self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
-                    self.addrow(self.limit_tableWidget, node.size,i, 7)
+                    self.addrow(self.limit_tableWidget, unicode(int(unicode(node.size))/(1024*1024)),i, 7)
                     
                     self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
@@ -1636,9 +1649,9 @@ class TarifFrame(QtGui.QDialog):
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
-            model.cost = unicode(self.tarif_cost_edit.text()) or 0
+            
             model.description = unicode(self.tarif_description_edit.toPlainText())
-            model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
+            
             model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
             
             model.active = self.tarif_status_edit.checkState()==2
@@ -1731,10 +1744,15 @@ class TarifFrame(QtGui.QDialog):
             #model.save()
             
             #Период
-            if unicode(self.sp_name_edit.currentText())!="":
+            if self.sp_groupbox.isChecked()==True:
                 model.settlement_period_id = self.connection.get( "SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.sp_name_edit.currentText())).id
+                model.cost = unicode(self.tarif_cost_edit.text()) or 0
+                model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
+                
             else:
                 model.settlement_period_id='Null'
+                model.reset_tarif_cost=False
+                model.cost = 0
             
             
             model_id = self.connection.create(model.save("billservice_tariff"))
@@ -1902,7 +1920,7 @@ class TarifFrame(QtGui.QDialog):
                     limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                     limit.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.limit_tableWidget.item(i, 3).text())).id
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                    limit.size=unicode(self.limit_tableWidget.item(i, 7).text())
+                    limit.size=unicode(int(unicode(self.limit_tableWidget.item(i, 7).text()))*1024*1024)
     
                     limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
                     limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
@@ -2556,6 +2574,7 @@ class AddAccountFrame(QtGui.QDialog):
                 model.user_id=1
                 model.ipn_status = False
                 model.disabled_by_limit = False
+                
             model.username = unicode(self.username_edit.text())
     
             model.password = unicode(self.password_edit.text())
@@ -2566,13 +2585,13 @@ class AddAccountFrame(QtGui.QDialog):
             #print "self.speed_groupBox.isChecked()=", self.speed_groupBox.isChecked()
             if self.vpn_speed_groupBox.isChecked()==True and self.vpn_speed_lineEdit.text()!="":
                 print "save vpn speed=True"
-                model.vpn_speed = self.vpn_speed_lineEdit.text()
+                model.vpn_speed = unicode(self.vpn_speed_lineEdit.text())
             else:
                 model.vpn_speed = ""
 
             if self.ipn_speed_groupBox.isChecked()==True and self.ipn_speed_lineEdit.text()!="":
                 print "save ipn speed=True"
-                model.ipn_speed = self.ipn_speed_lineEdit.text()
+                model.ipn_speed = unicode(self.ipn_speed_lineEdit.text())
             else:
                 model.ipn_speed = ""
             #убрать действие с чекбокса "получать адрес по дхцп"
@@ -2661,10 +2680,24 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 
                 model.id=self.connection.create(model.save("billservice_account"))
+            print "model.ipn_mac_address", model.ipn_mac_address
+            
+            
             self.connection.commit()
+            if model.ipn_ip_address!="":
+                 if self.connection.accountActions(model.id, 'create'):
+                    QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно добавлен на сервер доступа."))
+                 else:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
+                    #self.connection.rollback()
+
+                
+            
             self.model=model
         except Exception, e:
             print e
+            import sys, traceback
+            traceback.print_exc()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
             self.connection.rollback()
             return 
@@ -2799,7 +2832,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget) 
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'Недостаточно средств', u'Превышен лимит', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -2846,10 +2879,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.actionEnableSession = QtGui.QAction(u'Включить на сервере доступа',self)
         self.actionEnableSession.setIcon(QtGui.QIcon("images/add.png"))
 
-        self.actionAddAccount = QtGui.QAction(u'Добавить',self)
+        self.actionAddAccount = QtGui.QAction(u'Добавить на сервер доступа',self)
         self.actionAddAccount.setIcon(QtGui.QIcon("images/add.png"))
 
-        self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера',self)
+        self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера доступа',self)
         self.actionDeleteAccount.setIcon(QtGui.QIcon("images/del.png"))
                 
         
@@ -3027,9 +3060,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def delete(self):
         id=self.getSelectedId()
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.accountActions(id, 'delete')
             
             self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
             self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
+
             self.connection.commit()
             self.refresh()
 
@@ -3067,14 +3102,25 @@ class AccountsMdiChild(QtGui.QMainWindow):
             headerItem.setTextColor(QtGui.QColor('#FF0100'))
         
         if type(value)==BooleanType and value==True:
-            headerItem.setIcon(QtGui.QIcon("images/ok.png"))
-            value=u"Да"
+            if y==10:
+                headerItem.setIcon(QtGui.QIcon("images/money_false.png"))
+                headerItem.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
+            else:
+                headerItem.setIcon(QtGui.QIcon("images/ok.png"))
+            value=u""
         elif type(value)==BooleanType and value==False:
-            headerItem.setIcon(QtGui.QIcon("images/false.png"))
-            value=u"Нет"
+            if y==10:
+                headerItem.setIcon(QtGui.QIcon("images/money_true.png"))
+                headerItem.setToolTip(u"На счету достаточно средств")
+                
+            else:
+                headerItem.setIcon(QtGui.QIcon("images/false.png"))
+            value=u""
             
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            
+
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
