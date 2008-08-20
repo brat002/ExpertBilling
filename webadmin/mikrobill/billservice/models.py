@@ -720,6 +720,7 @@ class SystemUser(models.Model):
     description = models.TextField(blank=True)
     created = models.DateTimeField()
     status = models.BooleanField(default=True)
+    host = models.CharField(max_length=255, blank=True, default="0.0.0.0/32")
     
 class Ports(models.Model):
     port = models.IntegerField()

@@ -1261,8 +1261,10 @@ class TarifFrame(QtGui.QDialog):
                 default_text=u""
             
             text = QtGui.QInputDialog.getText(self,u"Введите название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
-            if text[0].isEmpty()==True and text[2]:
+            if text[0].isEmpty()==True and text[1]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+                return
+            elif text[1]==False:
                 return
             
             self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
@@ -1300,20 +1302,23 @@ class TarifFrame(QtGui.QDialog):
         
     
     def fixtures(self):
-
-        if self.model.settlement_period_id!='Null':
-            settlement_period=self.connection.get("""SELECT * FROM billservice_settlementperiod WHERE id =%s""" % self.model.settlement_period_id)
-            self.sp_groupbox.setChecked(True)
-            if settlement_period.autostart==True:
-                
-                self.sp_type_edit.setChecked(True)
+        
+        if self.model:
+            if self.model.settlement_period_id!='Null':
+                settlement_period=self.connection.get("""SELECT * FROM billservice_settlementperiod WHERE id =%s""" % self.model.settlement_period_id)
+                self.sp_groupbox.setChecked(True)
+                if settlement_period.autostart==True:
                     
-                settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
-            
+                    self.sp_type_edit.setChecked(True)
+                        
+                    settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
+                
+                else:
+                    settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
+                
             else:
+                self.sp_groupbox.setChecked(False)
                 settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
-            
-            
         else:
             self.sp_groupbox.setChecked(False)
             settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
@@ -1325,8 +1330,7 @@ class TarifFrame(QtGui.QDialog):
             self.sp_name_edit.addItem(sp.name)
             
         #print settlement_period.name
-        if self.model.settlement_period_id!='Null':
-            self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+
 
 
             
@@ -1342,6 +1346,9 @@ class TarifFrame(QtGui.QDialog):
 
         
         if self.model:
+            if self.model.settlement_period_id!='Null':
+                self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+                
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.tarif_name_edit.setText(self.model.name)
             self.tarif_cost_edit.setText(unicode(self.model.cost))
@@ -1763,33 +1770,17 @@ class TarifFrame(QtGui.QDialog):
                 model.id = model_id 
             
             #Доступ по времени
-            if self.model.time_access_service_id!="Null":
-                
-                #time_access_service = Object()
-                #time_access_service.id = model.time_access_service_id
-                time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
-                #time_access_service = model.time_access_service_id
+            if "time_access_service_id" in model.__dict__:
+                if model.time_access_service_id!="Null":
+                    time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
+                else:
+                    time_access_service=Object()
             else:
                 time_access_service=Object()
                 
-                
-            if self.time_access_service_checkbox.checkState()==0:
-                if  self.model.time_access_service_id!="Null" and self.model.time_access_service_id!=0:
-                    #model.save()
-                    self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % self.model.time_access_service_id)
-                    
-                    time_access_service_id=model.time_access_service_id
-                    model.time_access_service_id='Null'
-                    self.connection.create(model.save("billservice_tariff"))
-                    self.connection.delete("DELETE FROM billservice_timeaccessservice WHERE id=%d" % time_access_service_id)
-                    
-                    model.time_access_service_id = 'Null'
-            
-                else:
-                    model.time_access_service_id = 'Null'
-                    
-            elif self.time_access_service_checkbox.checkState()==2:
+            if self.time_access_service_checkbox.checkState()==2:
                 if self.timeaccess_table.rowCount()>0:
+                    
                     #print 1
                     time_access_service.name = ""
                     time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
@@ -1824,6 +1815,21 @@ class TarifFrame(QtGui.QDialog):
                         time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
                         self.connection.create(time_access_node.save("billservice_timeaccessnode"))
             
+            elif self.time_access_service_checkbox.checkState()==0 and "time_access_service_id" in model.__dict__:
+                if  model.time_access_service_id!="Null" and model.time_access_service_id!=0:
+                    #model.save()
+                    self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % self.model.time_access_service_id)
+                    
+                    time_access_service_id=model.time_access_service_id
+                    model.time_access_service_id='Null'
+                    self.connection.create(model.save("billservice_tariff"))
+                    self.connection.delete("DELETE FROM billservice_timeaccessservice WHERE id=%d" % time_access_service_id)
+                    
+                    model.time_access_service_id = 'Null'
+            
+                else:
+                    model.time_access_service_id = 'Null'
+                    
             #Разовые услуги
             
             if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:
@@ -2685,14 +2691,15 @@ class AddAccountFrame(QtGui.QDialog):
             
             self.connection.commit()
             if model.ipn_ip_address!="":
-                 if self.connection.accountActions(model.id, 'create'):
-                    QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно добавлен на сервер доступа."))
-                 else:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
-                    #self.connection.rollback()
+                self.connection.accountActions(model.id, 'delete')
+                if self.connection.accountActions(model.id, 'create'):
+                   QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно синхронизирован на сервере доступа."))
+                else:
+                   QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
+                   #self.connection.rollback()
 
                 
-            
+            self.connection.commit()
             self.model=model
         except Exception, e:
             print e

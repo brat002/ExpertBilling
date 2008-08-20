@@ -43,8 +43,9 @@ def get_speed_parameters(cursor, tarif):
            timespeed.min_limit
     FROM billservice_timespeed as timespeed
     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
-    JOIN billservice_timeperiodnode as timenode ON timespeed.time_id=timenode.id
-    WHERE tariff.id=%s;
+    JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
+    JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id
+    WHERE tariff.id=%s
     """ % tarif)
 
     return cursor.fetchall()

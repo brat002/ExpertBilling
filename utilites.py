@@ -291,6 +291,7 @@ def in_period(time_start, length, repeat_after, now=None):
              вышел за рамки
 
         """
+        #print time_start, length, repeat_after
         if not now:
             now=datetime.datetime.now()
         #time_start=time_start.replace(tzinfo='UTC')
@@ -298,7 +299,7 @@ def in_period(time_start, length, repeat_after, now=None):
             delta_days=now - time_start
 
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, 86400)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -306,13 +307,16 @@ def in_period(time_start, length, repeat_after, now=None):
                 return True
             return False
         elif repeat_after=='WEEK':
-            delta_days=now - time_start
+            delta_days = now - time_start
+            
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, 604800)
-            tnc=now-datetime.timedelta(seconds=ost)
+            nums,ost = divmod(delta_days.days*86400+delta_days.seconds, 604800)
+            tnc = now-datetime.timedelta(seconds=ost)
             #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
+            tkc = tnc+datetime.timedelta(seconds=length)
+            print time_start, delta_days.seconds
             if now>=tnc and now<=tkc:
+                print "WEEK TRUE"
                 return True
             return False
         elif repeat_after=='MONTH':
@@ -367,7 +371,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
             delta_days=now - time_start
 
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, 86400)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -377,7 +381,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
         elif repeat_after=='WEEK':
             delta_days=now - time_start
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, 604800)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 604800)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -425,7 +429,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             delta_days=now - time_start
             length=repeat_after_seconds
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -434,7 +438,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             delta_days=now - time_start
             length=86400
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -444,7 +448,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             delta_days=now - time_start
             length=604800
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.seconds, length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
             tnc=now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc=tnc+datetime.timedelta(seconds=length)
@@ -788,8 +792,10 @@ def get_sessions_for_nas(nas):
         
     elif nas['type']==u'mikrotik3':
         #Use ROS API for fetching sessions
-
-        sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
+        try:
+            sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
+        except Exception, e:
+            print e
 
     return sessions
 
