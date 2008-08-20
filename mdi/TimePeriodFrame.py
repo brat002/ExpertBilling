@@ -252,11 +252,12 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
 
     def addPeriod(self):
-        text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);        
-        if text[0].isEmpty()==True and text[2]:
+        text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);
+        print text        
+        if text[0].isEmpty()==True and text[1]==True:
             QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return
-        elif text[2]:
+        elif text[1]==False:
             return
 
         model = Object()

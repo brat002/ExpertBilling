@@ -80,22 +80,33 @@ class HandleAuth(HandleBase):
             if defaults is None:
                 return None
             result=[]
-            i=0
+            #print speeds
+
             for speed in speeds:
-                print speed[0],speed[1],speed[2]
+                
                 if in_period(speed[0],speed[1],speed[2])==True:
-                    for s in speed[3:]:
+                    print speed
+                    i=0
+                    for k in xrange(0, len(speed[3:])):
+                        s=speed[3+k]
+                        print s
                         if s==0:
                             res=0
                         elif s=='':
                             res=defaults[i]
                         else:
                             res=s
+                        #print "res=",res
                         result.append(res)
                         i+=1
+                    break
+                    
+
             if speeds==[]:
                 result=defaults
-    
+            if result==[]:
+                return "0/0"
+            print result
             result_params=create_speed_string(result)
             print "params=", result_params
 
@@ -115,24 +126,18 @@ class HandleAuth(HandleBase):
         #simple_log(packet=self.packetobject)
 
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
-        print 1
+        #print 1
         if row==None:
             self.cur.close()
             
             return self.auth_NA()
-        print 2
+        #print 2
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed = row
         #Проверка на то, указан ли сервер доступа
-        #row=get_nas_id_by_tarif_id(self.cur, tarif_id)
-        #if row==None:
-        #    self.cur.close()
-        #    self.connection.close()
-        #    return self.auth_NA() 
-        
         if int(nas_id)!=int(self.nas_id):
            self.cur.close()
            self.connection.close()
-           print 2
+           #print 2
            return self.auth_NA()
 
 
@@ -143,12 +148,12 @@ class HandleAuth(HandleBase):
             #print row[0],row[1],u"%s" % row[2]
             if in_period(row[0],row[1],row[2])==True:
                 allow_dial=True
-                print 3
+                #print 3
                 break
-        print 3
+        #print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked:
-           print 4
+           #print 4
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
            self.replypacket.password=str(password) #Нельзя юникод
@@ -162,9 +167,9 @@ class HandleAuth(HandleBase):
         else:
              self.cur.close()
              self.connection.close()
-             print 5
+             #print 5
              return self.auth_NA()
-        print 5
+        #print 5
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 
