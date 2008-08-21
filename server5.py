@@ -177,10 +177,11 @@ class NetFlowPacket:
         if len(data) < 16:
             raise ValueError, "Short packet"
 
-        cur.execute("""SELECT id from nas_nas WHERE support_netflow=True and ipaddress='%s'""" % addrport[0])
+        cur.execute("""SELECT id from nas_nas WHERE  ipaddress='%s'""" % addrport[0])
         try:
             nas_id = cur.fetchone()[0]
-        except:
+        except Exception, e:
+            print e
             return
         flows=[]
         if nas_id!=None:
@@ -205,7 +206,7 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
 
                 traffic_class=None
-
+                print flow
                 for traffic_class in trafficclasses_pool:
                     res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol)
                     

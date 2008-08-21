@@ -728,4 +728,27 @@ class Ports(models.Model):
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=255)
     
+class Series(models.Model):
+    serial = models.PositiveIntegerField(unique=True)
+    date_start = models.DateTimeField()
+    date_end = models.DateTimeField()
+    nominal = models.FloatField()
+    pin_length = models.IntegerField()
+    letters = models.BooleanField(default=True)
+    numbers = models.BooleanField(default=True)
+    deleted = models.BooleanField(default=False)
+    sold = models.DateTimeField(default=False)
+    
+class Card(models.Model):
+    series = models.ForeignKey(Series)
+    pin = models.CharField(max_length=255)
+    sold = models.DateTimeField()
+    nominal = models.FloatField()
+    activated = models.DateTimeField()
+    activated_by = models.ForeignKey(Account)
+    
+    
+    
+    
+    
     
