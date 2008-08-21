@@ -3,7 +3,10 @@ import sys
 from PyQt4 import QtCore, QtGui
 
 from helpers import Object
+from helpers import connlogin
 import Pyro.core
+import Pyro.protocol
+import Pyro.constants
 
 
 
@@ -76,7 +79,8 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.writeSettings()
             event.accept()
-
+    
+    @connlogin
     def newFile(self):
         child =  AccountsMdiChild(connection=connection, parent=self)
         self.workspace.addWindow(child)
@@ -396,6 +400,73 @@ class MainWindow(QtGui.QMainWindow):
                 return window
         return None
 
+'''class LoginConnValidator(Pyro.protocol.DefaultConnValidator):
+    def __init__(self):
+	Pyro.protocol.DefaultConnValidator.__init__(self)
+	
+    def acceptIdentification(self, daemon, connection, token, challenge):
+	# extract tuple (login, processed password) from token as returned by createAuthToken
+	# processed password is a hmac hash from the server's challenge string and the password itself.
+	print "acceptIdentification_client"
+	login, processedpassword = token.split(':', 1)
+	try:
+            obj = connection.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
+        except Exception, e:
+	    print "acceptIdentification query error"
+            print e
+            return (0,Pyro.constants.DENIED_SECURITY)
+	
+        print "connection_____request"
+
+	knownpasswdhash = obj.password
+	# Check if the username/password is valid.
+	if knownpasswdhash:
+		# Known passwords are stored as ascii hash, but the auth token contains a binary hash.
+		# So we need to convert our ascii hash to binary to be able to validate.
+		knownpasswdhash=knownpasswdhash.decode("hex")
+		if hmac.new(challenge,knownpasswdhash).digest() == processedpassword:
+			print "ALLOWED", login
+			connection.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+			connection.authenticated=login  # store for later reference by Pyro object
+			return(1,0)
+	print "DENIED",login
+	return (0,Pyro.constants.DENIED_SECURITY)
+	    
+    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+	print "createAuthToken"
+	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
+	# we return a secure auth token based on the server challenge string.
+	return "%s:%s" % (authid[0], hmac.new(challenge,authid[1]).digest() )
+
+    def mungeIdent(self, ident):
+	print "mungeIdent_client"
+	print ident
+	print ident[1].decode("hex")
+	# ident is tuple (login, password), the client sets this.
+	# we don't like to store plaintext passwords so store the md5 hash instead.
+	return (ident[0], ident[1].decode("hex")) '''
+class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
+    def __init__(self):
+	Pyro.protocol.DefaultConnValidator.__init__(self)
+    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+	print "createAuthToken_cli"
+	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
+	# we return a secure auth token based on the server challenge string.
+	return authid
+    def mungeIdent(self, ident):
+	print "mungeIdent_client"
+	print ident
+	# ident is tuple (login, password), the client sets this.
+	# we don't like to store plaintext passwords so store the md5 hash instead.
+	return ident
+'''def setIdentification(self, ident, munge=False):
+	if ident:
+		if munge:
+			self.ident=self.newConnValidator.mungeIdent(ident)   # don't store ident itself. 
+		else:
+			self.ident=ident # per-munged ident string
+	else:
+		self.ident='' '''      
 def login():
     child = ConnectDialog()
     if child.exec_()==1:
@@ -405,13 +476,20 @@ def login():
             #print child.name
             #child.name = 'admin'
             connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-            password = unicode((child.password.toHex()))
+            password = unicode(child.password.toHex())
             #f = open('tmp', 'wb')
-            #f.write(child.password.toHex())           
+            #f.write(child.password.toHex())
+	    connection._setNewConnectionValidator(antiMungeValidator())
+	    #connection.adapter.setIdentification = setIdentification
+	    print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+	    print connection.adapter.ident
             if connection.connection_request(username=unicode(child.name), password=password)==False:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
                 login()
+	    #connection._setNewConnectionValidator(LoginConnValidator())
+            #connection._setIdentification((unicode(child.name),password))
         except Exception, e:
+            print "login connection error"
             print e
             QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
             login()
@@ -423,11 +501,15 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
    
     connection = login() 
-
-    mainwindow = MainWindow()
-    mainwindow.show()
-    #app.setStyle("cleanlooks")
-    app.setStyleSheet(open("./style.qss","r").read())
+    try:
+	mainwindow = MainWindow()
+	mainwindow.show()
+	#app.setStyle("cleanlooks")
+	app.setStyleSheet(open("./style.qss","r").read())
+	sys.exit(app.exec_())
+    except Exception, ex:
+	print "main-----------"
+	print ex
 
     #QtGui.QStyle.SH_Table_GridLineColor
-    sys.exit(app.exec_())
+    

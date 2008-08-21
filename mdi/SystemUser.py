@@ -2,6 +2,7 @@
 
 from PyQt4 import QtCore, QtGui
 
+#restrict by ip adresses
 
 from helpers import tableFormat
 from helpers import Object as Object
@@ -53,7 +54,7 @@ class PasswordEditFrame(QtGui.QDialog):
         
     def accept(self):
         if self.password_lineEdit.text():
-            if self.passValidator.validate(self.password_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+            if self.passValidator.validate(self.password_lineEdit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 3 и не содержать спецефических символов."))
                 return
             if self.password_lineEdit.text() == self.repeat_password_lineEdit.text():
@@ -66,7 +67,94 @@ class PasswordEditFrame(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль"))
             return
             
+class hostsFrame(QtGui.QDialog):
+    def __init__(self, connection, model=None):
+        super(hostsFrame, self).__init__()
+        
+        self.connection = connection
+        self.model = model
+        self.hosts = ''
+        self.setObjectName("hostsFrame")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,373,287).size()).expandedTo(self.minimumSizeHint()))
 
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(-90,250,341,32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.hosts_listWidget = QtGui.QListWidget(self)
+        self.hosts_listWidget.setGeometry(QtCore.QRect(10,10,321,192))
+        self.hosts_listWidget.setObjectName("hosts_listWidget")
+
+        self.addHosts_lineEdit = QtGui.QLineEdit(self)
+        self.addHosts_lineEdit.setGeometry(QtCore.QRect(10,220,321,23))
+        self.addHosts_lineEdit.setObjectName("addHosts_lineEdit")
+
+        self.add_toolButton = QtGui.QToolButton(self)
+        self.add_toolButton.setGeometry(QtCore.QRect(340,220,31,23))
+        self.add_toolButton.setIcon(QtGui.QIcon("images/add.png"))
+        self.add_toolButton.setObjectName("add_toolButton")
+
+        self.remove_toolButton = QtGui.QToolButton(self)
+        self.remove_toolButton.setGeometry(QtCore.QRect(340,10,31,23))
+        self.remove_toolButton.setIcon(QtGui.QIcon("images/del.png"))
+        self.remove_toolButton.setObjectName("remove_toolButton")
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+
+        self.retranslateUi()
+        self.fixtures()
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        QtCore.QObject.connect(self.add_toolButton, QtCore.SIGNAL("clicked()"),self.addHosts)
+        QtCore.QObject.connect(self.remove_toolButton, QtCore.SIGNAL("clicked()"),self.remHosts)
+        #QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("hostsFrame", "Выбор хостов", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_toolButton.setText(QtGui.QApplication.translate("hostsFrame", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.remove_toolButton.setText(QtGui.QApplication.translate("hostsFrame", "...", None, QtGui.QApplication.UnicodeUTF8))
+    
+    def fixtures(self):
+        if self.model:
+            self.fill_ips(self.model.host)
+            
+    def fill_ips(self, ipsstr):
+        ips = ipsstr.split(', ')
+        curips = []
+        for i in range(self.hosts_listWidget.count()):
+            curips.append(str(self.hosts_listWidget.item(i).text()))
+        print curips
+        added = []
+        for ipstr in ips:
+            if ipstr not in curips:
+                ipstr_ok = True
+                for ip in ipstr.split('-'):
+                    print ip
+                    print self.ipValidator.validate(ip, 0)[0]  == QtGui.QValidator.Acceptable
+                    print ipstr_ok
+                    ipstr_ok = ipstr_ok and (self.ipValidator.validate(ip, 0)[0]  == QtGui.QValidator.Acceptable)
+                if ipstr_ok and (ipstr not in added):
+                    added.append(ipstr)
+                    self.hosts_listWidget.addItem(QtGui.QListWidgetItem(ipstr))
+        self.hosts_listWidget.show()
+    
+    def addHosts(self):
+        print self.addHosts_lineEdit.text()
+        self.fill_ips(self.addHosts_lineEdit.text())
+        
+    def remHosts(self):
+        for item in self.hosts_listWidget.selectedItems():
+            self.hosts_listWidget.takeItem(self.hosts_listWidget.row(item))
+        self.hosts_listWidget.show()
+    
+    def accept(self):
+        #for item in self.hosts_listWidget.items():
+        self.hosts = ', '.join([str(self.hosts_listWidget.item(i).text()) for i in range(self.hosts_listWidget.count())])
+        print self.hosts
+        QtGui.QDialog.accept(self)
+        
 class SystemUserFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(SystemUserFrame, self).__init__()
@@ -76,10 +164,10 @@ class SystemUserFrame(QtGui.QDialog):
         self.model = model
         self.password = ''
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,344,122).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,362,122).size()).expandedTo(self.minimumSizeHint()))
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(109,90,161,25))
+        self.buttonBox.setGeometry(QtCore.QRect(200,90,161,25))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
@@ -105,7 +193,12 @@ class SystemUserFrame(QtGui.QDialog):
         self.password_pushButton.setGeometry(QtCore.QRect(0,90,93,25))
         self.password_pushButton.setFlat(False)
         self.password_pushButton.setObjectName("password_pushButton")
-
+        
+        self.hosts_pushButton = QtGui.QPushButton(self)
+        self.hosts_pushButton.setGeometry(QtCore.QRect(100,90,93,25))
+        self.hosts_pushButton.setFlat(False)
+        self.hosts_pushButton.setObjectName("hosts_pushButton")
+        
         self.comment_edit = QtGui.QLineEdit(self)
         self.comment_edit.setGeometry(QtCore.QRect(110,36,230,20))
         self.comment_edit.setObjectName("comment_edit")
@@ -115,6 +208,7 @@ class SystemUserFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
         QtCore.QObject.connect(self.password_pushButton, QtCore.SIGNAL("clicked()"),self.setPassword)
+        QtCore.QObject.connect(self.hosts_pushButton, QtCore.SIGNAL("clicked()"), self.setHosts)
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self):
@@ -123,7 +217,7 @@ class SystemUserFrame(QtGui.QDialog):
         self.comment_label.setText(QtGui.QApplication.translate("Dialog", "Комментарий:", None, QtGui.QApplication.UnicodeUTF8))
         self.status_checkBox.setText(QtGui.QApplication.translate("Dialog", "Статус", None, QtGui.QApplication.UnicodeUTF8))
         self.password_pushButton.setText(QtGui.QApplication.translate("Dialog", "Новый пароль", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.hosts_pushButton.setText(QtGui.QApplication.translate("Dialog", "Хосты", None, QtGui.QApplication.UnicodeUTF8))
         
 
     def setPassword(self):
@@ -133,7 +227,12 @@ class SystemUserFrame(QtGui.QDialog):
             if child.password:
                 self.password = unicode(child.password.toHex())
         
-
+    def setHosts(self):
+        child = hostsFrame(self.connection, self.model)
+        if child.exec_()==1:
+            if child.hosts:
+                self.hosts = unicode(child.hosts)
+                
     def accept(self):
         """
         понаставить проверок
@@ -149,7 +248,7 @@ class SystemUserFrame(QtGui.QDialog):
                 model=Object()
                 model.password=self.password
     
-    
+            model.host = self.hosts
             model.username = unicode(self.username_edit.text())
             model.description = unicode(self.comment_edit.text())
     
@@ -226,7 +325,7 @@ class SystemUserChild(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
         
         self.tableWidget.clear()
-        columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP']
+        columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP', u'Разрешённые адреса']
         makeHeaders(columns, self.tableWidget)
 
 
@@ -287,6 +386,7 @@ class SystemUserChild(QtGui.QMainWindow):
             self.addrow(user.created, i,3)
             self.addrow(user.last_login, i,4)
             self.addrow(user.last_ip, i,5)
+            self.addrow(user.host, i,6)
             self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)

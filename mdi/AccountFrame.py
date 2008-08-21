@@ -7,6 +7,7 @@ import Pyro.core
 import traceback
 from helpers import Object as Object
 from helpers import dateDelim
+from helpers import connlogin
 from types import BooleanType
 import copy
 
@@ -3076,7 +3077,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.refresh()
 
 
-    def editframe(self):
+    @connlogin
+    def editframe(self, col, row):
         #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
         print id
@@ -3163,7 +3165,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
                 name=unicode(self.tarif_treeWidget.currentItem().text(0))
             except:
                 return
-        print name
         tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE deleted=False and name='%s'" % name)
 
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account

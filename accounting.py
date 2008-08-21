@@ -7,12 +7,18 @@ from threading import Thread
 import threading
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
 import Pyro.core
+import Pyro.protocol
+import Pyro.constants
+import hmac
+import hashlib
+from hashlib import md5
 #import mdi.orm.models as models
 import settings
 import psycopg2
 import psycopg2.extras
 from types import InstanceType  
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+import IPy
 
 
 from chartprovider.bpplotadapter import bpplotAdapter
@@ -1485,8 +1491,125 @@ class ipn_service(Thread):
 
                 self.connection.commit()
             time.sleep(60)
+'''class LoginConnValidator(Pyro.protocol.DefaultConnValidator):
+    def __init__(self):
+	Pyro.protocol.DefaultConnValidator.__init__(self)
+	self.connection = pool.connection()
+	#print dir(self.connection)
+	self.connection._con._con.set_client_encoding('UTF8')
+	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+	
+    def acceptIdentification(self, daemon, connection, token, challenge):
+	# extract tuple (login, processed password) from token as returned by createAuthToken
+	# processed password is a hmac hash from the server's challenge string and the password itself.
+	print "accept"
+	print token
+	login, processedpassword = token.split(':', 1)
+	try:
+	    self.cur.execute("SELECT * FROM billservice_systemuser WHERE username='%s'" % login)
+	    #self.connection.commit()
+	    r=self.cur.fetchall()
+	    if len(r)>1:
+		raise Exception("Query returns multiple values!")
+	    if r==[]:
+		raise Exception("Empty query!")
+            obj = Object(r[0])
+        except Exception, e:
+	    print "acceptIdentification query error"
+            print e
+            return (0,Pyro.constants.DENIED_SECURITY)
+        print "connection_____request"
 
+	knownpasswdhash = obj.password
+	# Check if the username/password is valid.
+	if knownpasswdhash:
+		# Known passwords are stored as ascii hash, but the auth token contains a binary hash.
+		# So we need to convert our ascii hash to binary to be able to validate.
+		knownpasswdhash=knownpasswdhash.decode("hex")
+		if hmac.new(challenge,knownpasswdhash).digest() == processedpassword:
+			print "ALLOWED", login
+			self.cur.execute("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+			connection.authenticated=login  # store for later reference by Pyro object
+			return(1,0)
+	print "DENIED",login
+	return (0,Pyro.constants.DENIED_SECURITY)
+	    
+    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+	print "createAuthToken_serv"
+	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
+	# we return a secure auth token based on the server challenge string.
+	return "%s:%s" % (authid[0], hmac.new(challenge,authid[1]).digest() )
+
+    def mungeIdent(self, ident):
+	print "mungeIdent_serv"
+	# ident is tuple (login, password), the client sets this.
+	# we don't like to store plaintext passwords so store the md5 hash instead.
+	return (ident[0], ident[1].decode("hex")) '''
+class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
+    def __init__(self):
+	Pyro.protocol.DefaultConnValidator.__init__(self)
+	'''self.connection = pool.connection()
+	#print dir(self.connection)
+	self.connection._con._con.set_client_encoding('UTF8')
+	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)'''
+	
+
+    
+    def acceptIdentification(self, tcpserver, conn, hash, challenge):
+	print "acceptident"
+	print conn
+	print hash
+	#print hash.decode('utf-8')
+	#print hash.decode('hex')
+	#print challenge
+	#prx = tcpserver.getProxy()
+	#self.connection = pool.connection()
+        #print dir(self.connection)
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
+	#obj = conn.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % hash)
+	#print obj.id
+	#print "hoooooostname"
+	#print tcpserver.hostname
+	for val in tcpserver.implementations.itervalues():
+	    if val[1] == 'rpc':
+		serv = val[0]
+		break
+	
+	user, mdpass = hash.split(':', 1)
+	
+	obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
+	print obj.id
+	print obj.host
+	print obj.password == mdpass
+	print str(obj.password) == mdpass
+	conn.login = user
+	Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
+	return(1,0)
+    
+    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+	print "createAuthToken_serv"
+	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
+	# we return a secure auth token based on the server challenge string.
+	return authid
+
+    def mungeIdent(self, ident):
+	print "mungeIdent_serv"
+	# ident is tuple (login, password), the client sets this.
+	# we don't like to store plaintext passwords so store the md5 hash instead.
+	return ident
+def authentconn(func):
+    print "connlog----"
+    def relogfunc(*args, **kwargs):
+	print args
+	print kwargs
+	print "authent---------------------"
+	print args[0].getLocalStorage().caller
+	res = func(*args, **kwargs)
+	return res
+    return relogfunc
 class RPCServer(Thread, Pyro.core.ObjBase):
+    
     def __init__ (self):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
@@ -1497,17 +1620,18 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.listconnection = pool.connection()
         self.listconnection._con._con.set_client_encoding('UTF8')
         self.listcur = self.listconnection.cursor()
-              
+	self.ticket = ''
         #self._cddrawer = cdDrawer()
 
         
     def run(self):
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
+	#daemon.adapter.setIdentification = setIdentification
+	daemon.setNewConnectionValidator(hostCheckingValidator())
         daemon.connect(self,"rpc")
-        
         daemon.requestLoop()
-
+	
     def testCredentials(self, host, login, password):
         try:
             print host, login, password
@@ -1586,8 +1710,20 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
         self.connection.commit()
         
+    @authentconn
     def get(self, sql):
-        #print sql
+        #print self.ticket
+	'''print "cons-------------------"
+	print self.daemon.connections
+	print "------------------------"'''
+	'''try:
+	    print self.getProxy().adapter.conn
+	except Exception, ex: print "noconn: " + str(ex)
+	try:
+	    print "serlog--------------"
+	    print self.getLocalStorage().caller
+	except:
+	    print "serlogex---"'''
         self.cur.execute(sql)
         #self.connection.commit()
         result=[]
@@ -1624,15 +1760,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cddrawer = cdDrawer()
         imgs = cddrawer.cddraw(*args, **kwargs)
         return imgs
-    '''def setChartOptions(self, chartname, optdict):
-        #self._cddrawer.set_options(chartname, optdict)
-        pass'''
         
     def rollback(self):
         self.connection.rollback()
         
     def sql(self, sql, return_response=True, pickler=False):
-        #print sql
+        print self.ticket
         self.cur.execute(sql)
         #self.connection.commit()
         
@@ -1684,7 +1817,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             print e
             return False
         print "connection_____request"
-        print password
+        print self.getProxy()
         if obj is not None and obj.password==password:
             self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
             #Pyro.constants.
