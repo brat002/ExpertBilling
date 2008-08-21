@@ -7,6 +7,7 @@ from helpers import connlogin
 import Pyro.core
 import Pyro.protocol
 import Pyro.constants
+import Pyro.errors
 
 
 
@@ -85,14 +86,15 @@ class MainWindow(QtGui.QMainWindow):
         child =  AccountsMdiChild(connection=connection, parent=self)
         self.workspace.addWindow(child)
         child.show()
-
+    
+    @connlogin
     def open(self):
         child = NasMdiChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
         return child
 
-
+    @connlogin
     def save(self):
         child=SettlementPeriodChild(connection=connection)
         self.workspace.addWindow(child)
@@ -101,41 +103,52 @@ class MainWindow(QtGui.QMainWindow):
         #if self.activeMdiChild().save():
         #    self.statusBar().showMessage(self.tr("File saved"), 2000)
 
+    @connlogin
     def saveAs(self):
 
         child = SystemUserChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
+    @connlogin
     def cut(self):
         child=TimePeriodChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
+    @connlogin
     def copy(self):
         child=ClassChild(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
+    @connlogin
     def paste(self):
         child = MonitorFrame(connection=connection)
         self.workspace.addWindow(child)
         child.show()
 
+    @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, self.tr(u"О программе"),
             self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
 
+    @connlogin
     def reportProperties(self):
         child = ReportPropertiesDialog(connection = connection)
         self.workspace.addWindow(child)
         child.show()
-
+	
+    @connlogin
     def netflowReport(self):
         child = NetFlowReport(connection = connection)
         self.workspace.addWindow(child)
         child.show()
-
+	
+    def relogin(self):
+	global connection
+	connection = login()
+	
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)
         #self.saveAct.setEnabled(hasMdiChild)
@@ -186,7 +199,7 @@ class MainWindow(QtGui.QMainWindow):
             self.windowMapper.setMapping(action, child)
 
 
-
+    @connlogin
     def openstatWin(self):
         self.reportseldg = ReportSelectDialog(connection=connection)
         if self.reportseldg.exec_()!=1: return
@@ -261,6 +274,10 @@ class MainWindow(QtGui.QMainWindow):
         self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
 
         self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
+	
+	self.reloginAct = QtGui.QAction(self.tr("&Reconnect"), self)
+        self.reloginAct.setStatusTip(self.tr("Reconnect"))
+        self.connect(self.reloginAct, QtCore.SIGNAL("triggered()"), self.relogin)
 
         self.reportActs = []
         i = 0
@@ -335,6 +352,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.saveAct)
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addSeparator()
+	self.fileMenu.addAction(self.reloginAct)
+	self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
         self.editMenu = self.menuBar().addMenu(self.tr("&Edit"))
@@ -355,11 +374,13 @@ class MainWindow(QtGui.QMainWindow):
         self.helpMenu.addAction(self.aboutAct)
         self.helpMenu.addAction(self.aboutQtAct)
     
+    @connlogin
     def reportsMenu(self):
         #print self.sender().data().toInt()
         child=StatReport(connection=connection, chartinfo=_reportsdict[self.sender().data().toInt()[0]])
         self.workspace.addWindow(child)
         child.show()
+	
     def createToolBars(self):
         self.fileToolBar = self.addToolBar(self.tr("File"))
         self.fileToolBar.addAction(self.newAct)
@@ -460,46 +481,56 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
 	# ident is tuple (login, password), the client sets this.
 	# we don't like to store plaintext passwords so store the md5 hash instead.
 	return ident
-'''def setIdentification(self, ident, munge=False):
-	if ident:
-		if munge:
-			self.ident=self.newConnValidator.mungeIdent(ident)   # don't store ident itself. 
-		else:
-			self.ident=ident # per-munged ident string
-	else:
-		self.ident='' '''      
-def login():
+      
+'''def login():
     child = ConnectDialog()
     if child.exec_()==1:
         try:
-            #child.address= '127.0.0.1'
-            #print child.address
-            #print child.name
-            #child.name = 'admin'
             connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
             password = unicode(child.password.toHex())
             #f = open('tmp', 'wb')
             #f.write(child.password.toHex())
 	    connection._setNewConnectionValidator(antiMungeValidator())
-	    #connection.adapter.setIdentification = setIdentification
 	    print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
-            if connection.connection_request(username=unicode(child.name), password=password)==False:
-                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
-                login()
-	    #connection._setNewConnectionValidator(LoginConnValidator())
-            #connection._setIdentification((unicode(child.name),password))
-	    '''print "tryutoken-------"
-	    print connection.utoken
-	    connection.utoken = "hhh"
-	    print connection.utoken'''
+	    connection.test()
+
+
         except Exception, e:
             print "login connection error"
-            print e
-            QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            login()
+            if isinstance(e, Pyro.errors.ConnectionDeniedError):
+		QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
+		login()
+	    else:
+		QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+		login()
         return connection
     else:
-        sys.exit()
+        sys.exit()'''
+
+def login():
+    
+    while True:
+	child = ConnectDialog()
+	if child.exec_()==1:
+	    try:
+		connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
+		password = unicode(child.password.toHex())
+		#f = open('tmp', 'wb')
+		#f.write(child.password.toHex())
+		connection._setNewConnectionValidator(antiMungeValidator())
+		print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+		connection.test()
+		return connection    
+    
+	    except Exception, e:
+		print "login connection error"
+		if isinstance(e, Pyro.errors.ConnectionDeniedError):
+		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
+		else:
+		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+
+	else:
+	    sys.exit()
                 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
