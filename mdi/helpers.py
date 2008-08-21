@@ -2,6 +2,7 @@
 
 from PyQt4 import QtGui, QtCore, QtSql
 from types import InstanceType, StringType, UnicodeType
+import Pyro.errors
 import datetime
 import os
 
@@ -45,7 +46,23 @@ def makeHeaders(columns, table):
     for header in map(createHeader, columns):
         table.setHorizontalHeaderItem(i, header)
         i+=1
-            
+
+        
+def connlogin(func):
+    print "connlog----"
+    def relogfunc(*args, **kwargs):
+        try:
+            print args
+            print kwargs
+            print "---------------------"
+            res = func(*args, **kwargs)
+            return res
+        except Pyro.errors.ConnectionClosedError, cce:
+            print "exception_-----decor"
+            print cce
+            print func.__name__
+            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Конец сессии или потеря связи."))
+    return relogfunc
 def format_update (x,y):
     if y!='Null':
         if type(y)==StringType or type(y)==UnicodeType:
