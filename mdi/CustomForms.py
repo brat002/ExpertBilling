@@ -226,58 +226,48 @@ class TransactionForm(QtGui.QDialog):
         self.account = account
         self.connection = connection
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,499,204).size()))
-        self.widget = QtGui.QWidget(self)
-        self.widget.setGeometry(QtCore.QRect(11,12,481,173))
-        self.widget.setObjectName("widget")
+        self.setObjectName("Dialog")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,385,166).size()).expandedTo(self.minimumSizeHint()))
 
-        self.gridlayout = QtGui.QGridLayout(self.widget)
-        self.gridlayout.setObjectName("gridlayout")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setGeometry(QtCore.QRect(10,40,371,81))
+        self.groupBox.setObjectName("groupBox")
 
-        self.payed_document_label = QtGui.QLabel(self.widget)
-        self.payed_document_label.setObjectName("payed_document_label")
-        self.gridlayout.addWidget(self.payed_document_label,0,0,1,1)
+        self.summ_edit = QtGui.QLineEdit(self.groupBox)
+        self.summ_edit.setGeometry(QtCore.QRect(130,20,231,20))
+        self.summ_edit.setObjectName("summ_edit")
 
-        self.payed_document_edit = QtGui.QLineEdit(self.widget)
+        self.summ_label = QtGui.QLabel(self.groupBox)
+        self.summ_label.setGeometry(QtCore.QRect(10,20,111,20))
+        self.summ_label.setObjectName("summ_label")
+
+        self.payed_document_edit = QtGui.QLineEdit(self.groupBox)
+        self.payed_document_edit.setGeometry(QtCore.QRect(130,50,231,20))
         self.payed_document_edit.setFrame(True)
         self.payed_document_edit.setObjectName("payed_document_edit")
-        self.gridlayout.addWidget(self.payed_document_edit,0,1,1,1)
 
-        self.pay_type_label = QtGui.QLabel(self.widget)
+        self.payed_document_label = QtGui.QLabel(self.groupBox)
+        self.payed_document_label.setGeometry(QtCore.QRect(10,50,115,20))
+        self.payed_document_label.setObjectName("payed_document_label")
+
+        self.pay_type_label = QtGui.QLabel(self)
+        self.pay_type_label.setGeometry(QtCore.QRect(13,10,111,20))
         self.pay_type_label.setObjectName("pay_type_label")
-        self.gridlayout.addWidget(self.pay_type_label,1,0,1,1)
 
-        self.payed_type_edit = QtGui.QComboBox(self.widget)
-        self.payed_type_edit.setObjectName("payed_type_edit")
-        self.gridlayout.addWidget(self.payed_type_edit,1,1,1,1)
-
-        self.summ_label = QtGui.QLabel(self.widget)
-        self.summ_label.setObjectName("summ_label")
-        self.gridlayout.addWidget(self.summ_label,2,0,1,1)
-
-        self.summ_edit = QtGui.QLineEdit(self.widget)
-        self.summ_edit.setObjectName("summ_edit")
-        self.gridlayout.addWidget(self.summ_edit,2,1,1,1)
-
-        self.comment_label = QtGui.QLabel(self.widget)
-        self.comment_label.setObjectName("comment_label")
-        self.gridlayout.addWidget(self.comment_label,3,0,1,1)
-
-        self.comment_edit = QtGui.QTextEdit(self.widget)
-        self.comment_edit.setObjectName("comment_edit")
-        self.gridlayout.addWidget(self.comment_edit,3,1,1,1)
-
-        self.transactions_pushButton = QtGui.QPushButton(self.widget)
+        self.transactions_pushButton = QtGui.QPushButton(self)
+        self.transactions_pushButton.setGeometry(QtCore.QRect(10,130,106,26))
         self.transactions_pushButton.setObjectName("transactions_pushButton")
-        self.gridlayout.addWidget(self.transactions_pushButton,4,0,1,1)
 
-        self.buttonBox = QtGui.QDialogButtonBox(self.widget)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(210,130,167,26))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridlayout.addWidget(self.buttonBox,4,1,1,1)
+
+        self.payed_type_edit = QtGui.QComboBox(self)
+        self.payed_type_edit.setGeometry(QtCore.QRect(140,10,241,20))
+        self.payed_type_edit.setObjectName("payed_type_edit")
+
 
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
@@ -292,7 +282,7 @@ class TransactionForm(QtGui.QDialog):
         self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Пополнить балланс", None, QtGui.QApplication.UnicodeUTF8))
         self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Списать с балланса", None, QtGui.QApplication.UnicodeUTF8))
         self.summ_label.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
-        self.comment_label.setText(QtGui.QApplication.translate("Dialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
         self.transactions_pushButton.setText(QtGui.QApplication.translate("Dialog", "История проводок", None, QtGui.QApplication.UnicodeUTF8))
     
     def accept(self):
@@ -565,7 +555,7 @@ class ConnectDialog(QtGui.QDialog):
                     if self._password and (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
                         password = self._password
                     else:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 3 и не содержать спецефических символов."))
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной минимум 3 символа и не содержать спецефических символов."))
                         return
                 else: password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
             else:

@@ -3042,7 +3042,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         account = self.connection.get("SELECT * FROM billservice_account WHERE id=%d" % id)
         child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
-            tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = unicode(child.comment_edit.toPlainText()), summ=child.result, bill=unicode(child.payed_document_edit.text()))
+            tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = "", summ=child.result, bill=unicode(child.payed_document_edit.text()))
             try:
                 
                 self.connection.create(tr)
