@@ -450,6 +450,7 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
 	Pyro.protocol.DefaultConnValidator.__init__(self)
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
 	print "createAuthToken_cli"
+	print challenge
 	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
 	# we return a secure auth token based on the server challenge string.
 	return authid
@@ -482,12 +483,15 @@ def login():
 	    connection._setNewConnectionValidator(antiMungeValidator())
 	    #connection.adapter.setIdentification = setIdentification
 	    print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
-	    print connection.adapter.ident
             if connection.connection_request(username=unicode(child.name), password=password)==False:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Неверно введены данные."))
                 login()
 	    #connection._setNewConnectionValidator(LoginConnValidator())
             #connection._setIdentification((unicode(child.name),password))
+	    '''print "tryutoken-------"
+	    print connection.utoken
+	    connection.utoken = "hhh"
+	    print connection.utoken'''
         except Exception, e:
             print "login connection error"
             print e
