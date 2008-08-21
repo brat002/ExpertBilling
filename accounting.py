@@ -1545,6 +1545,8 @@ class ipn_service(Thread):
 	# ident is tuple (login, password), the client sets this.
 	# we don't like to store plaintext passwords so store the md5 hash instead.
 	return (ident[0], ident[1].decode("hex")) '''
+sasha = None
+dima = None
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
 	Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -1556,36 +1558,73 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
     
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
-	print "acceptident"
+	print "acceptident-----------------"
 	print conn
 	print hash
-	#print hash.decode('utf-8')
-	#print hash.decode('hex')
-	#print challenge
-	#prx = tcpserver.getProxy()
-	#self.connection = pool.connection()
-        #print dir(self.connection)
-        #self.connection._con._con.set_client_encoding('UTF8')
-        #self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
-	#obj = conn.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % hash)
-	#print obj.id
-	#print "hoooooostname"
-	#print tcpserver.hostname
-	for val in tcpserver.implementations.itervalues():
-	    if val[1] == 'rpc':
-		serv = val[0]
+	
+	try:
+	    for val in tcpserver.implementations.itervalues():
+		if val[1] == 'rpc':
+		    serv = val[0]
+		    break
+		
+	    user, mdpass = hash.split(':', 1)
+	    if user == 'sasha':
+		sasha = conn
+	    else:
+		dima = conn
+	    obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
+	    print obj.id
+	    print obj.host
+	    hostOk = self.checkIP(conn.addr[0], str(obj.host))
+	    
+	    if hostOk and (obj.password == mdpass):
+		print "accepted---------------------------------"
+		tmd5 = hashlib.md5(str(conn.addr[0]))
+		tmd5.update(str(conn.addr[1]))
+		tmd5.update(tcpserver.hostname)
+		conn.utoken = tmd5.digest()
+		 
+		print conn.utoken
+		print obj.id
+		print conn
+		#Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
+		return(1,0)
+	    else:
+		print "DENIED-----------------"
+		print conn
+		print obj.id
+		conn.utoken = ''
+		return (0,Pyro.constants.DENIED_SECURITY)
+	except Exception, ex:
+	    print "acceptidentificationerror---------------: ", ex
+	    print conn
+	    conn.utoken = ''
+	    return (0,Pyro.constants.DENIED_SECURITY)
+    
+    def checkIP(self, ipstr, hostsstr):
+	print "checkIP----"
+	print hostsstr
+	print ipstr
+	userIP = IPy.IP(ipstr)
+	print "presplit"
+	hosts = hostsstr.split(', ')
+	print "hosts====="
+	print hosts
+	hostOk = False
+	for host in hosts:
+	    print host
+	    iprange = host.split('-')
+	    if len(iprange) == 1:
+		if iprange[0].find('/') != -1:
+		    hostOk = userIP in IPy.IP(iprange[0])
+		else:
+		    hostOk = hostOk or (userIP == IPy.IP(iprange[0]))
+	    else:
+		hostOk = hostOk or ((userIP >= IPy.IP(iprange[0])) and (userIP <= IPy.IP(iprange[1])))
+	    if hostOk:
 		break
-	
-	user, mdpass = hash.split(':', 1)
-	
-	obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
-	print obj.id
-	print obj.host
-	print obj.password == mdpass
-	print str(obj.password) == mdpass
-	conn.login = user
-	Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
-	return(1,0)
+	return hostOk
     
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
 	print "createAuthToken_serv"
@@ -1599,14 +1638,15 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 	# we don't like to store plaintext passwords so store the md5 hash instead.
 	return ident
 def authentconn(func):
-    print "connlog----"
     def relogfunc(*args, **kwargs):
-	print args
-	print kwargs
-	print "authent---------------------"
-	print args[0].getLocalStorage().caller
-	res = func(*args, **kwargs)
-	return res
+	print "----------------------------"
+	if args[0].getLocalStorage().caller:
+	    if args[0].getLocalStorage().caller.utoken:
+		return func(*args, **kwargs)
+	    else:
+		return None
+	else:
+	    return func(*args, **kwargs)
     return relogfunc
 class RPCServer(Thread, Pyro.core.ObjBase):
     
