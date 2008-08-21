@@ -370,7 +370,7 @@ class ConnectDialog(QtGui.QDialog):
             height = self.tableWidget.fontMetrics().height()
             self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
             self.tableWidget.setModel(self.model)
-            self.tableWidget.setGeometry(QtCore.QRect(0,150,341,113))
+            self.tableWidget.setGeometry(QtCore.QRect(0,150,341,128))
             self.tableWidget.setObjectName("tableWidget")
             self.tableWidget = tableFormat(self.tableWidget)
             self.tableWidget.setColumnHidden(3, True)
@@ -394,6 +394,7 @@ class ConnectDialog(QtGui.QDialog):
         self.password_edit = QtGui.QLineEdit(self.centralwidget)
         self.password_edit.setGeometry(QtCore.QRect(58,70,192,20))
         self.password_edit.setObjectName("password_edit")
+        self.password_edit.setEchoMode(QtGui.QLineEdit.Password)
 
         self.name_edit = QtGui.QLineEdit(self.centralwidget)
         self.name_edit.setGeometry(QtCore.QRect(58,40,192,20))

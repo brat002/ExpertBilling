@@ -1545,8 +1545,7 @@ class ipn_service(Thread):
 	# ident is tuple (login, password), the client sets this.
 	# we don't like to store plaintext passwords so store the md5 hash instead.
 	return (ident[0], ident[1].decode("hex")) '''
-sasha = None
-dima = None
+
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
 	Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -1569,10 +1568,6 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 		    break
 		
 	    user, mdpass = hash.split(':', 1)
-	    if user == 'sasha':
-		sasha = conn
-	    else:
-		dima = conn
 	    obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
 	    print obj.id
 	    print obj.host
@@ -1639,7 +1634,6 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 	return ident
 def authentconn(func):
     def relogfunc(*args, **kwargs):
-	print "----------------------------"
 	if args[0].getLocalStorage().caller:
 	    if args[0].getLocalStorage().caller.utoken:
 		return func(*args, **kwargs)
@@ -1664,6 +1658,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #self._cddrawer = cdDrawer()
 
         
+    
     def run(self):
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
@@ -1672,6 +1667,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         daemon.connect(self,"rpc")
         daemon.requestLoop()
 	
+    @authentconn
     def testCredentials(self, host, login, password):
         try:
             print host, login, password
@@ -1682,6 +1678,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         return True
 
+    @authentconn
     def configureNAS(self, host, login, password, configuration):
         try:
             a=SSHClient(host, 22,login, password)
@@ -1694,6 +1691,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return True
 
 
+    @authentconn
     def accountActions(self, account_id, action):
         
         
@@ -1734,6 +1732,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         return sended
         
+    @authentconn
     def get_object(self, name):
         try:
             model = models.__getattribute__(name)()
@@ -1743,6 +1742,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         return model
     
+    @authentconn
     def transaction_delete(self, ids):
         for i in ids:
 
@@ -1752,18 +1752,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
     @authentconn
     def get(self, sql):
-        #print self.ticket
-	'''print "cons-------------------"
-	print self.daemon.connections
-	print "------------------------"'''
-	'''try:
-	    print self.getProxy().adapter.conn
-	except Exception, ex: print "noconn: " + str(ex)
-	try:
-	    print "serlog--------------"
-	    print self.getLocalStorage().caller
-	except:
-	    print "serlogex---"'''
         self.cur.execute(sql)
         #self.connection.commit()
         result=[]
@@ -1775,35 +1763,42 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return None
         return Object(r[0])
     
+    @authentconn
     def get_list(self, sql):
         print sql
         self.listcur.execute(sql)
         return self.listcur.fetchall()
     
+    @authentconn
     def delete(self, sql):
    
         self.cur.execute(sql)
         #self.connection.commit()
         return 
 
+    @authentconn
     def command(self, sql):
    
         self.cur.execute(sql)
         #self.connection.commit()
         return         
         
+    @authentconn
     def commit(self):
         self.connection.commit()
         
+    @authentconn
     def makeChart(self, *args, **kwargs):
         bpplotAdapter.rCursor = self.listcur
         cddrawer = cdDrawer()
         imgs = cddrawer.cddraw(*args, **kwargs)
         return imgs
         
+    @authentconn
     def rollback(self):
         self.connection.rollback()
         
+    @authentconn
     def sql(self, sql, return_response=True, pickler=False):
         print self.ticket
         self.cur.execute(sql)
@@ -1824,6 +1819,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             print "Pickle length=", time.clock()-a
         return result
 
+    @authentconn
     def sql_as_dict(self, sql, return_response=True):
         #print sql
         self.cur.execute(sql)
@@ -1836,6 +1832,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
       
   
+    @authentconn
     def create(self, sql):
         print sql
         self.cur.execute(sql)
@@ -1850,6 +1847,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return id
 
 
+    @authentconn
     def connection_request(self, username, password):
         try:
             obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
@@ -1866,7 +1864,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         else:
             return False
         
-
+    @authentconn
+    def test(self):
+	pass
+    
+    @authentconn
     def pod(self, session):
         
         self.cur.execute("""

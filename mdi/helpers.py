@@ -49,20 +49,18 @@ def makeHeaders(columns, table):
 
         
 def connlogin(func):
-    print "connlog----"
     def relogfunc(*args, **kwargs):
         try:
-            print args
-            print kwargs
-            print "---------------------"
             res = func(*args, **kwargs)
             return res
         except Pyro.errors.ConnectionClosedError, cce:
-            print "exception_-----decor"
             print cce
-            print func.__name__
-            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Конец сессии или потеря связи."))
+            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Потеря связи."))
+        except Pyro.errors.ConnectionDeniedError, cde:
+            print cde
+            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Действие не авторизовано."))
     return relogfunc
+
 def format_update (x,y):
     if y!='Null':
         if type(y)==StringType or type(y)==UnicodeType:
