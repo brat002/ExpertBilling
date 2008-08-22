@@ -226,6 +226,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
 
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
         self.addAction = QtGui.QAction(self)

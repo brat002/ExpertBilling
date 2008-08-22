@@ -386,6 +386,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar.addAction(self.newAct)
         self.fileToolBar.addAction(self.openAct)
         self.fileToolBar.addAction(self.saveAct)
+	self.fileToolBar.setMovable(False)
+        self.fileToolBar.setFloatable(False)
 
         self.editToolBar = self.addToolBar(self.tr("Edit"))
         self.editToolBar.addAction(self.cutAct)
@@ -394,6 +396,8 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.reportPropertiesAct)
         self.editToolBar.addAction(self.netflowReportAct)
         self.editToolBar.addAction(self.statwinAct)
+	self.editToolBar.setMovable(False)
+        self.editToolBar.setFloatable(False)
         
     def createStatusBar(self):
         self.statusBar().showMessage(self.tr("Ready"))
@@ -421,51 +425,7 @@ class MainWindow(QtGui.QMainWindow):
                 return window
         return None
 
-'''class LoginConnValidator(Pyro.protocol.DefaultConnValidator):
-    def __init__(self):
-	Pyro.protocol.DefaultConnValidator.__init__(self)
-	
-    def acceptIdentification(self, daemon, connection, token, challenge):
-	# extract tuple (login, processed password) from token as returned by createAuthToken
-	# processed password is a hmac hash from the server's challenge string and the password itself.
-	print "acceptIdentification_client"
-	login, processedpassword = token.split(':', 1)
-	try:
-            obj = connection.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
-        except Exception, e:
-	    print "acceptIdentification query error"
-            print e
-            return (0,Pyro.constants.DENIED_SECURITY)
-	
-        print "connection_____request"
 
-	knownpasswdhash = obj.password
-	# Check if the username/password is valid.
-	if knownpasswdhash:
-		# Known passwords are stored as ascii hash, but the auth token contains a binary hash.
-		# So we need to convert our ascii hash to binary to be able to validate.
-		knownpasswdhash=knownpasswdhash.decode("hex")
-		if hmac.new(challenge,knownpasswdhash).digest() == processedpassword:
-			print "ALLOWED", login
-			connection.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
-			connection.authenticated=login  # store for later reference by Pyro object
-			return(1,0)
-	print "DENIED",login
-	return (0,Pyro.constants.DENIED_SECURITY)
-	    
-    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-	print "createAuthToken"
-	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
-	# we return a secure auth token based on the server challenge string.
-	return "%s:%s" % (authid[0], hmac.new(challenge,authid[1]).digest() )
-
-    def mungeIdent(self, ident):
-	print "mungeIdent_client"
-	print ident
-	print ident[1].decode("hex")
-	# ident is tuple (login, password), the client sets this.
-	# we don't like to store plaintext passwords so store the md5 hash instead.
-	return (ident[0], ident[1].decode("hex")) '''
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
 	Pyro.protocol.DefaultConnValidator.__init__(self)

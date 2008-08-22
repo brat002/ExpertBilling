@@ -397,7 +397,7 @@ class ClassChild(QtGui.QMainWindow):
         super(ClassChild, self).__init__()
         self.connection = connection
         self.setObjectName("MainWindow")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,801,597).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,597).size()).expandedTo(self.minimumSizeHint()))
 
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
@@ -416,7 +416,7 @@ class ClassChild(QtGui.QMainWindow):
         self.hboxlayout.setObjectName("hboxlayout")
 
         self.splitter = QtGui.QSplitter(self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0,0,801,521))
+        self.splitter.setGeometry(QtCore.QRect(0,0,800,521))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
@@ -438,7 +438,7 @@ class ClassChild(QtGui.QMainWindow):
         #self.setCentralWidget(self.splitterHandle)
 
         self.menubar = QtGui.QMenuBar(self)
-        self.menubar.setGeometry(QtCore.QRect(0,0,801,21))
+        self.menubar.setGeometry(QtCore.QRect(0,0,800,21))
         self.menubar.setObjectName("menubar")
         self.setMenuBar(self.menubar)
 
@@ -449,6 +449,8 @@ class ClassChild(QtGui.QMainWindow):
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setObjectName("toolBar")
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
 
         self.addClassAction = QtGui.QAction(self)
         self.addClassAction.setIcon(QtGui.QIcon("images/add.png"))

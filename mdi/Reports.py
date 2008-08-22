@@ -537,6 +537,8 @@ class NetFlowReport(QtGui.QMainWindow):
 
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
         
         #self.toolBar.addWidget(self.combobox)
         self.statusBar().addWidget(self.label)
@@ -878,6 +880,8 @@ class StatReport(QtGui.QMainWindow):
 
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
         
  
         #self.statusBar().addWidget(self.button_end)
