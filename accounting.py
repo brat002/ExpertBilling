@@ -218,54 +218,54 @@ class check_vpn_access(Thread):
                     result=None
 
                     if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True:
-                       """
-                       Делаем проверку на то, изменилась ли скорость.
-                       """
-                       print row['vpn_speed']
-                       print row['vpn_speed']==''
-                       if row['vpn_speed']=='':
-                           speed=self.create_speed(row['tarif_id'], row['nas_type'])
-                       else:
-                           speed=parse_custom_speed(row['vpn_speed']) 
-                       #To-DO: Сделать сохранение в базу плэйн-текст настроек скорости
-                       #print "row['speed_string'], row['speed']", row['speed_string'], speed, speed_parameters
-                       newspeed=''
-                       for key in speed:
-                           newspeed+=unicode(speed[key])
-                       if row['speed_string']!=newspeed:
-                           #print "row['speed_string'], newspeed", row['speed_string'], newspeed
-
-
-                           #coa_result=DAE(dict=self.dict, code=43, nas_secret=str(row['nas_secret']), nas_ip=str(row['nas_ip']), nas_id=str(row['nas_name']), username=str(row['username']), session_id=str(row['session']), login=row['nas_login'], password=row['nas_password'], access_type=row['access_type'], speed_string=speed, coa=False)
-                           
-                           #print "set speed", speed
-                           coa_result=change_speed(dict=self.dict, account_id=row['account_id'], 
-                                account_name=str(row['username']), 
-                                account_vpn_ip=row['vpn_ip_address'], 
-                                account_ipn_ip=row['ipn_ip_address'], 
-                                account_mac_address=row['ipn_mac_address'], 
-                                access_type=str(row['access_type']), 
-                                nas_ip=str(row['nas_ip']), 
-                                nas_type=row['nas_type'], 
-                                nas_name=str(row['nas_name']), 
-                                nas_secret=str(row['nas_secret']), 
-                                nas_login=str(row['nas_login']), 
-                                nas_password=row['nas_password'], 
-                                session_id=str(row['session']), 
-                                format_string=str(row['speed_action']),
-                                speed=speed)                           
-                           
-                           
-                           print "coa_result=", coa_result
-                           
-                           if coa_result==True:
-                               self.cur.execute(
-                                        """
-                                        UPDATE radius_activesession
-                                        SET speed_string='%s'
-                                        WHERE id=%s;
-                                        """ % (newspeed, row['id'])
-                                        )
+			"""
+			Делаем проверку на то, изменилась ли скорость.
+			"""
+			print row['vpn_speed']
+			print row['vpn_speed']==''
+			if row['vpn_speed']=='':
+			    speed=self.create_speed(row['tarif_id'], row['nas_type'])
+			else:
+			    speed=parse_custom_speed(row['vpn_speed']) 
+			#To-DO: Сделать сохранение в базу плэйн-текст настроек скорости
+			#print "row['speed_string'], row['speed']", row['speed_string'], speed, speed_parameters
+			newspeed=''
+			for key in speed:
+			    newspeed+=unicode(speed[key])
+			if row['speed_string']!=newspeed:
+			    #print "row['speed_string'], newspeed", row['speed_string'], newspeed
+    
+    
+			    #coa_result=DAE(dict=self.dict, code=43, nas_secret=str(row['nas_secret']), nas_ip=str(row['nas_ip']), nas_id=str(row['nas_name']), username=str(row['username']), session_id=str(row['session']), login=row['nas_login'], password=row['nas_password'], access_type=row['access_type'], speed_string=speed, coa=False)
+			    
+			    #print "set speed", speed
+			    coa_result=change_speed(dict=self.dict, account_id=row['account_id'], 
+				 account_name=str(row['username']), 
+				 account_vpn_ip=row['vpn_ip_address'], 
+				 account_ipn_ip=row['ipn_ip_address'], 
+				 account_mac_address=row['ipn_mac_address'], 
+				 access_type=str(row['access_type']), 
+				 nas_ip=str(row['nas_ip']), 
+				 nas_type=row['nas_type'], 
+				 nas_name=str(row['nas_name']), 
+				 nas_secret=str(row['nas_secret']), 
+				 nas_login=str(row['nas_login']), 
+				 nas_password=row['nas_password'], 
+				 session_id=str(row['session']), 
+				 format_string=str(row['speed_action']),
+				 speed=speed)                           
+			    
+			    
+			    print "coa_result=", coa_result
+			    
+			    if coa_result==True:
+				self.cur.execute(
+					 """
+					 UPDATE radius_activesession
+					 SET speed_string='%s'
+					 WHERE id=%s;
+					 """ % (newspeed, row['id'])
+					 )
                     else:
                         #result = DAE(dict=self.dict, code=40, nas_secret=row['nas_secret'], nas_ip=nas_id, nas_id=row['nas_name'], username=row['username'], session_id=row['session'],  login=row['nas_login'], password=row['nas_password'])
                         
