@@ -1834,7 +1834,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
   
     @authentconn
     def create(self, sql):
-        print sql
+        #print sql
         self.cur.execute(sql)
         id=-1
         #print self.cur.fetchone()

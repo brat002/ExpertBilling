@@ -28,7 +28,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QGroupBox" name="groupBox" >
+  <widget class="QGroupBox" name="period_groupBox" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -40,7 +40,7 @@
    <property name="title" >
     <string>Период действия</string>
    </property>
-   <widget class="QDateTimeEdit" name="dateTimeEdit_2" >
+   <widget class="QDateTimeEdit" name="end_dateTimeEdit" >
     <property name="geometry" >
      <rect>
       <x>70</x>
@@ -53,7 +53,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QDateTimeEdit" name="dateTimeEdit" >
+   <widget class="QDateTimeEdit" name="start_dateTimeEdit" >
     <property name="geometry" >
      <rect>
       <x>70</x>
@@ -66,7 +66,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label" >
+   <widget class="QLabel" name="start_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -79,7 +79,7 @@
      <string>Начало</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2" >
+   <widget class="QLabel" name="end_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -93,7 +93,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2" >
+  <widget class="QGroupBox" name="params_groupBox" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -105,7 +105,7 @@
    <property name="title" >
     <string>Параметры генерации</string>
    </property>
-   <widget class="QLineEdit" name="lineEdit_2" >
+   <widget class="QLineEdit" name="nominal_lineEdit" >
     <property name="geometry" >
      <rect>
       <x>110</x>
@@ -115,7 +115,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_6" >
+   <widget class="QLabel" name="count_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -128,7 +128,7 @@
      <string>Количество</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4" >
+   <widget class="QLabel" name="pin_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -141,7 +141,7 @@
      <string>Длина пина</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3" >
+   <widget class="QLabel" name="series_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -154,7 +154,7 @@
      <string>Серия</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_5" >
+   <widget class="QLabel" name="nominal_label" >
     <property name="geometry" >
      <rect>
       <x>10</x>
@@ -167,7 +167,7 @@
      <string>Номинал</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox" >
+   <widget class="QSpinBox" name="pin_spinBox" >
     <property name="geometry" >
      <rect>
       <x>110</x>
@@ -180,7 +180,7 @@
      <number>32</number>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox" >
+   <widget class="QCheckBox" name="l_checkBox" >
     <property name="geometry" >
      <rect>
       <x>220</x>
@@ -193,7 +193,7 @@
      <string>Б</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_2" >
+   <widget class="QCheckBox" name="numbers_checkBox" >
     <property name="geometry" >
      <rect>
       <x>250</x>
@@ -206,7 +206,7 @@
      <string>Ц</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox_2" >
+   <widget class="QSpinBox" name="count_spinBox" >
     <property name="geometry" >
      <rect>
       <x>110</x>
@@ -228,7 +228,7 @@
      <number>999999999</number>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox_3" >
+   <widget class="QSpinBox" name="series_spinBox" >
     <property name="geometry" >
      <rect>
       <x>110</x>
