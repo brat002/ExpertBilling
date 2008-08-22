@@ -455,14 +455,28 @@ class NasMdiChild(QtGui.QMainWindow):
 
         self.delAction = QtGui.QAction(self)
         self.delAction.setIcon(QtGui.QIcon("images/del.png"))
+        
+        self.editAction = QtGui.QAction(self)
+        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
 
         self.configureAction = QtGui.QAction(self)
         self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
         self.configureAction.setMenuRole(QtGui.QAction.NoRole)
+        
+        self.editAction = QtGui.QAction(self)
+        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
+        
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.addAction(self.editAction)
+        self.tableWidget.addAction(self.addAction)
+        self.tableWidget.addAction(self.delAction)
+        self.tableWidget.addAction(self.configureAction)
 
         self.toolBar.addAction(self.addAction)
         self.toolBar.addAction(self.delAction)
         self.toolBar.addAction(self.configureAction)
+        
+
         
         
 #===============================================================================
@@ -475,6 +489,7 @@ class NasMdiChild(QtGui.QMainWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
+        self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.editframe)
         self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
         self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
         self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
@@ -498,7 +513,7 @@ class NasMdiChild(QtGui.QMainWindow):
         
 
         self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
 
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "Конфигурировать", None, QtGui.QApplication.UnicodeUTF8))
         

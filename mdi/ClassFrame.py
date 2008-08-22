@@ -397,26 +397,26 @@ class ClassChild(QtGui.QMainWindow):
         super(ClassChild, self).__init__()
         self.connection = connection
         self.setObjectName("MainWindow")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,597).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,795,597).size()).expandedTo(self.minimumSizeHint()))
 
-        self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
+        '''self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")'''
 
-        self.frame = QtGui.QFrame(self.centralwidget)
+        '''self.frame = QtGui.QFrame(self.centralwidget)
         self.frame.setGeometry(QtCore.QRect(157,1,16,519))
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.frame.setObjectName("frame")
+        self.frame.setObjectName("frame")'''
 
-        self.widget = QtGui.QWidget(self.centralwidget)
+        '''self.widget = QtGui.QWidget(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(0,0,2,2))
         self.widget.setObjectName("widget")
 
         self.hboxlayout = QtGui.QHBoxLayout(self.widget)
-        self.hboxlayout.setObjectName("hboxlayout")
+        self.hboxlayout.setObjectName("hboxlayout")'''
 
-        self.splitter = QtGui.QSplitter(self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0,0,800,521))
+        self.splitter = QtGui.QSplitter(self)
+        self.splitter.setGeometry(QtCore.QRect(0,0,200,521))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
 
@@ -424,12 +424,13 @@ class ClassChild(QtGui.QMainWindow):
         self.treeWidget.setColumnCount(2)
         tree_header = self.treeWidget.headerItem()
         tree_header.setHidden(True)
+        self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
-        self.splitterHandle = self.splitter.createHandle()
+        #self.splitterHandle = self.splitter.createHandle()
         wwidth =  self.width()
         self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
         #self.splitter.moveSplitter(150, 0)
@@ -459,6 +460,9 @@ class ClassChild(QtGui.QMainWindow):
         self.delClassAction = QtGui.QAction(self)
         self.delClassAction.setIcon(QtGui.QIcon("images/del.png"))
         self.delClassAction.setObjectName("delClassAction")
+        self.editClassAction = QtGui.QAction(self)
+        self.editClassAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editClassAction.setObjectName("editClassAction")
 
         self.addClassNodeAction = QtGui.QAction(self)
         self.addClassNodeAction.setIcon(QtGui.QIcon("images/add.png"))
@@ -467,6 +471,10 @@ class ClassChild(QtGui.QMainWindow):
         self.delClassNodeAction = QtGui.QAction(self)
         self.delClassNodeAction.setIcon(QtGui.QIcon("images/del.png"))
         self.delClassNodeAction.setObjectName("delClassNodeAction")
+        
+        self.editClassNodeAction = QtGui.QAction(self)
+        self.editClassNodeAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editClassNodeAction.setObjectName("editClassNodeAction")
         
         #Up Class
         self.upClassAction = QtGui.QAction(self)
@@ -490,8 +498,15 @@ class ClassChild(QtGui.QMainWindow):
         
         self.retranslateUi()
         
+        self.treeWidget.addAction(self.editClassAction)
+        self.treeWidget.addAction(self.addClassAction)
+        self.treeWidget.addAction(self.delClassAction)
+
+        
+        self.tableWidget.addAction(self.editClassNodeAction)
         self.tableWidget.addAction(self.addClassNodeAction)
         self.tableWidget.addAction(self.delClassNodeAction)
+        
         
         self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
         self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
@@ -511,7 +526,8 @@ class ClassChild(QtGui.QMainWindow):
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-        
+        self.connect(self.editClassAction, QtCore.SIGNAL("triggered()"), self.editClass)
+        self.connect(self.editClassNodeAction, QtCore.SIGNAL("triggered()"), self.editNode)
         self.refresh_list()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.delNodeLocalAction()
@@ -530,6 +546,8 @@ class ClassChild(QtGui.QMainWindow):
         self.delClassAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class", None, QtGui.QApplication.UnicodeUTF8))
         self.addClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Add Node", None, QtGui.QApplication.UnicodeUTF8))
         self.delClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class Node", None, QtGui.QApplication.UnicodeUTF8))
+        self.editClassAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Class", None, QtGui.QApplication.UnicodeUTF8))
+        self.editClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Node", None, QtGui.QApplication.UnicodeUTF8))
 
 
     def addClass(self):
@@ -539,10 +557,10 @@ class ClassChild(QtGui.QMainWindow):
             self.refresh_list()
         
     
-    def editClass(self, item, index):
+    def editClass(self, *args, **kwargs):
         
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item.id)
+            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.treeWidget.currentItem().id)
         except Exception, e:
             print e
         

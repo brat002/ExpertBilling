@@ -239,6 +239,16 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.delAction.setObjectName("delAction")
         self.toolBar.addAction(self.addAction)
         self.toolBar.addAction(self.delAction)
+        
+        self.editAction = QtGui.QAction(self)
+        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
+        
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.addAction(self.editAction)
+        self.tableWidget.addAction(self.addAction)
+        self.tableWidget.addAction(self.delAction)
+
+
 
         self.retranslateUi()
         self.refresh()
@@ -246,7 +256,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
 
         self.connect(self.addAction,  QtCore.SIGNAL("triggered()"), self.add_period)
         self.connect(self.delAction,  QtCore.SIGNAL("triggered()"), self.del_period)
-
+        self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.edit_period)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_period)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         self.delNodeLocalAction()
@@ -261,7 +271,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        
     def add_period(self):
         child=AddSettlementPeriod(connection=self.connection)
         child.exec_()
