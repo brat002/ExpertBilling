@@ -23,7 +23,9 @@ class bpplotAdapter(object):
         try:
             curs.execute(selstr)
         except psycopg2.ProgrammingError, perr:
-            raise perr        
+            raise perr 
+            #print perr
+            #return None
         
         return curs.fetchall()
     

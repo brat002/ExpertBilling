@@ -2829,6 +2829,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #self.tarif_treeWidget.setFixedSize(QtCore.QSize(150,551))
         self.tarif_treeWidget.setObjectName("tarif_treeWidget")
         self.tarif_treeWidget.headerItem().setText(0,"")
+        self.tarif_treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
         tree_header = self.tarif_treeWidget.headerItem()
         tree_header.setHidden(True)
@@ -2862,17 +2863,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
 
-        self.addAction = QtGui.QAction(u"Добавить польователя", self)
+        self.addAction = QtGui.QAction(u"Добавить пользователя", self)
         self.addAction.setIcon(QtGui.QIcon("images/user_add.png"))
 
 
         self.delAction = QtGui.QAction(u"Удалить пользователя",self)
         self.delAction.setIcon(QtGui.QIcon("images/user_delete.png"))
 
-        self.addTarifAction = QtGui.QAction(self)
+        self.addTarifAction = QtGui.QAction(u"Добавить тарифный план",self)
         self.addTarifAction.setIcon(QtGui.QIcon("images/folder_add.png"))
         
-        self.delTarifAction = QtGui.QAction(self)
+        self.delTarifAction = QtGui.QAction(u"Удалить тарифный план",self)
         self.delTarifAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         
         self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
@@ -2892,8 +2893,20 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера доступа',self)
         self.actionDeleteAccount.setIcon(QtGui.QIcon("images/del.png"))
-                
         
+        self.editTarifAction = QtGui.QAction(self)
+        self.editTarifAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editTarifAction.setObjectName("editTarifAction")
+        
+        self.editAccountAction = QtGui.QAction(self)
+        self.editAccountAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editAccountAction.setObjectName("editAccountAction")
+                
+        self.tarif_treeWidget.addAction(self.editTarifAction)
+        self.tarif_treeWidget.addAction(self.addTarifAction)
+        self.tarif_treeWidget.addAction(self.delTarifAction)
+        
+        self.tableWidget.addAction(self.editAccountAction)
         self.tableWidget.addAction(self.addAction)
         self.tableWidget.addAction(self.delAction)
         self.tableWidget.addAction(self.transactionAction)
@@ -2952,7 +2965,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connect(self.actionAddAccount, QtCore.SIGNAL("triggered()"), self.accountAdd)
         
         self.connect(self.actionDeleteAccount, QtCore.SIGNAL("triggered()"), self.accountDelete)
-                     
+        
+        self.connect(self.editTarifAction, QtCore.SIGNAL("triggered()"), self.editTarif)
+        self.connect(self.editAccountAction, QtCore.SIGNAL("triggered()"), self.editframe)
+        
         self.retranslateUi()
         self.refreshTree()
         self.refresh()
@@ -2963,6 +2979,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
     def retranslateUi(self):
         self.tarif_treeWidget.clear()
+        self.editTarifAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.editAccountAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+
 
     def addTarif(self):
         tarifframe = TarifFrame(connection=self.connection)
@@ -3007,8 +3026,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.refreshTree()
         self.refresh()
         
-    def editTarif(self, item, num):
-        model = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(item.text(0)))
+    def editTarif(self, *args, **kwargs):
+        model = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
         
         tarifframe = TarifFrame(connection=self.connection, model=model)
         #self.parent.workspace.addWindow(tarifframe)
@@ -3078,7 +3097,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
 
     @connlogin
-    def editframe(self, col, row):
+    def editframe(self, *args, **kwargs):
         #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
         print id

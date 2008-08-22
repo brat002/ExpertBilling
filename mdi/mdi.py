@@ -490,7 +490,9 @@ def login():
 		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
 
 	else:
-	    sys.exit()
+	    #sys.exit()
+	    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Соединение не установлено."))
+	    return None
                 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

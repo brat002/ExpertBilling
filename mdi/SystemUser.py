@@ -305,6 +305,10 @@ class SystemUserChild(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        
+        self.editUserAction = QtGui.QAction(self)
+        self.editUserAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editUserAction.setObjectName("openUserAction")
 
         self.addUserAction = QtGui.QAction(self)
         self.addUserAction.setIcon(QtGui.QIcon("images/add.png"))
@@ -316,8 +320,14 @@ class SystemUserChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.addUserAction)
         self.toolBar.addAction(self.delUserAction)
         
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.addAction(self.editUserAction)
+        self.tableWidget.addAction(self.addUserAction)
+        self.tableWidget.addAction(self.delUserAction)
+        
         self.connect(self.addUserAction, QtCore.SIGNAL("triggered()"), self.addframe)
         self.connect(self.delUserAction, QtCore.SIGNAL("triggered()"), self.delete)
+        self.connect(self.editUserAction, QtCore.SIGNAL("triggered()"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.retranslateUi()
         self.refresh()
@@ -334,6 +344,7 @@ class SystemUserChild(QtGui.QMainWindow):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
         self.addUserAction.setText(QtGui.QApplication.translate("MainWindow", "addUser", None, QtGui.QApplication.UnicodeUTF8))
         self.delUserAction.setText(QtGui.QApplication.translate("MainWindow", "delUserAction", None, QtGui.QApplication.UnicodeUTF8))
+        self.editUserAction.setText(QtGui.QApplication.translate("MainWindow", "Редактировать", None, QtGui.QApplication.UnicodeUTF8))
 
     def addframe(self):
         addf = SystemUserFrame(connection=self.connection)

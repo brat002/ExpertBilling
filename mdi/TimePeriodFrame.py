@@ -210,6 +210,23 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.delConsAction = QtGui.QAction(self)
         self.delConsAction.setIcon(QtGui.QIcon("images/del.png"))
         self.delConsAction.setObjectName("delConsAction")
+        
+        self.editPeriodAction = QtGui.QAction(self)
+        self.editPeriodAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editConsAction = QtGui.QAction(self)
+        self.editConsAction.setIcon(QtGui.QIcon("images/open.png"))
+        
+        self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.treeWidget.addAction(self.editPeriodAction)
+        self.treeWidget.addAction(self.addPeriodAction)
+        self.treeWidget.addAction(self.delPeriodAction)
+        
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.addAction(self.editConsAction)
+        self.tableWidget.addAction(self.addConsAction)
+        self.tableWidget.addAction(self.delConsAction)
+        
+        
         self.toolBar.addAction(self.addPeriodAction)
         self.toolBar.addAction(self.delPeriodAction)
         self.toolBar.addSeparator()
@@ -230,7 +247,8 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
         self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
-        
+        self.connect(self.editPeriodAction, QtCore.SIGNAL("triggered()"), self.editPeriod)
+        self.connect(self.editConsAction, QtCore.SIGNAL("triggered()"), self.editNode)
         
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
@@ -251,6 +269,9 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.delPeriodAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить период", None, QtGui.QApplication.UnicodeUTF8))
         self.addConsAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить составляющую", None, QtGui.QApplication.UnicodeUTF8))
         self.delConsAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить составляющую", None, QtGui.QApplication.UnicodeUTF8))
+        self.editPeriodAction.setText(QtGui.QApplication.translate("MainWindow", "Редактировать", None, QtGui.QApplication.UnicodeUTF8))
+        self.editConsAction.setText(QtGui.QApplication.translate("MainWindow", "Редактировать", None, QtGui.QApplication.UnicodeUTF8))
+
         self.tableWidget.setColumnHidden(0, True)
 
     def addPeriod(self):

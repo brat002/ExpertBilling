@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 from xml.sax.handler import ContentHandler
 from xml.sax import parse
 from bpcdQImage import bpcdQImage as bpQImage
+#from psycopg2 import ProgrammingError
 #from bpplotadapter import bpplotAdapter
 
 import time
