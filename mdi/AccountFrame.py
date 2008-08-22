@@ -3140,7 +3140,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
             if y==10:
                 headerItem.setIcon(QtGui.QIcon("images/money_true.png"))
                 headerItem.setToolTip(u"На счету достаточно средств")
-                
             else:
                 headerItem.setIcon(QtGui.QIcon("images/false.png"))
             value=u""

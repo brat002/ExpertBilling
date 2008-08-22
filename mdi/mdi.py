@@ -21,8 +21,8 @@ from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog
-from Reports import ReportPropertiesDialog, NetFlowReport, StatReport, ReportSelectDialog
-
+from Reports import NetFlowReport, StatReport, ReportSelectDialog
+from CardsFrame import CardsChild
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -134,8 +134,8 @@ class MainWindow(QtGui.QMainWindow):
             self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
 
     @connlogin
-    def reportProperties(self):
-        child = ReportPropertiesDialog(connection = connection)
+    def cardsFrame(self):
+        child = CardsChild(connection = connection)
         self.workspace.addWindow(child)
         child.show()
 	
@@ -262,12 +262,12 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
 
-        self.reportPropertiesAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
+        self.cardsAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
                         self.tr("&Paste"), self)
         #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
-        self.reportPropertiesAct.setStatusTip(self.tr("Настройка отчёта "))
+        self.cardsAct.setStatusTip(self.tr("Карты экспресс-оплаты"))
 
-        self.connect(self.reportPropertiesAct, QtCore.SIGNAL("triggered()"), self.reportProperties)
+        self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
         
         self.netflowReportAct=QtGui.QAction(QtGui.QIcon(":/images/paste.png"), self.tr("&NetFlow"), self)
         
@@ -393,7 +393,7 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.cutAct)
         self.editToolBar.addAction(self.copyAct)
         self.editToolBar.addAction(self.pasteAct)
-        self.editToolBar.addAction(self.reportPropertiesAct)
+        self.editToolBar.addAction(self.cardsAct)
         self.editToolBar.addAction(self.netflowReportAct)
         self.editToolBar.addAction(self.statwinAct)
 	self.editToolBar.setMovable(False)

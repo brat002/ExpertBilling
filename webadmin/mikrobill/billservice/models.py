@@ -481,7 +481,7 @@ class Account(models.Model):
 
     class Admin:
         ordering = ['user']
-        list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
+        #list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
         #list_filter = ('username')
 
     def __str__(self):
@@ -728,24 +728,22 @@ class Ports(models.Model):
     name = models.CharField(max_length=32)
     description = models.CharField(max_length=255)
     
-class Series(models.Model):
-    serial = models.PositiveIntegerField(unique=True)
-    date_start = models.DateTimeField()
-    date_end = models.DateTimeField()
-    nominal = models.FloatField()
-    pin_length = models.IntegerField()
-    letters = models.BooleanField(default=True)
-    numbers = models.BooleanField(default=True)
-    deleted = models.BooleanField(default=False)
-    sold = models.DateTimeField(default=False)
+class CardGroup(models.Model):
+    name = models.CharField(max_length=255)
+    disabled=models.BooleanField(default=False)
     
 class Card(models.Model):
-    series = models.ForeignKey(Series)
+    card_group = models.ForeignKey(CardGroup)
+    series = models.IntegerField()
     pin = models.CharField(max_length=255)
-    sold = models.DateTimeField()
+    sold = models.DateTimeField(blank=True, null=True)
     nominal = models.FloatField()
-    activated = models.DateTimeField()
-    activated_by = models.ForeignKey(Account)
+    activated = models.DateTimeField(blank=True, null=True)
+    activated_by = models.ForeignKey(Account, blank=True, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    disabled= models.BooleanField(default=False, null=True)
+    
     
     
     
