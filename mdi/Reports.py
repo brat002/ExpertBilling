@@ -224,7 +224,9 @@ class TransactionsReport(QtGui.QMainWindow):
     def delete_transaction(self):
         ids = []
         import Pyro
-        for index in self.tableWidget.selectedIndexes()[0:6]:
+        for index in self.tableWidget.selectedIndexes():
+            if index.column()>1:
+                continue
             i=unicode(self.tableWidget.item(index.row(), 0).text())
             try:
                 ids.append(int(i))

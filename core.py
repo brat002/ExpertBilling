@@ -1901,7 +1901,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 
-if __name__ == "__main__":
+
+def main():
 
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 #===============================================================================
@@ -1946,3 +1947,7 @@ if __name__ == "__main__":
 
 
 #===============================================================================
+
+if __name__ == "__main__":
+    main()
+    

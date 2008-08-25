@@ -57,18 +57,13 @@ class ParseError(Exception):
 
 	def __init__(self, msg=None, **data):
 		self.msg=msg
-		if data.has_key("filename"):
-			self.filename=data["filename"]
-		elif data.has_key("linenumber"):
+		if data.has_key("linenumber"):
 			self.linenumber=data["linenumber"]
 	
 	def __str__(self):
 		str=""
-		if hasattr(self, "filename"):
-			str+=self.filename
-			if hasattr(self, "linenumber"):
-				str+="(%d)" % self.linenumber
-			str+=": "
+		if hasattr(self, "linenumber"):
+			str+="(%d): " % self.linenumber
 		str+="Parse error"
 		if self.msg:
 			str+=": %s" % self.msg
@@ -78,8 +73,9 @@ class ParseError(Exception):
 
 class Attribute:
 	def __init__(self, name, code, datatype, vendor="", values={}):
-		assert datatype in ("string", "ipaddr", "integer", "date",
-					"octets", "abinary", "ipv6addr", "ifid")
+		if datatype not in ("string", "ipaddr", "integer", "date",
+				"octets", "abinary", "ipv6addr", "ifid"):
+			raise ValueError, "Invalid data type"
 		self.name=name
 		self.code=code
 		self.type=datatype
@@ -105,10 +101,10 @@ class Dictionary:
 
 	def __init__(self, dict=None, *dicts):
 		"""
-		@param dict:  dictionary file to read
-		@type dict:   string
-		@param dicts: list of dictionary files to read
-		@type dicts:  sequence of strings
+		@param dict:  path of dictionary file or file-like object to read
+		@type dict:   string or file
+		@param dicts: list of dictionaries
+		@type dicts:  sequence of strings or files
 		"""
 		self.vendors=bidict.BiDict()
 		self.vendors.Add("", 0)
@@ -121,9 +117,13 @@ class Dictionary:
 		for i in dicts:
 			self.ReadDictionary(i)
 	
+	def __len__(self):
+                return len(self.attributes)
 
 	def __getitem__(self, key):
 		return self.attributes[key]
+	def __contains__(self, key):
+		return key in self.attributes
 
 
 	def has_key(self, key):
@@ -132,12 +132,15 @@ class Dictionary:
 
 	def __ParseAttribute(self, state, tokens):
 		if not len(tokens) in [4,5]:
-			raise ParseError, "Incorrect number of tokens for attribute definition"
+			raise ParseError(
+				"Incorrect number of tokens for attribute definition",
+				linenumber=state["line"])
 
 		if len(tokens)>=5 and tokens[4].find("=")==-1:
 			vendor=tokens[4]
 			if not self.vendors.HasForward(vendor):
-				raise ParseError, "Unknown vendor " + vendor
+				raise ParseError("Unknown vendor " + vendor,
+					linenumber=state["line"])
 		else:
 			vendor=state["vendor"]
 
@@ -146,7 +149,8 @@ class Dictionary:
 		if not datatype in \
 			("string", "ipaddr", "integer", "date",
 			"octets", "abinary", "ipv6addr", "ifid"):
-			raise ParseError, "Illegal type: " + datatype
+			raise ParseError("Illegal type: " + datatype,
+					linenumber=state["line"])
 
 		if vendor:
 			key=(self.vendors.GetForward(vendor),code)
@@ -159,14 +163,16 @@ class Dictionary:
 
 	def __ParseValue(self, state, tokens):
 		if len(tokens)!=4:
-			raise ParseError, "Incorrect number of tokens for attribute definition"
+			raise ParseError("Incorrect number of tokens for value definition",
+					linenumber=state["line"])
 
 		(attr, key, value)=tokens[1:]
 
 		try:
 			adef=self.attributes[attr]
 		except KeyError:
-			raise ParseError, "Value defined for unknown attribute " + attr
+			raise ParseError("Value defined for unknown attribute " + attr,
+					linenumber=state["line"])
 
 		if adef.type=="integer":
 			value=int(value)
@@ -176,7 +182,8 @@ class Dictionary:
 
 	def __ParseVendor(self, state, tokens):
 		if len(tokens)!=3:
-			raise ParseError, "Incorrect number of tokens for vendor definition"
+			raise ParseError("Incorrect number of tokens for vendor definition",
+					linenumber=state["line"])
 
 		(vendorname,vendor)=tokens[1:]
 		self.vendors.Add(vendorname, int(vendor))
@@ -184,24 +191,29 @@ class Dictionary:
 
 	def __ParseBeginVendor(self, state, tokens):
 		if len(tokens)!=2:
-			raise ParseError, "Incorrect number of tokens for begin-vendor statement"
+			raise ParseError("Incorrect number of tokens for begin-vendor statement",
+					linenumber=state["line"])
 
 		vendor=tokens[1]
 
 		if not self.vendors.HasForward(vendor):
-			raise ParseError, "Unknown vendor %s in begin-vendor statement" % vendor
+			raise ParseError("Unknown vendor %s in begin-vendor statement" % vendor,
+					linenumber=state["line"])
 
 		state["vendor"]=vendor
 
 
 	def __ParseEndVendor(self, state, tokens):
 		if len(tokens)!=2:
-			raise ParseError, "Incorrect number of tokens for end-vendor statement"
+			raise ParseError(
+				"Incorrect number of tokens for end-vendor statement",
+				linenumber=state["line"])
 
 		vendor=tokens[1]
 
 		if state["vendor"]!=vendor:
-			raise ParseError, "Ending non-open vendor" + vendor
+			raise ParseError("Ending non-open vendor" + vendor,
+					linenumber=state["line"])
 
 		state["vendor"]=""
 
@@ -212,15 +224,22 @@ class Dictionary:
 		Reads a RADIUS dictionary file and merges its contents into the
 		class instance.
 
-		@param file: Name of dictionary file to parse
-		@type file:  string
+		@param file: Name of dictionary file to parse or a file-like object
+		@type file:  string or file-like object
 		"""
 
-		fd=open(file, "rt")
+		mustclose=False
+		if isinstance(file, (str, unicode)):
+			mustclose=True
+			fd=open(file, "rt")
+		else:
+			fd=file
 		state={}
 		state["vendor"]=""
+                state["line"]=0
 
-		for line in fd.xreadlines():
+		for line in fd.readlines():
+			state["line"]+=1
 			line=line.split("#", 1)[0].strip()
 
 			tokens=line.split()
@@ -238,5 +257,6 @@ class Dictionary:
 			elif tokens[0]=="END-VENDOR":
 				self.__ParseEndVendor(state, tokens)
 
-		fd.close()
+		if mustclose:
+			fd.close()
 

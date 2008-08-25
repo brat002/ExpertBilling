@@ -53,7 +53,7 @@ class Packet(UserDict.UserDict):
 		"""
 		UserDict.UserDict.__init__(self)
 		self.code=code
-		if id!=None:
+		if id is not None:
 			self.id=id
 		else:
 			self.id=CreateID()
@@ -75,8 +75,9 @@ class Packet(UserDict.UserDict):
 
 
 	def CreateReply(self, **attributes):
-	    return Packet(id=self.id, secret=self.secret, authenticator=self.authenticator,
-				dict=self.dict, **attributes)
+		return Packet(id=self.id, secret=self.secret,
+                        authenticator=self.authenticator, dict=self.dict,
+                        **attributes)
 
 
 	def _DecodeValue(self, attr, value):
@@ -94,7 +95,7 @@ class Packet(UserDict.UserDict):
 
 
 	def _EncodeKeyValues(self, key, values):
-		if type(key)!=types.StringType:
+                if not isinstance(key, str):
 			return (key, values)
 
 		attr=self.dict.attributes[key]
@@ -104,12 +105,11 @@ class Packet(UserDict.UserDict):
 		else:
 			key=attr.code
 
-		return (key,
-			map(lambda v,a=attr,s=self: s._EncodeValue(a,v), values))
+		return (key, [self._EncodeValue(attr, v) for v in values])
 
 
 	def _EncodeKey(self, key):
-		if type(key)!=types.StringType:
+                if not isinstance(key, str): 
 			return key
 
 		attr=self.dict.attributes[key]
@@ -156,10 +156,17 @@ class Packet(UserDict.UserDict):
 			res.append(self._DecodeValue(attr, v))
 		return res
 
+        def __contains__(self, key):
+		return self.has_key(key)
 
 
 	def has_key(self, key):
-		return self.data.has_key(self._EncodeKey(key))
+		try:
+			return self.data.has_key(self._EncodeKey(key))
+		except KeyError:
+			return False
+        def __delitem__(self, key):
+                del self.data[self._EncodeKey(key)]
 
 
 	def __setitem__(self, key, item):
@@ -167,12 +174,12 @@ class Packet(UserDict.UserDict):
 			(key,item)=self._EncodeKeyValues(key, [item])
 			self.data[key]=item
 		else:
-			assert(type(item)==types.ListType)
-			self.data[key]=[item]
+			assert isinstance(item, list)
+			self.data[key]=item
 
 
 	def keys(self):
-		return map(self._DecodeKey, self.data.keys())
+		return [self._DecodeKey(key) for key in self.data.keys()]
 
 
 	def CreateAuthenticator():
@@ -200,7 +207,7 @@ class Packet(UserDict.UserDict):
 
 		All RADIUS requests have a ID which is used to identify
 		a request. This is used to detect retries and replay
-		attacks. This functino returns a suitable random number
+		attacks. This function returns a suitable random number
 		that can be used as ID.
 
 		@return: ID number
@@ -235,18 +242,18 @@ class Packet(UserDict.UserDict):
 
 	def VerifyReply(self, reply, rawreply=None):
 		if reply.id!=self.id:
-			return 0
+			return False
 
-		if rawreply==None:
+		if rawreply is None:
 			rawreply=reply.ReplyPacket()
 
 		hash=md5.new(rawreply[0:4] + self.authenticator +
 			rawreply[20:] + self.secret).digest()
 
-		if hash!=reply.authenticator:
-			return 0
+                if hash!=rawreply[4:20]:
+			return False
 
-		return 1
+		return True
 
 
 	def _PktEncodeAttribute(self, key, value):
@@ -403,7 +410,21 @@ class AcctPacket(Packet):
 
 
 	def CreateReply(self, **attributes):
-	    return AcctPacket(AccountingResponse, self.id, self.secret, self.authenticator, dict=self.dict, **attributes)
+		return AcctPacket(AccountingResponse, self.id,
+			self.secret, self.authenticator, dict=self.dict,
+			**attributes)
+
+        def VerifyAcctRequest(self):
+                """Verify request authenticator
+
+                @return: True if verification failed else False
+                @rtype: boolean
+                """
+                assert(self.raw_packet)
+                hash=md5.new(self.raw_packet[0:4] + 16*"\x00" + 
+                                self.raw_packet[20:] + self.secret).digest()
+
+                return hash==self.authenticator
 
 
 	def RequestPacket(self):
@@ -418,7 +439,7 @@ class AcctPacket(Packet):
 
 		attr=self._PktEncodeAttributes()
 
-		if self.id==None:
+		if self.id is None:
 			self.id=self.CreateID()
 
 		header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))

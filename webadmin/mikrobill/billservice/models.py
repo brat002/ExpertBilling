@@ -634,10 +634,6 @@ class RawNetFlowStream(models.Model):
     out_index = models.IntegerField()
     packets = models.IntegerField()
     octets = models.IntegerField()
-    #sysuptime start flow aggregate
-    start = models.PositiveIntegerField()
-    #sysuptime flow send
-    finish = models.PositiveIntegerField()
     src_port = models.IntegerField()
     dst_port = models.IntegerField()
     tcp_flags = models.IntegerField()

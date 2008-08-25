@@ -6,7 +6,8 @@ import struct
 
 
 def EncodeString(str):
-	assert len(str)<=253
+	if len(str)>253:
+		raise ValueError, "Can only encode strings of <= 253 characters"
 
 	return str
 
@@ -41,7 +42,7 @@ def DecodeDate(num):
 
 
 def EncodeAttr(datatype, value):
-	if datatype=="string":
+	if datatype in ("string", "octets"):
 		return EncodeString(value)
 	elif datatype=="ipaddr":
 		return EncodeAddress(value)
@@ -50,11 +51,11 @@ def EncodeAttr(datatype, value):
 	elif datatype=="date":
 		return EncodeDate(value)
 	else:
-		return value
+		raise ValueError, "Unknown attribute type %s" % datatype
 	
 
 def DecodeAttr(datatype, value):
-	if datatype=="string":
+	if datatype in ("string", "octets"):
 		return DecodeString(value)
 	elif datatype=="ipaddr":
 		return DecodeAddress(value)
@@ -63,6 +64,6 @@ def DecodeAttr(datatype, value):
 	elif datatype=="date":
 		return DecodeDate(value)
 	else:
-		return value
+		raise ValueError, "Unknown attribute type %s" % datatype
 	
 

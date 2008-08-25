@@ -314,9 +314,9 @@ def in_period(time_start, length, repeat_after, now=None):
             tnc = now-datetime.timedelta(seconds=ost)
             #Когда это закончится
             tkc = tnc+datetime.timedelta(seconds=length)
-            print time_start, delta_days.seconds
+            #print time_start, delta_days.seconds
             if now>=tnc and now<=tkc:
-                print "WEEK TRUE"
+                #print "WEEK TRUE"
                 return True
             return False
         elif repeat_after=='MONTH':
