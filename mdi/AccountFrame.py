@@ -8,6 +8,8 @@ import traceback
 from helpers import Object as Object
 from helpers import dateDelim
 from helpers import connlogin
+from helpers import setFirstActive
+from helpers import tableHeight
 from types import BooleanType
 import copy
 
@@ -2830,17 +2832,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #self.tarif_treeWidget.setGeometry(QtCore.QRect(0,0,221,551))
         #self.tarif_treeWidget.setFixedSize(QtCore.QSize(150,551))
         self.tarif_treeWidget.setObjectName("tarif_treeWidget")
-        self.tarif_treeWidget.headerItem().setText(0,"")
+        #self.tarif_treeWidget.headerItem().setText(0,"")
         self.tarif_treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
-        tree_header = self.tarif_treeWidget.headerItem()
-        tree_header.setHidden(True)
+
 
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
-
+        
         #self.tableWidget.setAlternatingRowColors(True)
-        self.tableWidget = tableFormat(self.tableWidget) 
+        self.tableWidget = tableFormat(self.tableWidget)
+        
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
         columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
@@ -2848,6 +2850,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         makeHeaders(columns, self.tableWidget)
             
+        
+        tree_header = self.tarif_treeWidget.headerItem()
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
+        hght = self.tableWidget.horizontalHeader().maximumHeight()
+        sz = QtCore.QSize()
+        sz.setHeight(hght)
+        tree_header.setSizeHint(0,sz)
         self.setCentralWidget(self.splitter)
         
         self.splitter.setSizes([self.width() / 5, self.width() - (self.width() / 5)])
@@ -2973,8 +2982,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.retranslateUi()
         self.refreshTree()
+        setFirstActive(self.tarif_treeWidget)
         self.refresh()
-        
         self.delNodeLocalAction()
         self.addNodeLocalAction()
         
@@ -3024,8 +3033,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
                 print e
                 self.connection.rollback()
                 return
-        self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(0))
+        #self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(0))
         self.refreshTree()
+        try:
+            setFirstActive(self.tarif_treeWidget)
+        except Exception, ex:
+            print ex
         self.refresh()
         
     def editTarif(self, *args, **kwargs):
@@ -3155,6 +3168,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #self.tablewidget.setShowGrid(False)
 
     def refreshTree(self):
+        curItem = -1
+        try:
+            curItem = self.tarif_treeWidget.indexOfTopLevelItem(self.tarif_treeWidget.currentItem())
+        except Exception, ex:
+            print ex
         self.tarif_treeWidget.clear()
         #tariffs = Tariff.objects.all().order_by("id")
         tariffs = self.connection.sql("SELECT * FROM billservice_tariff WHERE deleted=False ORDER BY id ASC;")
@@ -3175,6 +3193,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             #if index is not None and index.id == item.id:
             #    #self.tarif_treeWidget.setCurrentItem(item)
             #    item.setSelected(True)
+        if curItem != -1:
+            self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
             
     def refresh(self, item=None, k=''):
         #print item

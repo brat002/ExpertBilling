@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import setFirstActive
 
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -422,14 +423,20 @@ class ClassChild(QtGui.QMainWindow):
 
         self.treeWidget = QtGui.QTreeWidget(self.splitter)
         self.treeWidget.setColumnCount(2)
-        tree_header = self.treeWidget.headerItem()
-        tree_header.setHidden(True)
+
         self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
+        tree_header = self.treeWidget.headerItem()
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Цвет", None, QtGui.QApplication.UnicodeUTF8))
+        hght = self.tableWidget.horizontalHeader().maximumHeight()
+        sz = QtCore.QSize()
+        sz.setHeight(hght)
+        tree_header.setSizeHint(0,sz)
         #self.splitterHandle = self.splitter.createHandle()
         wwidth =  self.width()
         self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
@@ -529,6 +536,12 @@ class ClassChild(QtGui.QMainWindow):
         self.connect(self.editClassAction, QtCore.SIGNAL("triggered()"), self.editClass)
         self.connect(self.editClassNodeAction, QtCore.SIGNAL("triggered()"), self.editNode)
         self.refresh_list()
+        try:
+            setFirstActive(self.treeWidget)
+            self.refreshTable()
+        except Exception, ex:
+            print "Error in setting first element active: ",ex
+            
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
@@ -584,6 +597,12 @@ class ClassChild(QtGui.QMainWindow):
                 self.connection.rollback()
 
             self.refresh_list()
+            
+            try:
+                setFirstActive(self.treeWidget)
+                self.refreshTable()
+            except Exception, ex:
+                print ex
         
         
     def savePosition(self, direction):
@@ -649,6 +668,11 @@ class ClassChild(QtGui.QMainWindow):
         self.savePosition(direction=u"down")
         
     def refresh_list(self):
+        curItem = -1
+        try:
+            curItem = self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        except Exception, ex:
+            print ex
         self.treeWidget.clear()
         classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC;")
         
@@ -658,6 +682,9 @@ class ClassChild(QtGui.QMainWindow):
             item.setText(0, clas.name)
             
             item.setBackgroundColor(1, QtGui.QColor(clas.color))
+            
+        if curItem != -1:
+            self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
 
 
     def addNode(self):
