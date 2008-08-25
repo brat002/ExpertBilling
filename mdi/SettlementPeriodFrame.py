@@ -8,6 +8,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 
+
 class AddSettlementPeriod(QtGui.QDialog):
     def __init__(self, connection,model=None):
         super(AddSettlementPeriod, self).__init__()

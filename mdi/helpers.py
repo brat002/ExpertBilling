@@ -61,6 +61,15 @@ def connlogin(func):
             QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Действие не авторизовано."))
     return relogfunc
 
+def setFirstActive(listWidget):
+    try:
+        if isinstance(listWidget, QtGui.QTreeWidget):
+            listWidget.setCurrentItem(listWidget.headerItem())
+        elif listWidget.rowCount > 0:
+            listWidget.setCurrentItem(listWidget.item(0, 0))
+    except Exception, ex:
+        print ex
+
 def format_update (x,y):
     if y!='Null':
         if type(y)==StringType or type(y)==UnicodeType:
