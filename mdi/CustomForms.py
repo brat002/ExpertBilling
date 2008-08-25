@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui, QtSql
 from Reports import TransactionsReport
 from helpers import makeHeaders
 from helpers import tableFormat
+from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName
 
 
@@ -367,8 +368,10 @@ class ConnectDialog(QtGui.QDialog):
             self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
             self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
             self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
-            height = self.tableWidget.fontMetrics().height()
-            self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
+            #height = self.tableWidget.fontMetrics().height()
+            #self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
+            #print height
+            self.tableWidget.verticalHeader().setDefaultSectionSize(tableHeight)
             self.tableWidget.setModel(self.model)
             self.tableWidget.setGeometry(QtCore.QRect(0,150,341,128))
             self.tableWidget.setObjectName("tableWidget")

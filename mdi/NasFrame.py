@@ -153,6 +153,7 @@ class AddNasFrame(QtGui.QDialog):
 
         self.secret_label = QtGui.QLabel(self.identify_groupBox)
         self.secret_label.setGeometry(QtCore.QRect(10,102,131,20))
+        
         self.secret_label.setObjectName("secret_label")
 
         self.nas_name = QtGui.QLineEdit(self.identify_groupBox)
@@ -165,6 +166,7 @@ class AddNasFrame(QtGui.QDialog):
 
         self.nas_secret = QtGui.QLineEdit(self.identify_groupBox)
         self.nas_secret.setGeometry(QtCore.QRect(140,102,221,20))
+        self.nas_secret.setEchoMode(QtGui.QLineEdit.Password)
         self.nas_secret.setObjectName("nas_secret")
         self.maintabWidget.addTab(self.general_tab,"")
 

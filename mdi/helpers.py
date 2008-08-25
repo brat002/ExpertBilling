@@ -8,8 +8,11 @@ import os
 
 dateDelim = "."
 connectDBName = "exbillusers"
+tableHeight = 20
 
-def tableFormat(table):        
+def tableFormat(table):
+    #setTableHeight(table)
+    #table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height()+3)
     table.setFrameShape(QtGui.QFrame.Panel)
     table.setFrameShadow(QtGui.QFrame.Sunken)
     #table.setAlternatingRowColors(True)
@@ -30,6 +33,7 @@ def tableFormat(table):
     hh.setClickable(True)
     hh.setMovable(False)
     hh.ResizeMode(QtGui.QHeaderView.Stretch)
+    
     return table
 
 def createHeader(text):
@@ -64,11 +68,18 @@ def connlogin(func):
 def setFirstActive(listWidget):
     try:
         if isinstance(listWidget, QtGui.QTreeWidget):
-            listWidget.setCurrentItem(listWidget.headerItem())
+            listWidget.setCurrentItem(listWidget.topLevelItem(0))
         elif listWidget.rowCount > 0:
             listWidget.setCurrentItem(listWidget.item(0, 0))
     except Exception, ex:
         print ex
+        
+def setTableHeight(tableWidget):
+    try:
+        height = tableWidget.fontMetrics().height()
+        tableWidget.verticalHeader().setDefaultSectionSize(height+3)
+    except Exception, ex:
+        print "Error in setTableHeight: ", ex
 
 def format_update (x,y):
     if y!='Null':

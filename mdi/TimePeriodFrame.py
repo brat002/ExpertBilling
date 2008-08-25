@@ -179,7 +179,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         
         tree_header = self.treeWidget.headerItem()
-        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Периоды", None, QtGui.QApplication.UnicodeUTF8))
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
@@ -243,6 +243,16 @@ class TimePeriodChild(QtGui.QMainWindow):
 
         self.retranslateUi()
         self.refresh()
+        try:
+            setFirstActive(self.treeWidget)
+            self.refreshTable()
+        except Exception, ex:
+            print "Error when setting first element active: ", ex
+        #self.treeWidget.setCurrentItem(self.treeWidget.headerItem().child(1))
+        #print self.treeWidget.headerItem().childCount()
+        #print self.treeWidget.currentItem()
+        #print self.treeWidget.indexOfTopLevelItem()
+        #self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(0))
         self.connect(self.addPeriodAction, QtCore.SIGNAL("triggered()"), self.addPeriod)
         self.connect(self.delPeriodAction, QtCore.SIGNAL("triggered()"), self.delPeriod)
         
@@ -283,6 +293,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
 
     def addPeriod(self):
+        
         text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);
         print text        
         if text[0].isEmpty()==True and text[1]==True:
@@ -326,7 +337,11 @@ class TimePeriodChild(QtGui.QMainWindow):
                 
             #self.timeperiod_list_edit.setCurrentIndex(0)
             self.refresh()
-
+            try:
+                setFirstActive(self.treeWidget)
+                self.refreshTable()
+            except Exception, ex:
+                print ex
 
     def editPeriod(self):
         model = self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d;" % self.getTimeperiodId())
@@ -376,6 +391,7 @@ class TimePeriodChild(QtGui.QMainWindow):
                 self.connection.commit()
             except Exception, e:
                 self.connection.rollback()
+
             self.refreshTable()
         
     def editNode(self):
@@ -443,6 +459,11 @@ class TimePeriodChild(QtGui.QMainWindow):
 
     def refresh(self):
         #self.timeperiod_list_edit.clear()
+        curItem = -1
+        try:
+            curItem = self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        except Exception, ex:
+            print ex
         self.treeWidget.clear()
 
         periods=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY id ASC")
@@ -452,9 +473,12 @@ class TimePeriodChild(QtGui.QMainWindow):
             
             item.setText(0, period.name)
             item.id = period.id
+            #print item
             #self.timeperiod_list_edit.addItem(item)
             #self.
-        
+        if curItem != -1:
+            self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
+            
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
             self.delConsAction.setDisabled(True)
