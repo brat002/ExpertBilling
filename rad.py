@@ -10,6 +10,7 @@ from SocketServer import DatagramRequestHandler
 from threading import Thread
 import dictionary, packet
 
+    
 from utilites import in_period, create_speed_string
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
@@ -18,6 +19,23 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
+
+dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+
+pool = PooledDB(
+    mincached=3,
+    maxcached=10,
+    blocking=True,
+    creator=psycopg2,
+    dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                           settings.DATABASE_USER,
+                                                           settings.DATABASE_HOST,
+                                                           settings.DATABASE_PASSWORD)
+)
+global numauth, numacct
+
+numauth=0
+numacct=0
 def get_accesstype(packetobject):
     """
     Returns access type name by which a user connects to the NAS
@@ -83,13 +101,12 @@ class HandleAuth(HandleBase):
             #print speeds
 
             for speed in speeds:
-                
                 if in_period(speed[0],speed[1],speed[2])==True:
-                    print speed
+                    #print speed
                     i=0
                     for k in xrange(0, len(speed[3:])):
                         s=speed[3+k]
-                        print s
+                        #print s
                         if s==0:
                             res=0
                         elif s=='':
@@ -101,14 +118,13 @@ class HandleAuth(HandleBase):
                         i+=1
                     break
                     
-
             if speeds==[]:
                 result=defaults
             if result==[]:
                 return "0/0"
-            print result
+            #print result
             result_params=create_speed_string(result)
-            print "params=", result_params
+            #print "params=", result_params
 
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
@@ -120,17 +136,13 @@ class HandleAuth(HandleBase):
     def handle(self):
         #TO-DO: Добавить проверку на balance_blocked
 
-        #for key,value in self.packetobject.items():
-        #    print self.packetobject._DecodeKey(key),self.packetobject[key][0]
-
-        #simple_log(packet=self.packetobject)
 
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
         #print 1
         if row==None:
             self.cur.close()
-            
             return self.auth_NA()
+        
         #print 2
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed = row
         #Проверка на то, указан ли сервер доступа
@@ -160,7 +172,7 @@ class HandleAuth(HandleBase):
            self.replypacket.AddAttribute('Service-Type', 2)
            self.replypacket.AddAttribute('Framed-Protocol', 1)
            self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-           self.replypacket.AddAttribute('Framed-Routing', 0)
+           #self.replypacket.AddAttribute('Framed-Routing', 0)
            self.create_speed(tarif_id, speed=speed)
            self.cur.close()
            self.connection.close()
@@ -214,7 +226,7 @@ class HandleDHCP(HandleBase):
             result=[]
             i=0
             for speed in speeds:
-                print speed[0],speed[1],speed[2]
+                #print speed[0],speed[1],speed[2]
                 if in_period(speed[0],speed[1],speed[2])==True:
                     for s in speed[3:]:
                         if s==0:
@@ -229,7 +241,7 @@ class HandleDHCP(HandleBase):
                 result=defaults
     
             result_params=create_speed_string(result)
-            print "params=", result_params
+            #print "params=", result_params
 
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
@@ -240,7 +252,7 @@ class HandleDHCP(HandleBase):
 
         if row==None:
             self.cur.close()
-            print 1
+            #print 1
             return self.auth_NA()
 
     
@@ -249,10 +261,10 @@ class HandleDHCP(HandleBase):
         if int(nas_id)!=int(self.nas_id):
            self.cur.close()
            self.connection.close()
-           print 2
+           #print 2
            return self.auth_NA()
 
-        print 4
+        #print 4
         self.replypacket.code=2
         self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
         #self.replypacket.AddAttribute('Framed-Routing', 0)
@@ -429,11 +441,18 @@ class BaseAuth(DatagramRequestHandler):
 class RadiusAuth(BaseAuth):
 
       def handle(self):
+        global numauth
+        if numauth>=50:
+            print "PREVENTING DoS"
+            
+            return
+        
+        numauth+=1
         t = clock()
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
-
+        
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
@@ -442,23 +461,36 @@ class RadiusAuth(BaseAuth):
             packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
             returndata=authobject.ReturnPacket()
+            del coreconnect
+            del packetfromcore
+            del authobject
         elif access_type in ['DHCP'] :
             coreconnect = HandleDHCP(packetobject=packetobject)
             packetfromcore=coreconnect.handle()
             packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
             returndata=authobject.ReturnPacket()
-            
-
+            del coreconnect
+            del packetfromcore
+            del authobject
+        
         self.socket.sendto(returndata,addrport)
-
-        del packetfromcore
+        #print numauth
+        numauth-=1
+        del data
+        del addrport
         del packetobject
+        del access_type
+        del returndata
         print "AUTH:%.20f" % (clock()-t)
 
 class RadiusAcct(BaseAuth):
 
       def handle(self):
+        global numacct
+        if numacct>=100:
+            return "PREVENTING ACCT DoS"
+        numacct+=1
         t = clock()
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
@@ -467,13 +499,15 @@ class RadiusAcct(BaseAuth):
 
         coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0])
         packetfromcore = coreconnect.handle()
-
-        #replyobj=packet.AcctPacket(id=requestpacket.id, code=packetfromcore.code, secret=packetfromcore.secret, authenticator=requestpacket.authenticator, dict=dict)
         returndat=packetfromcore.ReplyPacket()
         self.socket.sendto(returndat,addrport)
         print "ACC:%.20f" % (clock()-t)
         #del coreconnect
+        #print numacct
+        numacct-=1
         del packetfromcore
+        del coreconnect
+        del returndat
 
 
 
@@ -506,25 +540,18 @@ def setpriority(pid=None,priority=1):
     handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
     win32process.SetPriorityClass(handle, priorityclasses[priority])
 
-if __name__ == "__main__":
+def main():
 
-    pool = PooledDB(
-        mincached=3,
-        maxcached=60,
-        blocking=True,
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                               settings.DATABASE_USER,
-                                                               settings.DATABASE_HOST,
-                                                               settings.DATABASE_PASSWORD)
-    )
     if os.name=='nt':
         setpriority(priority=4)
 
-    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+    
     server_auth = Starter(("0.0.0.0", 1812), RadiusAuth)
     server_auth.start()
 
     server_acct = Starter(("0.0.0.0", 1813), RadiusAcct)
     server_acct.start()
-print 123
+    
+if __name__ == "__main__":
+
+    main()

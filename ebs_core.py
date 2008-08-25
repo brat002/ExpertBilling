@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#-*-coding:utf-8-*-
 
 ###########################################################################
 # configure these paths:
@@ -6,8 +6,8 @@ LOGFILE = '/var/log/ebs_core.log'
 PIDFILE = '/var/run/ebs_core.pid'
 
 # and let USERPROG be the main function of your project
-import accounting
-USERPROG = accounting.main
+import core
+USERPROG = core.main
 ###########################################################################
 
 #based on J�rgen Hermanns http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66012

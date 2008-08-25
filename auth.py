@@ -45,7 +45,11 @@ class Auth:
         
     def ReturnPacket(self):
             self.Reply=self.packet.CreateReply()
-            self.Reply.code=self.code
+            if self.AccessAccept:
+                self.Reply.code=self.code
+            else:
+                self.Reply.code=3
+                
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                   self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
@@ -68,18 +72,21 @@ class Auth:
         To Do: Если ядро ответило: доступ запретить-пропускаем.
         """
         if self.code!=3:
-           if self.typeauth=='PAP':
-             if self._PwDecrypt():
-                 #print "PAP Authorisation Ok"
-                 self.AccessAccept=True
-           if self.typeauth=='CHAP':
-             if self._CHAPDecrypt():
-                  #print "CHAP Authorisation Ok"
-                  self.AccessAccept=True
-           if self.typeauth=='MSCHAP2':
-             if self._MSCHAP2Decrypt():
+            if self.typeauth=='PAP':
+                if self._PwDecrypt():
+                #print "PAP Authorisation Ok"
+                    self.AccessAccept=True
+        elif self.typeauth=='CHAP':
+            if self._CHAPDecrypt():
+                #print "CHAP Authorisation Ok"
+                self.AccessAccept=True
+        elif self.typeauth=='MSCHAP2':
+            if self._MSCHAP2Decrypt():
                 #print "MSCHAP2 Authorisation Ok"
                 self.AccessAccept=True
+        else:
+            self.AccessAccept=False
+
                
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])

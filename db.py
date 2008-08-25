@@ -72,15 +72,8 @@ def get_account_data_by_username_dhcp(cursor, username):
     WHERE bsat.datetime<now() and account.ipn_mac_address='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
     return cursor.fetchone()
 
-#def get_nas_id_by_tarif_id(cursor, tarif_id):
-#    cursor.execute("""SELECT nas_nas.id, ap.access_type from nas_nas
-#    JOIN billservice_accessparameters AS ap ON ap.nas_id=nas_nas.id
-#    JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
-#    WHERE bst.id='%s'""" % tarif_id)
-#    return cursor.fetchone()
-
 def time_periods_by_tarif_id(cursor, tarif_id):
-    print 'tarif_id', tarif_id
+    #print 'tarif_id', tarif_id
     cursor.execute("""
     SELECT tpn.time_start::timestamp without time zone as time_start, tpn.length as length, tpn.repeat_after as repeat_after
     FROM billservice_timeperiodnode as tpn

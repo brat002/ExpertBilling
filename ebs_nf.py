@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+#-*-coding:utf-8-*-
 
 ###########################################################################
 # configure these paths:
-LOGFILE = '/var/log/ebs_core.log'
-PIDFILE = '/var/run/ebs_core.pid'
+LOGFILE = '/var/log/ebs_nf.log'
+PIDFILE = '/var/run/ebs_nf.pid'
 
 # and let USERPROG be the main function of your project
-import server5
-USERPROG = server5.main
+import nf
+USERPROG = nf.main
 ###########################################################################
 
 #based on J�rgen Hermanns http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66012

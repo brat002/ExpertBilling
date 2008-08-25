@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+#-*-coding:utf-8-*-
 
 ###########################################################################
 # configure these paths:
-LOGFILE = '/var/log/ebs_core.log'
-PIDFILE = '/var/run/ebs_core.pid'
+LOGFILE = '/var/log/ebs_rad.log'
+PIDFILE = '/var/run/ebs_rad.pid'
 
 # and let USERPROG be the main function of your project
-import server_new
-USERPROG = server_new.main
+import rad
+USERPROG = rad.main
 ###########################################################################
 
 #based on J�rgen Hermanns http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66012

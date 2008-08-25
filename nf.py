@@ -1,12 +1,6 @@
 #-*-coding=utf-8-*-
 
 import socket, select, struct, datetime
-##sys.path.append(os.path.abspath('c:/Python25/Scripts/'))
-##os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-##from mikrobill.nas.models import Collector, NetFlowStream
-
-##from django.conf import settings
-
 from IPy import *
 
 import settings
@@ -17,7 +11,7 @@ from DBUtils.PooledDB import PooledDB
 
 def RefreshClasses():
     trafficclasses_pool=[]
-    cur.execute("SELECT id, name, weight, store FROM nas_trafficclass ORDER BY weight DESC;")
+    cur.execute("SELECT id, name, weight, store FROM nas_trafficclass ORDER BY weight ASC;")
     traffic_classes=cur.fetchall()
     for traffic_class in traffic_classes:
         #ORDER BY tn.direction DESC - для того, чтобы сравнение начиналось с нод, описывающих транзитное направление.
@@ -26,7 +20,7 @@ def RefreshClasses():
         SELECT tn.name, tn.direction, tn.protocol, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
         tn.next_hop
         FROM nas_trafficnode as tn
-        WHERE tn.traffic_class_id=%s ORDER BY tn.direction DESC
+        WHERE tn.traffic_class_id=%s ORDER BY tn.direction DESC;
         """ % traffic_class[0]
         )
         traffic_nodes=cur.fetchall()
@@ -51,10 +45,12 @@ class TrafficNode(object):
         self.next_hop = node_data
 
 
-    def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol):
+    def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol, next_hop):
         src = IP("%s/%s" % (self.src_ip, self.src_mask))
         dst = IP("%s/%s" % (self.dst_ip, self.dst_mask))
-        res={'src':False, 'src_port':False, 'dst':False,'dst_port':False, 'protocol':False}
+        n_hop = IP(self.next_hop)
+        
+        res={'src':False, 'src_port':False, 'dst':False,'dst_port':False, 'protocol':False, 'next_hop':False}
 
         if IP(src_ip) in src:
             res['src']=True
@@ -62,6 +58,9 @@ class TrafficNode(object):
 
         if IP(dst_ip) in dst:
             res['dst']=True
+            
+        if IP(next_hop)== n_hop:
+            res['next_hop']=True
 
 
         if src_port==self.src_port or self.src_port==0:
@@ -88,10 +87,10 @@ class TrafficClass(object):
         for node in nodes:
             self.data.append(TrafficNode(node))
 
-    def check(self, src, src_port, dst, dst_port, protocol):
+    def check(self, src, src_port, dst, dst_port, protocol, next_hop):
         for node in self.data:
-            res=node.check_class(src, src_port, dst, dst_port, protocol)
-            if res['src'] and res['dst'] and res['src_port'] and res['dst_port'] and res['protocol']:
+            res=node.check_class(src, src_port, dst, dst_port, protocol, next_hop)
+            if res['src'] and res['dst'] and res['src_port'] and res['dst_port'] and res['protocol'] and res['next_hop']:
                 return self.id, res['direction']
         return False, False
 
@@ -208,7 +207,7 @@ class NetFlowPacket:
                 traffic_class=None
                 print flow
                 for traffic_class in trafficclasses_pool:
-                    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol)
+                    res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol, flow.next_hop)
                     
                     if res[0]:
                         traffic_class, direction = res
@@ -223,8 +222,6 @@ class NetFlowPacket:
                         'out_index' : flow.out_index,
                         'packets' : flow.packets,
                         'octets' : flow.octets,
-                        'start' : flow.start,
-                        'finish' : flow.finish,
                         'src_port' : flow.src_port,
                         'dst_port' : flow.dst_port,
                         'tcp_flags' : flow.tcp_flags,
@@ -242,60 +239,45 @@ class NetFlowPacket:
    
             cur.executemany("""
                         INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,start,finish,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
-                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s, %(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s)""" ,\
+                        VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s, %(start)s,%(finish)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s);""" ,\
                         flows)
             db_connection.commit()
             
-            #break
 
-
-
-
-##	def __str__(self):
-##		ret = str(self.hdr)
-##		i = 0
-##		for flow in self.flows:
-##			ret += "Flow %d: " % i
-##			ret += "%s\n" % str(flow)
-##			i += 1
-##
-##		return ret
 if __name__=='__main__':
-    pool = PooledDB(
-         mincached=1,
-         maxcached=5,
-         blocking=True,
-         creator=psycopg2,
-         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                                settings.DATABASE_USER,
-                                                                settings.DATABASE_HOST,
-                                                                settings.DATABASE_PASSWORD)
-    )
-    db_connection = pool.connection()
-    cur = db_connection.cursor()
+    main()
 
+pool = PooledDB(
+     mincached=1,
+     maxcached=5,
+     blocking=True,
+     creator=psycopg2,
+     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD)
+)
 
-    host = '0.0.0.0'
-    port = 9996
-
-    addrs = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
+db_connection = pool.connection()
+cur = db_connection.cursor()
+    
+def main ():
+    addrs = socket.getaddrinfo(settings.NF_HOST, settings.NF_PORT, socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
     socks = []
-    trafficclasses_pool = RefreshClasses()
+    
     for addr in addrs:
     	sock = socket.socket(addr[0], addr[1])
     	sock.bind(addr[4])
     	socks.append(sock)
     	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
 
-    while 1:
+    while True:
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
 		    print "Received flow packet from %s:%d" % addrport
-
-            #try:
+            trafficclasses_pool = RefreshClasses()
             NetFlowPacket(data, addrport)
-            #except:
-            #    print 'bad_packet'
+
 
