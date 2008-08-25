@@ -374,7 +374,7 @@ class CardsChild(QtGui.QMainWindow):
                     model.activated=now
                     model.activated_by_id = account.id
                     self.connection.create(model.save("billservice_card"))
-                    tr = transaction(account.id, "ACTIVATION_CARD", True, "", model.nominal, u"%s-%s" % (model.series, model.pin))
+                    tr = transaction(account.id, "ACTIVATION_CARD", True, "", model.nominal*(-1), u"%s-%s" % (model.series, model.pin))
                     self.connection.create(tr)
                     self.connection.commit()
                 

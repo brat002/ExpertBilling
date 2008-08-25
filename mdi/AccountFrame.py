@@ -1653,7 +1653,9 @@ class TarifFrame(QtGui.QDialog):
             model=Object()
             access_parameters = Object()
             
-
+            if unicode(self.tarif_name_edit.text())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
+                return
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
