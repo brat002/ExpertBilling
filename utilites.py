@@ -157,6 +157,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         except Exception, e:
             print e
             return False
+        return False
 
 
 
