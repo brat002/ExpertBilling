@@ -7,6 +7,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
+from helpers import setFirstActive
 from time import mktime
 
 import datetime, calendar
@@ -173,13 +174,20 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
         self.treeWidget = QtGui.QTreeWidget(self.splitter)
-        tree_header = self.treeWidget.headerItem()
-        tree_header.setHidden(True)
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
+        
+        
+        tree_header = self.treeWidget.headerItem()
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        hght = self.tableWidget.horizontalHeader().maximumHeight()
+        sz = QtCore.QSize()
+        sz.setHeight(hght)
+        tree_header.setSizeHint(0,sz)
+        #tree_header.setHidden(True)
         self.setCentralWidget(self.splitter)
         self.splitter.setSizes([self.width() / 5, self.width() - (self.width() / 5)])
-
+        
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0,0,692,19))
         self.menubar.setObjectName("menubar")
