@@ -697,12 +697,12 @@ class NetFlowReport(QtGui.QMainWindow):
                     octets_out_summ+=int(flow.octets)
 
                 
-                if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1=="Null"):
+                if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1==None):
                 
-                    if flow.port_name=="Null" and flow.port_name1!="Null":
+                    if flow.port_name==None and flow.port_name1!=None:
                         flow.port_name=flow.port_name1
                         flow.port_description=flow.port_description1
-                    elif flow.port_name=="Null":
+                    elif flow.port_name==None:
                         flow.port_description=''
     
                         
@@ -711,12 +711,12 @@ class NetFlowReport(QtGui.QMainWindow):
                     self.tableWidget.item(i,3).setToolTip(flow.port_description)
                 
                  
-                elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name=="Null"):
+                elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name==None):
                 
-                    if flow.port_name1=="Null" and flow.port_name!="Null":
+                    if flow.port_name1==None and flow.port_name!=None:
                         flow.port_name1 = flow.port_name
                         flow.port_description1 = flow.port_description
-                    elif flow.port_name1=="Null": 
+                    elif flow.port_name1==None: 
                         flow.port_name1=""    
                         flow.port_description1 = ""   
     
