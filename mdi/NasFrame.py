@@ -303,8 +303,7 @@ class AddNasFrame(QtGui.QDialog):
     def refillActions(self):
         self.maintabWidget.setCurrentIndex(1)
         nas_type = unicode(self.nas_comboBox.currentText())
-        if nas_type=='---':
-            return
+
         
         self.create_user_textEdit.setText(actions[nas_type]['create'])
         self.remove_user_textEdit.setText(actions[nas_type]['remove'])
@@ -315,7 +314,10 @@ class AddNasFrame(QtGui.QDialog):
         self.set_vpn_speed_textEdit.setText(actions[nas_type]['vpn_speed'])
         self.set_ipn_speed_lineEdit.setText(actions[nas_type]['ipn_speed'])
         self.pod_textEdit.setText(actions[nas_type]['pod'])
-        pass
+        if nas_type=='---':
+            self.buttonBox.setDisabled(True)
+        else:
+            self.buttonBox.setDisabled(False)
     
     def accept(self):
         """
@@ -422,6 +424,8 @@ class AddNasFrame(QtGui.QDialog):
             self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.pppoe_checkBox.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+        else:
+            self.buttonBox.setDisabled(True)
 
 
 
