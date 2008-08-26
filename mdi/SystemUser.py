@@ -7,6 +7,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import HeaderUtil
 
 
 class PasswordEditFrame(QtGui.QDialog):
@@ -289,7 +290,7 @@ class SystemUserChild(QtGui.QMainWindow):
         self.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.setDockNestingEnabled(False)
         self.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks|QtGui.QMainWindow.AnimatedDocks)
-
+        self.setname = "users_frame_header"
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setGeometry(QtCore.QRect(0,0,631,311))
         self.tableWidget.setObjectName("tableWidget")
@@ -324,13 +325,16 @@ class SystemUserChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.editUserAction)
         self.tableWidget.addAction(self.addUserAction)
         self.tableWidget.addAction(self.delUserAction)
-        
+
         self.connect(self.addUserAction, QtCore.SIGNAL("triggered()"), self.addframe)
         self.connect(self.delUserAction, QtCore.SIGNAL("triggered()"), self.delete)
         self.connect(self.editUserAction, QtCore.SIGNAL("triggered()"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.retranslateUi()
+        HeaderUtil.nullifySaved(self.setname)
         self.refresh()
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -405,8 +409,10 @@ class SystemUserChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
 
             
-        self.tableWidget.resizeColumnsToContents()
-
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
             self.delAction.setDisabled(True)

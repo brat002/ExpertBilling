@@ -8,6 +8,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import setFirstActive
+from helpers import HeaderUtil
 from time import mktime
 
 import datetime, calendar
@@ -163,7 +164,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setname = "time_frame_header"
         #self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
         #self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
 
@@ -240,11 +241,13 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.addConsAction)
         self.toolBar.addAction(self.delConsAction)
-
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         self.retranslateUi()
         self.refresh()
         try:
             setFirstActive(self.treeWidget)
+            HeaderUtil.nullifySaved(self.setname)
             self.refreshTable()
         except Exception, ex:
             print "Error when setting first element active: ", ex
@@ -439,11 +442,13 @@ class TimePeriodChild(QtGui.QMainWindow):
             self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
 
 
 
-
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 

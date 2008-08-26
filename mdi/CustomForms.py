@@ -459,10 +459,6 @@ class ConnectDialog(QtGui.QDialog):
         self.address_edit.setValidator(self.ipValidator)
         self.password_edit.setValidator(self.passValidator)
         self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
-        #self.tableWidget.clear()
-
-        #makeHeaders(columns, self.tableWidget)
-        
         self.save_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.password_label.setText(QtGui.QApplication.translate("MainWindow", "Пароль:", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("MainWindow", "Имя:", None, QtGui.QApplication.UnicodeUTF8))
@@ -511,9 +507,6 @@ class ConnectDialog(QtGui.QDialog):
             if (psd == QtGui.QValidator.Acceptable):
                 self.password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
             else:
-                print "aaaa"
-                print self._name
-                print self.name_edit.text()
                 if (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
                     self.password = self._password
                 else:
@@ -523,7 +516,6 @@ class ConnectDialog(QtGui.QDialog):
                             #print "zomg"
                             #print model.record(i).value(3).toUtf8()
                             self.password = model.record(i).value(3).toByteArray()
-                            print self.password
                             break
                     if not self.password:
                         print self.password
@@ -542,6 +534,7 @@ class ConnectDialog(QtGui.QDialog):
         except Exception, ex:
             print "accept error"
             print ex
+            
     def save(self):
         try:
             if self.address_edit.text() and (self.ipValidator.validate(self.address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable):
@@ -590,7 +583,6 @@ class ConnectDialog(QtGui.QDialog):
         
     def remove(self):
         try:
-            print "------------zomg"
             self.tableWidget.model().removeRow(self.tableWidget.selectedIndexes()[0].row())
         except Exception, ex:
             print ex

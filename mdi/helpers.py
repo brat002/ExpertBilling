@@ -13,6 +13,7 @@ tableHeight = 20
 def tableFormat(table):
     #setTableHeight(table)
     #table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height()+3)
+    table.verticalHeader().setDefaultSectionSize(tableHeight)
     table.setFrameShape(QtGui.QFrame.Panel)
     table.setFrameShadow(QtGui.QFrame.Sunken)
     #table.setAlternatingRowColors(True)
@@ -81,6 +82,37 @@ def setTableHeight(tableWidget):
     except Exception, ex:
         print "Error in setTableHeight: ", ex
 
+class HeaderUtil(object):
+    @staticmethod
+    def nullifySaved(name):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(QtCore.QByteArray()))
+        except Exception, ex:
+            print "HeaderUtil settings nullify error: ", ex
+            
+    @staticmethod
+    def saveHeader(name, table):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(table.horizontalHeader().saveState()))
+        except Exception, ex:
+            print "HeaderUtil settings save error: ", ex
+            
+    @staticmethod
+    def getHeader(name, table):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            headerState = settings.value(name, QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+
+            if not headerState.isEmpty():
+                table.horizontalHeader().restoreState(headerState)
+            else:
+                table.resizeColumnsToContents()
+        except Exception, ex:
+            print "Account frame settings error: ", ex
+            table.resizeColumnsToContents()
+            
 def format_update (x,y):
     if y!='Null' and y!='None':
         if type(y)==StringType or type(y)==UnicodeType:

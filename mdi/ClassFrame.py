@@ -6,6 +6,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import setFirstActive
+from helpers import HeaderUtil
 
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -400,22 +401,6 @@ class ClassChild(QtGui.QMainWindow):
         self.setObjectName("MainWindow")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,795,597).size()).expandedTo(self.minimumSizeHint()))
 
-        '''self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")'''
-
-        '''self.frame = QtGui.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(157,1,16,519))
-        self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.frame.setObjectName("frame")'''
-
-        '''self.widget = QtGui.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(0,0,2,2))
-        self.widget.setObjectName("widget")
-
-        self.hboxlayout = QtGui.QHBoxLayout(self.widget)
-        self.hboxlayout.setObjectName("hboxlayout")'''
-
         self.splitter = QtGui.QSplitter(self)
         self.splitter.setGeometry(QtCore.QRect(0,0,200,521))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
@@ -514,7 +499,8 @@ class ClassChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.addClassNodeAction)
         self.tableWidget.addAction(self.delClassNodeAction)
         
-        
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
         self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
         
@@ -538,6 +524,7 @@ class ClassChild(QtGui.QMainWindow):
         self.refresh_list()
         try:
             setFirstActive(self.treeWidget)
+            HeaderUtil.nullifySaved("class_frame_header")
             self.refreshTable()
         except Exception, ex:
             print "Error in setting first element active: ",ex
@@ -766,7 +753,8 @@ class ClassChild(QtGui.QMainWindow):
             self.tableWidget.setColumnHidden(0, True)
 
             i+=1
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader("class_frame_header", self.tableWidget)
         
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
@@ -781,6 +769,8 @@ class ClassChild(QtGui.QMainWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader("class_frame_header", self.tableWidget)
 
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:

@@ -10,6 +10,7 @@ from helpers import dateDelim
 from helpers import connlogin
 from helpers import setFirstActive
 from helpers import tableHeight
+from helpers import HeaderUtil
 from types import BooleanType
 import copy
 
@@ -374,7 +375,7 @@ class TarifFrame(QtGui.QDialog):
         self.speed_table.setGeometry(QtCore.QRect(9,290,595,239))
         self.speed_table.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         #-------------
-        self.speed_table = tableFormat(self.speed_table)
+        #self.speed_table = tableFormat(self.speed_table)
         #-------------
         
         self.speed_panel = QtGui.QFrame(self.tab_2)
@@ -407,7 +408,7 @@ class TarifFrame(QtGui.QDialog):
         self.timeaccess_table = QtGui.QTableWidget(self.tab_3)
         self.timeaccess_table.setGeometry(QtCore.QRect(10,90,595,436))
         #----------------
-        self.timeaccess_table = tableFormat(self.timeaccess_table)
+        #self.timeaccess_table = tableFormat(self.timeaccess_table)
         #----------------
 
         self.timeaccess_panel = QtGui.QFrame(self.tab_3)
@@ -440,7 +441,7 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget = QtGui.QTableWidget(self.tab_4)
         self.trafficcost_tableWidget.setGeometry(QtCore.QRect(8,60,601,247))
         #--------------
-        self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget)
+        #self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget)
         #--------------
         
         
@@ -468,7 +469,7 @@ class TarifFrame(QtGui.QDialog):
         self.prepaid_tableWidget = QtGui.QTableWidget(self.tab_4)
         self.prepaid_tableWidget.setGeometry(QtCore.QRect(10,370,599,121))
         #--------------
-        self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget)
+        #self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget)
         #--------------
 
         self.prepaid_traffic_cost_label = QtGui.QLabel(self.tab_4)
@@ -501,7 +502,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget = QtGui.QTableWidget(self.tab_6)
         self.onetime_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
         #--------------
-        self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
+        #self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
         #--------------
 
 
@@ -527,7 +528,7 @@ class TarifFrame(QtGui.QDialog):
         self.periodical_tableWidget = QtGui.QTableWidget(self.tab_5)
         self.periodical_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
         #--------------
-        self.periodical_tableWidget = tableFormat(self.periodical_tableWidget)
+        #self.periodical_tableWidget = tableFormat(self.periodical_tableWidget)
         #--------------
 
         self.periodical_panel = QtGui.QFrame(self.tab_5)
@@ -551,7 +552,7 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget = QtGui.QTableWidget(self.tab_7)
         self.limit_tableWidget.setGeometry(QtCore.QRect(10,40,597,486))
         #--------------------
-        self.limit_tableWidget = tableFormat(self.limit_tableWidget)
+        #self.limit_tableWidget = tableFormat(self.limit_tableWidget)
 
 
         self.limit_panel = QtGui.QFrame(self.tab_7)
@@ -577,6 +578,13 @@ class TarifFrame(QtGui.QDialog):
 
         self.retranslateUi()
         self.fixtures()
+        self.speed_table = tableFormat(self.speed_table)
+        self.timeaccess_table = tableFormat(self.timeaccess_table)
+        self.limit_tableWidget = tableFormat(self.limit_tableWidget)
+        self.periodical_tableWidget = tableFormat(self.periodical_tableWidget)
+        self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
+        self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget)
+        self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget)
         self.tabWidget.setCurrentIndex(0)
         
 #------------Connects
@@ -707,7 +715,7 @@ class TarifFrame(QtGui.QDialog):
         self.speed_min_label.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
         
         self.speed_table.clear()
-        columns=[u'Id', u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
+        columns=[u'Id',u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
         
         makeHeaders(columns, self.speed_table) 
         
@@ -2946,7 +2954,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.resize(1100,600)
 
 
-
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        
         self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
         self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
         
@@ -2983,10 +2993,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.connect(self.editTarifAction, QtCore.SIGNAL("triggered()"), self.editTarif)
         self.connect(self.editAccountAction, QtCore.SIGNAL("triggered()"), self.editframe)
-        
         self.retranslateUi()
         self.refreshTree()
         setFirstActive(self.tarif_treeWidget)
+        HeaderUtil.nullifySaved("account_frame_header")
         self.refresh()
         self.delNodeLocalAction()
         self.addNodeLocalAction()
@@ -3244,7 +3254,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
-        self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
 
     def accountEnable(self):
@@ -3287,7 +3297,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-
+    
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader("account_frame_header", self.tableWidget)
 #---------------Local actions
     def delNodeLocalAction(self):
         #print self.tableWidget.currentRow()
