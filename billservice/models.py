@@ -740,9 +740,3 @@ class Card(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     disabled= models.BooleanField(default=False, null=True)
     
-    
-    
-    
-    
-    
-    
