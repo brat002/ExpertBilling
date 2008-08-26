@@ -1307,7 +1307,8 @@ class TarifFrame(QtGui.QDialog):
     def fixtures(self):
         
         if self.model:
-            if self.model.settlement_period_id!='Null':
+            if self.model.settlement_period_id!=None:
+                self.model.settlement_period_id
                 settlement_period=self.connection.get("""SELECT * FROM billservice_settlementperiod WHERE id =%s""" % self.model.settlement_period_id)
                 self.sp_groupbox.setChecked(True)
                 if settlement_period.autostart==True:
@@ -1349,7 +1350,7 @@ class TarifFrame(QtGui.QDialog):
 
         
         if self.model:
-            if self.model.settlement_period_id!='Null':
+            if self.model.settlement_period_id!=None:
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
                 
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
@@ -1428,7 +1429,7 @@ class TarifFrame(QtGui.QDialog):
             
             #Time Access Service
             #print "self.model.time_access_service_id=", self.model.time_access_service_id
-            if 'time_access_service_id' in self.model.__dict__ and self.model.time_access_service_id!="Null" and self.model.time_access_service_id!=0:
+            if 'time_access_service_id' in self.model.__dict__ and self.model.time_access_service_id!=None and self.model.time_access_service_id!=0:
                 self.time_access_service_checkbox.setChecked(True)
                 time_access_service = self.connection.get("SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
                 self.prepaid_time_edit.setValue(time_access_service.prepaid_time)
@@ -1523,7 +1524,7 @@ class TarifFrame(QtGui.QDialog):
             
             #print "self.model.traffic_transmit_service_id=", self.model.traffic_transmit_service_id 
             #Prepaid Traffic
-            if 'traffic_transmit_service_id' in self.model.__dict__ and self.model.traffic_transmit_service_id!=0 and self.model.traffic_transmit_service_id!='Null':
+            if 'traffic_transmit_service_id' in self.model.__dict__ and self.model.traffic_transmit_service_id!=0 and self.model.traffic_transmit_service_id!=None:
                 self.transmit_service_checkbox.setChecked(True)
                 prepaid_traffic = self.connection.sql("""SELECT * FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
                 #print 'self.model.traffic_transmit_service_id', self.model.traffic_transmit_service_id
@@ -1762,21 +1763,24 @@ class TarifFrame(QtGui.QDialog):
                 model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
                 
             else:
-                model.settlement_period_id='Null'
+                model.settlement_period_id=None
                 model.reset_tarif_cost=False
                 model.cost = 0
             
-            
+            print "model_id-------"
+            print model.settlement_period_id
             model_id = self.connection.create(model.save("billservice_tariff"))
             if model_id==-1:
                 #Если не создали новую сущность
                 model_id = model.id
             else:
                 model.id = model_id 
-            
+                
+            print "model_id-------"
+            print model.id
             #Доступ по времени
             if "time_access_service_id" in model.__dict__:
-                if model.time_access_service_id!="Null":
+                if model.time_access_service_id!=None:
                     time_access_service = self.connection.get(" SELECT * FROM billservice_timeaccessservice WHERE id=%d" % self.model.time_access_service_id)
                 else:
                     time_access_service=Object()
@@ -1791,7 +1795,7 @@ class TarifFrame(QtGui.QDialog):
                     time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
                     time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
                     
-                    if self.model.time_access_service_id!='Null' and self.model.time_access_service_id!=0:
+                    if self.model.time_access_service_id!=None and self.model.time_access_service_id!=0:
                         self.connection.create(time_access_service.save("billservice_timeaccessservice"))
                         time_access_service_id = self.model.time_access_service_id
                     else:
@@ -1821,19 +1825,19 @@ class TarifFrame(QtGui.QDialog):
                         self.connection.create(time_access_node.save("billservice_timeaccessnode"))
             
             elif self.time_access_service_checkbox.checkState()==0 and "time_access_service_id" in model.__dict__:
-                if  model.time_access_service_id!="Null" and model.time_access_service_id!=0:
+                if  model.time_access_service_id!=None and model.time_access_service_id!=0:
                     #model.save()
                     self.connection.delete("DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=%d" % self.model.time_access_service_id)
                     
                     time_access_service_id=model.time_access_service_id
-                    model.time_access_service_id='Null'
+                    model.time_access_service_id=None
                     self.connection.create(model.save("billservice_tariff"))
                     self.connection.delete("DELETE FROM billservice_timeaccessservice WHERE id=%d" % time_access_service_id)
                     
-                    model.time_access_service_id = 'Null'
+                    model.time_access_service_id = None
             
                 else:
-                    model.time_access_service_id = 'Null'
+                    model.time_access_service_id = None
                     
             #Разовые услуги
             
@@ -2142,9 +2146,9 @@ class TarifFrame(QtGui.QDialog):
                     #self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
     
             elif self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0:
-                if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id!='Null' and model.traffic_transmit_service_id!=0:
+                if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id!=None and model.traffic_transmit_service_id!=0:
                     self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
-                model.traffic_transmit_service_id="Null"
+                model.traffic_transmit_service_id=None
                 
                             
         
@@ -2747,7 +2751,7 @@ class AddAccountFrame(QtGui.QDialog):
             self.vpn_ip_address_edit.setText(unicode(self.model.vpn_ip_address))
         
             #print "self.model.ipn_mac_address", self.model.ipn_mac_address
-            if self.model.ipn_mac_address=="Null" or self.model.ipn_mac_address=="":
+            if self.model.ipn_mac_address==None or self.model.ipn_mac_address=="":
                 print "assign True"
                 self.assign_ipn_ip_from_dhcp_edit.setCheckState(QtCore.Qt.Checked)
                 
@@ -2763,13 +2767,13 @@ class AddAccountFrame(QtGui.QDialog):
             self.balance_edit.setText(unicode(self.model.ballance))
             self.credit_edit.setText(unicode(self.model.credit))
             
-            if self.model.vpn_speed!="" and self.model.vpn_speed!="Null":
+            if self.model.vpn_speed!="" and self.model.vpn_speed!=None:
                 self.vpn_speed_groupBox.setChecked(True)
                 self.vpn_speed_lineEdit.setText(self.model.vpn_speed)
             else:
                 self.vpn_speed_groupBox.setChecked(False)
                 
-            if self.model.ipn_speed!="" and self.model.ipn_speed!="Null":
+            if self.model.ipn_speed!="" and self.model.ipn_speed!=None:
                 self.ipn_speed_groupBox.setChecked(True)
                 self.ipn_speed_lineEdit.setText(self.model.ipn_speed)
             else:

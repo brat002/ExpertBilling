@@ -82,16 +82,16 @@ def setTableHeight(tableWidget):
         print "Error in setTableHeight: ", ex
 
 def format_update (x,y):
-    if y!='Null':
+    if y!='Null' and y!='None':
         if type(y)==StringType or type(y)==UnicodeType:
             y=y.replace("\\", r"\\").replace(r"'", r"\'").replace(r'"', r'\"')
             print y
         return "%s='%s'" % (x,y)
     else:
-        return "%s=%s" % (x,y)
+        return "%s=%s" % (x,'Null')
 
 def format_insert(y):
-    if y=='Null':
+    if y=='None' or y == 'Null':
         return y
     elif type(y)==StringType or type(y)==UnicodeType:
         return y.replace("\\", r"\\").replace(r"'", r"\'").replace(r'"', r'\"')
@@ -102,10 +102,11 @@ def format_insert(y):
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
-            if result[key]!=None:
+            setattr(self, key, result[key])
+            '''if result[key]!=None:
                 setattr(self, key, result[key])
             else:
-                setattr(self, key, 'Null')      
+                setattr(self, key, 'Null')'''      
             
          
     def save(self, table):
@@ -120,7 +121,7 @@ class Object(object):
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'Null'", 'Null')))
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
         
         return sql
     
