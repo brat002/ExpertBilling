@@ -369,7 +369,7 @@ class CardsChild(QtGui.QMainWindow):
                 #print "int(i)", int(i)
                 model=self.connection.get("SELECT id, card_group_id, series, disabled, activated_by_id, pin, nominal,start_date, end_date::timestamp without time zone FROM billservice_card WHERE id=%s" % int(i))
 
-                if model.activated_by_id=="Null" and model.end_date>=now and model.disabled==False:
+                if model.activated_by_id==None and model.end_date>=now and model.disabled==False:
                     model.sold=now
                     model.activated=now
                     model.activated_by_id = account.id

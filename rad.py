@@ -1,5 +1,4 @@
 #-*-coding=utf-8-*-
-from log import simple_log
 
 from auth import Auth
 from time import clock
@@ -19,6 +18,10 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
+try:
+    import win32api,win32process,win32con
+except:
+    pass
 
 dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
 
@@ -304,13 +307,15 @@ class HandleAcct(HandleBase):
     def handle(self):
 
         self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % self.nasip)
-        rows = self.cur.fetchone()
-        if rows==None:
+        row = self.cur.fetchone()
+        if row==None:
             return self.acct_NA(self.replypacket)
+
+        self.replypacket.secret=str(row[0])
         #Проверяем знаем ли мы такого пользователя
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
-        simple_log(packet=self.packetobject)
+        #simple_log(packet=self.packetobject)
 
         self.cur.execute(
         """
@@ -326,8 +331,7 @@ class HandleAcct(HandleBase):
 
         account_id, time_access=row
 
-        secret=str(rows[0])
-        self.replypacket.secret=str(secret)
+
         self.replypacket.code=5
         now=datetime.datetime.now()
 
@@ -527,7 +531,7 @@ def setpriority(pid=None,priority=1):
         2 is normal priority.  Default sets the priority of the current
         python process but can take any valid process ID. """
 
-    import win32api,win32process,win32con
+    
 
     priorityclasses = [win32process.IDLE_PRIORITY_CLASS,
                        win32process.BELOW_NORMAL_PRIORITY_CLASS,

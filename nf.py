@@ -7,11 +7,11 @@ import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
-
+trafficclasses_pool = []
 
 def RefreshClasses():
-    trafficclasses_pool=[]
-    cur.execute("SELECT id, name, weight, store FROM nas_trafficclass ORDER BY weight ASC;")
+    pool = []
+    cur.execute("SELECT id, name, weight, store, passthrough FROM nas_trafficclass ORDER BY weight, passthrough;")
     traffic_classes=cur.fetchall()
     for traffic_class in traffic_classes:
         #ORDER BY tn.direction DESC - для того, чтобы сравнение начиналось с нод, описывающих транзитное направление.
@@ -24,9 +24,9 @@ def RefreshClasses():
         """ % traffic_class[0]
         )
         traffic_nodes=cur.fetchall()
-        trafficclasses_pool.append(TrafficClass(traffic_class, nodes=traffic_nodes))
+        pool.append(TrafficClass(traffic_class, nodes=traffic_nodes))
 
-    return trafficclasses_pool
+    return pool
 
 class TrafficNode(object):
     """
@@ -82,7 +82,8 @@ class TrafficClass(object):
         self.id, \
         self.name, \
         self.weight, \
-        self.store = class_data
+        self.store,\
+        self.passthtough = class_data
         self.data=[]
         for node in nodes:
             self.data.append(TrafficNode(node))
@@ -205,11 +206,15 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
 
                 traffic_class=None
-                print flow
+                #print flow
+                match = False
                 for traffic_class in trafficclasses_pool:
                     res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol, flow.next_hop)
                     
-                    if res[0]:
+                    if res[0] and match==False:
+                        if traffic_class.passthtough==False:
+                            match=True
+                            
                         traffic_class, direction = res
                         flows.append(
                         {
@@ -244,22 +249,7 @@ class NetFlowPacket:
             db_connection.commit()
             
 
-if __name__=='__main__':
-    main()
 
-pool = PooledDB(
-     mincached=1,
-     maxcached=5,
-     blocking=True,
-     creator=psycopg2,
-     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                            settings.DATABASE_USER,
-                                                            settings.DATABASE_HOST,
-                                                            settings.DATABASE_PASSWORD)
-)
-
-db_connection = pool.connection()
-cur = db_connection.cursor()
     
 def main ():
     addrs = socket.getaddrinfo(settings.NF_HOST, settings.NF_PORT, socket.AF_UNSPEC,
@@ -277,7 +267,26 @@ def main ():
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
 		    print "Received flow packet from %s:%d" % addrport
+            global trafficclasses_pool
             trafficclasses_pool = RefreshClasses()
             NetFlowPacket(data, addrport)
+
+pool = PooledDB(
+     mincached=1,
+     maxcached=5,
+     blocking=True,
+     creator=psycopg2,
+     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD)
+)
+
+db_connection = pool.connection()
+cur = db_connection.cursor()
+
+if __name__=='__main__':
+    main()
+
 
 

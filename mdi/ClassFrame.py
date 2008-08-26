@@ -12,36 +12,52 @@ class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(ClassEdit, self).__init__()
         self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,346,106).size()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,329,186).size()).expandedTo(self.minimumSizeHint()))
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,329,186).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,329,186).size()))
         
         self.connection = connection
         self.connection.commit()
         self.model=model
         self.color=''
 
+
+
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(180,70,161,32))
+        self.buttonBox.setGeometry(QtCore.QRect(160,150,161,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
 
-        self.name_edit = QtGui.QLineEdit(self)
-        self.name_edit.setGeometry(QtCore.QRect(65,21,241,20))
+        self.params_groupBox = QtGui.QGroupBox(self)
+        self.params_groupBox.setGeometry(QtCore.QRect(10,10,311,131))
+        self.params_groupBox.setObjectName("params_groupBox")
+
+        self.name_edit = QtGui.QLineEdit(self.params_groupBox)
+        self.name_edit.setGeometry(QtCore.QRect(60,20,241,20))
         self.name_edit.setObjectName("name_edit")
 
-        self.name_label = QtGui.QLabel(self)
-        self.name_label.setGeometry(QtCore.QRect(11,21,48,20))
-        self.name_label.setObjectName("name_label")
-
-        self.color_edit = QtGui.QPushButton(self)
-        self.color_edit.setGeometry(QtCore.QRect(310,20,25,20))
+        self.color_edit = QtGui.QToolButton(self.params_groupBox)
+        self.color_edit.setGeometry(QtCore.QRect(164,50,131,20))
+        self.color_edit.setArrowType(QtCore.Qt.NoArrow)
         self.color_edit.setObjectName("color_edit")
 
-        self.store_edit = QtGui.QCheckBox(self)
-        self.store_edit.setGeometry(QtCore.QRect(60,50,151,18))
+        self.name_label = QtGui.QLabel(self.params_groupBox)
+        self.name_label.setGeometry(QtCore.QRect(6,20,48,20))
+        self.name_label.setObjectName("name_label")
+
+        self.store_edit = QtGui.QCheckBox(self.params_groupBox)
+        self.store_edit.setGeometry(QtCore.QRect(60,80,271,18))
         self.store_edit.setObjectName("store_edit")
+
+        self.passthrough_checkBox = QtGui.QCheckBox(self.params_groupBox)
+        self.passthrough_checkBox.setGeometry(QtCore.QRect(60,100,271,19))
+        self.passthrough_checkBox.setObjectName("passthrough_checkBox")
+
+        self.color_label = QtGui.QLabel(self.params_groupBox)
+        self.color_label.setGeometry(QtCore.QRect(60,50,101,21))
+        self.color_label.setObjectName("color_label")
+
 
         self.retranslateUi()
         
@@ -59,9 +75,12 @@ class ClassEdit(QtGui.QDialog):
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Направление трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры направления", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить всю статистику", None, QtGui.QApplication.UnicodeUTF8))
+        self.passthrough_checkBox.setText(QtGui.QApplication.translate("Dialog", "Пометить и продолжить", None, QtGui.QApplication.UnicodeUTF8))
+        self.color_label.setText(QtGui.QApplication.translate("Dialog", "Цвет направления", None, QtGui.QApplication.UnicodeUTF8))
     
     def setColor(self):    
         color = QtGui.QColorDialog.getColor(QtCore.Qt.green, self)
@@ -77,6 +96,7 @@ class ClassEdit(QtGui.QDialog):
             self.color=unicode(self.model.color)
             self.color_edit.setStyleSheet("QWidget { background-color: %s }" % self.color)
             self.store_edit.setCheckState(self.model.store == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.passthrough_checkBox.setCheckState(self.model.passthrough == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
             #self.store_editself.pptp_edit.checkState()==2
         
@@ -97,6 +117,7 @@ class ClassEdit(QtGui.QDialog):
         model.color=self.color
            
         model.store=self.store_edit.checkState()==2
+        model.passthrough = self.passthrough_checkBox.checkState()==2
         #model.save()
         try:
             self.connection.create(model.save("nas_trafficclass"))
@@ -669,6 +690,8 @@ class ClassChild(QtGui.QMainWindow):
             item.setText(0, clas.name)
             
             item.setBackgroundColor(1, QtGui.QColor(clas.color))
+            if clas.passthrough==True:
+                item.setIcon(1, QtGui.QIcon("images/down.png"))
             
         if curItem != -1:
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
