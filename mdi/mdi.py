@@ -1,4 +1,4 @@
-#-*-coding=utf-8*-
+﻿#-*-coding=utf-8*-
 import sys
 from PyQt4 import QtCore, QtGui
 
@@ -468,45 +468,45 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
         sys.exit()'''
 
 def login():
-    
+    child = ConnectDialog()
     while True:
-	child = ConnectDialog()
-	if child.exec_()==1:
-	    try:
-		connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-		password = unicode(child.password.toHex())
-		#f = open('tmp', 'wb')
-		#f.write(child.password.toHex())
-		connection._setNewConnectionValidator(antiMungeValidator())
-		print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
-		connection.test()
-		return connection    
-    
-	    except Exception, e:
-		print "login connection error"
-		if isinstance(e, Pyro.errors.ConnectionDeniedError):
-		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-		else:
-		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+	
+    	if child.exec_()==1:
+    	    try:
+        		connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
+        		password = unicode(child.password.toHex())
+        		#f = open('tmp', 'wb')
+        		#f.write(child.password.toHex())
+        		connection._setNewConnectionValidator(antiMungeValidator())
+        		print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+        		connection.test()
+        		return connection
 
-	else:
-	    #sys.exit()
-	    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Соединение не установлено."))
-	    return None
+    	    except Exception, e:
+        		print "login connection error"
+        		if isinstance(e, Pyro.errors.ConnectionDeniedError):
+        		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
+        		else:
+        		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+
+    	else:
+    	    return None
                 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
    
     connection = login() 
+    if connection is None:
+        sys.exit()
     try:
-	mainwindow = MainWindow()
-	mainwindow.show()
-	#app.setStyle("cleanlooks")
-	app.setStyleSheet(open("./style.qss","r").read())
-	sys.exit(app.exec_())
+    	mainwindow = MainWindow()
+    	mainwindow.show()
+    	#app.setStyle("cleanlooks")
+    	app.setStyleSheet(open("./style.qss","r").read())
+    	sys.exit(app.exec_())
     except Exception, ex:
-	print "main-----------"
-	print ex
+    	print "main-----------"
+    	print ex
 
     #QtGui.QStyle.SH_Table_GridLineColor
     
