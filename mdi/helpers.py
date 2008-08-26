@@ -135,10 +135,18 @@ class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
             setattr(self, key, result[key])
-            '''if result[key]!=None:
-                setattr(self, key, result[key])
-            else:
-                setattr(self, key, 'Null')'''      
+        """
+        if result[key]!=None:
+            setattr(self, key, result[key])
+        else:
+            setattr(self, key, 'Null')
+        """
+
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])  
+        
+        #print dir(self)          
             
          
     def save(self, table):
@@ -162,6 +170,22 @@ class Object(object):
     
     def __call__(self):
         return self.id
+    
+    def hasattr(self, attr):
+        if attr in self.__dict__:
+            return True
+        return False
+    
+    def isnull(self, attr):
+        if self.hasattr(attr):
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+                return False
+            
+        return True
+    
+
+        
+
     
 
 class sqliteDbAccess(object):

@@ -3,14 +3,9 @@
 Модуль содержит класс для проверки прав на авторизацию
 """
 import packet
-#import md5,struct
 import struct
-#import sha as SHA
-#import md4
-#import pyDes as DES
 
 from Crypto.Cipher import DES
-#from pyDes import ECB
 from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
@@ -39,7 +34,7 @@ class Auth:
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-        self._CheckAuth()
+        self.AccessAccept = self._CheckAuth()
         self.attrs=packetfromcore._PktEncodeAttributes()
 
         
@@ -56,14 +51,14 @@ class Auth:
         
     def _DetectTypeAuth(self):
         if self.packet.has_key('User-Password'):
-            self.typeauth='PAP'
+            return 'PAP'
         elif self.packet.has_key('CHAP-Password'):
-               self.typeauth='CHAP'
+            return 'CHAP'
         elif self.packet.has_key('MS-CHAP-Challenge'):
-               self.typeauth='MSCHAP2'
+            return 'MSCHAP2'
         else:
-            self.typeauth='UNKNOWN'
-        return self.typeauth
+            return 'UNKNOWN'
+        
     
     def _CheckAuth(self):
         """
@@ -74,37 +69,25 @@ class Auth:
         if self.code!=3:
             if self.typeauth=='PAP':
                 if self._PwDecrypt():
-                #print "PAP Authorisation Ok"
-                    self.AccessAccept=True
-        elif self.typeauth=='CHAP':
-            if self._CHAPDecrypt():
-                #print "CHAP Authorisation Ok"
-                self.AccessAccept=True
-        elif self.typeauth=='MSCHAP2':
-            if self._MSCHAP2Decrypt():
-                #print "MSCHAP2 Authorisation Ok"
-                self.AccessAccept=True
-        else:
-            self.AccessAccept=False
+                    return True
+            elif self.typeauth=='CHAP':
+                if self._CHAPDecrypt():
+                    return True
+            elif self.typeauth=='MSCHAP2':
+                if self._MSCHAP2Decrypt():
+                    return True
+        return False
 
                
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])
         self.AuthenticatorChallenge=self.packet['MS-CHAP-Challenge'][0]
-        if self.NTResponse==self._GenerateNTResponse(self.AuthenticatorChallenge, self.PeerChallenge, self.plainusername, self.plainpassword):
-            return True
-        else:
-            return False
-
+        return self.NTResponse==self._GenerateNTResponse(self.AuthenticatorChallenge, self.PeerChallenge, self.plainusername, self.plainpassword)
         
     def _CHAPDecrypt(self):
         (ident , password)=struct.unpack('!B16s',self.packet['CHAP-Password'][0])
         pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet['CHAP-Challenge'][0])
-        if md5.new(pck).digest()==password:
-            return True
-        else:
-            return False
-        
+        return md5.new(pck).digest()==password
 
     def _PwDecrypt(self):
         """
@@ -134,10 +117,7 @@ class Auth:
         while pw.endswith("\x00"):
         	pw=pw[:-1]
         	
-        if pw==password:
-            return True
-        else:
-            return False
+        return pw==password
         
     #Функции для генерации MSCHAP2 response
     def _convert_key(self, key):
@@ -179,7 +159,6 @@ class Auth:
         return chr(ordbyte)
 
     def _ChallengeHash(self, PeerChallenge, AuthenticatorChallenge, username):
-        
     	return SHA.new("%s%s%s" % (PeerChallenge, AuthenticatorChallenge, username)).digest()[0:8]
 
     def _NtPasswordHash(self, password, utf16=True):
@@ -188,6 +167,7 @@ class Auth:
     	The NT password hash is a MD4 hash of the UTF-16 little endian
     	encoding of the password.
     	"""
+        
     	if utf16==True:
     	    pw=password.encode("utf-16-le")
     	else:
@@ -205,8 +185,7 @@ class Auth:
         """
         challenge = self._ChallengeHash(peerchallenge, authchallenge, username)
         passwordhash = self._NtPasswordHash(password)
-        response = self._ChallengeResponse(challenge, passwordhash)
-        return response
+        return self._ChallengeResponse(challenge, passwordhash)
 
     def _ChallengeResponse(self, challenge, pwhash):
     	"""Calculate a response to a password challenge.
@@ -225,7 +204,7 @@ class Auth:
     	return resp
     
     def _MSchapSuccess(self):
-        return struct.pack("!BBB42s", 26,45, self.ident, self._GenerateAuthenticatorResponse())
+        return struct.pack("!BBB42s", 26, 45, self.ident, self._GenerateAuthenticatorResponse())
 
 
     def _GenerateAuthenticatorResponse(self):

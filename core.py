@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import time, datetime, os, sys
-from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string, ipn_manipulate
+from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
 import threading
@@ -65,11 +65,13 @@ def format_insert(y):
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
-	    setattr(self, key, result[key])
-            '''if result[key]!=None:
-                setattr(self, key, result[key])
-            else:
-                setattr(self, key, 'Null')'''
+            setattr(self, key, result[key])
+        """
+        if result[key]!=None:
+            setattr(self, key, result[key])
+        else:
+            setattr(self, key, 'Null')
+        """
 
 
         for key in kwargs:
@@ -98,6 +100,19 @@ class Object(object):
         return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
     
     def __call__(self):
+        return self.id
+    
+    def hasattr(self, attr):
+        if attr in self.__dict__:
+            return True
+        return False
+    
+    def isnull(self, attr):
+        if self.hasattr(attr):
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+                return False
+            
+        return True
         return self.id
 
 def comparator(d, s):
@@ -1347,6 +1362,33 @@ class settlement_period_service_dog(Thread):
                         cur.execute("""
                             INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
                             """ % account_id)
+                connection.commit()
+            
+            cur.execute("""
+            SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
+                        WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
+            FROM billservice_account as account
+            LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
+                        WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
+            JOIN billservice_tariff_onetime_services as ots ON ots.tariff_id=tarif.id
+            JOIN billservice_onetimeservice as service ON service.id=ots.onetimeservice_id
+            WHERE (account.ballance+account.credit)>0 and oth.id is Null
+            """)
+            rows = cur.fetchall()
+            for row in rows:
+                account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
+                transaction(
+                cursor=cur,
+                type='ONETIME_SERVICE',
+                account=account_id,
+                approved=True,
+                tarif=tarif_id,
+                summ=cost,
+                description=u"Снятие денег по разовой услуге %s" % service_name
+                )
+                cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s,%s,now());" % (accounttarif_id, service_id))
+                
                 connection.commit()
             time.sleep(120)
 
