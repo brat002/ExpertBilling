@@ -7,7 +7,7 @@ import datetime, calendar
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
-
+from helpers import HeaderUtil
 
 class AddSettlementPeriod(QtGui.QDialog):
     def __init__(self, connection,model=None):
@@ -72,6 +72,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         self.name_label.setBuddy(self.name_edit)
 
         self.retranslateUi()
+
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
 
@@ -88,7 +89,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         self.setTabOrder(self.length_seconds_edit,self.buttonBox)
 
         self.fixtures()
-
+        
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
         self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало в", None, QtGui.QApplication.UnicodeUTF8))
@@ -203,7 +204,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.connection=connection
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,827,476).size()).expandedTo(self.minimumSizeHint()))
-
+        self.setname = "setper_frame_period"
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -252,8 +253,10 @@ class SettlementPeriodChild(QtGui.QMainWindow):
 
 
         self.retranslateUi()
+        HeaderUtil.nullifySaved(self.setname)
         self.refresh()
-
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
 
         self.connect(self.addAction,  QtCore.SIGNAL("triggered()"), self.add_period)
         self.connect(self.delAction,  QtCore.SIGNAL("triggered()"), self.del_period)
@@ -311,7 +314,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
-
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def refresh(self):
 
         #periods=SettlementPeriod.objects.all().order_by('id')
@@ -331,7 +335,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             self.tableWidget.setColumnHidden(0, True)
             self.tableWidget.setRowHeight(i, 14)
             i+=1
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
             
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:

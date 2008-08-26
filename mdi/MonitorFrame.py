@@ -7,6 +7,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
+from helpers import HeaderUtil
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -69,14 +70,20 @@ class MonitorFrame(QtGui.QMainWindow):
         self.toolBar.addSeparator()
         self.toolBar.addWidget(self.allTimeCheckbox)
         self.toolBar.addWidget(self.pushbutton)
+        
+        
 
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)
         QtCore.QObject.connect(self.actionResetSession, QtCore.SIGNAL("triggered()"), self.reset_action)
-        
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         QtCore.QObject.connect(self.userCombobox,   QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.fixtures)
         self.retranslateUi()
+        self.firsttime = True
         self.fixtures()
+        HeaderUtil.nullifySaved("monitor_frame_header")
         self.refresh_users()
+        self.firsttime = True
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -145,10 +152,17 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.session_status, i, 10)
             self.tableWidget.setRowHeight(i, 14)
             i+=1
-            
-        self.tableWidget.resizeColumnsToContents()
+        if self.firsttime and sessions:
+            self.tableWidget.resizeColumnsToContents()
+            self.firsttime = False
+            print "firsttime"
+        else:
+            HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
+        
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.setSortingEnabled(True)
+        
+
         
     def refresh_users(self):
         if self.selected_user is None:
@@ -157,5 +171,9 @@ class MonitorFrame(QtGui.QMainWindow):
             for user in users:
                 self.userCombobox.addItem(unicode(user.username))
                 
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader("monitor_frame_header", self.tableWidget)
+
+    
             
         

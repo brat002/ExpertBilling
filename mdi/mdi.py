@@ -403,14 +403,14 @@ class MainWindow(QtGui.QMainWindow):
         self.statusBar().showMessage(self.tr("Ready"))
 
     def readSettings(self):
-        settings = QtCore.QSettings("Trolltech", "MDI Example")
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         pos = settings.value("pos", QtCore.QVariant(QtCore.QPoint(200, 200))).toPoint()
         size = settings.value("size", QtCore.QVariant(QtCore.QSize(400, 400))).toSize()
         self.move(pos)
         self.resize(size)
 
     def writeSettings(self):
-        settings = QtCore.QSettings("Trolltech", "MDI Example")
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("pos", QtCore.QVariant(self.pos()))
         settings.setValue("size", QtCore.QVariant(self.size()))
 

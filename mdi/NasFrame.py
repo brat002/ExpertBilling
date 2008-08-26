@@ -6,6 +6,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
+from helpers import HeaderUtil
 
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),

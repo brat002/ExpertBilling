@@ -6,6 +6,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
+from helpers import HeaderUtil
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
@@ -59,7 +60,9 @@ class TransactionsReport(QtGui.QMainWindow):
         self.user_edit = QtGui.QComboBox(self)
         self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
         self.user_edit.setObjectName("user_edit")
-
+        
+        
+        
         self.date_start = QtGui.QDateTimeEdit(self)
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
@@ -71,6 +74,13 @@ class TransactionsReport(QtGui.QMainWindow):
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.date_start.setDateTime(settings.value("trans_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("trans_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
 
         self.date_start_label = QtGui.QLabel(self)
         self.date_start_label.setMargin(10)
@@ -220,6 +230,12 @@ class TransactionsReport(QtGui.QMainWindow):
         #self.write_off.setText(unicode(write_off))
         #self.write_on.setText(unicode(write_on))
         #self.ballance.setText(unicode(write_on-write_off))
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("trans_date_start", QtCore.QVariant(self.date_start.dateTime()))
+            settings.setValue("trans_date_end", QtCore.QVariant(self.date_end.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
         
     def delete_transaction(self):
         ids = []
@@ -464,6 +480,9 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
         
     def accept(self):
+        self.users = []
+        self.classes = []
+        self.nas = None
         for x in xrange(0, self.selected_users_listWidget.count()):
             self.users.append(self.selected_users_listWidget.item(x).id)
             
@@ -484,7 +503,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.current_page=0
-        
+        self.setname = "netflow_frame_header"
         self.protocols_reverse = {
                   '0':'',
                   '37': 'ddp',
@@ -557,7 +576,8 @@ class NetFlowReport(QtGui.QMainWindow):
         self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
         self.configureAction.setObjectName("configureAction")
         self.toolBar.addAction(self.configureAction)
-        
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
         
         QtCore.QObject.connect(self.button_start, QtCore.SIGNAL("clicked()"), self.startPage)
@@ -573,6 +593,7 @@ class NetFlowReport(QtGui.QMainWindow):
         columns = ['#', u'Аккаунт', u'Трафик', u'Сетевой протокол', u'IP источника', u'Порт источника', u'IP получателя',  u'Порт получателя', u'Передано байт', u'Дата']
         makeHeaders(columns, self.tableWidget)
         self.tableWidget.setColumnHidden(0, False)
+        HeaderUtil.nullifySaved(self.setname)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -605,6 +626,8 @@ class NetFlowReport(QtGui.QMainWindow):
             return self.protocols_reverse['%s' % value]
         return value
         
+    def saveHeader(self, *args):
+        HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def configure(self):
         if self.child.exec_()!=1:
             return
@@ -668,6 +691,7 @@ class NetFlowReport(QtGui.QMainWindow):
             
             sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
             
+        #print self.child.users
         import time
         a=time.clock()
         flows = self.connection.sql(sql)
@@ -758,7 +782,8 @@ class NetFlowReport(QtGui.QMainWindow):
             c+=1
 
         #self.tableWidget.sortByColumn(3)        
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
         #self.tableWidget.resizeRowsToContents()
         #self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         #self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
@@ -1025,6 +1050,13 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.date_start_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.date_start_dateTimeEdit.setCalendarPopup(True)
         self.date_start_dateTimeEdit.setObjectName("date_start_dateTimeEdit")
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.date_start_dateTimeEdit.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end_dateTimeEdit.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Chart reports settings error: ", ex
         
         self.date_end_label = QtGui.QLabel(self.intervals_groupBox)
         self.date_end_label.setGeometry(QtCore.QRect(20,60,91,18))
@@ -1417,13 +1449,16 @@ class ReportOptionsDialog(QtGui.QDialog):
                 if eport not in self.ports: self.ports.append(eport)
             
                     
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("chrep_date_start", QtCore.QVariant(self.date_start_dateTimeEdit.dateTime()))
+            settings.setValue("chrep_date_end", QtCore.QVariant(self.date_end_dateTimeEdit.dateTime()))
+        except Exception, ex:
+            print "Chart reports settings save error: ", ex
             
         self.start_date = self.date_start_dateTimeEdit.dateTime().toPyDateTime()
         self.end_date   = self.date_end_dateTimeEdit.dateTime().toPyDateTime()
-        print self.users  
-        print self.classes
-        print self.servers 
-        print self.ports
+
         QtGui.QDialog.accept(self)
         
         
