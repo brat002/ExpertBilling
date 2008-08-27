@@ -299,6 +299,8 @@ class SystemUserChild(QtGui.QMainWindow):
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
+        if value == None:
+            value = ''
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
 
