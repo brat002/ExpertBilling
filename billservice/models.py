@@ -1,6 +1,6 @@
 ﻿#-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass, IPAddressPool, TrafficClass, IPAddressPool
+from mikrobill.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
 import datetime, time
 
@@ -68,10 +68,10 @@ class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
     """
-    name = models.CharField(max_length=255, verbose_name=u'Название периода')
-    time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода')
-    length = models.IntegerField(verbose_name=u'Период в секундах')
-    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток')
+    name = models.CharField(max_length=255, verbose_name=u'Название периода', default='', blank=True)
+    time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода', default='', blank=True)
+    length = models.IntegerField(verbose_name=u'Период в секундах', default='', blank=True)
+    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток', default='MONTH', blank=True)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -87,7 +87,7 @@ class TimePeriodNode(models.Model):
 
 class TimePeriod(models.Model):
     name = models.CharField(max_length=255, verbose_name=u'Название группы временных периодов', unique=True)
-    time_period_nodes = models.ManyToManyField(to=TimePeriodNode, filter_interface=models.HORIZONTAL, verbose_name=u'Группа временных периодов')
+    time_period_nodes = models.ManyToManyField(to=TimePeriodNode, verbose_name=u'Группа временных периодов')
 
     def in_period(self):
         for time_period_node in self.time_period_nodes:
@@ -113,10 +113,10 @@ class SettlementPeriod(models.Model):
     """
     Расчётный период
     """
-    name = models.CharField(max_length=255, verbose_name=u'Название расчётного периода')
+    name = models.CharField(max_length=255, verbose_name=u'Название расчётного периода', unique=True)
     time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода')
     length = models.IntegerField(blank=True, default=0,verbose_name=u'Период действия в секундах')
-    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, null=True, verbose_name=u'Длина промежутка')
+    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, default='', verbose_name=u'Длина промежутка')
     autostart = models.BooleanField(verbose_name=u'Начинать при активации', default=False)
 
     def __unicode__(self):
@@ -138,8 +138,8 @@ class PeriodicalService(models.Model):
     """
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
-    cost              = models.FloatField(verbose_name=u'Стоимость услуги', null=True, blank=True)
-    cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS)
+    cost              = models.FloatField(verbose_name=u'Стоимость услуги', default=0, blank=True)
+    cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
 #    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
 
     def __unicode__(self):
@@ -176,8 +176,8 @@ class OneTimeService(models.Model):
     Справочник разовых услуг
     TO-DO: Сделать справочники валют
     """
-    name              = models.CharField(max_length=255, verbose_name=u'Название разовой услуги')
-    cost              = models.FloatField(verbose_name=u'Стоимость разовой услуги', null=True, blank=True)
+    name              = models.CharField(max_length=255, verbose_name=u'Название разовой услуги', default='', blank=True)
+    cost              = models.FloatField(verbose_name=u'Стоимость разовой услуги', default=0, blank=True)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -196,16 +196,16 @@ class TimeAccessService(models.Model):
     """
     Доступ с тарификацией по времени
     """
-    name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
-    prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время')
+    #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', unuque=True)
+    prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время', default=0, blank=True)
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время', blank=True, default=False)
 
     def __unicode__(self):
         return u"%s" % self.name
 
     class Admin:
-        ordering = ['name']
-        list_display = ('name','prepaid_time')
+        #ordering = ['name']
+        list_display = ('prepaid_time',)
 
 
     class Meta:
@@ -216,9 +216,9 @@ class TimeAccessNode(models.Model):
     """
     Нода тарификации по времени
     """
-    time_access_service = models.ForeignKey(to=TimeAccessService, edit_inline=True, related_name="time_access_nodes")
-    time_period         = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток', core=True)
-    cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', core=True)
+    time_access_service = models.ForeignKey(to=TimeAccessService, related_name="time_access_nodes")
+    time_period         = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток')
+    cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', default=0)
 
     def __unicode__(self):
         return u"%s %s" % (self.time_period, self.cost)
@@ -233,8 +233,8 @@ class TimeAccessNode(models.Model):
         verbose_name_plural = u"Периоды доступа"
 
 class AccessParameters(models.Model):
-    name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
-    access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, verbose_name=u'Вид доступа')
+    #name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
+    access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Вид доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
@@ -249,8 +249,8 @@ class AccessParameters(models.Model):
         return u"%s" % self.name
 
     class Admin:
-        ordering = ['name']
-        list_display = ('name','access_type')
+        #ordering = ['name']
+        list_display = ('access_type',)
 
 
     class Meta:
@@ -261,8 +261,8 @@ class TimeSpeed(models.Model):
     """
     Настройки скорости в интервал времени
     """
-    access_parameters = models.ForeignKey(to=AccessParameters, edit_inline=True, related_name="access_speed")
-    time = models.ForeignKey(TimePeriod, core=True)
+    access_parameters = models.ForeignKey(to=AccessParameters, related_name="access_speed")
+    time = models.ForeignKey(TimePeriod)
     max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
     min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default="")
     burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default="")
@@ -285,12 +285,12 @@ class PrepaidTraffic(models.Model):
     """
     Настройки предоплаченного трафика для тарифного плана
     """
-    traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="prepaid_traffic")
+    traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", verbose_name=u"Услуга доступа по трафику", related_name="prepaid_traffic")
     traffic_class    = models.ManyToManyField(to=TrafficClass, verbose_name=u'Класс трафика')
-    in_direction     = models.BooleanField()
-    out_direction    = models.BooleanField()
-    transit_direction= models.BooleanField()
-    size             = models.FloatField(verbose_name=u'Размер в байтах', core=True)
+    in_direction     = models.BooleanField(default=True, blank=True)
+    out_direction    = models.BooleanField(default=True, blank=True)
+    transit_direction= models.BooleanField(default=True, blank=True)
+    size             = models.FloatField(verbose_name=u'Размер в байтах', default=0,blank=True)
 
     def __unicode__(self):
         return u"%s %s" % (self.traffic_class, self.size)
@@ -306,17 +306,18 @@ class PrepaidTraffic(models.Model):
 
 
 class TrafficTransmitService(models.Model):
-    name              = models.CharField(max_length=255, default='', blank=True)
-    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик')
+    #name              = models.CharField(max_length=255, default='', blank=True)
+    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик', blank=True, default=False)
     #Не реализовано в GUI
-    cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, default=u'SUMM', editable=False)
+    cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, blank=True, default=u'SUMM', editable=False)
     #Не реализовано в GUI
-    period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, default=u'SP_START', editable=False)
+    period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, blank=True, default=u'SP_START', editable=False)
 
 
     class Admin:
-        ordering = ['name']
-        list_display = ('name',)
+        #ordering = ['name']
+        #list_display = ('name',)
+        pass
 
 
     class Meta:
@@ -324,15 +325,15 @@ class TrafficTransmitService(models.Model):
         verbose_name_plural = u"Доступ с учётом трафика"
 
 class TrafficTransmitNodes(models.Model):
-    traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, edit_inline=True, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
-    traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Классы трафика')
-    time_nodes        = models.ManyToManyField(to=TimePeriod, filter_interface=models.HORIZONTAL, verbose_name=u'Промежуток времени')
-    cost              = models.FloatField(default=0, core=True, verbose_name=u'Цена трафика')
+    traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
+    traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Классы трафика')
+    time_nodes        = models.ManyToManyField(to=TimePeriod, verbose_name=u'Промежуток времени')
+    cost              = models.FloatField(default=0, verbose_name=u'Цена трафика')
     edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
     edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-    in_direction      = models.BooleanField()
-    out_direction      = models.BooleanField()
-    transit_direction      = models.BooleanField()
+    in_direction      = models.BooleanField(default=True, blank=True)
+    out_direction      = models.BooleanField(default=True, blank=True)
+    #transit_direction      = models.BooleanField()
     
     def __unicode__(self):
         return u"%s" % (self.cost)
@@ -355,8 +356,8 @@ class AccountPrepaysTrafic(models.Model):
     """
     account_tarif = models.ForeignKey(to="AccountTarif")
     prepaid_traffic = models.ForeignKey(to=PrepaidTraffic)
-    size = models.FloatField(blank=True, default=0.000)
-    datetime = models.DateTimeField(auto_now_add=True)
+    size = models.FloatField(blank=True, default=0)
+    datetime = models.DateTimeField(auto_now_add=True, default='')
 
     def __unicode__(self):
         return u"%s-%s" % (self.account, self.prepaid_traffic)
@@ -371,8 +372,8 @@ class AccountPrepaysTrafic(models.Model):
 class AccountPrepaysTime(models.Model):
     account_tarif = models.ForeignKey(to="AccountTarif")
     prepaid_time_service = models.ForeignKey(to=TimeAccessService)
-    size = models.IntegerField()
-    datetime = models.DateTimeField(auto_now_add=True)
+    size = models.IntegerField(default=0, blank=True)
+    datetime = models.DateTimeField(auto_now_add=True, default='')
 
     class Admin:
         pass
@@ -384,12 +385,12 @@ class AccountPrepaysTime(models.Model):
 class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
-    traffic_class     = models.ManyToManyField(to=TrafficClass, filter_interface=models.HORIZONTAL, verbose_name=u'Лимит на класс', blank=True, null=True)
+    traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Лимит на класс', blank=True, null=True)
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
-    in_direction      = models.BooleanField()
-    out_direction     = models.BooleanField()
-    transit_direction = models.BooleanField()
-    mode              = models.BooleanField(verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
+    in_direction      = models.BooleanField(default=True, blank=True)
+    out_direction     = models.BooleanField(default=True, blank=True)
+    transit_direction = models.BooleanField(default=True, blank=True)
+    mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -404,20 +405,20 @@ class TrafficLimit(models.Model):
         verbose_name_plural = u"Лимиты трафика"
 
 class Tariff(models.Model):
-    name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана')
-    description       = models.TextField(verbose_name=u'Описание тарифного плана')
+    name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана', unique = True)
+    description       = models.TextField(verbose_name=u'Описание тарифного плана', blank=True, default='')
     access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
-    traffic_limit     = models.ManyToManyField(to=TrafficLimit, filter_interface=models.HORIZONTAL,verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
-    periodical_services = models.ManyToManyField(to=PeriodicalService, filter_interface=models.HORIZONTAL, verbose_name=u'периодические услуги', blank=True, null=True)
-    onetime_services  = models.ManyToManyField(to=OneTimeService, filter_interface=models.HORIZONTAL,verbose_name=u'Разовые услуги', blank=True, null=True)
+    traffic_limit     = models.ManyToManyField(to=TrafficLimit, verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
+    periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
+    onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
-    cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0.000 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
-    reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, null=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
+    cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
+    reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
-    ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, null=True, default=False )
-    active            = models.BooleanField(default=False)
-    deleted           = models.BooleanField(default=False)
+    ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, default=False )
+    active            = models.BooleanField(default=False, blank=True)
+    deleted           = models.BooleanField(default=False, blank=True)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -438,26 +439,26 @@ class Account(models.Model):
     значит каждый раз при RADIUS запросе будет провереряться есть ли аренда и не истекла ли она.
     Если аренды нет или она истекла, то создаётся новая и пользователю назначается новый IP адрес.
     """
-    user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
+    #user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
-    password = models.CharField(verbose_name=u'Пароль',max_length=200)
+    password = models.CharField(verbose_name=u'Пароль',max_length=200, blank=True, default='')
     fullname = models.CharField(verbose_name=u'Имя', blank=True, default='', max_length=200)
     email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
     address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
-    assign_vpn_ip_from_dhcp = models.BooleanField(default=False)
-    nas = models.ForeignKey(to=Nas, blank=True, null=True, verbose_name=u'Сервер доступа')
-    vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
+    #assign_vpn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
+    nas = models.ForeignKey(to=Nas, blank=True, verbose_name=u'Сервер доступа')
+    #vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
     vpn_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, default='0.0.0.0')
     assign_ipn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
-    ipn_pool = models.ForeignKey(to=IPAddressPool, related_name='ipn_pool', blank=True, null=True)
+    #ipn_pool = models.ForeignKey(to=IPAddressPool, related_name='ipn_pool', blank=True, null=True)
     ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, default='0.0.0.0')
-    ipn_mac_address = models.CharField(u'MAC адрес клиента', max_length=32, help_text=u'Для IPN тарифных планов', blank=True, null=True)
+    ipn_mac_address = models.CharField(u'MAC адрес клиента', max_length=32, help_text=u'Для IPN тарифных планов', blank=True, default='')
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
-    status=models.BooleanField(verbose_name=u'Статус пользователя', radio_admin=True, default=False)
+    status=models.BooleanField(verbose_name=u'Статус пользователя', default=False)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
-    created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True)
-    ballance=models.FloatField(u'Балланс', blank=True)
-    credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, null=True, default=0)
+    created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True, default='')
+    ballance=models.FloatField(u'Балланс', blank=True, default=0)
+    credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.DateTimeField(blank=True, default=False)
     ipn_speed = models.CharField(max_length=96, blank=True, default="")
@@ -510,7 +511,7 @@ class Account(models.Model):
 
 
 class TransactionType(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     internal_name = models.CharField(max_length=32, unique=True)
 
     def __unicode__(self):
@@ -532,9 +533,9 @@ class Transaction(models.Model):
     
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True)
-    summ=models.FloatField(blank=True)
-    description = models.TextField()
-    created=models.DateTimeField(auto_now_add=True)
+    summ=models.FloatField(default=0, blank=True)
+    description = models.TextField(default='', blank=True)
+    created=models.DateTimeField(auto_now_add=True, default='')
 
 
     class Admin:
@@ -559,9 +560,9 @@ class Transaction(models.Model):
         return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 
 class AccountTarif(models.Model):
-    account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, blank=True, null=True, edit_inline=models.STACKED, num_in_admin=1, related_name='related_accounttarif')
-    tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', core=True, related_name="account_tarif")
-    datetime  = models.DateTimeField()
+    account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
+    tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', related_name="account_tarif")
+    datetime  = models.DateTimeField(default='', blank=True)
 
     class Admin:
         ordering = ['-datetime']
@@ -580,10 +581,10 @@ class AccountIPNSpeed(models.Model):
       После создания пользователя должна создваться запись в этой таблице
       """
       account = models.ForeignKey(to=Account)
-      speed   = models.CharField(max_length=32)
+      speed   = models.CharField(max_length=32, default='')
       state   = models.BooleanField(blank=True, default=False)
-      static  = models.BooleanField(verbose_name=u"Статическая скорость", help_text=u"Пока опция установлена, биллинг не будет менять для этого клиента скорость", blank=True, null=True)
-      datetime  = models.DateTimeField()
+      static  = models.BooleanField(verbose_name=u"Статическая скорость", help_text=u"Пока опция установлена, биллинг не будет менять для этого клиента скорость", blank=True, default=False)
+      datetime  = models.DateTimeField(default='')
 
       def __unicode__(self):
           return u"%s %s" % (self.account, self.speed)
@@ -596,35 +597,9 @@ class AccountIPNSpeed(models.Model):
         verbose_name_plural = u"Скорости IPN клиентов"
 
 
-class SummaryTrafic(models.Model):
-    """
-    Класс предназначен для ведения статистики по трафику, потреблённому пользователями
-    """
-
-    account = models.ForeignKey('Account', blank=True, null=True, related_name='account_trafic')
-    incomming_bytes = models.PositiveIntegerField(blank=True, null=True)
-    outgoing_bytes = models.PositiveIntegerField(blank=True, null=True)
-    radius_session = models.CharField(max_length=32)
-    nas_id = models.IPAddressField()
-    date_start = models.DateTimeField()
-    date_end = models.DateTimeField(blank=True, null=True)
-
-    class Admin:
-        ordering = ['-date_end']
-        list_display = ('account',  'incomming_bytes',  'outgoing_bytes', 'date_start', 'date_end')
-
-    class Meta:
-        verbose_name = u"Общий трафик по RADIUS сессиям"
-        verbose_name_plural = u"Общий трафик по RADIUS сессиям"
-
-    def __unicode__(self):
-        return u'%s' % self.account
-
-
 class RawNetFlowStream(models.Model):
-    nas = models.ForeignKey(Nas, blank=True, null=True)
-    date_start = models.DateTimeField(auto_now_add=True)
-    groups = models.IntegerField(default=0, null=True, blank=True)
+    nas = models.ForeignKey(Nas)
+    date_start = models.DateTimeField(auto_now_add=True, default='')
     src_addr = models.IPAddressField()
     traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
@@ -647,7 +622,7 @@ class RawNetFlowStream(models.Model):
 
     class Admin:
           ordering = ['-date_start']
-          list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets','groups')
+          list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
 
     class Meta:
         verbose_name = u"Сырая NetFlow статистика"
@@ -670,8 +645,8 @@ class NetFlowStream(models.Model):
     src_port = models.IntegerField()
     dst_port = models.IntegerField()
     protocol = models.IntegerField()
-    checkouted = models.BooleanField(blank=True, null=True, default=False)
-    for_checkout = models.BooleanField(blank=True, null=True, default=False)
+    checkouted = models.BooleanField(blank=True, default=False)
+    for_checkout = models.BooleanField(blank=True, default=False)
 
 
     class Admin:
@@ -710,33 +685,32 @@ class OneTimeServiceHistory(models.Model):
     
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=255, default='')
     last_ip  = models.CharField(max_length=64, blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
-    description = models.TextField(blank=True)
-    created = models.DateTimeField()
-    status = models.BooleanField(default=True)
-    host = models.CharField(max_length=255, blank=True, default="0.0.0.0/32")
+    description = models.TextField(blank=True, default='')
+    created = models.DateTimeField(blank=True, null=True, default='')
+    status = models.BooleanField(default=False)
+    host = models.CharField(max_length=255, blank=True, null=True, default="0.0.0.0/0")
     
 class Ports(models.Model):
     port = models.IntegerField()
     protocol = models.IntegerField()
-    name = models.CharField(max_length=32)
-    description = models.CharField(max_length=255)
+    name = models.CharField(max_length=64, default='')
+    description = models.CharField(max_length=255, default='')
     
 class CardGroup(models.Model):
-    name = models.CharField(max_length=255)
-    disabled=models.BooleanField(default=False)
+    name = models.CharField(max_length=255, unique=True)
+    disabled=models.BooleanField(blank=True, default=False)
     
 class Card(models.Model):
     card_group = models.ForeignKey(CardGroup)
     series = models.IntegerField()
     pin = models.CharField(max_length=255)
-    sold = models.DateTimeField(blank=True, null=True)
-    nominal = models.FloatField()
-    activated = models.DateTimeField(blank=True, null=True)
+    sold = models.DateTimeField(blank=True, default=False)
+    nominal = models.FloatField(default=0)
+    activated = models.DateTimeField(blank=True, default=False)
     activated_by = models.ForeignKey(Account, blank=True, null=True)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
-    disabled= models.BooleanField(default=False, null=True)
-    
+    start_date = models.DateTimeField(blank=True, default='')
+    end_date = models.DateTimeField(blank=True, default='')
+    disabled= models.BooleanField(default=False, blank=True)
