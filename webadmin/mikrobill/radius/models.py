@@ -15,27 +15,27 @@ SESSION_STATUS=(
 class Session(models.Model):
     account=models.ForeignKey(Account)
     #Атрибут радиуса Acct-Session-Id
-    sessionid=models.CharField(max_length=255, blank=True)
+    sessionid=models.CharField(max_length=32, blank=True, default='')
     #Время последнего обновления
-    interrim_update=models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    interrim_update=models.DateTimeField(auto_now_add=True, blank=True, default='')
     #Время старта сессии
-    date_start=models.DateTimeField(blank=True, null=True)
+    date_start=models.DateTimeField(blank=True, default='')
     #Время конца сессии
-    date_end=models.DateTimeField(null=True,blank=True)
+    date_end=models.DateTimeField(null=True,default='')
     #Атрибут радиуса Calling-Station-Id. IP адрес или мак-адрес
-    caller_id=models.CharField(max_length=255, blank=True)
+    caller_id=models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса Called-Station-Id (IP адрес или имя сервиса для PPPOE)
-    called_id=models.CharField(max_length=255, blank=True)
+    called_id=models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса NAS-IP-Address
-    nas_id=models.CharField(max_length=255, blank=True)
+    nas_id=models.CharField(max_length=255)
     #Атрибут радиуса Acct-Session-Time
     session_time=models.IntegerField(default=0, null=True,blank=True)
     #Нужно определить каким образом клиент подключился к серверу
-    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES,radio_admin=True)
+    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES)
     #Атрибут радиуса Acct-Input-Packets
-    bytes_in=models.IntegerField(null=True,blank=True)
+    bytes_in=models.IntegerField(null=True, default=0)
     #Атрибут радиуса Acct-Output-Packets
-    bytes_out=models.IntegerField(null=True,blank=True)
+    bytes_out=models.IntegerField(null=True, default=0)
     #Выставляется в случае, если был произведён платёж
     checkouted_by_time = models.BooleanField(default=False, blank=True)
     checkouted_by_trafic = models.BooleanField(default=False, blank=True)
@@ -74,7 +74,7 @@ class ActiveSession(models.Model):
     #Атрибут радиуса Acct-Session-Time
     session_time=models.IntegerField(default=0, null=True,blank=True)
     #Нужно определить каким образом клиент подключился к серверу
-    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES,radio_admin=True)
+    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES)
     #Атрибут радиуса Acct-Input-Octets
     bytes_in=models.IntegerField(null=True,blank=True)
     #Атрибут радиуса Acct-Output-Octets
