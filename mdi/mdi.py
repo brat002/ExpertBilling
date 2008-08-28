@@ -42,7 +42,7 @@ _reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'Загру
                 ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли'], \
                 ['report3_ttr_nas.xml', ['nfs_total_traf'], 'Общий трафик'], \
                 ['report3_tutr_nas.xml', ['nfs_total_traf_bydir'], 'Общий трафик по типам']\
-               ]
+            ]
 
 #разделитель для дат по умолчанию
 dateDelim = "."
@@ -80,13 +80,13 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.writeSettings()
             event.accept()
-    
+
     @connlogin
     def newFile(self):
         child =  AccountsMdiChild(connection=connection, parent=self)
         self.workspace.addWindow(child)
         child.show()
-    
+
     @connlogin
     def open(self):
         child = NasMdiChild(connection=connection)
@@ -131,24 +131,24 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, self.tr(u"О программе"),
-            self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
+                                self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
 
     @connlogin
     def cardsFrame(self):
         child = CardsChild(connection = connection)
         self.workspace.addWindow(child)
         child.show()
-	
+
     @connlogin
     def netflowReport(self):
         child = NetFlowReport(connection = connection)
         self.workspace.addWindow(child)
         child.show()
-	
+
     def relogin(self):
-	global connection
-	connection = login()
-	
+        global connection
+        connection = login()
+
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)
         #self.saveAct.setEnabled(hasMdiChild)
@@ -211,22 +211,22 @@ class MainWindow(QtGui.QMainWindow):
             child=StatReport(connection=connection, chartinfo=self.reportseldg.chartinfo[self.reportseldg.selectedId])
             self.workspace.addWindow(child)
             child.show()
-        
+
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
-                            self.tr("&New"), self)
+                                    self.tr("&New"), self)
         self.newAct.setShortcut(self.tr("Ctrl+N"))
         self.newAct.setStatusTip(self.tr("Create a new file"))
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
         self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
-                        self.tr("&Open..."), self)
+                                     self.tr("&Open..."), self)
         self.openAct.setShortcut(self.tr("Ctrl+O"))
         self.openAct.setStatusTip(self.tr("Open an existing file"))
         self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
 
         self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"),
-                        self.tr("&Save"), self)
+                                     self.tr("&Save"), self)
         self.saveAct.setShortcut(self.tr("Ctrl+S"))
         self.saveAct.setStatusTip(self.tr("Save the document to disk"))
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
@@ -241,21 +241,21 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.exitAct, QtCore.SIGNAL("triggered()"), self.close)
 
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
-                        self.tr("Cu&t"), self)
+                                    self.tr("Cu&t"), self)
         self.cutAct.setShortcut(self.tr("Ctrl+X"))
         self.cutAct.setStatusTip(self.tr("Cut the current selection's "
                                          "contents to the clipboard"))
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
         self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
-                        self.tr("&Copy"), self)
+                                     self.tr("&Copy"), self)
         self.copyAct.setShortcut(self.tr("Ctrl+C"))
         self.copyAct.setStatusTip(self.tr("Copy the current selection's "
                                           "contents to the clipboard"))
         self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
 
         self.pasteAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
-                        self.tr("&Paste"), self)
+                                      self.tr("&Paste"), self)
         self.pasteAct.setShortcut(self.tr("Ctrl+V"))
         self.pasteAct.setStatusTip(self.tr("Paste the clipboard's contents "
                                            "into the current selection"))
@@ -263,19 +263,19 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
 
         self.cardsAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
-                        self.tr("&Paste"), self)
+                                      self.tr("&Paste"), self)
         #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
         self.cardsAct.setStatusTip(self.tr("Карты экспресс-оплаты"))
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
-        
+
         self.netflowReportAct=QtGui.QAction(QtGui.QIcon(":/images/paste.png"), self.tr("&NetFlow"), self)
-        
+
         self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
 
         self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
-	
-	self.reloginAct = QtGui.QAction(self.tr("&Reconnect"), self)
+
+        self.reloginAct = QtGui.QAction(self.tr("&Reconnect"), self)
         self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.reloginAct, QtCore.SIGNAL("triggered()"), self.relogin)
 
@@ -338,7 +338,7 @@ class MainWindow(QtGui.QMainWindow):
         self.aboutQtAct.setStatusTip(self.tr("Show the Qt library's About box"))
         self.connect(self.aboutQtAct, QtCore.SIGNAL("triggered()"),
                      QtGui.qApp, QtCore.SLOT("aboutQt()"))
-        
+
         self.statwinAct = QtGui.QAction(self.tr("Statwin"), self)
 
         self.statwinAct.setStatusTip(self.tr("Open the reports window"))
@@ -352,8 +352,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.saveAct)
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addSeparator()
-	self.fileMenu.addAction(self.reloginAct)
-	self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.reloginAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
         self.editMenu = self.menuBar().addMenu(self.tr("&Edit"))
@@ -367,26 +367,26 @@ class MainWindow(QtGui.QMainWindow):
         self.reportsMenu = self.menuBar().addMenu(self.tr("&Reports"))
         for act in self.reportActs:
             self.reportsMenu.addAction(act)
-            
+
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
         self.helpMenu.addAction(self.aboutAct)
         self.helpMenu.addAction(self.aboutQtAct)
-    
+
     @connlogin
     def reportsMenu(self):
         #print self.sender().data().toInt()
         child=StatReport(connection=connection, chartinfo=_reportsdict[self.sender().data().toInt()[0]])
         self.workspace.addWindow(child)
         child.show()
-	
+
     def createToolBars(self):
         self.fileToolBar = self.addToolBar(self.tr("File"))
         self.fileToolBar.addAction(self.newAct)
         self.fileToolBar.addAction(self.openAct)
         self.fileToolBar.addAction(self.saveAct)
-	self.fileToolBar.setMovable(False)
+        self.fileToolBar.setMovable(False)
         self.fileToolBar.setFloatable(False)
 
         self.editToolBar = self.addToolBar(self.tr("Edit"))
@@ -396,9 +396,9 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.cardsAct)
         self.editToolBar.addAction(self.netflowReportAct)
         self.editToolBar.addAction(self.statwinAct)
-	self.editToolBar.setMovable(False)
+        self.editToolBar.setMovable(False)
         self.editToolBar.setFloatable(False)
-        
+
     def createStatusBar(self):
         self.statusBar().showMessage(self.tr("Ready"))
 
@@ -428,20 +428,20 @@ class MainWindow(QtGui.QMainWindow):
 
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
-	Pyro.protocol.DefaultConnValidator.__init__(self)
+        Pyro.protocol.DefaultConnValidator.__init__(self)
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-	print "createAuthToken_cli"
-	print challenge
-	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
-	# we return a secure auth token based on the server challenge string.
-	return authid
+        print "createAuthToken_cli"
+        print challenge
+        # authid is what mungeIdent returned, a tuple (login, hash-of-password)
+        # we return a secure auth token based on the server challenge string.
+        return authid
     def mungeIdent(self, ident):
-	print "mungeIdent_client"
-	print ident
-	# ident is tuple (login, password), the client sets this.
-	# we don't like to store plaintext passwords so store the md5 hash instead.
-	return ident
-      
+        print "mungeIdent_client"
+        print ident
+        # ident is tuple (login, password), the client sets this.
+        # we don't like to store plaintext passwords so store the md5 hash instead.
+        return ident
+
 '''def login():
     child = ConnectDialog()
     if child.exec_()==1:
@@ -470,43 +470,43 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
 def login():
     child = ConnectDialog()
     while True:
-	
-    	if child.exec_()==1:
-    	    try:
-        		connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-        		password = unicode(child.password.toHex())
-        		#f = open('tmp', 'wb')
-        		#f.write(child.password.toHex())
-        		connection._setNewConnectionValidator(antiMungeValidator())
-        		print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
-        		connection.test()
-        		return connection
 
-    	    except Exception, e:
-        		print "login connection error"
-        		if isinstance(e, Pyro.errors.ConnectionDeniedError):
-        		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-        		else:
-        		    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+        if child.exec_()==1:
+            try:
+                connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
+                password = unicode(child.password.toHex())
+                #f = open('tmp', 'wb')
+                #f.write(child.password.toHex())
+                connection._setNewConnectionValidator(antiMungeValidator())
+                print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+                connection.test()
+                return connection
 
-    	else:
-    	    return None
-                
+            except Exception, e:
+                print "login connection error"
+                if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
+                else:
+                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+
+        else:
+            return None
+
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-   
+
     connection = login() 
     if connection is None:
         sys.exit()
     try:
-    	mainwindow = MainWindow()
-    	mainwindow.show()
-    	#app.setStyle("cleanlooks")
-    	app.setStyleSheet(open("./style.qss","r").read())
-    	sys.exit(app.exec_())
+        mainwindow = MainWindow()
+        mainwindow.show()
+        #app.setStyle("cleanlooks")
+        app.setStyleSheet(open("./style.qss","r").read())
+        sys.exit(app.exec_())
     except Exception, ex:
-    	print "main-----------"
-    	print ex
+        print "main-----------"
+        print ex
 
     #QtGui.QStyle.SH_Table_GridLineColor
-    
+
