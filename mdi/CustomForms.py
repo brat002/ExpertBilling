@@ -315,7 +315,7 @@ class ConnectDialog(QtGui.QDialog):
         self.encryption_checkBox = QtGui.QCheckBox(self.centralwidget)
         self.encryption_checkBox.setGeometry(QtCore.QRect(60,100,191,18))
         self.encryption_checkBox.setObjectName("encryption_checkBox")
-
+        self.encryption_checkBox.setDisabled(True)
         '''self.compress_checkbox = QtGui.QCheckBox(self.centralwidget)
         self.compress_checkbox.setGeometry(QtCore.QRect(60,124,191,18))
         self.compress_checkbox.setObjectName("compress_checkbox")'''
