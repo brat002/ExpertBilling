@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 from django.db import models
 from mikrobill.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
@@ -6,6 +6,7 @@ import datetime, time
 
 
 # Create your models here.
+# choiCe
 PERIOD_CHOISES=(
                 (u'DONT_REPEAT', u'Не повторять'),
                 (u'DAY',u'День'),
@@ -25,12 +26,12 @@ ACCESS_TYPE_METHODS=(
                 (u'PPTP',u'PPTP'),
                 (u'PPPOE',u'PPPOE'),
                 )
-
+# choiCe
 ACTIVITY_CHOISES=(
         (u"Enabled",u"Активен"),
         (u"Disabled",u"Неактивен"),
         )
-
+# choiCe
 CHOISE_METHODS=(
         (u"MAX",u"Наибольший"),
         (u"SUMM",u"Сумма всех"),
@@ -70,7 +71,7 @@ class TimePeriodNode(models.Model):
     """
     name = models.CharField(max_length=255, verbose_name=u'Название периода', default='', blank=True)
     time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода', default='', blank=True)
-    length = models.IntegerField(verbose_name=u'Период в секундах', default='', blank=True)
+    length = models.IntegerField(verbose_name=u'Период в секундах', default=0, blank=True)
     repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток', default='MONTH', blank=True)
 
     def __unicode__(self):
@@ -278,8 +279,8 @@ class TimeSpeed(models.Model):
         pass
 
     class Meta:
-         verbose_name = u"настройка скорости"
-         verbose_name_plural = u"Настройки скорости"
+        verbose_name = u"настройка скорости"
+        verbose_name_plural = u"Настройки скорости"
 
 class PrepaidTraffic(models.Model):
     """
@@ -457,10 +458,11 @@ class Account(models.Model):
     status=models.BooleanField(verbose_name=u'Статус пользователя', default=False)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True, default='')
-    ballance=models.FloatField(u'Балланс', blank=True, default=0)
+    #NOTE: baLance
+    ballance=models.FloatField(u'Баланс', blank=True, default=0)
     credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
-    balance_blocked = models.DateTimeField(blank=True, default=False)
+    balance_blocked = models.BooleanField(blank=True, default=False)
     ipn_speed = models.CharField(max_length=96, blank=True, default="")
     vpn_speed = models.CharField(max_length=96, blank=True, default="")
     netmask = models.IPAddressField(blank=True, default='0.0.0.0')
@@ -521,7 +523,7 @@ class TransactionType(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"тип проводки"
+        verbose_name = u"Тип проводки"
         verbose_name_plural = u"Типы проводок"
 #===============================================================================
 
@@ -601,8 +603,8 @@ class RawNetFlowStream(models.Model):
     nas = models.ForeignKey(Nas)
     date_start = models.DateTimeField(auto_now_add=True, default='')
     src_addr = models.IPAddressField()
-    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
-    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
+    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Направление трафика', blank=True, null=True)
+    direction = models.CharField(verbose_name=u"Тип трафика", choices=DIRECTIONS_LIST, max_length=32)
     dst_addr = models.IPAddressField()
     next_hop = models.IPAddressField()
     in_index = models.IntegerField()
@@ -621,8 +623,8 @@ class RawNetFlowStream(models.Model):
     fetched=models.BooleanField(blank=True, default=False)
 
     class Admin:
-          ordering = ['-date_start']
-          list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
+        ordering = ['-date_start']
+        list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
 
     class Meta:
         verbose_name = u"Сырая NetFlow статистика"
@@ -650,8 +652,8 @@ class NetFlowStream(models.Model):
 
 
     class Admin:
-          ordering = ['-date_start']
-          list_display = ('nas', 'account', 'tarif','traffic_class','date_start','src_addr','dst_addr','src_port','dst_port','octets')
+        ordering = ['-date_start']
+        list_display = ('nas', 'account', 'tarif','traffic_class','date_start','src_addr','dst_addr','src_port','dst_port','octets')
 
     class Meta:
         verbose_name = u"NetFlow статистика"
