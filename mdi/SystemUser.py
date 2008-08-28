@@ -123,6 +123,9 @@ class SystemUserFrame(QtGui.QDialog):
         self.status_checkBox = QtGui.QCheckBox(self.groupBox)
         self.status_checkBox.setGeometry(QtCore.QRect(110,110,131,16))
         self.status_checkBox.setObjectName("status_checkBox")
+        
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
 
         self.retranslateUi()
         self.fixtures()
@@ -148,6 +151,18 @@ class SystemUserFrame(QtGui.QDialog):
             if child.password:
                 self.password = unicode(child.password.toHex())
                 
+    def check_ips(self, ipsstr):
+        ips = ipsstr.split(', ')
+
+        added = []
+        for ipstr in ips:
+            ipstr_ok = True
+            for ip in ipstr.split('-'):                
+                ipstr_ok = ipstr_ok and (self.ipValidator.validate(ip, 0)[0]  == QtGui.QValidator.Acceptable)
+            if ipstr_ok and (ipstr not in added):
+                added.append(ipstr)
+        return ', '.join(added)
+        
     def accept(self):
         """
         понаставить проверок
@@ -164,7 +179,7 @@ class SystemUserFrame(QtGui.QDialog):
             
             
         if self.username_edit.text():
-            model.host = unicode(self.hosts_lineEdit.text())
+            model.host = unicode(self.check_ips(str(self.hosts_lineEdit.text())))
             model.username = unicode(self.username_edit.text())
             model.description = unicode(self.comment_edit.text())
             model.status = self.status_checkBox.checkState()==2
