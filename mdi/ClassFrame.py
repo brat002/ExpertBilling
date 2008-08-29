@@ -419,7 +419,7 @@ class ClassChild(QtGui.QMainWindow):
     def __init__(self, connection):
         super(ClassChild, self).__init__()
         self.connection = connection
-        self.setObjectName("MainWindow")
+        self.setObjectName("ClassMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,795,597).size()).expandedTo(self.minimumSizeHint()))
 
         self.splitter = QtGui.QSplitter(self)

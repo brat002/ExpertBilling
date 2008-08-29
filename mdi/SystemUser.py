@@ -72,7 +72,7 @@ class PasswordEditFrame(QtGui.QDialog):
 class SystemUserFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(SystemUserFrame, self).__init__()
-        
+        self.setObjectName("SystemUserMDI")
         self.connection = connection
         self.connection.commit()
         self.model = model

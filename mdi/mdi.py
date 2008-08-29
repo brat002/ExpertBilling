@@ -83,20 +83,36 @@ class MainWindow(QtGui.QMainWindow):
 
     @connlogin
     def newFile(self):
+        self.workspace.windowList()
         child =  AccountsMdiChild(connection=connection, parent=self)
+        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
         self.workspace.addWindow(child)
         child.show()
 
     @connlogin
     def open(self):
         child = NasMdiChild(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+            
         self.workspace.addWindow(child)
         child.show()
-        return child
+        #return child
 
     @connlogin
     def save(self):
         child=SettlementPeriodChild(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+            
         self.workspace.addWindow(child)
         child.show()
 
@@ -107,24 +123,43 @@ class MainWindow(QtGui.QMainWindow):
     def saveAs(self):
 
         child = SystemUserChild(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+            
         self.workspace.addWindow(child)
         child.show()
 
     @connlogin
     def cut(self):
         child=TimePeriodChild(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+            
         self.workspace.addWindow(child)
         child.show()
 
     @connlogin
     def copy(self):
         child=ClassChild(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+            
         self.workspace.addWindow(child)
         child.show()
 
     @connlogin
     def paste(self):
         child = MonitorFrame(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
         self.workspace.addWindow(child)
         child.show()
 
@@ -136,12 +171,17 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def cardsFrame(self):
         child = CardsChild(connection = connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
         self.workspace.addWindow(child)
         child.show()
 
     @connlogin
     def netflowReport(self):
         child = NetFlowReport(connection = connection)
+
         self.workspace.addWindow(child)
         child.show()
 
@@ -199,19 +239,7 @@ class MainWindow(QtGui.QMainWindow):
             self.windowMapper.setMapping(action, child)
 
 
-    @connlogin
-    def openstatWin(self):
-        self.reportseldg = ReportSelectDialog(connection=connection)
-        if self.reportseldg.exec_()!=1: return
-        #print self.reportseldg.zomgdata
-        #print self.reportseldg.selectedId
-        #f = open('tmp1', 'wb')
-        #f.write(str(self.reportseldg.chartinfo))
-        if self.reportseldg.selectedId != -1:
-            child=StatReport(connection=connection, chartinfo=self.reportseldg.chartinfo[self.reportseldg.selectedId])
-            self.workspace.addWindow(child)
-            child.show()
-
+       
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
                                     self.tr("&New"), self)
@@ -281,6 +309,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.reportActs = []
         i = 0
+        
         for item in _reportsdict:
             rAct = QtGui.QAction(self.trUtf8(item[2]), self)
             rAct.setStatusTip(self.tr("Report"))
@@ -339,11 +368,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.aboutQtAct, QtCore.SIGNAL("triggered()"),
                      QtGui.qApp, QtCore.SLOT("aboutQt()"))
 
-        self.statwinAct = QtGui.QAction(self.tr("Statwin"), self)
 
-        self.statwinAct.setStatusTip(self.tr("Open the reports window"))
-        self.connect(self.statwinAct, QtCore.SIGNAL("triggered()"),
-                     self.openstatWin)
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
@@ -395,7 +420,6 @@ class MainWindow(QtGui.QMainWindow):
         self.editToolBar.addAction(self.pasteAct)
         self.editToolBar.addAction(self.cardsAct)
         self.editToolBar.addAction(self.netflowReportAct)
-        self.editToolBar.addAction(self.statwinAct)
         self.editToolBar.setMovable(False)
         self.editToolBar.setFloatable(False)
 
@@ -430,18 +454,10 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-        print "createAuthToken_cli"
-        print challenge
-        # authid is what mungeIdent returned, a tuple (login, hash-of-password)
-        # we return a secure auth token based on the server challenge string.
         return authid
     def mungeIdent(self, ident):
-        print "mungeIdent_client"
-        print ident
-        # ident is tuple (login, password), the client sets this.
-        # we don't like to store plaintext passwords so store the md5 hash instead.
         return ident
-
+      
 '''def login():
     child = ConnectDialog()
     if child.exec_()==1:

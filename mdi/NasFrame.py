@@ -438,7 +438,7 @@ class NasMdiChild(QtGui.QMainWindow):
         super(NasMdiChild, self).__init__()
         #global connection
         self.connection=connection
-        #MainWindow.setObjectName("MainWindow")
+        self.setObjectName("NasMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,300,300).size()).expandedTo(self.minimumSizeHint()))
 
 

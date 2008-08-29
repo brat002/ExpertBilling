@@ -799,5 +799,6 @@ def parse_custom_speed(speed_string):
     trm = match_obj.group('trm') or -1
 
     return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
+
     
             
