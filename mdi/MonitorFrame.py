@@ -14,7 +14,7 @@ class MonitorFrame(QtGui.QMainWindow):
         super(MonitorFrame, self).__init__()
         self.connection = connection
         self.selected_user=None
-        self.setObjectName("MainWindow")
+        self.setObjectName("MonitorMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 

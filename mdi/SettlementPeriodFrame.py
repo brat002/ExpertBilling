@@ -202,7 +202,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def __init__(self, connection):
         super(SettlementPeriodChild, self).__init__()
         self.connection=connection
-
+        self.setObjectName("SettlementPeriodMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,827,476).size()).expandedTo(self.minimumSizeHint()))
         self.setname = "setper_frame_period"
         self.centralwidget = QtGui.QWidget(self)

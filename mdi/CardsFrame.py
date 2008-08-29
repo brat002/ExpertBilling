@@ -188,7 +188,7 @@ class CardsChild(QtGui.QMainWindow):
         super(CardsChild, self).__init__()
         self.connection = connection
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-        self.setObjectName("MainWindow")
+        self.setObjectName("CardsMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
 
         #self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))

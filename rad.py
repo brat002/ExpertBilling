@@ -147,7 +147,7 @@ class HandleAuth(HandleBase):
             return self.auth_NA()
         
         #print 2
-        username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed = row
+        username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
            self.cur.close()
@@ -167,7 +167,7 @@ class HandleAuth(HandleBase):
                 break
         #print 3
 
-        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked:
+        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
            #print 4
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод

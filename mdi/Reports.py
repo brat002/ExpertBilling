@@ -51,6 +51,7 @@ class TransactionsReport(QtGui.QMainWindow):
     def __init__(self, connection ,account=None):
 
         super(TransactionsReport, self).__init__()
+        self.setObjectName("TransactionReportMDI")
         self.account = account
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,903,483).size()).expandedTo(self.minimumSizeHint()))
@@ -199,13 +200,13 @@ class TransactionsReport(QtGui.QMainWindow):
             transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
-                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
+                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
         else:
             transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name
             FROM billservice_transaction as transaction
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
+            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
 
         self.tableWidget.setRowCount(len(transactions))
         i=0
@@ -241,17 +242,19 @@ class TransactionsReport(QtGui.QMainWindow):
         ids = []
         import Pyro
         for index in self.tableWidget.selectedIndexes():
+            print index.row(), index.column()
             if index.column()>1:
                 continue
+            
             i=unicode(self.tableWidget.item(index.row(), 0).text())
             try:
                 ids.append(int(i))
             except Exception, e:
                 print "can not convert transaction id to int"
-        try:
-            self.connection.transaction_delete(ids)
-        except Exception, e:
-            print ''.join(Pyro.util.getPyroTraceback(e))
+        
+        
+        self.connection.transaction_delete(ids)
+        
             
         self.refresh_table()
         
@@ -498,6 +501,9 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
 class NetFlowReport(QtGui.QMainWindow):
     def __init__(self, connection):
+        """
+        Допускается открыт
+        """
         super(NetFlowReport, self).__init__()
         self.connection = connection
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"

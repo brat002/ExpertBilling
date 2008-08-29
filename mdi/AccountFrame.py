@@ -2827,6 +2827,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
         self.connection = connection
+        self.setObjectName('AccountMDI')
         self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"

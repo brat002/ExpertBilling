@@ -238,7 +238,7 @@ class NetFlowPacket:
                         'dst_netmask_length' : flow.dst_netmask_length,
                         'fetched':False
                         }
-                        );break
+                        )
 
             #print flows
    
