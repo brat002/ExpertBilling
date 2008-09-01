@@ -323,28 +323,36 @@ class TimePeriodChild(QtGui.QMainWindow):
 
     def delPeriod(self):
 
-        try:
+        '''try:
             model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % self.getTimeperiodId())
 
         except:
-            return
-
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            try:
-                self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
-                self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
-                self.connection.commit()
-            except Exception, e:
-                print e
-                self.connection.rollback()
+            return'''
+        id = self.getTimeperiodId()
+        
+        if id>0:
+            if self.connection.sql("""SELECT access_time_id FROM billservice_accessparameters WHERE (access_time_id=%d) UNION SELECT time_period_id FROM billservice_timeaccessnode WHERE (time_period_id=%d) UNION SELECT time_id FROM billservice_timespeed WHERE (time_id=%d)""" % (id, id, id)):
+                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление невозможно, тарифный план используется!")
+                return
+            elif QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                try:
+                    #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
+                    #self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
+                    #self.connection.sql("UPDATE billservice_timeperiod SET deleted=TRUE WHERE id=%d" % id, False)
+                    self.connection.iddelete("billservice_timeperiod", id)
+                    self.connection.commit()
+                    self.refresh()
+                    try:
+                        setFirstActive(self.treeWidget)
+                        self.refreshTable()
+                    except Exception, ex:
+                        print ex
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
                 
             #self.timeperiod_list_edit.setCurrentIndex(0)
-            self.refresh()
-            try:
-                setFirstActive(self.treeWidget)
-                self.refreshTable()
-            except Exception, ex:
-                print ex
+
 
     def editPeriod(self):
         model = self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d;" % self.getTimeperiodId())
@@ -387,15 +395,18 @@ class TimePeriodChild(QtGui.QMainWindow):
     def delNode(self):
         id = self.getSelectedId()
 
-        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+        if id >0 and QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
-                self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
+                #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
+                #self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
+                #self.connection.sql("UPDATE billservice_timeperiodnode SET deleted=TRUE WHERE id=%d" % id, False)
+                self.connection.iddelete("billservice_timeperiodnode", id)
                 self.connection.commit()
+                self.refreshTable()
             except Exception, e:
                 self.connection.rollback()
 
-            self.refreshTable()
+            
         
     def editNode(self):
         id = self.getSelectedId()
@@ -428,7 +439,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
         JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
-        WHERE tpn.timeperiod_id=%d
+        WHERE tpn.timeperiod_id=%d AND timeperiodnode.deleted=FALSE
         """ % model.id)
         self.tableWidget.setRowCount(len(nodes))
         i=0        

@@ -292,7 +292,8 @@ class SystemUserChild(QtGui.QMainWindow):
     def delete(self):
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
+                #self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
+                self.connection.iddelete("billservice_systemuser", self.getSelectedId())
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -323,7 +324,8 @@ class SystemUserChild(QtGui.QMainWindow):
     def refresh(self):
 
         #nasses=Nas.objects.all().order_by('id')
-        users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
+        #users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
+        users = self.connection.foselect("billservice_systemuser")
         #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(users))
         i=0

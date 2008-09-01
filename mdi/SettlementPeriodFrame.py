@@ -283,12 +283,27 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.refresh()
 
     def del_period(self):
-        id=self.getSelectedId()
+        '''id=self.getSelectedId()
 
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.delete("DELETE FROM billservice_settlementperiod WHERE id=%d" % id)
 
-        self.refresh()
+        self.refresh()'''
+        id=self.getSelectedId()
+        if id>0:
+            if self.connection.sql("""SELECT id FROM billservice_tariff WHERE (settlement_period_id=%d)""" % id):
+                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
+                return
+            elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                try:
+                    #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
+                    self.connection.iddelete("billservice_settlementperiod", id)
+                    self.connection.commit()
+                    self.refresh()
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
+                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
 
 
     def edit_period(self):
@@ -319,7 +334,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def refresh(self):
 
         #periods=SettlementPeriod.objects.all().order_by('id')
-        periods=self.connection.sql("SELECT * FROM billservice_settlementperiod ORDER BY id")
+        #periods=self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE deleted=FALSE ORDER BY id")
+        periods = self.connection.foselect("billservice_settlementperiod")
         #self.tableWidget.setRowCount(periods.count())
         self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
@@ -330,6 +346,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             self.addrow(period.autostart, i,2)
             self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
             self.addrow(period.length_in, i,4)
+            
             self.addrow(period.length, i,5)
             self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)

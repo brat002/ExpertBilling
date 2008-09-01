@@ -12,6 +12,13 @@ def get_nas_by_ip(cursor, ip):
     cursor.execute("""SELECT id, secret, type from nas_nas WHERE ipaddress='%s';""" % ip)
     return cursor.fetchone()
 
+def set_account_deleted(cursor, account_id):
+    cursor.execute('''UPDATE billservice_account SET deleted=TRUE WHERE id=%d''' % account_id)
+    try:
+        return cursor.fetchone()[0]
+    except:
+        return None
+
 def get_default_speed_parameters(cursor, tarif):
     """
     rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] [rx-rate-min[/tx-rate-min]]]]

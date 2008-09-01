@@ -3038,7 +3038,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
                     WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif_id)
             if len(accounts)>0:
-                tarifs = self.connection.sql("SELECT * FROM billservice_tariff WHERE deleted=False")
+                tarifs = self.connection.foselect("billservice_tariff")
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
                 if child.exec_()==1:
@@ -3049,7 +3049,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
                             self.connection.create("INSERT INTO billservice_accounttarif (account_id, tarif_id, datetime) VALUES(%d, %d, now())" % (account.id, tarif.id))
                     
                     
-                        self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                        #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                        self.connection.iddelete("billservice_tariff", tarif_id)
                         self.connection.commit()
                     except Exception, e:
                         print e
@@ -3057,7 +3058,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
                         return
             else:
                 try:
-                    self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                    #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                    self.connection.iddelete("billservice_tariff", tarif_id)
                     self.connection.commit()
                 except Exception, e:
                     print e
@@ -3134,8 +3136,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.accountActions(id, 'delete')
             
-            self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
-            self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
+            #self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
+            #self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
 
             self.connection.commit()
             self.refresh()
@@ -3206,7 +3208,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             print ex
         self.tarif_treeWidget.clear()
         #tariffs = Tariff.objects.all().order_by("id")
-        tariffs = self.connection.sql("SELECT * FROM billservice_tariff WHERE deleted=False ORDER BY id ASC;")
+        tariffs = self.connection.foselect("billservice_tariff")
         
         #index = self.tarif_treeWidget.index
   
@@ -3240,12 +3242,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
         print "tarif_id=",id
             
-        tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE deleted=False and id=%s" % id)
-
+        #tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%s" % id)
+        tarif = self.connection.foselect("billservice_tariff", id)
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
         JOIN nas_nas ON nas_nas.id=account.nas_id
         JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
-        WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif.id)
+        WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)
 
         self.tableWidget.setRowCount(len(accounts))
         
@@ -3300,11 +3302,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
     def accountDelete(self):
         id=self.getSelectedId()
-        if id==0:
+        if (id==0) and (QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить аккаунт? \n После удаления станет недоступна статистика и информация о проводках.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No):
             return
 
         if self.connection.accountActions(id, 'delete'):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
+            
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
 

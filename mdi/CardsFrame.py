@@ -138,7 +138,7 @@ class AddCards(QtGui.QDialog):
             return
         
         if self.pin_spinBox.text().toInt()[0]==0:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не eуказана длина PIN-кода"))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
             return        
         
         from randgen import GenPasswd2
@@ -421,8 +421,9 @@ class CardsChild(QtGui.QMainWindow):
 
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить группу карточек?" , u"Удалить группу карточек?.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM billservice_card WHERE card_group_id='%d'" % id)
-                self.connection.delete("DELETE FROM billservice_cardgroup WHERE id='%d'" % id)
+                #self.connection.delete("DELETE FROM billservice_card WHERE card_group_id='%d'" % id)
+                #self.connection.delete("DELETE FROM billservice_cardgroup WHERE id='%d'" % id)
+                self.connection.indelete("billservice_cardgroup", id)
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -538,7 +539,7 @@ class CardsChild(QtGui.QMainWindow):
 
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
+                #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
                 self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
                 self.connection.commit()
             except Exception, e:
