@@ -540,7 +540,7 @@ class TimeAccessBill(Thread):
         while True:
 
             self.cur.execute("""
-            SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tacc.name, tarif.id, acc_t.id
+            SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
             FROM radius_session as rs
             JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
             JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
@@ -550,7 +550,7 @@ class TimeAccessBill(Thread):
             rows=self.cur.fetchall()
 
             for row in rows:
-                account_id, session_id, session_time, interrim_update, ps_id, ps_name, tarif_id, accountt_tarif_id = row
+                account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
                 #1. Ищем последнюю запись по которой была произведена оплата
                 #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
                 #TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.

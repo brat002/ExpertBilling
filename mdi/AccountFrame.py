@@ -1667,6 +1667,9 @@ class TarifFrame(QtGui.QDialog):
             if unicode(self.tarif_name_edit.text())=="":
                 QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
                 return
+            if unicode(self.access_time_edit.currentText())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
+                return                
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
