@@ -555,14 +555,22 @@ class NasMdiChild(QtGui.QMainWindow):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
     def delete(self):
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u"Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. Вы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            try:
-                self.connection.delete("DELETE FROM nas_nas WHERE id=%d" % self.getSelectedId())
-                self.connection.commit()
-            except Exception, e:
-                print e
-                self.connection.rollback()
-        self.refresh()
+        id=self.getSelectedId()
+        if id>0:
+            if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
+                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
+                return
+            elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
+                try:
+                    #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
+                    self.connection.iddelete("nas_nas", id)
+                    self.connection.commit()
+                    self.refresh()
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
+                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
+        
 
 
     def editframe(self):
@@ -585,7 +593,8 @@ class NasMdiChild(QtGui.QMainWindow):
     def refresh(self):
 
         #nasses=Nas.objects.all().order_by('id')
-        nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
+        #nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
+        nasses = self.connection.foselect("nas_nas")
         #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(nasses))
         i=0

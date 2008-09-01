@@ -597,7 +597,7 @@ class ClassChild(QtGui.QMainWindow):
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 
-                self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
+                #self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
                 self.connection.delete("DELETE FROM nas_trafficclass WHERE id=%d" % model.id)
                 self.connection.commit()
             except Exception, e:

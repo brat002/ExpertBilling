@@ -5,7 +5,7 @@ from utilites import parse_custom_speed, cred, create_speed_string, change_speed
 import dictionary
 from threading import Thread
 import threading
-from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id
+from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 import Pyro.core
 import Pyro.protocol
 import Pyro.constants
@@ -1765,6 +1765,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         elif action=='create':
             command = row['user_add_action']
         elif action =='delete':
+            #set_account_deleted(self.cur, account_id)
+            self.iddelete("billservice_account", account_id)
             command = row['user_delete_action']
         print command
         
@@ -1818,7 +1820,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
    
         self.cur.execute(sql)
         #self.connection.commit()
-        return 
+        return
+    
+    @authentconn
+    def iddelete(self, table, id):
+
+        self.cur.execute("DELETE FROM %s where id=%d" % (table, id))
+        #self.connection.commit()
+        return
 
     @authentconn
     def command(self, sql):
@@ -1862,6 +1871,21 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             output.close()
             print "Pickle length=", time.clock()-a
         return result
+    
+    @authentconn
+    def foselect(self, table, id=None):
+        self.cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
+        #self.connection.commit()
+
+        #print dir(self.connection)
+        result=[]
+        a=time.clock()
+        result = map(Object, self.cur.fetchall())
+        print "Query length=", time.clock()-a
+        if id == None:
+            return result
+        else:
+            return result[0]
 
     @authentconn
     def sql_as_dict(self, sql, return_response=True):
