@@ -63,7 +63,7 @@ def get_account_data_by_username(cursor, username):
     bsat.tarif_id, accessparameters.access_type, account.status, 
     account.balance_blocked, (account.ballance+account.credit) as ballance, 
     account.disabled_by_limit, account.vpn_speed,
-    tariff.active,
+    tariff.active
     FROM billservice_account as account
     JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
     JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
@@ -93,7 +93,7 @@ def time_periods_by_tarif_id(cursor, tarif_id):
     WHERE bst.id=%s""" % tarif_id)
     return cursor.fetchall()
 
-def transaction(cursor, account, approved, type, tarif, summ, description, created=None, bill=''):
+def transaction(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
     print 'new transaction'
     if not created:
         created=datetime.datetime.now()
@@ -101,16 +101,16 @@ def transaction(cursor, account, approved, type, tarif, summ, description, creat
     cursor.execute("""
     INSERT INTO billservice_transaction(bill,
     account_id, approved, type_id, tarif_id, summ, description, created)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-    """,(bill, account, approved, type, tarif , summ, description, created))
+    VALUES ('%s', %s, %s, '%s', %s, %s, '%s', '%s') RETURNING id;
+    """ % (bill, account, approved, type, tarif , summ, description, created))
 
     tr_id=cursor.fetchone()[0]
-    
-    sql="""UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s RETURNING id;""" % (summ, account)
-    print 1
+    print tr_id
+    sql="""UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;""" % (summ, account)
+    print sql
     cursor.execute(sql)
-    print 2
-    print "transaction_id="
+    
+    #print "transaction_id=", cursor.fetchall()
     return tr_id
 
 def delete_transaction(cursor, id):

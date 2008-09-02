@@ -31,7 +31,7 @@ from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
      mincached=1,
-     maxcached=60,
+     maxcached=10,
      blocking=True,
      creator=psycopg2,
      dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
@@ -338,13 +338,15 @@ class periodical_service_bill(Thread):
 
     """
     def __init__ (self):
-        Thread.__init__(self)
         self.connection = pool.connection()
+        #self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
+        Thread.__init__(self)
+
         
     def run(self):
-        while True:
 
+        while True:
             # Количество снятий в сутки
             transaction_number=24
             n=(24*60*60)/transaction_number
@@ -357,7 +359,7 @@ class periodical_service_bill(Thread):
             #print "SELECT TP"
             #перебираем тарифные планы
             for row in rows:
-                self.connection.commit()
+                #self.connection.commit()
                 print row
                 tariff_id, settlement_period_id, null_ballance_checkout=row
                 
@@ -384,7 +386,7 @@ class periodical_service_bill(Thread):
                     ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
                     print "new ps"
                     for account in accounts:
-                        self.connection.commit()
+                        #self.connection.commit()
                         account_id = account[0]
                         print "account_id for ps", ps_id, account_id
                         account_datetime = account[1]
@@ -431,9 +433,9 @@ class periodical_service_bill(Thread):
                                     print "cash_summ", cash_summ
                                     transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
                                     #print "tr_id", transaction_id
-                                    self.connection.commit()
+                                    #self.connection.commit()
                                     ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
-                                    self.connection.commit()
+                                    #self.connection.commit()
 
                             if ps_cash_method=="AT_START":
                                 """
@@ -469,7 +471,7 @@ class periodical_service_bill(Thread):
                                     description=u"Проводка по периодической услуге со нятием суммы в начале периода",
                                     created = now)
                                     ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-                                    self.connection.commit()
+                                    #self.connection.commit()
                             if ps_cash_method=="AT_END":
                                """
                                Смотрим завершился ли хотя бы один расчётный период.
@@ -516,10 +518,9 @@ class periodical_service_bill(Thread):
                                    description=descr,
                                    created = now)
                                    ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-                                   self.connection.commit()
-                        self.connection.commit()
-            #self.cur.close()
-            #connection.close()
+                                   #self.connection.commit()
+                    self.connection.commit()
+
             time.sleep(180)
 
 class TimeAccessBill(Thread):
@@ -1798,6 +1799,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
     @authentconn
     def get(self, sql):
+        #print sql
         self.cur.execute(sql)
         #self.connection.commit()
         result=[]
@@ -1975,7 +1977,7 @@ def main():
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
     threads=[]
-    threads.append(check_vpn_access(timeout=60, dict=dict))
+    #threads.append(check_vpn_access(timeout=60, dict=dict))
 
 
     threads.append(periodical_service_bill())

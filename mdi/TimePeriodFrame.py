@@ -439,7 +439,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
         JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
-        WHERE tpn.timeperiod_id=%d AND timeperiodnode.deleted=FALSE
+        WHERE tpn.timeperiod_id=%d
         """ % model.id)
         self.tableWidget.setRowCount(len(nodes))
         i=0        

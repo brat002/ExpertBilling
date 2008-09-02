@@ -2594,7 +2594,7 @@ class AddAccountFrame(QtGui.QDialog):
                 model=Object()
                 model.created = datetime.datetime.now()
     
-                model.user_id=1
+                #model.user_id=1
                 model.ipn_status = False
                 model.disabled_by_limit = False
                 
@@ -3229,9 +3229,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
             #if index is not None and index.id == item.id:
             #    #self.tarif_treeWidget.setCurrentItem(item)
             #    item.setSelected(True)
+        self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
-        self.connectTree()
+        
             
     def refresh(self, item=None, k=''):
         #print item
@@ -3247,11 +3248,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
         #tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%s" % id)
         tarif = self.connection.foselect("billservice_tariff", id)
+        print "!!!tarif!!!", tarif
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
         JOIN nas_nas ON nas_nas.id=account.nas_id
         JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
         WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)
-
+        print accounts
         self.tableWidget.setRowCount(len(accounts))
         
         
