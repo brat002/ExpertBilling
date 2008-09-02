@@ -30,7 +30,7 @@ pool = PooledDB(
     maxcached=10,
     blocking=True,
     creator=psycopg2,
-    setsession=['SET AUTOCOMMIT = 1'],
+#    setsession=['SET AUTOCOMMIT = 1'],
     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
                                                            settings.DATABASE_USER,
                                                            settings.DATABASE_HOST,

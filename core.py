@@ -122,9 +122,9 @@ def comparator(d, s):
     return d
     
 class check_vpn_access(Thread):
-        def __init__ (self, dict, timeout=30):
-            self.dict=dict
-            self.timeout=timeout
+        def __init__ (self):
+            #self.dict=dict
+            #self.timeout=timeout
             self.connection = pool.connection()
             self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
             Thread.__init__(self)
@@ -169,7 +169,7 @@ class check_vpn_access(Thread):
                     #print "account", account
                     if account is not None:
                         print 'send pod'
-                        res = PoD(dict=self.dict,
+                        res = PoD(dict=dict,
                             account_id=account['id'], 
                             account_name=str(session['name']), 
                             account_vpn_ip=account['vpn_ip_address'], 
@@ -261,7 +261,7 @@ class check_vpn_access(Thread):
             			for key in speed:
             			    newspeed+=unicode(speed[key])
             			if row['speed_string']!=newspeed:
-            			    coa_result=change_speed(dict=self.dict, account_id=row['account_id'], 
+            			    coa_result=change_speed(dict=dict, account_id=row['account_id'], 
             				 account_name=str(row['username']), 
             				 account_vpn_ip=row['vpn_ip_address'], 
             				 account_ipn_ip=row['ipn_ip_address'], 
@@ -286,7 +286,7 @@ class check_vpn_access(Thread):
             					 """ % (newspeed, row['id'])
             					 )
                     else:
-                        result = PoD(dict=self.dict,
+                        result = PoD(dict=dict,
                             account_id=row['account_id'], 
                             account_name=str(row['username']), 
                             account_vpn_ip=row['vpn_ip_address'], 
@@ -318,7 +318,7 @@ class check_vpn_access(Thread):
                 self.connection.commit()
                 #self.cur.close()
 
-                time.sleep(self.timeout)
+                time.sleep(60)
 
         def run(self):
             self.remove_sessions()
@@ -1010,10 +1010,10 @@ class limit_checker(Thread):
     Проверяет исчерпание лимитов. если лимит исчерпан-ставим соотв галочку в аккаунте
     """
     def __init__ (self):
+        Thread.__init__(self)
         self.connection = pool.connection()
         self.cur = self.connection.cursor()
-        Thread.__init__(self)
-
+        
     def run(self):
         while True:
 
@@ -1126,7 +1126,7 @@ class limit_checker(Thread):
                     )
 #                    print "limit_result=", block
 
-                self.connection.commit() 
+            self.connection.commit() 
             time.sleep(30)
 
 
@@ -1977,9 +1977,7 @@ def main():
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
     threads=[]
-    #threads.append(check_vpn_access(timeout=60, dict=dict))
-
-
+    threads.append(check_vpn_access())
     threads.append(periodical_service_bill())
     threads.append(TimeAccessBill())
     threads.append(NetFlowAggregate())
