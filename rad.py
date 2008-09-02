@@ -30,6 +30,7 @@ pool = PooledDB(
     maxcached=10,
     blocking=True,
     creator=psycopg2,
+    setsession=['SET AUTOCOMMIT = 1'],
     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
                                                            settings.DATABASE_USER,
                                                            settings.DATABASE_HOST,
@@ -290,6 +291,7 @@ class HandleAcct(HandleBase):
         self.replypacket=packetobject.CreateReply()
         self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(2)
         self.cur = self.connection.cursor()
 
     def get_bytes(self):
@@ -306,8 +308,9 @@ class HandleAcct(HandleBase):
 
     def handle(self):
 
-        self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s'""" % self.nasip)
+        self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s';""" % self.nasip)
         row = self.cur.fetchone()
+        print 1
         if row==None:
             return self.acct_NA(self.replypacket)
 
@@ -316,7 +319,7 @@ class HandleAcct(HandleBase):
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         #simple_log(packet=self.packetobject)
-
+        print 2
         self.cur.execute(
         """
         SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
@@ -327,6 +330,8 @@ class HandleAcct(HandleBase):
         )
         row=self.cur.fetchone()
         if row==None:
+            self.cur.close()
+            self.connection.close()
             return self.acct_NA(self.replypacket)
 
         account_id, time_access=row
@@ -335,7 +340,7 @@ class HandleAcct(HandleBase):
         self.replypacket.code=5
         now=datetime.datetime.now()
 
-
+        print 3
         if self.packetobject['Acct-Status-Type']==['Start']:
             #Проверяем нет ли такой сессии в базе
             self.cur.execute("""
@@ -345,36 +350,40 @@ class HandleAcct(HandleBase):
             caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
             """ % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
                    self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
-            
+            print 31
             allow_write = self.cur.fetchone()==None
+            print 32
             #allow_write=True
             if time_access and allow_write:
+                print 33
                 self.cur.execute(
                 """
                 INSERT INTO radius_session(
                 account_id, sessionid, date_start,
                 caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
                 )
-                VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s);
-                """, (account_id, self.packetobject['Acct-Session-Id'][0], now,
+                VALUES (%s, '%s','%s', '%s', '%s', '%s', '%s', %s, %s)
+                """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
                      self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
-
+            print 34
             if allow_write:
+                print 35
                 self.cur.execute(
                 """
                 INSERT INTO radius_activesession(
                 account_id, sessionid, date_start,
                 caller_id, called_id, nas_id, framed_protocol, session_status
                 )
-                VALUES (%s, %s,%s, %s, %s, %s, %s, 'ACTIVE');
-                """, (account_id, self.packetobject['Acct-Session-Id'][0], now,
+                VALUES (%s, '%s','%s', '%s', '%s', '%s', '%s', 'ACTIVE');
+                """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
                      self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type))
-
-            self.connection.commit()
-
-
+                print 36
+                print 'start', True
+            #self.connection.commit()
+            print 37
+        print 4
         if self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out=self.get_bytes()
             if time_access:
@@ -384,9 +393,9 @@ class HandleAcct(HandleBase):
                             account_id, sessionid, interrim_update,
                             caller_id, called_id, nas_id, session_time,
                             bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                            VALUES ( %s, %s, %s, %s, %s, %s,
-                            %s, %s, %s, %s, %s, %s);
-                            """, (account_id, self.packetobject['Acct-Session-Id'][0],
+                            VALUES ( %s, '%s', '%s', '%s', '%s', '%s',
+                            '%s', '%s', '%s', '%s', %s, %s);
+                            """ % (account_id, self.packetobject['Acct-Session-Id'][0],
                                  now, self.packetobject['Calling-Station-Id'][0],
                                  self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
                                  self.packetobject['Acct-Session-Time'][0],
@@ -400,7 +409,7 @@ class HandleAcct(HandleBase):
                         """ % (now, self.packetobject['Acct-Input-Octets'][0], self.packetobject['Acct-Output-Octets'][0], self.packetobject['Acct-Session-Time'][0], account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
             )
 
-            self.connection.commit()
+            #self.connection.commit()
 
         if self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
@@ -411,9 +420,9 @@ class HandleAcct(HandleBase):
                 account_id, sessionid, interrim_update, date_end,
                 caller_id, called_id, nas_id, session_time,
                 bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                VALUES ( %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s);
-                """, (account_id, self.packetobject['Acct-Session-Id'][0],
+                VALUES ( %s, '%s', '%s', '%s', '%s',
+                '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);
+                """ % (account_id, self.packetobject['Acct-Session-Id'][0],
                       now, now, self.packetobject['Calling-Station-Id'][0],
                       self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
                       self.packetobject['Acct-Session-Time'][0],
@@ -427,10 +436,13 @@ class HandleAcct(HandleBase):
                WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
                """ % (now,account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
                )
-            self.connection.commit()
+            #self.connection.commit()
+        print "acct end"
+        self.connection.commit()
+        print 5
         self.connection.close()
         self.cur.close()
-
+        
         #data_to_send=replypacket.ReplyPacket()
         return self.replypacket
 

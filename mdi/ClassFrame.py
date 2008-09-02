@@ -330,11 +330,13 @@ class ClassNodeFrame(QtGui.QDialog):
             self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
             #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
             self.next_hop_edit.setText(unicode(self.model.next_hop))
-
-                                       
-
-            
-    
+        else:
+            default=u'0.0.0.0'
+            self.src_ip_edit.setText(default)
+            self.src_mask_edit.setText(default)            
+            self.dst_ip_edit.setText(default)
+            self.dst_mask_edit.setText(default)
+            self.next_hop_edit.setText(default)                                       
 
 
     def accept(self):
@@ -365,17 +367,23 @@ class ClassNodeFrame(QtGui.QDialog):
         
         if src_mask:
             if self.ipValidator.validate(src_mask, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src Mask до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Src Mask."))
                 return
         else:
             src_mask= '0.0.0.0'
             
         model.src_mask = src_mask
-            
+        try:
+            IP("%s/%s" % (model.src_ip, model.src_mask))
+        except Exception, e:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Неправильное сочетание SRC IP/Mask."))
+            return
+
+        
         dst_ip = unicode(self.dst_ip_edit.text())
         if dst_ip:
             if self.ipValidator.validate(dst_ip, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Dst Ip до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность DST IP."))
                 return
         else:
             src_mask='0.0.0.0'
@@ -384,13 +392,18 @@ class ClassNodeFrame(QtGui.QDialog):
         dst_mask = unicode(self.dst_mask_edit.text())
         if dst_mask:
             if self.ipValidator.validate(dst_mask, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Dst Mask до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Dst Mask."))
                 return
         else:
             dst_mask='0.0.0.0'
 
         model.dst_mask = dst_mask
-            
+        try:
+            IP("%s/%s" % (model.dst_ip, model.dst_mask))
+        except Exception, e:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Неправильное сочетание DST IP/Mask."))
+            return
+                    
         src_port = unicode(self.src_port_edit.text())
            
         model.src_port = src_port or 0
@@ -403,7 +416,7 @@ class ClassNodeFrame(QtGui.QDialog):
         
         if next_hop:
             if self.ipValidator.validate(next_hop, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Next Hop до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Next Hop."))
                 return
         else:
             next_hop = '0.0.0.0'

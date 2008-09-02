@@ -291,6 +291,7 @@ def transaction(account_id, type_id, approved, description, summ, bill):
     o.description = description
     o.summ = summ
     o.bill = bill
+    #o.tarif_id=1
     o.created = datetime.datetime.now()
     
     sql = o.save("billservice_transaction")
