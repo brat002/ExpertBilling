@@ -322,7 +322,7 @@ class SystemUserChild(QtGui.QMainWindow):
 
 
     def refresh(self):
-
+        self.tableWidget.setSortingEnabled(False)
         #nasses=Nas.objects.all().order_by('id')
         #users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
         users = self.connection.foselect("billservice_systemuser")
@@ -344,6 +344,7 @@ class SystemUserChild(QtGui.QMainWindow):
             
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
+        self.tableWidget.setSortingEnabled(True)
     def saveHeader(self, *args):
         HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def delNodeLocalAction(self):

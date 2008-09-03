@@ -526,7 +526,7 @@ class CardsChild(QtGui.QMainWindow):
         #print model.id
         
         last_series = self.connection.get("SELECT MAX(series) as series FROM billservice_card").series
-        if last_series=='Null':
+        if last_series==None:
             last_series=0
         else:
             last_series+=1
@@ -564,6 +564,7 @@ class CardsChild(QtGui.QMainWindow):
             self.refreshTable()
         
     def refreshTable(self, widget=None):
+        self.tableWidget.setSortingEnabled(False)
         if not widget:
             group_id=self.getTimeperiodId()
         else:
@@ -588,6 +589,7 @@ class CardsChild(QtGui.QMainWindow):
             
         self.tableWidget.setColumnHidden(0, False)
         self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.setSortingEnabled(True)
 
 
 

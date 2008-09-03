@@ -591,7 +591,7 @@ class NasMdiChild(QtGui.QMainWindow):
 
 
     def refresh(self):
-
+        self.tableWidget.setSortingEnabled(False)
         #nasses=Nas.objects.all().order_by('id')
         #nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
         nasses = self.connection.foselect("nas_nas")
@@ -609,6 +609,7 @@ class NasMdiChild(QtGui.QMainWindow):
 
             
         self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.setSortingEnabled(True)
 
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:

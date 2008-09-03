@@ -1368,14 +1368,15 @@ class settlement_period_service_dog(Thread):
             SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
                         WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
             FROM billservice_account as account
-            LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
-                        WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
             JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
             JOIN billservice_tariff_onetime_services as ots ON ots.tariff_id=tarif.id
             JOIN billservice_onetimeservice as service ON service.id=ots.onetimeservice_id
-            WHERE (account.ballance+account.credit)>0 and oth.id is Null
+            LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
+                        WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
+            WHERE (account.ballance+account.credit)>0 and oth.id is Null;
             """)
             rows = self.cur.fetchall()
+            print "onetime", rows
             for row in rows:
                 account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
                 transaction(

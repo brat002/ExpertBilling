@@ -191,6 +191,7 @@ class TransactionsReport(QtGui.QMainWindow):
         self.tableWidget.setItem(x,y,headerItem)
                 
     def refresh_table(self):
+        self.tableWidget.setSortingEnabled(False)
         self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
         self.tableWidget.clearContents()
         start_date = self.date_start.dateTime().toPyDateTime()
@@ -237,6 +238,7 @@ class TransactionsReport(QtGui.QMainWindow):
             settings.setValue("trans_date_end", QtCore.QVariant(self.date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
+        self.tableWidget.setSortingEnabled(True)
         
     def delete_transaction(self):
         ids = []
@@ -645,7 +647,7 @@ class NetFlowReport(QtGui.QMainWindow):
         
         self.status_label.setText(u"Подождите, идёт обработка.")
 
-        
+        self.tableWidget.setSortingEnabled(False)
         if self.child.with_grouping_checkBox.checkState()==0:
             sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
             netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
@@ -794,7 +796,8 @@ class NetFlowReport(QtGui.QMainWindow):
         #self.statusBar().showMessage(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         #self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         self.status_label.setText(u"Готово")
-        print "Interface generation time=", time.clock()-a    
+        #print "Interface generation time=", time.clock()-a
+        self.tableWidget.setSortingEnabled(True)    
         
         
 
