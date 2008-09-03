@@ -177,7 +177,7 @@ class Object(object):
     
     def isnull(self, attr):
         if self.hasattr(attr):
-            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+            if self.__dict__[attr]!=None:
                 return False
             
         return True

@@ -7,6 +7,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import setFirstActive
 from helpers import HeaderUtil
+from IPy import *
 
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -376,6 +377,7 @@ class ClassNodeFrame(QtGui.QDialog):
         try:
             IP("%s/%s" % (model.src_ip, model.src_mask))
         except Exception, e:
+            print e
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Неправильное сочетание SRC IP/Mask."))
             return
 

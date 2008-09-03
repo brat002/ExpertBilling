@@ -1664,12 +1664,12 @@ class TarifFrame(QtGui.QDialog):
             model=Object()
             access_parameters = Object()
             
-            if unicode(self.tarif_name_edit.text())=="":
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
-                return
-            if unicode(self.access_time_edit.currentText())=="":
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
-                return                
+        if unicode(self.tarif_name_edit.text())=="":
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
+            return
+        if unicode(self.access_time_edit.currentText())=="":
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
+            return                
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
@@ -1688,7 +1688,7 @@ class TarifFrame(QtGui.QDialog):
             access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or 0, self.speed_burst_treshold_out_edit.text() or 0)
             access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or 0, self.speed_burst_time_out_edit.text() or 0)
             access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
-            access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
+            #access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
             
             if self.model:
                 #Просто обновляем запись
@@ -1980,9 +1980,10 @@ class TarifFrame(QtGui.QDialog):
                         #limit.tariff_set.add(model)
             elif self.limites_checkbox.checkState()==0:
                 limites = self.connection.sql("SELECT * FROM billservice_tariff_traffic_limit WHERE tariff_id=%d" % model_id)
-                for limit in limites:
-                    self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d" % limit.id)
-                self.connection.delete("DELETE FROM billservice_tariff_traffic_limit WHERE tariff_id=%d;" % model_id)
+                if len(limites)>0:
+                    for limit in limites:
+                        self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d" % limit.id)
+                    self.connection.delete("DELETE FROM billservice_tariff_traffic_limit WHERE tariff_id=%d;" % model_id)
                                 
             #Доступ по трафику 
             if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
@@ -2153,9 +2154,8 @@ class TarifFrame(QtGui.QDialog):
                                                                     
                     #self.connection.create(prepaid_node.save("billservice_prepaidtraffic")) 
     
-            elif self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0:
-                if not model.isnull("traffic_transmit_service_id"):
-                    self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
+            elif (self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0) and not model.isnull("traffic_transmit_service_id"):
+                self.connection.delete("DELETE FROM billservice_traffictransmitservice WHERE id=%d" % model.traffic_transmit_service_id)
                 model.traffic_transmit_service_id=None
                 
                             
@@ -2706,8 +2706,7 @@ class AddAccountFrame(QtGui.QDialog):
             print "model.ipn_mac_address", model.ipn_mac_address
             
             
-            self.connection.commit()
-            if model.ipn_ip_address!="":
+            if model.ipn_ip_address!="0.0.0.0":
                 self.connection.accountActions(model.id, 'delete')
                 if self.connection.accountActions(model.id, 'create'):
                    QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно синхронизирован на сервере доступа."))
@@ -2719,7 +2718,7 @@ class AddAccountFrame(QtGui.QDialog):
             self.connection.commit()
             self.model=model
         except Exception, e:
-            print e
+            print "!!!SAVE CREATE ERROR", e
             import sys, traceback
             traceback.print_exc()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
@@ -3097,12 +3096,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             accounttarif.account_id=child.model.id
             accounttarif.tarif_id=tarif.id
             accounttarif.datetime = datetime.datetime.now()
-            try:
-                self.connection.create(accounttarif.save("billservice_accounttarif"))
-                self.connection.commit()
-            except Exception, e:
-                print e
-                self.connection.rollback()
+            self.connection.create(accounttarif.save("billservice_accounttarif"))
+            self.connection.commit()
                 
             self.refresh()
 
@@ -3150,7 +3145,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def editframe(self, *args, **kwargs):
         #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
-        print id
+        #print id
         if id == 0:
             return
         try:
@@ -3244,11 +3239,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
             except:
                 return
             
-        print "tarif_id=",id
+        #print "tarif_id=",id
             
         #tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%s" % id)
         tarif = self.connection.foselect("billservice_tariff", id)
-        print "!!!tarif!!!", tarif
+        #print "!!!tarif!!!", tarif
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
         JOIN nas_nas ON nas_nas.id=account.nas_id
         JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )

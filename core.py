@@ -1906,12 +1906,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def create(self, sql):
         print sql
         self.cur.execute(sql)
-        id=-1
+        
         #print self.cur.fetchone()
         try:
             id = self.cur.fetchone()['id']
         except:
-            pass
+            id=-1
         #self.connection.commit()
                
         return id
