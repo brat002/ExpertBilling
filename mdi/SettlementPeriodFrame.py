@@ -332,7 +332,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def saveHeader(self, *args):
         HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def refresh(self):
-
+        self.tableWidget.setSortingEnabled(False)
         #periods=SettlementPeriod.objects.all().order_by('id')
         #periods=self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE deleted=FALSE ORDER BY id")
         periods = self.connection.foselect("billservice_settlementperiod")
@@ -354,6 +354,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             i+=1
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
+        self.tableWidget.setSortingEnabled(True)
             
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:

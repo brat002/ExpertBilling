@@ -520,6 +520,7 @@ if __name__ == "__main__":
         #app.setStyle("cleanlooks")
         app.setStyleSheet(open("./style.qss","r").read())
         sys.exit(app.exec_())
+        connection.commit()
     except Exception, ex:
         print "main-----------"
         print ex

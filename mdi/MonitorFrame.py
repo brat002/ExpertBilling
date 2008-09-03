@@ -114,7 +114,7 @@ class MonitorFrame(QtGui.QMainWindow):
     def fixtures(self, user=None):
         
         self.tableWidget.clearContents()
-        
+        self.tableWidget.setSortingEnabled(False)
         if self.allTimeCheckbox.checkState()==2:
             sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
             
@@ -161,7 +161,7 @@ class MonitorFrame(QtGui.QMainWindow):
         
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.setSortingEnabled(True)
-        
+        self.tableWidget.setSortingEnabled(True)
 
         
     def refresh_users(self):

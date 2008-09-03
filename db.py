@@ -113,16 +113,16 @@ def transaction(cursor, account, approved, type, summ, description, created=None
         created=datetime.datetime.now()
 
     cursor.execute("""
+    UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
     INSERT INTO billservice_transaction(bill,
     account_id, approved, type_id, tarif_id, summ, description, created)
     VALUES ('%s', %s, %s, '%s', %s, %s, '%s', '%s') RETURNING id;
-    """ % (bill, account, approved, type, tarif , summ, description, created))
+    """ % (summ, account, bill, account, approved, type, tarif , summ, description, created))
 
     tr_id=cursor.fetchone()[0]
     print tr_id
-    sql="""UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;""" % (summ, account)
-    print sql
-    cursor.execute(sql)
+
+    #cursor.execute("""""" % ())
     
     #print "transaction_id=", cursor.fetchall()
     return tr_id

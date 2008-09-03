@@ -3230,6 +3230,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
             
     def refresh(self, item=None, k=''):
+        self.tableWidget.setSortingEnabled(False)
         #print item
         if item:
             id=item.id
@@ -3279,6 +3280,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
         HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
+        self.tableWidget.setSortingEnabled(True)
 
     def accountEnable(self):
         id=self.getSelectedId()
