@@ -72,9 +72,10 @@ class HandleBase(object):
 #auth_class
 class HandleAuth(HandleBase):
 
-    def __init__(self,  packetobject):
+    def __init__(self,  packetobject, access_type):
         self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
+        self.access_type=access_type
 
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
@@ -141,7 +142,7 @@ class HandleAuth(HandleBase):
         #TO-DO: Добавить проверку на balance_blocked
 
 
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0])
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0])
         #print 1
         if row==None:
             self.cur.close()
@@ -343,15 +344,16 @@ class HandleAcct(HandleBase):
         print 3
         if self.packetobject['Acct-Status-Type']==['Start']:
             #Проверяем нет ли такой сессии в базе
-            self.cur.execute("""
-            SELECT id
-            FROM radius_activesession
-            WHERE account_id=%s and sessionid='%s' and
-            caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
-            """ % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
-                   self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
+            #self.cur.execute("""
+            #SELECT id
+            #FROM radius_activesession
+            #WHERE account_id=%s and sessionid='%s' and
+            #caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
+            #""" % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
+            #       self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
             print 31
-            allow_write = self.cur.fetchone()==None
+            #allow_write = self.cur.fetchone()==None
+            allow_write=True
             print 32
             #allow_write=True
             if time_access and allow_write:
@@ -472,7 +474,7 @@ class RadiusAuth(BaseAuth):
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
-            coreconnect = HandleAuth(packetobject=packetobject)
+            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type)
             packetfromcore=coreconnect.handle()
             packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
