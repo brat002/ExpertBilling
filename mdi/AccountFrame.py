@@ -48,9 +48,10 @@ class CustomWidget(QtGui.QTableWidgetItem):
         
 
 class AddAccountTarif(QtGui.QDialog):
-    def __init__(self, connection,account=None, model=None):
+    def __init__(self, connection,ttype, account=None, model=None):
         super(AddAccountTarif, self).__init__()
         self.model=model
+        self.ttype = ttype
         self.account=account
         self.connection = connection
         self.connection.commit()
@@ -105,7 +106,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
 
     def accept(self):
-        tarif=self.connection.get("SELECT * FROM billservice_tariff WHERE deleted=False and name='%s'" % unicode(self.tarif_edit.currentText()))
+        tarif=self.connection.get("SELECT * FROM billservice_tariff WHERE id=%d" % self.tarif_edit.itemData(self.tarif_edit.currentIndex()).toInt()[0])
         date=self.date_edit.dateTime().toPyDateTime()
         if self.model:
             model=self.model
@@ -138,13 +139,13 @@ class AddAccountTarif(QtGui.QDialog):
         self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        tarifs=self.connection.sql("SELECT * FROM billservice_tariff WHERE deleted=False and active=True")
+        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (active=TRUE) AND (get_tariff_type(id)='%s');" % self.ttype)
         for tarif in tarifs:
-            self.tarif_edit.addItem(tarif.name)
+            self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
         now=datetime.datetime.now()
-
+        print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
-            self.tarif_edit.setCurrentIndex(self.tarif_edit.findText(self.model.tarif_name, QtCore.Qt.MatchCaseSensitive))
+            self.tarif_edit.setCurrentIndex(self.tarif_edit.findData(self.model.tarif_id))
 
             now = QtCore.QDateTime()
 
@@ -235,6 +236,7 @@ class TarifFrame(QtGui.QDialog):
         self.access_type_edit = QtGui.QComboBox(self.tab_1)
         self.access_type_edit.setGeometry(QtCore.QRect(150,260,241,21))
         self.access_type_edit.setObjectName("access_type_edit")
+        #if self.model: self.access_type_edit.setDisabled(True)
 
         self.access_time_edit = QtGui.QComboBox(self.tab_1)
         self.access_time_edit.setGeometry(QtCore.QRect(150,290,241,21))
@@ -251,7 +253,11 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_name_edit = QtGui.QLineEdit(self.tab_1)
         self.tarif_name_edit.setGeometry(QtCore.QRect(110,20,381,20))
         self.tarif_name_edit.setObjectName("tarif_name_edit")
-
+        
+        self.ipn_for_vpn = QtGui.QCheckBox(self.tab_1)
+        self.ipn_for_vpn.setGeometry(QtCore.QRect(400,260,200,20))
+        self.ipn_for_vpn.setObjectName("ipn_for_vpn")
+        
         self.components_groupBox = QtGui.QGroupBox(self.tab_1)
         self.components_groupBox.setGeometry(QtCore.QRect(420,60,184,159))
         self.components_groupBox.setObjectName("components_groupBox")
@@ -699,6 +705,7 @@ class TarifFrame(QtGui.QDialog):
         self.access_time_label.setText(QtGui.QApplication.translate("Dialog", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.components_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Набор компонентов", None, QtGui.QApplication.UnicodeUTF8))
         self.transmit_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_for_vpn.setText(QtGui.QApplication.translate("Dialog", "Производить IPN действия", None, QtGui.QApplication.UnicodeUTF8))
         self.time_access_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
         self.onetime_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.periodical_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
@@ -1345,7 +1352,7 @@ class TarifFrame(QtGui.QDialog):
 
 
 
-            
+
         access_types = ["PPTP", "PPPOE", "IPN"]
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
@@ -1606,10 +1613,14 @@ class TarifFrame(QtGui.QDialog):
                     self.trafficcost_tableWidget.resizeRowsToContents()
                     self.trafficcost_tableWidget.resizeColumnsToContents()
                     self.trafficcost_tableWidget.setColumnHidden(0, True)
-        
+            if access_parameters.access_type == 'IPN':
+                self.access_type_edit.setDisabled(True)
+                self.ipn_for_vpn.setDisabled(True)
+            else:
+                self.access_type_edit.removeItem(2)
             self.access_type_edit.setCurrentIndex(self.access_type_edit.findText(access_parameters.access_type, QtCore.Qt.MatchCaseSensitive))
             self.access_time_edit.setCurrentIndex(self.access_time_edit.findText(access_parameters.time_name, QtCore.Qt.MatchCaseSensitive))
-            
+            self.ipn_for_vpn.setChecked(access_parameters.ipn_for_vpn)
         self.timeaccessTabActivityActions()
         self.transmitTabActivityActions()
         self.onetimeTabActivityActions()
@@ -1664,12 +1675,15 @@ class TarifFrame(QtGui.QDialog):
             model=Object()
             access_parameters = Object()
             
-        if unicode(self.tarif_name_edit.text())=="":
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
-            return
-        if unicode(self.access_time_edit.currentText())=="":
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
-            return                
+            if unicode(self.tarif_name_edit.text())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
+                return
+            if unicode(self.access_time_edit.currentText())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
+                return
+            if (str(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть указано только для VPN планов")
+                return
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
@@ -1688,7 +1702,8 @@ class TarifFrame(QtGui.QDialog):
             access_parameters.burst_treshold = u"%s/%s" % (self.speed_burst_treshold_in_edit.text() or 0, self.speed_burst_treshold_out_edit.text() or 0)
             access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or 0, self.speed_burst_time_out_edit.text() or 0)
             access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
-            #access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
+            access_parameters.ipn_for_vpn = self.ipn_for_vpn.checkState()==2
+            access_parameters_id = self.connection.create(access_parameters.save("billservice_accessparameters"))
             
             if self.model:
                 #Просто обновляем запись
@@ -2176,9 +2191,10 @@ class TarifFrame(QtGui.QDialog):
         QtGui.QDialog.accept(self)
                     
 class AddAccountFrame(QtGui.QDialog):
-    def __init__(self, connection, model=None):
+    def __init__(self, connection,ttype, model=None):
         super(AddAccountFrame, self).__init__()
         self.model=model
+        self.ttype = ttype
         self.connection = connection
         self.connection.commit()
 
@@ -2532,7 +2548,7 @@ class AddAccountFrame(QtGui.QDialog):
 
     def add_accounttarif(self):
 
-        child=AddAccountTarif(connection=self.connection, account=self.model)
+        child=AddAccountTarif(connection=self.connection,ttype=self.ttype, account=self.model)
         
         if child.exec_()==1:
             self.accountTarifRefresh()
@@ -2556,10 +2572,10 @@ class AddAccountFrame(QtGui.QDialog):
             return
 
         if model.datetime<datetime.datetime.now():
-            QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
+            QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
             return
 
-        child=AddAccountTarif(model=model)
+        child=AddAccountTarif(connection=self.connection, ttype=self.ttype, model=model)
         if child.exec_()==1:
             self.accountTarifRefresh()
 
@@ -2636,6 +2652,9 @@ class AddAccountFrame(QtGui.QDialog):
                 except Exception, ex:
                     print ex
                 model.ipn_ip_address = unicode(self.ipn_ip_address_edit.text())
+            elif self.ttype == 'IPN':
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на IPN тарифном плане. \n IPN IP должен быть введён до конца."))
+                return
             else:
                 model.ipn_ip_address = '0.0.0.0'
                 
@@ -2655,6 +2674,9 @@ class AddAccountFrame(QtGui.QDialog):
                     print ex
                 
                 model.vpn_ip_address = unicode(self.vpn_ip_address_edit.text())
+            elif self.ttype == 'VPN':
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на VPN тарифном плане. \n VPN IP должен быть введён до конца."))
+                return
             else:
                 model.vpn_ip_address = '0.0.0.0'
               
@@ -2709,13 +2731,14 @@ class AddAccountFrame(QtGui.QDialog):
             if model.ipn_ip_address!="0.0.0.0":
                 self.connection.accountActions(model.id, 'delete')
                 if self.connection.accountActions(model.id, 'create'):
-                   QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно синхронизирован на сервере доступа."))
+                    #self.connection.commit()
+                    QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно синхронизирован на сервере доступа."))
                 else:
-                   QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
-                   #self.connection.rollback()
-
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
+                    #self.connection.rollback()
+                #self.connection.commit()
                 
-            self.connection.commit()
+            
             self.model=model
         except Exception, e:
             print "!!!SAVE CREATE ERROR", e
@@ -2796,7 +2819,7 @@ class AddAccountFrame(QtGui.QDialog):
         if self.model:
             ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name FROM billservice_accounttarif as accounttarif 
             JOIN billservice_tariff as tarif ON tarif.id=accounttarif.tarif_id
-            WHERE tarif.deleted=False and account_id=%d ORDER BY datetime ASC""" % self.model.id)
+            WHERE account_id=%d ORDER BY datetime ASC""" % self.model.id)
             self.accounttarif_table.setRowCount(len(ac))
             i=0
             print ac
@@ -2865,6 +2888,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         tree_header = self.tarif_treeWidget.headerItem()
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
+        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
@@ -3040,7 +3064,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
                     WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif_id)
             if len(accounts)>0:
-                tarifs = self.connection.foselect("billservice_tariff")
+                tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
                 if child.exec_()==1:
@@ -3087,11 +3112,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #print num
 
     def addframe(self):
-        
-        child = AddAccountFrame(connection=self.connection)
+        tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+        self.connection.commit()
+        child = AddAccountFrame(connection=self.connection, ttype=tarif_type)
         
         if child.exec_()==1:
-            tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
+            self.connection.commit()
+            tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%d" % self.tarif_treeWidget.currentItem().id)
             accounttarif = Object()
             accounttarif.account_id=child.model.id
             accounttarif.tarif_id=tarif.id
@@ -3109,10 +3136,16 @@ class AccountsMdiChild(QtGui.QMainWindow):
             tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = "", summ=child.result, bill=unicode(child.payed_document_edit.text()))
             try:
                 
-                self.connection.create(tr)
+                #self.connection.create(tr)
+                toex = tr.split(';')
+                print 
+                #self.connection.listexec(toex[0]+ ';')
+                #self.connection.listexec(tr)
+                #self.connection.create(tr)
+                self.connection.create(toex[0]+ ';')
                 self.connection.commit()
             except Exception, e:
-                print e
+                print "omg traf exception", e
                 self.connection.rollback()
             
             #Если будем переделывать - здесь нужно списывать со счёта пользователя указанную сумму денег.
@@ -3157,7 +3190,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             print e
             model = None
         print 'model', model
-        addf = AddAccountFrame(connection=self.connection, model=model)
+        tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+        addf = AddAccountFrame(connection=self.connection,ttype=tarif_type, model=model)
         #addf.show()
         if addf.exec_()==1:
             self.refresh()
@@ -3206,8 +3240,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             print ex
         self.tarif_treeWidget.clear()
         #tariffs = Tariff.objects.all().order_by("id")
-        tariffs = self.connection.foselect("billservice_tariff")
-        
+        #tariffs = self.connection.foselect("billservice_tariff")
+        tariffs = self.connection.sql("SELECT id, name, active, get_tariff_type(id) AS ttype FROM billservice_tariff ORDER BY ttype, name;")
         #index = self.tarif_treeWidget.index
   
         #print 'index=', index
@@ -3217,7 +3251,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             item.id = tarif.id
             item.setText(0, u"%s" % tarif.name)
             item.setIcon(0,QtGui.QIcon("images/folder.png"))
-            
+            #tariff_type = self.connection.get("SELECT get_tariff_type(%d);" % tarif.id)
+            item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setDisabled(True)
             
