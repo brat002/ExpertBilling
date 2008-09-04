@@ -169,6 +169,11 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_secret.setGeometry(QtCore.QRect(140,102,221,20))
         self.nas_secret.setEchoMode(QtGui.QLineEdit.Password)
         self.nas_secret.setObjectName("nas_secret")
+        
+        self.multilink_checkBox = QtGui.QCheckBox(self.general_tab)
+        self.multilink_checkBox.setGeometry(QtCore.QRect(10,280,220,20))
+        self.multilink_checkBox.setObjectName("multilink_checkBox")
+        
         self.maintabWidget.addTab(self.general_tab,"")
 
         self.commands_tab = QtGui.QWidget()
@@ -275,6 +280,7 @@ class AddNasFrame(QtGui.QDialog):
         self.pptp_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPTP", None, QtGui.QApplication.UnicodeUTF8))
         self.pppoe_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPPOE", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_checkBox.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
+        self.multilink_checkBox.setText(QtGui.QApplication.translate("Dialog", "Разрешить Multilink подключения", None, QtGui.QApplication.UnicodeUTF8))
         self.identify_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сетевая идентификация", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Сетевое имя", None, QtGui.QApplication.UnicodeUTF8))
         #self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
@@ -369,6 +375,7 @@ class AddNasFrame(QtGui.QDialog):
         model.allow_pptp = self.pptp_checkBox.checkState()==2
         model.allow_pppoe = self.pppoe_checkBox.checkState()==2
         model.allow_ipn = self.ipn_checkBox.checkState()==2
+        model.multilink = self.ipn_checkBox.checkState()==2
 
         model.user_add_action= unicode(self.create_user_textEdit.text() or "")
         model.user_delete_action= unicode(self.remove_user_textEdit.text() or "")
@@ -424,6 +431,7 @@ class AddNasFrame(QtGui.QDialog):
             self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.pppoe_checkBox.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.multilink_checkBox.setChecked(self.model.multilink)
         else:
             self.buttonBox.setDisabled(True)
 
