@@ -92,6 +92,7 @@ class HandleAuth(HandleBase):
 
         self.nas_id=str(row[0])
         self.nas_type=row[2]
+        self.multilink = row[3]
         self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
 
 
@@ -142,7 +143,7 @@ class HandleAuth(HandleBase):
         #TO-DO: Добавить проверку на balance_blocked
 
 
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0])
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0], multilink = self.multilink)
         #print 1
         if row==None:
             self.cur.close()
@@ -344,16 +345,16 @@ class HandleAcct(HandleBase):
         print 3
         if self.packetobject['Acct-Status-Type']==['Start']:
             #Проверяем нет ли такой сессии в базе
-            #self.cur.execute("""
-            #SELECT id
-            #FROM radius_activesession
-            #WHERE account_id=%s and sessionid='%s' and
-            #caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
-            #""" % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
-            #       self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
+            self.cur.execute("""
+            SELECT id
+            FROM radius_activesession
+            WHERE account_id=%s and sessionid='%s' and
+            caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
+            """ % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
+                   self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
             print 31
-            #allow_write = self.cur.fetchone()==None
-            allow_write=True
+            allow_write = self.cur.fetchone()==None
+            #allow_write=True
             print 32
             #allow_write=True
             if time_access and allow_write:
