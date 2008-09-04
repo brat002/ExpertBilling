@@ -1979,21 +1979,22 @@ def main():
 
     threads=[]
     threads.append(check_vpn_access())
-    threads.append(periodical_service_bill())
-    threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
-    threads.append(limit_checker())
+    #threads.append(periodical_service_bill())
+    #threads.append(TimeAccessBill())
+    #threads.append(NetFlowAggregate())
+    #threads.append(NetFlowBill())
+    #threads.append(limit_checker())
     threads.append(ipn_service())
-    threads.append(settlement_period_service_dog())
+    #threads.append(settlement_period_service_dog())
     threads.append(RPCServer())
-
-    for th in threads:
+    i= range(len(threads))
+    for th in threads:	
         th.start()
+	time.sleep(2)
 
     while True:
         for t in threads:
-
+	    #time.sleep(1)
             if not t.isAlive():
                 print 'restarting thread', t.getName()
                 #t.__init__()
