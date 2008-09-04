@@ -2875,7 +2875,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         
-        #self.tableWidget.setAlternatingRowColors(True)
+        self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -3057,7 +3057,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
     
     def delTarif(self):
-        tarif_id = self.tarif_treeWidget.currentItem().id
+        tarif_id = self.getTarifId()
         if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             accounts=self.connection.sql("""SELECT account.id 
                     FROM billservice_account as account
@@ -3101,7 +3101,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             #self.refresh()
         
     def editTarif(self, *args, **kwargs):
-        model = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(self.tarif_treeWidget.currentItem().text(0)))
+        model = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%s" % self.getTarifId())
         
         tarifframe = TarifFrame(connection=self.connection, model=model)
         #self.parent.workspace.addWindow(tarifframe)
@@ -3116,12 +3116,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connection.commit()
         child = AddAccountFrame(connection=self.connection, ttype=tarif_type)
         
-        if child.exec_()==1:
-            self.connection.commit()
-            tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%d" % self.tarif_treeWidget.currentItem().id)
+        child = AddAccountFrame(connection=self.connection)
+        id = self.getTarifId()
+        if child.exec_()==1 and id is not None:
             accounttarif = Object()
             accounttarif.account_id=child.model.id
-            accounttarif.tarif_id=tarif.id
+            accounttarif.tarif_id=id
             accounttarif.datetime = datetime.datetime.now()
             self.connection.create(accounttarif.save("billservice_accounttarif"))
             self.connection.commit()
@@ -3162,6 +3162,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
+    def getTarifId(self):
+        return self.tarif_treeWidget.currentItem().id
+
     def delete(self):
         id=self.getSelectedId()
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
@@ -3189,7 +3192,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         except Exception, e:
             print e
             model = None
-        print 'model', model
+        #print 'model', model
         tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
         addf = AddAccountFrame(connection=self.connection,ttype=tarif_type, model=model)
         #addf.show()
@@ -3239,12 +3242,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         except Exception, ex:
             print ex
         self.tarif_treeWidget.clear()
-        #tariffs = Tariff.objects.all().order_by("id")
+
         #tariffs = self.connection.foselect("billservice_tariff")
         tariffs = self.connection.sql("SELECT id, name, active, get_tariff_type(id) AS ttype FROM billservice_tariff ORDER BY ttype, name;")
-        #index = self.tarif_treeWidget.index
-  
-        #print 'index=', index
+
         self.tableWidget.setColumnHidden(0, True)
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
@@ -3256,9 +3257,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
             if not tarif.active:
                 item.setDisabled(True)
             
-            #if index is not None and index.id == item.id:
-            #    #self.tarif_treeWidget.setCurrentItem(item)
-            #    item.setSelected(True)
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
@@ -3271,20 +3269,21 @@ class AccountsMdiChild(QtGui.QMainWindow):
             id=item.id
         else:
             try:
-                id=self.tarif_treeWidget.currentItem().id
+                id=self.getTarifId()
             except:
                 return
             
         #print "tarif_id=",id
             
-        #tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE id=%s" % id)
+
+        #self.connection.commit()
         tarif = self.connection.foselect("billservice_tariff", id)
-        #print "!!!tarif!!!", tarif
+
         accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
         JOIN nas_nas ON nas_nas.id=account.nas_id
         JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
         WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)
-        print accounts
+        #print accounts
         self.tableWidget.setRowCount(len(accounts))
         
         

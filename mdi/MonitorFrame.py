@@ -90,7 +90,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = [u'#', u'Аккаунт', u'IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
+        columns = [u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
         makeHeaders(columns, self.tableWidget)
         
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -143,13 +143,14 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.sessionid, i, 0)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
-            self.addrow(self.tableWidget, session.nas_name, i, 3)
-            self.addrow(self.tableWidget, session.framed_protocol, i, 4)
+            self.addrow(self.tableWidget, session.framed_ip_address, i, 3)
+            self.addrow(self.tableWidget, session.nas_name, i, 4)
+            self.addrow(self.tableWidget, session.framed_protocol, i, 5)
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
             self.addrow(self.tableWidget, session.bytes_out, i, 7)
             self.addrow(self.tableWidget, session.bytes_in, i, 8)
-            self.addrow(self.tableWidget, session.session_time, i, 9)
-            self.addrow(self.tableWidget, session.session_status, i, 10)
+            self.addrow(self.tableWidget, session.session_time, i, 10)
+            self.addrow(self.tableWidget, session.session_status, i, 11)
             self.tableWidget.setRowHeight(i, 14)
             i+=1
         if self.firsttime and sessions:

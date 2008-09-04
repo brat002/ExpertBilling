@@ -392,7 +392,7 @@ class periodical_service_bill(Thread):
                         account_datetime = account[1]
                         account_ballance = account[2]
                         # Если балланс>0 или разрешено снятие денег при отрицательном баллансе
-                        if account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0):
+                        if account_ballance>0 or null_ballance_checkout==True:
                             #Получаем данные из расчётного периода
                             if autostart_sp==True:
                                 time_start_ps=account_datetime
@@ -425,7 +425,12 @@ class periodical_service_bill(Thread):
                                     cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                     lc=now - last_checkout
                                     nums, ost=divmod(lc.seconds+lc.days*86400,n)
-                                    if nums>0:
+                                    
+                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        """
+                                        Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
+                                        пока денег на счету не было
+                                        """
                                         #Смотрим на какую сумму должны были снять денег и снимаем её
                                         cash_summ=cash_summ*nums
                                     #print "delta", delta
@@ -456,18 +461,24 @@ class periodical_service_bill(Thread):
                                     first_time=False
                                 #print first_time==True or last_checkout<period_start
                                 if first_time==True or last_checkout<period_start:
-                                    if not first_time:
-                                        lc=last_checkout-period_start
-                                        nums, ost=divmod(lc.seconds+lc.days*86400, n)
-                                        for i in xrange(nums-1):
-                                            summ+=ps_cost
 
+                                    lc=period_start-last_checkout
+                                    nums, ost=divmod(lc.seconds+lc.days*86400, delta)
+                                    summ=ps_cost
+                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        """
+                                        Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
+                                        пока денег на счету не было
+                                        """
+                                        #Смотрим на какую сумму должны были снять денег и снимаем её
+                                        summ=ps_cost*nums
+                                    
                                     transaction_id = transaction(cursor=self.cur,
                                     account=account_id,
                                     approved=True,
                                     type='PS_AT_START',
                                     tarif = tariff_id,
-                                    summ=ps_cost+summ,
+                                    summ = summ,
                                     description=u"Проводка по периодической услуге со нятием суммы в начале периода",
                                     created = now)
                                     ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
@@ -500,10 +511,12 @@ class periodical_service_bill(Thread):
 
 
                                    if first_time==False:
-                                       lc=last_checkout-period_start
-                                       nums, ost=divmod((period_end-last_checkout).seconds+(period_end-last_checkout).days*86400, n)
+                                       lc=period_start-last_checkout
+                                       nums, ost=divmod((period_end-last_checkout).seconds+(period_end-last_checkout).days*86400, delta)
                                        
-                                       summ=ps_cost*nums
+                                       summ=ps_cost
+                                       if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                           summ=ps_cost*nums
                                        descr=u"Проводка по периодической услуге со нятием суммы в конце периода"
                                    else:
                                        summ=0
@@ -1163,7 +1176,7 @@ class settlement_period_service_dog(Thread):
 
             self.cur.execute(
                         """
-                        SELECT shedulelog.id, account.id, shedulelog.ballance_checkout::timestamp without time zone, 
+                        SELECT shedulelog.id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, shedulelog.ballance_checkout::timestamp without time zone, 
                         shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
                         sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, 
                         accounttarif.datetime::timestamp without time zone,  
@@ -1172,8 +1185,9 @@ class settlement_period_service_dog(Thread):
                         shedulelog.balance_blocked::timestamp without time zone, shedulelog.prepaid_traffic_accrued::timestamp without time zone, shedulelog.prepaid_time_accrued::timestamp without time zone
                         FROM billservice_account as account  
                         LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
-                        JOIN billservice_accounttarif AS accounttarif ON accounttarif.account_id=get_tarif(account.id)
-                        JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
+                        JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
+                        JOIN billservice_accounttarif AS accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif
+                        WHERE account_id=account.id and tarif_id=tariff.id and  datetime<now() ORDER BY datetime DESC LIMIT 1)
                         LEFT JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
                         LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
                         LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
@@ -1183,7 +1197,7 @@ class settlement_period_service_dog(Thread):
             
             rows=self.cur.fetchall()
             for row in rows:
-                (shedulelog_id, account_id, ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
+                (shedulelog_id, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
                 time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
                 reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id,
                 reset_traffic, reset_time, balance_blocked, prepaid_traffic_accrued, prepaid_time_accrued) = row
@@ -1241,7 +1255,8 @@ class settlement_period_service_dog(Thread):
                       
                     #Если балланса не хватает - отключить пользователя
                 self.connection.commit()
-                if (ballance_checkout is None or ballance_checkout<=period_start) and cost>0:
+                if (balance_blocked is None or balance_blocked<=period_start) and cost>0 and account_balance_blocked==True:
+                    print "balance blocked1", ballance_checkout, period_start, cost
                     #В начале каждого расчётного периода
                     self.cur.execute(
                                 """
@@ -1258,8 +1273,12 @@ class settlement_period_service_dog(Thread):
                         self.cur.execute("""
                         INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
                         """ % account_id)
-                else:
+                if account_balance_blocked==True and account_balance>=cost:
+                    """
+                    Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
+                    """
                     #Иначе Убираем отметку
+                    print "balance blocked2"
                     self.cur.execute(
                                 """
                                 UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
