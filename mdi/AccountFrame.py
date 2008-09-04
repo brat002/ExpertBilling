@@ -1323,7 +1323,7 @@ class TarifFrame(QtGui.QDialog):
         
         if self.model:
             if not self.model.isnull('settlement_period_id'):
-                print "self.model.settlement_period_id", self.model.settlement_period_id
+                #print "self.model.settlement_period_id", self.model.settlement_period_id
                 settlement_period=self.connection.get("""SELECT * FROM billservice_settlementperiod WHERE id =%s""" % self.model.settlement_period_id)
                 self.sp_groupbox.setChecked(True)
                 if settlement_period.autostart==True:
@@ -1826,7 +1826,7 @@ class TarifFrame(QtGui.QDialog):
                         time_access_service_id = model.time_access_service_id
                     
                     for i in xrange(0, self.timeaccess_table.rowCount()):
-                        print "pre save"
+                        #print "pre save"
                         if self.timeaccess_table.item(i,1)==None or self.timeaccess_table.item(i,2)==None:
                             QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки оплаты за время")
                             self.connection.rollback()
@@ -1834,7 +1834,7 @@ class TarifFrame(QtGui.QDialog):
                         else:
                             QtGui.QMessageBox.warning(self, u"Ошибка", u"Сохранение настроек стоимости за время")
                             
-                        print "post save"
+                        #print "post save"
                         id = self.getIdFromtable(self.timeaccess_table, i)
                         if id!=-1:
                             time_access_node = self.connection.get("SELECT * FROM billservice_timeaccessnode WHERE id=%d" % id )
@@ -1988,9 +1988,9 @@ class TarifFrame(QtGui.QDialog):
     #                limit.save()     
                       
                     #Если это новая запись
-                    print 'id', id
+                    #print 'id', id
                     if id==-1:   
-                        print u"Сохраняем связь"   
+                        #print u"Сохраняем связь"   
                         self.connection.create("INSERT INTO billservice_tariff_traffic_limit(tariff_id, trafficlimit_id) VALUES (%d, %d);" % (model_id, limit_id)) 
                         #limit.tariff_set.add(model)
             elif self.limites_checkbox.checkState()==0:
@@ -2073,11 +2073,11 @@ class TarifFrame(QtGui.QDialog):
                     for cl in traffic_class_models:
                         #print (transmit_node_id, cl.id)
                         if cl not in traffic_classes:
-                            print cl, traffic_classes
+                            #print cl, traffic_classes
                             self.connection.create("""INSERT INTO billservice_traffictransmitnodes_traffic_class(traffictransmitnodes_id, trafficclass_id) VALUES(%d, %d)""" % (transmit_node_id, cl))
                             #cl.traffictransmitnodes_set.add(transmit_node)
                             
-                            print "add"
+                            #print "add"
     
                     for cl in traffic_classes:
                         if cl not in traffic_class_models:
@@ -2125,7 +2125,7 @@ class TarifFrame(QtGui.QDialog):
                             return    
                         
                     if id!=-1:
-                        print "prepaid_id=", id
+                        #print "prepaid_id=", id
                         prepaid_node = self.connection.get("SELECT * FROM billservice_prepaidtraffic WHERE id=%d" % id)
                     else:
                         prepaid_node = Object()
@@ -2179,7 +2179,7 @@ class TarifFrame(QtGui.QDialog):
             self.connection.create(model.save("billservice_tariff"))
             self.connection.commit()
         
-            print True
+            #print True
             
         except Exception, e:
             print e
@@ -2623,13 +2623,13 @@ class AddAccountFrame(QtGui.QDialog):
             
             #print "self.speed_groupBox.isChecked()=", self.speed_groupBox.isChecked()
             if self.vpn_speed_groupBox.isChecked()==True and self.vpn_speed_lineEdit.text()!="":
-                print "save vpn speed=True"
+                #print "save vpn speed=True"
                 model.vpn_speed = unicode(self.vpn_speed_lineEdit.text())
             else:
                 model.vpn_speed = ""
 
             if self.ipn_speed_groupBox.isChecked()==True and self.ipn_speed_lineEdit.text()!="":
-                print "save ipn speed=True"
+                #print "save ipn speed=True"
                 model.ipn_speed = unicode(self.ipn_speed_lineEdit.text())
             else:
                 model.ipn_speed = ""
@@ -2725,7 +2725,7 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 
                 model.id=self.connection.create(model.save("billservice_account"))
-            print "model.ipn_mac_address", model.ipn_mac_address
+            #print "model.ipn_mac_address", model.ipn_mac_address
             
             
             if model.ipn_ip_address!="0.0.0.0":
@@ -2738,7 +2738,7 @@ class AddAccountFrame(QtGui.QDialog):
                     #self.connection.rollback()
                 #self.connection.commit()
                 
-            
+            #self.connection.commit()
             self.model=model
         except Exception, e:
             print "!!!SAVE CREATE ERROR", e
@@ -2782,13 +2782,13 @@ class AddAccountFrame(QtGui.QDialog):
         
             #print "self.model.ipn_mac_address", self.model.ipn_mac_address
             if self.model.ipn_mac_address==None or self.model.ipn_mac_address=="":
-                print "assign True"
+                #print "assign True"
                 self.assign_ipn_ip_from_dhcp_edit.setCheckState(QtCore.Qt.Checked)
                 
             else:
                 self.ipn_mac_address_edit.setText(unicode(self.model.ipn_mac_address))
 
-            print "self.model.status", self.model.status
+            #print "self.model.status", self.model.status
             self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
@@ -2822,7 +2822,7 @@ class AddAccountFrame(QtGui.QDialog):
             WHERE account_id=%d ORDER BY datetime ASC""" % self.model.id)
             self.accounttarif_table.setRowCount(len(ac))
             i=0
-            print ac
+            #print ac
             for a in ac:
 
                 self.addrow(a.id, i,0)
@@ -2875,7 +2875,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         
-        self.tableWidget.setAlternatingRowColors(True)
+        #self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -3116,7 +3116,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connection.commit()
         child = AddAccountFrame(connection=self.connection, ttype=tarif_type)
         
-        child = AddAccountFrame(connection=self.connection)
+        #child = AddAccountFrame(connection=self.connection)
         id = self.getTarifId()
         if child.exec_()==1 and id is not None:
             accounttarif = Object()
@@ -3138,7 +3138,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                 
                 #self.connection.create(tr)
                 toex = tr.split(';')
-                print 
+                #print 
                 #self.connection.listexec(toex[0]+ ';')
                 #self.connection.listexec(tr)
                 #self.connection.create(tr)
@@ -3191,12 +3191,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
             WHERE account.id=%d""" % id)
         except Exception, e:
             print e
-            model = None
+            return
         #print 'model', model
         tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
         addf = AddAccountFrame(connection=self.connection,ttype=tarif_type, model=model)
         #addf.show()
         if addf.exec_()==1:
+            self.connection.commit()
             self.refresh()
 
     def addrow(self, value, x, y, color=None, enabled=True):

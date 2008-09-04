@@ -1760,16 +1760,16 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 	self.cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
-			 account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
-nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
-nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
-nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
-FROM billservice_account as account
-JOIN nas_nas as nas ON nas.id = account.nas_id
-JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
-JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
-WHERE account.id=%d
-""" % account_id)
+        			 account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
+        nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
+        nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
+        nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
+        FROM billservice_account as account
+        JOIN nas_nas as nas ON nas.id = account.nas_id
+        JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
+        JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
+        WHERE account.id=%d
+        """ % account_id)
 
 	row = self.cur.fetchone()
 	print action
@@ -1787,7 +1787,7 @@ WHERE account.id=%d
 	    command = row['user_add_action']
 	elif action =='delete':
 	    #set_account_deleted(self.cur, account_id)
-	    self.iddelete("billservice_account", account_id)
+	    #self.iddelete("billservice_account", account_id)
 	    command = row['user_delete_action']
 	print command
 
