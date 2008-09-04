@@ -362,11 +362,11 @@ class HandleAcct(HandleBase):
                 """
                 INSERT INTO radius_session(
                 account_id, sessionid, date_start,
-                caller_id, called_id, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
+                caller_id, called_id, framed_ip_address, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
                 )
-                VALUES (%s, '%s','%s', '%s', '%s', '%s', '%s', %s, %s)
+                VALUES (%s, '%s','%s', '%s', '%s', '%s', '%s', '%s', %s, %s)
                 """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
-                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0],
+                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
             print 34
             if allow_write:
@@ -375,11 +375,11 @@ class HandleAcct(HandleBase):
                 """
                 INSERT INTO radius_activesession(
                 account_id, sessionid, date_start,
-                caller_id, called_id, nas_id, framed_protocol, session_status
+                caller_id, called_id, framed_ip_address, nas_id, framed_protocol, session_status
                 )
-                VALUES (%s, '%s','%s', '%s', '%s', '%s', '%s', 'ACTIVE');
+                VALUES (%s, '%s','%s','%s', '%s', '%s', '%s', '%s', 'ACTIVE');
                 """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
-                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0],
+                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type))
                 print 36
                 print 'start', True
@@ -393,13 +393,14 @@ class HandleAcct(HandleBase):
                             """
                             INSERT INTO radius_session(
                             account_id, sessionid, interrim_update,
-                            caller_id, called_id, nas_id, session_time,
+                            caller_id, called_id, framed_ip_address, nas_id, session_time,
                             bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                            VALUES ( %s, '%s', '%s', '%s', '%s', '%s',
+                            VALUES ( %s, '%s', '%s', '%s', '%s', '%s', '%s',
                             '%s', '%s', '%s', '%s', %s, %s);
                             """ % (account_id, self.packetobject['Acct-Session-Id'][0],
                                  now, self.packetobject['Calling-Station-Id'][0],
-                                 self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
+                                 self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
+                                 self.packetobject['NAS-IP-Address'][0],
                                  self.packetobject['Acct-Session-Time'][0],
                                  bytes_in, bytes_out, self.access_type, False, False)
                             )
@@ -420,13 +421,14 @@ class HandleAcct(HandleBase):
                 """
                 INSERT INTO radius_session(
                 account_id, sessionid, interrim_update, date_end,
-                caller_id, called_id, nas_id, session_time,
+                caller_id, called_id, framed_ip_address, nas_id, session_time,
                 bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
                 VALUES ( %s, '%s', '%s', '%s', '%s',
-                '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);
+                '%s', '%s', '%s', '%s','%s', '%s', '%s', %s, %s);
                 """ % (account_id, self.packetobject['Acct-Session-Id'][0],
                       now, now, self.packetobject['Calling-Station-Id'][0],
-                      self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],
+                      self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0], 
+                      self.packetobject['NAS-IP-Address'][0],
                       self.packetobject['Acct-Session-Time'][0],
                       bytes_in, bytes_out, self.access_type, False, False)
                 )

@@ -26,6 +26,7 @@ class Session(models.Model):
     caller_id=models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса Called-Station-Id (IP адрес или имя сервиса для PPPOE)
     called_id=models.CharField(max_length=255, blank=True, default='')
+    framed_ip_address = models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса NAS-IP-Address
     nas_id=models.CharField(max_length=255)
     #Атрибут радиуса Acct-Session-Time
@@ -69,6 +70,7 @@ class ActiveSession(models.Model):
     caller_id=models.CharField(max_length=255, blank=True)
     #Атрибут радиуса Called-Station-Id (IP адрес или имя сервиса для PPPOE)
     called_id=models.CharField(max_length=255, blank=True)
+    framed_ip_address = models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса NAS-IP-Address
     nas_id=models.CharField(max_length=255, blank=True)
     #Атрибут радиуса Acct-Session-Time
