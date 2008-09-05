@@ -1642,7 +1642,9 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 tmd5.update(str(conn.addr[1]))
                 tmd5.update(tcpserver.hostname)
                 conn.utoken = tmd5.digest()
-
+                conn.db_connection = pool.connection()
+                conn.db_connection._con._con.set_client_encoding('UTF8')
+                conn.cur = conn.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
                 print conn.utoken
                 print obj.id
                 print conn
@@ -1698,7 +1700,12 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 def authentconn(func):
     def relogfunc(*args, **kwargs):
         if args[0].getLocalStorage().caller:
+            caller = args[0].getLocalStorage().caller
             if args[0].getLocalStorage().caller.utoken:
+                #print args
+                #print kwargs
+                kwargs['connection'] = caller.db_connection
+                kwargs['cur'] = caller.cur
                 return func(*args, **kwargs)
             else:
                 return None
@@ -1712,7 +1719,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
         self.connection = pool.connection()
-        #print dir(self.connection)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         '''self.listconnection = pool.connection()
@@ -1732,7 +1738,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         daemon.requestLoop()
 
     @authentconn
-    def testCredentials(self, host, login, password):
+    def testCredentials(self, host, login, password, cur=None, connection=None):
         try:
             print host, login, password
             a=SSHClient(host, 22,login, password)
@@ -1743,7 +1749,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return True
 
     @authentconn
-    def configureNAS(self, host, login, password, configuration):
+    def configureNAS(self, host, login, password, configuration, cur=None, connection=None):
         try:
             a=SSHClient(host, 22,login, password)
             print configuration
@@ -1756,10 +1762,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
     @authentconn
-    def accountActions(self, account_id, action):
+    def accountActions(self, account_id, action, cur=None, connection=None):
 
 
-        self.cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
+        cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
                          account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
 nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
 nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
@@ -1771,7 +1777,7 @@ JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
 WHERE account.id=%d
 """ % account_id)
 
-        row = self.cur.fetchone()
+        row = cur.fetchone()
         print action
         if row==None:
             return False
@@ -1786,7 +1792,7 @@ WHERE account.id=%d
         elif action=='create':
             command = row['user_add_action']
         elif action =='delete':
-            #set_account_deleted(self.cur, account_id)
+            #set_account_deleted(cur, account_id)
             #self.iddelete("billservice_account", account_id)
             command = row['user_delete_action']
         print command
@@ -1799,7 +1805,7 @@ WHERE account.id=%d
         return sended
 
     @authentconn
-    def get_object(self, name):
+    def get_object(self, name, cur=None, connection=None):
         try:
             model = models.__getattribute__(name)()
         except:
@@ -1809,21 +1815,23 @@ WHERE account.id=%d
         return model
 
     @authentconn
-    def transaction_delete(self, ids):
+    def transaction_delete(self, ids, cur=None, connection=None):
         for i in ids:
             print "delete %s transaction" % i
-            delete_transaction(self.cur, int(i))
-        self.connection.commit()
+            delete_transaction(cur, int(i))
+        connection.commit()
 
         return
 
     @authentconn
-    def get(self, sql):
+    def get(self, sql, cur=None, connection=None):
         #print sql
-        self.cur.execute(sql)
-        #self.connection.commit()
+        if not cur:
+            cur = self.cur
+        cur.execute(sql)
+        #connection.commit()
         result=[]
-        r=self.cur.fetchall()
+        r=cur.fetchall()
         if len(r)>1:
             raise Exception
 
@@ -1832,38 +1840,46 @@ WHERE account.id=%d
         return Object(r[0])
 
     @authentconn
-    def get_list(self, sql):
+    def get_list(self, sql, cur=None, connection=None):
         print sql
-        self.listcur.execute(sql)
-        return self.listcur.fetchall()
+        listconnection = pool.connection()
+        listconnection._con._con.set_client_encoding('UTF8')
+        listcur = listconnection.cursor()
+        listcur.execute(sql)
+        retres = listcur.fetchall()
+        listcur.close()
+        listconnection.close()
+        return res
 
     @authentconn
-    def delete(self, sql):
+    def delete(self, sql, cur=None, connection=None):
 
-        self.cur.execute(sql)
-        #self.connection.commit()
+        cur.execute(sql)
+        #connection.commit()
         return
 
     @authentconn
-    def iddelete(self, table, id):
+    def iddelete(self, table, id, cur=None, connection=None):
 
-        self.cur.execute("DELETE FROM %s where id=%d" % (table, id))
-        #self.connection.commit()
+        cur.execute("DELETE FROM %s where id=%d" % (table, id))
+        #connection.commit()
         return
 
     @authentconn
-    def command(self, sql):
+    def command(self, sql, cur=None, connection=None):
 
-        self.cur.execute(sql)
-        #self.connection.commit()
+        cur.execute(sql)
+        #connection.commit()
         return         
 
     @authentconn
-    def commit(self):
-        self.connection.commit()
+    def commit(self, cur=None, connection=None):
+        connection.commit()
 
     @authentconn
     def makeChart(self, *args, **kwargs):
+        kwargs['cur']=None
+        kwargs['connection']=None
         listconnection = pool.connection()
         listconnection._con._con.set_client_encoding('UTF8')
         listcur = listconnection.cursor()
@@ -1875,20 +1891,20 @@ WHERE account.id=%d
         return imgs
 
     @authentconn
-    def rollback(self):
-        self.connection.rollback()
+    def rollback(self, cur=None, connection=None):
+        connection.rollback()
 
     @authentconn
-    def sql(self, sql, return_response=True, pickler=False):
+    def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None):
         print self.ticket
-        self.cur.execute(sql)
-        #self.connection.commit()
+        cur.execute(sql)
+        #connection.commit()
 
-        #print dir(self.connection)
+        #print dir(connection)
         result=[]
         a=time.clock()
         if return_response:
-            result = map(Object, self.cur.fetchall())
+            result = map(Object, cur.fetchall())
         print "Query length=", time.clock()-a
         if pickler:
             output = open('data.pkl', 'wb')
@@ -1900,14 +1916,14 @@ WHERE account.id=%d
         return result
 
     @authentconn
-    def foselect(self, table, id=None):
-        self.cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
-        #self.connection.commit()
+    def foselect(self, table, id=None, cur=None, connection=None):
+        cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
+        #connection.commit()
 
-        #print dir(self.connection)
+        #print dir(connection)
         result=[]
         a=time.clock()
-        result = map(Object, self.cur.fetchall())
+        result = map(Object, cur.fetchall())
         print "Query length=", time.clock()-a
         if id == None:
             return result
@@ -1915,35 +1931,35 @@ WHERE account.id=%d
             return result[0]
 
     @authentconn
-    def sql_as_dict(self, sql, return_response=True):
+    def sql_as_dict(self, sql, return_response=True, cur=None, connection=None):
         #print sql
-        self.cur.execute(sql)
+        cur.execute(sql)
         result=[]
         a=time.clock()
         if return_response:
 
-            result =self.cur.fetchall()
+            result =cur.fetchall()
         print "Query length=", time.clock()-a
         return result
 
 
     @authentconn
-    def create(self, sql):
+    def create(self, sql, cur=None, connection=None):
         print sql
-        self.cur.execute(sql)
+        cur.execute(sql)
 
-        #print self.cur.fetchone()
+        #print cur.fetchone()
         try:
-            id = self.cur.fetchone()['id']
+            id = cur.fetchone()['id']
         except:
             id=-1
-        #self.connection.commit()
+        #connection.commit()
 
         return id
 
 
     @authentconn
-    def connection_request(self, username, password):
+    def connection_request(self, username, password, cur=None, connection=None):
         try:
             obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
         except Exception, e:
@@ -1960,13 +1976,13 @@ WHERE account.id=%d
             return False
 
     @authentconn
-    def test(self):
+    def test(self, cur=None, connection=None):
         pass
 
     @authentconn
-    def pod(self, session):
+    def pod(self, session, cur=None, connection=None):
 
-        self.cur.execute("""
+        cur.execute("""
                          SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
 nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
 account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address, session.framed_protocol as framed_protocol
@@ -1976,7 +1992,7 @@ JOIN nas_nas as nas ON nas.id=account.nas_id
 WHERE  session.sessionid='%s'
 """ % session)
 
-        row = self.cur.fetchone()
+        row = cur.fetchone()
         PoD(dict=dict,
             account_id=row['account_id'], 
             account_name=str(row['account_name']), 
@@ -2018,9 +2034,11 @@ def main():
         time.sleep(1)
 
     while True:
+        #print pool
+        print pool._connections
         for t in threads:
             #time.sleep(1)
-            print t
+            #print t
             if not t.isAlive():
                 print 'restarting thread', t.getName()
                 #t.__init__()
