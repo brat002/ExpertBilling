@@ -1715,9 +1715,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 	#print dir(self.connection)
 	self.connection._con._con.set_client_encoding('UTF8')
 	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
-	self.listconnection = pool.connection()
+	'''self.listconnection = pool.connection()
 	self.listconnection._con._con.set_client_encoding('UTF8')
-	self.listcur = self.listconnection.cursor()
+	self.listcur = self.listconnection.cursor()'''
 	self.ticket = ''
 	#self._cddrawer = cdDrawer()
 
@@ -1864,9 +1864,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def makeChart(self, *args, **kwargs):
-	bpplotAdapter.rCursor = self.listcur
+	listconnection = pool.connection()
+	listconnection._con._con.set_client_encoding('UTF8')
+	listcur = listconnection.cursor()
+	bpplotAdapter.rCursor = listcur
 	cddrawer = cdDrawer()
 	imgs = cddrawer.cddraw(*args, **kwargs)
+	listcur.close()
+	listconnection.close()
 	return imgs
 
     @authentconn
@@ -1997,29 +2002,31 @@ def main():
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
     threads=[]
-    threads.append(check_vpn_access())
-    #threads.append(periodical_service_bill())
-    #threads.append(TimeAccessBill())
-    #threads.append(NetFlowAggregate())
-    #threads.append(NetFlowBill())
-    #threads.append(limit_checker())
-    threads.append(ipn_service())
-    #threads.append(settlement_period_service_dog())
     threads.append(RPCServer())
+    threads.append(check_vpn_access())
+    threads.append(periodical_service_bill())
+    threads.append(TimeAccessBill())
+    threads.append(NetFlowAggregate())
+    threads.append(NetFlowBill())
+    threads.append(limit_checker())
+    threads.append(ipn_service())
+    threads.append(settlement_period_service_dog())
+    
     i= range(len(threads))
     for th in threads:	
 	th.start()
-	time.sleep(2)
+	time.sleep(1)
 
     while True:
 	for t in threads:
 	    #time.sleep(1)
+	    print t
 	    if not t.isAlive():
 		print 'restarting thread', t.getName()
 		#t.__init__()
 		#t.start()
 		print 'thread status', t.getName(), t.isAlive()
-	time.sleep(15)
+	time.sleep(5)
 
 
 #===============================================================================

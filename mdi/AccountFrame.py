@@ -3136,13 +3136,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
             tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = "", summ=child.result, bill=unicode(child.payed_document_edit.text()))
             try:
                 
-                #self.connection.create(tr)
-                toex = tr.split(';')
+                self.connection.create(tr)
+                #toex = tr.split(';')
                 #print 
                 #self.connection.listexec(toex[0]+ ';')
                 #self.connection.listexec(tr)
                 #self.connection.create(tr)
-                self.connection.create(toex[0]+ ';')
+                #self.connection.create(toex[0]+ ';')
                 self.connection.commit()
             except Exception, e:
                 print "omg traf exception", e
