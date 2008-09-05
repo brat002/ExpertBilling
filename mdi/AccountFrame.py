@@ -2887,12 +2887,14 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
         
         tree_header = self.tarif_treeWidget.headerItem()
-        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
-        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
         tree_header.setSizeHint(0,sz)
+        tree_header.setSizeHint(1,sz)
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
+        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+
         self.setCentralWidget(self.splitter)
         
         self.splitter.setSizes([self.width() / 5, self.width() - (self.width() / 5)])
