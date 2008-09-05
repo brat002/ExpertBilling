@@ -2196,7 +2196,6 @@ class AddAccountFrame(QtGui.QDialog):
         self.model=model
         self.ttype = ttype
         self.connection = connection
-        self.connection.commit()
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,340,435).size()).expandedTo(self.minimumSizeHint()))
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -2592,7 +2591,7 @@ class AddAccountFrame(QtGui.QDialog):
         """
         понаставить проверок
         """
-
+        self.connection.commit()
         try:
             
             if self.model:
@@ -2684,7 +2683,8 @@ class AddAccountFrame(QtGui.QDialog):
             if self.netmask_edit.isEnabled():
                 if self.netmask_edit.text():
                     if self.ipValidator.validate(self.netmask_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Netmask IP до конца."))
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Маска указана неверно."))
+                        self.connection.rollback()
                         return
                     model.netmask = unicode(self.netmask_edit.text())
                 
@@ -2692,6 +2692,7 @@ class AddAccountFrame(QtGui.QDialog):
             #model.netmask = unicode(self.netmask_edit.text())
             if ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
+                self.connection.rollback()
                 return
     
 
@@ -3052,6 +3053,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
 
     def addTarif(self):
+        print connection
         tarifframe = TarifFrame(connection=self.connection)
         tarifframe.exec_()
         self.refreshTree()

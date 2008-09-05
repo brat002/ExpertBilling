@@ -1,4 +1,5 @@
 #-*-coding=utf-8*-
+#global connection
 import sys
 from PyQt4 import QtCore, QtGui
 
@@ -510,8 +511,9 @@ def login():
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-
+    global connection
     connection = login() 
+    
     if connection is None:
         sys.exit()
     try:
