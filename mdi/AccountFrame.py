@@ -3053,7 +3053,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
 
     def addTarif(self):
-        print connection
+        #print connection
         tarifframe = TarifFrame(connection=self.connection)
         tarifframe.exec_()
         self.refreshTree()

@@ -31,7 +31,7 @@ from DBUtils.PooledDB import PooledDB
 
 pool = PooledDB(
     mincached=1,
-    maxcached=10,
+    maxcached=2,
     blocking=True,
     creator=psycopg2,
     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
@@ -1177,23 +1177,23 @@ class settlement_period_service_dog(Thread):
             self.cur.execute(
                 """
                 SELECT shedulelog.id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, shedulelog.ballance_checkout::timestamp without time zone, 
-shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
-sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, 
-accounttarif.datetime::timestamp without time zone,  
-tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, 
-tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time,
-shedulelog.balance_blocked::timestamp without time zone, shedulelog.prepaid_traffic_accrued::timestamp without time zone, shedulelog.prepaid_time_accrued::timestamp without time zone
-FROM billservice_account as account  
-LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
-JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
-JOIN billservice_accounttarif AS accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif
-WHERE account_id=account.id and tarif_id=tariff.id and  datetime<now() ORDER BY datetime DESC LIMIT 1)
-LEFT JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
-LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
-LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
-WHERE account.status=True and tariff.active=True
-"""
-)
+                shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
+                sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, 
+                accounttarif.datetime::timestamp without time zone,  
+                tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, 
+                tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time,
+                shedulelog.balance_blocked::timestamp without time zone, shedulelog.prepaid_traffic_accrued::timestamp without time zone, shedulelog.prepaid_time_accrued::timestamp without time zone
+                FROM billservice_account as account  
+                LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
+                JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
+                JOIN billservice_accounttarif AS accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif
+                WHERE account_id=account.id and tarif_id=tariff.id and  datetime<now() ORDER BY datetime DESC LIMIT 1)
+                LEFT JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
+                LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
+                LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
+                WHERE account.status=True and tariff.active=True
+                """
+                )
 
             rows=self.cur.fetchall()
             for row in rows:
@@ -1223,10 +1223,10 @@ WHERE account.status=True and tariff.active=True
                         self.cur.execute(
                             """
                             SELECT sum(summ)
-FROM billservice_transaction
-WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
-""" % (period_start, period_end, account_id, tarif_id)
-)
+                            FROM billservice_transaction
+                            WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
+                            """ % (period_start, period_end, account_id, tarif_id)
+                            )
                         summ=self.cur.fetchone()[0]
                         if summ==None:
                             summ=0
@@ -1250,29 +1250,30 @@ WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
                         if shedulelog_id==None:
                             self.cur.execute("""
                                              INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now());
-""" % account_id)
+                                        """ % account_id)
 
 
                     #Если балланса не хватает - отключить пользователя
                 self.connection.commit()
-                if (balance_blocked is None or balance_blocked<=period_start) and cost>0 and account_balance_blocked==True:
-                    print "balance blocked1", ballance_checkout, period_start, cost
+                if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
+                    print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                     #В начале каждого расчётного периода
                     self.cur.execute(
                         """
-                        UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
-""" % (account_id, cost)
-)
+                        UPDATE billservice_account SET balance_blocked=True WHERE id=%s;
+                        """ % (account_id, )
+                        )
 
 
                     self.cur.execute("""
                                      UPDATE billservice_shedulelog SET balance_blocked = now() WHERE account_id=%s RETURNING id;
-""" % account_id)
+                                    """ % account_id)
 
                     if self.cur.fetchone()==None:
                         self.cur.execute("""
                                          INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
-""" % account_id)
+                                        """ % account_id)
+                        
                 if account_balance_blocked==True and account_balance>=cost:
                     """
                     Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
@@ -1282,22 +1283,22 @@ WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
                     self.cur.execute(
                         """
                         UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
-""" % (account_id)
-)                            
+                        """ % (account_id)
+                        )                            
 
                 self.connection.commit()
                 if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and reset_traffic==True:
                     self.cur.execute(
                         """
                         DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
-""" % accounttarif_id
-)
+                            """ % accounttarif_id
+                            )
 
                     self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
                     if self.cur.fetchone()==None:
                         self.cur.execute("""
                                          INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_reset) values(%d, now()) ;
-""" % account_id)    
+                                        """ % account_id)    
                     self.connection.commit()
 
                 if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
@@ -1305,10 +1306,10 @@ WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
                     self.cur.execute(
                         """
                         SELECT id, size
-FROM billservice_prepaidtraffic
-WHERE traffic_transmit_service_id=%s;
-""" % traffic_transmit_service_id
-)
+                            FROM billservice_prepaidtraffic
+                            WHERE traffic_transmit_service_id=%s;
+                            """ % traffic_transmit_service_id
+                            )
 
                     prepais=self.cur.fetchall()
                     u=False
@@ -1318,24 +1319,24 @@ WHERE traffic_transmit_service_id=%s;
                         self.cur.execute(
                             """
                             UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
-WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
-""" % (size, accounttarif_id, prepaid_traffic_id)
-)
+                            WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
+                            """ % (size, accounttarif_id, prepaid_traffic_id)
+                            )
                         if self.cur.fetchone() is None:
                             #print 'INSERT'
                             #print accounttarif_id, prepaid_traffic_id, size
                             self.cur.execute(
                                 """
                                 INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
-VALUES(%d,%d, %f*1024*1024, now());
-""" % (accounttarif_id, prepaid_traffic_id, size)
-)                            
+                                VALUES(%d,%d, %f*1024*1024, now());
+                                """ % (accounttarif_id, prepaid_traffic_id, size)
+                                )                            
                     if u==True:
                         self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
                         if self.cur.fetchone()==None:
                             self.cur.execute("""
                                              INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
-""" % account_id)  
+                                            """ % account_id)  
                     self.connection.commit()   
 
                 if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
@@ -1345,15 +1346,15 @@ VALUES(%d,%d, %f*1024*1024, now());
                         self.cur.execute(
                             """
                             DELETE FROM billservice_accountprepaystime
-WHERE account_tarif=%s;
-""" % accounttarif_id
-)
+                            WHERE account_tarif=%s;
+                            """ % accounttarif_id
+                            )
 
                         self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
                         if self.cur.fetchone()==None:
                             self.cur.execute("""
                                              INSERT INTO billservice_shedulelog(account_id, prepaid_time_reset) values(%d, now()) ;
-""" % account_id)        
+                                            """ % account_id)        
                         self.connection.commit()    
 
                 if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
@@ -1361,18 +1362,18 @@ WHERE account_tarif=%s;
                     self.cur.execute(
                         """
                         UPDATE billservice_accountprepaystime
-SET size=size+(SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s),
-datetime=now()
-WHERE account_tarif_id=%s RETURNING id;
-""" % (time_access_service_id, accounttarif_id)
-)
+                    SET size=size+(SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s),
+                    datetime=now()
+                    WHERE account_tarif_id=%s RETURNING id;
+                    """ % (time_access_service_id, accounttarif_id)
+                    )
                     if self.cur.fetchone()==None:
                         self.cur.execute(
                             """
                             INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id)
-VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%d), now(), %d);
-""" % (accounttarif_id, time_access_service_id, time_access_service_id)
-)
+                                VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%d), now(), %d);
+                                """ % (accounttarif_id, time_access_service_id, time_access_service_id)
+                                )
 
 
 
@@ -1380,20 +1381,20 @@ VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%d),
                     if self.cur.fetchone()==None:
                         cur.execute("""
                                     INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
-""" % account_id)
+                        """ % account_id)
                 self.connection.commit()
 
             self.cur.execute("""
                              SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
-WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
-FROM billservice_account as account
-JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
-JOIN billservice_tariff_onetime_services as ots ON ots.tariff_id=tarif.id
-JOIN billservice_onetimeservice as service ON service.id=ots.onetimeservice_id
-LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
-WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
-WHERE (account.ballance+account.credit)>0 and oth.id is Null;
-""")
+                            WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
+                            FROM billservice_account as account
+                            JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
+                            JOIN billservice_tariff_onetime_services as ots ON ots.tariff_id=tarif.id
+                            JOIN billservice_onetimeservice as service ON service.id=ots.onetimeservice_id
+                            LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
+                            WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
+                            WHERE (account.ballance+account.credit)>0 and oth.id is Null;
+                            """)
             rows = self.cur.fetchall()
             print "onetime", rows
             for row in rows:
@@ -1447,35 +1448,34 @@ class ipn_service(Thread):
             self.cur.execute(
                 """
                 SELECT account.id as account_id,
-account.username as account_username, 
-account.ipn_ip_address as account_ipn_ip_address, 
-account.vpn_ip_address as account_vpn_ip_address, 
-account.ipn_mac_address as account_ipn_mac_address ,
-(account.ballance+account.credit) as ballance, 
-account.disabled_by_limit as account_disabled_by_limit, 
-account.balance_blocked as account_balance_blocked,
-account.ipn_status as account_ipn_status, 
-account.ipn_speed as account_ipn_speed, 
-tariff.id as tarif_id, nas.name as nas_name,
-nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
-nas.user_disable_action as nas_user_disable,
-nas.ipn_speed_action as nas_ipn_speed, 
-nas."login" as nas_login, nas."password" as nas_password, 
-nas."ipaddress" as nas_ipaddress,
-accessparameters.access_time_id as access_time_id, 
-ipn_speed_table.speed as ipn_speed, 
-ipn_speed_table.state as ipn_state,
-accessparameters.access_type as access_type
-FROM billservice_account as account
-JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif
-WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
-JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
-JOIN nas_nas as nas ON nas.id=account.nas_id
-LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn_speed<>'') and account.ipn_ip_address!='0.0.0.0'
-;"""
-)
+                account.username as account_username, 
+                account.ipn_ip_address as account_ipn_ip_address, 
+                account.vpn_ip_address as account_vpn_ip_address, 
+                account.ipn_mac_address as account_ipn_mac_address ,
+                (account.ballance+account.credit) as ballance, 
+                account.disabled_by_limit as account_disabled_by_limit, 
+                account.balance_blocked as account_balance_blocked,
+                account.ipn_status as account_ipn_status, 
+                account.ipn_speed as account_ipn_speed, 
+                tariff.id as tarif_id, nas.name as nas_name,
+                nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
+                nas.user_disable_action as nas_user_disable,
+                nas.ipn_speed_action as nas_ipn_speed, 
+                nas."login" as nas_login, nas."password" as nas_password, 
+                nas."ipaddress" as nas_ipaddress,
+                accessparameters.access_time_id as access_time_id, 
+                ipn_speed_table.speed as ipn_speed, 
+                ipn_speed_table.state as ipn_state,
+                accessparameters.access_type as access_type
+                FROM billservice_account as account
+                JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif
+                WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
+                JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
+                JOIN nas_nas as nas ON nas.id=account.nas_id
+                LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
+                WHERE account.status=True and accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0'
+                ;""")
             rows=self.cur.fetchall()
             for row in rows:
                 #print "check ipn"
