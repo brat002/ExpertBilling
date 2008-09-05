@@ -35,9 +35,9 @@ pool = PooledDB(
     blocking=True,
     creator=psycopg2,
     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-							   settings.DATABASE_USER,
-							   settings.DATABASE_HOST,
-							   settings.DATABASE_PASSWORD)
+                                                           settings.DATABASE_USER,
+                                                           settings.DATABASE_HOST,
+                                                           settings.DATABASE_PASSWORD)
 )
 
 
@@ -45,28 +45,28 @@ pool = PooledDB(
 def format_update (x,y):
     print 'y', y, type(y)
     if y!='Null' or y!='None':
-	if type(y)==StringType or type(y)==UnicodeType:
-	    print True
-	    y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
-	    #print 'y', y
-	return "%s='%s'" % (x,y)
+        if type(y)==StringType or type(y)==UnicodeType:
+            print True
+            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            #print 'y', y
+        return "%s='%s'" % (x,y)
     else:
-	return "%s=%s" % (x,'Null')
+        return "%s=%s" % (x,'Null')
 
 def format_insert(y):
     if y=='Null' or y =='None':
-	return y
+        return y
     elif type(y)==StringType or type(y)==UnicodeType:
-	print True
-	return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+        print True
+        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
     else:
-	return y
+        return y
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
-	for key in result:
-	    setattr(self, key, result[key])
-	"""
+        for key in result:
+            setattr(self, key, result[key])
+        """
         if result[key]!=None:
             setattr(self, key, result[key])
         else:
@@ -74,127 +74,127 @@ class Object(object):
         """
 
 
-	for key in kwargs:
-	    setattr(self, key, kwargs[key])  
+        for key in kwargs:
+            setattr(self, key, kwargs[key])  
 
-	#print dir(self)          
+        #print dir(self)          
 
 
     def save(self, table):
 
 
-	fields=[]
-	for field in self.__dict__:
-	    if type(field)!=InstanceType:
-		# and self.__dict__[field]!=None
-		fields.append(field)
-	try:
-	    self.__dict__['id']
-	    sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
-	except:
-	    sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
+                fields.append(field)
+        try:
+            self.__dict__['id']
+            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
+        except:
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
 
-	return sql
+        return sql
 
     def get(self, table):
-	return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
+        return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
 
     def __call__(self):
-	return self.id
+        return self.id
 
     def hasattr(self, attr):
-	if attr in self.__dict__:
-	    return True
-	return False
+        if attr in self.__dict__:
+            return True
+        return False
 
     def isnull(self, attr):
-	if self.hasattr(attr):
-	    if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
-		return False
+        if self.hasattr(attr):
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+                return False
 
-	return True
-	return self.id
+        return True
+        return self.id
 
 def comparator(d, s):
     for key in s:
-	if s[key]!='' and s[key]!='Null' and s[key]!='None':
-	    d[key]=s[key] 
+        if s[key]!='' and s[key]!='Null' and s[key]!='None':
+            d[key]=s[key] 
     return d
 
 class check_vpn_access(Thread):
     def __init__ (self):
-	#self.dict=dict
-	#self.timeout=timeout
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
-	Thread.__init__(self)
+        #self.dict=dict
+        #self.timeout=timeout
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        Thread.__init__(self)
 
     def check_period(self, rows):
-	for row in rows:
-	    if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
-		return True
-	return False
+        for row in rows:
+            if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
+                return True
+        return False
 
     def create_speed(self, tarif_id, nas_type):
-	defaults = get_default_speed_parameters(self.cur, tarif_id)
-	speeds = get_speed_parameters(self.cur, tarif_id)
-	for speed in speeds:
-	    if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
-		defaults = comparator(defaults, speed)
-		return defaults
-	return defaults
+        defaults = get_default_speed_parameters(self.cur, tarif_id)
+        speeds = get_speed_parameters(self.cur, tarif_id)
+        for speed in speeds:
+            if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
+                defaults = comparator(defaults, speed)
+                return defaults
+        return defaults
 
     def remove_sessions(self):
 
-	self.cur.execute(
-	    """
-	    SELECT id, name, "type", ipaddress, secret, "login", "password", reset_action FROM nas_nas;
+        self.cur.execute(
+            """
+            SELECT id, name, "type", ipaddress, secret, "login", "password", reset_action FROM nas_nas;
 """
 )
-	nasses=self.cur.fetchall()
+        nasses=self.cur.fetchall()
 
 
-	for nas in nasses:
-	    sessions = get_active_sessions(nas)
-	    #print sessions
-	    for session in sessions:
-		#print 'session', session
-		self.cur.execute("""
-				 SELECT account.id, account.vpn_ip_address, account.ipn_ip_address, account.ipn_mac_address, radius.sessionid as  sessionid
+        for nas in nasses:
+            sessions = get_active_sessions(nas)
+            #print sessions
+            for session in sessions:
+                #print 'session', session
+                self.cur.execute("""
+                                 SELECT account.id, account.vpn_ip_address, account.ipn_ip_address, account.ipn_mac_address, radius.sessionid as  sessionid
 FROM radius_activesession as radius 
 JOIN billservice_account as account ON radius.account_id=account.id
 WHERE account.username='%s'
 """ % session['name'])
-		account = self.cur.fetchone()
-		#print "account", account
-		if account is not None:
-		    print 'send pod'
-		    res = PoD(dict=dict,
-			      account_id=account['id'], 
-			      account_name=str(session['name']), 
-			      account_vpn_ip=account['vpn_ip_address'], 
-			      account_ipn_ip=account['ipn_ip_address'], 
-			      account_mac_address=account['ipn_mac_address'], 
-			      access_type=str(session['service']), 
-			      nas_ip=nas['ipaddress'], 
-			      nas_type=nas['type'], 
-			      nas_name=nas['name'], 
-			      nas_secret=nas['secret'], 
-			      nas_login=nas['login'], 
-			      nas_password=nas['password'], 
-			      session_id=str(account['sessionid']), 
-			      format_string=str(nas['reset_action'])
-			  )
+                account = self.cur.fetchone()
+                #print "account", account
+                if account is not None:
+                    print 'send pod'
+                    res = PoD(dict=dict,
+                              account_id=account['id'], 
+                              account_name=str(session['name']), 
+                              account_vpn_ip=account['vpn_ip_address'], 
+                              account_ipn_ip=account['ipn_ip_address'], 
+                              account_mac_address=account['ipn_mac_address'], 
+                              access_type=str(session['service']), 
+                              nas_ip=nas['ipaddress'], 
+                              nas_type=nas['type'], 
+                              nas_name=nas['name'], 
+                              nas_secret=nas['secret'], 
+                              nas_login=nas['login'], 
+                              nas_password=nas['password'], 
+                              session_id=str(account['sessionid']), 
+                              format_string=str(nas['reset_action'])
+                          )
 
-	    self.cur.execute("""
-			     UPDATE radius_activesession
+            self.cur.execute("""
+                             UPDATE radius_activesession
 SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='ACK'
 WHERE date_end is Null and nas_id='%s';""" % nas['ipaddress'])
-	    self.connection.commit()
+            self.connection.commit()
 
 
     def check_access(self):
-	"""
+        """
             Раз в 30 секунд происходит выборка всех пользователей
             OnLine, делается проверка,
             1. не вышли ли они за рамки временного диапазона
@@ -205,17 +205,17 @@ WHERE date_end is Null and nas_id='%s';""" % nas['ipaddress'])
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
 
-	while True:
+        while True:
 
 
 
 
-	    #Закрываем подвисшие сессии
-	    self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
-	    self.connection.commit()
+            #Закрываем подвисшие сессии
+            self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update is Null)) and date_end is Null;")
+            self.connection.commit()
 
-	    self.cur.execute("""
-			     SELECT rs.id as id, 
+            self.cur.execute("""
+                             SELECT rs.id as id, 
 rs.account_id as account_id, 
 rs.sessionid as session,  
 rs.speed_string as speed_string, 
@@ -245,84 +245,84 @@ JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
 WHERE rs.date_end is null;
 """)
 
-	    rows=self.cur.fetchall()
-	    for row in rows:
-		result=None
+            rows=self.cur.fetchall()
+            for row in rows:
+                result=None
 
-		if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
-		    """
+                if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
+                    """
             			Делаем проверку на то, изменилась ли скорость.
             			"""
-		    if row['vpn_speed']=='':
-			speed=self.create_speed(row['tarif_id'], row['nas_type'])
-		    else:
-			speed=parse_custom_speed(row['vpn_speed']) 
-		    newspeed=''
-		    for key in speed:
-			newspeed+=unicode(speed[key])
-		    if row['speed_string']!=newspeed:
-			coa_result=change_speed(dict=dict, account_id=row['account_id'], 
-						account_name=str(row['username']), 
-						account_vpn_ip=row['vpn_ip_address'], 
-						account_ipn_ip=row['ipn_ip_address'], 
-						account_mac_address=row['ipn_mac_address'], 
-						access_type=str(row['access_type']), 
-						nas_ip=str(row['nas_ip']), 
-						nas_type=row['nas_type'], 
-						nas_name=str(row['nas_name']), 
-						nas_secret=str(row['nas_secret']), 
-						nas_login=str(row['nas_login']), 
-						nas_password=row['nas_password'], 
-						session_id=str(row['session']), 
-						format_string=str(row['speed_action']),
-						speed=speed)                           
+                    if row['vpn_speed']=='':
+                        speed=self.create_speed(row['tarif_id'], row['nas_type'])
+                    else:
+                        speed=parse_custom_speed(row['vpn_speed']) 
+                    newspeed=''
+                    for key in speed:
+                        newspeed+=unicode(speed[key])
+                    if row['speed_string']!=newspeed:
+                        coa_result=change_speed(dict=dict, account_id=row['account_id'], 
+                                                account_name=str(row['username']), 
+                                                account_vpn_ip=row['vpn_ip_address'], 
+                                                account_ipn_ip=row['ipn_ip_address'], 
+                                                account_mac_address=row['ipn_mac_address'], 
+                                                access_type=str(row['access_type']), 
+                                                nas_ip=str(row['nas_ip']), 
+                                                nas_type=row['nas_type'], 
+                                                nas_name=str(row['nas_name']), 
+                                                nas_secret=str(row['nas_secret']), 
+                                                nas_login=str(row['nas_login']), 
+                                                nas_password=row['nas_password'], 
+                                                session_id=str(row['session']), 
+                                                format_string=str(row['speed_action']),
+                                                speed=speed)                           
 
-			if coa_result==True:
-			    self.cur.execute(
-				"""
-				UPDATE radius_activesession
+                        if coa_result==True:
+                            self.cur.execute(
+                                """
+                                UPDATE radius_activesession
 SET speed_string='%s'
 WHERE id=%s;
 """ % (newspeed, row['id'])
 )
-		else:
-		    result = PoD(dict=dict,
-				 account_id=row['account_id'], 
-				 account_name=str(row['username']), 
-				 account_vpn_ip=row['vpn_ip_address'], 
-				 account_ipn_ip=row['ipn_ip_address'], 
-				 account_mac_address=row['ipn_mac_address'], 
-				 access_type=str(row['access_type']), 
-				 nas_ip=row['nas_ip'], 
-				 nas_type=row['nas_type'], 
-				 nas_name=row['nas_name'], 
-				 nas_secret=row['nas_secret'], 
-				 nas_login=row['nas_login'], 
-				 nas_password=row['nas_password'], 
-				 session_id=str(row['session']), 
-				 format_string=str(row['reset_action'])
-			     )
+                else:
+                    result = PoD(dict=dict,
+                                 account_id=row['account_id'], 
+                                 account_name=str(row['username']), 
+                                 account_vpn_ip=row['vpn_ip_address'], 
+                                 account_ipn_ip=row['ipn_ip_address'], 
+                                 account_mac_address=row['ipn_mac_address'], 
+                                 access_type=str(row['access_type']), 
+                                 nas_ip=row['nas_ip'], 
+                                 nas_type=row['nas_type'], 
+                                 nas_name=row['nas_name'], 
+                                 nas_secret=row['nas_secret'], 
+                                 nas_login=row['nas_login'], 
+                                 nas_password=row['nas_password'], 
+                                 session_id=str(row['session']), 
+                                 format_string=str(row['reset_action'])
+                             )
 
-		if result==True:
-		    disconnect_result=u'ACK'
-		elif result==False:
-		    disconnect_result=u'NACK'
+                if result==True:
+                    disconnect_result=u'ACK'
+                elif result==False:
+                    disconnect_result=u'NACK'
 
-		if result is not None:
-		    self.cur.execute(
-			"""
-			UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
+                if result is not None:
+                    self.cur.execute(
+                        """
+                        UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
 """, (disconnect_result, row['session'])
 )
 
-	    self.connection.commit()
-	    #self.cur.close()
+            self.connection.commit()
+            #self.cur.close()
 
-	    time.sleep(60)
+            time.sleep(60)
 
     def run(self):
-	self.remove_sessions()
-	self.check_access()
+        self.remove_sessions()
+        self.check_access()
 
 
 class periodical_service_bill(Thread):
@@ -338,203 +338,203 @@ class periodical_service_bill(Thread):
 
     """
     def __init__ (self):
-	self.connection = pool.connection()
-	#self.connection._con._con.set_isolation_level(0)
-	self.cur = self.connection.cursor()
-	Thread.__init__(self)
+        self.connection = pool.connection()
+        #self.connection._con._con.set_isolation_level(0)
+        self.cur = self.connection.cursor()
+        Thread.__init__(self)
 
 
     def run(self):
 
-	while True:
-	    # Количество снятий в сутки
-	    transaction_number=24
-	    n=(24*60*60)/transaction_number
+        while True:
+            # Количество снятий в сутки
+            transaction_number=24
+            n=(24*60*60)/transaction_number
 
-	    #выбираем список тарифных планов у которых есть периодические услуги
-	    self.cur.execute("""SELECT id, settlement_period_id, ps_null_ballance_checkout  
-			     FROM billservice_tariff  as tarif
+            #выбираем список тарифных планов у которых есть периодические услуги
+            self.cur.execute("""SELECT id, settlement_period_id, ps_null_ballance_checkout  
+                             FROM billservice_tariff  as tarif
 WHERE id in (SELECT tariff_id FROM billservice_tariff_periodical_services) AND tarif.active=True""")
-	    rows=self.cur.fetchall()
-	    #print "SELECT TP"
-	    #перебираем тарифные планы
-	    for row in rows:
-		#self.connection.commit()
-		print row
-		tariff_id, settlement_period_id, null_ballance_checkout=row
+            rows=self.cur.fetchall()
+            #print "SELECT TP"
+            #перебираем тарифные планы
+            for row in rows:
+                #self.connection.commit()
+                print row
+                tariff_id, settlement_period_id, null_ballance_checkout=row
 
-		# Получаем список аккаунтов на ТП
-		self.cur.execute("""
-				 SELECT a.account_id, a.datetime::timestamp without time zone, (b.ballance+b.credit) as ballance
+                # Получаем список аккаунтов на ТП
+                self.cur.execute("""
+                                 SELECT a.account_id, a.datetime::timestamp without time zone, (b.ballance+b.credit) as ballance
 FROM billservice_account as b
 JOIN billservice_accounttarif as a ON a.id=(SELECT id FROM billservice_accounttarif WHERE account_id=b.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
 WHERE a.tarif_id=%d and b.suspended=False
 """ % tariff_id)
-		accounts=self.cur.fetchall()
-		# Получаем параметры каждой перодической услуги в выбранном ТП
-		self.cur.execute("""
-				 SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone,
+                accounts=self.cur.fetchall()
+                # Получаем параметры каждой перодической услуги в выбранном ТП
+                self.cur.execute("""
+                                 SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone,
 c.length, c.length_in, c.autostart
 FROM billservice_tariff_periodical_services as p
 JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
 JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
 WHERE p.tariff_id=%d
 """ % tariff_id)
-		rows_ps=self.cur.fetchall()
-		# По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
-		for row_ps in rows_ps:
-		    ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
-		    print "new ps"
-		    for account in accounts:
-			#self.connection.commit()
-			account_id = account[0]
-			print "account_id for ps", ps_id, account_id
-			account_datetime = account[1]
-			account_ballance = account[2]
-			# Если балланс>0 или разрешено снятие денег при отрицательном баллансе
-			if account_ballance>0 or null_ballance_checkout==True:
-			    #Получаем данные из расчётного периода
-			    if autostart_sp==True:
-				time_start_ps=account_datetime
-			    # Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-			    period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
-			    self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
-			    now=datetime.datetime.now()
-			    if ps_cash_method=="GRADUAL":
-				"""
+                rows_ps=self.cur.fetchall()
+                # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
+                for row_ps in rows_ps:
+                    ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
+                    print "new ps"
+                    for account in accounts:
+                        #self.connection.commit()
+                        account_id = account[0]
+                        print "account_id for ps", ps_id, account_id
+                        account_datetime = account[1]
+                        account_ballance = account[2]
+                        # Если балланс>0 или разрешено снятие денег при отрицательном баллансе
+                        if account_ballance>0 or null_ballance_checkout==True:
+                            #Получаем данные из расчётного периода
+                            if autostart_sp==True:
+                                time_start_ps=account_datetime
+                            # Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
+                            period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
+                            self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
+                            now=datetime.datetime.now()
+                            if ps_cash_method=="GRADUAL":
+                                """
                                 # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
                                 # Если закончился один-снимаем всю сумму, указанную в периодической услуге
                                 # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                 # а остальные помечаем неактивными и уведомляем администратора
                                 """
-				last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
 
-				if last_checkout==None:
-				    last_checkout=account_datetime
-				print "last checkout", last_checkout
-				if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
-				    print "GRADUAL"
-				    #Проверяем наступил ли новый период
-				    if now-datetime.timedelta(seconds=n)<=period_start:
-					# Если начался новый период
-					# Находим когда начался прошльый период
-					# Смотрим сколько денег должны были снять за прошлый период и производим корректировку
-					#period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
-					pass
-				    # Смотрим сколько раз уже должны были снять деньги
-				    cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
-				    lc=now - last_checkout
-				    nums, ost=divmod(lc.seconds+lc.days*86400,n)
+                                if last_checkout==None:
+                                    last_checkout=account_datetime
+                                print "last checkout", last_checkout
+                                if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
+                                    print "GRADUAL"
+                                    #Проверяем наступил ли новый период
+                                    if now-datetime.timedelta(seconds=n)<=period_start:
+                                        # Если начался новый период
+                                        # Находим когда начался прошльый период
+                                        # Смотрим сколько денег должны были снять за прошлый период и производим корректировку
+                                        #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
+                                        pass
+                                    # Смотрим сколько раз уже должны были снять деньги
+                                    cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
+                                    lc=now - last_checkout
+                                    nums, ost=divmod(lc.seconds+lc.days*86400,n)
 
-				    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
-					"""
+                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        """
                                         Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                         пока денег на счету не было
                                         """
-					#Смотрим на какую сумму должны были снять денег и снимаем её
-					cash_summ=cash_summ*nums
-				    #print "delta", delta
-				    # Делаем проводку со статусом Approved
-				    print "cash_summ", cash_summ
-				    transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
-				    #print "tr_id", transaction_id
-				    #self.connection.commit()
-				    ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
-				    #self.connection.commit()
+                                        #Смотрим на какую сумму должны были снять денег и снимаем её
+                                        cash_summ=cash_summ*nums
+                                    #print "delta", delta
+                                    # Делаем проводку со статусом Approved
+                                    print "cash_summ", cash_summ
+                                    transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
+                                    #print "tr_id", transaction_id
+                                    #self.connection.commit()
+                                    ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
+                                    #self.connection.commit()
 
-			    if ps_cash_method=="AT_START":
-				"""
+                            if ps_cash_method=="AT_START":
+                                """
                                 Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                 не платили-производим снятие.
                                 """
-				last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
-				# Здесь нужно проверить сколько раз прошёл расчётный период
-				# Если с начала текущего периода не было снятий-смотрим сколько их уже не было
-				# Для последней проводки ставим статус Approved=True
-				# для всех сотальных False
-				# Если последняя проводка меньше или равно дате начала периода-делаем снятие
-				summ=0
-				if last_checkout is None:
-				    first_time=True
-				    last_checkout=now
-				else:
-				    first_time=False
-				#print first_time==True or last_checkout<period_start
-				if first_time==True or last_checkout<period_start:
+                                last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                # Здесь нужно проверить сколько раз прошёл расчётный период
+                                # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
+                                # Для последней проводки ставим статус Approved=True
+                                # для всех сотальных False
+                                # Если последняя проводка меньше или равно дате начала периода-делаем снятие
+                                summ=0
+                                if last_checkout is None:
+                                    first_time=True
+                                    last_checkout=now
+                                else:
+                                    first_time=False
+                                #print first_time==True or last_checkout<period_start
+                                if first_time==True or last_checkout<period_start:
 
-				    lc=period_start-last_checkout
-				    nums, ost=divmod(lc.seconds+lc.days*86400, delta)
-				    summ=ps_cost
-				    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
-					"""
+                                    lc=period_start-last_checkout
+                                    nums, ost=divmod(lc.seconds+lc.days*86400, delta)
+                                    summ=ps_cost
+                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        """
                                         Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                         пока денег на счету не было
                                         """
-					#Смотрим на какую сумму должны были снять денег и снимаем её
-					summ=ps_cost*nums
+                                        #Смотрим на какую сумму должны были снять денег и снимаем её
+                                        summ=ps_cost*nums
 
-				    transaction_id = transaction(cursor=self.cur,
-								 account=account_id,
-								 approved=True,
-								 type='PS_AT_START',
-								 tarif = tariff_id,
-								 summ = summ,
-								 description=u"Проводка по периодической услуге со нятием суммы в начале периода",
-								 created = now)
-				    ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-				    #self.connection.commit()
-			    if ps_cash_method=="AT_END":
-				"""
+                                    transaction_id = transaction(cursor=self.cur,
+                                                                 account=account_id,
+                                                                 approved=True,
+                                                                 type='PS_AT_START',
+                                                                 tarif = tariff_id,
+                                                                 summ = summ,
+                                                                 description=u"Проводка по периодической услуге со нятием суммы в начале периода",
+                                                                 created = now)
+                                    ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
+                                    #self.connection.commit()
+                            if ps_cash_method=="AT_END":
+                                """
                                Смотрим завершился ли хотя бы один расчётный период.
                                Если завершился - считаем сколько уже их завершилось.
 
                                для остальных со статусом False
                                """
-				last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
 
-				if last_checkout is None:
-				    first_time=True
-				    last_checkout=now
-				else:
-				    first_time=False
+                                if last_checkout is None:
+                                    first_time=True
+                                    last_checkout=now
+                                else:
+                                    first_time=False
 
-				# Здесь нужно проверить сколько раз прошёл расчётный период
+                                # Здесь нужно проверить сколько раз прошёл расчётный период
 
-				# Если с начала текущего периода не было снятий-смотрим сколько их уже не было
-				# Для последней проводки ставим статус Approved=True
-				# для всех сотальных False
-				now=datetime.datetime.now()
-				# Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
+                                # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
+                                # Для последней проводки ставим статус Approved=True
+                                # для всех сотальных False
+                                now=datetime.datetime.now()
+                                # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
 
-				summ=0
-				if period_start>last_checkout or first_time==True:
+                                summ=0
+                                if period_start>last_checkout or first_time==True:
 
 
-				    if first_time==False:
-					lc=period_start-last_checkout
-					nums, ost=divmod((period_end-last_checkout).seconds+(period_end-last_checkout).days*86400, delta)
+                                    if first_time==False:
+                                        lc=period_start-last_checkout
+                                        nums, ost=divmod((period_end-last_checkout).seconds+(period_end-last_checkout).days*86400, delta)
 
-					summ=ps_cost
-					if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
-					    summ=ps_cost*nums
-					descr=u"Проводка по периодической услуге со нятием суммы в конце периода"
-				    else:
-					summ=0
-					descr=u"Фикстивная проводка по периодической услуге со нятием суммы в конце периода"                                        
+                                        summ=ps_cost
+                                        if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                            summ=ps_cost*nums
+                                        descr=u"Проводка по периодической услуге со нятием суммы в конце периода"
+                                    else:
+                                        summ=0
+                                        descr=u"Фикстивная проводка по периодической услуге со нятием суммы в конце периода"                                        
 
-				    transaction_id = transaction(cursor=self.cur,
-								 account=account_id,
-								 approved=True,
-								 type='PS_AT_END',
-								 tarif = tariff_id,
-								 summ=summ,
-								 description=descr,
-								 created = now)
-				    ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-				    #self.connection.commit()
-		    self.connection.commit()
+                                    transaction_id = transaction(cursor=self.cur,
+                                                                 account=account_id,
+                                                                 approved=True,
+                                                                 type='PS_AT_END',
+                                                                 tarif = tariff_id,
+                                                                 summ=summ,
+                                                                 description=descr,
+                                                                 created = now)
+                                    ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
+                                    #self.connection.commit()
+                    self.connection.commit()
 
-	    time.sleep(180)
+            time.sleep(180)
 
 class TimeAccessBill(Thread):
     """
@@ -542,122 +542,122 @@ class TimeAccessBill(Thread):
     и дата отключения пользователя
     """
     def __init__(self):
-	Thread.__init__(self)
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor()
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
 
     def run(self):
-	"""
+        """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
         """
 
-	while True:
+        while True:
 
-	    self.cur.execute("""
-			     SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
+            self.cur.execute("""
+                             SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
 FROM radius_session as rs
 JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
 JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
 JOIN billservice_timeaccessservice as tacc ON tacc.id=tarif.time_access_service_id
 WHERE rs.checkouted_by_time=False and rs.date_start is NUll and acc_t.datetime<rs.interrim_update and tarif.active=True ORDER BY rs.interrim_update ASC;
 """)
-	    rows=self.cur.fetchall()
+            rows=self.cur.fetchall()
 
-	    for row in rows:
-		account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
-		#1. Ищем последнюю запись по которой была произведена оплата
-		#2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
-		#TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
-		#TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
-		# рассчитав соотв снятия.
-		#2.2 Если снятия не было-снять столько, на сколько насидел пользователь
-		self.cur.execute("""
-				 SELECT session_time FROM radius_session WHERE sessionid='%s' AND checkouted_by_time=True
+            for row in rows:
+                account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
+                #1. Ищем последнюю запись по которой была произведена оплата
+                #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
+                #TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
+                #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
+                # рассчитав соотв снятия.
+                #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
+                self.cur.execute("""
+                                 SELECT session_time FROM radius_session WHERE sessionid='%s' AND checkouted_by_time=True
 ORDER BY interrim_update DESC LIMIT 1
 """ % session_id)
-		try:
-		    old_time=self.cur.fetchone()[0]
-		except:
-		    old_time=0
-		total_time=session_time-old_time
+                try:
+                    old_time=self.cur.fetchone()[0]
+                except:
+                    old_time=0
+                total_time=session_time-old_time
 
-		self.cur.execute(
-		    """
-		    SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
+                self.cur.execute(
+                    """
+                    SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
 """ % accountt_tarif_id
 )
 
-		try:
-		    prepaid_id, prepaid=self.cur.fetchone()
-		except:
-		    prepaid=0
-		    prepaid_id=-1
+                try:
+                    prepaid_id, prepaid=self.cur.fetchone()
+                except:
+                    prepaid=0
+                    prepaid_id=-1
 
-		if prepaid>0:
-		    if prepaid>=total_time:
-			total_time=0
-			prepaid=prepaid-total_time
-		    elif total_time>=prepaid:
-			total_time=total_time-prepaid
-			prepaid=0
-		    self.cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                if prepaid>0:
+                    if prepaid>=total_time:
+                        total_time=0
+                        prepaid=prepaid-total_time
+                    elif total_time>=prepaid:
+                        total_time=total_time-prepaid
+                        prepaid=0
+                    self.cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
 
-		# Получаем список временных периодов и их стоимость у периодической услуги
-		self.cur.execute(
-		    """
-		    SELECT tan.time_period_id, tan.cost
+                # Получаем список временных периодов и их стоимость у периодической услуги
+                self.cur.execute(
+                    """
+                    SELECT tan.time_period_id, tan.cost
 FROM billservice_timeaccessnode as tan
 JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id
 WHERE tan.time_access_service_id=%s
 """ % ps_id
 )
-		periods=self.cur.fetchall()
-		for period in periods:
-		    period_id=period[0]
-		    period_cost=period[1]
-		    #получаем данные из периода чтобы проверить попала в него сессия или нет
-		    self.cur.execute(
-			"""
-			SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+                periods=self.cur.fetchall()
+                for period in periods:
+                    period_id=period[0]
+                    period_cost=period[1]
+                    #получаем данные из периода чтобы проверить попала в него сессия или нет
+                    self.cur.execute(
+                        """
+                        SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
 FROM billservice_timeperiodnode as tpn
 JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
 WHERE tptpn.timeperiod_id=%s
 """ % period_id
 )
-		    period_nodes_data=cur.fetchall()
-		    for period_node in period_nodes_data:
-			period_id=period_node[0]
-			period_name = period_node[1]
-			period_start = period_node[2]
-			period_length = period_node[3]
-			repeat_after = period_node[4]
-			if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
-			    summ=(float(total_time)/60.000)*period_cost
-			    if summ>0:
-				transaction(
-				    cursor=self.cur,
-				    type='TIME_ACCESS',
-				    account=account_id,
-				    approved=True,
-				    tarif=tarif_id,
-				    summ=summ,
-				    description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
-				)
-				#print u"Снятие денег за время %s" % query
+                    period_nodes_data=cur.fetchall()
+                    for period_node in period_nodes_data:
+                        period_id=period_node[0]
+                        period_name = period_node[1]
+                        period_start = period_node[2]
+                        period_length = period_node[3]
+                        repeat_after = period_node[4]
+                        if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
+                            summ=(float(total_time)/60.000)*period_cost
+                            if summ>0:
+                                transaction(
+                                    cursor=self.cur,
+                                    type='TIME_ACCESS',
+                                    account=account_id,
+                                    approved=True,
+                                    tarif=tarif_id,
+                                    summ=summ,
+                                    description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
+                                )
+                                #print u"Снятие денег за время %s" % query
 
-		query="""
-		     UPDATE radius_session
-		     SET checkouted_by_time=True
-		     WHERE sessionid='%s'
-		     AND account_id='%s'
-		     AND interrim_update='%s'
-		     """ % (session_id, account_id, interrim_update)
-		self.cur.execute(query)
-		self.connection.commit()
+                query="""
+                     UPDATE radius_session
+                     SET checkouted_by_time=True
+                     WHERE sessionid='%s'
+                     AND account_id='%s'
+                     AND interrim_update='%s'
+                     """ % (session_id, account_id, interrim_update)
+                self.cur.execute(query)
+                self.connection.commit()
 
 
-	    time.sleep(30)
+            time.sleep(30)
 
 
 class NetFlowAggregate(Thread):
@@ -678,22 +678,22 @@ class NetFlowAggregate(Thread):
     """
 
     def __init__(self):
-	Thread.__init__(self)
+        Thread.__init__(self)
 
     def check_period(self, rows):
-	for row in rows:
-	    if in_period(row[0],row[1],row[2])==True:
-		return True
-	return False
+        for row in rows:
+            if in_period(row[0],row[1],row[2])==True:
+                return True
+        return False
 
     def run(self):
-	while True:
-	    print 'next aggregation cycle'
-	    connection = pool.connection()
-	    cur = connection.cursor()
-	    cur.execute(
-		"""
-		SELECT nf.id, 
+        while True:
+            print 'next aggregation cycle'
+            connection = pool.connection()
+            cur = connection.cursor()
+            cur.execute(
+                """
+                SELECT nf.id, 
 nf.nas_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
 nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.id, ba.nas_id,
 tariff.active, tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
@@ -705,25 +705,25 @@ LEFT JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_i
 WHERE nf.fetched=False;
 """
 )
-	    raw_streams=cur.fetchall()
+            raw_streams=cur.fetchall()
 
-	    """
+            """
             Берём строку, ищем пользователя, у которого адрес совпадает или с dst или с src.
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
             """
-	    for stream in raw_streams:
-		nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id, account_nas_id, \
-		     tarif_status, traffic_transmit_service, tarif_id, store = stream
+            for stream in raw_streams:
+                nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id, account_nas_id, \
+                     tarif_status, traffic_transmit_service, tarif_id, store = stream
 
-		tarif_mode=False
-		#print nf_id
+                tarif_mode=False
+                #print nf_id
 
-		if traffic_transmit_service and account_nas_id==nas_id:
+                if traffic_transmit_service and account_nas_id==nas_id:
 
-		#Выбираем временные интервалы из услуги по трафику
-		    cur.execute(
-			"""
-			SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+                #Выбираем временные интервалы из услуги по трафику
+                    cur.execute(
+                        """
+                        SELECT tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
 FROM billservice_timeperiodnode as tpn
 JOIN billservice_timeperiod_time_period_nodes as timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
 JOIN billservice_traffictransmitnodes_time_nodes as ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
@@ -732,16 +732,16 @@ WHERE ttns.traffic_transmit_service_id=%s
 """ % traffic_transmit_service
 )
 
-		    periods=cur.fetchall()
-		    #Нужно ли списывать деньги за этот трафик
-		    tarif_mode=self.check_period(periods)
+                    periods=cur.fetchall()
+                    #Нужно ли списывать деньги за этот трафик
+                    tarif_mode=self.check_period(periods)
 
-		    #tarif_mode=True
-		if account_id is not None and account_nas_id==nas_id and tarif_status==True:
-		    # Если пользователь
-		    cur.execute(
-			"""
-			SELECT id
+                    #tarif_mode=True
+                if account_id is not None and account_nas_id==nas_id and tarif_status==True:
+                    # Если пользователь
+                    cur.execute(
+                        """
+                        SELECT id
 FROM billservice_netflowstream
 WHERE nas_id='%s' and account_id=%s and
 tarif_id=%s and
@@ -756,19 +756,19 @@ checkouted=False and
 for_checkout='%s' ORDER BY id DESC LIMIT 1;
 """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode)
 )
-		    row_for_update=cur.fetchone()
-		    if row_for_update:
+                    row_for_update=cur.fetchone()
+                    if row_for_update:
     #                    print 'u'
-			cur.execute(
-			    """
-			    UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
+                        cur.execute(
+                            """
+                            UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
 """ % (octets, nf_id)
 )
-		    else:
+                    else:
     #                  print 'i'
-			cur.execute(
-			    """
-			    INSERT INTO billservice_netflowstream(
+                        cur.execute(
+                            """
+                            INSERT INTO billservice_netflowstream(
 nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
 dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
 VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
@@ -778,24 +778,24 @@ VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
 
 
 
-		if store==True:
-		    cur.execute(
-			"""
-			UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
+                if store==True:
+                    cur.execute(
+                        """
+                        UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
 """ % nf_id
 )
-		else:
-		    cur.execute(
-			"""
-			DELETE FROM billservice_rawnetflowstream WHERE id=%s;
+                else:
+                    cur.execute(
+                        """
+                        DELETE FROM billservice_rawnetflowstream WHERE id=%s;
 """ % nf_id
 )
 
-		connection.commit()
-	    del raw_streams  
-	    cur.close()
-	    connection.close()
-	    time.sleep(60)
+                connection.commit()
+            del raw_streams  
+            cur.close()
+            connection.close()
+            time.sleep(60)
 
 
 class NetFlowBill(Thread):
@@ -806,41 +806,41 @@ class NetFlowBill(Thread):
 
     """
     class Picker(object):
-	def __init__(self):
-	    self.data={}
+        def __init__(self):
+            self.data={}
 
 
-	def add_summ(self, account, tarif, summ):
-	    if self.data.has_key(account):
-		self.data[account]['summ']+=summ
-	    else:
-		self.data[account]={'tarif':tarif, 'summ':summ}
+        def add_summ(self, account, tarif, summ):
+            if self.data.has_key(account):
+                self.data[account]['summ']+=summ
+            else:
+                self.data[account]={'tarif':tarif, 'summ':summ}
 
-	def get_list(self):
-	    for key in self.data:
-		yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
+        def get_list(self):
+            for key in self.data:
+                yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
 
 
     def __init__(self):
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor()
-	Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
+        Thread.__init__(self)
 
     def get_actual_cost(self, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date):
-	"""
+        """
         Метод возвращает актуальную цену для направления трафика для пользователя:
         """
 
-	if direction=="INPUT":
-	    d = "in_direction=True"
-	elif direction=="OUTPUT":
-	    d = "out_direction=True"
-	else:
-	    return 0
+        if direction=="INPUT":
+            d = "in_direction=True"
+        elif direction=="OUTPUT":
+            d = "out_direction=True"
+        else:
+            return 0
 
-	self.cur.execute(
-	    """
-	    SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
+        self.cur.execute(
+            """
+            SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
 FROM billservice_traffictransmitnodes as ttsn
 JOIN billservice_traffictransmitnodes_traffic_class as tcn ON tcn.traffictransmitnodes_id=ttsn.id
 JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
@@ -851,34 +851,34 @@ WHERE ((ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end<='%s'/(1024*1024)) o
 )
 
 
-	trafic_transmit_nodes=self.cur.fetchall()
-	cost=0
-	min_from_start=0
-	for node in trafic_transmit_nodes:
-	    trafic_transmit_node_id=node[0]
-	    trafic_cost=node[1]
-	    trafic_edge_start=node[2]
-	    trafic_edge_end=node[3]
+        trafic_transmit_nodes=self.cur.fetchall()
+        cost=0
+        min_from_start=0
+        for node in trafic_transmit_nodes:
+            trafic_transmit_node_id=node[0]
+            trafic_cost=node[1]
+            trafic_edge_start=node[2]
+            trafic_edge_end=node[3]
 
-	    period_start=node[4]
-	    period_length=node[5]
-	    repeat_after=node[6]
-	    tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
-	    if result:
-		if from_start<min_from_start or min_from_start==0:
-		    min_from_start=from_start
-		    cost=trafic_cost
-	del trafic_transmit_nodes
-	return cost
+            period_start=node[4]
+            period_length=node[5]
+            repeat_after=node[6]
+            tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+            if result:
+                if from_start<min_from_start or min_from_start==0:
+                    min_from_start=from_start
+                    cost=trafic_cost
+        del trafic_transmit_nodes
+        return cost
 
 
     def run(self):
 
-	while True:
-	    a=time.clock()
-	    self.cur.execute(
-		"""
-		SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.direction, nf.octets, bs_acc.username, 
+        while True:
+            a=time.clock()
+            self.cur.execute(
+                """
+                SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.direction, nf.octets, bs_acc.username, 
 tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check, accounttarif.id, accounttarif.datetime::timestamp without time zone,
 settlementperiod.time_start::timestamp without time zone, settlementperiod.length_in, settlementperiod.length, settlementperiod.autostart
 FROM billservice_netflowstream as nf
@@ -892,130 +892,130 @@ LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.i
 WHERE for_checkout=True and checkouted=False and tarif.active=True ORDER BY nf.account_id ASC;
 """
 )
-	    rows=self.cur.fetchall()
+            rows=self.cur.fetchall()
 
-	    pays=self.Picker()
+            pays=self.Picker()
 
-	    for row in rows:
-		"""
+            for row in rows:
+                """
                 TO-DO: Пробегаемся по всем записям. Суммируем суммы денег для одного пользователя и разом списываем всю сумму
                 """
-		nf_id, \
-		     account_id,\
-		     tarif_id, \
-		     stream_date, \
-		     traffic_class_id,\
-		     direction, \
-		     octets, \
-		     username, \
-		     trafic_transmit_service_id, \
-		     settlement_period_id, \
-		     cash_method, \
-		     period_check, \
-		     accounttarif_id,\
-		     accounttarif_datetime, \
-		     sp_time_start, \
-		     sp_length_in, \
-		     sp_length, \
-		     sp_autostart = row
-		s=False
-		#print nf_id
+                nf_id, \
+                     account_id,\
+                     tarif_id, \
+                     stream_date, \
+                     traffic_class_id,\
+                     direction, \
+                     octets, \
+                     username, \
+                     trafic_transmit_service_id, \
+                     settlement_period_id, \
+                     cash_method, \
+                     period_check, \
+                     accounttarif_id,\
+                     accounttarif_datetime, \
+                     sp_time_start, \
+                     sp_length_in, \
+                     sp_length, \
+                     sp_autostart = row
+                s=False
+                #print nf_id
 
-		if trafic_transmit_service_id:
-		    #Если в тарифном плане указан расчётный период
-		    if settlement_period_id:
-			if sp_autostart==True:
-			    # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
-			    # дату привязки тарифного плана пользователю
-			    sp_time_start=accounttarif_datetime
+                if trafic_transmit_service_id:
+                    #Если в тарифном плане указан расчётный период
+                    if settlement_period_id:
+                        if sp_autostart==True:
+                            # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
+                            # дату привязки тарифного плана пользователю
+                            sp_time_start=accounttarif_datetime
 
-			#print "before SP", time.clock()-b
-			settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length, now=stream_date)
+                        #print "before SP", time.clock()-b
+                        settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length, now=stream_date)
 
-			#Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-			self.cur.execute(
-			    """
-			    SELECT sum(octets)
+                        #Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
+                        self.cur.execute(
+                            """
+                            SELECT sum(octets)
 FROM billservice_netflowstream
 WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
 """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end)
 )
 
-			octets_summ=self.cur.fetchone()[0] or 0
-		    else:
-			octets_summ=0
-		    trafic_cost=self.get_actual_cost(trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
+                        octets_summ=self.cur.fetchone()[0] or 0
+                    else:
+                        octets_summ=0
+                    trafic_cost=self.get_actual_cost(trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
 
-		    """
+                    """
                     Использован т.н. дифференциальный подход к начислению денег за трафик
                     Тарифный план позволяет указать по какой цене считать трафик
                     в зависимости от того сколько этого трафика уже накачал пользователь за расчётный период
                     """
 
 
-		    if direction=="INPUT":
-			d = "in_direction=True"
-		    elif direction=="OUTPUT":
-			d = "out_direction=True"
-		    else:
-			d = "out_direction=True"
+                    if direction=="INPUT":
+                        d = "in_direction=True"
+                    elif direction=="OUTPUT":
+                        d = "out_direction=True"
+                    else:
+                        d = "out_direction=True"
 
 
-		    query="""
-			 SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
-			 JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-			 JOIN billservice_prepaidtraffic_traffic_class ON billservice_prepaidtraffic_traffic_class.prepaidtraffic_id=prepaidtraffic.id
-			 WHERE prepais.size>0 and prepais.account_tarif_id=%s and billservice_prepaidtraffic_traffic_class.trafficclass_id=%s and prepaidtraffic.traffic_transmit_service_id=%s and prepaidtraffic.%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
-		    self.cur.execute(query)
+                    query="""
+                         SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
+                         JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                         JOIN billservice_prepaidtraffic_traffic_class ON billservice_prepaidtraffic_traffic_class.prepaidtraffic_id=prepaidtraffic.id
+                         WHERE prepais.size>0 and prepais.account_tarif_id=%s and billservice_prepaidtraffic_traffic_class.trafficclass_id=%s and prepaidtraffic.traffic_transmit_service_id=%s and prepaidtraffic.%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
+                    self.cur.execute(query)
 
-		    try:
-			prepaid_id, prepaid=self.cur.fetchone()
-		    except Exception, e:
-			prepaid=0
-			prepaid_id=-1
-		    if prepaid>0:
-			if prepaid>=octets:
-			    prepaid=prepaid-octets
-			    octets=0
-			elif octets>=prepaid:
-			    octets=octets-prepaid
-			    prepaid=0
-
-
-			self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
-
-		    summ=(trafic_cost*octets)/(1024*1024)
-
-		    if summ>0:
-			pays.add_summ(account_id, tarif_id, summ)
+                    try:
+                        prepaid_id, prepaid=self.cur.fetchone()
+                    except Exception, e:
+                        prepaid=0
+                        prepaid_id=-1
+                    if prepaid>0:
+                        if prepaid>=octets:
+                            prepaid=prepaid-octets
+                            octets=0
+                        elif octets>=prepaid:
+                            octets=octets-prepaid
+                            prepaid=0
 
 
-		self.cur.execute(
-		    """
-		    UPDATE billservice_netflowstream
+                        self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+
+                    summ=(trafic_cost*octets)/(1024*1024)
+
+                    if summ>0:
+                        pays.add_summ(account_id, tarif_id, summ)
+
+
+                self.cur.execute(
+                    """
+                    UPDATE billservice_netflowstream
 SET checkouted=True
 WHERE id=%s;
 """ % nf_id
 )
 
-	    rows=None
+            rows=None
 
-	    for l in pays.get_list():
-		#Производим списывание денег
-		transaction(
-		    cursor=self.cur,
-		    type='NETFLOW_BILL',
-		    account=l['account'],
-		    approved=True,
-		    tarif=l['tarif'],
-		    summ=l['summ'],
-		    description=u"",
-		)
-		self.connection.commit()
-	    self.connection.commit()
-	    time.sleep(120)
+            for l in pays.get_list():
+                #Производим списывание денег
+                transaction(
+                    cursor=self.cur,
+                    type='NETFLOW_BILL',
+                    account=l['account'],
+                    approved=True,
+                    tarif=l['tarif'],
+                    summ=l['summ'],
+                    description=u"",
+                )
+                self.connection.commit()
+            self.connection.commit()
+            time.sleep(120)
 
-	#connection.close()
+        #connection.close()
 
 
 class limit_checker(Thread):
@@ -1023,19 +1023,19 @@ class limit_checker(Thread):
     Проверяет исчерпание лимитов. если лимит исчерпан-ставим соотв галочку в аккаунте
     """
     def __init__ (self):
-	Thread.__init__(self)
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor()
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
 
     def run(self):
-	while True:
+        while True:
 
-	    """
+            """
             Выбираем тарифные планы, у которых есть лимиты
             """
-	    self.cur.execute(
-		"""
-		SELECT account.id, account.disabled_by_limit, acctt.datetime::timestamp without time zone,  
+            self.cur.execute(
+                """
+                SELECT account.id, account.disabled_by_limit, acctt.datetime::timestamp without time zone,  
 tlimit.id, tlimit.size, tlimit.mode, tlimit.in_direction, tlimit.out_direction,
 sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
 FROM billservice_tariff as tarif
@@ -1047,100 +1047,100 @@ LEFT JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period
 ORDER BY account.id ASC;
 """
 )
-	    account_tarifs=self.cur.fetchall()
-	    oldid=-1
-	    for row in account_tarifs:
-		account_id, \
-			  disabled_by_limit,\
-			  account_start, \
-			  limit_id, \
-			  limit_size, \
-			  limit_mode, \
-			  in_direction, \
-			  out_direction, \
-			  sp_time_start, \
-			  sp_length, \
-			  sp_length_in, \
-			  autostart_sp = row 
-		#print "limit check", account_id
+            account_tarifs=self.cur.fetchall()
+            oldid=-1
+            for row in account_tarifs:
+                account_id, \
+                          disabled_by_limit,\
+                          account_start, \
+                          limit_id, \
+                          limit_size, \
+                          limit_mode, \
+                          in_direction, \
+                          out_direction, \
+                          sp_time_start, \
+                          sp_length, \
+                          sp_length_in, \
+                          autostart_sp = row 
+                #print "limit check", account_id
 
-		if limit_id==None:
-		    #пишем в базу состояние пользователя
-		    self.cur.execute(
-			"""
-			UPDATE billservice_account
+                if limit_id==None:
+                    #пишем в базу состояние пользователя
+                    self.cur.execute(
+                        """
+                        UPDATE billservice_account
 SET disabled_by_limit=%s
 WHERE id=%s;
 """ % (False, account_id)
 )
 
-		    continue
+                    continue
 
-		if oldid==account_id and block:
-		    """
+                if oldid==account_id and block:
+                    """
                     Если у аккаунта уже есть одно превышение лимита
                     то больше для него лимиты не проверяем
                     """
-		    continue
+                    continue
 
-		if autostart_sp==True:
-		    sp_start=account_start
-		else:
-		    sp_start = sp_time_start
+                if autostart_sp==True:
+                    sp_start=account_start
+                else:
+                    sp_start = sp_time_start
 
-		settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length)
+                settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length)
 
-		#если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
-		if limit_mode==True:
-		    settlement_period_start=datetime.datetime.now()-datetime.timedelta(seconds=delta)
-		    settlement_period_end=datetime.datetime.now()
+                #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
+                if limit_mode==True:
+                    settlement_period_start=datetime.datetime.now()-datetime.timedelta(seconds=delta)
+                    settlement_period_end=datetime.datetime.now()
 
-		block=False
+                block=False
 
-		d=''
-		if in_direction:
-		    d+=" 'INPUT'"
-		if out_direction:
-		    if in_direction:
-			d+=","
-		    d+="'OUTPUT'"
+                d=''
+                if in_direction:
+                    d+=" 'INPUT'"
+                if out_direction:
+                    if in_direction:
+                        d+=","
+                    d+="'OUTPUT'"
 
-		query="""
-		     SELECT sum(octets) as size FROM billservice_netflowstream as nf
-		     JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
-		     WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
+                query="""
+                     SELECT sum(octets) as size FROM billservice_netflowstream as nf
+                     JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
+                     WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
 
-		     """ % (account_id, limit_id, settlement_period_start, settlement_period_end, d)
+                     """ % (account_id, limit_id, settlement_period_start, settlement_period_end, d)
 
 
-		self.cur.execute(query)
+                self.cur.execute(query)
 
-		tsize=0
-		sizes=self.cur.fetchall()
+                tsize=0
+                sizes=self.cur.fetchall()
 
-		for size in sizes:
-		    if size[0]!=None:
-			tsize+=size[0]
+                for size in sizes:
+                    if size[0]!=None:
+                        tsize+=size[0]
 
-		if tsize>limit_size*1024:
-		    block=True
+                if tsize>limit_size*1024:
+                    block=True
 
-		#Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
+                #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
 
-		oldid=account_id
-		if disabled_by_limit!=block:
-		    #пишем в базу состояние пользователя
-		    self.cur.execute(
-			"""
-			UPDATE billservice_account
+                oldid=account_id
+                if disabled_by_limit!=block:
+                    #пишем в базу состояние пользователя
+                    self.cur.execute(
+                        """
+                        UPDATE billservice_account
 SET disabled_by_limit=%s
 WHERE id=%s;
 """ % (block, account_id)
 )
 #                    print "limit_result=", block
 
-	    self.connection.commit() 
-	    time.sleep(30)
+            self.connection.commit() 
+            time.sleep(30)
 
 
 class settlement_period_service_dog(Thread):
@@ -1157,13 +1157,13 @@ class settlement_period_service_dog(Thread):
     3. Если сумма меньше цены тарифного плана-делаем транзакцию, в которой снимаем деньги.
     """
     def __init__ (self):
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor()
-	Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor()
+        Thread.__init__(self)
 
 
     def stop(self):
-	"""
+        """
         Stop the thread
         """
 
@@ -1172,11 +1172,11 @@ class settlement_period_service_dog(Thread):
 
 
 
-	while True:
+        while True:
 
-	    self.cur.execute(
-		"""
-		SELECT shedulelog.id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, shedulelog.ballance_checkout::timestamp without time zone, 
+            self.cur.execute(
+                """
+                SELECT shedulelog.id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, shedulelog.ballance_checkout::timestamp without time zone, 
 shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
 sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, 
 accounttarif.datetime::timestamp without time zone,  
@@ -1195,196 +1195,196 @@ WHERE account.status=True and tariff.active=True
 """
 )
 
-	    rows=self.cur.fetchall()
-	    for row in rows:
-		(shedulelog_id, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
-		 time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
-		 reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id,
-		 reset_traffic, reset_time, balance_blocked, prepaid_traffic_accrued, prepaid_time_accrued) = row
+            rows=self.cur.fetchall()
+            for row in rows:
+                (shedulelog_id, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
+                 time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
+                 reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id,
+                 reset_traffic, reset_time, balance_blocked, prepaid_traffic_accrued, prepaid_time_accrued) = row
 
-		if shedulelog_id==None:
-		    shedulelog_id=-1
+                if shedulelog_id==None:
+                    shedulelog_id=-1
 
-		if time_start is not None:
-		    if autostart:
-			time_start=acct_datetime
+                if time_start is not None:
+                    if autostart:
+                        time_start=acct_datetime
 
-		    period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length)
-		else:
-		    time_start = acct_datetime
-		    period_start = acct_datetime
-		    delta = 86400*365*365
+                    period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length)
+                else:
+                    time_start = acct_datetime
+                    period_start = acct_datetime
+                    delta = 86400*365*365
 
-		#нужно производить в конце расчётного периода
+                #нужно производить в конце расчётного периода
 
-		if (ballance_checkout is None and  (datetime.datetime.now()-time_start).seconds+(datetime.datetime.now()-time_start).days*86400>=delta) or (ballance_checkout!=None and ballance_checkout<=period_start):
-		    #Снять сумму до стоимости тарифного плана
-		    if reset_tarif_cost:
-			self.cur.execute(
-			    """
-			    SELECT sum(summ)
+                if (ballance_checkout is None and  (datetime.datetime.now()-time_start).seconds+(datetime.datetime.now()-time_start).days*86400>=delta) or (ballance_checkout!=None and ballance_checkout<=period_start):
+                    #Снять сумму до стоимости тарифного плана
+                    if reset_tarif_cost:
+                        self.cur.execute(
+                            """
+                            SELECT sum(summ)
 FROM billservice_transaction
 WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
 """ % (period_start, period_end, account_id, tarif_id)
 )
-			summ=self.cur.fetchone()[0]
-			if summ==None:
-			    summ=0
+                        summ=self.cur.fetchone()[0]
+                        if summ==None:
+                            summ=0
 
-			if cost>summ:
-			    s=cost-summ
-			    transaction(
-				cursor=self.cur,
-				type='END_PS_MONEY_RESET',
-				account=account_id,
-				approved=True,
-				tarif=tarif_id,
-				summ=s,
-				description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
-			    )
+                        if cost>summ:
+                            s=cost-summ
+                            transaction(
+                                cursor=self.cur,
+                                type='END_PS_MONEY_RESET',
+                                account=account_id,
+                                approved=True,
+                                tarif=tarif_id,
+                                summ=s,
+                                description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
+                            )
 
 
-			self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;" % account_id)
-			shedulelog_id =self.cur.fetchone()
+                        self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        shedulelog_id =self.cur.fetchone()
 
-			if shedulelog_id==None:
-			    self.cur.execute("""
-					     INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now());
+                        if shedulelog_id==None:
+                            self.cur.execute("""
+                                             INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now());
 """ % account_id)
 
 
-		    #Если балланса не хватает - отключить пользователя
-		self.connection.commit()
-		if (balance_blocked is None or balance_blocked<=period_start) and cost>0 and account_balance_blocked==True:
-		    print "balance blocked1", ballance_checkout, period_start, cost
-		    #В начале каждого расчётного периода
-		    self.cur.execute(
-			"""
-			UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
+                    #Если балланса не хватает - отключить пользователя
+                self.connection.commit()
+                if (balance_blocked is None or balance_blocked<=period_start) and cost>0 and account_balance_blocked==True:
+                    print "balance blocked1", ballance_checkout, period_start, cost
+                    #В начале каждого расчётного периода
+                    self.cur.execute(
+                        """
+                        UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
 """ % (account_id, cost)
 )
 
 
-		    self.cur.execute("""
-				     UPDATE billservice_shedulelog SET balance_blocked = now() WHERE account_id=%s RETURNING id;
+                    self.cur.execute("""
+                                     UPDATE billservice_shedulelog SET balance_blocked = now() WHERE account_id=%s RETURNING id;
 """ % account_id)
 
-		    if self.cur.fetchone()==None:
-			self.cur.execute("""
-					 INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
+                    if self.cur.fetchone()==None:
+                        self.cur.execute("""
+                                         INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
 """ % account_id)
-		if account_balance_blocked==True and account_balance>=cost:
-		    """
+                if account_balance_blocked==True and account_balance>=cost:
+                    """
                     Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
                     """
-		    #Иначе Убираем отметку
-		    print "balance blocked2"
-		    self.cur.execute(
-			"""
-			UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
+                    #Иначе Убираем отметку
+                    print "balance blocked2"
+                    self.cur.execute(
+                        """
+                        UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
 """ % (account_id)
 )                            
 
-		self.connection.commit()
-		if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and reset_traffic==True:
-		    self.cur.execute(
-			"""
-			DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
+                self.connection.commit()
+                if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and reset_traffic==True:
+                    self.cur.execute(
+                        """
+                        DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
 """ % accounttarif_id
 )
 
-		    self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
-		    if self.cur.fetchone()==None:
-			self.cur.execute("""
-					 INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_reset) values(%d, now()) ;
+                    self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                    if self.cur.fetchone()==None:
+                        self.cur.execute("""
+                                         INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_reset) values(%d, now()) ;
 """ % account_id)    
-		    self.connection.commit()
+                    self.connection.commit()
 
-		if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
-		    #Начислить новый предоплаченный трафик
-		    self.cur.execute(
-			"""
-			SELECT id, size
+                if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
+                    #Начислить новый предоплаченный трафик
+                    self.cur.execute(
+                        """
+                        SELECT id, size
 FROM billservice_prepaidtraffic
 WHERE traffic_transmit_service_id=%s;
 """ % traffic_transmit_service_id
 )
 
-		    prepais=self.cur.fetchall()
-		    u=False
-		    for prepaid_traffic_id, size in prepais:
-			u=True
-			#print "SET PREPAID TRAFIC"
-			self.cur.execute(
-			    """
-			    UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
+                    prepais=self.cur.fetchall()
+                    u=False
+                    for prepaid_traffic_id, size in prepais:
+                        u=True
+                        #print "SET PREPAID TRAFIC"
+                        self.cur.execute(
+                            """
+                            UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
 WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
 """ % (size, accounttarif_id, prepaid_traffic_id)
 )
-			if self.cur.fetchone() is None:
-			    #print 'INSERT'
-			    #print accounttarif_id, prepaid_traffic_id, size
-			    self.cur.execute(
-				"""
-				INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
+                        if self.cur.fetchone() is None:
+                            #print 'INSERT'
+                            #print accounttarif_id, prepaid_traffic_id, size
+                            self.cur.execute(
+                                """
+                                INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
 VALUES(%d,%d, %f*1024*1024, now());
 """ % (accounttarif_id, prepaid_traffic_id, size)
 )                            
-		    if u==True:
-			self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
-			if self.cur.fetchone()==None:
-			    self.cur.execute("""
-					     INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
+                    if u==True:
+                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        if self.cur.fetchone()==None:
+                            self.cur.execute("""
+                                             INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
 """ % account_id)  
-		    self.connection.commit()   
+                    self.connection.commit()   
 
-		if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
+                if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
 
-		    if reset_time:
-			#снять время и начислить новое
-			self.cur.execute(
-			    """
-			    DELETE FROM billservice_accountprepaystime
+                    if reset_time:
+                        #снять время и начислить новое
+                        self.cur.execute(
+                            """
+                            DELETE FROM billservice_accountprepaystime
 WHERE account_tarif=%s;
 """ % accounttarif_id
 )
 
-			self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
-			if self.cur.fetchone()==None:
-			    self.cur.execute("""
-					     INSERT INTO billservice_shedulelog(account_id, prepaid_time_reset) values(%d, now()) ;
+                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        if self.cur.fetchone()==None:
+                            self.cur.execute("""
+                                             INSERT INTO billservice_shedulelog(account_id, prepaid_time_reset) values(%d, now()) ;
 """ % account_id)        
-			self.connection.commit()    
+                        self.connection.commit()    
 
-		if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
+                if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
 
-		    self.cur.execute(
-			"""
-			UPDATE billservice_accountprepaystime
+                    self.cur.execute(
+                        """
+                        UPDATE billservice_accountprepaystime
 SET size=size+(SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s),
 datetime=now()
 WHERE account_tarif_id=%s RETURNING id;
 """ % (time_access_service_id, accounttarif_id)
 )
-		    if self.cur.fetchone()==None:
-			self.cur.execute(
-			    """
-			    INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id)
+                    if self.cur.fetchone()==None:
+                        self.cur.execute(
+                            """
+                            INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id)
 VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%d), now(), %d);
 """ % (accounttarif_id, time_access_service_id, time_access_service_id)
 )
 
 
 
-		    self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
-		    if self.cur.fetchone()==None:
-			cur.execute("""
-				    INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
+                    self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                    if self.cur.fetchone()==None:
+                        cur.execute("""
+                                    INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
 """ % account_id)
-		self.connection.commit()
+                self.connection.commit()
 
-	    self.cur.execute("""
-			     SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
+            self.cur.execute("""
+                             SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
 WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
 FROM billservice_account as account
 JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
@@ -1394,23 +1394,23 @@ LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELEC
 WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
 WHERE (account.ballance+account.credit)>0 and oth.id is Null;
 """)
-	    rows = self.cur.fetchall()
-	    print "onetime", rows
-	    for row in rows:
-		account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
-		transaction(
-		    cursor=self.cur,
-		    type='ONETIME_SERVICE',
-		    account=account_id,
-		    approved=True,
-		    tarif=tarif_id,
-		    summ=cost,
-		    description=u"Снятие денег по разовой услуге %s" % service_name
-		)
-		self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s,%s,now());" % (accounttarif_id, service_id))
+            rows = self.cur.fetchall()
+            print "onetime", rows
+            for row in rows:
+                account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
+                transaction(
+                    cursor=self.cur,
+                    type='ONETIME_SERVICE',
+                    account=account_id,
+                    approved=True,
+                    tarif=tarif_id,
+                    summ=cost,
+                    description=u"Снятие денег по разовой услуге %s" % service_name
+                )
+                self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s,%s,now());" % (accounttarif_id, service_id))
 
-		self.connection.commit()
-	    time.sleep(120)
+                self.connection.commit()
+            time.sleep(120)
 
 class ipn_service(Thread):
     """
@@ -1420,33 +1420,33 @@ class ipn_service(Thread):
     3. Если клиент вышел за рамки разрешённого временного диапазона в тарифном плане-отключать
     """
     def __init__ (self):
-	Thread.__init__(self)
-	self.connection = pool.connection()
-	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
 
     def check_period(self, rows):
-	for row in rows:
-	    if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
-		return True
-	return False
+        for row in rows:
+            if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
+                return True
+        return False
 
     def create_speed(self, tarif_id):
-	defaults = get_default_speed_parameters(self.cur, tarif_id)
-	speeds = get_speed_parameters(self.cur, tarif_id)
-	for speed in speeds:
-	    if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
-		defaults = comparator(defaults, speed)
-		return defaults
+        defaults = get_default_speed_parameters(self.cur, tarif_id)
+        speeds = get_speed_parameters(self.cur, tarif_id)
+        for speed in speeds:
+            if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
+                defaults = comparator(defaults, speed)
+                return defaults
 
-	#print "speed_result=", defaults
-	return defaults
+        #print "speed_result=", defaults
+        return defaults
 
 
     def run(self):
-	while True:
-	    self.cur.execute(
-		"""
-		SELECT account.id as account_id,
+        while True:
+            self.cur.execute(
+                """
+                SELECT account.id as account_id,
 account.username as account_username, 
 account.ipn_ip_address as account_ipn_ip_address, 
 account.vpn_ip_address as account_vpn_ip_address, 
@@ -1476,84 +1476,84 @@ LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.acco
 WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn_speed<>'') and account.ipn_ip_address!='0.0.0.0'
 ;"""
 )
-	    rows=self.cur.fetchall()
-	    for row in rows:
-		#print "check ipn"
-		sended=None
+            rows=self.cur.fetchall()
+            for row in rows:
+                #print "check ipn"
+                sended=None
 
-		period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
+                period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
 
-		#print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
-		#print row['account_disabled_by_limit']==True, row['ballance']<=0, period==False, row['account_balance_blocked']==True, row['account_ipn_status']==True, row['access_type']=='IPN'
-		if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
-		    print u"ВКЛЮЧАЕМ"
+                #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
+                #print row['account_disabled_by_limit']==True, row['ballance']<=0, period==False, row['account_balance_blocked']==True, row['account_ipn_status']==True, row['access_type']=='IPN'
+                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
+                    print u"ВКЛЮЧАЕМ"
 
-		    #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
-		    #шлём команду, на включение пользователя, account_ipn_status=True
-		    sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
-				  access_type='IPN',
-				  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
-				  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
-				  nas_password=row['nas_password'], format_string=row['nas_user_enable'])
+                    #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
+                    #шлём команду, на включение пользователя, account_ipn_status=True
+                    sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
+                                  access_type='IPN',
+                                  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
+                                  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                                  nas_password=row['nas_password'], format_string=row['nas_user_enable'])
 
-		    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
-		elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
+                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
+                elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
 
-		    #шлём команду на отключение пользователя,account_ipn_status=False
-		    print u"ОТКЛЮЧАЕМ"
-		    sended = cred(account_id=row['account_id'], account_name=row['account_username'], \
-				  access_type='IPN', \
-				  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], \
-				  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], \
-				  nas_password=row['nas_password'], format_string=row['nas_user_disable'])
+                    #шлём команду на отключение пользователя,account_ipn_status=False
+                    print u"ОТКЛЮЧАЕМ"
+                    sended = cred(account_id=row['account_id'], account_name=row['account_username'], \
+                                  access_type='IPN', \
+                                  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], \
+                                  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], \
+                                  nas_password=row['nas_password'], format_string=row['nas_user_disable'])
 
-		    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (False, row['account_id']))
-
-
-
-		#print account_ipn_speed
-		if row['account_ipn_speed']=='' or row['account_ipn_speed']==None:
-
-		    speed=self.create_speed(row['tarif_id'])
-		else:
-		    speed = parse_custom_speed(row['account_ipn_speed'])
+                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (False, row['account_id']))
 
 
-		newspeed=''
-		for key in speed:
-		    newspeed+=unicode(speed[key])
 
-		#print newspeed, row['ipn_speed'],row['ipn_state']
-		#print newspeed!=row['ipn_speed'] or row['ipn_state']==False
-		if newspeed!=row['ipn_speed'] or row['ipn_state']==False:
-		    #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
-		    #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+                #print account_ipn_speed
+                if row['account_ipn_speed']=='' or row['account_ipn_speed']==None:
 
-		    sended_speed = change_speed(dict=dict, account_id=row['account_id'], 
-						account_name=row['account_username'], 
-						account_vpn_ip=row['account_vpn_ip_address'], 
-						account_ipn_ip=row['account_ipn_ip_address'], 
-						account_mac_address=row['account_ipn_mac_address'], 
-						access_type='IPN', 
-						nas_ip=row['nas_ipaddress'], 
-						nas_type=row['nas_type'], 
-						nas_name=row['nas_name'], 
-						nas_secret='', 
-						nas_login=row['nas_login'], 
-						nas_password=row['nas_password'], 
-						format_string=row['nas_ipn_speed'],
-						speed=speed)    
-		    data_for_save=''
-		    #print speed
+                    speed=self.create_speed(row['tarif_id'])
+                else:
+                    speed = parse_custom_speed(row['account_ipn_speed'])
 
-		    self.cur.execute("UPDATE billservice_accountipnspeed SET speed='%s', state=%s WHERE account_id=%s RETURNING id;" % (newspeed, sended_speed, row['account_id']))
-		    id = self.cur.fetchone()
-		    #print 'id=', id
-		    if id==None:
-			self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %d, '%s',%s , now());" % (row['account_id'], unicode(newspeed), sended_speed))
 
-		self.connection.commit()
-	    time.sleep(60)
+                newspeed=''
+                for key in speed:
+                    newspeed+=unicode(speed[key])
+
+                #print newspeed, row['ipn_speed'],row['ipn_state']
+                #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
+                if newspeed!=row['ipn_speed'] or row['ipn_state']==False:
+                    #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
+                    #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+
+                    sended_speed = change_speed(dict=dict, account_id=row['account_id'], 
+                                                account_name=row['account_username'], 
+                                                account_vpn_ip=row['account_vpn_ip_address'], 
+                                                account_ipn_ip=row['account_ipn_ip_address'], 
+                                                account_mac_address=row['account_ipn_mac_address'], 
+                                                access_type='IPN', 
+                                                nas_ip=row['nas_ipaddress'], 
+                                                nas_type=row['nas_type'], 
+                                                nas_name=row['nas_name'], 
+                                                nas_secret='', 
+                                                nas_login=row['nas_login'], 
+                                                nas_password=row['nas_password'], 
+                                                format_string=row['nas_ipn_speed'],
+                                                speed=speed)    
+                    data_for_save=''
+                    #print speed
+
+                    self.cur.execute("UPDATE billservice_accountipnspeed SET speed='%s', state=%s WHERE account_id=%s RETURNING id;" % (newspeed, sended_speed, row['account_id']))
+                    id = self.cur.fetchone()
+                    #print 'id=', id
+                    if id==None:
+                        self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %d, '%s',%s , now());" % (row['account_id'], unicode(newspeed), sended_speed))
+
+                self.connection.commit()
+            time.sleep(60)
 '''class LoginConnValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
 	Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -1611,8 +1611,8 @@ WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn
 
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
-	Pyro.protocol.DefaultConnValidator.__init__(self)
-	'''self.connection = pool.connection()
+        Pyro.protocol.DefaultConnValidator.__init__(self)
+        '''self.connection = pool.connection()
     #print dir(self.connection)
     self.connection._con._con.set_client_encoding('UTF8')
     self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)'''
@@ -1620,354 +1620,354 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
 
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
-	print "acceptident-----------------"
-	print conn
-	print hash
+        print "acceptident-----------------"
+        print conn
+        print hash
 
-	try:
-	    for val in tcpserver.implementations.itervalues():
-		if val[1] == 'rpc':
-		    serv = val[0]
-		    break
+        try:
+            for val in tcpserver.implementations.itervalues():
+                if val[1] == 'rpc':
+                    serv = val[0]
+                    break
 
-	    user, mdpass = hash.split(':', 1)
-	    obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
-	    print obj.id
-	    print obj.host
-	    hostOk = self.checkIP(conn.addr[0], str(obj.host))
+            user, mdpass = hash.split(':', 1)
+            obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
+            print obj.id
+            print obj.host
+            hostOk = self.checkIP(conn.addr[0], str(obj.host))
 
-	    if hostOk and (obj.password == mdpass):
-		print "accepted---------------------------------"
-		tmd5 = hashlib.md5(str(conn.addr[0]))
-		tmd5.update(str(conn.addr[1]))
-		tmd5.update(tcpserver.hostname)
-		conn.utoken = tmd5.digest()
+            if hostOk and (obj.password == mdpass):
+                print "accepted---------------------------------"
+                tmd5 = hashlib.md5(str(conn.addr[0]))
+                tmd5.update(str(conn.addr[1]))
+                tmd5.update(tcpserver.hostname)
+                conn.utoken = tmd5.digest()
 
-		print conn.utoken
-		print obj.id
-		print conn
-		#Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
-		return(1,0)
-	    else:
-		print "DENIED-----------------"
-		print conn
-		print obj.id
-		conn.utoken = ''
-		return (0,Pyro.constants.DENIED_SECURITY)
-	except Exception, ex:
-	    print "acceptidentificationerror---------------: ", ex
-	    print conn
-	    conn.utoken = ''
-	    return (0,Pyro.constants.DENIED_SECURITY)
+                print conn.utoken
+                print obj.id
+                print conn
+                #Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
+                return(1,0)
+            else:
+                print "DENIED-----------------"
+                print conn
+                print obj.id
+                conn.utoken = ''
+                return (0,Pyro.constants.DENIED_SECURITY)
+        except Exception, ex:
+            print "acceptidentificationerror---------------: ", ex
+            print conn
+            conn.utoken = ''
+            return (0,Pyro.constants.DENIED_SECURITY)
 
     def checkIP(self, ipstr, hostsstr):
-	print "checkIP----"
-	print hostsstr
-	print ipstr
-	userIP = IPy.IP(ipstr)
-	print "presplit"
-	hosts = hostsstr.split(', ')
-	print "hosts====="
-	print hosts
-	hostOk = False
-	for host in hosts:
-	    print host
-	    iprange = host.split('-')
-	    if len(iprange) == 1:
-		if iprange[0].find('/') != -1:
-		    hostOk = userIP in IPy.IP(iprange[0])
-		else:
-		    hostOk = hostOk or (userIP == IPy.IP(iprange[0]))
-	    else:
-		hostOk = hostOk or ((userIP >= IPy.IP(iprange[0])) and (userIP <= IPy.IP(iprange[1])))
-	    if hostOk:
-		break
-	return hostOk
+        print "checkIP----"
+        print hostsstr
+        print ipstr
+        userIP = IPy.IP(ipstr)
+        print "presplit"
+        hosts = hostsstr.split(', ')
+        print "hosts====="
+        print hosts
+        hostOk = False
+        for host in hosts:
+            print host
+            iprange = host.split('-')
+            if len(iprange) == 1:
+                if iprange[0].find('/') != -1:
+                    hostOk = userIP in IPy.IP(iprange[0])
+                else:
+                    hostOk = hostOk or (userIP == IPy.IP(iprange[0]))
+            else:
+                hostOk = hostOk or ((userIP >= IPy.IP(iprange[0])) and (userIP <= IPy.IP(iprange[1])))
+            if hostOk:
+                break
+        return hostOk
 
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-	print "createAuthToken_serv"
-	# authid is what mungeIdent returned, a tuple (login, hash-of-password)
-	# we return a secure auth token based on the server challenge string.
-	return authid
+        print "createAuthToken_serv"
+        # authid is what mungeIdent returned, a tuple (login, hash-of-password)
+        # we return a secure auth token based on the server challenge string.
+        return authid
 
     def mungeIdent(self, ident):
-	print "mungeIdent_serv"
-	# ident is tuple (login, password), the client sets this.
-	# we don't like to store plaintext passwords so store the md5 hash instead.
-	return ident
+        print "mungeIdent_serv"
+        # ident is tuple (login, password), the client sets this.
+        # we don't like to store plaintext passwords so store the md5 hash instead.
+        return ident
 def authentconn(func):
     def relogfunc(*args, **kwargs):
-	if args[0].getLocalStorage().caller:
-	    if args[0].getLocalStorage().caller.utoken:
-		return func(*args, **kwargs)
-	    else:
-		return None
-	else:
-	    return func(*args, **kwargs)
+        if args[0].getLocalStorage().caller:
+            if args[0].getLocalStorage().caller.utoken:
+                return func(*args, **kwargs)
+            else:
+                return None
+        else:
+            return func(*args, **kwargs)
     return relogfunc
 
 class RPCServer(Thread, Pyro.core.ObjBase):
 
     def __init__ (self):
-	Thread.__init__(self)
-	Pyro.core.ObjBase.__init__(self)
-	self.connection = pool.connection()
-	#print dir(self.connection)
-	self.connection._con._con.set_client_encoding('UTF8')
-	self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
-	'''self.listconnection = pool.connection()
+        Thread.__init__(self)
+        Pyro.core.ObjBase.__init__(self)
+        self.connection = pool.connection()
+        #print dir(self.connection)
+        self.connection._con._con.set_client_encoding('UTF8')
+        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        '''self.listconnection = pool.connection()
 	self.listconnection._con._con.set_client_encoding('UTF8')
 	self.listcur = self.listconnection.cursor()'''
-	self.ticket = ''
-	#self._cddrawer = cdDrawer()
+        self.ticket = ''
+        #self._cddrawer = cdDrawer()
 
 
 
     def run(self):
-	Pyro.core.initServer()
-	daemon=Pyro.core.Daemon()
-	#daemon.adapter.setIdentification = setIdentification
-	daemon.setNewConnectionValidator(hostCheckingValidator())
-	daemon.connect(self,"rpc")
-	daemon.requestLoop()
+        Pyro.core.initServer()
+        daemon=Pyro.core.Daemon()
+        #daemon.adapter.setIdentification = setIdentification
+        daemon.setNewConnectionValidator(hostCheckingValidator())
+        daemon.connect(self,"rpc")
+        daemon.requestLoop()
 
     @authentconn
     def testCredentials(self, host, login, password):
-	try:
-	    print host, login, password
-	    a=SSHClient(host, 22,login, password)
-	    a.close()
-	except Exception, e:
-	    print e
-	    return False
-	return True
+        try:
+            print host, login, password
+            a=SSHClient(host, 22,login, password)
+            a.close()
+        except Exception, e:
+            print e
+            return False
+        return True
 
     @authentconn
     def configureNAS(self, host, login, password, configuration):
-	try:
-	    a=SSHClient(host, 22,login, password)
-	    print configuration
-	    print a.send_command(configuration)
-	    a.close()
-	except Exception, e:
-	    print e
-	    return False
-	return True
+        try:
+            a=SSHClient(host, 22,login, password)
+            print configuration
+            print a.send_command(configuration)
+            a.close()
+        except Exception, e:
+            print e
+            return False
+        return True
 
 
     @authentconn
     def accountActions(self, account_id, action):
 
 
-	self.cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
-        			 account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
-        nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
-        nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
-        nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
-        FROM billservice_account as account
-        JOIN nas_nas as nas ON nas.id = account.nas_id
-        JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
-        JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
-        WHERE account.id=%d
-        """ % account_id)
+        self.cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
+                         account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
+nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
+nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
+nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
+FROM billservice_account as account
+JOIN nas_nas as nas ON nas.id = account.nas_id
+JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
+JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
+WHERE account.id=%d
+""" % account_id)
 
-	row = self.cur.fetchone()
-	print action
-	if row==None:
-	    return False
+        row = self.cur.fetchone()
+        print action
+        if row==None:
+            return False
 
-	if row['ipn_ip_address']=="0.0.0.0":
-	    return False
+        if row['ipn_ip_address']=="0.0.0.0":
+            return False
 
-	if action=='disable':
-	    command = row['user_disable_action']
-	elif action=='enable':
-	    command = row['user_enable_action']
-	elif action=='create':
-	    command = row['user_add_action']
-	elif action =='delete':
-	    #set_account_deleted(self.cur, account_id)
-	    #self.iddelete("billservice_account", account_id)
-	    command = row['user_delete_action']
-	print command
+        if action=='disable':
+            command = row['user_disable_action']
+        elif action=='enable':
+            command = row['user_enable_action']
+        elif action=='create':
+            command = row['user_add_action']
+        elif action =='delete':
+            #set_account_deleted(self.cur, account_id)
+            #self.iddelete("billservice_account", account_id)
+            command = row['user_delete_action']
+        print command
 
-	sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
-		      account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
-		      account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
-		      nas_password=row['nas_password'], format_string=command)
+        sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
+                      account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
+                      account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                      nas_password=row['nas_password'], format_string=command)
 
-	return sended
+        return sended
 
     @authentconn
     def get_object(self, name):
-	try:
-	    model = models.__getattribute__(name)()
-	except:
-	    return None
+        try:
+            model = models.__getattribute__(name)()
+        except:
+            return None
 
 
-	return model
+        return model
 
     @authentconn
     def transaction_delete(self, ids):
-	for i in ids:
-	    print "delete %s transaction" % i
-	    delete_transaction(self.cur, int(i))
-	self.connection.commit()
+        for i in ids:
+            print "delete %s transaction" % i
+            delete_transaction(self.cur, int(i))
+        self.connection.commit()
 
-	return
+        return
 
     @authentconn
     def get(self, sql):
-	#print sql
-	self.cur.execute(sql)
-	#self.connection.commit()
-	result=[]
-	r=self.cur.fetchall()
-	if len(r)>1:
-	    raise Exception
+        #print sql
+        self.cur.execute(sql)
+        #self.connection.commit()
+        result=[]
+        r=self.cur.fetchall()
+        if len(r)>1:
+            raise Exception
 
-	if r==[]:
-	    return None
-	return Object(r[0])
+        if r==[]:
+            return None
+        return Object(r[0])
 
     @authentconn
     def get_list(self, sql):
-	print sql
-	self.listcur.execute(sql)
-	return self.listcur.fetchall()
+        print sql
+        self.listcur.execute(sql)
+        return self.listcur.fetchall()
 
     @authentconn
     def delete(self, sql):
 
-	self.cur.execute(sql)
-	#self.connection.commit()
-	return
+        self.cur.execute(sql)
+        #self.connection.commit()
+        return
 
     @authentconn
     def iddelete(self, table, id):
 
-	self.cur.execute("DELETE FROM %s where id=%d" % (table, id))
-	#self.connection.commit()
-	return
+        self.cur.execute("DELETE FROM %s where id=%d" % (table, id))
+        #self.connection.commit()
+        return
 
     @authentconn
     def command(self, sql):
 
-	self.cur.execute(sql)
-	#self.connection.commit()
-	return         
+        self.cur.execute(sql)
+        #self.connection.commit()
+        return         
 
     @authentconn
     def commit(self):
-	self.connection.commit()
+        self.connection.commit()
 
     @authentconn
     def makeChart(self, *args, **kwargs):
-	listconnection = pool.connection()
-	listconnection._con._con.set_client_encoding('UTF8')
-	listcur = listconnection.cursor()
-	bpplotAdapter.rCursor = listcur
-	cddrawer = cdDrawer()
-	imgs = cddrawer.cddraw(*args, **kwargs)
-	listcur.close()
-	listconnection.close()
-	return imgs
+        listconnection = pool.connection()
+        listconnection._con._con.set_client_encoding('UTF8')
+        listcur = listconnection.cursor()
+        bpplotAdapter.rCursor = listcur
+        cddrawer = cdDrawer()
+        imgs = cddrawer.cddraw(*args, **kwargs)
+        listcur.close()
+        listconnection.close()
+        return imgs
 
     @authentconn
     def rollback(self):
-	self.connection.rollback()
+        self.connection.rollback()
 
     @authentconn
     def sql(self, sql, return_response=True, pickler=False):
-	print self.ticket
-	self.cur.execute(sql)
-	#self.connection.commit()
+        print self.ticket
+        self.cur.execute(sql)
+        #self.connection.commit()
 
-	#print dir(self.connection)
-	result=[]
-	a=time.clock()
-	if return_response:
-	    result = map(Object, self.cur.fetchall())
-	print "Query length=", time.clock()-a
-	if pickler:
-	    output = open('data.pkl', 'wb')
-	    b=time.clock()-a
+        #print dir(self.connection)
+        result=[]
+        a=time.clock()
+        if return_response:
+            result = map(Object, self.cur.fetchall())
+        print "Query length=", time.clock()-a
+        if pickler:
+            output = open('data.pkl', 'wb')
+            b=time.clock()-a
 
-	    pickle.dump(result, output)
-	    output.close()
-	    print "Pickle length=", time.clock()-a
-	return result
+            pickle.dump(result, output)
+            output.close()
+            print "Pickle length=", time.clock()-a
+        return result
 
     @authentconn
     def foselect(self, table, id=None):
-	self.cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
-	#self.connection.commit()
+        self.cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
+        #self.connection.commit()
 
-	#print dir(self.connection)
-	result=[]
-	a=time.clock()
-	result = map(Object, self.cur.fetchall())
-	print "Query length=", time.clock()-a
-	if id == None:
-	    return result
-	else:
-	    return result[0]
+        #print dir(self.connection)
+        result=[]
+        a=time.clock()
+        result = map(Object, self.cur.fetchall())
+        print "Query length=", time.clock()-a
+        if id == None:
+            return result
+        else:
+            return result[0]
 
     @authentconn
     def sql_as_dict(self, sql, return_response=True):
-	#print sql
-	self.cur.execute(sql)
-	result=[]
-	a=time.clock()
-	if return_response:
+        #print sql
+        self.cur.execute(sql)
+        result=[]
+        a=time.clock()
+        if return_response:
 
-	    result =self.cur.fetchall()
-	print "Query length=", time.clock()-a
-	return result
+            result =self.cur.fetchall()
+        print "Query length=", time.clock()-a
+        return result
 
 
     @authentconn
     def create(self, sql):
-	print sql
-	self.cur.execute(sql)
+        print sql
+        self.cur.execute(sql)
 
-	#print self.cur.fetchone()
-	try:
-	    id = self.cur.fetchone()['id']
-	except:
-	    id=-1
-	#self.connection.commit()
+        #print self.cur.fetchone()
+        try:
+            id = self.cur.fetchone()['id']
+        except:
+            id=-1
+        #self.connection.commit()
 
-	return id
+        return id
 
 
     @authentconn
     def connection_request(self, username, password):
-	try:
-	    obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
-	except Exception, e:
-	    print e
-	    return False
-	#print "connection_____request"
-	#print self.getProxy()
-	if obj is not None and obj.password==password:
-	    self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
-	    #Pyro.constants.
+        try:
+            obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
+        except Exception, e:
+            print e
+            return False
+        #print "connection_____request"
+        #print self.getProxy()
+        if obj is not None and obj.password==password:
+            self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+            #Pyro.constants.
 
-	    return True
-	else:
-	    return False
+            return True
+        else:
+            return False
 
     @authentconn
     def test(self):
-	pass
+        pass
 
     @authentconn
     def pod(self, session):
 
-	self.cur.execute("""
-			 SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
+        self.cur.execute("""
+                         SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
 nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
 account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address, session.framed_protocol as framed_protocol
 FROM radius_activesession as session
@@ -1976,23 +1976,23 @@ JOIN nas_nas as nas ON nas.id=account.nas_id
 WHERE  session.sessionid='%s'
 """ % session)
 
-	row = self.cur.fetchone()
-	PoD(dict=dict,
-	    account_id=row['account_id'], 
-	    account_name=str(row['account_name']), 
-	    account_vpn_ip=row['vpn_ip_address'], 
-	    account_ipn_ip=row['ipn_ip_address'], 
-	    account_mac_address=row['ipn_mac_address'], 
-	    access_type=str(row['framed_protocol']), 
-	    nas_ip=row['nas_ip'], 
-	    nas_type=row['nas_type'], 
-	    nas_name=row['nas_name'], 
-	    nas_secret=row['nas_secret'], 
-	    nas_login=row['nas_login'], 
-	    nas_password=row['nas_password'], 
-	    session_id=str(session), 
-	    format_string=str(row['reset_action'])
-	)
+        row = self.cur.fetchone()
+        PoD(dict=dict,
+            account_id=row['account_id'], 
+            account_name=str(row['account_name']), 
+            account_vpn_ip=row['vpn_ip_address'], 
+            account_ipn_ip=row['ipn_ip_address'], 
+            account_mac_address=row['ipn_mac_address'], 
+            access_type=str(row['framed_protocol']), 
+            nas_ip=row['nas_ip'], 
+            nas_type=row['nas_type'], 
+            nas_name=row['nas_name'], 
+            nas_secret=row['nas_secret'], 
+            nas_login=row['nas_login'], 
+            nas_password=row['nas_password'], 
+            session_id=str(session), 
+            format_string=str(row['reset_action'])
+        )
 
 
 
@@ -2011,22 +2011,22 @@ def main():
     threads.append(limit_checker())
     threads.append(ipn_service())
     threads.append(settlement_period_service_dog())
-    
+
     i= range(len(threads))
     for th in threads:	
-	th.start()
-	time.sleep(1)
+        th.start()
+        time.sleep(1)
 
     while True:
-	for t in threads:
-	    #time.sleep(1)
-	    print t
-	    if not t.isAlive():
-		print 'restarting thread', t.getName()
-		#t.__init__()
-		#t.start()
-		print 'thread status', t.getName(), t.isAlive()
-	time.sleep(5)
+        for t in threads:
+            #time.sleep(1)
+            print t
+            if not t.isAlive():
+                print 'restarting thread', t.getName()
+                #t.__init__()
+                #t.start()
+                print 'thread status', t.getName(), t.isAlive()
+        time.sleep(5)
 
 
 #===============================================================================
