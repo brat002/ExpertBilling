@@ -710,7 +710,7 @@ class NetFlowReport(QtGui.QMainWindow):
         octets_in_summ=0
         octets_out_summ=0
 
-        c=self.current_page*100
+        c=self.current_page*500
         #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
         for flow in flows:
             self.addrow(c, i, 0)
@@ -738,8 +738,10 @@ class NetFlowReport(QtGui.QMainWindow):
                         flow.port_description=''
     
                         
-                    
-                    self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                    if flow.port_name!='' and flow.port_name is not None:
+                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                    else:
+                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
                     self.tableWidget.item(i,3).setToolTip(flow.port_description)
                 
                  
@@ -751,8 +753,10 @@ class NetFlowReport(QtGui.QMainWindow):
                     elif flow.port_name1==None: 
                         flow.port_name1=""    
                         flow.port_description1 = ""   
-    
-                    self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
+                    if flow.port_name1!='' and flow.port_name1 is not None:
+                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
+                    else:
+                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
                     self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
                 else:
                     self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
