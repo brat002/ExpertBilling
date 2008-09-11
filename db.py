@@ -4,6 +4,89 @@ Database wrapper for mikrobill
 """
 #Post
 import psycopg2, datetime
+from types import InstanceType, StringType, UnicodeType
+import os
+
+class Object(object):
+    def __init__(self, result=[], *args, **kwargs):
+        for key in result:
+            setattr(self, key, result[key])
+        """
+        if result[key]!=None:
+            setattr(self, key, result[key])
+        else:
+            setattr(self, key, 'Null')
+        """
+
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])  
+
+        #print dir(self)          
+
+
+    def save(self, table):
+
+
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
+                fields.append(field)
+        try:
+            self.__dict__['id']
+            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
+        except:
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
+
+        return sql
+
+    def get(self, table):
+        return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
+
+    def __call__(self):
+        return self.id
+
+    def hasattr(self, attr):
+        if attr in self.__dict__:
+            return True
+        return False
+
+    def isnull(self, attr):
+        if self.hasattr(attr):
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+                return False
+
+        return True
+        return self.id
+    
+class dbRoutine(object):
+    
+    @staticmethod
+    def execRoutine(*args, **kwargs):
+	'''@args[0] - method identifier'''
+	#add an opportunity to pass method name as a kwargs value
+        methodName = args[0]
+        print methodName
+        method = getattr(self, "db_" + methodName, None)
+        if callable(method):
+	    try:
+		args = args[1:]
+		res =  method(*args, **kwargs)
+		return res
+	    except Exception, ex:
+		print "Exception upon executing dbRoutine #" + methodName + "# method: ", ex
+		raise ex
+        else:
+            raise Exception("dbRoutine method #" + args[0] + "# does not exist!" )
+
+    @staticmethod
+    def db_delete_netflowstream_stat(*args, **kwargs):
+	return cur.execute("DELETE FROM billservice_netflowstream WHERE date_start BETWEEN '%s' AND '%s'; " % ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
+
+    @staticmethod
+    def db_delete_rawnetflowstream_stat(*args, **kwargs):
+	return cur.execute("DELETE FROM billservice_rawnetflowstream WHERE date_start BETWEEN '%s' AND '%s'; " % ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
 
 #Primitives
 

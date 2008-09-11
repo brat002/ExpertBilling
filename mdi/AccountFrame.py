@@ -581,7 +581,9 @@ class TarifFrame(QtGui.QDialog):
         self.speed_burst_treshold_label.setBuddy(self.speed_burst_treshold_in_edit)
         self.speed_max_label.setBuddy(self.speed_max_in_edit)
         self.speed_min_label.setBuddy(self.speed_min_in_edit)
-
+        
+        self.ipn_for_vpn_state = 0
+        QtCore.QObject.connect(self.access_type_edit, QtCore.SIGNAL("currentIndexChanged (const QString&)"), self.onAccessTypeChange)
         self.retranslateUi()
         self.fixtures()
         self.speed_table = tableFormat(self.speed_table)
@@ -948,9 +950,19 @@ class TarifFrame(QtGui.QDialog):
             #service.delete()    
         self.periodical_tableWidget.removeRow(current_row)
         
-#-----------------------------
-
-#---------Local Logic
+    #-----------------------------
+    def onAccessTypeChange(self, *args):
+        if args[0] == "IPN":
+            if self.ipn_for_vpn.isEnabled():
+                self.ipn_for_vpn_state = self.ipn_for_vpn.checkState()
+                self.ipn_for_vpn.setChecked(True)
+                self.ipn_for_vpn.setDisabled(True)
+        else:
+            if not self.ipn_for_vpn.isEnabled():
+                self.ipn_for_vpn.setEnabled(True)
+                self.ipn_for_vpn.setCheckState(self.ipn_for_vpn_state)
+                
+    #---------Local Logic
     def filterSettlementPeriods(self):
         
         self.sp_name_edit.clear()
@@ -3118,8 +3130,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def addframe(self):
         tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
         self.connection.commit()
+        #self.connection.flush()
         child = AddAccountFrame(connection=self.connection, ttype=tarif_type)
-        
+        #self.connection.commit()
         #child = AddAccountFrame(connection=self.connection)
         id = self.getTarifId()
         if child.exec_()==1 and id is not None:
@@ -3127,10 +3140,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
             accounttarif.account_id=child.model.id
             accounttarif.tarif_id=id
             accounttarif.datetime = datetime.datetime.now()
-            self.connection.create(accounttarif.save("billservice_accounttarif"))
+            print self.connection.create(accounttarif.save("billservice_accounttarif"))
             self.connection.commit()
-                
-            self.refresh()
+            #time.sleep(5)
+            #self.connection.flush()
+            self.refresh(k="zomgnewacc")
 
     def makeTransation(self):
         id = self.getSelectedId()
@@ -3278,17 +3292,25 @@ class AccountsMdiChild(QtGui.QMainWindow):
             except:
                 return
             
-        #print "tarif_id=",id
-            
+        print "tarif_id=",id
+        print k
 
         #self.connection.commit()
         tarif = self.connection.foselect("billservice_tariff", id)
 
-        accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
+        '''accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
         JOIN nas_nas ON nas_nas.id=account.nas_id
         JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
-        WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)
+        WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)'''
+        '''accounts = self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
+        JOIN nas_nas ON nas_nas.id=account.nas_id
+        WHERE (account.id IN (SELECT account_id FROM billservice_accounttarif WHERE tarif_id=%d)) ORDER BY account.username ASC""" % tarif.id)'''
+        '''SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (acc.id IN (SELECT account_id FROM billservice_accounttarif WHERE tarif_id=1)) ORDER BY acc.username ASC;'''
+        accounts = self.connection.sql("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (%d IN (SELECT tarif_id FROM billservice_accounttarif WHERE account_id=acc.id)) ORDER BY acc.username ASC;""" % tarif.id)
+        self.connection.commit()
         #print accounts
+
+        print "after acc"
         self.tableWidget.setRowCount(len(accounts))
         
         
@@ -3310,7 +3332,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.disabled_by_limit,i,11, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,12, enabled=a.status)
             
-            self.tableWidget.setRowHeight(i, 17)
+            #self.tableWidget.setRowHeight(i, 17)
             
             if self.selected_account:
                 if self.selected_account.id == a.id:

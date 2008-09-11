@@ -459,30 +459,6 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def mungeIdent(self, ident):
         return ident
       
-'''def login():
-    child = ConnectDialog()
-    if child.exec_()==1:
-        try:
-            connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-            password = unicode(child.password.toHex())
-            #f = open('tmp', 'wb')
-            #f.write(child.password.toHex())
-	    connection._setNewConnectionValidator(antiMungeValidator())
-	    print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
-	    connection.test()
-
-
-        except Exception, e:
-            print "login connection error"
-            if isinstance(e, Pyro.errors.ConnectionDeniedError):
-		QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-		login()
-	    else:
-		QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-		login()
-        return connection
-    else:
-        sys.exit()'''
 
 def login():
     child = ConnectDialog()
