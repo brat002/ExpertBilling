@@ -3,7 +3,7 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
-from helpers import Object
+from helpers import Object as Object
 from helpers import connlogin
 import Pyro.core
 import Pyro.protocol
@@ -167,7 +167,7 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, self.tr(u"О программе"),
-                                self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части сстемы."))
+                                self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части системы."))
 
     @connlogin
     def cardsFrame(self):

@@ -183,7 +183,7 @@ class cdDrawer(object):
 
 
     def __init__(self):
-        pass
+        pychartdir.setLicenseCode("ME7YWN3DBFQU2C7MB3971677")
         #self.defoptdict = copy.deepcopy(self.cdchartoptdict)
     def cddraw(self, *args, **kwargs):
         '''Plotting methods' handler
