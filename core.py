@@ -5,7 +5,7 @@ from utilites import parse_custom_speed, cred, create_speed_string, change_speed
 import dictionary
 from threading import Thread
 import threading
-from db import Object
+from db import Object as Object
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from db import dbRoutine
 import Pyro.core
@@ -2058,9 +2058,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 def main():
-
-    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-
+    print os.path.curdir
+    #dict=dictionary.Dictionary(os.path.normpath("./dicts/dictionary"), "./dicts/dictionary.microsoft","./dicts/dictionary.mikrotik","./dicts/dictionary.rfc3576")
+    dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
     threads=[]
     threads.append(RPCServer())
     threads.append(check_vpn_access())
