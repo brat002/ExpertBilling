@@ -90,7 +90,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = [u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Тарифный план', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
+        columns = [u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
         makeHeaders(columns, self.tableWidget)
         
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -98,7 +98,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.actionGoToUser.setText(QtGui.QApplication.translate("MainWindow", "Перейти к пользователю", None, QtGui.QApplication.UnicodeUTF8))
 
     def addrow(self, widget, value, x, y):
-        if value=='Null':
+        if value==None:
             value=''
             
         if widget.item(x,y):

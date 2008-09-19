@@ -244,11 +244,14 @@ class TimePeriodChild(QtGui.QMainWindow):
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         self.retranslateUi()
+
         self.refresh()
+        
         try:
             setFirstActive(self.treeWidget)
             HeaderUtil.nullifySaved(self.setname)
             self.refreshTable()
+            self.tableWidget = tableFormat(self.tableWidget)
         except Exception, ex:
             print "Error when setting first element active: ", ex
         #self.treeWidget.setCurrentItem(self.treeWidget.headerItem().child(1))
@@ -426,6 +429,7 @@ class TimePeriodChild(QtGui.QMainWindow):
             self.refreshTable()
         
     def refreshTable(self, widget=None):
+        self.tableWidget.setSortingEnabled(False)
         if not widget:
             period_id=self.getTimeperiodId()
         else:
@@ -455,6 +459,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
+        self.tableWidget.setSortingEnabled(True)
 
 
 

@@ -144,12 +144,12 @@ class HandleAuth(HandleBase):
 
 
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0], multilink = self.multilink)
-        #print 1
+        print 1, row
         if row==None:
             self.cur.close()
             return self.auth_NA()
         
-        #print 2
+        print 2
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
@@ -168,10 +168,10 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 #print 3
                 break
-        #print 3
+        print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
-           #print 4
+           print 4
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
            self.replypacket.password=str(password) #Нельзя юникод
@@ -185,7 +185,7 @@ class HandleAuth(HandleBase):
         else:
              self.cur.close()
              self.connection.close()
-             #print 5
+             print 5
              return self.auth_NA()
         #print 5
         #data_to_send=replypacket.ReplyPacket()

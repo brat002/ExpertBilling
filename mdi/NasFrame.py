@@ -375,7 +375,7 @@ class AddNasFrame(QtGui.QDialog):
         model.allow_pptp = self.pptp_checkBox.checkState()==2
         model.allow_pppoe = self.pppoe_checkBox.checkState()==2
         model.allow_ipn = self.ipn_checkBox.checkState()==2
-        model.multilink = self.ipn_checkBox.checkState()==2
+        model.multilink = self.multilink_checkBox.checkState()==2
 
         model.user_add_action= unicode(self.create_user_textEdit.text() or "")
         model.user_delete_action= unicode(self.remove_user_textEdit.text() or "")
@@ -451,7 +451,7 @@ class NasMdiChild(QtGui.QMainWindow):
 
 
         self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget = tableFormat(self.tableWidget)
+        
 
 
         self.setCentralWidget(self.tableWidget)
@@ -501,6 +501,7 @@ class NasMdiChild(QtGui.QMainWindow):
 
         self.retranslateUi()
         self.refresh()
+        self.tableWidget = tableFormat(self.tableWidget)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
