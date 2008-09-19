@@ -46,7 +46,7 @@ pool = PooledDB(
 )
 
 
-
+'''
 def format_update (x,y):
     print 'y', y, type(y)
     if y!='Null' or y!='None':
@@ -67,7 +67,7 @@ def format_insert(y):
     else:
         return y
 
-'''class Object(object):
+class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
             setattr(self, key, result[key])

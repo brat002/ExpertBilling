@@ -24,12 +24,13 @@ req["User-Password"]=req.PwCrypt("WUoKLf3n")
 #req["Framed-IP-Address"] = "10.0.0.100"
 
 req['NAS-Port-Type'] = 'Virtual'
+req['Calling-Station-Id']='10.10.1.2'
 
 f=file("request", "wb")
 f.write(req.ReplyPacket())
 f.flush()
 
-for x in range(0,1000):
+for x in range(0,1000000):
     try:
     	#print "Sending authentication request"
     	reply=srv.SendPacket(req)

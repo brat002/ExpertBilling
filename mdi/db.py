@@ -7,6 +7,27 @@ import psycopg2, datetime
 from types import InstanceType, StringType, UnicodeType
 import os
 
+def format_update (x,y):
+    #print 'y', y, type(y)
+    print x,y, type(y), y=='None'
+    if y!=u'Null' and y!=u'None':
+        if type(y)==StringType or type(y)==UnicodeType:
+            print True
+            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            #print 'y', y
+        return "%s='%s'" % (x,y)
+    else:
+        return "%s=%s" % (x,'Null')
+
+def format_insert(y):
+    if y==u'Null' or y ==u'None':
+        return 'Null'
+    elif type(y)==StringType or type(y)==UnicodeType:
+        print True
+        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+    else:
+        return y
+    
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:

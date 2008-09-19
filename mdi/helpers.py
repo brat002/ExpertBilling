@@ -8,7 +8,7 @@ import os
 
 dateDelim = "."
 connectDBName = "exbillusers"
-tableHeight = 20
+tableHeight = 17
 
 def tableFormat(table):
     #setTableHeight(table)
@@ -29,7 +29,7 @@ def tableFormat(table):
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
     hh.setMaximumHeight(17)
-    hh.setStretchLastSection(True)
+    hh.setStretchLastSection(False)
     hh.setHighlightSections(False)
     hh.setClickable(True)
     hh.setMovable(False)

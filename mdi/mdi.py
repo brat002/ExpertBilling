@@ -166,8 +166,8 @@ class MainWindow(QtGui.QMainWindow):
 
     @connlogin
     def about(self):
-        QtGui.QMessageBox.about(self, self.tr(u"О программе"),
-                                self.tr(u"Expert Billing Client- клиентское приложение, предназначенное для конфигурирования<br> серверной части системы."))
+        QtGui.QMessageBox.about(self, u"О программе",
+                                u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
 
     @connlogin
     def cardsFrame(self):
@@ -225,10 +225,6 @@ class MainWindow(QtGui.QMainWindow):
         i = 0
 
         for child in windows:
-            if i < 9:
-                text = self.tr("&%1 %2").arg(i + 1).arg(child.userFriendlyCurrentFile())
-            else:
-                text = self.tr("%1 %2").arg(i + 1).arg(child.userFriendlyFile())
 
             i += 1
 
@@ -243,58 +239,57 @@ class MainWindow(QtGui.QMainWindow):
        
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
-                                    self.tr("&New"), self)
-        self.newAct.setShortcut(self.tr("Ctrl+N"))
-        self.newAct.setStatusTip(self.tr("Create a new file"))
+                                    u"&Пользователи и тарифы", self)
+        self.newAct.setShortcut(self.tr("Ctrl+A"))
+        self.newAct.setStatusTip(u"Пользователи и тарифы")
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
         self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
-                                     self.tr("&Open..."), self)
-        self.openAct.setShortcut(self.tr("Ctrl+O"))
-        self.openAct.setStatusTip(self.tr("Open an existing file"))
+                                     u"&Серверы доступа", self)
+        
+        self.openAct.setShortcut(self.tr("Ctrl+N"))
+        self.openAct.setStatusTip(u'Серверы доступа')
         self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
 
         self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"),
-                                     self.tr("&Save"), self)
+                                     u'Расчётные периоды', self)
         self.saveAct.setShortcut(self.tr("Ctrl+S"))
-        self.saveAct.setStatusTip(self.tr("Save the document to disk"))
+        self.saveAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
 
-        self.saveAsAct = QtGui.QAction(self.tr("Save &As..."), self)
-        self.saveAsAct.setStatusTip(self.tr("Save the document under a new name"))
+        self.saveAsAct = QtGui.QAction(u'Администраторы', self)
+        self.saveAsAct.setStatusTip(u"Системные администраторы")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
 
-        self.exitAct = QtGui.QAction(self.tr("E&xit"), self)
+        self.exitAct = QtGui.QAction(u"Выход", self)
         self.exitAct.setShortcut(self.tr("Ctrl+Q"))
-        self.exitAct.setStatusTip(self.tr("Exit the application"))
+        self.exitAct.setStatusTip(u"Выход из прграммы")
         self.connect(self.exitAct, QtCore.SIGNAL("triggered()"), self.close)
 
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
-                                    self.tr("Cu&t"), self)
-        self.cutAct.setShortcut(self.tr("Ctrl+X"))
-        self.cutAct.setStatusTip(self.tr("Cut the current selection's "
-                                         "contents to the clipboard"))
+                                    u'Периоды тарификации', self)
+        self.cutAct.setShortcut(self.tr("Ctrl+T"))
+        self.cutAct.setStatusTip(u"Периоды тарификации")
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
         self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
-                                     self.tr("&Copy"), self)
+                                     u"Направления трафика", self)
         self.copyAct.setShortcut(self.tr("Ctrl+C"))
-        self.copyAct.setStatusTip(self.tr("Copy the current selection's "
-                                          "contents to the clipboard"))
+        self.copyAct.setStatusTip(u"Направления трафика")
         self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
 
         self.pasteAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
-                                      self.tr("&Paste"), self)
-        self.pasteAct.setShortcut(self.tr("Ctrl+V"))
-        self.pasteAct.setStatusTip(self.tr("Paste the clipboard's contents "
-                                           "into the current selection"))
+                                      u"Монитор сессий", self)
+        
+        self.pasteAct.setShortcut(self.tr("Ctrl+M"))
+        self.pasteAct.setStatusTip(u"Монитор сессий")
 
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
 
         self.cardsAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
-                                      self.tr("&Paste"), self)
+                                      u"Карты экспресс-оплаты", self)
         #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
-        self.cardsAct.setStatusTip(self.tr("Карты экспресс-оплаты"))
+        self.cardsAct.setStatusTip(u"Карты экспресс-оплаты")
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
 
@@ -372,20 +367,21 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def createMenus(self):
-        self.fileMenu = self.menuBar().addMenu(self.tr("&File"))
+        self.fileMenu = self.menuBar().addMenu(u"&Главное меню")
         self.fileMenu.addAction(self.newAct)
         self.fileMenu.addAction(self.openAct)
         self.fileMenu.addAction(self.saveAct)
+        
+        #self.editMenu = self.menuBar().addMenu(self.tr("&Edit"))
+        self.fileMenu.addAction(self.cutAct)
+        self.fileMenu.addAction(self.copyAct)
+        self.fileMenu.addAction(self.pasteAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.reloginAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
-
-        self.editMenu = self.menuBar().addMenu(self.tr("&Edit"))
-        self.editMenu.addAction(self.cutAct)
-        self.editMenu.addAction(self.copyAct)
-        self.editMenu.addAction(self.pasteAct)
 
         self.windowMenu = self.menuBar().addMenu(self.tr("&Window"))
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),

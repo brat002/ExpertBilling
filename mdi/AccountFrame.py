@@ -3292,8 +3292,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             except:
                 return
             
-        print "tarif_id=",id
-        print k
+        #print "tarif_id=",id
+        #print k
 
         #self.connection.commit()
         tarif = self.connection.foselect("billservice_tariff", id)
@@ -3310,7 +3310,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connection.commit()
         #print accounts
 
-        print "after acc"
+        #print "after acc"
         self.tableWidget.setRowCount(len(accounts))
         
         
