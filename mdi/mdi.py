@@ -278,7 +278,7 @@ class MainWindow(QtGui.QMainWindow):
         self.copyAct.setStatusTip(u"Направления трафика")
         self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
 
-        self.pasteAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
+        self.pasteAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
                                       u"Монитор сессий", self)
         
         self.pasteAct.setShortcut(self.tr("Ctrl+M"))
@@ -286,14 +286,14 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
 
-        self.cardsAct = QtGui.QAction(QtGui.QIcon(":/images/paste.png"),
+        self.cardsAct = QtGui.QAction(QtGui.QIcon("images/cards.png"),
                                       u"Карты экспресс-оплаты", self)
         #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
         self.cardsAct.setStatusTip(u"Карты экспресс-оплаты")
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
 
-        self.netflowReportAct=QtGui.QAction(QtGui.QIcon(":/images/paste.png"), self.tr("&NetFlow"), self)
+        self.netflowReportAct=QtGui.QAction(QtGui.QIcon("images/nfstat.png"), self.tr("&NetFlow"), self)
 
         self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
 
