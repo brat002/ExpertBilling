@@ -23,19 +23,7 @@ try:
 except:
     pass
 
-dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
 
-pool = PooledDB(
-    mincached=3,
-    maxcached=10,
-    blocking=True,
-    creator=psycopg2,
-#    setsession=['SET AUTOCOMMIT = 1'],
-    dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                           settings.DATABASE_USER,
-                                                           settings.DATABASE_HOST,
-                                                           settings.DATABASE_PASSWORD)
-)
 global numauth, numacct
 
 numauth=0
@@ -563,8 +551,7 @@ def setpriority(pid=None,priority=1):
 
 def main():
 
-    if os.name=='nt':
-        setpriority(priority=4)
+
 
     
     server_auth = Starter(("0.0.0.0", 1812), RadiusAuth)
@@ -572,7 +559,29 @@ def main():
 
     server_acct = Starter(("0.0.0.0", 1813), RadiusAcct)
     server_acct.start()
-    
-if __name__ == "__main__":
 
+import socket
+if socket.gethostname() not in ['dolphinik','sasha', 'kail']:
+    import sys
+    print "Licension key error. Exit from application."
+    sys.exit(1)
+
+if __name__ == "__main__":
+    if os.name=='nt':
+        setpriority(priority=4)
+    else:
+        os.chdir("/opt/ebs/data")
+    dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+    
+    pool = PooledDB(
+        mincached=3,
+        maxcached=10,
+        blocking=True,
+        creator=psycopg2,
+    #    setsession=['SET AUTOCOMMIT = 1'],
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                               settings.DATABASE_USER,
+                                                               settings.DATABASE_HOST,
+                                                               settings.DATABASE_PASSWORD)
+    )
     main()
