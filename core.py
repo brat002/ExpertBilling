@@ -374,7 +374,7 @@ class periodical_service_bill(Thread):
 
         while True:
             # Количество снятий в сутки
-            transaction_number=24
+            transaction_number=2
             n=(86400)/transaction_number
 
             #выбираем список тарифных планов у которых есть периодические услуги
@@ -464,8 +464,8 @@ class periodical_service_bill(Thread):
                                     cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                     lc=now - last_checkout
                                     nums, ost=divmod(lc.seconds+lc.days*86400,n)
-
-                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                    #Нижеследующая функция добавляет много проблем. Временно отключена
+                                    if True==False and nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
                                         """
                                         Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                         пока денег на счету не было
