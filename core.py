@@ -2092,7 +2092,14 @@ def main():
 
 
 #===============================================================================
-
+import socket
+if socket.gethostname() not in ['dolphinik','sasha', 'kail']:
+    import sys
+    print "Licension key error. Exit from application."
+    sys.exit(1)
+    
 if __name__ == "__main__":
+    if os.name!='nt':
+        os.chdir("/opt/ebs/data")
     main()
 
