@@ -2,7 +2,7 @@
 
 from auth import Auth
 from time import clock
-
+import mx.DateTime
 import os,datetime
 from SocketServer import ThreadingUDPServer
 from SocketServer import DatagramRequestHandler
@@ -561,7 +561,7 @@ def main():
     server_acct.start()
 
 import socket
-if socket.gethostname() not in ['dolphinik','sasha', 'kail']:
+if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)

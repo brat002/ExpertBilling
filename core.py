@@ -5,6 +5,7 @@ from utilites import parse_custom_speed, cred, create_speed_string, change_speed
 import dictionary
 from threading import Thread
 import threading
+import mx.DateTime
 from db import Object as Object
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from db import dbRoutine
@@ -2093,7 +2094,7 @@ def main():
 
 #===============================================================================
 import socket
-if socket.gethostname() not in ['dolphinik','sasha', 'kail']:
+if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
