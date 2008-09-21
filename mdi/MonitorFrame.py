@@ -149,9 +149,9 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
             self.addrow(self.tableWidget, session.bytes_out, i, 7)
             self.addrow(self.tableWidget, session.bytes_in, i, 8)
-            self.addrow(self.tableWidget, session.session_time, i, 10)
-            self.addrow(self.tableWidget, session.session_status, i, 11)
-            self.tableWidget.setRowHeight(i, 14)
+            self.addrow(self.tableWidget, session.session_time, i, 9)
+            self.addrow(self.tableWidget, session.session_status, i, 10)
+            #self.tableWidget.setRowHeight(i, 14)
             i+=1
         if self.firsttime and sessions:
             self.tableWidget.resizeColumnsToContents()
