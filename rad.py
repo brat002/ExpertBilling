@@ -135,12 +135,12 @@ class HandleAuth(HandleBase):
 
 
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0], multilink = self.multilink)
-        print 1, row
+        #print 1, row
         if row==None:
             self.cur.close()
             return self.auth_NA()
         
-        print 2
+        #print 2
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
@@ -159,10 +159,10 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 #print 3
                 break
-        print 3
+        #print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
-           print 4
+           #print 4
            self.replypacket.code=2
            self.replypacket.username=str(username) #Нельзя юникод
            self.replypacket.password=str(password) #Нельзя юникод
@@ -176,7 +176,7 @@ class HandleAuth(HandleBase):
         else:
              self.cur.close()
              self.connection.close()
-             print 5
+             #print 5
              return self.auth_NA()
         #print 5
         #data_to_send=replypacket.ReplyPacket()
@@ -303,7 +303,7 @@ class HandleAcct(HandleBase):
 
         self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s';""" % self.nasip)
         row = self.cur.fetchone()
-        print 1
+        #print 1
         if row==None:
             return self.acct_NA(self.replypacket)
 
@@ -312,7 +312,7 @@ class HandleAcct(HandleBase):
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         #simple_log(packet=self.packetobject)
-        print 2
+        #print 2
         self.cur.execute(
         """
         SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
@@ -333,7 +333,7 @@ class HandleAcct(HandleBase):
         self.replypacket.code=5
         now=datetime.datetime.now()
 
-        print 3
+        #print 3
         if self.packetobject['Acct-Status-Type']==['Start']:
             #Проверяем нет ли такой сессии в базе
             self.cur.execute("""
@@ -343,13 +343,13 @@ class HandleAcct(HandleBase):
             caller_id='%s' and called_id='%s' and nas_id='%s' and framed_protocol='%s';
             """ % (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
                    self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type))
-            print 31
+            #print 31
             allow_write = self.cur.fetchone()==None
             #allow_write=True
-            print 32
+            #print 32
             #allow_write=True
             if time_access and allow_write:
-                print 33
+                #print 33
                 self.cur.execute(
                 """
                 INSERT INTO radius_session(
@@ -360,9 +360,9 @@ class HandleAcct(HandleBase):
                 """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
                      self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type, False, False))
-            print 34
+            #print 34
             if allow_write:
-                print 35
+                #print 35
                 self.cur.execute(
                 """
                 INSERT INTO radius_activesession(
@@ -373,11 +373,11 @@ class HandleAcct(HandleBase):
                 """ % (account_id, self.packetobject['Acct-Session-Id'][0], now,
                      self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
                      self.packetobject['NAS-IP-Address'][0], self.access_type))
-                print 36
-                print 'start', True
+                #print 36
+                #print 'start', True
             #self.connection.commit()
-            print 37
-        print 4
+            #print 37
+        #print 4
         if self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out=self.get_bytes()
             if time_access:
@@ -433,9 +433,9 @@ class HandleAcct(HandleBase):
                """ % (now,account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
                )
             #self.connection.commit()
-        print "acct end"
+        #print "acct end"
         self.connection.commit()
-        print 5
+        #print 5
         self.connection.close()
         self.cur.close()
         
@@ -494,7 +494,7 @@ class RadiusAuth(BaseAuth):
         del packetobject
         del access_type
         del returndata
-        print "AUTH:%.20f" % (clock()-t)
+        #print "AUTH:%.20f" % (clock()-t)
 
 class RadiusAcct(BaseAuth):
 
@@ -513,7 +513,7 @@ class RadiusAcct(BaseAuth):
         packetfromcore = coreconnect.handle()
         returndat=packetfromcore.ReplyPacket()
         self.socket.sendto(returndat,addrport)
-        print "ACC:%.20f" % (clock()-t)
+        #print "ACC:%.20f" % (clock()-t)
         #del coreconnect
         #print numacct
         numacct-=1
