@@ -1693,7 +1693,7 @@ class TarifFrame(QtGui.QDialog):
             if unicode(self.access_time_edit.currentText())=="":
                 QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
                 return
-            if (str(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
+            if (unicode(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
                 QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть указано только для VPN планов")
                 return
         try:
