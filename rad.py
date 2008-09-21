@@ -2,7 +2,10 @@
 
 from auth import Auth
 from time import clock
-import mx.DateTime
+try:
+    import mx.DateTime
+except:
+    print 'cannot import mx'
 import os,datetime
 from SocketServer import ThreadingUDPServer
 from SocketServer import DatagramRequestHandler
