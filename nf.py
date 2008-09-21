@@ -89,10 +89,10 @@ class TrafficClass(object):
             self.data.append(TrafficNode(node))
 
     def check(self, src, src_port, dst, dst_port, protocol, next_hop):
-        print src, src_port, dst, dst_port, protocol, next_hop
+        #print src, src_port, dst, dst_port, protocol, next_hop
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port, protocol, next_hop)
-            print res
+            #print res
             if res['src'] and res['dst'] and res['src_port'] and res['dst_port'] and res['protocol'] and res['next_hop']:
                 
                 return self.id, res['direction']
@@ -184,7 +184,7 @@ class NetFlowPacket:
         try:
             nas_id = cur.fetchone()[0]
         except Exception, e:
-            print e
+            #print e
             return
         flows=[]
         if nas_id!=None:
@@ -213,7 +213,7 @@ class NetFlowPacket:
                 match = False
                 for traffic_class in trafficclasses_pool:
                     res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol, flow.next_hop)
-                    print res
+                    #print res
                     if res[0] and match==False:
                         if traffic_class.passthtough==False:
                             match=True
@@ -244,7 +244,7 @@ class NetFlowPacket:
                         )
 
             #print flows
-            print flows
+            #print flows
             cur.executemany("""
                         INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
                         VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s);""" ,\

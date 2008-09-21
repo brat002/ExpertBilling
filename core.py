@@ -175,7 +175,7 @@ class check_vpn_access(Thread):
                 account = self.cur.fetchone()
                 #print "account", account
                 if account is not None:
-                    print 'send pod'
+                    #print 'send pod'
                     res = PoD(dict=dict,
                               account_id=account['id'], 
                               account_name=str(session['name']), 
@@ -390,7 +390,7 @@ class periodical_service_bill(Thread):
             #перебираем тарифные планы
             for row in rows:
                 #self.connection.commit()
-                print row
+                #print row
                 tariff_id, settlement_period_id, null_ballance_checkout=row
 
                 # Получаем список аккаунтов на ТП
@@ -427,11 +427,11 @@ class periodical_service_bill(Thread):
                 # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                 for row_ps in rows_ps:
                     ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
-                    print "new ps"
+                    #print "new ps"
                     for account in accounts:
                         #self.connection.commit()
                         account_id = account[0]
-                        print "account_id for ps", ps_id, account_id
+                        #print "account_id for ps", ps_id, account_id
                         account_datetime = account[1]
                         account_ballance = account[2]
                         # Если балланс>0 или разрешено снятие денег при отрицательном баллансе
@@ -454,9 +454,9 @@ class periodical_service_bill(Thread):
 
                                 if last_checkout==None:
                                     last_checkout=account_datetime
-                                print "last checkout", last_checkout
+                                #print "last checkout", last_checkout
                                 if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
-                                    print "GRADUAL"
+                                    #print "GRADUAL"
                                     #Проверяем наступил ли новый период
                                     if now-datetime.timedelta(seconds=n)<=period_start:
                                         # Если начался новый период
@@ -478,7 +478,7 @@ class periodical_service_bill(Thread):
                                         cash_summ=cash_summ*nums
                                     #print "delta", delta
                                     # Делаем проводку со статусом Approved
-                                    print "cash_summ", cash_summ
+                                    #print "cash_summ", cash_summ
                                     transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
                                     #print "tr_id", transaction_id
                                     #self.connection.commit()
@@ -742,7 +742,7 @@ class NetFlowAggregate(Thread):
 
     def run(self):
         while True:
-            print 'next aggregation cycle'
+            #print 'next aggregation cycle'
             connection = pool.connection()
             cur = connection.cursor()
             '''cur.execute(
@@ -826,7 +826,7 @@ class NetFlowAggregate(Thread):
                         """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode))
                     row_for_update=cur.fetchone()
                     if row_for_update:
-    #                    print 'u'
+    #                    #print 'u'
                         cur.execute(
                             """
                             UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
@@ -1326,7 +1326,7 @@ class settlement_period_service_dog(Thread):
                     #Если балланса не хватает - отключить пользователя
                 self.connection.commit()
                 if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
-                    print "balance blocked1", ballance_checkout, period_start, cost, account_balance
+                    #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                     #В начале каждого расчётного периода
                     self.cur.execute(
                         """
@@ -1347,7 +1347,7 @@ class settlement_period_service_dog(Thread):
                     Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
                     """
                     #Иначе Убираем отметку
-                    print "balance blocked2"
+                    #print "balance blocked2"
                     self.cur.execute(
                         """
                         UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
@@ -1456,7 +1456,7 @@ class settlement_period_service_dog(Thread):
                              WHERE (account.ballance+account.credit)>0 and oth.id is Null;
                              """)
             rows = self.cur.fetchall()
-            print "onetime", rows
+            #print "onetime", rows
             for row in rows:
                 account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
                 transaction(
@@ -1573,7 +1573,7 @@ class ipn_service(Thread):
                 #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
                 #print row['account_disabled_by_limit']==True, row['ballance']<=0, period==False, row['account_balance_blocked']==True, row['account_ipn_status']==True, row['access_type']=='IPN'
                 if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
-                    print u"ВКЛЮЧАЕМ"
+                    #print u"ВКЛЮЧАЕМ"
 
                     #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
                     #шлём команду, на включение пользователя, account_ipn_status=True
@@ -1587,7 +1587,7 @@ class ipn_service(Thread):
                 elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
 
                     #шлём команду на отключение пользователя,account_ipn_status=False
-                    print u"ОТКЛЮЧАЕМ"
+                    #print u"ОТКЛЮЧАЕМ"
                     sended = cred(account_id=row['account_id'], account_name=row['account_username'], \
                                   access_type='IPN', \
                                   account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], \
@@ -1654,9 +1654,9 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
 
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
-        print "acceptident-----------------"
-        print conn
-        print hash
+        #print "acceptident-----------------"
+        #print conn
+        #print hash
 
         try:
             for val in tcpserver.implementations.itervalues():
@@ -1666,12 +1666,12 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
             user, mdpass = hash.split(':', 1)
             obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
-            print obj.id
-            print obj.host
+            #print obj.id
+            #print obj.host
             hostOk = self.checkIP(conn.addr[0], str(obj.host))
 
             if hostOk and (obj.password == mdpass):
-                print "accepted---------------------------------"
+                #print "accepted---------------------------------"
                 tmd5 = hashlib.md5(str(conn.addr[0]))
                 tmd5.update(str(conn.addr[1]))
                 tmd5.update(tcpserver.hostname)
@@ -1680,35 +1680,35 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 conn.db_connection._con._con.set_client_encoding('UTF8')
                 #conn.db_connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
                 conn.cur = conn.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
-                print conn.utoken
-                print obj.id
-                print conn
+                #print conn.utoken
+                #print obj.id
+                #print conn
                 #Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
                 return(1,0)
             else:
-                print "DENIED-----------------"
-                print conn
-                print obj.id
+                #print "DENIED-----------------"
+                #print conn
+                #print obj.id
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SECURITY)
         except Exception, ex:
-            print "acceptidentificationerror---------------: ", ex
-            print conn
+            #rint "acceptidentificationerror---------------: ", ex
+            #print conn
             conn.utoken = ''
             return (0,Pyro.constants.DENIED_SECURITY)
 
     def checkIP(self, ipstr, hostsstr):
-        print "checkIP----"
-        print hostsstr
-        print ipstr
+        #print "checkIP----"
+        #print hostsstr
+        #print ipstr
         userIP = IPy.IP(ipstr)
-        print "presplit"
+        #print "presplit"
         hosts = hostsstr.split(', ')
-        print "hosts====="
-        print hosts
+        #print "hosts====="
+        #print hosts
         hostOk = False
         for host in hosts:
-            print host
+            #print host
             iprange = host.split('-')
             if len(iprange) == 1:
                 if iprange[0].find('/') != -1:
@@ -1722,13 +1722,13 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
         return hostOk
 
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-        print "createAuthToken_serv"
+        #print "createAuthToken_serv"
         # authid is what mungeIdent returned, a tuple (login, hash-of-password)
         # we return a secure auth token based on the server challenge string.
         return authid
 
     def mungeIdent(self, ident):
-        print "mungeIdent_serv"
+        #print "mungeIdent_serv"
         # ident is tuple (login, password), the client sets this.
         # we don't like to store plaintext passwords so store the md5 hash instead.
         return ident
@@ -1820,7 +1820,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                          """ % account_id)
 
         row = cur.fetchone()
-        print action
+        #print action
         if row==None:
             return False
 
@@ -1837,7 +1837,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             #set_account_deleted(cur, account_id)
             #self.iddelete("billservice_account", account_id)
             command = row['user_delete_action']
-        print command
+        #print command
 
         sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
                       account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
@@ -1859,7 +1859,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def transaction_delete(self, ids, cur=None, connection=None):
         for i in ids:
-            print "delete %s transaction" % i
+            #print "delete %s transaction" % i
             delete_transaction(cur, int(i))
         connection.commit()
 
@@ -1886,7 +1886,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def get_list(self, sql, cur=None, connection=None):
-        print sql
+        #print sql
         listconnection = pool.connection()
         listconnection._con._con.set_client_encoding('UTF8')
         listcur = listconnection.cursor()
@@ -1944,7 +1944,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None):
-        print self.ticket
+        #print self.ticket
         cur.execute(sql)
         #connection.commit()
 
@@ -1953,14 +1953,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         a=time.clock()
         if return_response:
             result = map(Object, cur.fetchall())
-        print "Query length=", time.clock()-a
+        #print "Query length=", time.clock()-a
         if pickler:
             output = open('data.pkl', 'wb')
             b=time.clock()-a
 
             pickle.dump(result, output)
             output.close()
-            print "Pickle length=", time.clock()-a
+            #print "Pickle length=", time.clock()-a
         return result
 
     @authentconn
@@ -1972,7 +1972,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result=[]
         a=time.clock()
         result = map(Object, cur.fetchall())
-        print "Query length=", time.clock()-a
+        #print "Query length=", time.clock()-a
         if id == None:
             return result
         else:
@@ -1987,13 +1987,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if return_response:
 
             result =cur.fetchall()
-        print "Query length=", time.clock()-a
+        #print "Query length=", time.clock()-a
         return result
 
 
     @authentconn
     def create(self, sql, cur=None, connection=None):
-        print sql
+        #print sql
         cur.execute(sql)
 
         #print cur.fetchone()
@@ -2062,7 +2062,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 def main():
-    print os.path.curdir
+    #print os.path.curdir
     #dict=dictionary.Dictionary(os.path.normpath("./dicts/dictionary"), "./dicts/dictionary.microsoft","./dicts/dictionary.mikrotik","./dicts/dictionary.rfc3576")
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
     threads=[]
@@ -2083,7 +2083,7 @@ def main():
 
     while True:
         #print pool
-        print pool._connections
+        #print pool._connections
         for t in threads:
             #time.sleep(1)
             #print t
