@@ -1,11 +1,7 @@
 #! /bin/sh
-# example python daemon starter script
-# based on skeleton from Debian GNU/Linux
-# cliechti@gmx.net
-# place the daemon scripts in a folder accessible by root. /usr/local/sbin is a good idea
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/opt/ebs/bin/ebs_core
+DAEMON=/opt/ebs/data/core
 
 NAME=ebs_core
 DESC="EBS Core daemon"
@@ -17,13 +13,14 @@ set -e
 case "$1" in
   start)
 	echo -n "Starting $DESC: "
-	start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-		--exec $DAEMON
+	nohup start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
+		--exec $DAEMON &>/dev/null
 	echo "$NAME."
 	;;
   stop)
 	echo -n "Stopping $DESC: "
-	start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid
+	#start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid
+	killall -9 core
 	# \	--exec $DAEMON
 	echo "$NAME."
 	;;
