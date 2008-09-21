@@ -3190,7 +3190,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
             #self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
             #self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
-            self.connection.iddelete("billservice_accounttarif", id)
+            self.connection.iddelete("billservice_account", id)
             self.connection.commit()
             self.refresh()
 
