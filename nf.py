@@ -2,7 +2,7 @@
 
 import socket, select, struct, datetime
 from IPy import *
-
+import mx.DateTime
 import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
@@ -288,7 +288,7 @@ pool = PooledDB(
 db_connection = pool.connection()
 cur = db_connection.cursor()
 import socket
-if socket.gethostname() not in ['dolphinik','sasha', 'kail']:
+if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
