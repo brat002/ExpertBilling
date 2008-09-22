@@ -597,3 +597,32 @@ class ConnectDialog(QtGui.QDialog):
             
         except Exception, ex:
             print ex
+
+class ConnectionWaiting(QtGui.QDialog):
+    def __init__(self):
+        super(ConnectionWaiting, self).__init__()
+        self.setObjectName("ConnectionWaiting")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,199,66).size()).expandedTo(self.minimumSizeHint()))
+        self.setMinimumSize(QtCore.QSize(199,66))
+        self.setMaximumSize(QtCore.QSize(199,66))
+        #self.setModal(True)
+
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(10,30,181,32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(10,6,181,20))
+        self.label.setObjectName("label")
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
+        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        #QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Подключение...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Подключаемся", None, QtGui.QApplication.UnicodeUTF8))
+        

@@ -21,7 +21,7 @@ from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
-from CustomForms import ConnectDialog
+from CustomForms import ConnectDialog, ConnectionWaiting
 from Reports import NetFlowReport, StatReport, ReportSelectDialog
 from CardsFrame import CardsChild
 
@@ -461,6 +461,8 @@ def login():
     while True:
 
         if child.exec_()==1:
+            waitchild = ConnectionWaiting()
+            waitchild.show()
             try:
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 password = unicode(child.password.toHex())
@@ -469,15 +471,18 @@ def login():
                 connection._setNewConnectionValidator(antiMungeValidator())
                 print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
                 connection.test()
+                waitchild.hide()
                 return connection
 
             except Exception, e:
-                print "login connection error"
+                #print "login connection error"
+                waitchild.hide()
                 if isinstance(e, Pyro.errors.ConnectionDeniedError):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-
+            waitchild.hide()
+            del waitchild
         else:
             return None
 
