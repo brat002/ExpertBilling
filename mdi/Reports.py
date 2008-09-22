@@ -647,7 +647,7 @@ class NetFlowReport(QtGui.QMainWindow):
         
         self.status_label.setText(u"Подождите, идёт обработка.")
 
-        self.tableWidget.setSortingEnabled(False)
+        #self.tableWidget.setSortingEnabled(False)
         if self.child.with_grouping_checkBox.checkState()==0:
             sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
             netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
@@ -689,9 +689,9 @@ class NetFlowReport(QtGui.QMainWindow):
             sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
         
         if self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==0:
-            sql+="ORDER BY netflowstream.date_start ASC"
+            sql+="ORDER BY netflowstream.id ASC"
         elif self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==2:
-            sql+="ORDER BY netflowstream.date_start DESC"
+            sql+="ORDER BY netflowstream.id DESC"
             
         if self.current_page==0:
             sql+=" LIMIT 100"
@@ -801,7 +801,7 @@ class NetFlowReport(QtGui.QMainWindow):
         #self.status_label.setText(u"Всего принято: %s МБ. Отправлено: %s МБ. Транзитного трафика: %s МБ" % (float(octets_in_summ)/(1024*1024), float(octets_out_summ)/(1024*1024), float(octets_transit_summ)/(1024*1024) ))
         self.status_label.setText(u"Готово")
         #print "Interface generation time=", time.clock()-a
-        self.tableWidget.setSortingEnabled(True)    
+        #self.tableWidget.setSortingEnabled(True)    
         
         
 
