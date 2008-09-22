@@ -1,8 +1,11 @@
 #-*-coding=utf-8-*-
 
-import socket, select, struct, datetime
+import socket, select, struct, datetime, time
 from IPy import *
-import mx.DateTime
+try:
+    import mx.DateTime
+except:
+    print "cannot inport mx"
 import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
@@ -179,8 +182,9 @@ class NetFlowPacket:
     def __init__(self, data, addrport):
         if len(data) < 16:
             raise ValueError, "Short packet"
-
+        
         cur.execute("""SELECT id from nas_nas WHERE  ipaddress='%s'""" % addrport[0])
+        #print "after_nas", time.clock()-a
         try:
             nas_id = cur.fetchone()[0]
         except Exception, e:
@@ -199,20 +203,22 @@ class NetFlowPacket:
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
 
-
+            
             for n in range(self.hdr.num_flows):
 
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
 
                 flow_data = data[offset:offset + flow_class.LENGTH]
-
+                
+                
                 flow=flow_class(flow_data)
-
+                #print "after_flow_class", time.clock()-a
                 traffic_class=None
                 #print flow
                 match = False
                 for traffic_class in trafficclasses_pool:
                     res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol, flow.next_hop)
+                    #print "after_trafic_check", time.clock()-a
                     #print res
                     if res[0] and match==False:
                         if traffic_class.passthtough==False:
@@ -245,11 +251,13 @@ class NetFlowPacket:
 
             #print flows
             #print flows
+            #print "before_insert", time.clock()-a
             cur.executemany("""
                         INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
                         VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s);""" ,\
                         flows)
             db_connection.commit()
+            #print "after_insert", time.clock()-a
             
 
 
@@ -264,15 +272,22 @@ def main ():
     	sock.bind(addr[4])
     	socks.append(sock)
     	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
-
+        
+    global trafficclasses_pool
+    trafficclasses_pool = RefreshClasses()
+    
     while True:
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
 		    #print "Received flow packet from %s:%d" % addrport
-            global trafficclasses_pool
-            trafficclasses_pool = RefreshClasses()
+            
+            global a
+            a=time.clock()
+            
+            #print "after_refresh", time.clock()-a
             NetFlowPacket(data, addrport)
+            #print "after_nfpacket", time.clock()-a
 
 pool = PooledDB(
      mincached=1,
