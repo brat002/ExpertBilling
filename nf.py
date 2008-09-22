@@ -197,7 +197,7 @@ class NetFlowPacket:
                     #print "after_trafic_check", time.clock()-a
                     #print res
                     if res[0] and match==False:
-                        print res[0]
+                        #print res[0]
                         if traffic_class.passthtough==False:
                             match=True
                             
