@@ -2029,7 +2029,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def pod(self, session, cur=None, connection=None):
-
+        print "Start POD"
         cur.execute("""
                     SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
                     nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
@@ -2041,7 +2041,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                     """ % session)
 
         row = cur.fetchone()
-        PoD(dict=dict,
+        print "POD Result=", PoD(dict=dict,
             account_id=row['account_id'], 
             account_name=str(row['account_name']), 
             account_vpn_ip=row['vpn_ip_address'], 
