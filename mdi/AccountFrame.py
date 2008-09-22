@@ -1677,6 +1677,8 @@ class TarifFrame(QtGui.QDialog):
           
     #@transaction.commit_manually            
     def accept(self):
+        #import datetime
+        #print datetime.datetime.now()
         #self.connection.command("BEGIN;")
         if self.model:
             model=copy.deepcopy(self.model)
@@ -2603,6 +2605,7 @@ class AddAccountFrame(QtGui.QDialog):
         """
         понаставить проверок
         """
+        
         self.connection.commit()
         try:
             
@@ -3067,9 +3070,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
-        tarifframe.exec_()
-        self.refreshTree()
-        self.refresh()
+        if tarifframe.exec_() == 1:
+            #import datetime
+            #print datetime.datetime.now()
+            self.refreshTree()
+            self.refresh()
         
     
     def delTarif(self):
