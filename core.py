@@ -1,5 +1,5 @@
 #-*-coding=utf-8-*-
-from encodings import idna
+#from encodings import idna
 import time, datetime, os, sys
 from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
