@@ -46,39 +46,15 @@ class TrafficNode(object):
         self.dst_mask, \
         self.dst_port, \
         self.next_hop = node_data
-
+        self.src = IP("%s/%s" % (self.src_ip, self.src_mask))
+        self.dst = IP("%s/%s" % (self.dst_ip, self.dst_mask))
+        self.n_hop = IP(self.next_hop)
 
     def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol, next_hop):
-        src = IP("%s/%s" % (self.src_ip, self.src_mask))
-        dst = IP("%s/%s" % (self.dst_ip, self.dst_mask))
-        n_hop = IP(self.next_hop)
-        
-        res={'src':False, 'src_port':False, 'dst':False,'dst_port':False, 'protocol':False, 'next_hop':False}
-
-        if IP(src_ip) in src:
-            res['src']=True
-
-
-        if IP(dst_ip) in dst:
-            res['dst']=True
-            
-        if IP(next_hop)==n_hop or self.next_hop:
-            res['next_hop']=True
-
-
-        if src_port==self.src_port or self.src_port==0:
-            res['src_port']=True
-
-        if dst_port==self.dst_port or self.dst_port==0:
-            res['dst_port']=True
-
-        if protocol==int(self.protocol) or int(self.protocol)==0:
-            res['protocol']=True
-            
-        res['direction']=self.direction
-        #print res
-        return res
-
+        if IP(src_ip) in self.src and IP(dst_ip) in self.dst and (IP(next_hop)==self.n_hop or self.next_hop=='0.0.0.0') and (src_port==self.src_port or self.src_port==0) and (dst_port==self.dst_port or self.dst_port==0) and (protocol==int(self.protocol) or int(self.protocol)==0):
+            return True, self.direction
+        else:
+            return False, self.direction
 
 class TrafficClass(object):
     def __init__(self, class_data, nodes):
@@ -88,6 +64,7 @@ class TrafficClass(object):
         self.store,\
         self.passthtough = class_data
         self.data=[]
+        
         for node in nodes:
             self.data.append(TrafficNode(node))
 
@@ -96,9 +73,8 @@ class TrafficClass(object):
         for node in self.data:
             res=node.check_class(src, src_port, dst, dst_port, protocol, next_hop)
             #print res
-            if res['src'] and res['dst'] and res['src_port'] and res['dst_port'] and res['protocol'] and res['next_hop']:
-                
-                return self.id, res['direction']
+            if res[0]:
+                return self.id, res[1]
         return False, False
 
 
@@ -221,6 +197,7 @@ class NetFlowPacket:
                     #print "after_trafic_check", time.clock()-a
                     #print res
                     if res[0] and match==False:
+                        print res[0]
                         if traffic_class.passthtough==False:
                             match=True
                             
@@ -273,12 +250,47 @@ def main ():
     	socks.append(sock)
     	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
         
+#TestSuite
+#===============================================================================
+#    f = file('data.dat', "rb")
+#    data=f.read()
+#    print len(data)
+#    addrport=('10.20.3.1', 9996)
+#    import sys
+#    while True:
+# #===============================================================================
+# #        (rlist, wlist, xlist) = select.select(socks, [], socks)
+# #        for sock in rlist:
+# #            (data, addrport) = sock.recvfrom(8192)
+# #            f.write(data)
+# #            f.flush()
+# #            f.close()
+# # 
+# #            #print "Received flow packet from %s:%d" % addrport
+# #            
+# #            global a
+# #            a=time.clock()
+# #            global trafficclasses_pool
+# #            trafficclasses_pool = RefreshClasses()
+# #            #print "after_refresh", time.clock()-a
+# #            sys.exit()
+# #            NetFlowPacket(data, addrport)
+# #===============================================================================
+#            #print "after_nfpacket", time.clock()-a
+#        NetFlowPacket(data, addrport)
+#        #time.sleep(0.1)
+#        
+#===============================================================================
 
     
     while True:
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
+            f.write(data)
+            f.flush()
+            f.close()
+ 
 		    #print "Received flow packet from %s:%d" % addrport
             
             global a
@@ -286,8 +298,11 @@ def main ():
             global trafficclasses_pool
             trafficclasses_pool = RefreshClasses()
             #print "after_refresh", time.clock()-a
+            sys.exit()
             NetFlowPacket(data, addrport)
-            #print "after_nfpacket", time.clock()-a
+
+
+        #time.sleep(0.1)
 
 pool = PooledDB(
      mincached=1,
@@ -303,7 +318,7 @@ pool = PooledDB(
 db_connection = pool.connection()
 cur = db_connection.cursor()
 import socket
-if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing']:
+if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing', 'medusa']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
