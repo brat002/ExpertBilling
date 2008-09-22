@@ -2942,7 +2942,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.transactionAction.setIcon(QtGui.QIcon("images/add.png"))
 
         self.transactionReportAction = QtGui.QAction(u'Журнал проводок',self)
-        self.transactionReportAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.transactionReportAction.setIcon(QtGui.QIcon("images/moneybook.png"))
 
         self.actionDisableSession = QtGui.QAction(u'Отключить на сервере доступа',self)
         self.actionDisableSession.setIcon(QtGui.QIcon("images/del.png"))
