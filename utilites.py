@@ -40,7 +40,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     access_type = access_type.lower()
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         
-        #Send PoD
+        print "Send PoD"
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
