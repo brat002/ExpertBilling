@@ -273,8 +273,7 @@ def main ():
     	socks.append(sock)
     	print "listening on [%s]:%d" % (addr[4][0], addr[4][1])
         
-    global trafficclasses_pool
-    trafficclasses_pool = RefreshClasses()
+
     
     while True:
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
@@ -284,7 +283,8 @@ def main ():
             
             global a
             a=time.clock()
-            
+            global trafficclasses_pool
+            trafficclasses_pool = RefreshClasses()
             #print "after_refresh", time.clock()-a
             NetFlowPacket(data, addrport)
             #print "after_nfpacket", time.clock()-a
