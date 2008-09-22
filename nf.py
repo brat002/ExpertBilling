@@ -269,7 +269,7 @@ def main ():
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
-		    print "Received flow packet from %s:%d" % addrport
+		    #print "Received flow packet from %s:%d" % addrport
             global trafficclasses_pool
             trafficclasses_pool = RefreshClasses()
             NetFlowPacket(data, addrport)
