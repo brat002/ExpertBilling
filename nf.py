@@ -298,7 +298,7 @@ def main ():
             global trafficclasses_pool
             trafficclasses_pool = RefreshClasses()
             #print "after_refresh", time.clock()-a
-            sys.exit()
+            #sys.exit()
             NetFlowPacket(data, addrport)
 
 
