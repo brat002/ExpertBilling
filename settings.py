@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 DATABASE_NAME='ebs6'
-DATABASE_HOST='10.10.1.1'
+DATABASE_HOST='localhost'
 DATABASE_USER='mikrobill'
 DATABASE_PASSWORD='1234'
 
