@@ -8,7 +8,7 @@ except:
     print "cannot inport mx"
 import settings
 import psycopg2
-from DBUtils.PooledDB import PooledDB
+#from DBUtils.PooledDB import PooledDB
 
 trafficclasses_pool = []
 
@@ -237,8 +237,31 @@ class NetFlowPacket:
             #print "after_insert", time.clock()-a
             
 
+#===============================================================================
+# pool = PooledDB(
+#     mincached=1,
+#     maxcached=5,
+#     blocking=True,
+#     creator=psycopg2,
+#     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+#                                                            settings.DATABASE_USER,
+#                                                            settings.DATABASE_HOST,
+#                                                            settings.DATABASE_PASSWORD)
+# )
+# db_connection = pool.connection()
+#===============================================================================
 
-    
+try:
+    db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
+                                                            settings.DATABASE_USER,
+                                                            settings.DATABASE_HOST,
+                                                            settings.DATABASE_PASSWORD))
+    cur = db_connection.cursor()
+except:
+   print "I am unable to connect to the database"
+   sys.exit()
+
+
 def main ():
     addrs = socket.getaddrinfo(settings.NF_HOST, settings.NF_PORT, socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
@@ -287,9 +310,9 @@ def main ():
 	    (rlist, wlist, xlist) = select.select(socks, [], socks)
 	    for sock in rlist:
 		    (data, addrport) = sock.recvfrom(8192)
-            f.write(data)
-            f.flush()
-            f.close()
+            #f.write(data)
+            #f.flush()
+            #f.close()
  
 		    #print "Received flow packet from %s:%d" % addrport
             
@@ -303,20 +326,10 @@ def main ():
 
 
         #time.sleep(0.1)
+    return
 
-pool = PooledDB(
-     mincached=1,
-     maxcached=5,
-     blocking=True,
-     creator=psycopg2,
-     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                            settings.DATABASE_USER,
-                                                            settings.DATABASE_HOST,
-                                                            settings.DATABASE_PASSWORD)
-)
 
-db_connection = pool.connection()
-cur = db_connection.cursor()
+
 import socket
 if socket.gethostname() not in ['dolphinik','sasha', 'kail','billing', 'medusa']:
     import sys
