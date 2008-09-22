@@ -6,17 +6,13 @@ Further Information might be available at:
 http://software.inl.fr/trac/trac.cgi/wiki/IPy
 """
 
-# $HeadURL: https://svn.inl.fr/inl-svn/src/tools/ipy/tags/IPy-0.55/IPy.py $
-# $Id: IPy.py 8947 2007-08-16 13:50:45Z haypo $
+# $HeadURL: https://svn.inl.fr/inl-svn/src/tools/ipy/trunk/IPy.py $
+# $Id: IPy.py 15332 2008-06-27 14:23:00Z haypo $
 
-__rcsid__ = '$Id: IPy.py 8947 2007-08-16 13:50:45Z haypo $'
-__version__ = '0.55'
+__rcsid__ = '$Id: IPy.py 15332 2008-06-27 14:23:00Z haypo $'
+__version__ = '0.62'
 
 import types
-
-# New in API 0.5: if true, it rejects uncommon net mask like "172.30.1.0/22".
-# Default is enable, ie. raise ValueError on such netmask.
-check_addr_prefixlen = 1
 
 # Definition of the Ranges for IPv4 IPs
 # this should include www.iana.org/assignments/ipv4-address-space
@@ -111,8 +107,6 @@ class IPint:
         See module documentation for more examples.
         """
 
-        global check_addr_prefixlen
-
         # Print no Prefixlen for /32 and /128
         self.NoPrefixForSingleIp = 1
 
@@ -160,13 +154,12 @@ class IPint:
                     raise ValueError, "last address should be larger than first"
                 size = last - self.ip
                 netbits = _count1Bits(size)
-                if check_addr_prefixlen:
-                    # make sure the broadcast is the same as the last ip
-                    # otherwise it will return /16 for something like:
-                    # 192.168.0.0-192.168.191.255
-                    if IP('%s/%s' % (ip, 32-netbits)).broadcast().int() != last:
-                        raise ValueError, \
-                            "the range %s is not on a network boundary." % data
+                # make sure the broadcast is the same as the last ip
+                # otherwise it will return /16 for something like:
+                # 192.168.0.0-192.168.191.255
+                if IP('%s/%s' % (ip, 32-netbits)).broadcast().int() != last:
+                    raise ValueError, \
+                        "the range %s is not on a network boundary." % data
             elif len(x) == 1:
                 x = data.split('/')
                 # if no prefix is given use defaults
@@ -330,6 +323,8 @@ class IPint:
         if self._ipversion == 4:
             return self.strFullsize(wantprefixlen)
         else:
+            if self.ip >> 32 == 0xffff:
+                return "::ffff:%s" % intToIp(self.ip & 0xffffffff, 4)
             # find the longest sequence of '0'
             hextets = [int(x, 16) for x in self.strFullsize(0).split(':')]
             # every element of followingzeros will contain the number of zeros
@@ -554,10 +549,14 @@ class IPint:
 
         if type(key) != types.IntType and type(key) != types.LongType:
             raise TypeError
-        if abs(key) >= self.len():
-            raise IndexError
         if key < 0:
-            key = self.len() - abs(key)
+            if abs(key) <= self.len():
+                key = self.len() - abs(key)
+            else:
+                raise IndexError
+        else:
+            if key >= self.len():
+                raise IndexError
 
         return self.ip + long(key)
 
@@ -616,7 +615,7 @@ class IPint:
 
         Used to implement str(IP)."""
 
-        return self.strFullsize()
+        return self.strCompressed()
 
 
     def __repr__(self):
@@ -758,7 +757,8 @@ class IP(IPint):
         ['128.in-addr.arpa.']
         >>> IP('128.0.0.0/7').reverseNames()
         ['128.in-addr.arpa.', '129.in-addr.arpa.']
-
+        >>> IP('::1:2').reverseNames()
+        ['2.0.0.0.1.ip6.arpa.']
         """
 
         if self._ipversion == 4:
@@ -787,7 +787,7 @@ class IP(IPint):
             s.reverse()
             s = '.'.join(s)
             first_nibble_index = int(32 - (self._prefixlen / 4)) * 2
-            return ["%s.ip6.int." % s[first_nibble_index:]]
+            return ["%s.ip6.arpa." % s[first_nibble_index:]]
         else:
             raise ValueError, "only IPv4 and IPv6 supported"
 
@@ -804,6 +804,8 @@ class IP(IPint):
         1.1.185.195.in-addr.arpa.
         >>> print IP('195.185.1.0/28').reverseName()
         0-15.1.185.195.in-addr.arpa.
+        >>> IP('::1:2').reverseName()
+        '2.0.0.0.1.ip6.arpa.'
         """
 
         if self._ipversion == 4:
@@ -837,7 +839,7 @@ class IP(IPint):
             s.reverse()
             s = '.'.join(s)
             first_nibble_index = int(32 - (self._prefixlen / 4)) * 2
-            return "%s%s.ip6.int." % (nibblepart, s[first_nibble_index:])
+            return "%s%s.ip6.arpa." % (nibblepart, s[first_nibble_index:])
         else:
             raise ValueError, "only IPv4 and IPv6 supported"
 
@@ -994,6 +996,8 @@ def _parseAddressIPv6(ipstr):
     # ['1','2'] with fill_pos=1 => ['1', '0', '0', '0', '0', '0', '0', '2']
     if fill_pos is not None:
         diff = 8 - len(items)
+        if diff <= 0:
+            raise ValueError("%r: Invalid IPv6 address: '::' is not needed" % ipstr)
         items = items[:fill_pos] + ['0']*diff + items[fill_pos:]
 
     # Here we have a list of 8 strings
@@ -1254,18 +1258,10 @@ def _checkNetmask(netmask, masklen):
 
 def _checkNetaddrWorksWithPrefixlen(net, prefixlen, version):
     """Check if a base addess of a network is compatible with a prefixlen"""
-    global check_addr_prefixlen
-    if check_addr_prefixlen:
-        if net & _prefixlenToNetmask(prefixlen, version) == net:
-            return 1
-        else:
-            return 0
-    else:
-        if prefixlen < 0:
-            return 0
-        if _ipVersionToLen(version) < prefixlen:
-            return 0
+    if net & _prefixlenToNetmask(prefixlen, version) == net:
         return 1
+    else:
+        return 0
 
 
 def _netmaskToPrefixlen(netmask):
