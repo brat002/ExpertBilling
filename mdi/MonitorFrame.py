@@ -29,7 +29,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.userCombobox = QtGui.QComboBox()
         self.userCombobox.setGeometry(QtCore.QRect(100,12,201,20))
         self.user_label = QtGui.QLabel(u" Пользователь  ")
-        self.allTimeCheckbox = QtGui.QCheckBox(u"Все сессии пользователя")
+        self.allTimeCheckbox = QtGui.QCheckBox(u"Включая завершённые")
         
         self.menubar = QtGui.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0,0,802,21))
@@ -90,23 +90,36 @@ class MonitorFrame(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = [u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Передано байт', u'Принято байт', u'Длительность', u'Статус']
+        columns = [u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Передано', u'Принято', u'Длительность, с', u'Статус']
         makeHeaders(columns, self.tableWidget)
         
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionResetSession.setText(QtGui.QApplication.translate("MainWindow", "Сбросить сессию", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGoToUser.setText(QtGui.QApplication.translate("MainWindow", "Перейти к пользователю", None, QtGui.QApplication.UnicodeUTF8))
 
-    def addrow(self, widget, value, x, y):
+    def addrow(self, widget, value, x, y, color=False):
         if value==None:
             value=''
-            
+
         if widget.item(x,y):
             widget.item(x,y).setText(unicode(value))
         else:
             item_type = QtGui.QTableWidgetItem()
             item_type.setText(unicode(value))
             widget.setItem(x, y, item_type)
+        if y==1:
+            item_type.setIcon(QtGui.QIcon("images/user.png"))
+            
+        if color:
+            if value=='ACTIVE':
+                item_type.setBackgroundColor(QtGui.QColor('green'))
+                item_type.setTextColor(QtGui.QColor('#ffffff'))
+            elif value=='ACK':
+                item_type.setBackgroundColor(QtGui.QColor('#4d4d4d'))
+                item_type.setTextColor(QtGui.QColor('#ffffff'))
+            elif value=='NACK':
+                item_type.setBackgroundColor(QtGui.QColor('#e8ff6a'))
+                item_type.setTextColor(QtGui.QColor('#000000'))
         
     def reset_action(self):
         self.connection.pod(session=unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).text()))
@@ -125,7 +138,7 @@ class MonitorFrame(QtGui.QMainWindow):
             sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
                   JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
-                  WHERE radius_activesession.session_status='ACTIVE'"""
+                  WHERE radius_activesession.session_status='ACTIVE' or radius_activesession.session_status='NACK'"""
         
         if user==None:
             user=unicode(self.userCombobox.currentText())                                      
@@ -138,6 +151,21 @@ class MonitorFrame(QtGui.QMainWindow):
 
         
         self.tableWidget.setRowCount(len(sessions))
+        def antiexcept(a):
+            try:
+                a=float(a)
+                #res = a/1024
+                if a>1024 and a<(1024*1000):
+                    return u"%.5s KB" % unicode(a/(1024))
+                elif a>=(1024*1000) and a<=(1024*1000*1000):
+                    return u"%.5s МB" % unicode(a/(1024*1000))
+                elif a>(1024*1000*1000):
+                    return u"%.5s Gb" % unicode(a/(1024*1000*1000))
+                elif res<1024:
+                    return u"%s b" % unicode(a) 
+            except Exception, e:
+                print e
+                return 0
         
         for session in sessions:
             self.addrow(self.tableWidget, session.sessionid, i, 0)
@@ -147,10 +175,10 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.nas_name, i, 4)
             self.addrow(self.tableWidget, session.framed_protocol, i, 5)
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
-            self.addrow(self.tableWidget, session.bytes_out, i, 7)
-            self.addrow(self.tableWidget, session.bytes_in, i, 8)
+            self.addrow(self.tableWidget, antiexcept(session.bytes_out), i, 7)
+            self.addrow(self.tableWidget, antiexcept(session.bytes_in), i, 8)
             self.addrow(self.tableWidget, session.session_time, i, 9)
-            self.addrow(self.tableWidget, session.session_status, i, 10)
+            self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
             #self.tableWidget.setRowHeight(i, 14)
             i+=1
         if self.firsttime and sessions:

@@ -23,7 +23,6 @@ class ClassEdit(QtGui.QDialog):
         self.color=''
 
 
-
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(160,150,161,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -152,165 +151,131 @@ class ClassNodeFrame(QtGui.QDialog):
            'tcp':6, 
            'udp':17
            }
-            
+
+    
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,247,328).size()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()).expandedTo(self.minimumSizeHint()))
+
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()))        
         
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(80,290,160,26))
+        self.buttonBox.setGeometry(QtCore.QRect(50,320,160,26))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        
         self.buttonBox.setObjectName("buttonBox")
 
-        self.layoutWidget = QtGui.QWidget(self)
-        self.layoutWidget.setGeometry(QtCore.QRect(10,10,181,265))
-        self.layoutWidget.setObjectName("layoutWidget")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setGeometry(QtCore.QRect(10,100,201,81))
+        self.groupBox.setObjectName("groupBox")
 
-        self.gridlayout = QtGui.QGridLayout(self.layoutWidget)
-        self.gridlayout.setObjectName("gridlayout")
+        self.src_port_edit = QtGui.QLineEdit(self.groupBox)
+        self.src_port_edit.setGeometry(QtCore.QRect(60,50,127,20))
+        self.src_port_edit.setObjectName("src_port_edit")
 
-        self.name_label = QtGui.QLabel(self.layoutWidget)
-        self.name_label.setObjectName("name_label")
-        self.gridlayout.addWidget(self.name_label,0,0,1,1)
+        self.src_port_label = QtGui.QLabel(self.groupBox)
+        self.src_port_label.setGeometry(QtCore.QRect(10,50,46,20))
+        self.src_port_label.setObjectName("src_port_label")
 
-        self.name_edit = QtGui.QLineEdit(self.layoutWidget)
-
-        font = QtGui.QFont()
-        font.setFamily("MS Reference Sans Serif")
-        self.name_edit.setFont(font)
-        self.name_edit.setObjectName("name_edit")
-        self.gridlayout.addWidget(self.name_edit,0,1,1,2)
-
-        self.group_label = QtGui.QLabel(self.layoutWidget)
-        self.group_label.setObjectName("group_label")
-        self.gridlayout.addWidget(self.group_label,1,0,1,1)
-
-        self.direction_edit = QtGui.QComboBox(self.layoutWidget)
-        self.direction_edit.setObjectName("direction_edit")
-        self.gridlayout.addWidget(self.direction_edit,1,1,1,2)
-
-        self.src_ip_label = QtGui.QLabel(self.layoutWidget)
+        self.src_ip_label = QtGui.QLabel(self.groupBox)
+        self.src_ip_label.setGeometry(QtCore.QRect(11,20,46,20))
         self.src_ip_label.setObjectName("src_ip_label")
-        self.gridlayout.addWidget(self.src_ip_label,2,0,1,1)
 
-        self.src_ip_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.src_ip_edit = QtGui.QLineEdit(self.groupBox)
+        self.src_ip_edit.setGeometry(QtCore.QRect(60,20,127,20))
 
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(8)
-        self.src_ip_edit.setFont(font)
-        self.src_ip_edit.setMaxLength(15)
-        self.src_ip_edit.setFrame(True)
+        self.src_ip_edit.setMaxLength(32767)
         self.src_ip_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.src_ip_edit.setObjectName("src_ip_edit")
-        self.gridlayout.addWidget(self.src_ip_edit,2,1,1,2)
 
-        self.src_mask_label = QtGui.QLabel(self.layoutWidget)
-        self.src_mask_label.setObjectName("src_mask_label")
-        self.gridlayout.addWidget(self.src_mask_label,3,0,1,1)
+        self.groupBox_2 = QtGui.QGroupBox(self)
+        self.groupBox_2.setGeometry(QtCore.QRect(10,190,201,80))
+        self.groupBox_2.setObjectName("groupBox_2")
 
-        self.src_mask_edit = QtGui.QLineEdit(self.layoutWidget)
-        self.src_mask_edit.setObjectName("src_mask_edit")
-        self.gridlayout.addWidget(self.src_mask_edit,3,1,1,2)
-
-        self.dst_ip_label = QtGui.QLabel(self.layoutWidget)
-        self.dst_ip_label.setObjectName("dst_ip_label")
-        self.gridlayout.addWidget(self.dst_ip_label,4,0,1,1)
-
-        self.dst_ip_edit = QtGui.QLineEdit(self.layoutWidget)
-        self.dst_ip_edit.setObjectName("dst_ip_edit")
-        self.gridlayout.addWidget(self.dst_ip_edit,4,1,1,2)
-
-        self.dst_mask_label = QtGui.QLabel(self.layoutWidget)
-        self.dst_mask_label.setObjectName("dst_mask_label")
-        self.gridlayout.addWidget(self.dst_mask_label,5,0,1,1)
-
-        self.dst_mask_edit = QtGui.QLineEdit(self.layoutWidget)
-        self.dst_mask_edit.setObjectName("dst_mask_edit")
-        self.gridlayout.addWidget(self.dst_mask_edit,5,1,1,2)
-
-        self.protocol_label = QtGui.QLabel(self.layoutWidget)
-        self.protocol_label.setObjectName("protocol_label")
-        self.gridlayout.addWidget(self.protocol_label,6,0,1,1)
-
-        self.protocol_edit = QtGui.QComboBox(self.layoutWidget)
-        self.protocol_edit.setObjectName("protocol_edit")
-        self.gridlayout.addWidget(self.protocol_edit,6,1,1,2)
-
-        self.src_port_label = QtGui.QLabel(self.layoutWidget)
-        self.src_port_label.setObjectName("src_port_label")
-        self.gridlayout.addWidget(self.src_port_label,7,0,1,1)
-
-        self.src_port_edit = QtGui.QLineEdit(self.layoutWidget)
-        self.src_port_edit.setObjectName("src_port_edit")
-        self.gridlayout.addWidget(self.src_port_edit,7,1,1,2)
-
-        self.dst_port_label = QtGui.QLabel(self.layoutWidget)
-        self.dst_port_label.setObjectName("dst_port_label")
-        self.gridlayout.addWidget(self.dst_port_label,8,0,1,1)
-
-        self.dst_port_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.dst_port_edit = QtGui.QLineEdit(self.groupBox_2)
+        self.dst_port_edit.setGeometry(QtCore.QRect(60,50,127,20))
         self.dst_port_edit.setObjectName("dst_port_edit")
-        self.gridlayout.addWidget(self.dst_port_edit,8,1,1,2)
-        
-        self.src_validator=QtGui.QIntValidator(self.src_port_edit)
-        self.src_port_edit.setValidator(self.src_validator)
-        
-        self.dst_validator=QtGui.QIntValidator(self.dst_port_edit)
-        self.dst_port_edit.setValidator(self.dst_validator)
 
+        self.dst_ip_label = QtGui.QLabel(self.groupBox_2)
+        self.dst_ip_label.setGeometry(QtCore.QRect(8,20,46,20))
+        self.dst_ip_label.setObjectName("dst_ip_label")
 
-        self.next_hop_label = QtGui.QLabel(self.layoutWidget)
+        self.dst_ip_edit = QtGui.QLineEdit(self.groupBox_2)
+        self.dst_ip_edit.setGeometry(QtCore.QRect(60,20,127,20))
+        self.dst_ip_edit.setObjectName("dst_ip_edit")
+
+        self.dst_port_label = QtGui.QLabel(self.groupBox_2)
+        self.dst_port_label.setGeometry(QtCore.QRect(8,50,46,20))
+        self.dst_port_label.setObjectName("dst_port_label")
+
+        self.name_edit = QtGui.QLineEdit(self)
+        self.name_edit.setGeometry(QtCore.QRect(70,10,131,20))
+        self.name_edit.setObjectName("name_edit")
+
+        self.next_hop_label = QtGui.QLabel(self)
+        self.next_hop_label.setGeometry(QtCore.QRect(18,280,46,20))
         self.next_hop_label.setObjectName("next_hop_label")
-        self.gridlayout.addWidget(self.next_hop_label,9,0,1,1)
 
-        self.next_hop_edit = QtGui.QLineEdit(self.layoutWidget)
+        self.next_hop_edit = QtGui.QLineEdit(self)
+        self.next_hop_edit.setGeometry(QtCore.QRect(70,280,127,20))
         self.next_hop_edit.setObjectName("next_hop_edit")
-        self.gridlayout.addWidget(self.next_hop_edit,9,1,1,2)
 
-        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.name_label = QtGui.QLabel(self)
+        self.name_label.setGeometry(QtCore.QRect(10,10,61,22))
+        self.name_label.setObjectName("name_label")
+
+        self.protocol_label = QtGui.QLabel(self)
+        self.protocol_label.setGeometry(QtCore.QRect(10,70,61,20))
+        self.protocol_label.setObjectName("protocol_label")
+
+        self.group_label = QtGui.QLabel(self)
+        self.group_label.setGeometry(QtCore.QRect(10,40,61,20))
+        self.group_label.setObjectName("group_label")
+
+        self.protocol_edit = QtGui.QComboBox(self)
+        self.protocol_edit.setGeometry(QtCore.QRect(70,70,131,20))
+        self.protocol_edit.setObjectName("protocol_edit")
+
+        self.direction_edit = QtGui.QComboBox(self)
+        self.direction_edit.setGeometry(QtCore.QRect(70,40,131,20))
+        self.direction_edit.setObjectName("group_edit")
+        
+        
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.retranslateUi()
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
+        self.setTabOrder(self.direction_edit,self.protocol_edit)
+        self.setTabOrder(self.protocol_edit,self.src_ip_edit)
+        self.setTabOrder(self.src_ip_edit,self.src_port_edit)
+        self.setTabOrder(self.src_port_edit,self.dst_ip_edit)
+        self.setTabOrder(self.dst_ip_edit,self.dst_port_edit)
+        self.setTabOrder(self.dst_port_edit,self.next_hop_edit)
+        self.setTabOrder(self.next_hop_edit,self.buttonBox)
         self.fixtures()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Трафик", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_edit.setText(QtGui.QApplication.translate("Dialog", "", None, QtGui.QApplication.UnicodeUTF8))
-        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Group", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src IP", None, QtGui.QApplication.UnicodeUTF8))
-        #self.src_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        #self.src_ip_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_edit.setValidator(self.ipValidator)
-        #self.src_ip_edit.setText('0.0.0.0')
-        self.src_mask_label.setText(QtGui.QApplication.translate("Dialog", "Src mask", None, QtGui.QApplication.UnicodeUTF8))
-        #self.src_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_mask_edit.setValidator(self.ipValidator)
-        #self.src_mask_edit.setText('0.0.0.0')
-        self.dst_ip_label.setText(QtGui.QApplication.translate("Dialog", "Dst-IP", None, QtGui.QApplication.UnicodeUTF8))
-        #self.dst_ip_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_ip_edit.setValidator(self.ipValidator)
-        #self.dst_ip_edit.setText('0.0.0.0')
-        self.dst_mask_label.setText(QtGui.QApplication.translate("Dialog", "Dst mask", None, QtGui.QApplication.UnicodeUTF8))
-        #self.dst_mask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_mask_edit.setValidator(self.ipValidator)
-        #self.dst_mask_edit.setText('0.0.0.0')
-        self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Protocol", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сеть источника", None, QtGui.QApplication.UnicodeUTF8))
         self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src net", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Сеть получателя", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_ip_label.setText(QtGui.QApplication.translate("Dialog", "Dst net", None, QtGui.QApplication.UnicodeUTF8))
         self.dst_port_label.setText(QtGui.QApplication.translate("Dialog", "Dst port", None, QtGui.QApplication.UnicodeUTF8))
         self.next_hop_label.setText(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
-        #self.next_hop_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000;   ", None, QtGui.QApplication.UnicodeUTF8))
-        self.next_hop_edit.setValidator(self.ipValidator)
-        #self.next_hop_edit.setText('0.0.0.0')
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Протокол", None, QtGui.QApplication.UnicodeUTF8))
+        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Группа", None, QtGui.QApplication.UnicodeUTF8))
         
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.src_ip_edit.setValidator(self.ipValidator)
+        self.dst_ip_edit.setValidator(self.ipValidator)
+        self.next_hop_edit.setValidator(self.ipValidator)
+        
         
         for protocol in self.protocols:
             #print protocol
@@ -324,19 +289,19 @@ class ClassNodeFrame(QtGui.QDialog):
             self.name_edit.setText(unicode(self.model.name))
             self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
             self.src_ip_edit.setText(unicode(self.model.src_ip))
-            self.src_mask_edit.setText(unicode(self.model.src_mask))
+            #self.src_mask_edit.setText(unicode(self.model.src_mask))
             self.src_port_edit.setText(unicode(self.model.src_port or 0))
             self.dst_ip_edit.setText(unicode(self.model.dst_ip))
-            self.dst_mask_edit.setText(unicode(self.model.dst_mask))
+            #self.dst_mask_edit.setText(unicode(self.model.dst_mask))
             self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
             #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
             self.next_hop_edit.setText(unicode(self.model.next_hop))
         else:
             default=u'0.0.0.0'
             self.src_ip_edit.setText(default)
-            self.src_mask_edit.setText(default)            
+            #self.src_mask_edit.setText(default)            
             self.dst_ip_edit.setText(default)
-            self.dst_mask_edit.setText(default)
+            #self.dst_mask_edit.setText(default)
             self.next_hop_edit.setText(default)                                       
 
 
@@ -364,18 +329,9 @@ class ClassNodeFrame(QtGui.QDialog):
         
         model.src_ip = src_ip
             
-        src_mask = unicode(self.src_mask_edit.text())
-        
-        if src_mask:
-            if self.ipValidator.validate(src_mask, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Src Mask."))
-                return
-        else:
-            src_mask= '0.0.0.0'
-            
-        model.src_mask = src_mask
+
         try:
-            IP("%s/%s" % (model.src_ip, model.src_mask))
+            IP("%s" % (model.src_ip))
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Неправильное сочетание SRC IP/Mask."))
@@ -391,17 +347,8 @@ class ClassNodeFrame(QtGui.QDialog):
             src_mask='0.0.0.0'
         model.dst_ip = dst_ip
         
-        dst_mask = unicode(self.dst_mask_edit.text())
-        if dst_mask:
-            if self.ipValidator.validate(dst_mask, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Dst Mask."))
-                return
-        else:
-            dst_mask='0.0.0.0'
-
-        model.dst_mask = dst_mask
         try:
-            IP("%s/%s" % (model.dst_ip, model.dst_mask))
+            IP("%s" % (model.dst_ip))
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Неправильное сочетание DST IP/Mask."))
             return
