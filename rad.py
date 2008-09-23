@@ -132,7 +132,8 @@ class HandleAuth(HandleBase):
 
     def handle(self):
         #TO-DO: Добавить проверку на balance_blocked
-
+        #for key,value in packetobject.items():
+        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
 
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0], multilink = self.multilink)
         #print 1, row
@@ -464,7 +465,7 @@ class RadiusAuth(BaseAuth):
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
-        
+        #print 1
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
