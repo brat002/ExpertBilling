@@ -8,6 +8,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
+from helpers import humanable_bytes
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -151,21 +152,7 @@ class MonitorFrame(QtGui.QMainWindow):
 
         
         self.tableWidget.setRowCount(len(sessions))
-        def antiexcept(a):
-            try:
-                a=float(a)
-                #res = a/1024
-                if a>1024 and a<(1024*1000):
-                    return u"%.5s KB" % unicode(a/(1024))
-                elif a>=(1024*1000) and a<=(1024*1000*1000):
-                    return u"%.5s МB" % unicode(a/(1024*1000))
-                elif a>(1024*1000*1000):
-                    return u"%.5s Gb" % unicode(a/(1024*1000*1000))
-                elif res<1024:
-                    return u"%s b" % unicode(a) 
-            except Exception, e:
-                print e
-                return 0
+
         
         for session in sessions:
             self.addrow(self.tableWidget, session.sessionid, i, 0)
@@ -175,8 +162,8 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.nas_name, i, 4)
             self.addrow(self.tableWidget, session.framed_protocol, i, 5)
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
-            self.addrow(self.tableWidget, antiexcept(session.bytes_out), i, 7)
-            self.addrow(self.tableWidget, antiexcept(session.bytes_in), i, 8)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 7)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 8)
             self.addrow(self.tableWidget, session.session_time, i, 9)
             self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
             #self.tableWidget.setRowHeight(i, 14)
