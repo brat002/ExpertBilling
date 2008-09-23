@@ -7,6 +7,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
+from helpers import humanable_bytes
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
@@ -768,7 +769,7 @@ class NetFlowReport(QtGui.QMainWindow):
                 
             self.addrow(flow.account_username, i, 1)
             
-            self.addrow("%s KB" % (float(flow.octets)/1024), i, 8)
+            self.addrow(humanable_bytes(flow.octets), i, 8)
             self.addrow(flow.class_name, i, 2, color=flow.class_color)
             #self.addrow(flow.direction, i, 4)
             

@@ -301,4 +301,22 @@ def transaction(account_id, type_id, approved, description, summ, bill):
     return sql 
 
     
-    
+def humanable_bytes(a):
+    """
+    Функция для удобного человеку предоставления обхёма трафика
+    """
+    try:
+        a=float(a)
+        #res = a/1024
+        if a>1024 and a<(1024*1000):
+            return u"%.5s KB" % unicode(a/(1024))
+        elif a>=(1024*1000) and a<=(1024*1000*1000):
+            return u"%.5s МB" % unicode(a/(1024*1000))
+        elif a>(1024*1000*1000):
+            return u"%.5s Gb" % unicode(a/(1024*1000*1000))
+        elif res<1024:
+            return u"%s b" % unicode(a) 
+    except Exception, e:
+        print e
+        return 0
+            
