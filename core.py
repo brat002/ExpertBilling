@@ -759,12 +759,11 @@ class NetFlowAggregate(Thread):
                 WHERE nf.fetched=False;
                 """)'''
             cur.execute("""SELECT nf.id, 
-                nf.nas_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
-                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.id, ba.nas_id,
+                nf.nas_id, nf.account_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
+                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.nas_id,
                 tariff.active, tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
                 FROM billservice_rawnetflowstream as nf
-                LEFT JOIN billservice_account as ba ON ba.vpn_ip_address=nf.src_addr OR ba.vpn_ip_address=nf.dst_addr OR ba.ipn_ip_address=nf.src_addr OR ba.ipn_ip_address=nf.dst_addr
-                LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=ba.id ORDER BY datetime DESC LIMIT 1))
+                LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id ORDER BY datetime DESC LIMIT 1))
                 LEFT JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
                 WHERE nf.fetched=False;""")
             raw_streams=cur.fetchall()
@@ -774,13 +773,13 @@ class NetFlowAggregate(Thread):
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
             """
             for stream in raw_streams:
-                nf_id, nas_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, account_id, account_nas_id, \
+                nf_id, nas_id, account_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, \
                      tarif_status, traffic_transmit_service, tarif_id, store = stream
 
                 tarif_mode=False
                 #print nf_id
 
-                if traffic_transmit_service and account_nas_id==nas_id:
+                if traffic_transmit_service:
 
                 #Выбираем временные интервалы из услуги по трафику
                     '''cur.execute(
@@ -805,7 +804,7 @@ class NetFlowAggregate(Thread):
                     tarif_mode=self.check_period(periods)
 
                     #tarif_mode=True
-                if account_id is not None and account_nas_id==nas_id and tarif_status==True:
+                if account_id is not None and tarif_status==True:
                     # Если пользователь
                     cur.execute(
                         """

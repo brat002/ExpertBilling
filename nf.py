@@ -190,10 +190,9 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
                 #print "after_flow_class", time.clock()-a
                 traffic_class=None
-                print flow
-		cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-		
-		print cur.fetchall()
+                #print flow.__dict__
+                cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+                #print cur.fetchall()
 	    
                 '''match = False
                 for traffic_class in trafficclasses_pool:
@@ -279,14 +278,14 @@ def main ():
         
 #TestSuite
 #===============================================================================
-    f = file('nf_data2.dat', "rb")
-    data=f.read()
-    print len(data)
-    addrport=('10.10.1.100', 9996)
+#    f = file('nf_data2.dat', "rb")
+#    data=f.read()
+#    print len(data)
+#    addrport=('10.10.1.100', 9996)
     #import sys
     #while True:
     #f = file('nf_data2.dat', "wb")
-    while True:
+#    while True:
 # #===============================================================================
 	#(rlist, wlist, xlist) = select.select(socks, [], socks)
 	#for sock in rlist:
@@ -303,8 +302,8 @@ def main ():
 	    #trafficclasses_pool = RefreshClasses()
 	    #print "after_refresh", time.clock()-a
 	    #
-	    NetFlowPacket(data, addrport)
-	    sys.exit()
+#	    NetFlowPacket(data, addrport)
+#	    sys.exit()
 # #===============================================================================
 #            #print "after_nfpacket", time.clock()-a
 #        NetFlowPacket(data, addrport)
@@ -313,26 +312,23 @@ def main ():
 #===============================================================================
 
     
-    #while True:
-	    #(rlist, wlist, xlist) = select.select(socks, [], socks)
-	    #for sock in rlist:
-		    #(data, addrport) = sock.recvfrom(8192)
-            ##f.write(data)
-            ##f.flush()
-            ##f.close()
+    while True:
+	    (rlist, wlist, xlist) = select.select(socks, [], socks)
+	    for sock in rlist:
+		    (data, addrport) = sock.recvfrom(8192)
+            #f.write(data)
+            #f.flush()
+            #f.close()
  
-		    ##print "Received flow packet from %s:%d" % addrport
+		    #print "Received flow packet from %s:%d" % addrport
             
             #global a
             #a=time.clock()
             #global trafficclasses_pool
             #trafficclasses_pool = RefreshClasses()
-            ##print "after_refresh", time.clock()-a
-            ##sys.exit()
-            #NetFlowPacket(data, addrport)
-
-
-        #time.sleep(0.1)
+            #print "after_refresh", time.clock()-a
+            #sys.exit()
+            NetFlowPacket(data, addrport)
     return
 
 

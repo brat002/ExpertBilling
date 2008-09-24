@@ -381,6 +381,22 @@ class ClassChild(QtGui.QMainWindow):
     def __init__(self, connection):
         super(ClassChild, self).__init__()
         self.connection = connection
+        self.protocols={'0':'-all-',
+           '37':'ddp',
+           '98':'encap', 
+           '3':'ggp', 
+           '47':'gre', 
+           '20':'hmp', 
+           '1':'icmp', 
+           '38':'idpr-cmtp', 
+           '2':'igmp', 
+           '4':'ipencap', 
+           '94':'ipip',  
+           '89':'ospf', 
+           '27':'rdp', 
+           '6':'tcp', 
+           '17':'udp'
+           }
         self.setObjectName("ClassMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,795,597).size()).expandedTo(self.minimumSizeHint()))
 
@@ -521,7 +537,7 @@ class ClassChild(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Направления трафика", None, QtGui.QApplication.UnicodeUTF8))
         
         self.tableWidget.clear()        
-        columns = ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        columns = ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Next Hop']
         makeHeaders(columns, self.tableWidget)
 
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
@@ -577,7 +593,7 @@ class ClassChild(QtGui.QMainWindow):
         
     def savePosition(self, direction):
         item_changed_id = self.treeWidget.currentItem().id
-        print "item_changed_id", item_changed_id 
+        #print "item_changed_id", item_changed_id 
         
         if direction == u"up":
             item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())+1).id
@@ -726,16 +742,14 @@ class ClassChild(QtGui.QMainWindow):
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
             self.addrow(node.direction, i,2)
-            self.addrow(node.protocol, i,3)
+            self.addrow(self.protocols[node.protocol], i,3)
             self.addrow(node.src_ip, i,4)
-            self.addrow(node.src_mask, i,5)
-            self.addrow(node.src_port, i,6)
+            self.addrow(node.src_port, i,5)
             
-            self.addrow(node.dst_ip, i,7)
-            self.addrow(node.dst_mask, i,8)
-            self.addrow(node.dst_port, i,9)
-            self.addrow(node.next_hop, i,10)
-            self.tableWidget.setRowHeight(i, 17)
+            self.addrow(node.dst_ip, i,6)
+            self.addrow(node.dst_port, i,7)
+            self.addrow(node.next_hop, i,8)
+            #self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)
 
             i+=1
