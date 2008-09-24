@@ -809,33 +809,35 @@ class NetFlowAggregate(Thread):
                     #tarif_mode=self.check_period(periods)
 
                     #tarif_mode=True
-                if account_id is not None and tarif_status==True:
-                    # Если пользователь
-                    cur.execute(
-                        """
-                        SELECT id
-                        FROM billservice_netflowstream
-                        WHERE (nas_id='%s') AND (account_id=%s) AND
-                        (tarif_id=%s) AND
-                        ('%s' - date_start < interval '00:01:00') AND
-                        direction='%s' AND
-                        src_addr='%s' AND 
-                        traffic_class_id='%s' AND 
-                        dst_addr='%s' AND 
-                        src_port='%s' AND 
-                        dst_port='%s' AND 
-                        protocol='%s' AND 
-                        checkouted=False AND 
-                        for_checkout='%s' ORDER BY id DESC LIMIT 1;
-                        """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode))
-                    row_for_update=cur.fetchone()
-                    if row_for_update:
-    #                    #print 'u'
-                        cur.execute(
-                            """
-                            UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
-                            """ % (octets, nf_id))
-                    else:
+#===============================================================================
+#                if account_id is not None and tarif_status==True:
+#                    # Если пользователь
+#                    cur.execute(
+#                        """
+#                        SELECT id
+#                        FROM billservice_netflowstream
+#                        WHERE (nas_id='%s') AND (account_id=%s) AND
+#                        (tarif_id=%s) AND
+#                        ('%s' - date_start < interval '00:01:00') AND
+#                        direction='%s' AND
+#                        src_addr='%s' AND 
+#                        traffic_class_id='%s' AND 
+#                        dst_addr='%s' AND 
+#                        src_port='%s' AND 
+#                        dst_port='%s' AND 
+#                        protocol='%s' AND 
+#                        checkouted=False AND 
+#                        for_checkout='%s' ORDER BY id DESC LIMIT 1;
+#                        """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode))
+#                    row_for_update=cur.fetchone()
+#                    if row_for_update:
+#    #                    #print 'u'
+#                        cur.execute(
+#                            """
+#                            UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
+#                            """ % (octets, nf_id))
+#===============================================================================
+                    if True:
     #                  print 'i'
                         cur.execute(
                             """
