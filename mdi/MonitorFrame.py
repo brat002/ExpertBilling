@@ -110,7 +110,9 @@ class MonitorFrame(QtGui.QMainWindow):
             widget.setItem(x, y, item_type)
         if y==1:
             item_type.setIcon(QtGui.QIcon("images/user.png"))
-            
+        
+        if y==0:
+            item_type.sessionid = value
         if color:
             if value=='ACTIVE':
                 item_type.setBackgroundColor(QtGui.QColor('green'))
@@ -123,7 +125,12 @@ class MonitorFrame(QtGui.QMainWindow):
                 item_type.setTextColor(QtGui.QColor('#000000'))
         
     def reset_action(self):
-        self.connection.pod(session=unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).text()))
+        sessionid = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).sessionid)
+        print sessionid
+        self.connection.pod(session=sessionid)
+        self.connection.create("UPDATE radius_activesession SET session_status='ACK' WHERE sessionid='%s'" % sessionid)
+        self.connection.commit()
+        self.fixtures()
         
     def fixtures(self, user=None):
         

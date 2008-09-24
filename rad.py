@@ -31,6 +31,8 @@ global numauth, numacct
 
 numauth=0
 numacct=0
+gigaword = 4294967296
+
 def get_accesstype(packetobject):
     """
     Returns access type name by which a user connects to the NAS
@@ -290,12 +292,12 @@ class HandleAcct(HandleBase):
 
     def get_bytes(self):
         if self.packetobject.has_key('Acct-Input-Gigawords') and self.packetobject['Acct-Input-Gigawords'][0]!=0:
-            bytes_in=self.packetobject['Acct-Input-Octets'][0]*self.packetobject['Acct-Input-Gigawords'][0]
+            bytes_in=self.packetobject['Acct-Input-Octets'][0]+(self.packetobject['Acct-Input-Gigawords'][0]*gigaword)
         else:
             bytes_in=self.packetobject['Acct-Input-Octets'][0]
 
         if self.packetobject.has_key('Acct-Output-Gigawords') and self.packetobject['Acct-Output-Gigawords'][0]!=0:
-            bytes_out=self.packetobject['Acct-Output-Octets'][0]*self.packetobject['Acct-Output-Gigawords'][0]
+            bytes_out=self.packetobject['Acct-Output-Octets'][0]+(self.packetobject['Acct-Output-Gigawords'][0]*gigaword)
         else:
             bytes_out=self.packetobject['Acct-Output-Octets'][0]
         return (bytes_in, bytes_out)
