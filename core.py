@@ -2041,7 +2041,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                     """ % session)
 
         row = cur.fetchone()
-        print "POD Result=", PoD(dict=dict,
+        return PoD(dict=dict,
             account_id=row['account_id'], 
             account_name=str(row['account_name']), 
             account_vpn_ip=row['vpn_ip_address'], 
