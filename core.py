@@ -378,7 +378,7 @@ class periodical_service_bill(Thread):
 
         while True:
             # Количество снятий в сутки
-            transaction_number=2
+            transaction_number=24
             n=(86400)/transaction_number
 
             #выбираем список тарифных планов у которых есть периодические услуги
