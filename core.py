@@ -760,7 +760,7 @@ class NetFlowAggregate(Thread):
                 """)'''
             cur.execute("""SELECT nf.id, 
                 nf.nas_id, nf.account_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
-                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, ba.nas_id,
+                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, 
                 tariff.active, tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
                 FROM billservice_rawnetflowstream as nf
                 LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id ORDER BY datetime DESC LIMIT 1))
