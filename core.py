@@ -351,7 +351,7 @@ class check_vpn_access(Thread):
             time.sleep(60)
 
     def run(self):
-        self.remove_sessions()
+        #self.remove_sessions()
         self.check_access()
 
 
@@ -744,6 +744,7 @@ class NetFlowAggregate(Thread):
         while True:
             #print 'next aggregation cycle'
             connection = pool.connection()
+            ts_pool={}
             cur = connection.cursor()
             '''cur.execute(
                 """
@@ -791,17 +792,21 @@ class NetFlowAggregate(Thread):
                         JOIN billservice_traffictransmitnodes as ttns ON ttns.id=ttntp.traffictransmitnodes_id
                         WHERE ttns.traffic_transmit_service_id=%s
                         """ % traffic_transmit_service)'''
+                    #Кэшируем данные проверки
+                    if not ts_pool.has_key(traffic_transmit_service):
+                        cur.execute("""SELECT tpn.time_start, tpn.length, tpn.repeat_after
+                            FROM billservice_timeperiodnode as tpn
+                            WHERE (id IN 
+                            (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
+                            (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id IN 
+                            (SELECT id FROM billservice_traffictransmitnodes WHERE traffic_transmit_service_id=%s))))""" % traffic_transmit_service)
+    
+                        periods=cur.fetchall()
+                        ts_pool[traffic_transmit_service] = self.check_period(periods)
+                   
+                    tarif_mode = ts_pool[traffic_transmit_service]
                     
-                    cur.execute("""SELECT tpn.time_start, tpn.length, tpn.repeat_after
-                        FROM billservice_timeperiodnode as tpn
-                        WHERE (id IN 
-                        (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-                        (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id IN 
-                        (SELECT id FROM billservice_traffictransmitnodes WHERE traffic_transmit_service_id=%s))))""" % traffic_transmit_service)
-
-                    periods=cur.fetchall()
-                    #Нужно ли списывать деньги за этот трафик
-                    tarif_mode=self.check_period(periods)
+                    #tarif_mode=self.check_period(periods)
 
                     #tarif_mode=True
                 if account_id is not None and tarif_status==True:
