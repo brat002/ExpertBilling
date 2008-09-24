@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 
-import socket, select, struct, datetime, time
+import socket, select, struct, datetime, time, sys
 from IPy import *
 try:
     import mx.DateTime
@@ -51,7 +51,7 @@ class TrafficNode(object):
         self.n_hop = IP(self.next_hop)
 
     def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol, next_hop):
-        if IP(src_ip) in self.src and IP(dst_ip) in self.dst and (IP(next_hop)==self.n_hop or self.next_hop=='0.0.0.0') and (src_port==self.src_port or self.src_port==0) and (dst_port==self.dst_port or self.dst_port==0) and (protocol==int(self.protocol) or int(self.protocol)==0):
+        if IP(src_ip) in self.src and IP(dst_ip) in self.dst and (IP(next_hop)==self.n_hop or self.next_hop=='0.0.0.0') and (src_port==self.src_port or self.src_port==0) and (dst_port==self.dst_port or self.dst_port==0) and (protocol==self.protocol or self.protocol==0):
             return True, self.direction
         else:
             return False, self.direction
@@ -190,8 +190,12 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
                 #print "after_flow_class", time.clock()-a
                 traffic_class=None
-                #print flow
-                match = False
+                print flow
+		cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+		
+		print cur.fetchall()
+	    
+                '''match = False
                 for traffic_class in trafficclasses_pool:
                     res=traffic_class.check(flow.src_addr, flow.src_port, flow.dst_addr, flow.dst_port, flow.protocol, flow.next_hop)
                     #print "after_trafic_check", time.clock()-a
@@ -224,16 +228,16 @@ class NetFlowPacket:
                         'dst_netmask_length' : flow.dst_netmask_length,
                         'fetched':False
                         }
-                        )
-
+                        )'''
+	    cur.connection.commit()
             #print flows
             #print flows
             #print "before_insert", time.clock()-a
-            cur.executemany("""
+            '''cur.executemany("""
                         INSERT INTO billservice_rawnetflowstream(nas_id, date_start, src_addr, dst_addr, traffic_class_id, direction, next_hop,in_index, out_index,packets, octets,src_port,dst_port,tcp_flags,protocol,tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched)
                         VALUES (%(nas_id)s,%(date_start)s,%(src_addr)s,%(dst_addr)s,%(traffic_class_id)s,%(direction)s,%(next_hop)s,%(in_index)s, %(out_index)s, %(packets)s, %(octets)s,%(src_port)s,%(dst_port)s,%(tcp_flags)s,%(protocol)s,%(tos)s, %(source_as)s, %(dst_as)s, %(src_netmask_length)s, %(dst_netmask_length)s, %(fetched)s);""" ,\
                         flows)
-            db_connection.commit()
+            db_connection.commit()'''
             #print "after_insert", time.clock()-a
             
 
@@ -257,8 +261,8 @@ try:
                                                             settings.DATABASE_HOST,
                                                             settings.DATABASE_PASSWORD))
     cur = db_connection.cursor()
-except:
-   print "I am unable to connect to the database"
+except Exeption, ex:
+   print "I am unable to connect to the database ", ex
    sys.exit()
 
 
@@ -275,29 +279,32 @@ def main ():
         
 #TestSuite
 #===============================================================================
-#    f = file('data.dat', "rb")
-#    data=f.read()
-#    print len(data)
-#    addrport=('10.20.3.1', 9996)
-#    import sys
-#    while True:
+    f = file('nf_data2.dat', "rb")
+    data=f.read()
+    print len(data)
+    addrport=('10.10.1.100', 9996)
+    #import sys
+    #while True:
+    #f = file('nf_data2.dat', "wb")
+    while True:
 # #===============================================================================
-# #        (rlist, wlist, xlist) = select.select(socks, [], socks)
-# #        for sock in rlist:
-# #            (data, addrport) = sock.recvfrom(8192)
-# #            f.write(data)
-# #            f.flush()
-# #            f.close()
-# # 
-# #            #print "Received flow packet from %s:%d" % addrport
-# #            
-# #            global a
-# #            a=time.clock()
-# #            global trafficclasses_pool
-# #            trafficclasses_pool = RefreshClasses()
-# #            #print "after_refresh", time.clock()-a
-# #            sys.exit()
-# #            NetFlowPacket(data, addrport)
+	#(rlist, wlist, xlist) = select.select(socks, [], socks)
+	#for sock in rlist:
+	    #(data, addrport) = sock.recvfrom(8192)
+	    #f.write(data)
+	    #f.flush()
+	    #f.close()
+ 
+	    #print "Received flow packet from %s:%d" % addrport
+	    
+	    #global a
+	    #a=time.clock()
+	    #global trafficclasses_pool
+	    #trafficclasses_pool = RefreshClasses()
+	    #print "after_refresh", time.clock()-a
+	    #
+	    NetFlowPacket(data, addrport)
+	    sys.exit()
 # #===============================================================================
 #            #print "after_nfpacket", time.clock()-a
 #        NetFlowPacket(data, addrport)
@@ -306,23 +313,23 @@ def main ():
 #===============================================================================
 
     
-    while True:
-	    (rlist, wlist, xlist) = select.select(socks, [], socks)
-	    for sock in rlist:
-		    (data, addrport) = sock.recvfrom(8192)
-            #f.write(data)
-            #f.flush()
-            #f.close()
+    #while True:
+	    #(rlist, wlist, xlist) = select.select(socks, [], socks)
+	    #for sock in rlist:
+		    #(data, addrport) = sock.recvfrom(8192)
+            ##f.write(data)
+            ##f.flush()
+            ##f.close()
  
-		    #print "Received flow packet from %s:%d" % addrport
+		    ##print "Received flow packet from %s:%d" % addrport
             
-            global a
-            a=time.clock()
-            global trafficclasses_pool
-            trafficclasses_pool = RefreshClasses()
-            #print "after_refresh", time.clock()-a
-            #sys.exit()
-            NetFlowPacket(data, addrport)
+            #global a
+            #a=time.clock()
+            #global trafficclasses_pool
+            #trafficclasses_pool = RefreshClasses()
+            ##print "after_refresh", time.clock()-a
+            ##sys.exit()
+            #NetFlowPacket(data, addrport)
 
 
         #time.sleep(0.1)
