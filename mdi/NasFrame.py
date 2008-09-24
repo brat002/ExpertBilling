@@ -297,9 +297,17 @@ class AddNasFrame(QtGui.QDialog):
         self.set_vpn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для VPN клиента", None, QtGui.QApplication.UnicodeUTF8))
         self.set_ipn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для IPN клиента", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.commands_tab), QtGui.QApplication.translate("Dialog", "Команды", None, QtGui.QApplication.UnicodeUTF8))
-
-
-
+        
+        #Whats is
+        self.pushButton.setWhatsThis(QtGui.QApplication.translate("Dialog", "Нажмите на эту кнопку чтобы проверить правильность введённых вами данных.", None, QtGui.QApplication.UnicodeUTF8))
+        self.ssh_name_lineEdit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Имя пользователя для доступа по SSH к серверу доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        self.ssh_password_lineEdit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пароль для доступа по SSH к серверу доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_name.setWhatsThis(QtGui.QApplication.translate("Dialog", "Имя сервера доступа для RADIUS авторизации.", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_ip.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP адрес сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_secret.setWhatsThis(QtGui.QApplication.translate("Dialog", "Секретная фраза для идентификации сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_comboBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Тип сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        self.pptp_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPTP подключения.", None, QtGui.QApplication.UnicodeUTF8))
+        self.pppoe_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPPOE подключения.", None, QtGui.QApplication.UnicodeUTF8))
     def testNAS(self):
         if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))

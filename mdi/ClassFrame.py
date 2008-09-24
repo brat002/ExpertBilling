@@ -325,7 +325,7 @@ class ClassNodeFrame(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src IP до конца."))
                 return
         else:
-            src_ip='0.0.0.0'
+            src_ip='0.0.0.0/0'
         
         model.src_ip = src_ip
             
@@ -344,7 +344,7 @@ class ClassNodeFrame(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность DST IP."))
                 return
         else:
-            src_mask='0.0.0.0'
+            src_mask='0.0.0.0/0'
         model.dst_ip = dst_ip
         
         try:
