@@ -837,17 +837,17 @@ class NetFlowAggregate(Thread):
 #                            UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
 #                            """ % (octets, nf_id))
 #===============================================================================
-                    if True:
-    #                  print 'i'
-                        cur.execute(
-                            """
-                            INSERT INTO billservice_netflowstream(
-                            nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                            dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                            VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
-                            '%s', '%s', '%s', '%s', '%s', '%s', '%s');
-                            """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
-                            )
+                if True:
+#                  print 'i'
+                    cur.execute(
+                        """
+                        INSERT INTO billservice_netflowstream(
+                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                        VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
+                        '%s', '%s', '%s', '%s', '%s', '%s', '%s');
+                        """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
+                        )
 
 
 
