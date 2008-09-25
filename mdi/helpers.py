@@ -5,7 +5,7 @@ from types import InstanceType, StringType, UnicodeType
 import Pyro.errors
 import datetime
 import os
-
+import time
 dateDelim = "."
 connectDBName = "exbillusers"
 tableHeight = 17
@@ -307,7 +307,7 @@ def humanable_bytes(a):
     """
     if a is not None:
         try:
-            a=int(a)
+            a=float(a)
             #res = a/1024
             if a>1024 and a<(1024*1000):
                 return u"%.5s KB" % unicode(a/(1024))
@@ -315,10 +315,39 @@ def humanable_bytes(a):
                 return u"%.5s МB" % unicode(a/(1024*1000))
             elif a>(1024*1000*1000):
                 return u"%.5s Gb" % unicode(a/(1024*1000*1000))
-            elif res<1024:
+            elif a<1024:
                 return u"%s b" % unicode(a) 
         except Exception, e:
             print e
     
     return 0
-            
+    
+class Worker(QtCore.QThread):
+    """
+    Timer Class
+    import time
+    def __init__(self, connection):
+        super(MonitorFrame, self).__init__()
+        self.thread = Worker()
+        self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.fixtures)
+        self.thread.go(interval=10)
+    """
+    def __init__(self, parent = None):
+        QtCore.QThread.__init__(self, parent)
+        self.exiting = False
+    
+    def __del__(self):
+    
+        self.exiting = True
+        self.wait()
+
+    def go(self, interval=60):
+        self.interval=interval
+        self.start()
+
+    def run(self):
+        
+        while True:
+            self.emit(QtCore.SIGNAL("refresh()"))
+            time.sleep(self.interval)
+                    

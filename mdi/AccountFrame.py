@@ -23,12 +23,12 @@ from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
 from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
-
+import time
 from Reports import TransactionsReport
 
 from helpers import tableFormat
-
 from helpers import transaction, makeHeaders
+from helpers import Worker
 
 class CashType(object):
     def __init__(self, name):
@@ -647,6 +647,7 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.periodical_services_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.periodicalServicesTabActivityActions)
         
         QtCore.QObject.connect(self.limites_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.limitTabActivityActions)
+        QtCore.QObject.connect(self.ipn_for_vpn, QtCore.SIGNAL("stateChanged(int)"), self.ipn_for_vpnActions)
 
         QtCore.QObject.connect(self.sp_name_edit, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.spChangedActions)
 #-----------------------        
@@ -806,7 +807,13 @@ class TarifFrame(QtGui.QDialog):
             self.reset_tarif_cost_edit.setDisabled(False)
             self.reset_traffic_edit.setDisabled(False)
             self.reset_time_checkbox.setDisabled(False)
-            
+
+    def ipn_for_vpnActions(self, value):
+        if self.model is not None:
+            if value==2 and self.connection.get("SELECT count(*) as accounts FROM billservice_account WHERE ipn_ip_address='0.0.0.0' and get_tarif(id)=%s" % self.model.id).accounts>0:
+                self.ipn_for_vpn.setChecked(0)
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Вы не можете выбрать эту опцию, так как не у всех у пользователей \nданного тарифного плана указан IPN IP адрес."))
+                 
     def addrow(self, widget, value, x, y, item_type=None):
         if value==None:
             value=''
@@ -1685,9 +1692,11 @@ class TarifFrame(QtGui.QDialog):
             access_parameters = Object()
             access_parameters.id=self.model.access_parameters_id
             access_parameters = self.connection.get(access_parameters.get("billservice_accessparameters"))
+            previous_ipn_for_vpn_state = access_parameters.ipn_for_vpn
         else:
             model=Object()
             access_parameters = Object()
+            previous_ipn_for_vpn_state = False
             
             if unicode(self.tarif_name_edit.text())=="":
                 QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
@@ -2192,7 +2201,9 @@ class TarifFrame(QtGui.QDialog):
             
             self.connection.create(model.save("billservice_tariff"))
             self.connection.commit()
-        
+            
+            if self.model is not None and not self.accountActions(previous_ipn_for_vpn_state, access_parameters.ipn_for_vpn):
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"При синхронизации пользователей на сервере доступа возникли проблемы.\nПроверьте правильность указания IPN IP и синхронизируйте пользователей вручную через контекстное меню.")
             #print True
             
         except Exception, e:
@@ -2203,13 +2214,27 @@ class TarifFrame(QtGui.QDialog):
             return
 
         QtGui.QDialog.accept(self)
-                    
+             
+    def accountActions(self, prev, now):
+
+        accounts = self.connection.sql("SELECT id FROM billservice_account WHERE get_tarif(id)=%s" % self.model.id)
+        x = [d.id for d in accounts]
+        if prev==False and now==True:
+            return self.connection.accountActions(x, "create")
+        elif prev==True and now==False:
+            return self.connection.accountActions(x, "delete")
+            
+                
+            
+            
 class AddAccountFrame(QtGui.QDialog):
-    def __init__(self, connection,ttype, model=None):
+    def __init__(self, connection,tarif_id, ttype, model=None, ipn_for_vpn=False):
         super(AddAccountFrame, self).__init__()
         self.model=model
         self.ttype = ttype
         self.connection = connection
+        self.ipn_for_vpn = ipn_for_vpn
+        self.tarif_id = tarif_id
 
         self.resize(QtCore.QSize(QtCore.QRect(0,0,340,435).size()).expandedTo(self.minimumSizeHint()))
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -2657,8 +2682,8 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IPN IP до конца."))
                     return
                 try:
-                    ipn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text()))
-                    if ipn_address_account.id != model.id:
+                    ipn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text())).id
+                    if ipn_address_account_id != model.id:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return  
@@ -2678,8 +2703,8 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите VPN IP до конца."))
                     return
                 try:
-                    vpn_address_account = self.connection.get("SELECT * FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text()))
-                    if vpn_address_account.id != model.id:
+                    vpn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text())).id
+                    if vpn_address_account_id != model.id:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return    
@@ -2713,8 +2738,8 @@ class AddAccountFrame(QtGui.QDialog):
 
             if unicode(self.ipn_mac_address_edit.text()) != ':::::':
                 try:
-                    ipn_mac_address_account = self.connection.get("SELECT * FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text()))
-                    if ipn_mac_address_account.id !=model.id :
+                    ipn_mac_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text())).id
+                    if ipn_mac_address_account_id !=model.id :
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
                         self.connection.rollback()
                         return
@@ -2741,10 +2766,20 @@ class AddAccountFrame(QtGui.QDialog):
             else:
                 
                 model.id=self.connection.create(model.save("billservice_account"))
+                #Создаём AccounTarif
+                #print 1111
+                accounttarif = Object()
+                accounttarif.account_id=model.id
+                accounttarif.tarif_id=self.tarif_id
+                accounttarif.datetime = datetime.datetime.now()
+                self.connection.create(accounttarif.save("billservice_accounttarif"))
+            self.connection.commit()
+            
             #print "model.ipn_mac_address", model.ipn_mac_address
             
             
-            if model.ipn_ip_address!="0.0.0.0":
+            #self.connection.commit()
+            if model.ipn_ip_address!="0.0.0.0" and self.ipn_for_vpn==True:
                 self.connection.accountActions(model.id, 'delete')
                 if self.connection.accountActions(model.id, 'create'):
                     #self.connection.commit()
@@ -2753,9 +2788,12 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
                     #self.connection.rollback()
                 #self.connection.commit()
-                
+            elif model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
+                #self.connection.rollback()
+                #return
             #self.connection.commit()
-            self.model=model
+            #self.model=model
         except Exception, e:
             print "!!!SAVE CREATE ERROR", e
             import sys, traceback
@@ -2868,6 +2906,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
         self.connection = connection
+        self.thread = Worker()
         self.setObjectName('AccountMDI')
         self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
@@ -3008,7 +3047,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         
         self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
-        
+        self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
 
         
         
@@ -3036,6 +3075,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.refresh()
         self.delNodeLocalAction()
         self.addNodeLocalAction()
+        self.thread.go(interval=60)
         
     def connectTree(self):
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
@@ -3136,20 +3176,18 @@ class AccountsMdiChild(QtGui.QMainWindow):
         tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
         self.connection.commit()
         #self.connection.flush()
-        child = AddAccountFrame(connection=self.connection, ttype=tarif_type)
+        id = self.getTarifId()
+        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+        WHERE tarif.id=%s""" % id).ipn_for_vpn
+        child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         #self.connection.commit()
         #child = AddAccountFrame(connection=self.connection)
-        id = self.getTarifId()
+        
         if child.exec_()==1 and id is not None:
-            accounttarif = Object()
-            accounttarif.account_id=child.model.id
-            accounttarif.tarif_id=id
-            accounttarif.datetime = datetime.datetime.now()
-            print self.connection.create(accounttarif.save("billservice_accounttarif"))
-            self.connection.commit()
             #time.sleep(5)
             #self.connection.flush()
-            self.refresh(k="zomgnewacc")
+            self.refresh()
 
     def makeTransation(self):
         id = self.getSelectedId()
@@ -3216,11 +3254,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
             print e
             return
         #print 'model', model
+
+        
+        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+        WHERE tarif.id=%s""" % self.getTarifId()).ipn_for_vpn
         tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
-        addf = AddAccountFrame(connection=self.connection,ttype=tarif_type, model=model)
+        addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         #addf.show()
         if addf.exec_()==1:
             self.connection.commit()
+            self.connection.iddelete("billservice_accountipnspeed", id)
             self.refresh()
 
     def addrow(self, value, x, y, color=None, enabled=True):
@@ -3366,7 +3410,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         if self.connection.accountActions(id, 'create'):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok."))
         else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
 
     def accountDelete(self):
         id=self.getSelectedId()

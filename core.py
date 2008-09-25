@@ -909,6 +909,7 @@ class NetFlowBill(Thread):
         else:
             return 0
 
+        #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
         '''self.cur.execute(
             """
             SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
@@ -924,11 +925,12 @@ class NetFlowBill(Thread):
             JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
             (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
             (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id))
-            WHERE ((ttsn.edge_start>='%s'/(1024*1024) AND ttsn.edge_end<='%s'/(1024*1024)) OR (ttsn.edge_start>='%s'/(1024*1024) AND ttsn.edge_end='0' ))
+            WHERE ((ttsn.edge_start>='%s' AND ttsn.edge_end<='%s') OR (ttsn.edge_start>='%s' AND ttsn.edge_end='0' ))
             AND (ttsn.traffic_transmit_service_id='%s') 
             AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
-            AND ttsn.%s;''' % (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d))
+            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d))
 
+        
         trafic_transmit_nodes=self.cur.fetchall()
         cost=0
         min_from_start=0
@@ -1065,7 +1067,7 @@ class NetFlowBill(Thread):
 
                         self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
 
-                    summ=(trafic_cost*octets)/(1024*1024)
+                    summ=(trafic_cost*octets)/(1024000)
 
                     if summ>0:
                         pays.add_summ(account_id, tarif_id, summ)
@@ -1398,7 +1400,7 @@ class settlement_period_service_dog(Thread):
                             self.cur.execute(
                                 """
                                 INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
-                                VALUES(%d,%d, %f*1024*1024, now());
+                                VALUES(%d,%d, %f*1024000, now());
                                 """ % (accounttarif_id, prepaid_traffic_id, size))                            
                     if u==True:
                         self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
@@ -1767,6 +1769,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         Thread.__init__(self)
         Pyro.core.ObjBase.__init__(self)
         self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(1)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         '''self.listconnection = pool.connection()
@@ -1812,43 +1815,47 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def accountActions(self, account_id, action, cur=None, connection=None):
 
-
-        cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
-                         account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
-                         nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
-                         nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
-                         nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
-                         FROM billservice_account as account
-                         JOIN nas_nas as nas ON nas.id = account.nas_id
-                         JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
-                         JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
-                         WHERE account.id=%d
-                         """ % account_id)
-
-        row = cur.fetchone()
-        #print action
-        if row==None:
-            return False
-
-        if row['ipn_ip_address']=="0.0.0.0":
-            return False
-
-        if action=='disable':
-            command = row['user_disable_action']
-        elif action=='enable':
-            command = row['user_enable_action']
-        elif action=='create':
-            command = row['user_add_action']
-        elif action =='delete':
-            #set_account_deleted(cur, account_id)
-            #self.iddelete("billservice_account", account_id)
-            command = row['user_delete_action']
-        #print command
-
-        sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
-                      account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
-                      account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
-                      nas_password=row['nas_password'], format_string=command)
+        if type(account_id) is not list:
+            account_id=[account_id]
+            
+        for account in account_id:
+            cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
+                             account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
+                             nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
+                             nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
+                             nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
+                             FROM billservice_account as account
+                             JOIN nas_nas as nas ON nas.id = account.nas_id
+                             JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
+                             JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
+                             WHERE account.id=%d
+                             """ % account)
+    
+            row = cur.fetchone()
+            print "actions", row
+            #print action
+            if row==None:
+                return False
+    
+            if row['ipn_ip_address']=="0.0.0.0":
+                return False
+    
+            if action=='disable':
+                command = row['user_disable_action']
+            elif action=='enable':
+                command = row['user_enable_action']
+            elif action=='create':
+                command = row['user_add_action']
+            elif action =='delete':
+                #set_account_deleted(cur, account_id)
+                #self.iddelete("billservice_account", account_id)
+                command = row['user_delete_action']
+            #print command
+    
+            sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
+                          account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
+                          account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                          nas_password=row['nas_password'], format_string=command)
 
         return sended
 

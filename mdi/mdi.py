@@ -85,13 +85,19 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def newFile(self):
         self.workspace.windowList()
+        
+
         child =  AccountsMdiChild(connection=connection, parent=self)
+        #child.setIcon( QPixmap("images/icon.ico") )
+        #child.
+
         
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
                 return
         self.workspace.addWindow(child)
+        
         child.show()
 
     @connlogin
@@ -497,6 +503,7 @@ if __name__ == "__main__":
         mainwindow = MainWindow()
         mainwindow.show()
         #app.setStyle("cleanlooks")
+        mainwindow.setWindowIcon(QtGui.QIcon("images/icon.ico"))
         app.setStyleSheet(open("./style.qss","r").read())
         sys.exit(app.exec_())
         connection.commit()
