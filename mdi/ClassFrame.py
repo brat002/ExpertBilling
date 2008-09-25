@@ -742,7 +742,7 @@ class ClassChild(QtGui.QMainWindow):
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
             self.addrow(node.direction, i,2)
-            self.addrow(self.protocols[node.protocol], i,3)
+            self.addrow(node.protocol, i,3)
             self.addrow(node.src_ip, i,4)
             self.addrow(node.src_port, i,5)
             

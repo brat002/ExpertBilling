@@ -22,7 +22,7 @@ actions = {
                'enable':'/ip firewall address-list set [find comment=$user_id] disabled=no',
                'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
                'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
-               'ipn_speed': '/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit comment=$username-$user_id  target-addresses=$account_ipn_ip/32',
+               'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id',
@@ -30,7 +30,7 @@ actions = {
                'enable':'/ip firewall address-list set [find comment=$user_id] disabled=no',
                'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
                'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
-               'ipn_speed': '/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit comment=$username-$user_id  target-addresses=$account_ipn_ip/32',
+               'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
 'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id',

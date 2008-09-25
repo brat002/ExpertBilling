@@ -9,11 +9,16 @@ from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
 from helpers import humanable_bytes
+from helpers import Worker
+import time
+
+
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
         super(MonitorFrame, self).__init__()
         self.connection = connection
+        self.thread = Worker()
         self.selected_user=None
         self.setObjectName("MonitorMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
@@ -76,6 +81,8 @@ class MonitorFrame(QtGui.QMainWindow):
 
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)
         QtCore.QObject.connect(self.actionResetSession, QtCore.SIGNAL("triggered()"), self.reset_action)
+        self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.fixtures)
+
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         QtCore.QObject.connect(self.userCombobox,   QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.fixtures)
@@ -85,6 +92,7 @@ class MonitorFrame(QtGui.QMainWindow):
         HeaderUtil.nullifySaved("monitor_frame_header")
         self.refresh_users()
         self.firsttime = True
+        self.thread.go(interval=10)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
