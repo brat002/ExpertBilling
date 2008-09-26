@@ -158,26 +158,51 @@ class FlowCache:
             #flow.stime = datetime.datetime.now()
             flow.stime = time.time()
             dcacheLock.acquire()
-            dcache[key] = flow
-            dcacheLock.release()
+            try:
+                dcache[key] = flow
+            except Exception, ex:
+                print "create rec ex: ", ex
+            finally:
+                dcacheLock.release()
         else:
             dcacheLock.acquire()
-            dflow= dcache[key]
-            dflow.octets  += flow.octets
-            dflow.packets += flow.packets
-            dflow.finish = flow.finish
-            #if (dflow.stime + tdMinute) <=  datetime.datetime.now():
-            if (dflow.stime + aggrTime + (flow.octets % 10) +  (1 / (flow.src_port + 1)) ) <= time.time():
-                flow = dcache.pop(key)
-                #time.sleep (0.003)
-                flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-            dcacheLock.release()
+            try:
+                dflow= dcache[key]
+                dflow.octets  += flow.octets
+                dflow.packets += flow.packets
+                dflow.finish = flow.finish
+                #if (dflow.stime + tdMinute) <=  datetime.datetime.now():
+                if (dflow.stime + aggrTime + (flow.octets % 10) +  (1 / (flow.src_port + 1)) ) <= time.time():
+                    flow = dcache.pop(key)
+                    #time.sleep (0.003)
+                    flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+            except Exception, ex:
+                print "append rec ex: ", ex
+            finally:
+                dcacheLock.release()
             
 def monitorCache():
     
     while True:
+        popList = []
         for k, v in dcache.items():
             #if (v.stime + tdMinute) <  datetime.datetime.now():
+            '''if (v.stime + aggrTime + 11) <  time.time():
+                popList.append(k)
+            try:
+                dcacheLock.acquire()                
+                for dkey in popList:
+                    try:
+                        flow = dcache.pop(dkey)
+                    except Exception, ex:
+                        print "monitor pop ", ex 
+                    else:
+                        flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+            except Exception, ex:
+                print "monitor exception ", ex
+            finally:
+                    dcacheLock.release()'''
+
             if (v.stime + aggrTime + 11) <  time.time():
                 try:
                     dcacheLock.acquire()
