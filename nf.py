@@ -236,37 +236,37 @@ def main ():
     
     #TestSuite
     #===============================================================================
-    f = file('nf_data2.dat', "rb")
-    packets = f.read()
-    plist = packets.split('======')
-    addrport=('10.10.1.100', 9996)
-    plist.pop()
+    #f = file('nf_data2.dat', "rb")
+    #packets = f.read()
+    #plist = packets.split('======')
+    #addrport=('10.10.1.100', 9996)
+    #plist.pop()
      
     #a=time.clock()
-    ff = 0
+    #ff = 0
     i = 0
-    for i in range(1000):
-        for data in plist:
+    #for i in range(1000):
+        #for data in plist:
 
-    #while True:
-        #(rlist, wlist, xlist) = select.select(socks, [], socks)
-        #for sock in rlist:
-            #(data, addrport) = sock.recvfrom(8192)            
+    while True:
+        (rlist, wlist, xlist) = select.select(socks, [], socks)
+        for sock in rlist:
+            (data, addrport) = sock.recvfrom(8192)            
 
-            #if (i % 50) == 0:
-            if ff == 100:
-                ff = 0
-                print i
-                print "len dcache ", len(dcache)
-                print "time", time.clock()
+        if (i % 50) == 0:
+            #if ff == 100:
+                #ff = 0
+                #print i
+                #print "len dcache ", len(dcache)
+                #print "time", time.clock()
                 #print nascache
                 cur.connection.commit()
-            try:
-                NetFlowPacket(data, addrport, tFC)
-            except Exception, ex:
-                print "NFP exception %d: %s" % (i, ex)
-            ff += 1
-            #i += 1
+        try:
+            NetFlowPacket(data, addrport, tFC)
+        except Exception, ex:
+            print "NFP exception %d: %s" % (i, ex)
+        #ff += 1
+        i += 1
         #sys.exit()
     cur.connection.commit()
     #print "after_nfpacket", time.clock()-a
