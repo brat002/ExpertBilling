@@ -741,11 +741,13 @@ class NetFlowAggregate(Thread):
         return False
 
     def run(self):
+        connection = pool.connection()
+        cur = connection.cursor()
         while True:
             #print 'next aggregation cycle'
-            connection = pool.connection()
+            
             ts_pool={}
-            cur = connection.cursor()
+            
             '''cur.execute(
                 """
                 SELECT nf.id, 
@@ -864,9 +866,10 @@ class NetFlowAggregate(Thread):
 
                 connection.commit()
             del raw_streams  
-            cur.close()
-            connection.close()
+
             time.sleep(60)
+        cur.close()
+        connection.close()
 
 
 class NetFlowBill(Thread):
