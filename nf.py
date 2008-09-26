@@ -140,7 +140,7 @@ class FlowCache:
         dcache = {}
         nascache = {}
         #print "gc threshold", gc.get_threshold()
-        gc.set_threshold(700, 1000, 100)
+        #gc.set_threshold(700, 1000, 100)
         self.cMonitor = threading.Timer(sleepTime, monitorCache)
         self.cMonitor.start()
 
