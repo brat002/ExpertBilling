@@ -94,7 +94,8 @@ class AddTimePeriod(QtGui.QDialog):
         self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "WEEK", None, QtGui.QApplication.UnicodeUTF8))
         self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "MONTH", None, QtGui.QApplication.UnicodeUTF8))
         self.repeat_edit.addItem(QtGui.QApplication.translate("Dialog", "YEAR", None, QtGui.QApplication.UnicodeUTF8))
-
+        #Whats this
+        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название периода.", None, QtGui.QApplication.UnicodeUTF8))
 
     def accept(self):
         """
@@ -205,11 +206,11 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
         self.addPeriodAction = QtGui.QAction(self)
-        self.addPeriodAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.addPeriodAction.setIcon(QtGui.QIcon("images/folder_add.png"))
         self.addPeriodAction.setObjectName("addPeriodAction")
 
         self.delPeriodAction = QtGui.QAction(self)
-        self.delPeriodAction.setIcon(QtGui.QIcon("images/del.png"))
+        self.delPeriodAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         self.delPeriodAction.setObjectName("delPeriodAction")
 
         self.addConsAction = QtGui.QAction(self)
@@ -253,7 +254,8 @@ class TimePeriodChild(QtGui.QMainWindow):
             self.refreshTable()
             self.tableWidget = tableFormat(self.tableWidget)
         except Exception, ex:
-            print "Error when setting first element active: ", ex
+            #print "Error when setting first element active: ", ex
+            pass
         #self.treeWidget.setCurrentItem(self.treeWidget.headerItem().child(1))
         #print self.treeWidget.headerItem().childCount()
         #print self.treeWidget.currentItem()

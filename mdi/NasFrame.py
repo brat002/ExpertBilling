@@ -308,6 +308,7 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_comboBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Тип сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
         self.pptp_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPTP подключения.", None, QtGui.QApplication.UnicodeUTF8))
         self.pppoe_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPPOE подключения.", None, QtGui.QApplication.UnicodeUTF8))
+        self.multilink_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Разрешить подключаться по PPTP/PPPOE к серверу доступа нескольким пользователям с одним логином.\nПри активации данной функции логин пользователя становиться не привязанным к VPN IP при PPTP подключении и MAC адресу при PPPOE подключении. Внимание, функция может не поддериваться вашим сервером доступа.", None, QtGui.QApplication.UnicodeUTF8))
     def testNAS(self):
         if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
