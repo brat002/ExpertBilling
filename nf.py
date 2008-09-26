@@ -206,7 +206,7 @@ try:
                                                                                         settings.DATABASE_HOST,
                                                                                         settings.DATABASE_PASSWORD))
     cur = db_connection.cursor()
-except Exeption, ex:
+except Exception, ex:
     print "Unable to connect to the database ", ex
     sys.exit()
 
