@@ -20,77 +20,6 @@ nascache = {}
 tdMinute = datetime.timedelta(seconds=60)
 sleepTime = 300.0
 
-def RefreshClasses():
-    pool = []
-    cur.execute("SELECT id, name, weight, store, passthrough FROM nas_trafficclass ORDER BY weight, passthrough;")
-    traffic_classes=cur.fetchall()
-    for traffic_class in traffic_classes:
-        #ORDER BY tn.direction DESC - для того, чтобы сравнение начиналось с нод, описывающих транзитное направление.
-        cur.execute(
-            """
-            SELECT tn.name, tn.direction, tn.protocol, tn.src_ip, tn.src_mask, tn.src_port, tn.dst_ip, tn.dst_mask, tn.dst_port,
-            tn.next_hop
-            FROM nas_trafficnode as tn
-            WHERE tn.traffic_class_id=%s ORDER BY tn.direction DESC;
-            """ % traffic_class[0]
-            )
-        traffic_nodes=cur.fetchall()
-        pool.append(TrafficClass(traffic_class, nodes=traffic_nodes))
-
-    return pool
-
-class TrafficNode(object):
-    """
-    В src или dst не должны попадать строки статистики, которые описаны как транзитные
-    """
-    def __init__(self, node_data):
-        self.name, \
-        self.direction, \
-        self.protocol, \
-        self.src_ip, \
-        self.src_mask, \
-        self.src_port, \
-        self.dst_ip, \
-        self.dst_mask, \
-        self.dst_port, \
-        self.next_hop = node_data
-        #self.src = IP("%s/%s" % (self.src_ip, self.src_mask))
-        #self.dst = IP("%s/%s" % (self.dst_ip, self.dst_mask))
-        self.src = IP(self.src_ip)
-        self.dst = IP(self.dst_ip)
-        self.n_hop = IP(self.next_hop)
-
-    def check_class(self, src_ip, src_port, dst_ip, dst_port, protocol, next_hop):
-        if IP(src_ip) in self.src and IP(dst_ip) in self.dst and (IP(next_hop)==self.n_hop or self.next_hop=='0.0.0.0') and (src_port==self.src_port or self.src_port==0) and (dst_port==self.dst_port or self.dst_port==0) and (protocol==self.protocol or self.protocol==0):
-            return True, self.direction
-        else:
-            return False, self.direction
-
-class TrafficClass(object):
-    def __init__(self, class_data, nodes):
-        self.id, \
-        self.name, \
-        self.weight, \
-        self.store,\
-        self.passthtough = class_data
-        self.data=[]
-
-        for node in nodes:
-            self.data.append(TrafficNode(node))
-
-    def check(self, src, src_port, dst, dst_port, protocol, next_hop):
-        #print src, src_port, dst, dst_port, protocol, next_hop
-        for node in self.data:
-            res=node.check_class(src, src_port, dst, dst_port, protocol, next_hop)
-            #print res
-            if res[0]:
-                return self.id, res[1]
-        return False, False
-
-
-
-
-
 class Flow(object):
     # Virtual base class
     LENGTH = 0
@@ -169,12 +98,7 @@ class NetFlowPacket:
         self.fc = flowCache
         if len(data) < 16:
             raise ValueError, "Short packet"
-        '''nas_id = None
-	for ip, nid in nascache:
-	    #print ip, addrport[0]
-	    if ip == addrport[0]:
-		nas_id = nid
-		break'''
+
 
         nas_id = nascache.get(addrport[0])
         if not nas_id:
@@ -335,7 +259,7 @@ def main ():
         i += 1
         #sys.exit()
     cur.connection.commit()
-    print "after_nfpacket", time.clock()-a
+    #print "after_nfpacket", time.clock()-a
 
     return
 

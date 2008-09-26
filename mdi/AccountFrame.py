@@ -2907,6 +2907,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.parent = parent
         self.connection = connection
         self.thread = Worker()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setObjectName('AccountMDI')
         self.selected_account = selected_account 
         self.setWindowTitle(u"Пользователи")
@@ -3460,5 +3461,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.delTarifAction.setDisabled(False)
             
 
-
+    def closeEvent(self, event):
+        """
+        Terminate thread
+        """
+        self.thread.terminate()
+        event.accept()
 #---------------------------

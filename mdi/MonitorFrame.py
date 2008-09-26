@@ -19,6 +19,7 @@ class MonitorFrame(QtGui.QMainWindow):
         super(MonitorFrame, self).__init__()
         self.connection = connection
         self.thread = Worker()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.selected_user=None
         self.setObjectName("MonitorMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1102,593).size()).expandedTo(self.minimumSizeHint()))
@@ -106,6 +107,13 @@ class MonitorFrame(QtGui.QMainWindow):
         self.actionResetSession.setText(QtGui.QApplication.translate("MainWindow", "Сбросить сессию", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGoToUser.setText(QtGui.QApplication.translate("MainWindow", "Перейти к пользователю", None, QtGui.QApplication.UnicodeUTF8))
 
+    def closeEvent(self, event):
+        """
+        Terminate thread
+        """
+        self.thread.terminate()
+        event.accept()
+            
     def addrow(self, widget, value, x, y, color=False):
         if value==None:
             value=''

@@ -100,6 +100,7 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
 
+
     @connlogin
     def open(self):
         child = NasMdiChild(connection=connection)

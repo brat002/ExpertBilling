@@ -81,7 +81,10 @@ class ClassEdit(QtGui.QDialog):
         self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить всю статистику", None, QtGui.QApplication.UnicodeUTF8))
         self.passthrough_checkBox.setText(QtGui.QApplication.translate("Dialog", "Пометить и продолжить", None, QtGui.QApplication.UnicodeUTF8))
         self.color_label.setText(QtGui.QApplication.translate("Dialog", "Цвет направления", None, QtGui.QApplication.UnicodeUTF8))
-    
+        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название группы направлений.", None, QtGui.QApplication.UnicodeUTF8))
+        self.store_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю сырую статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
+        self.passthrough_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого направления статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении лимитов.", None, QtGui.QApplication.UnicodeUTF8))
+        self.color_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Цвет направления.", None, QtGui.QApplication.UnicodeUTF8))
     def setColor(self):    
         color = QtGui.QColorDialog.getColor(QtCore.Qt.green, self)
         if color.isValid(): 
@@ -271,7 +274,15 @@ class ClassNodeFrame(QtGui.QDialog):
         
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
-        
+        #Help Hints
+        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название поднаправления.", None, QtGui.QApplication.UnicodeUTF8))
+        self.direction_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Описываемое направление трафика (Вх/Исх).", None, QtGui.QApplication.UnicodeUTF8))
+        self.protocol_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Выберите протокол из списка.", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_ip_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP/Сеть источника трафика.\n Примеры:\n192.168.1.0/24 - сеть 192.168.1.1-192.168.1.254\n192.168.1.1/32 - один IP адрес\n0.0.0.0/0 все IP адреса", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_ip_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP/Сеть получателя трафика.\n Примеры:\n192.168.1.0/24 - сеть 192.168.1.1-192.168.1.254\n192.168.1.1/32 - один IP адрес\n0.0.0.0/0 все IP адреса", None, QtGui.QApplication.UnicodeUTF8))
+        self.dst_port_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Порт получателя. Имеет смысл указывать только, если протокол TCP/UDP", None, QtGui.QApplication.UnicodeUTF8))        
+        self.src_port_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Порт источника. Имеет смысл указывать только, если протокол TCP/UDP", None, QtGui.QApplication.UnicodeUTF8))
+        self.next_hop_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
         self.src_ip_edit.setValidator(self.ipValidator)
         self.dst_ip_edit.setValidator(self.ipValidator)
         self.next_hop_edit.setValidator(self.ipValidator)
@@ -381,6 +392,7 @@ class ClassChild(QtGui.QMainWindow):
     def __init__(self, connection):
         super(ClassChild, self).__init__()
         self.connection = connection
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.protocols={'0':'-all-',
            '37':'ddp',
            '98':'encap', 
@@ -445,11 +457,11 @@ class ClassChild(QtGui.QMainWindow):
         self.toolBar.setFloatable(False)
 
         self.addClassAction = QtGui.QAction(self)
-        self.addClassAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.addClassAction.setIcon(QtGui.QIcon("images/folder_add.png"))
         self.addClassAction.setObjectName("addClassAction")
 
         self.delClassAction = QtGui.QAction(self)
-        self.delClassAction.setIcon(QtGui.QIcon("images/del.png"))
+        self.delClassAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         self.delClassAction.setObjectName("delClassAction")
         self.editClassAction = QtGui.QAction(self)
         self.editClassAction.setIcon(QtGui.QIcon("images/open.png"))
@@ -547,7 +559,8 @@ class ClassChild(QtGui.QMainWindow):
         self.delClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class Node", None, QtGui.QApplication.UnicodeUTF8))
         self.editClassAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Class", None, QtGui.QApplication.UnicodeUTF8))
         self.editClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Node", None, QtGui.QApplication.UnicodeUTF8))
-
+        
+        
 
     def addClass(self):
         #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),Dialog.accept)
