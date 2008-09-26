@@ -16,9 +16,11 @@ import gc
 trafficclasses_pool = []
 dcache   = {}
 nascache = {}
+dcacheLock = threading.Lock()
 #nascache = []
-tdMinute = datetime.timedelta(seconds=60)
-sleepTime = 300.0
+#tdMinute = datetime.timedelta(seconds=60)
+sleepTime = 291.0
+aggrTime = 120.0
 
 class Flow(object):
     # Virtual base class
@@ -155,24 +157,32 @@ class FlowCache:
             flow.cur = cur.connection.cursor()
             #flow.stime = datetime.datetime.now()
             flow.stime = time.time()
+            dcacheLock.acquire()
             dcache[key] = flow
+            dcacheLock.release()
         else:
+            dcacheLock.acquire()
             dflow= dcache[key]
             dflow.octets  += flow.octets
             dflow.packets += flow.packets
             dflow.finish = flow.finish
             #if (dflow.stime + tdMinute) <=  datetime.datetime.now():
-            if (dflow.stime + 60 + (flow.octets % 10) +  (1 / flow.src_port) ) <= time.time():
+            if (dflow.stime + aggrTime + (flow.octets % 10) +  (1 / (flow.src_port + 1)) ) <= time.time():
                 flow = dcache.pop(key)
+                #time.sleep (0.003)
                 flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-
+            dcacheLock.release()
+            
 def monitorCache():
+    
     while True:
         for k, v in dcache.items():
             #if (v.stime + tdMinute) <  datetime.datetime.now():
-            if (v.stime + 80) <  time.time():
+            if (v.stime + aggrTime + 11) <  time.time():
                 try:
+                    dcacheLock.acquire()
                     flow = dcache.pop(k)
+                    dcacheLock.release()
                     flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
                     #print "monitor pop"
                 except Exception, ex:
@@ -226,37 +236,37 @@ def main ():
     
     #TestSuite
     #===============================================================================
-    #f = file('nf_data2.dat', "rb")
-    #packets = f.read()
-    #plist = packets.split('======')
-    #addrport=('10.10.1.100', 9996)
-    #plist.pop()
+    f = file('nf_data2.dat', "rb")
+    packets = f.read()
+    plist = packets.split('======')
+    addrport=('10.10.1.100', 9996)
+    plist.pop()
      
     #a=time.clock()
-    #ff = 0
+    ff = 0
     i = 0
-    #for i in range(200):
-        #for data in plist:
+    for i in range(1000):
+        for data in plist:
 
-    while True:
-        (rlist, wlist, xlist) = select.select(socks, [], socks)
-        for sock in rlist:
-            (data, addrport) = sock.recvfrom(8192)            
+    #while True:
+        #(rlist, wlist, xlist) = select.select(socks, [], socks)
+        #for sock in rlist:
+            #(data, addrport) = sock.recvfrom(8192)            
 
-        if (i % 50) == 0:
-        #if ff == 100:
-            #ff = 0
-            #print i
-            #print "len dcache ", len(dcache)
-            #print "time", time.clock()
-            #print nascache
-            cur.connection.commit()
-        try:
-            NetFlowPacket(data, addrport, tFC)
-        except Exception, ex:
-            print "NFP exception %d: %s" % (i, ex)
-        #ff += 1
-        i += 1
+            #if (i % 50) == 0:
+            if ff == 100:
+                ff = 0
+                print i
+                print "len dcache ", len(dcache)
+                print "time", time.clock()
+                #print nascache
+                cur.connection.commit()
+            try:
+                NetFlowPacket(data, addrport, tFC)
+            except Exception, ex:
+                print "NFP exception %d: %s" % (i, ex)
+            ff += 1
+            #i += 1
         #sys.exit()
     cur.connection.commit()
     #print "after_nfpacket", time.clock()-a
