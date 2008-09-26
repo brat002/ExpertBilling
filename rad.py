@@ -74,6 +74,7 @@ class HandleAuth(HandleBase):
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
         self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
 
 
@@ -198,6 +199,7 @@ class HandleDHCP(HandleBase):
         #self.access_type=get_accesstype(self.packetobject)
         
         self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
 
 
@@ -287,7 +289,7 @@ class HandleAcct(HandleBase):
         self.replypacket=packetobject.CreateReply()
         self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(2)
+        self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
 
     def get_bytes(self):

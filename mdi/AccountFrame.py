@@ -2202,6 +2202,7 @@ class TarifFrame(QtGui.QDialog):
             self.connection.create(model.save("billservice_tariff"))
             self.connection.commit()
             
+            #TO-DO:Сделать проверку нужно ли удалять/добавлять на сервер пользователей
             if self.model is not None and not self.accountActions(previous_ipn_for_vpn_state, access_parameters.ipn_for_vpn):
                 QtGui.QMessageBox.warning(self, u"Ошибка", u"При синхронизации пользователей на сервере доступа возникли проблемы.\nПроверьте правильность указания IPN IP и синхронизируйте пользователей вручную через контекстное меню.")
             #print True
