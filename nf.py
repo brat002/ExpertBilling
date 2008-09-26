@@ -162,7 +162,7 @@ class FlowCache:
             dflow.packets += flow.packets
             dflow.finish = flow.finish
             #if (dflow.stime + tdMinute) <=  datetime.datetime.now():
-            if (dflow.stime + 60) <= time.time():
+            if (dflow.stime + 60 + (flow.octets % 10) +  (1 / flow.src_port) ) <= time.time():
                 flow = dcache.pop(key)
                 flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
 
@@ -170,7 +170,7 @@ def monitorCache():
     while True:
         for k, v in dcache.items():
             #if (v.stime + tdMinute) <  datetime.datetime.now():
-            if (v.stime + 61) <  time.time():
+            if (v.stime + 80) <  time.time():
                 try:
                     flow = dcache.pop(k)
                     flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
