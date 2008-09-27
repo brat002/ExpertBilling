@@ -162,7 +162,7 @@ class MonitorFrame(QtGui.QMainWindow):
             sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
                   JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
-                  WHERE radius_activesession.session_status='ACTIVE' or radius_activesession.session_status='NACK'"""
+                  WHERE radius_activesession.session_status='ACTIVE'"""
         
         if user==None:
             user=unicode(self.userCombobox.currentText())                                      
