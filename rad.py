@@ -404,9 +404,9 @@ class HandleAcct(HandleBase):
             self.cur.execute(
                         """
                         UPDATE radius_activesession
-                        SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s'
-                        WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
-                        """ % (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
+                        SET interrim_update='%s',bytes_out='%s', bytes_in='%s', session_time='%s', session_status='ACTIVE'
+                        WHERE sessionid='%s' and nas_id='%s';
+                        """ % (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
             )
 
             #self.connection.commit()
