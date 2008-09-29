@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import socket, select, struct, datetime, time, sys
-from IPy import *
+from IPy import IP
 try:
     import mx.DateTime
 except:
