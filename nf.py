@@ -22,6 +22,7 @@ dcacheLock = threading.Lock()
 sleepTime = 291.0
 aggrTime = 120.0
 
+
 class Flow(object):
     # Virtual base class
     LENGTH = 0
@@ -139,10 +140,12 @@ class FlowCache:
     def __init__(self):
         dcache = {}
         nascache = {}
+        self.keylist = []
+        self.stime = time.time()
         #print "gc threshold", gc.get_threshold()
         #gc.set_threshold(700, 1000, 100)
-        self.cMonitor = threading.Timer(sleepTime, monitorCache)
-        self.cMonitor.start()
+        #self.cMonitor = threading.Timer(sleepTime, monitorCache)
+        #self.cMonitor.start()
 
     def addflow(self, version, flow):
         method = getattr(self, "addflow" + str(version), None)
@@ -155,7 +158,44 @@ class FlowCache:
         val = dcache.get(key)
         if not val:
             flow.cur = cur.connection.cursor()
-            #flow.stime = datetime.datetime.now()
+            #self.stime = time.time()
+            dcacheLock.acquire()
+            i = 1
+            try:
+                dcache[key] = flow
+                i=0
+                dcacheLock.release()
+                self.keylist.append(key)
+                #print len(self.keylist)
+                if (len(self.keylist) == 1500) or ((self.stime + 20.0) < time.time()):
+                    tmr = threading.Timer(aggrTime, applyFlow, (self.keylist,))
+                    tmr.start()
+                    self.keylist = []
+                    self.stime = time.time()
+            except Exception, ex:
+                if i:
+                    dcacheLock.release()
+                print "create rec ex: ", ex
+                
+        else:
+            dcacheLock.acquire()
+            i = 1
+            try:
+                dflow= dcache[key]
+                dflow.octets  += flow.octets
+                dflow.packets += flow.packets
+                dflow.finish = flow.finish
+                i = 0;
+                dcacheLock.release()
+            except Exception, ex:
+                if i:
+                    dcacheLock.release()
+                #print "append rec ex: ", ex
+            #finally:
+                #dcacheLock.release()
+                
+        '''if not val:
+            flow.cur = cur.connection.cursor()
             flow.stime = time.time()
             dcacheLock.acquire()
             try:
@@ -179,12 +219,12 @@ class FlowCache:
             except Exception, ex:
                 print "append rec ex: ", ex
             finally:
-                dcacheLock.release()
+                dcacheLock.release()'''
             
 def monitorCache():
     
     while True:
-        popList = []
+        #popList = []
         for k, v in dcache.items():
             #if (v.stime + tdMinute) <  datetime.datetime.now():
             '''if (v.stime + aggrTime + 11) <  time.time():
@@ -222,10 +262,23 @@ def monitorCache():
         #print "time", time.clock()
         time.sleep(sleepTime)
         
-def applyFlow(key):
-    flow = dcache.pop(key)
-    flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-
+def applyFlow(keylist):
+    print "len keylist", len(keylist)
+    for key in keylist:
+        dcacheLock.acquire()
+        i = 1
+        try:
+            flow = dcache.pop(key)
+            dcacheLock.release()
+            i = 0
+            flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+        except Exception, ex:
+            if i:
+                dcacheLock.release()
+                #print "pop exception", ex
+            #finally:
+                #dcacheLock.release()
+                
 #===============================================================================
 # pool = PooledDB(
 #     mincached=1,
@@ -290,12 +343,13 @@ def main ():
                 #print "len dcache ", len(dcache)
                 #print "time", time.clock()
                 #print nascache
-                cur.connection.commit()
+            cur.connection.commit()
         try:
             NetFlowPacket(data, addrport, tFC)
         except Exception, ex:
             print "NFP exception %d: %s" % (i, ex)
-        #ff += 1
+            #ff += 1
+            #time.sleep(0.1)
         i += 1
         #sys.exit()
     cur.connection.commit()
