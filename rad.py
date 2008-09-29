@@ -137,8 +137,11 @@ class HandleAuth(HandleBase):
         #TO-DO: Добавить проверку на balance_blocked
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
-
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=self.packetobject['Calling-Station-Id'][0], multilink = self.multilink)
+        try:
+            station_id=self.packetobject['Calling-Station-Id'][0]
+        except:
+            station_id = ''
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink)
         #print 1, row
         if row==None:
             self.cur.close()
