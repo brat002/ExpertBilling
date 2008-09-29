@@ -1,5 +1,6 @@
 #-*-coding=utf-8-*-
 #from encodings import idna
+
 import time, datetime, os, sys
 from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
@@ -27,12 +28,19 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 import IPy
 
 
+
 from chartprovider.bpplotadapter import bpplotAdapter
 from chartprovider.bpcdplot import cdDrawer
 
-#from mdi.helpers import Object
+import ConfigParser
+config = ConfigParser.ConfigParser()
+config.read("ebs_config.ini")
 
 from DBUtils.PooledDB import PooledDB
+
+from logger import redirect_std
+
+redirect_std("core", redirect=config.get("stdout", "redirect"))
 #from mdi.helpers import Object as Object
 
 #TODO: имхо слип тредов надо вынести в опции
@@ -43,10 +51,10 @@ pool = PooledDB(
     blocking=True,
     #maxusage=20, 
     creator=psycopg2,
-    dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                           settings.DATABASE_USER,
-                                                           settings.DATABASE_HOST,
-                                                           settings.DATABASE_PASSWORD)
+    dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                           config.get("db", "username"),
+                                                           config.get("db", "host"),
+                                                           config.get("db", "password"))
 )
 
 
@@ -369,6 +377,7 @@ class periodical_service_bill(Thread):
     """
     def __init__ (self):
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         #self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
         Thread.__init__(self)
@@ -590,6 +599,7 @@ class TimeAccessBill(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
 
     def run(self):
@@ -742,6 +752,7 @@ class NetFlowAggregate(Thread):
 
     def run(self):
         connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
         cur = connection.cursor()
         while True:
             #print 'next aggregation cycle'
@@ -897,6 +908,7 @@ class NetFlowBill(Thread):
 
     def __init__(self):
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
         Thread.__init__(self)
 
@@ -1110,6 +1122,7 @@ class limit_checker(Thread):
     def __init__ (self):
         Thread.__init__(self)
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
 
     def run(self):
@@ -1240,6 +1253,7 @@ class settlement_period_service_dog(Thread):
     """
     def __init__ (self):
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
         Thread.__init__(self)
 
@@ -1494,6 +1508,7 @@ class ipn_service(Thread):
     def __init__ (self):
         Thread.__init__(self)
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
 
     def check_period(self, rows):

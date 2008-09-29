@@ -26,6 +26,16 @@ try:
 except:
     pass
 
+import ConfigParser
+
+
+config = ConfigParser.ConfigParser()
+config.read("ebs_config.ini")
+
+
+from logger import redirect_std
+
+redirect_std("rad", redirect=config.get("stdout", "redirect"))
 
 global numauth, numacct
 
@@ -590,9 +600,9 @@ if __name__ == "__main__":
         blocking=True,
         creator=psycopg2,
     #    setsession=['SET AUTOCOMMIT = 1'],
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                               settings.DATABASE_USER,
-                                                               settings.DATABASE_HOST,
-                                                               settings.DATABASE_PASSWORD)
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                               config.get("db", "username"),
+                                                               config.get("db", "host"),
+                                                               config.get("db", "password"))
     )
     main()
