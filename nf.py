@@ -8,7 +8,14 @@ except:
     print "cannot inport mx"
 import settings
 import psycopg2
-#import dummy_threading as threading
+import ConfigParser
+config = ConfigParser.ConfigParser()
+config.read("ebs_config.ini")
+
+from logger import redirect_std
+
+redirect_std("nf", redirect=config.get("stdout", "redirect"))
+
 import threading
 import gc
 #from DBUtils.PooledDB import PooledDB
@@ -279,25 +286,12 @@ def applyFlow(keylist):
             #finally:
                 #dcacheLock.release()
                 
-#===============================================================================
-# pool = PooledDB(
-#     mincached=1,
-#     maxcached=5,
-#     blocking=True,
-#     creator=psycopg2,
-#     dsn="dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-#                                                            settings.DATABASE_USER,
-#                                                            settings.DATABASE_HOST,
-#                                                            settings.DATABASE_PASSWORD)
-# )
-# db_connection = pool.connection()
-#===============================================================================
 
 try:
-    db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (settings.DATABASE_NAME,
-                                                                                        settings.DATABASE_USER,
-                                                                                        settings.DATABASE_HOST,
-                                                                                        settings.DATABASE_PASSWORD))
+    db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                                                       config.get("db", "username"),
+                                                                                       config.get("db", "host"),
+                                                                                       config.get("db", "password")))
     cur = db_connection.cursor()
 except Exception, ex:
     print "Unable to connect to the database ", ex

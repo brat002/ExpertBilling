@@ -326,7 +326,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
             tkc=time_start+datetime.timedelta(seconds=length)
             if now>=time_start and now<=tkc:
                 result=True
-        return (tnc, tkc, (now-tnc).seconds, result)
+        return (tnc, tkc, (now-tnc).seconds+(now-tnc).days*86400, result)
 
 
 
