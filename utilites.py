@@ -178,7 +178,7 @@ def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, 
         
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        #print command_string
+        print command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
