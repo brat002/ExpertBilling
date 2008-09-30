@@ -1572,10 +1572,12 @@ class ipn_service(Thread):
                 account.balance_blocked as account_balance_blocked,
                 account.ipn_status as account_ipn_status, 
                 account.ipn_speed as account_ipn_speed, 
+                account.ipn_added as ipn_added,
                 tariff.id as tarif_id, nas.name as nas_name,
                 nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
                 nas.user_disable_action as nas_user_disable,
                 nas.ipn_speed_action as nas_ipn_speed, 
+                nas.user_add_action as nas_user_add,
                 nas."login" as nas_login, nas."password" as nas_password, 
                 nas."ipaddress" as nas_ipaddress,
                 accessparameters.access_time_id as access_time_id, 
@@ -1583,44 +1585,52 @@ class ipn_service(Thread):
                 ipn_speed_table.state as ipn_state,
                 accessparameters.access_type as access_type
                 FROM billservice_account as account
-                JOIN billservice_tariff as tariff ON tariff.id=(select tarif_id from billservice_accounttarif where account_id=account.id and datetime < now() ORDER BY datetime DESC LIMIT 1)
+                JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
                 JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
                 JOIN nas_nas as nas ON nas.id=account.nas_id
                 LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-                WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn_speed<>'') and account.ipn_ip_address!='0.0.0.0'
+                WHERE account.status=True and accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0'
                 ;""")
             rows=self.cur.fetchall()
             for row in rows:
                 #print "check ipn"
                 sended=None
-
+                recreate_speed = False
                 period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
 
-                #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
-                #print row['account_disabled_by_limit']==True, row['ballance']<=0, period==False, row['account_balance_blocked']==True, row['account_ipn_status']==True, row['access_type']=='IPN'
-                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_ipn_status']==False and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
-                    #print u"ВКЛЮЧАЕМ"
-
-                    #print row['ballance']>0, period==True, row['account_ipn_status'], row['account_disabled_by_limit'], row['account_balance_blocked'],row['access_type']=='IPN'
+                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
+                    #print u"ВКЛЮЧАЕМ",row['account_username']
                     #шлём команду, на включение пользователя, account_ipn_status=True
-                    sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
-                                  access_type='IPN',
-                                  account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
-                                  account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
-                                  nas_password=row['nas_password'], format_string=row['nas_user_enable'])
+                    if row['ipn_added']==False:
+                        """
+                        Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled
+                        """
+                        sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
+                                      access_type='IPN',
+                                      account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
+                                      account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                                      nas_password=row['nas_password'], format_string=row['nas_user_add'])
+                        if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, row['account_id']))
+                    else:
+                        sended = cred(account_id=row['account_id'], account_name=row['account_username'], 
+                                      access_type='IPN',
+                                      account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], 
+                                      account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
+                                      nas_password=row['nas_password'], format_string=row['nas_user_enable'])
+                        recreate_speed = True
 
-                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
+                        if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
                 elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
 
                     #шлём команду на отключение пользователя,account_ipn_status=False
-                    #print u"ОТКЛЮЧАЕМ"
+                    #print u"ОТКЛЮЧАЕМ",row['account_username']
                     sended = cred(account_id=row['account_id'], account_name=row['account_username'], \
                                   access_type='IPN', \
                                   account_vpn_ip=row['account_vpn_ip_address'], account_ipn_ip=row['account_ipn_ip_address'], \
                                   account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], \
                                   nas_password=row['nas_password'], format_string=row['nas_user_disable'])
 
-                    self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (False, row['account_id']))
+                    if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (False, row['account_id']))
 
 
 
@@ -1638,7 +1648,7 @@ class ipn_service(Thread):
 
                 #print newspeed, row['ipn_speed'],row['ipn_state']
                 #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
-                if newspeed!=row['ipn_speed'] or row['ipn_state']==False:
+                if newspeed!=row['ipn_speed'] or row['ipn_state']==False or recreate_speed==True:
                     #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
                     #отправляем на сервер доступа новые настройки скорости, помечаем state=True
 
@@ -1874,9 +1884,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                           account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
                           account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                           nas_password=row['nas_password'], format_string=command)
-
+        del account_id
+        del row
+        del account
         return sended
 
+        
     @authentconn
     def get_object(self, name, cur=None, connection=None):
         try:
@@ -1925,7 +1938,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         retres = listcur.fetchall()
         listcur.close()
         listconnection.close()
-        return res
+        return retres
 
     @authentconn
     def dbaction(self, fname, *args, **kwargs):
@@ -1935,12 +1948,15 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         cur.execute(sql)
         #connection.commit()
+        del sql
         return
 
     @authentconn
     def iddelete(self, table, id, cur=None, connection=None):
 
         cur.execute("DELETE FROM %s where id=%d" % (table, id))
+        del table
+        del id
         #connection.commit()
         return
 
@@ -1949,6 +1965,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         cur.execute(sql)
         #connection.commit()
+        del sql
         return         
 
     @authentconn

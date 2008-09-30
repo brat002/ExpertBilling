@@ -2653,6 +2653,7 @@ class AddAccountFrame(QtGui.QDialog):
     
                 #model.user_id=1
                 model.ipn_status = False
+                model.ipn_added = False
                 model.disabled_by_limit = False
                 
             model.username = unicode(self.username_edit.text())
@@ -2762,8 +2763,16 @@ class AddAccountFrame(QtGui.QDialog):
             model.suspended = self.suspended_edit.checkState() == QtCore.Qt.Checked
             model.status = self.status_edit.checkState() == QtCore.Qt.Checked
             
-            
+            if model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
+                return
+            self.connection.rollback()
             if self.model:
+                if model.ipn_ip_address!=self.model.ipn_ip_address:
+                    """
+                    Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
+                    """
+                    model.ipn_status=False
                 self.connection.create(model.save("billservice_account"))
             else:
                 
@@ -2780,18 +2789,7 @@ class AddAccountFrame(QtGui.QDialog):
             #print "model.ipn_mac_address", model.ipn_mac_address
             
             
-            #self.connection.commit()
-            if model.ipn_ip_address!="0.0.0.0" and self.ipn_for_vpn==True:
-                self.connection.accountActions(model.id, 'delete')
-                if self.connection.accountActions(model.id, 'create'):
-                    #self.connection.commit()
-                    QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Пользователь успешно синхронизирован на сервере доступа."))
-                else:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для начала работы необходимо синхронизировать изменения на сервере доступа с помощью контекстного меню."))
-                    #self.connection.rollback()
-                #self.connection.commit()
-            elif model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
+
                 #self.connection.rollback()
                 #return
             #self.connection.commit()
@@ -3233,9 +3231,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
         id=self.getSelectedId()
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.accountActions(id, 'delete')
-            
-            #self.connection.delete("DELETE FROM billservice_accounttarif WHERE account_id=%d" % id)
-            #self.connection.delete("DELETE FROM billservice_account WHERE id=%d" % id)
             self.connection.iddelete("billservice_account", id)
             self.connection.commit()
             self.refresh()
