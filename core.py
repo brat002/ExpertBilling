@@ -774,11 +774,10 @@ class NetFlowAggregate(Thread):
                 """)'''
             cur.execute("""SELECT nf.id, 
                 nf.nas_id, nf.account_id, nf.date_start, nf.traffic_class_id, nf.direction, nf.src_addr, 
-                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, 
-                tariff.active, tariff.traffic_transmit_service_id, tariff.id, trafficclass.store
+                nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, nf.store,
+                tariff.active, tariff.traffic_transmit_service_id, tariff.id
                 FROM billservice_rawnetflowstream as nf
                 LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id ORDER BY datetime DESC LIMIT 1))
-                LEFT JOIN nas_trafficclass as trafficclass ON trafficclass.id=nf.traffic_class_id
                 WHERE nf.fetched=False;""")
             raw_streams=cur.fetchall()
 
@@ -787,8 +786,8 @@ class NetFlowAggregate(Thread):
             Если сервер доступа в тарифе подразумевает обсчёт сессий через NetFlow помечаем строку "для обсчёта"
             """
             for stream in raw_streams:
-                nf_id, nas_id, account_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, \
-                     tarif_status, traffic_transmit_service, tarif_id, store = stream
+                nf_id, nas_id, account_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, store, \
+                     tarif_status, traffic_transmit_service, tarif_id = stream
 
                 tarif_mode=False
                 #print nf_id
@@ -818,49 +817,16 @@ class NetFlowAggregate(Thread):
                         ts_pool[traffic_transmit_service] = self.check_period(periods)
                    
                     tarif_mode = ts_pool[traffic_transmit_service]
-                    
-                    #tarif_mode=self.check_period(periods)
 
-                    #tarif_mode=True
-#===============================================================================
-#                if account_id is not None and tarif_status==True:
-#                    # Если пользователь
-#                    cur.execute(
-#                        """
-#                        SELECT id
-#                        FROM billservice_netflowstream
-#                        WHERE (nas_id='%s') AND (account_id=%s) AND
-#                        (tarif_id=%s) AND
-#                        ('%s' - date_start < interval '00:01:00') AND
-#                        direction='%s' AND
-#                        src_addr='%s' AND 
-#                        traffic_class_id='%s' AND 
-#                        dst_addr='%s' AND 
-#                        src_port='%s' AND 
-#                        dst_port='%s' AND 
-#                        protocol='%s' AND 
-#                        checkouted=False AND 
-#                        for_checkout='%s' ORDER BY id DESC LIMIT 1;
-#                        """ % (nas_id, account_id, tarif_id, date_start, direction, src_addr, traffic_class_id, dst_addr, src_port,dst_port, protocol, tarif_mode))
-#                    row_for_update=cur.fetchone()
-#                    if row_for_update:
-#    #                    #print 'u'
-#                        cur.execute(
-#                            """
-#                            UPDATE billservice_netflowstream SET octets=octets+%s WHERE id=%s
-#                            """ % (octets, nf_id))
-#===============================================================================
-                if True:
-#                  print 'i'
-                    cur.execute(
-                        """
-                        INSERT INTO billservice_netflowstream(
-                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                        VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
-                        '%s', '%s', '%s', '%s', '%s', '%s', '%s');
-                        """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
-                        )
+                cur.execute(
+                    """
+                    INSERT INTO billservice_netflowstream(
+                    nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                    dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
+                    '%s', '%s', '%s', '%s', '%s', '%s', '%s');
+                    """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
+                    )
 
 
 
@@ -947,8 +913,6 @@ class NetFlowBill(Thread):
 
         
         trafic_transmit_nodes=self.cur.fetchall()
-        cost=0
-        min_from_start=0
         for node in trafic_transmit_nodes:
             trafic_transmit_node_id=node[0]
             trafic_cost=node[1]
@@ -958,13 +922,12 @@ class NetFlowBill(Thread):
             period_start=node[4]
             period_length=node[5]
             repeat_after=node[6]
-            tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+            result=in_period(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
             if result:
-                if from_start<min_from_start or min_from_start==0:
-                    min_from_start=from_start
-                    cost=trafic_cost
-        del trafic_transmit_nodes
-        return cost
+                del trafic_transmit_nodes
+                return trafic_cost
+        return 0
+
 
 
     def run(self):
@@ -1055,9 +1018,7 @@ class NetFlowBill(Thread):
                     else:
                         d = "out_direction=True"
                     #alt?    
-                    """SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
-   WHERE (size>0) AND (account_tarif_id=13) AND (prepaid_traffic_id IN (SELECT id FROM billservice_prepaidtraffic as prepaidtraffic WHERE (traffic_transmit_service_id=107) AND (id IN (SELECT prepaidtraffic_id FROM billservice_prepaidtraffic_traffic_class WHERE trafficclass_id=1))))
-   """
+                    
 
                     query="""
                          SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
@@ -1110,7 +1071,7 @@ class NetFlowBill(Thread):
                 )
                 self.connection.commit()
             self.connection.commit()
-            time.sleep(120)
+            time.sleep(40)
 
         #connection.close()
 
@@ -1531,37 +1492,7 @@ class ipn_service(Thread):
 
     def run(self):
         while True:
-            '''self.cur.execute(
-                """
-                SELECT account.id as account_id,
-                account.username as account_username, 
-                account.ipn_ip_address as account_ipn_ip_address, 
-                account.vpn_ip_address as account_vpn_ip_address, 
-                account.ipn_mac_address as account_ipn_mac_address ,
-                (account.ballance+account.credit) as ballance, 
-                account.disabled_by_limit as account_disabled_by_limit, 
-                account.balance_blocked as account_balance_blocked,
-                account.ipn_status as account_ipn_status, 
-                account.ipn_speed as account_ipn_speed, 
-                tariff.id as tarif_id, nas.name as nas_name,
-                nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
-                nas.user_disable_action as nas_user_disable,
-                nas.ipn_speed_action as nas_ipn_speed, 
-                nas."login" as nas_login, nas."password" as nas_password, 
-                nas."ipaddress" as nas_ipaddress,
-                accessparameters.access_time_id as access_time_id, 
-                ipn_speed_table.speed as ipn_speed, 
-                ipn_speed_table.state as ipn_state,
-                accessparameters.access_type as access_type
-                FROM billservice_account as account
-                JOIN billservice_accounttarif as accounttarif on accounttarif.id=(SELECT id FROM billservice_accounttarif
-                WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-                JOIN billservice_tariff as tariff ON tariff.id=accounttarif.tarif_id
-                JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
-                JOIN nas_nas as nas ON nas.id=account.nas_id
-                LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-                WHERE account.status=True and (accessparameters.access_type='IPN' or account.ipn_speed<>'') and account.ipn_ip_address!='0.0.0.0'
-                ;""")'''
+   
             self.cur.execute("""SELECT account.id as account_id,
                 account.username as account_username, 
                 account.ipn_ip_address as account_ipn_ip_address, 
