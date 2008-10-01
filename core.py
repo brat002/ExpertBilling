@@ -40,7 +40,7 @@ from DBUtils.PooledDB import PooledDB
 
 from logger import redirect_std
 
-redirect_std("core", redirect=config.get("stdout", "redirect"))
+#redirect_std("core", redirect=config.get("stdout", "redirect"))
 #from mdi.helpers import Object as Object
 
 #TODO: имхо слип тредов надо вынести в опции
