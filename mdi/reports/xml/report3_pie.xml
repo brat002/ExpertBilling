@@ -3,21 +3,39 @@
 <report xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="report_schema.xsd">
   <textformat name="tf1" setFontWeight="96" setFontPointSize="18" setFontItalic="true" setForeground="#00ff00"/>
   <textformat name="tf2" setFontWeight="72" setFontPointSize="12" setFontItalic="true" />
+  <textformat name="tf3" setFontWeight="72" setFontPointSize="10" setForeground="#FFFFFF" />
   <blockformat name="bf1" setAlignment="22" />
-  <frame name="topframe" type="current" format="currentedit" fname="tff" padding="16">
-	<insertblock blockformat="bf1"/>
-	<chart library="pychartdir" name="chart1" type="userstrafpie">
+  <frame name="topframe"  type="current" format="currentedit" setWidth="1000"  fname="tff" padding="16">
+	<image path="images/reports/header.png"/>
+	
+	<frame name="blfr"  type="insert" format="new" fname="rff" setHeight="50" setWidth="1000" padding="4"  setBackground="#323232">
+		<insertblock blockformat="bf1"/>
+		<inserttext text="ZOMG" textformat="tf3" />
+		<insertblock />
+	</frame>
+	<insertblock />
+	<frame name="cframe"  type="existing" format="new" setWidth="1000" fname="tff7">
+
+	<stable name="stbl2" rownum="1" colnum="2" ftype="new" fname="stf1" setCellPadding="2" setBorderStyle="0">
+	<scell row="0" col="0">
+		<chart library="pychartdir" name="chart1" type="userstrafpie">	
 		<getdata>
-			<frame name="ch1fr1" datasource="chart1_return" type="current" format="current">
-				<insertblock/>
-				<inserttext text="               "/>
-				<table name="tbl2" columns="2" type="normal"  fname="tf2" ftype="new" setCellPadding="2"  setBackground="#c0a0c0" >
+		
+		</getdata>
+	</chart>
+	</scell>
+	<scell row="0" col="1">
+
+				<table name="tbl2" columns="2" datasource="chart1_return"  type="normal"  fname="tf2" ftype="new" setCellPadding="2"  setBackground="#c0a0c0" >
 					<column name="Имя пользователя" type="string" />
 					<column name="Траффик" type="int" />
 				</table>
-			</frame>			
-		</getdata>
-	</chart>
+
+	</scell>
+	</stable>
+		
+				
+	</frame>
 	<frame name="fr2" datasource="args" type="current" format="currentnew" fname="tff1">
 		<insertblock />
 		<insertblock />

@@ -176,7 +176,7 @@ class FlowCache:
                 dcacheLock.release()
                 self.keylist.append(key)
                 #print len(self.keylist)
-                if (len(self.keylist) == 1500) or ((self.stime + 20.0) < time.time()):
+                if (len(self.keylist) == 1500) or ((self.stime + 10.0) < time.time()):
                     tmr = threading.Timer(aggrTime, applyFlow, (self.keylist,))
                     tmr.start()
                     self.keylist = []
