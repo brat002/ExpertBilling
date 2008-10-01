@@ -2,7 +2,7 @@
 #from encodings import idna
 
 import time, datetime, os, sys
-from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
+from utilites import parse_custom_speed, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
 import threading
@@ -34,7 +34,6 @@ from chartprovider.bpcdplot import cdDrawer
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
-config.read("/opt/ebs/data/ebs_config.ini")
 
 from DBUtils.PooledDB import PooledDB
 
@@ -45,92 +44,7 @@ from logger import redirect_std
 
 #TODO: имхо слип тредов надо вынести в опции
 
-pool = PooledDB(
-    mincached=10,
-    maxcached=30,
-    blocking=True,
-    #maxusage=20, 
-    creator=psycopg2,
-    dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                           config.get("db", "username"),
-                                                           config.get("db", "host"),
-                                                           config.get("db", "password"))
-)
 
-
-'''
-def format_update (x,y):
-    print 'y', y, type(y)
-    if y!='Null' or y!='None':
-        if type(y)==StringType or type(y)==UnicodeType:
-            print True
-            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
-            #print 'y', y
-        return "%s='%s'" % (x,y)
-    else:
-        return "%s=%s" % (x,'Null')
-
-def format_insert(y):
-    if y=='Null' or y =='None':
-        return y
-    elif type(y)==StringType or type(y)==UnicodeType:
-        print True
-        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
-    else:
-        return y
-
-class Object(object):
-    def __init__(self, result=[], *args, **kwargs):
-        for key in result:
-            setattr(self, key, result[key])
-        """
-        if result[key]!=None:
-            setattr(self, key, result[key])
-        else:
-            setattr(self, key, 'Null')
-        """
-
-
-        for key in kwargs:
-            setattr(self, key, kwargs[key])  
-
-        #print dir(self)          
-
-
-    def save(self, table):
-
-
-        fields=[]
-        for field in self.__dict__:
-            if type(field)!=InstanceType:
-                # and self.__dict__[field]!=None
-                fields.append(field)
-        try:
-            self.__dict__['id']
-            sql=u"UPDATE %s SET %s WHERE id=%d;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
-        except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
-
-        return sql
-
-    def get(self, table):
-        return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
-
-    def __call__(self):
-        return self.id
-
-    def hasattr(self, attr):
-        if attr in self.__dict__:
-            return True
-        return False
-
-    def isnull(self, attr):
-        if self.hasattr(attr):
-            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
-                return False
-
-        return True
-        return self.id'''
 
 def comparator(d, s):
     for key in s:
@@ -143,6 +57,7 @@ class check_vpn_access(Thread):
         #self.dict=dict
         #self.timeout=timeout
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         Thread.__init__(self)
 
@@ -281,7 +196,7 @@ class check_vpn_access(Thread):
                              account.vpn_ip_address AS vpn_ip_address,  
                              account.ipn_ip_address AS ipn_ip_address, 
                              account.ipn_mac_address AS ipn_mac_address,
-                             (SELECT tarif.active AS tarif_status FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id))
+                             (SELECT tarif.active FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id)) AS tarif_status
                              FROM radius_activesession AS rs
                              JOIN nas_nas AS nas ON nas.ipaddress=rs.nas_id
                              JOIN billservice_account AS account ON account.id=rs.account_id
@@ -293,8 +208,9 @@ class check_vpn_access(Thread):
 
                 if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
                     """
-            			Делаем проверку на то, изменилась ли скорость.
-            			"""
+            		Делаем проверку на то, изменилась ли скорость.
+            		"""
+                    print "check"
                     if row['vpn_speed']=='':
                         speed=self.create_speed(row['tarif_id'], row['nas_type'])
                     else:
@@ -302,7 +218,10 @@ class check_vpn_access(Thread):
                     newspeed=''
                     for key in speed:
                         newspeed+=unicode(speed[key])
+                    #print row
+                    #print row['speed_string'],"!!!", newspeed, type(row['speed_string']), type(newspeed)
                     if row['speed_string']!=newspeed:
+                        print "set speed"
                         coa_result=change_speed(dict=dict, account_id=row['account_id'], 
                                                 account_name=str(row['username']), 
                                                 account_vpn_ip=row['vpn_ip_address'], 
@@ -515,15 +434,22 @@ class periodical_service_bill(Thread):
                                 if first_time==True or last_checkout<period_start:
 
                                     lc=period_start-last_checkout
+                                    #Смотрим сколько раз должны были снять с момента последнего снятия
                                     nums, ost=divmod(lc.seconds+lc.days*86400, delta)
-                                    summ=ps_cost
-                                    if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                    if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
+                                        summ=ps_cost
+                                        
+                                    if False and nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
+                                        #и с каколго до какого момента у пользователя стояла отметка "не списывать деньги по период.услугам"
                                         """
-                                        Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
+                                        Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                         пока денег на счету не было
                                         """
                                         #Смотрим на какую сумму должны были снять денег и снимаем её
                                         summ=ps_cost*nums
+                                    
+                                         
 
                                     transaction_id = transaction(cursor=self.cur,
                                                                  account=account_id,
@@ -570,8 +496,10 @@ class periodical_service_bill(Thread):
                                         nums, ost=divmod(le.seconds+le.days*86400, delta)
 
                                         summ=ps_cost
-                                        if nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        if False and  nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
                                             summ=ps_cost*nums
+                                        if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
+                                            summ=ps_cost
                                         descr=u"Проводка по периодической услуге со нятием суммы в конце периода"
                                     else:
                                         summ=0
@@ -2076,7 +2004,7 @@ def main():
 
 #===============================================================================
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing', 'medusa']:
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing', 'medusa', 'Billing.NemirovOnline']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
@@ -2084,5 +2012,21 @@ if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing
 if __name__ == "__main__":
     if os.name!='nt':
         os.chdir("/opt/ebs/data")
+        config.read("/opt/ebs/data/ebs_config.ini")
+    else:
+        config.read("ebs_config.ini")
+
+    pool = PooledDB(
+        mincached=10,
+        maxcached=30,
+        blocking=True,
+        #maxusage=20, 
+        creator=psycopg2,
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                               config.get("db", "username"),
+                                                               config.get("db", "host"),
+                                                               config.get("db", "password"))
+       )
+
     main()
 

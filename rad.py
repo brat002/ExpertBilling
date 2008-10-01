@@ -17,7 +17,7 @@ from utilites import in_period, create_speed_string
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
 
-import settings
+#import settings
 import psycopg2
 from DBUtils.PooledDB import PooledDB
 
@@ -29,8 +29,7 @@ except:
 import ConfigParser
 
 
-config = ConfigParser.ConfigParser()
-config.read("/opt/ebs/data/ebs_config.ini")
+
 
 
 from logger import redirect_std
@@ -42,6 +41,9 @@ global numauth, numacct
 numauth=0
 numacct=0
 gigaword = 4294967296
+
+def authNA(packet):
+    return packet.ReplyPacket()
 
 def get_accesstype(packetobject):
     """
@@ -62,16 +64,46 @@ class HandleBase(object):
         """
         Denides access
         """
-        self.replypacket.username=None
-        self.replypacket.password=None
+        
+        self.packetobject.username=None
+        self.packetobject.password=None
         # Access denided
-        self.replypacket.code=3
-        return self.replypacket
+        self.packetobject.code=3
+        return self.packetobject
 
     # Main
     def handle(self):
         pass
 
+class HandleNA(HandleBase):
+
+    def __init__(self,  packetobject):
+        """
+        TO-DO: Сделать проверку в методе get_nas_info на тип доступа 
+        """
+        self.nasip = str(packetobject['NAS-IP-Address'][0])
+        self.packetobject = packetobject.CreateReply()
+
+
+        
+        self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
+        self.cur = self.connection.cursor()
+
+
+    def handle(self):
+        row=self.get_nas_info()
+        self.cur.close()
+        self.connection.close()
+        
+        if row is not None:
+            self.packetobject.secret = str(row[1])
+            return self.auth_NA()
+        
+    def get_nas_info(self):
+        row = get_nas_by_ip(self.cur, self.nasip)
+        return row
+        
 #auth_class
 class HandleAuth(HandleBase):
 
@@ -86,18 +118,6 @@ class HandleAuth(HandleBase):
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
-
-
-        row=self.get_nas_info()
-
-        if row==None:
-            self.cur.close()
-            return self.auth_NA()
-
-        self.nas_id=str(row[0])
-        self.nas_type=row[2]
-        self.multilink = row[3]
-        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
 
 
     def create_speed(self, tarif_id, speed=''):
@@ -144,9 +164,18 @@ class HandleAuth(HandleBase):
         return row
 
     def handle(self):
-        #TO-DO: Добавить проверку на balance_blocked
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        row=self.get_nas_info()
+
+        if row==None:
+            self.cur.close()
+            self.connection.close()
+            return None
+
+        self.nas_id=str(row[0])
+        self.nas_type=row[2]
+        self.multilink = row[3]
+        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
+        
         try:
             station_id=self.packetobject['Calling-Station-Id'][0]
         except:
@@ -220,6 +249,7 @@ class HandleDHCP(HandleBase):
 
         if row==None:
             self.cur.close()
+            self.connection.close()
             return self.auth_NA()
 
         self.nas_id=str(row[0])
@@ -268,6 +298,8 @@ class HandleDHCP(HandleBase):
         if row==None:
             self.cur.close()
             #print 1
+            self.cur.close()
+            self.connection.close()
             return self.auth_NA()
 
     
@@ -317,25 +349,28 @@ class HandleAcct(HandleBase):
             bytes_out=self.packetobject['Acct-Output-Octets'][0]
         return (bytes_in, bytes_out)
 
+    def acct_NA(self):
+        """
+        Deny access
+        """
+
+        # Access denided
+        self.replypacket.code=3
+        return self.replypacket
+    
     def handle(self):
 
         self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress='%s';""" % self.nasip)
         row = self.cur.fetchone()
         #print 1
         if row==None:
-            return self.acct_NA(self.replypacket)
-
+            return None
+        
         self.replypacket.secret=str(row[0])
-        #Проверяем знаем ли мы такого пользователя
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
-        #simple_log(packet=self.packetobject)
-        #print 2
         self.cur.execute(
         """
         SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
-        JOIN billservice_accounttarif as accounttariff ON accounttariff.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1)
-        JOIN billservice_tariff as tariff ON tariff.id=accounttariff.tarif_id
+        JOIN billservice_tariff as tariff ON tariff.id=(SELECT tarif_id FROM billservice_accounttarif where account_id=account.id and datetime<now() ORDER BY id DESC LIMIT 1)
         WHERE account.username='%s';
         """ % self.packetobject['User-Name'][0]
         )
@@ -343,7 +378,7 @@ class HandleAcct(HandleBase):
         if row==None:
             self.cur.close()
             self.connection.close()
-            return self.acct_NA(self.replypacket)
+            return self.acct_NA()
 
         account_id, time_access=row
 
@@ -447,13 +482,13 @@ class HandleAcct(HandleBase):
                """
                UPDATE radius_activesession
                SET date_end='%s', session_status='ACK'
-               WHERE account_id='%s' and sessionid='%s' and nas_id='%s';
-               """ % (now,account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
+               WHERE sessionid='%s' and nas_id='%s';
+               """ % (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0])
                )
             #self.connection.commit()
         #print "acct end"
         self.connection.commit()
-        #print 5
+        print 5
         self.connection.close()
         self.cur.close()
         
@@ -479,6 +514,7 @@ class RadiusAuth(BaseAuth):
         
         numauth+=1
         t = clock()
+        returndata=''
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
@@ -488,6 +524,7 @@ class RadiusAuth(BaseAuth):
         if access_type in ['PPTP', 'PPPOE']:
             coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type)
             packetfromcore=coreconnect.handle()
+            if packetfromcore is None: numauth-=1; return
             packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
             returndata=authobject.ReturnPacket()
@@ -497,21 +534,30 @@ class RadiusAuth(BaseAuth):
         elif access_type in ['DHCP'] :
             coreconnect = HandleDHCP(packetobject=packetobject)
             packetfromcore=coreconnect.handle()
+            if packetfromcore is None: numauth-=1; return
             packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
             del authobject
-        
-        self.socket.sendto(returndata,addrport)
-        #print numauth
+        else:
+            returnpacket = HandleNA(packetobject).handle()
+            if returnpacket is None:numauth-=1; return
+            
+            returndata=authNA(returnpacket)
+            
+            
+        if returndata!="":
+            self.socket.sendto(returndata,addrport)
+            #print numauth
+            
+            del data
+            del addrport
+            del packetobject
+            del access_type
+            del returndata
         numauth-=1
-        del data
-        del addrport
-        del packetobject
-        del access_type
-        del returndata
         #print "AUTH:%.20f" % (clock()-t)
 
 class RadiusAcct(BaseAuth):
@@ -529,15 +575,17 @@ class RadiusAcct(BaseAuth):
 
         coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0])
         packetfromcore = coreconnect.handle()
-        returndat=packetfromcore.ReplyPacket()
-        self.socket.sendto(returndat,addrport)
+        if packetfromcore is not None: 
+            returndat=packetfromcore.ReplyPacket()
+            self.socket.sendto(returndat,addrport)
+            del returndat
         #print "ACC:%.20f" % (clock()-t)
         #del coreconnect
         #print numacct
         numacct-=1
         del packetfromcore
         del coreconnect
-        del returndat
+        
 
 
 
@@ -582,16 +630,20 @@ def main():
     server_acct.start()
 
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing','medusa']:
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing','medusa', 'Billing.NemirovOnline']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
 
 if __name__ == "__main__":
+    config = ConfigParser.ConfigParser()
     if os.name=='nt':
         setpriority(priority=4)
+        config.read("ebs_config.ini")
     else:
         os.chdir("/opt/ebs/data")
+        config.read("/opt/ebs/data/ebs_config.ini")
+        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
     pool = PooledDB(

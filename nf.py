@@ -12,7 +12,7 @@ import settings
 import psycopg2
 import ConfigParser
 config = ConfigParser.ConfigParser()
-config.read("/opt/ebs/data/ebs_config.ini")
+
 
 #from logger import redirect_std
 
@@ -289,15 +289,6 @@ def applyFlow(keylist):
                 #dcacheLock.release()
                 
 
-try:
-    db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                                                       config.get("db", "username"),
-                                                                                       config.get("db", "host"),
-                                                                                       config.get("db", "password")))
-    cur = db_connection.cursor()
-except Exception, ex:
-    print "Unable to connect to the database ", ex
-    sys.exit()
 
 
 def main ():
@@ -356,12 +347,26 @@ def main ():
 
 
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing', 'medusa']:
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing', 'Billing.NemirovOnline']:
     import sys
     print "License key error. Exit from application."
     sys.exit(1)
 
 if __name__=='__main__':
+    if os.name!='nt':
+        os.chdir("/opt/ebs/data")
+        config.read("/opt/ebs/data/ebs_config.ini")
+    else:
+        config.read("ebs_config.ini")
+    try:
+        db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                                                           config.get("db", "username"),
+                                                                                           config.get("db", "host"),
+                                                                                           config.get("db", "password")))
+        cur = db_connection.cursor()
+    except Exception, ex:
+        print "Unable to connect to the database ", ex
+        sys.exit()
     main()
 
 
