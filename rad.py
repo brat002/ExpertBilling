@@ -35,7 +35,7 @@ config.read("ebs_config.ini")
 
 from logger import redirect_std
 
-redirect_std("rad", redirect=config.get("stdout", "redirect"))
+#redirect_std("rad", redirect=config.get("stdout", "redirect"))
 
 global numauth, numacct
 
