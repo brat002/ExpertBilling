@@ -78,7 +78,10 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                              }
                             )
         #print command_string
-        if nas_type=='mikrotik3':
+        if nas_type=='mikrotik3' and False:
+            """
+            Закомментировано до разъяснения ситуации с ROS API
+            """
             """
             ДОбавить проверку что вернул сервер доступа
             """
@@ -133,7 +136,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
-        print 'SetSpeed Via SSH'
+        #print 'SetSpeed Via SSH'
         command_dict={
                              'access_type':access_type,
                              'username': account_name,
@@ -144,6 +147,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
                              'session': session_id,
                              }
         speed = get_decimals_speeds(speed)
+        print speed
         command_dict.update(speed)
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
@@ -159,35 +163,6 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
             print e
             return False
     return False
-
-
-
-def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
-        
-        command_dict={
-                             'access_type':access_type,
-                             'username': account_name,
-                             'user_id':account_id,
-                             'account_ipn_ip': account_ipn_ip,
-                             'account_vpn_ip': account_vpn_ip,
-                             'account_mac_address':account_mac_address,
-                             }
-
-
-        #print 'command_dict=', command_dict
-        
-        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
-        
-        print command_string
-        try:
-            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-            print 'ssh connected'
-            res=sshclient.send_command(command_string)
-            sshclient.close_chanel()
-            return True
-        except Exception, e:
-            print e
-            return False
 
 
 
