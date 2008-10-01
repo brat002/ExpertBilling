@@ -12,7 +12,7 @@ import settings
 import psycopg2
 import ConfigParser
 config = ConfigParser.ConfigParser()
-config.read("ebs_config.ini")
+config.read("/opt/ebs/data/ebs_config.ini")
 
 #from logger import redirect_std
 
