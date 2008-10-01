@@ -1545,7 +1545,7 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period_name,i, 3)
                     self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
-                    self.addrow(self.limit_tableWidget, unicode(int(unicode(node.size))/(1024*1024)),i, 7)
+                    self.addrow(self.limit_tableWidget, unicode(int(unicode(node.size))/(1024000)),i, 7)
                     
                     self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
@@ -1582,7 +1582,7 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
                         #self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
                         
-                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1024*1024),i, 4)
+                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1024000),i, 4)
                         i+=1       
                     
                     self.prepaid_tableWidget.resizeRowsToContents() 
@@ -1652,14 +1652,14 @@ class TarifFrame(QtGui.QDialog):
         if speed_in.endswith(u"k"):
             speed_in = int(speed_in[0:-1])*1024
         elif speed_in.endswith(u"M"):
-            speed_in = int(speed_in[0:-1])*1024*1024
+            speed_in = int(speed_in[0:-1])*1024000
         else:
             speed_in=int(speed_in)
         
         if speed_out.endswith(u"k"):
             speed_out = int(speed_out[0:-1])*1024
         elif speed_out.endswith(u"M"):
-            speed_out = int(speed_out[0:-1])*1024*1024
+            speed_out = int(speed_out[0:-1])*1024000
         else:
             speed_out=int(speed_out)
                        
@@ -1981,7 +1981,7 @@ class TarifFrame(QtGui.QDialog):
                     limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                     limit.settlement_period_id = self.connection.get("SELECT * FROM billservice_settlementperiod WHERE name='%s'" % unicode(self.limit_tableWidget.item(i, 3).text())).id
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                    limit.size=unicode(int(unicode(self.limit_tableWidget.item(i, 7).text()))*1024*1024)
+                    limit.size=unicode(int(unicode(self.limit_tableWidget.item(i, 7).text()))*1024000)
     
                     limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
                     limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
@@ -2159,7 +2159,7 @@ class TarifFrame(QtGui.QDialog):
                     prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
                     prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
                     #prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,4).text())*1024*1024)
+                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,4).text())*1024000)
 
 
                     traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
