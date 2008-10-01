@@ -147,7 +147,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
                              'session': session_id,
                              }
         speed = get_decimals_speeds(speed)
-        print speed
+        #print speed
         command_dict.update(speed)
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
