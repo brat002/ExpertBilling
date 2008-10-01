@@ -911,7 +911,7 @@ class StatReport(QtGui.QMainWindow):
         self.chartinfo = chartinfo
         
         self.child = ReportOptionsDialog(self.connection, self.chartinfo[1][0])
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,587).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,1000,700).size()).expandedTo(self.minimumSizeHint()))
         self.textedit = QtGui.QTextEdit(self)
         
         self.setCentralWidget(self.textedit)
@@ -983,14 +983,15 @@ class StatReport(QtGui.QMainWindow):
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
-        
+        #f = open("aaa.html", "wb")
+        #f.write(editor.document().toHtml())
+        #f.close()
         if self.child.read_only_checkBox.checkState() == 2:
             editor.setReadOnly(True)
         #self.textedit.setDocument(editor.document())
         self.setCentralWidget(editor)
 
         if self.child.send_to_printer_checkBox.checkState() == 2:
-            print "arrgh"
             #self.print_report(self.centralWidget().document(), 5)
             thread.start_new_thread(self.print_report, (self.centralWidget().document(), 2))
             

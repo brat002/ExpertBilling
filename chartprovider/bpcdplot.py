@@ -157,7 +157,7 @@ class cdDrawer(object):
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "userstrafpie":     \
-                                        {'piechart':(360, 300), 'setpiesize': (180, 140, 100), 'addtitle': ('Объем трафика', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
+                                        {'piechart':(660, 600), 'setpiesize': (280, 250, 120), 'addtitle': ('Объем трафика', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
         "sessions":  \
                                         {'xychart':(640, 280), 'addtitle':("Сессии", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(160, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
@@ -1055,6 +1055,7 @@ class cdDrawer(object):
         # Set the center of the pie  and the radius
         c.setPieSize(*optdict['setpiesize'])
         c.setLabelStyle(*optdict['setlabelstyle'])
+        c.setLabelLayout(SideLayout)
         # Add a title to the pie chart
         c.addTitle(*optdict['addtitle'])	
         # Draw the pie in 3D

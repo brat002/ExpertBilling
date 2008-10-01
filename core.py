@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 #from encodings import idna
 
-import time, datetime, os, sys
+import time, datetime, os, sys, gc
 from utilites import parse_custom_speed, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
@@ -1850,6 +1850,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         imgs = cddrawer.cddraw(*args, **kwargs)
         listcur.close()
         listconnection.close()
+        gc.collect()
         return imgs
 
     @authentconn
