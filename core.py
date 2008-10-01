@@ -1168,7 +1168,7 @@ class settlement_period_service_dog(Thread):
                 tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, 
                 tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time,
                 shedulelog.balance_blocked::timestamp without time zone, shedulelog.prepaid_traffic_accrued::timestamp without time zone, shedulelog.prepaid_time_accrued::timestamp without time zone
-                FROM billservice_account as account  
+                FROM billservice_account as account
                 LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
                 JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
                 JOIN billservice_accounttarif AS accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif
@@ -1194,6 +1194,7 @@ class settlement_period_service_dog(Thread):
                         time_start=acct_datetime
 
                     period_start, period_end, delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length)
+                    #prev_period_start, prev_period_end, prev_delta = settlement_period_info(time_start=time_start, repeat_after=length_in, repeat_after_seconds=length, prev=True)
                 else:
                     time_start = acct_datetime
                     period_start = acct_datetime
@@ -1201,8 +1202,8 @@ class settlement_period_service_dog(Thread):
                     #WTF???
 
                 #нужно производить в конце расчётного периода
-
-                if (ballance_checkout is None and  (datetime.datetime.now()-time_start).seconds+(datetime.datetime.now()-time_start).days*86400>=delta) or (ballance_checkout!=None and ballance_checkout<=period_start):
+                if ballance_checkout==None: ballance_checkout = acct_datetime
+                if ballance_checkout<period_start:
                     #Снять сумму до стоимости тарифного плана
                     if reset_tarif_cost:
                         self.cur.execute(
@@ -1230,6 +1231,7 @@ class settlement_period_service_dog(Thread):
 
                         self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;" % account_id)
                         shedulelog_id =self.cur.fetchone()
+                        print "shedulelog_id", shedulelog_id
 
                         if shedulelog_id==None:
                             self.cur.execute("""
@@ -1238,7 +1240,7 @@ class settlement_period_service_dog(Thread):
 
 
                     #Если балланса не хватает - отключить пользователя
-                self.connection.commit()
+                    self.connection.commit()
                 if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
                     #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                     #В начале каждого расчётного периода
@@ -1267,8 +1269,12 @@ class settlement_period_service_dog(Thread):
                         UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
                         """ % (account_id))                            
 
-                self.connection.commit()
-                if (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start) and reset_traffic==True:
+                    self.connection.commit()
+                if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
+                if (prepaid_traffic_reset<period_start and reset_traffic==True) or traffic_transmit_service_id is None:
+                    """
+                    
+                    """
                     self.cur.execute(
                         """
                         DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
@@ -1314,7 +1320,7 @@ class settlement_period_service_dog(Thread):
                             self.cur.execute("""
                                              INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
                                              """ % account_id)  
-                    self.connection.commit()   
+                    self.connection.commit() 
 
                 if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
 
@@ -1357,7 +1363,8 @@ class settlement_period_service_dog(Thread):
                                     INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
                                     """ % account_id)
                 self.connection.commit()
-
+                
+            #Делаем проводки по разовым услугам тем, кому их ещё не делали
             self.cur.execute("""
                              SELECT account.id as account_id, service.id as service_id, service.name as service_name, service.cost as service_cost, tarif.id as tarif_id, (SELECT id FROM billservice_accounttarif
                              WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
