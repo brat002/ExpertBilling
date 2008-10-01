@@ -14,9 +14,9 @@ import ConfigParser
 config = ConfigParser.ConfigParser()
 config.read("ebs_config.ini")
 
-from logger import redirect_std
+#from logger import redirect_std
 
-redirect_std("nf", redirect=config.get("stdout", "redirect"))
+#redirect_std("nf", redirect=config.get("stdout", "redirect"))
 
 import threading
 import gc
