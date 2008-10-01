@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 
-import socket, select, struct, datetime, time, sys
+import socket, select, struct, datetime, time, sys, os
 if os.name!='nt':
     os.chdir("/opt/ebs/data")
 from IPy import IP
