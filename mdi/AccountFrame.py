@@ -2982,7 +2982,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.delTarifAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         
         self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
-        self.transactionAction.setIcon(QtGui.QIcon("images/add.png"))
+        self.transactionAction.setIcon(QtGui.QIcon("images/pay.png"))
 
         self.transactionReportAction = QtGui.QAction(u'Журнал проводок',self)
         self.transactionReportAction.setIcon(QtGui.QIcon("images/moneybook.png"))
