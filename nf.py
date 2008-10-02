@@ -288,7 +288,7 @@ def applyFlow(keylist):
             dcacheLock.release()
             i = 0
             flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-            print flow.cur.fetchone()
+            #print flow.cur.fetchone()
         except Exception, ex:
             if i:
                 dcacheLock.release()
