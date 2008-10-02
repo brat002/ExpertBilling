@@ -273,6 +273,7 @@ def monitorCache():
         
 def applyFlow(keylist):
     print "len keylist", len(keylist)
+    #TO-DO: переделать на execute_many
     for key in keylist:
         dcacheLock.acquire()
         i = 1

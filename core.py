@@ -19,11 +19,9 @@ import Pyro.constants
 import hmac
 import hashlib
 from hashlib import md5
-#import mdi.orm.models as models
-import settings
+
 import psycopg2
 import psycopg2.extras
-from types import InstanceType  
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 import IPy
 
