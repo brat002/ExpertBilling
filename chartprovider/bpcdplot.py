@@ -3,6 +3,7 @@ import pychartdir
 from pychartdir import *
 from bpbl import bpbl, selstrdict
 import sys, copy
+from collections import defaultdict
 
 portdict = {\
     '1'    : 'tcpmux', '5': 'rje', '7': 'echo', '9': 'discard', '11': 'systat', '13': 'daytime', '15': 'netstat', '17': 'qotd', '18': 'send/rwp', '19': 'chargen', '20': 'ftp-data', '21': 'ftp', '22': 'ssh, pcAnywhere',\
@@ -157,13 +158,13 @@ class cdDrawer(object):
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "userstrafpie":     \
-                                        {'piechart':(660, 600), 'setpiesize': (280, 250, 120), 'addtitle': ('Объем трафика', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
+                                        {'piechart':(600, 280), 'setpiesize': (300, 120, 110), 'addtitle': ('', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
         "sessions":  \
-                                        {'xychart':(640, 280), 'addtitle':("Сессии", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(160, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
+                                        {'xychart':(800, 280), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(120, 40, 620, 220, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
-                                         'settickoffset':0.5, 'addboxwhiskersess':(None, None, None, 0x00cc00, pychartdir.SameAsMainColor, pychartdir.SameAsMainColor), 'dashlinecolor':(0xff0000, DashLine)}, \
+                                         'settickoffset':0.5, 'addboxwhiskersess':(None, None, None, 0x366e97, pychartdir.SameAsMainColor, pychartdir.SameAsMainColor), 'dashlinecolor':(0xff0000, DashLine)}, \
         "trans_deb": \
-                                        {'xychart':(620, 310), 'addtitle':("Транзакции: дебет", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
+                                        {'xychart':(620, 310), 'addtitle':("Транзакции: дебет", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xa2c5de, 0xa2c5de), \
                                          'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
@@ -1069,11 +1070,15 @@ class cdDrawer(object):
 	except:
 	    pass'''
         img = c.makeChart2(0)
-        print x
         formstr = "%.2f " + bstr
         x = [formstr % numx for numx in x]
-        print x
-        kwargs['return']['data'] = [(labels[i], x[i]) for i in range(len(x))]
+        
+        #kwargs['return']['data'] = [(labels[i], x[i]) for i in range(len(x))]
+        lpairs = [(labels[i], x[i]) for i in range(len(x))]
+        labels = [lbl.lower() for lbl in labels]
+        labels.sort()
+
+        kwargs['return']['data'] = [(lpr[0], lpr[1]) for slbl in labels for lpr in lpairs if slbl == lpr[0].lower()]
         # Explode the 1st sector (index = 0)
         #c.setExplode(0)
         # output the chart
@@ -1085,11 +1090,13 @@ class cdDrawer(object):
 	@axes - axes,
 	@args[0:2] - for user = @account_id, with values bounded by dates @date_start, @date_end'''
         try:
-            selstr = selstrdict['sessions'] % (', '.join([str(int) for int in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '))
+            selstr = selstrdict['sessions'] % (', '.join([str(intt) for intt in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '))
         except Exception, ex:
             raise ex
-
+        print "predata:"
         data = bpbl.get_sessions(selstr)
+        print "postdata"
+        #print data
         if not data: print "Dataset is empty"; data = ([], [], [], [], [])
         (t_start, t_end, sessid, username, protocol) = data
         kwargs['return']['data'] = [(username[i], sessid[i], t_start[i], t_end[i], protocol[i]) for i in range(len(sessid))]
@@ -1100,18 +1107,51 @@ class cdDrawer(object):
                 if not t_start[i]: t_start[i] = mins
                 if not t_end[i]: t_end[i] = maxe
         except Exception, ex:
-            print ex
+            print "Session exception: ", ex
+        # if username.count(username[0]) == len(username)
+        ucount = defaultdict(int)
+        for usr in username:
+            ucount[usr] += 1
+        unames = [key.lower() for key in ucount.iterkeys()]
+        unames.sort()
+        unames = [key for uname in unames for key in ucount.iterkeys() if key.lower() == uname]
+        nindex = {}
+        for i in range(len(unames)):
+            nindex[unames[i]] = i
+        tIndexes = []
+        i = 0
+        ''' for uname in unames:
+            for j in range(ucount[uname]):
+                tIndexes.append(i)
+            i += 1
+        print tIndexes'''
+        for uuname in username:
+            tIndexes.append(nindex[uuname])
         t_start = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_start]
         t_end   = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_end]
-        labels  = [username[i] + ' | ' + sessid[i] for i in range(len(sessid))]
+        #labels  = [username[i] + ' | ' + sessid[i] for i in range(len(sessid))]
+        labels = unames
         startDate = chartTime(args[0].year, args[0].month, args[0].day, args[0].hour, args[0].minute, args[0].second)
         endDate   = chartTime(args[1].year, args[1].month, args[1].day, args[1].hour, args[1].minute, args[1].second)
 
 
         optdict = self.cdchartoptdict['sessions']
-
+        #if len(labels) > 12:
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(labels) >= 1:
+            fllen = float(len(labels))
+            mVal = fllen / 10 - ((fllen / 10)*(fllen / 100))            
+            xyc[1] = int(xyc[1]*mVal)            
+            if xyc[1] < 80:
+                xyc[1] = 60 + 20*len(labels)
+            spa[3] = xyc[1] - 60
+            #optdict['xychart'] = xyc
+            #optdict['setplotarea'] = spa
+            
         retlist = []
-        c = XYChart(*optdict['xychart'])
+        #c = XYChart(*optdict['xychart'])
+        c = XYChart(*xyc)
 
         # Add a title to the chart using 15 points Times Bold Itatic font, with white
         # (ffffff) text on a deep blue (000080) background
@@ -1121,7 +1161,8 @@ class cdDrawer(object):
         # white/grey background. Enable both horizontal and vertical grids by setting their
         # colors to grey (c0c0c0). Set vertical major grid (represents month boundaries) 2
         # pixels in width
-        c.setPlotArea(*optdict['setplotarea'])	
+        #c.setPlotArea(*optdict['setplotarea'])	
+        c.setPlotArea(*spa)	
         # swap the x and y axes to create a horziontal box-whisker chart
         c.swapXY()	
         #----
@@ -1147,7 +1188,9 @@ class cdDrawer(object):
         # Set the horizontal ticks and grid lines to be between the bars
         c.xAxis().setTickOffset(optdict['settickoffset'])	
         # Add a box-whisker layer showing the box only.
-        c.addBoxWhiskerLayer(t_start, t_end, *optdict['addboxwhiskersess'])
+        layer = c.addBoxWhiskerLayer(t_start, t_end, *optdict['addboxwhiskersess'])
+        layer.setXData(tIndexes)
+        layer.setDataWidth(int(spa[3]*0.4/len(labels)))
         #return data
 
         # output the chart

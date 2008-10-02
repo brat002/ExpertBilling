@@ -983,6 +983,7 @@ class StatReport(QtGui.QMainWindow):
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
+
         #f = open("aaa.html", "wb")
         #f.write(editor.document().toHtml())
         #f.close()
@@ -990,6 +991,11 @@ class StatReport(QtGui.QMainWindow):
             editor.setReadOnly(True)
         #self.textedit.setDocument(editor.document())
         self.setCentralWidget(editor)
+        #ec = self.centralWidget().cursor()
+        #ec.setShape(QtCore.Qt.ArrowCursor)
+        #self.centralWidget().setCursor(ec)
+        #print ec.shape()
+        #print self.centralWidget().cursor().shape()
 
         if self.child.send_to_printer_checkBox.checkState() == 2:
             #self.print_report(self.centralWidget().document(), 5)
