@@ -1104,10 +1104,14 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.all_users_listWidget = QtGui.QListWidget(self.usersTab)
         self.all_users_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_users_listWidget.setObjectName("all_users_listWidget")
+        self.all_users_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.all_users_listWidget.setSelectionRectVisible(True)
 
         self.selected_users_listWidget = QtGui.QListWidget(self.usersTab)
         self.selected_users_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_users_listWidget.setObjectName("selected_users_listWidget")
+        self.selected_users_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.selected_users_listWidget.setSelectionRectVisible(True)
 
         self.add_user_toolButton = QtGui.QToolButton(self.usersTab)
         self.add_user_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
@@ -1132,10 +1136,14 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.selected_servers_listWidget = QtGui.QListWidget(self.serversTab)
         self.selected_servers_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_servers_listWidget.setObjectName("selected_servers_listWidget")
+        self.selected_servers_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.selected_servers_listWidget.setSelectionRectVisible(True)
 
         self.all_servers_listWidget = QtGui.QListWidget(self.serversTab)
         self.all_servers_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_servers_listWidget.setObjectName("all_servers_listWidget")
+        self.all_servers_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.all_servers_listWidget.setSelectionRectVisible(True)
 
         self.del_server_toolButton = QtGui.QToolButton(self.serversTab)
         self.del_server_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
@@ -1164,6 +1172,8 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.all_classes_listWidget = QtGui.QListWidget(self.classesTab)
         self.all_classes_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
         self.all_classes_listWidget.setObjectName("all_classes_listWidget")
+        self.all_classes_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.all_classes_listWidget.setSelectionRectVisible(True)
 
         self.del_class_toolButton = QtGui.QToolButton(self.classesTab)
         self.del_class_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
@@ -1180,6 +1190,8 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.selected_classes_listWidget = QtGui.QListWidget(self.classesTab)
         self.selected_classes_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
         self.selected_classes_listWidget.setObjectName("selected_classes_listWidget")
+        self.selected_classes_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.selected_classes_listWidget.setSelectionRectVisible(True)
         self.tabWidget.addTab(self.classesTab,"")
 
         self.portsTab = QtGui.QWidget()
