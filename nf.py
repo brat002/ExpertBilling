@@ -120,7 +120,7 @@ class NetFlowPacket:
                 nas_id = cur.fetchone()[0]
                 nascache[addrport[0]] = nas_id
             except Exception, e:
-                print e
+                #print e
                 return
         flows=[]
         if nas_id!=None:	    
@@ -135,13 +135,19 @@ class NetFlowPacket:
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
 
-
+            cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+            accounts_ipn = [x[0] for x in cur.fetchall()]
+            
+            cur.execute("SELECT vpn_ip_address FROM billservice_account;")
+            accounts_vpn =  [x[0] for x in cur.fetchall()]
+            #print "111",accounts_ipn, accounts_vpn
             for n in range(self.hdr.num_flows):
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
                 flow_data = data[offset:offset + flow_class.LENGTH]
                 flow=flow_class(flow_data)
                 flow.nas_id = nas_id
-                self.fc.addflow5(flow)
+                if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
+                    self.fc.addflow5(flow)
 
 
 class FlowCache:
