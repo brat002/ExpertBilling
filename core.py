@@ -1436,6 +1436,7 @@ class ipn_service(Thread):
                 account.ipn_status as account_ipn_status, 
                 account.ipn_speed as account_ipn_speed, 
                 account.ipn_added as ipn_added,
+                account.status as account_status,
                 tariff.id as tarif_id, nas.name as nas_name,
                 nas."type" as nas_type, nas.user_enable_action as nas_user_enable, 
                 nas.user_disable_action as nas_user_disable,
@@ -1461,7 +1462,7 @@ class ipn_service(Thread):
                 recreate_speed = False
                 period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
 
-                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_balance_blocked']==False:
+                if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_status']==True and row['account_balance_blocked']==False:
                     #print u"ВКЛЮЧАЕМ",row['account_username']
                     #шлём команду, на включение пользователя, account_ipn_status=True
                     if row['ipn_added']==False:
@@ -1483,7 +1484,7 @@ class ipn_service(Thread):
                         recreate_speed = True
 
                         if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
-                elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True) and row['account_ipn_status']==True:
+                elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True or row['account_status']==False) and row['account_ipn_status']==True:
 
                     #шлём команду на отключение пользователя,account_ipn_status=False
                     #print u"ОТКЛЮЧАЕМ",row['account_username']
