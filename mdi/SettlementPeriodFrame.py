@@ -231,6 +231,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
 
         self.addAction = QtGui.QAction(self)
         self.addAction.setIcon(QtGui.QIcon("images/add.png"))
