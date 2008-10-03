@@ -114,7 +114,6 @@ class NetFlowPacket:
         if len(data) < 16:
             raise ValueError, "Short packet"
 
-
         nas_id = nascache.get(addrport[0])
         if not nas_id:
             cur.execute("""SELECT id from nas_nas WHERE  ipaddress='%s'""" % addrport[0])
@@ -137,15 +136,16 @@ class NetFlowPacket:
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
+            global ipncache
+            global vpncache
             if not ipncache:
                 #cur.execute("SELECT array(SELECT ipn_ip_address FROM billservice_account);")
                 cur.execute("SELECT ipn_ip_address FROM billservice_account;")
-                ipncache.fromkeys([x[0] for x in cur.fetchall()], 1)
-                print ipncache
+                ipncache = ipncache.fromkeys([x[0] for x in cur.fetchall()], 1)
             if not vpncache:
+                vpncache = {}
                 cur.execute("SELECT vpn_ip_address FROM billservice_account;")
-                vpncache.fromkeys([x[0] for x in cur.fetchall()], 1)
-                print vpncache
+                vpncache = vpncache.fromkeys([x[0] for x in cur.fetchall()], 1)
             
             '''cur.execute("SELECT ipn_ip_address FROM billservice_account;")
             accounts_ipn = [x[0] for x in cur.fetchall()]
@@ -332,6 +332,7 @@ def main ():
             NetFlowPacket(data, addrport, tFC)
         except Exception, ex:
             print "NFP exception %d: %s" % (i, ex)
+            #raise ex
             #ff += 1
             #time.sleep(0.1)
         i += 1
