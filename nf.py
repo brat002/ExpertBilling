@@ -24,6 +24,7 @@ import gc
 
 trafficclasses_pool = []
 dcache   = {}
+global ipncache, vpncache
 nascache = {}
 ipncache = {}
 vpncache = {}
@@ -136,18 +137,17 @@ class NetFlowPacket:
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
-            global ipncache
-            global vpncache
+            global ipncache, vpncache
             if not ipncache:
-                print 'reset ipn'
+                #print 'reset ipn'
                 #cur.execute("SELECT array(SELECT ipn_ip_address FROM billservice_account);")
                 cur.execute("SELECT ipn_ip_address FROM billservice_account;")
                 ipncache = ipncache.fromkeys([x[0] for x in cur.fetchall()], 1)
             if not vpncache:
-                print 'reset vpn'
+                #print 'reset vpn'
                 cur.execute("SELECT vpn_ip_address FROM billservice_account;")
                 vpncache = vpncache.fromkeys([x[0] for x in cur.fetchall()], 1)
-            
+            #print ipncache, vpncache
             '''cur.execute("SELECT ipn_ip_address FROM billservice_account;")
             accounts_ipn = [x[0] for x in cur.fetchall()]
             
@@ -181,6 +181,7 @@ class FlowCache:
         return method(flow)
 
     def addflow5(self, flow):
+        global ipncache, vpncache, nascache
         #assert isinstance(flow, Flow5)
         key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
         #key = ''.join([str(var) for var in (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)])
@@ -204,7 +205,7 @@ class FlowCache:
                     nascache = {}
                     ipncache = {}
                     vpncache = {}
-                    print 'reset'
+                    #print 'reset'
             except Exception, ex:
                 if i:
                     dcacheLock.release()
