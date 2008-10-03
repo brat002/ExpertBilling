@@ -1453,7 +1453,7 @@ class ipn_service(Thread):
                 JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
                 JOIN nas_nas as nas ON nas.id=account.nas_id
                 LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-                WHERE account.status=True and accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0'
+                WHERE accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0'
                 ;""")
             rows=self.cur.fetchall()
             for row in rows:
