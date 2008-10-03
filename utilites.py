@@ -164,7 +164,34 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
             return False
     return False
 
+def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
+        """
+        Функция для вклюения/выключения пользователй на сервере доступа
+        """
+        command_dict={
+                             'access_type':access_type,
+                             'username': account_name,
+                             'user_id':account_id,
+                             'account_ipn_ip': account_ipn_ip,
+                             'account_vpn_ip': account_vpn_ip,
+                             'account_mac_address':account_mac_address,
+                             }
 
+
+        #print 'command_dict=', command_dict
+        
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
+        
+        #print command_string
+        try:
+            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+            print 'ssh connected'
+            res=sshclient.send_command(command_string)
+            sshclient.close_chanel()
+            return True
+        except Exception, e:
+            print e
+            return False
 
 def in_period(time_start, length, repeat_after, now=None):
         """
