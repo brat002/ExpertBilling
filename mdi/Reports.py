@@ -909,9 +909,9 @@ class StatReport(QtGui.QMainWindow):
         super(StatReport, self).__init__()
         self.connection = connection
         self.chartinfo = chartinfo
-        
+        self.printThread = textEditPrinter(self.parent())
         self.child = ReportOptionsDialog(self.connection, self.chartinfo[1][0])
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,1000,700).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,1050,700).size()).expandedTo(self.minimumSizeHint()))
         self.textedit = QtGui.QTextEdit(self)
         
         self.setCentralWidget(self.textedit)
@@ -935,7 +935,13 @@ class StatReport(QtGui.QMainWindow):
         self.configureAction.setObjectName("configureAction")
         self.toolBar.addAction(self.configureAction)
         
+        self.printAction = QtGui.QAction(self)
+        self.printAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.printAction.setObjectName("printAction")
+        self.toolBar.addAction(self.printAction)
+        
         QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        QtCore.QObject.connect(self.printAction, QtCore.SIGNAL("triggered()"), self.printDocument)
         
         self.retranslateUi()
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -996,22 +1002,49 @@ class StatReport(QtGui.QMainWindow):
         #self.centralWidget().setCursor(ec)
         #print ec.shape()
         #print self.centralWidget().cursor().shape()
-
+        self.show()
+        self.update()
+        self.show()
         if self.child.send_to_printer_checkBox.checkState() == 2:
-            #self.print_report(self.centralWidget().document(), 5)
-            thread.start_new_thread(self.print_report, (self.centralWidget().document(), 2))
+            pass
+            #self.printThread.run(self.centralWidget().document())
+            #self.print_report(self.centralWidget().document(), 1)
+            #thread.start_new_thread(print_report, (self.centralWidget().document(), 1))
             
-    def print_report(self, printdoc, sleeptime):
-        time.sleep(sleeptime)
-        document = printdoc
-        printer = QtGui.QPrinter()
-    
+    def printDocument(self):
+        document = self.centralWidget().document()
+        printer = QtGui.QPrinter()        
         dialog = QtGui.QPrintDialog(printer, self)
         dialog.setWindowTitle(self.tr("Print Document"))
         if dialog.exec_() != QtGui.QDialog.Accepted:
             return
+        printer.setFullPage(True)
         document.print_(printer)
         
+def print_report(printdoc, sleeptime):
+    time.sleep(sleeptime)
+    #document = printdoc
+    printer = QtGui.QPrinter()
+    
+    dialog = QtGui.QPrintDialog(printer, None)
+    dialog.setWindowTitle(parent.tr("Print Document"))
+    if dialog.exec_() != QtGui.QDialog.Accepted:
+        return
+    printer.setFullPage(True)
+    document.print_(printer)
+    
+class textEditPrinter(QtCore.QThread):
+    def run(self, printdoc):
+        time.sleep(2)
+        #document = self.parent().centralWidget().document()
+        document = printdoc
+        printer = QtGui.QPrinter()        
+        dialog = QtGui.QPrintDialog(printer, self.parent())
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        printer.setFullPage(True)
+        document.print_(printer)
 class ReportOptionsDialog(QtGui.QDialog):
     def __init__(self, connection, chartclass):
         super(ReportOptionsDialog, self).__init__()
