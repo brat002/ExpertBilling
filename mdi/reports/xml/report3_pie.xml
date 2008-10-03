@@ -6,14 +6,14 @@
   <textformat name="stf2" setFontWeight="72" setFontPointSize="11" setForeground="#5e93b6" />
   <textformat name="stf3" setFontWeight="36" setFontPointSize="11" setForeground="#000000" />
   <blockformat name="centerbf" setAlignment="22" />
-  <frame name="topframe"  format="currentedit" setWidth="1000"  fname="topff" padding="16">
+  <frame name="topframe"  format="currentedit" setWidth="840"  fname="topff" padding="0">
 	<image path="images/reports/header.png"/>	
-	<frame name="uprblockfr" format="new" fname="ubff" setHeight="50" setWidth="1000" padding="4"  setBackground="#323232">
+	<frame name="uprblockfr" format="new" fname="ubff" setHeight="50" setWidth="840" padding="4"  setBackground="#323232">
 		<insertblock blockformat="centerbf"/>
 		<inserttext text="Траффик пользователей" textformat="whitetf10" />
 		<insertblock />
 	</frame>
-	<frame name="cframe"  type="existing" format="new" setWidth="1000" fname="cff">
+	<frame name="cframe"  format="new" setWidth="840" fname="cff">
 	<stable name="schtbl" rownum="1" colnum="2" ftype="new" fname="schtf" setAlignment="22" setCellPadding="0" setBorderStyle="0">
 		<scell row="0" col="0">
 			<chart library="pychartdir" name="chart1" type="userstrafpie">	
@@ -28,7 +28,7 @@
 		</scell>
 	</stable>				
 	</frame>
-	<frame name="chtbl2fr" datasource="args" type="current" format="currentnew" setWidth="1000" fname="chtbl2ff">
+	<frame name="chtbl2fr" datasource="args" type="current" format="currentnew" setWidth="840" fname="chtbl2ff">
 		<insertblock />
 		<insertblock blockformat="centerbf"/>
 		<inserttext text="ПЕРИОД: " textformat="stf1" />

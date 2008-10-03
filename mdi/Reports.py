@@ -909,7 +909,6 @@ class StatReport(QtGui.QMainWindow):
         super(StatReport, self).__init__()
         self.connection = connection
         self.chartinfo = chartinfo
-        self.printThread = textEditPrinter(self.parent())
         self.child = ReportOptionsDialog(self.connection, self.chartinfo[1][0])
         self.resize(QtCore.QSize(QtCore.QRect(0,0,1050,700).size()).expandedTo(self.minimumSizeHint()))
         self.textedit = QtGui.QTextEdit(self)
@@ -1021,30 +1020,9 @@ class StatReport(QtGui.QMainWindow):
         printer.setFullPage(True)
         document.print_(printer)
         
-def print_report(printdoc, sleeptime):
-    time.sleep(sleeptime)
-    #document = printdoc
-    printer = QtGui.QPrinter()
+
     
-    dialog = QtGui.QPrintDialog(printer, None)
-    dialog.setWindowTitle(parent.tr("Print Document"))
-    if dialog.exec_() != QtGui.QDialog.Accepted:
-        return
-    printer.setFullPage(True)
-    document.print_(printer)
-    
-class textEditPrinter(QtCore.QThread):
-    def run(self, printdoc):
-        time.sleep(2)
-        #document = self.parent().centralWidget().document()
-        document = printdoc
-        printer = QtGui.QPrinter()        
-        dialog = QtGui.QPrintDialog(printer, self.parent())
-        dialog.setWindowTitle(self.tr("Print Document"))
-        if dialog.exec_() != QtGui.QDialog.Accepted:
-            return
-        printer.setFullPage(True)
-        document.print_(printer)
+
 class ReportOptionsDialog(QtGui.QDialog):
     def __init__(self, connection, chartclass):
         super(ReportOptionsDialog, self).__init__()

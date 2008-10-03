@@ -122,7 +122,7 @@ class NetFlowPacket:
                 nas_id = cur.fetchone()[0]
                 nascache[addrport[0]] = nas_id
             except Exception, e:
-                #print e
+                print e
                 return
         flows=[]
         if nas_id!=None:	    
@@ -327,6 +327,8 @@ def main ():
                 #print "len dcache ", len(dcache)
                 #print "time", time.clock()
                 #print nascache
+            print ipncache
+            print vpncache
             cur.connection.commit()
         try:
             NetFlowPacket(data, addrport, tFC)
