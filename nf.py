@@ -139,11 +139,12 @@ class NetFlowPacket:
             global ipncache
             global vpncache
             if not ipncache:
+                print 'reset ipn'
                 #cur.execute("SELECT array(SELECT ipn_ip_address FROM billservice_account);")
                 cur.execute("SELECT ipn_ip_address FROM billservice_account;")
                 ipncache = ipncache.fromkeys([x[0] for x in cur.fetchall()], 1)
             if not vpncache:
-                vpncache = {}
+                print 'reset vpn'
                 cur.execute("SELECT vpn_ip_address FROM billservice_account;")
                 vpncache = vpncache.fromkeys([x[0] for x in cur.fetchall()], 1)
             
@@ -200,13 +201,10 @@ class FlowCache:
                     tmr.start()
                     self.keylist = []
                     self.stime = time.time()
-                    if j == 6:
-                        #aggrNum = len(dcache) / 15
-                        nascache = {}
-                        ipncache = {}
-                        vpncache = {}
-                        j = 0
-                    j += 1
+                    nascache = {}
+                    ipncache = {}
+                    vpncache = {}
+                    print 'reset'
             except Exception, ex:
                 if i:
                     dcacheLock.release()
@@ -347,7 +345,7 @@ def main ():
 
 
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing', 'Billing.NemirovOnline']:
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline']:
     import sys
     print "License key error. Exit from application."
     sys.exit(1)
