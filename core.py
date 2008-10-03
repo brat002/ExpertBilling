@@ -717,9 +717,8 @@ class NetFlowAggregate(Thread):
 
                 tarif_mode=False
                 #print nf_id
-
+                #Если у тарифа нет услуги доступа по трафику, значит метим статистику
                 if traffic_transmit_service:
-
                 #Выбираем временные интервалы из услуги по трафику
                     '''cur.execute(
                         """
