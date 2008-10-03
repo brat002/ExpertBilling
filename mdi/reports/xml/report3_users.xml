@@ -10,24 +10,41 @@
 		<image path="images/reports/header.png" />
 		<frame name="uprblockfr" format="new" fname="ubff" setHeight="50" setWidth="840" padding="4" setBackground="#323232">
 			<insertblock blockformat="centerbf" />
-			<inserttext text="Отчёт по классам траффика с выбором сервера доступа" textformat="whitetf10" />
+			<inserttext text="Отчёт по классам траффика с выбором пользователя" textformat="whitetf10" />
 			<insertblock />
 		</frame>
 		<frame name="cframe" type="existing" format="new" setWidth="840" fname="cff">
 			<insertblock blockformat="centerbf" />
 
-	<chart library="pychartdir" name="chart1" type="nfs_total_classes_speed">
+	<chart library="pychartdir" name="chart1" type="nfs_total_users_traf">
 		<getdata>
-			<selstring name="get_classes" dataid="ch1datanas"/>
+			<selstring name="get_tarifs" dataid="ch1data2"/>
+		</getdata>
+		<getdata>
+			<selstring name="get_accounts" dataid="ch1data1"/>		
+		</getdata>
+		<getdata>
+			<selstring name="get_nas" dataid="ch1datanas"/>
 		</getdata>		
 	</chart>
 	<insertblock blockformat="centerbf" />
+			<stable name="schtbl1" rownum="1" colnum="1" ftype="new" fname="schtf" setAlignment="22" setCellPadding="0" setBorderStyle="0">
+				<scell row="0" col="0">
+					<table name="tbl2" columns="5" type="normal" datasource="ch1data1" arheader="Выбранные пользователи: "  fname="tf2" ftype="new" setCellPadding="2" setCellSpacing="2"  setBackground="#ececec" setAlignment="22">
+					<column name="ID" type="int" />
+					<column name="username" type="string" />
+					<column name="vpn ip" type="string" />
+					<column name="upn ip" type="string" />
+					<column name="тарифы" type="table" datasource="ch1data2" imerge="0" ibase="1" tftype="new" tfname="zomg" setBorder="1" colConstrType="percentage" colConstraints="70, 30" setAlignment="22"/>
+				</table>
+				</scell>
+			</stable>
 			<insertblock blockformat="centerbf" />
 			<stable name="schtbl2" rownum="1" colnum="1" ftype="new" fname="schtf" setAlignment="22" setCellPadding="0" setBorderStyle="0">
 				<scell row="0" col="0">
-					<table name="tbl3" columns="2" type="normal" datasource="ch1datanas" ftype="new" setCellPadding="2" setBackground="#ececec" fname="tf2" arheader="Выбранные направления: ">
+					<table name="tbl3" columns="2" type="normal" datasource="ch1datanas" ftype="new" setCellPadding="2" setBackground="#ececec" fname="tf2" arheader="Выбранные серверы доступа: ">
 					<column name="Имя" type="string" />
-					<column name="Вес" type="int" />
+					<column name="Тип" type="string" />
 				</table>
 				</scell>
 			</stable>

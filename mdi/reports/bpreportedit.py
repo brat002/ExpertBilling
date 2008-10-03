@@ -390,8 +390,7 @@ class reportConstructor(Dispatcher, ContentHandler):
             self.objdict['curtable']['arheadbf']  = self.objdict['blockformat'][attrs['arheadbf']]
         if attrs.has_key('datasource'):
             self.curdata = self.objdict['data'][attrs['datasource']]
-            if not self.curdata:
-                return 1
+            #if not self.curdata: return 1
 
 
         if attrs['ftype'] == 'new':

@@ -34,15 +34,16 @@ from CardsFrame import CardsChild
 #загрузка канала
 #общий трафик/загрузка
 #использование канала пользователями
-_reportsdict = [['report3_classes.xml', ['nfs_total_classes_speed'], 'Загрузка по направлениям'],\
-                ['report3_tus_nas.xml', ['nfs_u_traf'], 'Трафик пользователей'], \
-                ['report3_nass.xml', ['nfs_n_traf'], 'Загрузка по серверам доступа'],\
+_reportsdict = [['report3_total.xml', ['nfs_total_traf'], 'Общий трафик'], \
+                ['report3_total_cl.xml', ['nfs_total_traf_bydir'], 'Общий трафик по типам'],\
+                ['report3_users.xml', ['nfs_u_traf'], 'Трафик пользователей'], \
                 ['report3_pie.xml', ['userstrafpie'], 'Трафик пользователей (пирог)'], \
+                ['report3_nass.xml', ['nfs_n_traf'], 'Загрузка по серверам доступа'],\
+                ['report3_classes.xml', ['nfs_total_classes_speed'], 'Загрузка по направлениям'],\
                 ['report3_port.xml', ['nfs_port_speed'], 'Скорость по портам'], \
                 ['report3_sess.xml', ['sessions'], 'Сессии пользователей'], \
-                ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли'], \
-                ['report3_ttr_nas.xml', ['nfs_total_traf'], 'Общий трафик'], \
-                ['report3_tutr_nas.xml', ['nfs_total_traf_bydir'], 'Общий трафик по типам']\
+                ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли'] \
+                
             ]
 
 #разделитель для дат по умолчанию
