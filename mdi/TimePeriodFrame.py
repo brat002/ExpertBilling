@@ -236,7 +236,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.addConsAction)
         self.tableWidget.addAction(self.delConsAction)
         
-        
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.addAction(self.addPeriodAction)
         self.toolBar.addAction(self.delPeriodAction)
         self.toolBar.addSeparator()

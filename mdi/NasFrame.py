@@ -495,7 +495,8 @@ class NasMdiChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.addAction)
         self.tableWidget.addAction(self.delAction)
         self.tableWidget.addAction(self.configureAction)
-
+        
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.addAction(self.addAction)
         self.toolBar.addAction(self.delAction)
         self.toolBar.addAction(self.configureAction)

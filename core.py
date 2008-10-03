@@ -1512,7 +1512,7 @@ class ipn_service(Thread):
 
                 #print newspeed, row['ipn_speed'],row['ipn_state']
                 #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
-                if newspeed!=row['ipn_speed'] or row['ipn_state']==False or recreate_speed==True:
+                if newspeed!=row['ipn_speed'] or (row['ipn_state']==False and newspeed!=row['ipn_speed']) or recreate_speed==True:
                     #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
                     #отправляем на сервер доступа новые настройки скорости, помечаем state=True
 

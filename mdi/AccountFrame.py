@@ -2984,7 +2984,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
         self.transactionAction.setIcon(QtGui.QIcon("images/pay.png"))
 
-        self.transactionReportAction = QtGui.QAction(u'Журнал проводок',self)
+        self.transactionReportAction = QtGui.QAction(u'История платежей',self)
         self.transactionReportAction.setIcon(QtGui.QIcon("images/moneybook.png"))
 
         self.actionDisableSession = QtGui.QAction(u'Отключить на сервере доступа',self)
@@ -3020,7 +3020,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                         
         self.tableWidget.addAction(self.actionAddAccount)
         self.tableWidget.addAction(self.actionDeleteAccount)
-        
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.addAction(self.addTarifAction)
         self.toolBar.addAction(self.delTarifAction)
         self.toolBar.addSeparator()        
