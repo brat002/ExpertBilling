@@ -159,7 +159,7 @@ class NetFlowPacket:
                 flow=flow_class(flow_data)
                 flow.nas_id = nas_id
                 #if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
-                if vpncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr) or ipncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr):
+                if vpncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr) or ipncache.has_key(flow.src_addr) or ipncache.has_key(flow.dst_addr):
                     self.fc.addflow5(flow)
 
 
