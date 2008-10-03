@@ -2,7 +2,7 @@
 #from encodings import idna
 
 import time, datetime, os, sys, gc
-from utilites import parse_custom_speed, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
+from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
 import threading
