@@ -1140,11 +1140,11 @@ class cdDrawer(object):
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
         if len(labels) >= 1:
-            fllen = float(len(labels))
-            mVal = fllen / 10 - ((fllen / 10)*(fllen / 100))            
-            xyc[1] = int(xyc[1]*mVal)            
-            if xyc[1] < 80:
-                xyc[1] = 60 + 20*len(labels)
+            #fllen = float(len(labels))
+            #mVal = fllen / 10 - ((fllen / 10)*(fllen / 100))            
+            #xyc[1] = int(xyc[1]*mVal)            
+            #if xyc[1] < 80:
+            xyc[1] = 60 + 14*len(labels)
             spa[3] = xyc[1] - 60
             #optdict['xychart'] = xyc
             #optdict['setplotarea'] = spa
@@ -1190,7 +1190,8 @@ class cdDrawer(object):
         # Add a box-whisker layer showing the box only.
         layer = c.addBoxWhiskerLayer(t_start, t_end, *optdict['addboxwhiskersess'])
         layer.setXData(tIndexes)
-        layer.setDataWidth(int(spa[3]*0.4/len(labels)))
+        #layer.setDataWidth(int(spa[3]*0.4/len(labels)))
+        layer.setDataWidth(8)
         #return data
 
         # output the chart

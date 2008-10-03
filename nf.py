@@ -25,11 +25,14 @@ import gc
 trafficclasses_pool = []
 dcache   = {}
 nascache = {}
+ipncache = {}
+vpncache = {}
 dcacheLock = threading.Lock()
 #nascache = []
 #tdMinute = datetime.timedelta(seconds=60)
 sleepTime = 291.0
 aggrTime = 120.0
+aggrNum = 1500
 
 
 class Flow(object):
@@ -134,19 +137,29 @@ class NetFlowPacket:
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
             # получаем классы трафика
-
-            cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+            if not ipncache:
+                #cur.execute("SELECT array(SELECT ipn_ip_address FROM billservice_account);")
+                cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+                ipncache.fromkeys([x[0] for x in cur.fetchall()], 1)
+                print ipncache
+            if not vpncache:
+                cur.execute("SELECT vpn_ip_address FROM billservice_account;")
+                vpncache.fromkeys([x[0] for x in cur.fetchall()], 1)
+                print vpncache
+            
+            '''cur.execute("SELECT ipn_ip_address FROM billservice_account;")
             accounts_ipn = [x[0] for x in cur.fetchall()]
             
             cur.execute("SELECT vpn_ip_address FROM billservice_account;")
-            accounts_vpn =  [x[0] for x in cur.fetchall()]
+            accounts_vpn =  [x[0] for x in cur.fetchall()]'''
             #print "111",accounts_ipn, accounts_vpn
             for n in range(self.hdr.num_flows):
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
                 flow_data = data[offset:offset + flow_class.LENGTH]
                 flow=flow_class(flow_data)
                 flow.nas_id = nas_id
-                if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
+                #if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
+                if vpncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr) or ipncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr):
                     self.fc.addflow5(flow)
 
 
@@ -176,17 +189,24 @@ class FlowCache:
             #self.stime = time.time()
             dcacheLock.acquire()
             i = 1
+            j = 0
             try:
                 dcache[key] = flow
                 i=0
                 dcacheLock.release()
                 self.keylist.append(key)
-                #print len(self.keylist)
-                if (len(self.keylist) == 1500) or ((self.stime + 10.0) < time.time()):
+                if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
                     tmr = threading.Timer(aggrTime, applyFlow, (self.keylist,))
                     tmr.start()
                     self.keylist = []
                     self.stime = time.time()
+                    if j == 6:
+                        #aggrNum = len(dcache) / 15
+                        nascache = {}
+                        ipncache = {}
+                        vpncache = {}
+                        j = 0
+                    j += 1
             except Exception, ex:
                 if i:
                     dcacheLock.release()
@@ -205,39 +225,9 @@ class FlowCache:
             except Exception, ex:
                 if i:
                     dcacheLock.release()
-                #print "append rec ex: ", ex
-            #finally:
-                #dcacheLock.release()
-                
-        '''if not val:
-            flow.cur = cur.connection.cursor()
-            flow.stime = time.time()
-            dcacheLock.acquire()
-            try:
-                dcache[key] = flow
-            except Exception, ex:
-                print "create rec ex: ", ex
-            finally:
-                dcacheLock.release()
-        else:
-            dcacheLock.acquire()
-            try:
-                dflow= dcache[key]
-                dflow.octets  += flow.octets
-                dflow.packets += flow.packets
-                dflow.finish = flow.finish
-                #if (dflow.stime + tdMinute) <=  datetime.datetime.now():
-                if (dflow.stime + aggrTime + (flow.octets % 10) +  (1 / (flow.src_port + 1)) ) <= time.time():
-                    flow = dcache.pop(key)
-                    #time.sleep (0.003)
-                    flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-            except Exception, ex:
-                print "append rec ex: ", ex
-            finally:
-                dcacheLock.release()'''
+
             
-def monitorCache():
-    
+def monitorCache():    
     while True:
         #popList = []
         for k, v in dcache.items():
@@ -303,7 +293,6 @@ def main ():
     addrs = socket.getaddrinfo(settings.NF_HOST, settings.NF_PORT, socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
     socks = []
-
     for addr in addrs:
         sock = socket.socket(addr[0], addr[1])
         sock.bind(addr[4])
