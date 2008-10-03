@@ -1,8 +1,4 @@
-import sys, os, time, string, platform
-
-p_name = platform.uname()[0]
-    
-    
+import sys, os, time, string
 
 CDPYVersion = 0x401
 
