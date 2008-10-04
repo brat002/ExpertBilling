@@ -513,6 +513,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.current_page=0
         self.setname = "netflow_frame_header"
+        self.setname_summary = "netflow_frame_summary_header"
         self.protocols_reverse = {
                   '0':'',
                   '37': 'ddp',
@@ -555,12 +556,39 @@ class NetFlowReport(QtGui.QMainWindow):
         self.status_label= QtGui.QLabel()
         #self.status_label.setMinimumWidth(600)
         
-        self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget = tableFormat(self.tableWidget)
-        #self.tableWidget.setColumnHidden(0, False)
-        
-        self.setCentralWidget(self.tableWidget)
+        self.centralwidget = QtGui.QWidget()
+        self.centralwidget.setObjectName("centralwidget")
 
+        self.gridlayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridlayout.setObjectName("gridlayout")
+
+        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
+        self.tabWidget.setObjectName("tabWidget")
+
+        self.tab = QtGui.QWidget()
+        self.tab.setObjectName("tab")
+
+        self.gridlayout1 = QtGui.QGridLayout(self.tab)
+        self.gridlayout1.setObjectName("gridlayout1")
+        
+        self.tableWidget = QtGui.QTableWidget(self.tab)
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridlayout1.addWidget(self.tableWidget,0,0,1,1)
+        self.tabWidget.addTab(self.tab,"")
+        self.tab_2 = QtGui.QWidget()
+        self.tab_2.setObjectName("tab_2")
+
+        self.gridlayout2 = QtGui.QGridLayout(self.tab_2)
+        self.gridlayout2.setObjectName("gridlayout2")
+
+        self.tableWidget_summary = QtGui.QTableWidget(self.tab_2)
+        self.tableWidget_summary = tableFormat(self.tableWidget_summary)
+        self.tableWidget_summary.setObjectName("tableWidget_2")
+        self.gridlayout2.addWidget(self.tableWidget_summary,0,0,1,1)
+        self.tabWidget.addTab(self.tab_2,"")
+        
+        self.setCentralWidget(self.centralwidget)
+        self.gridlayout.addWidget(self.tabWidget,0,0,1,1)
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
@@ -597,12 +625,20 @@ class NetFlowReport(QtGui.QMainWindow):
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Сетевая статистика", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Детальная статистика", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Сводная статистика", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
 
-        columns = ['#', u'Аккаунт', u'Трафик', u'Сетевой протокол', u'IP источника', u'Порт источника', u'IP получателя',  u'Порт получателя', u'Передано байт', u'Дата']
+        columns = ['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
         makeHeaders(columns, self.tableWidget)
         self.tableWidget.setColumnHidden(0, False)
         HeaderUtil.nullifySaved(self.setname)
+        columns = [u'Класс', u'Принято',u'Передано', u'Сумма','']
+        
+        makeHeaders(columns, self.tableWidget_summary)
+        self.tableWidget_summary.setColumnHidden(0, False)
+        HeaderUtil.nullifySaved(self.setname_summary)
+        #self.tableWidget_summary.setS
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -640,11 +676,114 @@ class NetFlowReport(QtGui.QMainWindow):
     def configure(self):
         if self.child.exec_()!=1:
             return
+        if self.tabWidget.currentIndex()==0:
+            self.current_page=0
+            self.refresh()
+        elif self.tabWidget.currentIndex()==1:
+            self.refresh_summary()
+        
+    def addRowSummary(self, value, x, y, color=None):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        if color:
+            headerItem.setBackgroundColor(QtGui.QColor(color))
 
-        self.current_page=0
-        self.refresh()
+        headerItem.setText(unicode(value))
+        self.tableWidget_summary.setItem(x,y,headerItem)
+
+    def summ(self, x,y):
+        if x==None:
+            x=0
+        if y==None:
+            y=0
+        return x+y
                 
+    def refresh_summary(self):
+
+            
+        sql_acc=''
+        if len(self.child.users)>0:
+            sql_acc= """ AND account_id IN (%s) """ % ','.join(map(str, self.child.users))
+            
+        sql="""
+        SELECT class.name, class.color, 
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+        FROM nas_trafficnode as node
+        JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
+        """ % (sql_acc, self.child.start_date, self.child.end_date, sql_acc, self.child.start_date, self.child.end_date)
+
+        if len(self.child.classes)>0:
+            sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
+            
+                    
+        sql+="GROUP BY class.id, class.name,class.color"
+        
+        #print sql
+        data = self.connection.sql(sql)
+        i=0
+        self.tableWidget_summary.clearContents()
+        classes_count = len(data)+1
+        self.tableWidget_summary.setRowCount(classes_count)
+        self.tableWidget_summary.setSpan(i,0,0,5)
+        self.addRowSummary(u"Общая статистика по классам", i, 0, color='#ffffff')
+        i+=1
+        for flow in data:
+            self.addRowSummary(flow.name, i, 0, color=flow.color)
+            self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
+            self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
+            self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
+            self.addRowSummary(u'', i, 4, color=flow.color)
+            i+=1
+
+  
+        if sql_acc!="":
+            if len(self.child.users)>0:
+                sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
+
+            sql="""
+            SELECT account.username, class.name, class.color, 
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+            FROM nas_trafficnode as node
+            JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
+            JOIN billservice_account as account ON account.id IN %s
+            """ % (self.child.start_date, self.child.end_date, self.child.start_date, self.child.end_date, sql_acc)
+    
+            if len(self.child.classes)>0:
+                sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
+                
+                        
+            sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id"
+            
+            print sql
+            data = self.connection.sql(sql)
+            #i=0
+            self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
+            oldusername = ''
+            self.tableWidget_summary.setSpan(i,0,0,5)
+            self.addRowSummary(u"Подробно", i, 0, color='#ffffff')
+            i+=1
+            for flow in data:
+                if flow.username!=oldusername:
+                    self.tableWidget_summary.setRowHeight(i,22)
+                    self.tableWidget_summary.setSpan(i,0,0,5)
+                    self.addRowSummary(flow.username, i, 0, color='#ffffff')
+                    i+=1
+                self.addRowSummary(flow.name, i, 0, color=flow.color)
+                self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
+                self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
+                self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
+                self.addRowSummary(u'', i, 4, color=flow.color)
+                oldusername=flow.username
+                i+=1
+            
+
+            
+                    
     def refresh(self):
+
         
         self.status_label.setText(u"Подождите, идёт обработка.")
 
@@ -716,14 +855,7 @@ class NetFlowReport(QtGui.QMainWindow):
         for flow in flows:
             self.addrow(c, i, 0)
             if self.child.with_grouping_checkBox.checkState()==0:
-                
-                
-                self.addrow(flow.src_port, i, 5)
-                self.addrow(flow.dst_port, i, 7)
-                
-                #self.addrow(flow.nas_name, i, 1)
-                #self.addrow(flow.tarif_name, i, 3)
-                
+
                 if flow.direction=='INPUT':
                     octets_in_summ+=int(flow.octets)
                 elif flow.direction=='OUTPUT':
@@ -763,14 +895,19 @@ class NetFlowReport(QtGui.QMainWindow):
                     self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
 
 
-                self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 9)
+                self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 7)
+                self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 4)
+    
+                self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 5)
             else:
                 self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
+                self.addrow(flow.src_addr, i, 4)
+                self.addrow(flow.dst_addr, i, 5)
                 
             self.addrow(flow.account_username, i, 1)
             
-            self.addrow(humanable_bytes(flow.octets), i, 8)
-            self.addrow(flow.class_name, i, 2, color=flow.class_color)
+            self.addrow(humanable_bytes(flow.octets), i, 6)
+            self.addrow("%s %s" % (flow.class_name, flow.direction), i, 2, color=flow.class_color)
             #self.addrow(flow.direction, i, 4)
             
             
@@ -781,13 +918,7 @@ class NetFlowReport(QtGui.QMainWindow):
            #     self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 5)
             #except:
             #    self.addrow(flow.src_addr, i, 5)
-            self.addrow(flow.src_addr, i, 4)
-                
-            #try:
-            #    self.addrow(socket.gethostbyaddr(flow.dst_addr)[0], i, 7)
-            #except:
-            #    self.addrow(flow.dst_addr, i, 7)
-            self.addrow(flow.dst_addr, i, 6)
+
             
             self.tableWidget.setRowHeight(i, 16)
             

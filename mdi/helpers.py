@@ -29,7 +29,7 @@ def tableFormat(table):
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
     hh.setMaximumHeight(17)
-    hh.setStretchLastSection(False)
+    hh.setStretchLastSection(True)
     hh.setHighlightSections(False)
     hh.setClickable(True)
     hh.setMovable(False)
@@ -316,7 +316,7 @@ def humanable_bytes(a):
             elif a>(1024*1000*1000):
                 return u"%.5s Gb" % unicode(a/(1024*1000*1000))
             elif a<1024:
-                return u"%s b" % unicode(a) 
+                return u"%s B" % unicode(int(a)) 
         except Exception, e:
             print e
     
