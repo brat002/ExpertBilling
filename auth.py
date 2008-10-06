@@ -42,7 +42,7 @@ class Auth:
     def ReturnPacket(self):
             self.Reply=self.packet.CreateReply()
             self.Reply.secret = self.secret
-            print 'secret=', self.secret
+            #print 'secret=', self.secret
             if self.AccessAccept:
                 self.Reply.code=self.code
             else:
@@ -50,7 +50,7 @@ class Auth:
                 
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                   self.Reply.AddAttribute((311,26),self._MSchapSuccess())
-            print self.Reply.secret
+            #print self.Reply.secret
             return self.Reply.ReplyPacket(self.attrs)
         
     def _DetectTypeAuth(self):
