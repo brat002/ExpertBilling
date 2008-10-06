@@ -221,7 +221,7 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 #print 3
                 break
-        print 3
+        #print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
            #print 4
@@ -504,7 +504,7 @@ class HandleAcct(HandleBase):
             #self.connection.commit()
         #print "acct end"
         self.connection.commit()
-        print 5
+        #print 5
         self.connection.close()
         self.cur.close()
         
