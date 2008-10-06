@@ -26,7 +26,7 @@ portdict = {\
     '7648' : 'CU-SeeMe', '7649': 'CU-SeeMe', '7778': 'Unreal', '8010': 'WinGate 2.1', '8080': 'HTTP Proxy', '8181': 'HTTP', '8383': 'IMail WWW', '8875': 'napster', '8888': 'napster', '9050': 'tor', '10008': 'cheese worm', '11371': 'PGP5 Keyserv', '13223': 'PowWow', '13224': 'PowWow', '14237': 'Palm', '14238': 'Palm', \
     '18888': 'LiquidAudio', '21157': 'Activision', '23213': 'PowWow', '23214': 'PowWow', '23456': 'EvilFTP', '26000': 'Quake', '27001': 'QuakeWorld', '27010': 'Half-Life', '27015': 'Half-Life', '27960': 'QuakeIII', '30029': 'AOL Admin', '31337': 'Back Orifice', \
     '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'\
-}
+    }
 
 
 class cdDrawer(object):
