@@ -47,7 +47,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
@@ -59,7 +59,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
@@ -71,13 +71,13 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_traf_bydir":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '', \
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
@@ -89,7 +89,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
@@ -104,7 +104,7 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_speed":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
@@ -113,13 +113,13 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':2},\
         "nfs_port_speed": \
                                         {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по %s порту:", "fonts/LiberationMono-Regular.ttf", 18], \
                                          'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
@@ -131,7 +131,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '', \
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
@@ -143,7 +143,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
@@ -152,7 +152,7 @@ class cdDrawer(object):
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(30, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'',\
+                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
@@ -161,7 +161,7 @@ class cdDrawer(object):
                                         {'piechart':(600, 280), 'setpiesize': (300, 120, 110), 'addtitle': ('', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
         "sessions":  \
                                         {'xychart':(800, 280), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(120, 40, 620, 220, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",),'yaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', \
                                          'settickoffset':0.5, 'addboxwhiskersess':(None, None, None, 0x366e97, pychartdir.SameAsMainColor, pychartdir.SameAsMainColor), 'dashlinecolor':(0xff0000, DashLine)}, \
         "trans_deb": \
                                         {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xa2c5de, 0xa2c5de), \
@@ -170,7 +170,7 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
-                                         'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'yaxissetlabelformat':'{value}', 'currency':''}, \
+                                         'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', 'yaxissetlabelformat':'{value}', 'currency':''}, \
         "trans_crd":  \
                                         {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
                                          'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
@@ -178,7 +178,7 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
-                                         'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'yaxissetlabelformat':'{value}', 'currency':''}
+                                         'settickoffset':0.5, 'addbarlayer':(-1, '', 0),'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', 'yaxissetlabelformat':'{value}', 'currency':''}
                                 }
 
 
@@ -250,33 +250,7 @@ class cdDrawer(object):
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']:
-            c.xAxis().setFormatCondition("align", 31104000)	    
-            c.xAxis().setLabelFormat("{value|yy}")
-
-            delim = "/"
-
-            ddLoc = optdict['xaxissetlabelformat'].find("dd")	    
-            if ddLoc != -1:
-                delim = optdict['xaxissetlabelformat'][ddLoc + 2]
-
-            c.xAxis().setFormatCondition("align", 2592000)
-            c.xAxis().setLabelFormat("{value|mm" + delim + "yy}")
-
-            c.xAxis().setFormatCondition("align", 86400)
-            c.xAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
-
-            c.xAxis().setFormatCondition("else")
-            c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
-
-
-
-        #if optdict['outfill']:
-            # Add out line layer
-            #layer_out = c.addDataLayer(y_out, *optdict['addlinelayer_out'])
-            #layer_out.setXData(times)     
-            #layer_out.setLineWidth(optdict['setlinewidth_out'])
-
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
         layer_in.setXData(times)        
@@ -339,8 +313,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
         layer_in.setXData(times)        
@@ -402,8 +376,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
         layer_in.setXData(times)        
@@ -414,13 +388,6 @@ class cdDrawer(object):
         layer_out = c.addLineLayer(y_out, *optdict['addlinelayer_out'])
         layer_out.setXData(times)     
         layer_out.setLineWidth(optdict['setlinewidth_out'])
-
-        '''# Add tr line layer
-	layer_tr = c.addLineLayer(y_tr, *optdict['addlinelayer_tr'])
-        layer_tr.setXData(times)        
-        # Set the line width
-        layer_tr.setLineWidth(optdict['setlinewidth_tr'])
-	'''
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
@@ -466,8 +433,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
         layer_in.setXData(times)        
@@ -547,7 +514,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
 
         if not data: print "Dataset is empty"; return []
 
@@ -624,8 +592,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
 
         if not data: print "Dataset is empty"; return []
 
@@ -690,8 +658,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_total, *optdict['addlinelayer_total'])
         layer_in.setXData(times)        
@@ -743,8 +711,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         # Add in line layer 
         layer_in = c.addLineLayer(y_total, *optdict['addlinelayer_total'])
         layer_in.setXData(times)        
@@ -801,7 +769,8 @@ class cdDrawer(object):
             #-----------------
             c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr[ykey])
             #-----------------
-            if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+            if optdict['xaxissetlabelformat']:
+                self.update_tick_dates(c, optdict)
             #------------------
             # Add in line layer 
             '''layer_ins = c.addLineLayer(y_ps[ykey]['input'], *optdict['addlinelayer_ins'])
@@ -892,8 +861,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         #if optdict['outfill']:
             # Add out line layer
             #layer_out = c.addDataLayer(y_out, *optdict['addlinelayer_out'])
@@ -911,12 +880,6 @@ class cdDrawer(object):
         layer_out.setXData(times)     
         layer_out.setLineWidth(optdict['setlinewidth_out'])
         layer_out.setBorderColor(optdict['addlinelayer_out'][0])
-
-        '''# Add tr line layer
-	layer_tr = c.addLineLayer(y_tr, *optdict['addlinelayer_tr'])
-        layer_tr.setXData(times)        
-        # Set the line width
-        layer_tr.setLineWidth(optdict['setlinewidth_tr'])'''
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -974,10 +937,9 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         print "----------------------------"
-        print data
         if not data: print "Dataset is empty"; return [] 
 
         for tuple in data:
@@ -1046,8 +1008,8 @@ class cdDrawer(object):
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
         print "----------------------------"
         if not data: print "Dataset is empty"; return [] 
 
@@ -1194,6 +1156,7 @@ class cdDrawer(object):
         #----
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
+
         # Set multi-style axis label formatting. Month labels are in Arial Bold font in "mmm
         # d" format. Weekly labels just show the day of month and use minor tick (by using
         # '-' as first character of format string).
@@ -1216,7 +1179,23 @@ class cdDrawer(object):
         #layer.setDataWidth(int(spa[3]*0.4/len(labels)))
         layer.setDataWidth(8)
         #return data
-
+        if optdict['yaxissetlabelformat']:
+            c.yAxis().setFormatCondition("align", 31104000)	    
+            c.yAxis().setLabelFormat("{value|yy}")
+    
+            delim = "."
+            ddLoc = optdict['yaxissetlabelformat'].find("dd")	    
+            if ddLoc != -1:
+                delim = optdict['yaxissetlabelformat'][ddLoc + 2]
+    
+            c.yAxis().setFormatCondition("align", 2592000)
+            c.yAxis().setLabelFormat("{value|mm" + delim + "yy}")
+    
+            c.yAxis().setFormatCondition("align", 86400)
+            c.yAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
+    
+            c.yAxis().setFormatCondition("else")
+            c.yAxis().setLabelFormat(optdict['yaxissetlabelformat'])
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
@@ -1348,6 +1327,25 @@ class cdDrawer(object):
 
     def get_legend_length(self, users, elements, delta):
         return delta*(users / elements)
+    
+    def update_tick_dates(self, c, optdict):
+        c.xAxis().setFormatCondition("align", 31104000)	    
+        c.xAxis().setLabelFormat("{value|yy}")
+
+        delim = "."
+        ddLoc = optdict['xaxissetlabelformat'].find("dd")	    
+        if ddLoc != -1:
+            delim = optdict['xaxissetlabelformat'][ddLoc + 2]
+
+        c.xAxis().setFormatCondition("align", 2592000)
+        c.xAxis().setLabelFormat("{value|mm" + delim + "yy}")
+
+        c.xAxis().setFormatCondition("align", 86400)
+        c.xAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
+
+        c.xAxis().setFormatCondition("else")
+        c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
+            
     def translate_args(self, *args, **kwargs):
         if '' + args[0] == "nfs_u_traf":
             if len(kwargs['users']) == 1:

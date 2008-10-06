@@ -81,19 +81,19 @@ class bpbl(object):
             m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
             y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	    
             if y_max < 3000:
-                bstr = 'b'
+                bstr = 'B'
             elif y_max < 3000000:
                 nf = lambda y: float(y) / 1024
                 y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
-                bstr  = 'kb'
+                bstr  = 'KB'
             elif y_max < 3000000000:
                 nf = lambda y: float (y) / 1048576
                 y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
-                bstr  = 'Mb'
+                bstr  = 'MB'
             else:
                 nf = lambda y: float (y) / 1073741824
                 y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
-                bstr  = 'Gb'
+                bstr  = 'GB'
         return (times, y_in, y_out, y_tr, bstr, sec)
 
     @staticmethod    
@@ -111,19 +111,19 @@ class bpbl(object):
         y_max /= sec
         #calculate speed and normalize
         if y_max < 8000:
-            nf = lambda y: float (y) / sec
+            nf = lambda y: float (y) * 8/ sec
             y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
             bstr  = 'b\\s'
         elif y_max < 8000000:
-            nf = lambda y: float (y) / (1024*sec)
+            nf = lambda y: float (y) * 8/ (1024*sec)
             y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
-            bstr  = 'kb\\s'
+            bstr  = 'Kb\\s'
         elif y_max < 8000000000:
-            nf = lambda y: float (y) / (1048576*sec)
+            nf = lambda y: float (y) * 8/ (1048576*sec)
             y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
             bstr  = 'Mb\\s'
         else:
-            nf = lambda y: float (y) / (1073741824*sec)
+            nf = lambda y: float (y) * 8/ (1073741824*sec)
             y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
             bstr  = 'Gb\\s'
         return (times, y_in, y_out, y_tr, bstr, sec)
@@ -179,21 +179,21 @@ class bpbl(object):
             y_max = max([max(lst) for lst in y_total_u.itervalues()])
             #print y_max
             if y_max < 8000:
-                bstr = 'b'
+                bstr = 'B'
             elif y_max < 8000000:
                 #y_total = map(lambda y: float(y) / 1024, y_total)
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) / 1024 for y in y_total_u[y_total]]
-                bstr  = 'kb'
+                bstr  = 'KB'
             elif y_max < 8000000000:
                 #y_total = map(lambda y: float(y) / 1048576, y_total)
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) / 1048576 for y in y_total_u[y_total]]
-                bstr  = 'Mb'
+                bstr  = 'MB'
             else:
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) / 1073741824 for y in y_total_u[y_total]]
-                bstr  = 'Gb'
+                bstr  = 'GB'
         return (times, y_total_u, bstr, sec)
 
     @staticmethod
@@ -216,22 +216,22 @@ class bpbl(object):
 	    y_out = [float(y) / sec for y in y_out]
 	    y_tr  = [float(y) / sec for y in y_tr]'''
             for y_total in y_total_u.iterkeys():
-                y_total_u[y_total]  = [float(y) / sec for y in y_total_u[y_total]]
+                y_total_u[y_total]  = [float(y) * 8 / sec for y in y_total_u[y_total]]
             bstr  = 'b\\s'
         elif y_max < 8000000:
             norm = 1024*sec
             for y_total in y_total_u.iterkeys():
-                y_total_u[y_total]  = [float(y) / norm for y in y_total_u[y_total]]
-            bstr  = 'kb\\s'
+                y_total_u[y_total]  = [float(y) * 8/ norm for y in y_total_u[y_total]]
+            bstr  = 'Kb\\s'
         elif y_max < 8000000000:
             norm = 1048576*sec
             for y_total in y_total_u.iterkeys():
-                y_total_u[y_total]  = [float(y) / norm for y in y_total_u[y_total]]
+                y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
             bstr  = 'Mb\\s'
         else:
             norm = 1073741824*sec
             for y_total in y_total_u.iterkeys():
-                y_total_u[y_total]  = [float(y) / norm for y in y_total_u[y_total]]
+                y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
             bstr  = 'Gb\\s'
         return (times, y_total_u, bstr, sec)
 
@@ -273,18 +273,18 @@ class bpbl(object):
         if norm_y:
             y_max = max(y_total)
             if y_max < 8000:
-                bstr = 'b'
+                bstr = 'B'
             elif y_max < 8000000:
                 #y_total = map(lambda y: float(y) / 1024, y_total)
                 y_total  = [float(y) / 1024 for y in y_total]
-                bstr  = 'kb'
+                bstr  = 'KB'
             elif y_max < 8000000000:
                 #y_total = map(lambda y: float(y) / 1048576, y_total)
                 y_total  = [float(y) / 1048576 for y in y_total]
-                bstr  = 'Mb'
+                bstr  = 'MB'
             else:
                 y_total  = [float(y) / 1073741824 for y in y_total]
-                bstr  = 'Gb'
+                bstr  = 'GB'
         print y_total
         return (times, y_total, bstr, sec)
 
@@ -299,16 +299,16 @@ class bpbl(object):
         (times, y_total, bstr, sec) = data
         y_max = max(y_total) / sec
         if y_max < 8000:
-            y_total  = [float(y) / sec for y in y_total]
-            bstr = 'b\\s'
+            y_total  = [float(y) * 8/ sec for y in y_total]
+            bstr = 'B\\s'
         elif y_max < 8000000:
-            y_total  = [float(y) / (1024*sec) for y in y_total]
-            bstr  = 'kb\\s'
+            y_total  = [float(y) * 8/ (1024*sec) for y in y_total]
+            bstr  = 'Kb\\s'
         elif y_max < 8000000000:
-            y_total  = [float(y) / (1048576*sec) for y in y_total]
+            y_total  = [float(y) * 8/ (1048576*sec) for y in y_total]
             bstr  = 'Mb\\s'
         else:
-            y_total  = [float(y) / (1073741824*sec) for y in y_total]
+            y_total  = [float(y) * 8/ (1073741824*sec) for y in y_total]
             bstr  = 'Gb\\s'
         return (times, y_total, bstr, sec)
     @staticmethod
@@ -408,17 +408,17 @@ class bpbl(object):
             elif y_max < 8000000:
                 for dct in val[1]:
                     for dirk in dct.iterkeys():
-                        dct[dirk] = [float(y) / 1024 for y in dct[dirk]]
-                bstr[val[0]]  = 'kb'
+                        dct[dirk] = [float(y) * 8/ 1024 for y in dct[dirk]]
+                bstr[val[0]]  = 'Kb'
             elif y_max < 6000000000:
                 for dct in val[1]:
                     for dirk in dct.iterkeys():
-                        dct[dirk] = [float(y) / 1048576 for y in dct[dirk]]
+                        dct[dirk] = [float(y) * 8/ 1048576 for y in dct[dirk]]
                 bstr[val[0]]  = 'Mb'
             else:
                 for dct in val[1]:
                     for dirk in dct.iterkeys():
-                        dct[dirk] = [float(y) / 1073741824 for y in dct[dirk]]
+                        dct[dirk] = [float(y) * 8/ 1073741824 for y in dct[dirk]]
                 bstr[val[0]]  = 'Gb'
             i += 1
         return (times, y_ps, bstr, sec)

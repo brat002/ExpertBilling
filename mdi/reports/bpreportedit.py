@@ -236,7 +236,10 @@ class reportConstructor(Dispatcher, ContentHandler):
             print imgpath
             print os.path.normpath(imgpath)
             print os.path.abspath(imgpath)
-            qimg = QtGui.QImage(os.path.normpath(imgpath), 'png')
+            #qimg = QtGui.QImage(os.path.normpath(imgpath), 'png')
+            qimg = QtGui.QPixmap(os.path.normpath(imgpath), 'png')
+            print qimg.physicalDpiX()
+            print qimg.logicalDpiX()
             tdoc = self.editor.document()
             tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(''.join(imgpath.split('/'))), QtCore.QVariant(qimg))
             self.cursor.insertImage(''.join(imgpath.split('/')))
@@ -508,7 +511,8 @@ class reportConstructor(Dispatcher, ContentHandler):
                     if self.objdict['curtable']['coltypes'][colcnt] == 'string':
                         self.cursor.insertText(rowdata[colcnt], celltf)
                     elif self.objdict['curtable']['coltypes'][colcnt] == 'date':
-                        self.cursor.insertText(rowdata[colcnt].strftime(self.strftimeFormat), celltf)
+                        if rowdata[colcnt]:
+                            self.cursor.insertText(rowdata[colcnt].strftime(self.strftimeFormat), celltf)
                     elif self.objdict['curtable']['coltypes'][colcnt] == 'table':
                         print rowdata[colcnt]
                         if not rowdata[colcnt]:

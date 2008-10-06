@@ -1122,7 +1122,8 @@ class StatReport(QtGui.QMainWindow):
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
-
+        print editor.physicalDpiX()
+        print editor.logicalDpiX()
         #f = open("aaa.html", "wb")
         #f.write(editor.document().toHtml())
         #f.close()
@@ -1130,11 +1131,14 @@ class StatReport(QtGui.QMainWindow):
             editor.setReadOnly(True)
         #self.textedit.setDocument(editor.document())
         self.setCentralWidget(editor)
+        print editor.physicalDpiX()
+        print editor.logicalDpiX()
         #ec = self.centralWidget().cursor()
         #ec.setShape(QtCore.Qt.ArrowCursor)
         #self.centralWidget().setCursor(ec)
         #print ec.shape()
         #print self.centralWidget().cursor().shape()
+        
         self.show()
         self.update()
         self.show()
@@ -1145,6 +1149,8 @@ class StatReport(QtGui.QMainWindow):
             #thread.start_new_thread(print_report, (self.centralWidget().document(), 1))
             
     def printDocument(self):
+        print self.centralWidget().physicalDpiX()
+        print self.centralWidget().logicalDpiX()
         document = self.centralWidget().document()
         printer = QtGui.QPrinter()
         printer.setResolution(120)
