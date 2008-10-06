@@ -456,7 +456,7 @@ class NasMdiChild(QtGui.QMainWindow):
         #global connection
         self.connection=connection
         self.setObjectName("NasMDI")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,300,300).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,400,400).size()).expandedTo(self.minimumSizeHint()))
 
 
         self.tableWidget = QtGui.QTableWidget(self)
@@ -473,6 +473,7 @@ class NasMdiChild(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
 
         self.addAction = QtGui.QAction(self)
         self.addAction.setIcon(QtGui.QIcon("images/add.png"))
@@ -606,6 +607,8 @@ class NasMdiChild(QtGui.QMainWindow):
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/nas.png"))
         self.tableWidget.setItem(x,y,headerItem)
 
 

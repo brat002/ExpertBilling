@@ -57,6 +57,7 @@ class MonitorFrame(QtGui.QMainWindow):
         self.toolBar.setFloatable(False)
         self.toolBar.setObjectName("toolBar")
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
 
         self.actionResetSession = QtGui.QAction(self)
         self.actionResetSession.setIcon(QtGui.QIcon("images/del.png"))

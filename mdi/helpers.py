@@ -96,6 +96,7 @@ class HeaderUtil(object):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue(name, QtCore.QVariant(table.horizontalHeader().saveState()))
+            #print "save header"
         except Exception, ex:
             print "HeaderUtil settings save error: ", ex
             
@@ -104,13 +105,12 @@ class HeaderUtil(object):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             headerState = settings.value(name, QtCore.QVariant(QtCore.QByteArray())).toByteArray()
-
             if not headerState.isEmpty():
                 table.horizontalHeader().restoreState(headerState)
             else:
                 table.resizeColumnsToContents()
         except Exception, ex:
-            print "Account frame settings error: ", ex
+            print "Frame settings error: ", ex
             table.resizeColumnsToContents()
             
 def format_update (x,y):
@@ -314,7 +314,7 @@ def humanable_bytes(a):
             elif a>=(1024*1000) and a<=(1024*1000*1000):
                 return u"%.5s МB" % unicode(a/(1024*1000))
             elif a>(1024*1000*1000):
-                return u"%.5s Gb" % unicode(a/(1024*1000*1000))
+                return u"%.5s GB" % unicode(a/(1024*1000*1000))
             elif a<1024:
                 return u"%s B" % unicode(int(a)) 
         except Exception, e:

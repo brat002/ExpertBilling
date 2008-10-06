@@ -455,6 +455,8 @@ class ClassChild(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
 
         self.addClassAction = QtGui.QAction(self)
         self.addClassAction.setIcon(QtGui.QIcon("images/folder_add.png"))
@@ -679,7 +681,7 @@ class ClassChild(QtGui.QMainWindow):
             item = QtGui.QTreeWidgetItem(self.treeWidget)
             item.id = clas.id
             item.setText(0, clas.name)
-            
+            item.setIcon(0,QtGui.QIcon("images/folder.png"))
             item.setBackgroundColor(1, QtGui.QColor(clas.color))
             if clas.passthrough==True:
                 item.setIcon(1, QtGui.QIcon("images/down.png"))
@@ -782,6 +784,9 @@ class ClassChild(QtGui.QMainWindow):
             value=""
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/tc.png"))
+            
         self.tableWidget.setItem(x,y,headerItem)
     def saveHeader(self, *args):
         HeaderUtil.saveHeader("class_frame_header", self.tableWidget)

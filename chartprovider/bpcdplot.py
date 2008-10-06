@@ -1033,9 +1033,10 @@ class cdDrawer(object):
 	@args[0:2] - with values bounded by dates @date_start, @date_end for users @(users)
 	###@args[3:4] return data values###'''
         try:
-            selstr = selstrdict['userstrafpie'] % (args[0].isoformat(' '), args[1].isoformat(' '), ', '.join([str(int) for int in kwargs['users']]))	
+            selstr = selstrdict['userstrafpie'] % (args[0].isoformat(' '), args[1].isoformat(' '), (((kwargs.has_key('trclass')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(int) for int in kwargs['trclass']]))) or  ((not kwargs.has_key('trclass')) and ' ')), ', '.join([str(int) for int in kwargs['users']]))	
         except Exception, ex:
             raise ex
+        print 'selstr', selstr
         data = bpbl.get_pie_traf(selstr)
 
         if not data: print "Dataset is empty"; data = ([0], ["empty"], '')

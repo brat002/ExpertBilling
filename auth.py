@@ -18,9 +18,10 @@ class Auth:
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """
 
-    def __init__(self, packetobject, packetfromcore):
+    def __init__(self, packetobject, packetfromcore, secret):
         self.packet=packetobject
         self.code=packetfromcore.code
+        self.secret = secret
         self.typeauth=self._DetectTypeAuth()
         try:
             ##Убрать это говно отсюда! Сделано в тестовых целях
@@ -40,6 +41,8 @@ class Auth:
         
     def ReturnPacket(self):
             self.Reply=self.packet.CreateReply()
+            self.Reply.secret = self.secret
+            print 'secret=', self.secret
             if self.AccessAccept:
                 self.Reply.code=self.code
             else:
@@ -47,6 +50,7 @@ class Auth:
                 
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                   self.Reply.AddAttribute((311,26),self._MSchapSuccess())
+            print self.Reply.secret
             return self.Reply.ReplyPacket(self.attrs)
         
     def _DetectTypeAuth(self):

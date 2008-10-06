@@ -351,12 +351,15 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             else:
                 delta_days=now-datetime.timedelta(seconds=repeat_after_seconds) - time_start
             length=repeat_after_seconds
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
-            return (tnc, tkc, length)
+            if repeat_after!='DONT_REPEAT':
+                #Когда будет начало в текущем периоде.
+                nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
+                tnc=now-datetime.timedelta(seconds=ost)
+                #Когда это закончится
+                tkc=tnc+datetime.timedelta(seconds=length)
+                return (tnc, tkc, length)
+            else:
+                return (time_start,time_start+datetime.timedelta(seconds=repeat_after_seconds), repeat_after_seconds)
         elif repeat_after=='DAY':
             if prev==False:
                 delta_days=now - time_start
@@ -405,6 +408,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             delta=tkc-tnc
             return (tnc, tkc, delta.seconds)
 
+        
 def command_string_parser(command_string='', command_dict={}):
     
     import re
