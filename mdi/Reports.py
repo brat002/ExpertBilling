@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql
@@ -682,12 +682,15 @@ class NetFlowReport(QtGui.QMainWindow):
         elif self.tabWidget.currentIndex()==1:
             self.refresh_summary()
         
-    def addRowSummary(self, value, x, y, color=None):
+    def addRowSummary(self, value, x, y, color=None, user=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
         if color:
             headerItem.setBackgroundColor(QtGui.QColor(color))
+
+        if user==True:
+            headerItem.setIcon(QtGui.QIcon("images/account.png"))
 
         headerItem.setText(unicode(value))
         self.tableWidget_summary.setItem(x,y,headerItem)
@@ -755,7 +758,7 @@ class NetFlowReport(QtGui.QMainWindow):
                 sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
                 
                         
-            sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id"
+            sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id,class.name"
             
             print sql
             data = self.connection.sql(sql)
@@ -769,7 +772,7 @@ class NetFlowReport(QtGui.QMainWindow):
                 if flow.username!=oldusername:
                     self.tableWidget_summary.setRowHeight(i,22)
                     self.tableWidget_summary.setSpan(i,0,0,5)
-                    self.addRowSummary(flow.username, i, 0, color='#ffffff')
+                    self.addRowSummary(flow.username, i, 0, color='#ffffff', user=True)
                     i+=1
                 self.addRowSummary(flow.name, i, 0, color=flow.color)
                 self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
