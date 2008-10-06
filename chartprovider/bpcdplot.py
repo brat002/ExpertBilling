@@ -506,11 +506,26 @@ class cdDrawer(object):
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_users_traf']
+        print "postoptdict"
+        try:
+            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
+            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['users']]))
+        except Exception, ex:
+            raise ex
+        data = bpbl.get_usernames(selstr)
+        print "postdata"
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        print "data", len(data)
+        if len(data) >= 1:
+            addHeight = self.get_legend_length(len(data), 6, 25)
+            xyc[1] = xyc[1] + addHeight
+            spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*optdict['xychart']) 
+        c = XYChart(*xyc) 
         if not optdict['antialias']:
             c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
+        c.setPlotArea(*spa)
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
@@ -534,13 +549,6 @@ class cdDrawer(object):
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
 
-
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['users']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
         if not data: print "Dataset is empty"; return []
 
         #for key in y_total_u.iterkeys():
@@ -549,8 +557,6 @@ class cdDrawer(object):
             ## Set the line width	
             #layer.setLineWidth(optdict['setlinewidth_total'])
         # Add in line layer 
-        print "data------------------------"
-        print data
         for tuple in data:
             try:
                 layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
@@ -579,11 +585,24 @@ class cdDrawer(object):
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_users_speed']
+        try:
+            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
+            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['users']]))
+        except Exception, ex:
+            raise ex
+        data = bpbl.get_usernames(selstr)
+        
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(data) >= 1:
+            addHeight = self.get_legend_length(len(data), 6, 25)
+            xyc[1] = xyc[1] + addHeight
+            spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*optdict['xychart']) 
+        c = XYChart(*xyc) 
         if not optdict['antialias']:
             c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
+        c.setPlotArea(*spa)
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
@@ -607,12 +626,7 @@ class cdDrawer(object):
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
 
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(int) for int in args[0]]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
+
         if not data: print "Dataset is empty"; return []
 
         #for key in y_total_u.iterkeys():
@@ -921,11 +935,24 @@ class cdDrawer(object):
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_nass_traf']
+        try:
+            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
+            selstr = selstrdict['nas'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['servers']]))
+        except Exception, ex:
+            raise ex
+        data = bpbl.get_nas(selstr)
+        
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(data) >= 1:
+            addHeight = self.get_legend_length(len(data), 4, 25)
+            xyc[1] = xyc[1] + addHeight
+            spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*optdict['xychart']) 
+        c = XYChart(*xyc) 
         if not optdict['antialias']:
             c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
+        c.setPlotArea(*spa)
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
@@ -948,12 +975,7 @@ class cdDrawer(object):
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nas'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['servers']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_nas(selstr)
+
         print "----------------------------"
         print data
         if not data: print "Dataset is empty"; return [] 
@@ -981,12 +1003,23 @@ class cdDrawer(object):
             raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
         print "----------------------------"
-        print data
         if not data: print "Dataset is empty"; data = ([], [], '', 1)
         (times, y_total_n, bstr, sec) = data
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_classes_speed']
+        try:
+            #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
+            selstr = selstrdict['classes'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['classes']]))
+        except Exception, ex:
+            raise ex
+        data = bpbl.get_usernames(selstr)
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(data) >= 1:
+            addHeight = self.get_legend_length(len(data), 8, 25)
+            xyc[1] = xyc[1] + addHeight
+            spa[1] = spa[1] + addHeight
         retlist = []
         c = XYChart(*optdict['xychart']) 
         if not optdict['antialias']:
@@ -1014,12 +1047,7 @@ class cdDrawer(object):
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']: c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'])
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['classes'] % ("IN (%s)" % ', '.join([str(int) for int in kwargs['classes']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
+
         print "----------------------------"
         if not data: print "Dataset is empty"; return [] 
 
@@ -1140,14 +1168,9 @@ class cdDrawer(object):
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
         if len(labels) >= 1:
-            #fllen = float(len(labels))
-            #mVal = fllen / 10 - ((fllen / 10)*(fllen / 100))            
-            #xyc[1] = int(xyc[1]*mVal)            
-            #if xyc[1] < 80:
             xyc[1] = 60 + 14*len(labels)
             spa[3] = xyc[1] - 60
-            #optdict['xychart'] = xyc
-            #optdict['setplotarea'] = spa
+
             
         retlist = []
         #c = XYChart(*optdict['xychart'])
@@ -1323,6 +1346,8 @@ class cdDrawer(object):
         for key in optdict.iterkeys():
             if self.cdchartoptdict[chartname].has_key(key): self.cdchartoptdict[chartname][key] = optdict[key]
 
+    def get_legend_length(self, users, elements, delta):
+        return delta*(users / elements)
     def translate_args(self, *args, **kwargs):
         if '' + args[0] == "nfs_u_traf":
             if len(kwargs['users']) == 1:

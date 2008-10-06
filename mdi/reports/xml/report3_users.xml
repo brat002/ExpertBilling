@@ -32,10 +32,10 @@
 				<scell row="0" col="0">
 					<table name="tbl2" columns="5" type="normal" datasource="ch1data1" arheader="Выбранные пользователи: "  fname="tf2" ftype="new" setCellPadding="2" setCellSpacing="2"  setBackground="#ececec" setAlignment="22">
 					<column name="ID" type="int" />
-					<column name="username" type="string" />
-					<column name="vpn ip" type="string" />
-					<column name="upn ip" type="string" />
-					<column name="тарифы" type="table" datasource="ch1data2" imerge="0" ibase="1" tftype="new" tfname="zomg" setBorder="1" colConstrType="percentage" colConstraints="70, 30" setAlignment="22"/>
+					<column name="Username" type="string" />
+					<column name="VPN IP" type="string" />
+					<column name="IPN IP" type="string" />
+					<column name="Тарифы" type="table" datasource="ch1data2" imerge="0" ibase="1" tftype="new" tfname="zomg" setBorder="1" colConstrType="percentage" colConstraints="70, 30" setAlignment="22"/>
 				</table>
 				</scell>
 			</stable>
