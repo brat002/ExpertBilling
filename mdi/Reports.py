@@ -1143,12 +1143,15 @@ class StatReport(QtGui.QMainWindow):
             
     def printDocument(self):
         document = self.centralWidget().document()
-        printer = QtGui.QPrinter()        
+        printer = QtGui.QPrinter()
+        printer.setResolution(120)
+        printer.setPageSize(QtGui.QPrinter.A4)
         dialog = QtGui.QPrintDialog(printer, self)
         dialog.setWindowTitle(self.tr("Print Document"))
         if dialog.exec_() != QtGui.QDialog.Accepted:
             return
         printer.setFullPage(True)
+        print printer.resolution()
         document.print_(printer)
         
 
