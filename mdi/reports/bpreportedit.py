@@ -81,7 +81,7 @@ class reportConstructor(Dispatcher, ContentHandler):
         self.objdict['curchart'] = {}
         self.objdict['curtable'] = {}
         self.dateDelim = "."
-        self.strftimeFormat = "%d" + self.dateDelim + "%m" + self.dateDelim + "%Y %H:%M:%S"
+        self.strftimeFormat = "%d" + self.dateDelim + "%m" + self.dateDelim + "%Y %H:%M:%S  "
         self.objdict['data'] = {}
         self.objdict['frames'] = {}
         self.objdict['format'] = {}
