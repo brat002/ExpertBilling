@@ -24,7 +24,7 @@
 				<scell row="0" col="0">
 					<table name="tbl2" columns="5" type="normal" datasource="chart1_return" fname="tf2" ftype="new" setCellPadding="2" setBackground="#ececec" arheader="Сессии: ">
 							<column name="Имя пользователя" type="string" />
-							<column name="Имя пользователя" type="string" />
+							<column name="ID сессии" type="string" />
 							<column name="Дата начала" type="date" />
 							<column name="Дата окончания" type="date" />
 							<column name="Протокол" type="string" />
