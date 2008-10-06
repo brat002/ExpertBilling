@@ -192,9 +192,9 @@ class HandleAuth(HandleBase):
             station_id=self.packetobject['Calling-Station-Id'][0]
         except:
             station_id = ''
-        print self.replypacket.secret
+        #print self.replypacket.secret
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
-        print 1, row
+        #print 1, row
         
         if row==None:
             self.cur.close()
@@ -534,7 +534,7 @@ class RadiusAuth(BaseAuth):
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
-        print addrport
+        #print addrport
         #print 1
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
@@ -673,10 +673,13 @@ if __name__ == "__main__":
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
+
+
     try:
         common_vpn = config.get("radius", "common_vpn")
+        #print "from config", common_vpn
     except Exception, e:
-        print e
+        #print e
         common_vpn=False
     
     main()

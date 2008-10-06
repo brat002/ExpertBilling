@@ -163,9 +163,10 @@ def get_speed_parameters(cursor, tarif):
 def get_account_data_by_username(cursor, username, access_type, station_id, multilink, common_vpn=False):
     
     at = ''
-    if common_vpn == False:
+    #print "common_vpn == False", common_vpn == False, type(common_vpn)
+    if common_vpn == "False":
         at = "accessparameters.access_type='%s' AND " % access_type
-        
+    #print "at", at, common_vpn, common_vpn == False, type(common_vpn)
     ins=''
 
     if multilink==False:
@@ -181,7 +182,7 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
             ins=" and (ipn_ip_address='%s' or ipn_ip_address='0.0.0.0') " % station_id
 
     
-    print "!!!", common_vpn, at
+    #print "!!!", common_vpn, at
     
     sql="""
     SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
