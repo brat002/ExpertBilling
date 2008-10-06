@@ -222,6 +222,7 @@ class CardsChild(QtGui.QMainWindow):
         self.toolBar.setObjectName("toolBar")
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
         
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
@@ -623,6 +624,7 @@ class CardsChild(QtGui.QMainWindow):
         for group in groups:
             item = QtGui.QTreeWidgetItem(self.treeWidget)
             item.setText(0, group.name)
+            item.setIcon(0,QtGui.QIcon("images/folder.png"))
             if group.disabled==True:
                 item.setDisabled(True)
                 item.setBackgroundColor(0,QtGui.QColor('lightgrey'))

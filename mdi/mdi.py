@@ -281,9 +281,9 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
         self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
-                                     u"Направления трафика", self)
+                                     u"Классы трафика", self)
         self.copyAct.setShortcut(self.tr("Ctrl+C"))
-        self.copyAct.setStatusTip(u"Направления трафика")
+        self.copyAct.setStatusTip(u"Классы трафика")
         self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
 
         self.pasteAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
@@ -301,7 +301,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
 
-        self.netflowReportAct=QtGui.QAction(QtGui.QIcon("images/nfstat.png"), self.tr("&NetFlow"), self)
+        self.netflowReportAct=QtGui.QAction(QtGui.QIcon("images/nfstat.png"), u"Сетевая статистика", self)
 
         self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
 
@@ -412,21 +412,24 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     def createToolBars(self):
-        self.fileToolBar = self.addToolBar(self.tr("File"))
+        self.fileToolBar = QtGui.QToolBar(self)
+        self.fileToolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.fileToolBar.addAction(self.newAct)
         self.fileToolBar.addAction(self.openAct)
         self.fileToolBar.addAction(self.saveAct)
         self.fileToolBar.setMovable(False)
         self.fileToolBar.setFloatable(False)
 
-        self.editToolBar = self.addToolBar(self.tr("Edit"))
-        self.editToolBar.addAction(self.cutAct)
-        self.editToolBar.addAction(self.copyAct)
-        self.editToolBar.addAction(self.pasteAct)
-        self.editToolBar.addAction(self.cardsAct)
-        self.editToolBar.addAction(self.netflowReportAct)
-        self.editToolBar.setMovable(False)
-        self.editToolBar.setFloatable(False)
+        self.fileToolBar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
+        self.fileToolBar.setIconSize(QtCore.QSize(18,18))
+
+        self.fileToolBar.addAction(self.cutAct)
+        self.fileToolBar.addAction(self.copyAct)
+        self.fileToolBar.addAction(self.pasteAct)
+        self.fileToolBar.addAction(self.cardsAct)
+        self.fileToolBar.addAction(self.netflowReportAct)
+
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.fileToolBar)
 
     def createStatusBar(self):
         self.statusBar().showMessage(self.tr("Ready"))

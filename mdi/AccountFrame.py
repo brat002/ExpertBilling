@@ -2968,17 +2968,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
 
 
-        self.addAction = QtGui.QAction(u"Добавить пользователя", self)
-        self.addAction.setIcon(QtGui.QIcon("images/user_add.png"))
+        self.addAction = QtGui.QAction(u"Добавить аккаунт", self)
+        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
 
 
-        self.delAction = QtGui.QAction(u"Удалить пользователя",self)
-        self.delAction.setIcon(QtGui.QIcon("images/user_delete.png"))
+        self.delAction = QtGui.QAction(u"Удалить аккаунт",self)
+        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
 
-        self.addTarifAction = QtGui.QAction(u"Добавить тарифный план",self)
+        self.addTarifAction = QtGui.QAction(u"Добавить тариф",self)
         self.addTarifAction.setIcon(QtGui.QIcon("images/folder_add.png"))
         
-        self.delTarifAction = QtGui.QAction(u"Удалить тарифный план",self)
+        self.delTarifAction = QtGui.QAction(u"Удалить тариф",self)
         self.delTarifAction.setIcon(QtGui.QIcon("images/folder_delete.png"))
         
         self.transactionAction = QtGui.QAction(u'Пополнить счёт', self)
@@ -2999,12 +2999,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.actionDeleteAccount = QtGui.QAction(u'Удалить с сервера доступа',self)
         self.actionDeleteAccount.setIcon(QtGui.QIcon("images/del.png"))
         
-        self.editTarifAction = QtGui.QAction(self)
+        self.editTarifAction = QtGui.QAction(u"Редактировать",self)
         self.editTarifAction.setIcon(QtGui.QIcon("images/open.png"))
         self.editTarifAction.setObjectName("editTarifAction")
         
-        self.editAccountAction = QtGui.QAction(self)
-        self.editAccountAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editAccountAction = QtGui.QAction(u"Редактировать",self)
+        self.editAccountAction.setIcon(QtGui.QIcon("images/configure.png"))
         self.editAccountAction.setObjectName("editAccountAction")
                 
         self.tarif_treeWidget.addAction(self.editTarifAction)
@@ -3021,6 +3021,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.actionAddAccount)
         self.tableWidget.addAction(self.actionDeleteAccount)
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
         self.toolBar.addAction(self.addTarifAction)
         self.toolBar.addAction(self.delTarifAction)
         self.toolBar.addSeparator()        
@@ -3032,7 +3033,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.isUntitled = True
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
         self.resize(1100,600)
 
 
@@ -3104,8 +3105,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
     def retranslateUi(self):
         self.tarif_treeWidget.clear()
-        self.editTarifAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.editAccountAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        #self.editTarifAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        #self.editAccountAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
 
 
     def addTarif(self):

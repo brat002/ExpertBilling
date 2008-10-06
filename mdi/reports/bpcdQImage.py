@@ -16,6 +16,7 @@ class bpcdQImage(object):
         else:
             kwargs['options'] = self.options
         print args
+        print kwargs
         imgs  = self.connection.makeChart(*args, **kwargs)
         ret = imgs.pop()
         self.options = {}

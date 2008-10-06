@@ -235,6 +235,7 @@ class SystemUserChild(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
         
         self.editUserAction = QtGui.QAction(self)
         self.editUserAction.setIcon(QtGui.QIcon("images/open.png"))
@@ -317,6 +318,8 @@ class SystemUserChild(QtGui.QMainWindow):
         headerItem = QtGui.QTableWidgetItem()
         if value == None:
             value = ''
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
 

@@ -6,7 +6,7 @@ import copy
 selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
     'nfs_port_speed': "SELECT date_start, octets, direction, src_port, dst_port FROM billservice_netflowstream WHERE ((src_port IN (%s)) OR (dst_port IN (%s))) AND (date_start BETWEEN '%s' AND '%s') ORDER BY date_start;", \
-    'userstrafpie'  : "SELECT bac.username, SUM(octets) FROM billservice_netflowstream AS bnf, billservice_account AS bac WHERE (bnf.account_id = bac.id) AND (bnf.date_start BETWEEN '%s' AND '%s') GROUP BY bnf.account_id, bac.username HAVING bnf.account_id IN (%s);", \
+    'userstrafpie'  : "SELECT bac.username, SUM(octets) FROM billservice_netflowstream AS bnf, billservice_account AS bac WHERE (bnf.account_id = bac.id) AND (bnf.date_start BETWEEN '%s' AND '%s') %s GROUP BY bnf.account_id, bac.username HAVING bnf.account_id IN (%s);", \
     'sessions'      : "SELECT sessionid, date_start, date_end, username, framed_protocol FROM radius_activesession AS ras JOIN billservice_account AS bas ON (ras.account_id = bas.id) WHERE ((account_id IN (%s)) AND ((date_start BETWEEN '%s' AND '%s') OR (date_end BETWEEN '%s' AND '%s'))) ORDER BY date_start;", \
     'trans'         : "SELECT created, summ FROM billservice_transaction WHERE ((summ %s) AND (created BETWEEN '%s' AND '%s')) ORDER BY created;",\
     'nas'           : "SELECT name, id FROM nas_nas WHERE (id %s) ORDER BY name;", \

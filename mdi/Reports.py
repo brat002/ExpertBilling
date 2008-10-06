@@ -37,7 +37,7 @@ _charthidetabs = {\
              "nfs_nas_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_classes_speed" : ("usersTab", "portsTab"),\
-             "userstrafpie" : ("serversTab", "classesTab", "portsTab"),\
+             "userstrafpie" : ("serversTab", "portsTab"),\
              "sessions" : ("serversTab", "classesTab", "portsTab"),\
              "trans_deb" : ("usersTab", "serversTab", "classesTab", "portsTab"),\
              "trans_crd" : ("usersTab", "serversTab", "classesTab", "portsTab")
@@ -114,6 +114,7 @@ class TransactionsReport(QtGui.QMainWindow):
 
 
         self.toolBar = QtGui.QToolBar(self)
+        
         
         self.toolBar.addWidget(self.user_label)
         #self.toolBar.addSeparator()
@@ -597,6 +598,7 @@ class NetFlowReport(QtGui.QMainWindow):
         self.toolBar.setObjectName("toolBar")
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
         
         #self.toolBar.addWidget(self.combobox)
         self.statusBar().addWidget(self.label)
@@ -842,11 +844,11 @@ class NetFlowReport(QtGui.QMainWindow):
             
             sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
             
-        #print self.child.users
+        #print sql
         import time
         a=time.clock()
         flows = self.connection.sql(sql)
-        print "request time=", time.clock()-a
+        #print "request time=", time.clock()-a
         i=0
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
@@ -1056,6 +1058,7 @@ class StatReport(QtGui.QMainWindow):
         self.toolBar.setObjectName("toolBar")
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
         
  
         #self.statusBar().addWidget(self.button_end)
@@ -1069,7 +1072,7 @@ class StatReport(QtGui.QMainWindow):
         self.toolBar.addAction(self.configureAction)
         
         self.printAction = QtGui.QAction(self)
-        self.printAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.printAction.setIcon(QtGui.QIcon("images/printer.png"))
         self.printAction.setObjectName("printAction")
         self.toolBar.addAction(self.printAction)
         
@@ -1152,14 +1155,16 @@ class StatReport(QtGui.QMainWindow):
         print self.centralWidget().physicalDpiX()
         print self.centralWidget().logicalDpiX()
         document = self.centralWidget().document()
-        printer = QtGui.QPrinter()
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setResolution(120)
         printer.setPageSize(QtGui.QPrinter.A4)
-        dialog = QtGui.QPrintDialog(printer, self)
-        dialog.setWindowTitle(self.tr("Print Document"))
-        if dialog.exec_() != QtGui.QDialog.Accepted:
-            return
+        #dialog = QtGui.QPrintDialog(printer, self)
+        #dialog.setWindowTitle(self.tr("Print Document"))
+        #if dialog.exec_() != QtGui.QDialog.Accepted:
+            #return
         printer.setFullPage(True)
+        printer.setResolution(120)
+        printer.setOutputFileName("lol.pdf")
         print printer.resolution()
         document.print_(printer)
         

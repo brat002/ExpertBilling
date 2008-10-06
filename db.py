@@ -160,40 +160,43 @@ def get_speed_parameters(cursor, tarif):
 
     return cursor.fetchall()
 
-def get_account_data_by_username(cursor, username, access_type, station_id, multilink):
-    ins=''
-    if access_type=='PPTP':
-        #cursor.execute(
+def get_account_data_by_username(cursor, username, access_type, station_id, multilink, common_vpn=False):
+    
+    at = ''
+    if common_vpn == False:
+        at = "accessparameters.access_type='%s' AND " % access_type
         
-        if multilink==False:
-            ins=" and (ipn_ip_address='%s' or ipn_ip_address='0.0.0.0') " % station_id
-            
-        cursor.execute("""SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
-                            bsat.tarif_id, accessparameters.access_type, account.status, 
-                account.balance_blocked, (account.ballance+account.credit) as ballance, 
-                account.disabled_by_limit, account.vpn_speed,
-                tariff.active
-                FROM billservice_account as account
-                JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
-                JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
-                JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
-                WHERE accessparameters.access_type='PPTP' and bsat.datetime<now() and account.username='%s' %s ORDER BY bsat.datetime DESC LIMIT 1""" % (username, ins))
+    ins=''
 
-    elif access_type=='PPPOE':
-        if multilink==False:
+    if multilink==False:
+        if len(station_id)==17:
+            """
+            MAC - PPPOE
+            """
             ins = "and (ipn_mac_address='%s' or ipn_mac_address='')" % station_id
-            
-        cursor.execute(
-            """SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
-            bsat.tarif_id, accessparameters.access_type, account.status, 
-            account.balance_blocked, (account.ballance+account.credit) as ballance, 
-            account.disabled_by_limit, account.vpn_speed,
-            tariff.active
-            FROM billservice_account as account
-            JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
-            JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
-            JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
-            WHERE accessparameters.access_type='PPPOE' and bsat.datetime<now() and account.username='%s' %s ORDER BY bsat.datetime DESC LIMIT 1""" % (username, ins))
+        else:
+            """
+            IP - PPTP
+            """
+            ins=" and (ipn_ip_address='%s' or ipn_ip_address='0.0.0.0') " % station_id
+
+    
+    print "!!!", common_vpn, at
+    
+    sql="""
+    SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
+    bsat.tarif_id, accessparameters.access_type, account.status, 
+    account.balance_blocked, (account.ballance+account.credit) as ballance, 
+    account.disabled_by_limit, account.vpn_speed,
+    tariff.active
+    FROM billservice_account as account
+    JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
+    JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
+    JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
+    WHERE %s bsat.datetime<now() and account.username='%s' %s ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)
+    #print sql
+    cursor.execute(sql)
+
     return cursor.fetchone()
 
 def get_account_data_by_username_dhcp(cursor, username):

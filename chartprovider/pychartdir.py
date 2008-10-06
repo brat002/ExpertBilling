@@ -3,34 +3,12 @@ import sys, os, time, string, platform
 p_name = platform.uname()[0]
     
     
-
 CDPYVersion = 0x401
 
 ver = sys.version[:3]
-if ver == "1.5" :
-	import pychartdir15
-	dll = pychartdir15
-elif ver == "1.6" :
-	import pychartdir16
-	dll = pychartdir16
-elif ver == "2.0" :
-	import pychartdir20
-	dll = pychartdir20
-elif ver == "2.1" :
-	import pychartdir21
-	dll = pychartdir21
-elif ver == "2.2" :
-	import pychartdir22
-	dll = pychartdir22
-elif ver == "2.3" :
-	import pychartdir23
-	dll = pychartdir23
-elif ver == "2.4" :
-	import pychartdir24
-	dll = pychartdir24
-else :
-	import pychartdir25
-	dll = pychartdir25
+
+import pychartdir25
+dll = pychartdir25
 
 #main DLL interface
 _r = dll.callMethod

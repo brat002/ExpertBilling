@@ -103,16 +103,37 @@ class AddSettlementPeriod(QtGui.QDialog):
         self.length_edit.addItem(QtGui.QApplication.translate("Dialog", "---", None, QtGui.QApplication.UnicodeUTF8))
         self.seconds_label.setText(QtGui.QApplication.translate("Dialog", "секунд", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.autostart_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Расчётный период у каждого пользователя будет начинаться с момента привязки аккаунта к тарифному плану.", None, QtGui.QApplication.UnicodeUTF8))
+        self.autostart_checkbox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Расчётный период у каждого пользователя будет начинаться с момента привязки аккаунта к тарифному плану.\nПри этом начало расчётного периода из настроек расчётного периода учитываться не будет.", None, QtGui.QApplication.UnicodeUTF8))
+        
+        
+        self.length_edit.setToolTip(QtGui.QApplication.translate("Dialog", "DAY - расчётный период будет повторяться через 86400 с,\n"
+        "WEEKDAY - расчётный период будет повторяться через неделю. Пример : с понедельника по понедельник\n"+
+        "MONTH - расчётный период будет повторяться через календарный месяц (январь 31 день, февраль 29/28 дней). Пример: с 15 января по 15 февраля\n"
+        "YEAR - расчётный период будет повторяться через год (с учётом високосных). Пример: с 1 января 2006 по 1 января 2007\n"+
+        "--- - особый расчётный период"+
+        "DONT_REPEAT - расчётный период без повторения", None, QtGui.QApplication.UnicodeUTF8))
 
-
+        self.length_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "DAY - расчётный период будет повторяться через 86400 с,\n"
+        "WEEKDAY - расчётный период будет повторяться через неделю. Пример : с понедельника по понедельник\n"+
+        "MONTH - расчётный период будет повторяться через календарный месяц (январь 31 день, февраль 29/28 дней). Пример: с 15 января по 15 февраля\n"
+        "YEAR - расчётный период будет повторяться через год (с учётом високосных). Пример: с 1 января 2006 по 1 января 2007\n"+
+        "--- - особый расчётный период"+
+        "DONT_REPEAT - расчётный период без повторения", None, QtGui.QApplication.UnicodeUTF8))
 
 
 
     def checkbox_behavior(self):
         if self.autostart_checkbox.checkState()==2:
             self.datetime_edit.setEnabled(False)
+            if not unicode(self.name_edit.text()).startswith('+'):
+                self.name_edit.setText("+"+self.name_edit.text())
+                
         else:
             self.datetime_edit.setEnabled(True)
+            if unicode(self.name_edit.text()).startswith('+'):
+                self.name_edit.setText(self.name_edit.text()[1:])
 
     def length_behavior(self):
         if self.length_edit.currentText()==u"---":
@@ -232,6 +253,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
 
         self.addAction = QtGui.QAction(self)
         self.addAction.setIcon(QtGui.QIcon("images/add.png"))
@@ -328,6 +350,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/sp.png"))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
     def saveHeader(self, *args):

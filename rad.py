@@ -111,6 +111,7 @@ class HandleAuth(HandleBase):
         self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
         self.access_type=access_type
+        self.secret = ''
 
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
@@ -118,8 +119,17 @@ class HandleAuth(HandleBase):
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
-
-
+    
+    def auth_NA(self):
+        """
+        Denides access
+        """
+        self.packetobject.username=None
+        self.packetobject.password=None
+        # Access denided
+        self.packetobject.code=3
+        return self.secret, self.packetobject
+    
     def create_speed(self, tarif_id, speed=''):
         result_params=speed
         if speed=='':
@@ -165,7 +175,7 @@ class HandleAuth(HandleBase):
 
     def handle(self):
         row=self.get_nas_info()
-
+        #print row
         if row==None:
             self.cur.close()
             self.connection.close()
@@ -174,16 +184,21 @@ class HandleAuth(HandleBase):
         self.nas_id=str(row[0])
         self.nas_type=row[2]
         self.multilink = row[3]
+        self.secret = str(row[1])
+        #print str(row[1])
         self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
         
         try:
             station_id=self.packetobject['Calling-Station-Id'][0]
         except:
             station_id = ''
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink)
-        #print 1, row
+        print self.replypacket.secret
+        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
+        print 1, row
+        
         if row==None:
             self.cur.close()
+            self.connection.close()
             return self.auth_NA()
         
         #print 2
@@ -193,6 +208,7 @@ class HandleAuth(HandleBase):
            self.cur.close()
            self.connection.close()
            #print 2
+           
            return self.auth_NA()
 
 
@@ -205,7 +221,7 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 #print 3
                 break
-        #print 3
+        print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
            #print 4
@@ -226,7 +242,7 @@ class HandleAuth(HandleBase):
              return self.auth_NA()
         #print 5
         #data_to_send=replypacket.ReplyPacket()
-        return self.replypacket
+        return self.secret, self.replypacket
 
 #auth_class
 class HandleDHCP(HandleBase):
@@ -518,15 +534,15 @@ class RadiusAuth(BaseAuth):
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
         addrport=self.client_address
+        print addrport
         #print 1
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
             coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type)
-            packetfromcore=coreconnect.handle()
+            secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
-            packetobject.secret=packetfromcore.secret
-            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
+            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
@@ -547,7 +563,7 @@ class RadiusAuth(BaseAuth):
             
             returndata=authNA(returnpacket)
             
-            
+        #print returndata    
         if returndata!="":
             self.socket.sendto(returndata,addrport)
             #print numauth
@@ -657,4 +673,10 @@ if __name__ == "__main__":
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
+    try:
+        common_vpn = config.get("radius", "common_vpn")
+    except Exception, e:
+        print e
+        common_vpn=False
+    
     main()
