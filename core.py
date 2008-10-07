@@ -18,6 +18,7 @@ import Pyro.protocol
 import Pyro.constants
 import hmac
 import hashlib
+import zlib
 from hashlib import md5
 
 import psycopg2
@@ -1673,6 +1674,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
     def run(self):
+        #from Pyro.config import PYRO_COMPRESSION
+        #print "compr",Pyro.config.PYRO_COMPRESSION
+        Pyro.config.PYRO_COMPRESSION=True
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
         #daemon.adapter.setIdentification = setIdentification
