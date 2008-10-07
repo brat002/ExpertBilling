@@ -2945,13 +2945,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tarif_treeWidget.setObjectName("tarif_treeWidget")
         #self.tarif_treeWidget.headerItem().setText(0,"")
         self.tarif_treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        
-
-
-
         self.tableWidget = QtGui.QTableWidget(self.splitter)
-        
-        #self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -2990,8 +2984,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         self.addAction = QtGui.QAction(u"Добавить аккаунт", self)
         self.addAction.setIcon(QtGui.QIcon("images/add.png"))
-
-
+        
         self.delAction = QtGui.QAction(u"Удалить аккаунт",self)
         self.delAction.setIcon(QtGui.QIcon("images/del.png"))
 
@@ -3452,8 +3445,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
     
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader("account_frame_header", self.tableWidget)
-#---------------Local actions
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("account_frame_header", self.tableWidget)
+    #---------------Local actions
     def delNodeLocalAction(self):
         #print self.tableWidget.currentRow()
         if self.tableWidget.currentRow()==-1:

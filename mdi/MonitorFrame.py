@@ -16,6 +16,7 @@ import time
 
 class MonitorFrame(QtGui.QMainWindow):
     def __init__(self, connection):
+        bhdr = HeaderUtil.getBinaryHeader("monitor_frame_header")
         super(MonitorFrame, self).__init__()
         self.connection = connection
         self.thread = Worker()
@@ -93,7 +94,11 @@ class MonitorFrame(QtGui.QMainWindow):
         self.fixtures()
         HeaderUtil.nullifySaved("monitor_frame_header")
         self.refresh_users()
-        self.firsttime = True
+        if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader("monitor_frame_header", bhdr)
+                HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
+        else:
+            self.firsttime = True
         self.thread.go(interval=10)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -192,12 +197,13 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
             #self.tableWidget.setRowHeight(i, 14)
             i+=1
-        if self.firsttime and sessions:
+        if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()
             self.firsttime = False
             print "firsttime"
         else:
-            HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
+            if sessions:
+                HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.setSortingEnabled(True)
@@ -212,7 +218,8 @@ class MonitorFrame(QtGui.QMainWindow):
                 self.userCombobox.addItem(unicode(user.username))
                 
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader("monitor_frame_header", self.tableWidget)
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("monitor_frame_header", self.tableWidget)
 
     
             

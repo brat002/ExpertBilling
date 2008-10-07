@@ -392,6 +392,7 @@ class ClassChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        bhdr = HeaderUtil.getBinaryHeader("class_frame_header")
         super(ClassChild, self).__init__()
         self.connection = connection
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -542,9 +543,13 @@ class ClassChild(QtGui.QMainWindow):
             setFirstActive(self.treeWidget)
             HeaderUtil.nullifySaved("class_frame_header")
             self.refreshTable()
+            if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader("class_frame_header", bhdr)
+                HeaderUtil.getHeader("class_frame_header", self.tableWidget)
         except Exception, ex:
             print "Error in setting first element active: ",ex
-            
+        
+        
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
@@ -792,7 +797,8 @@ class ClassChild(QtGui.QMainWindow):
             
         self.tableWidget.setItem(x,y,headerItem)
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader("class_frame_header", self.tableWidget)
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("class_frame_header", self.tableWidget)
 
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
