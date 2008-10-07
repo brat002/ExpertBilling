@@ -101,6 +101,24 @@ class HeaderUtil(object):
             print "HeaderUtil settings save error: ", ex
             
     @staticmethod
+    def setBinaryHeader(name, bhdr):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(bhdr))
+        except Exception, ex:
+            print "HeaderUtil settings save error: ", ex
+            
+    @staticmethod
+    def getBinaryHeader(name):
+        bhdr = QtCore.QByteArray()
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            bhdr =  settings.value(name, QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        except Exception, ex:
+            print "Frame settings error: ", ex
+        return bhdr
+    
+    @staticmethod
     def getHeader(name, table):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
