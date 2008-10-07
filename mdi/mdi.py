@@ -39,7 +39,8 @@ _reportsdict = [['report3_total.xml', ['nfs_total_traf'], 'Общий трафи
                 ['report3_users.xml', ['nfs_u_traf'], 'Трафик пользователей'], \
                 ['report3_pie.xml', ['userstrafpie'], 'Трафик пользователей (пирог)'], \
                 ['report3_nass.xml', ['nfs_n_traf'], 'Загрузка по серверам доступа'],\
-                ['report3_classes.xml', ['nfs_total_classes_speed'], 'Загрузка по направлениям'],\
+                ['report3_classes.xml', ['nfs_total_classes_speed'], 'Скорость по направлениям'],\
+                ['report3_multcl.xml', ['nfs_multi_classes_speed'], 'Скорость по направлениям2'],\
                 ['report3_port.xml', ['nfs_port_speed'], 'Скорость по портам'], \
                 ['report3_sess.xml', ['sessions'], 'Сессии пользователей'], \
                 ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли'] \

@@ -7,11 +7,13 @@ selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
     'nfs_port_speed': "SELECT date_start, octets, direction, src_port, dst_port FROM billservice_netflowstream WHERE ((src_port IN (%s)) OR (dst_port IN (%s))) AND (date_start BETWEEN '%s' AND '%s') ORDER BY date_start;", \
     'userstrafpie'  : "SELECT bac.username, SUM(octets) FROM billservice_netflowstream AS bnf, billservice_account AS bac WHERE (bnf.account_id = bac.id) AND (bnf.date_start BETWEEN '%s' AND '%s') %s GROUP BY bnf.account_id, bac.username HAVING bnf.account_id IN (%s);", \
+    'nfs_mcl_speed' : "SELECT date_start, octets, direction, traffic_class_id FROM billservice_netflowstream WHERE (traffic_class_id IN (%s)) AND (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
     'sessions'      : "SELECT sessionid, date_start, date_end, username, framed_protocol FROM radius_activesession AS ras JOIN billservice_account AS bas ON (ras.account_id = bas.id) WHERE ((account_id IN (%s)) AND ((date_start BETWEEN '%s' AND '%s') OR (date_end BETWEEN '%s' AND '%s'))) ORDER BY date_start;", \
     'trans'         : "SELECT created, summ FROM billservice_transaction WHERE ((summ %s) AND (created BETWEEN '%s' AND '%s')) ORDER BY created;",\
     'nas'           : "SELECT name, id FROM nas_nas WHERE (id %s) ORDER BY name;", \
     'usernames'     : "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
-    'classes'       : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
+    'classes'       : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;",\
+    'rvclasses'     : "SELECT id, name FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
 
 class bpbl(object):
     #get data methods
@@ -78,7 +80,10 @@ class bpbl(object):
         bstr = 'b'
         #normalize values
         if (norm_y):
-            m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
+            try:
+                m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
+            except: 
+                m1, m2, m3 = 0, 0, 0
             y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	    
             if y_max < 3000:
                 bstr = 'B'
@@ -106,7 +111,10 @@ class bpbl(object):
         data = bpbl.get_traf(selstr, sec, norm_y)
         if not data: return 0
         (times, y_in, y_out, y_tr, bstr, sec) = data
-        m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
+        try:
+            m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
+        except:
+            m1, m2, m3 = 0, 0, 0
         y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	
         y_max /= sec
         #calculate speed and normalize
@@ -176,7 +184,10 @@ class bpbl(object):
             #y_total.append(totals)
         bstr = ''
         if norm_y:
-            y_max = max([max(lst) for lst in y_total_u.itervalues()])
+            try:
+                y_max = max([max(lst) for lst in y_total_u.itervalues()])
+            except:
+                y_max = 0
             #print y_max
             if y_max < 8000:
                 bstr = 'B'
@@ -208,7 +219,10 @@ class bpbl(object):
         if not data:
             return 0
         (times, y_total_u, bstr, sec) = data
-        y_max = max([max(lst) for lst in y_total_u.itervalues()])	
+        try:
+            y_max = max([max(lst) for lst in y_total_u.itervalues()]) * 8
+        except:
+            y_max = 0
         y_max /= sec
         #calculate speed and normalize
         if y_max < 8000:
@@ -271,7 +285,10 @@ class bpbl(object):
             y_total.append(totals)
         bstr = ''
         if norm_y:
-            y_max = max(y_total)
+            try:
+                y_max = max(y_total)
+            except:
+                y_max = 0
             if y_max < 8000:
                 bstr = 'B'
             elif y_max < 8000000:
@@ -297,7 +314,10 @@ class bpbl(object):
         data = bpbl.get_total_traf(selstr, sec, norm_y)
         if not data: return 0
         (times, y_total, bstr, sec) = data
-        y_max = max(y_total) / sec
+        try:
+            y_max = max(y_total)*8 / sec
+        except:
+            y_max = 0
         if y_max < 8000:
             y_total  = [float(y) * 8/ sec for y in y_total]
             bstr = 'B\\s'
@@ -311,18 +331,14 @@ class bpbl(object):
             y_total  = [float(y) * 8/ (1073741824*sec) for y in y_total]
             bstr  = 'Gb\\s'
         return (times, y_total, bstr, sec)
-    @staticmethod
-    def get_port_speed(selstr, ports, sec=0):
+    #@staticmethod
+    """def get_port_speed(selstr, ports, sec=0):
         '''Get speed with traffic classes combined for a certain ports
 	@selstr - query string
 	@sec - seconds for aggregation
 	@ports - ports tuple to count traffic on'''
         data = bpplotAdapter.getdata(selstr)
         times  = []
-        '''y_ins  = []
-	y_outs = []
-	y_ind  = []
-	y_outd = []'''
         y_ps = {}
         #zeros = [{'input': [], 'output': []}, {'input': [], 'output': []}]
         zeros = [{'input': [], 'output': [], 'transit': []}]
@@ -372,32 +388,8 @@ class bpbl(object):
 
             except IndexError, ierr:
                 pass
-        #bstr = ''
-        #y_max = max([max([max(max(dct.itervalues())) for dct in lstm]) for lstm in y_ps.itervalues()])
         y_maxmums = [max([max(max(dct.itervalues())) for dct in lstm]) for lstm in y_ps.itervalues()]
 
-        #print y_max
-        #dim = range(len(times))
-        '''if y_max < 8000:
-	    bstr = 'b'
-	elif y_max < 8000000:
-	    for val in y_ps.itervalues():
-		for dct in val:
-		    for dirk in dct.iterkeys():
-			dct[dirk] = [float(y) / 1024 for y in dct[dirk]]
-	    bstr  = 'kb'
-	elif y_max < 8000000000:
-	    for val in y_ps.itervalues():
-		for dct in val:
-		    for dirk in dct.iterkeys():
-			dct[dirk] = [float(y) / 1048576 for y in dct[dirk]]
-	    bstr  = 'Mb'
-	else:
-	    for val in y_ps.itervalues():
-		for dct in val:
-		    for dirk in dct.iterkeys():
-			dct[dirk] = [float(y) / 1073741824 for y in dct[dirk]]
-	    bstr  = 'Gb' '''
         i = 0
         bstr = {}
         bstr['0'] = '' 
@@ -421,6 +413,88 @@ class bpbl(object):
                         dct[dirk] = [float(y) * 8/ 1073741824 for y in dct[dirk]]
                 bstr[val[0]]  = 'Gb'
             i += 1
+        return (times, y_ps, bstr, sec)"""
+    
+    @staticmethod
+    def get_multi_speed(selstr, objs, counts, sec=0):
+        '''Get speed with traffic classes combined for a certain ports
+	@selstr - query string
+	@sec - seconds for aggregation
+	@ports - ports tuple to count traffic on'''
+        data = bpplotAdapter.getdata(selstr)
+        times  = []
+        y_ps = {}
+        #zeros = [{'input': [], 'output': []}, {'input': [], 'output': []}]
+        zeros = [{'input': [], 'output': [], 'transit': []}]
+        try:
+            tm = data[0][0]
+        except Exception, ex:
+            print ex
+            return 0
+        if not sec:
+            sec = bpbl.calc_seconds(data[0][0], data[-1][0])
+        tmd = timedelta(days = sec / 86400, seconds=sec % 86400)
+        htmd = tmd // 2
+        tmdall = data[-1][0] - data[0][0]        
+        iters = (tmdall.days*86400 + tmdall.seconds) / sec
+        if ((tmdall.days*86400 + tmdall.seconds) % sec) != 0:
+            iters +=1
+        tnum = 0
+
+        for i in range(iters):
+            tm = tm + tmd
+            times.append(tm - htmd)
+            for dct in zeros:
+                for lst in dct.itervalues():
+                    lst.append(0)
+
+            for val in y_ps.itervalues():
+                for dct in val:
+                    for lst in dct.itervalues():
+                        lst.append(0)
+            try:
+                while data[tnum][0] < tm:
+                    for cts in range(counts):
+                        if data[tnum][3+cts] in objs:
+                            try:
+                                y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
+                            except:
+                                y_ps[str(data[tnum][3+cts])] = copy.deepcopy(zeros)
+                                y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
+
+                    tnum +=1
+
+            except IndexError, ierr:
+                pass
+        y_maxmums = [max([max([max(xlst) for xlst in xdct.values()]) for xdct in lstm]) for lstm in y_ps.itervalues()]
+
+        i = 0
+        bstr = {}
+        bstr['0'] = '' 
+        for val in y_ps.iteritems():
+            try:
+                y_max = y_maxmums[i] * 8
+            except:
+                y_max = 0
+            
+            if y_max < 6000:
+                bstr[val[0]]  = 'b\\s'
+            elif y_max < 8000000:
+                for dct in val[1]:
+                    for dirk in dct.iterkeys():
+                        dct[dirk] = [(float(y) * 8)/ 1024 for y in dct[dirk]]
+                bstr[val[0]]  = 'Kb\\s'
+            elif y_max < 6000000000:
+                for dct in val[1]:
+                    for dirk in dct.iterkeys():
+                        dct[dirk] = [(float(y) * 8)/ 1048576 for y in dct[dirk]]
+                bstr[val[0]]  = 'Mb\\s'
+            else:
+                for dct in val[1]:
+                    for dirk in dct.iterkeys():
+                        dct[dirk] = [(float(y) * 8)/ 1073741824 for y in dct[dirk]]
+                bstr[val[0]]  = 'Gb\\s'
+            i += 1
         return (times, y_ps, bstr, sec)
 
     @staticmethod
@@ -436,7 +510,10 @@ class bpbl(object):
 	labels = [tuple[0] for tuple in data]'''
         x = []; labels = []
         [(x.append(tuple[1]), labels.append(tuple[0])) for tuple in data]
-        x_max = max(x)
+        try:
+            x_max = max(x)
+        except:
+            x_max = 0
         if x_max < 6000:
             bstr = 'b'
         elif x_max < 6000000:
@@ -539,16 +616,6 @@ class bpbl(object):
 
     @staticmethod
     def get_usernames(selstr):
-        data = bpplotAdapter.getdata(selstr)
-        try:
-            datetm = data[0][0]
-        except Exception, ex:
-            print ex
-            return 0
-        return data
-
-    @staticmethod
-    def get_nas(selstr):
         data = bpplotAdapter.getdata(selstr)
         try:
             datetm = data[0][0]
