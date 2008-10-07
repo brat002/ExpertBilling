@@ -190,6 +190,9 @@ class TransactionsReport(QtGui.QMainWindow):
 
 
     def addrow(self, value, x, y):
+        if value==None:
+            value=""
+            
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)

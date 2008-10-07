@@ -3286,7 +3286,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                 headerItem.setTextColor(QtGui.QColor('#ffffff'))
         
         elif not enabled:
-            headerItem.setTextColor(QtGui.QColor('#FF0100'))
+            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         
         if type(value)==BooleanType and value==True:
             if y==10:
@@ -3354,18 +3354,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #print k
 
         #self.connection.commit()
-        tarif = self.connection.foselect("billservice_tariff", id)
-
-        '''accounts=self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
-        JOIN nas_nas ON nas_nas.id=account.nas_id
-        JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
-        WHERE (accounttarif.tarif_id=%d) ORDER BY account.username ASC""" % tarif.id)'''
-        '''accounts = self.connection.sql("""SELECT account.*, nas_nas.name as nas_name FROM billservice_account as account
-        JOIN nas_nas ON nas_nas.id=account.nas_id
-        WHERE (account.id IN (SELECT account_id FROM billservice_accounttarif WHERE tarif_id=%d)) ORDER BY account.username ASC""" % tarif.id)'''
-        '''SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (acc.id IN (SELECT account_id FROM billservice_accounttarif WHERE tarif_id=1)) ORDER BY acc.username ASC;'''
-        accounts = self.connection.sql("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (%d IN (SELECT tarif_id FROM billservice_accounttarif WHERE account_id=acc.id)) ORDER BY acc.username ASC;""" % tarif.id)
-        self.connection.commit()
+        #tarif = self.connection.foselect("billservice_tariff", id)
+        
+        
+        accounts = self.connection.sql("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (%d IN (SELECT tarif_id FROM billservice_accounttarif WHERE account_id=acc.id)) ORDER BY acc.username ASC;""" % self.getTarifId())
+        #self.connection.commit()
         #print accounts
 
         #print "after acc"
@@ -3386,7 +3379,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
             self.addrow(a.suspended, i,10, enabled=a.status)
-            #self.addrow(a.status, i,10, enabled=a.status)
             self.addrow(a.balance_blocked, i,11, enabled=a.status)
             self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,13, enabled=a.status)
