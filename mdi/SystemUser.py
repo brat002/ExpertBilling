@@ -8,6 +8,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
+from helpers import dateDelim
 
 
 class PasswordEditFrame(QtGui.QDialog):
@@ -213,13 +214,15 @@ class SystemUserChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        self.setname = "users_frame_header"
+        bhdr = HeaderUtil.getBinaryHeader(self.setname)
         super(SystemUserChild, self).__init__()
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(0,0,634,365).size()).expandedTo(self.minimumSizeHint()))
         self.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.setDockNestingEnabled(False)
         self.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks|QtGui.QMainWindow.AnimatedDocks)
-        self.setname = "users_frame_header"
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setGeometry(QtCore.QRect(0,0,631,311))
         self.tableWidget.setObjectName("tableWidget")
@@ -263,6 +266,9 @@ class SystemUserChild(QtGui.QMainWindow):
         self.retranslateUi()
         HeaderUtil.nullifySaved(self.setname)
         self.refresh()
+        if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader(self.setname, bhdr)
+                HeaderUtil.getHeader(self.setname, self.tableWidget)
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -337,7 +343,7 @@ class SystemUserChild(QtGui.QMainWindow):
             self.addrow(user.username, i,1)
             self.addrow(user.status, i,2)
             self.addrow(user.created, i,3)
-            self.addrow(user.last_login, i,4)
+            self.addrow(user.last_login.strftime(self.strftimeFormat), i,4)
             self.addrow(user.last_ip, i,5)
             self.addrow(user.host, i,6)
             self.tableWidget.setRowHeight(i, 14)
@@ -349,7 +355,8 @@ class SystemUserChild(QtGui.QMainWindow):
         HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.tableWidget.setSortingEnabled(True)
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader(self.setname, self.tableWidget)
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
             self.delAction.setDisabled(True)

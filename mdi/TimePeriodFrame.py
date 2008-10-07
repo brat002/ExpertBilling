@@ -160,12 +160,14 @@ class TimePeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        self.setname = "time_frame_header"
+        bhdr = HeaderUtil.getBinaryHeader(self.setname)
         super(TimePeriodChild, self).__init__()
         self.connection = connection
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.setObjectName("TimePeriodMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()).expandedTo(self.minimumSizeHint()))
-        self.setname = "time_frame_header"
+        
         #self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
         #self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,692,483).size()))
 
@@ -254,8 +256,11 @@ class TimePeriodChild(QtGui.QMainWindow):
             HeaderUtil.nullifySaved(self.setname)
             self.refreshTable()
             self.tableWidget = tableFormat(self.tableWidget)
+            if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader(self.setname, bhdr)
+                HeaderUtil.getHeader(self.setname, self.tableWidget)
         except Exception, ex:
-            #print "Error when setting first element active: ", ex
+            print "Error when setting first element active: ", ex
             pass
         #self.treeWidget.setCurrentItem(self.treeWidget.headerItem().child(1))
         #print self.treeWidget.headerItem().childCount()
@@ -467,7 +472,8 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader(self.setname, self.tableWidget)
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 

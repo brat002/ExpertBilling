@@ -221,11 +221,13 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        self.setname = "setper_frame_period"
+        bhdr = HeaderUtil.getBinaryHeader(self.setname)
         super(SettlementPeriodChild, self).__init__()
         self.connection=connection
         self.setObjectName("SettlementPeriodMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,827,476).size()).expandedTo(self.minimumSizeHint()))
-        self.setname = "setper_frame_period"
+        
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -278,6 +280,9 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.retranslateUi()
         HeaderUtil.nullifySaved(self.setname)
         self.refresh()
+        if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader(self.setname, bhdr)
+                HeaderUtil.getHeader(self.setname, self.tableWidget)
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
 
@@ -355,7 +360,8 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
     def saveHeader(self, *args):
-        HeaderUtil.saveHeader(self.setname, self.tableWidget)
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
         #periods=SettlementPeriod.objects.all().order_by('id')

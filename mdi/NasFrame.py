@@ -452,17 +452,13 @@ class NasMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        bhdr = HeaderUtil.getBinaryHeader("nas_frame_header")
         super(NasMdiChild, self).__init__()
         #global connection
         self.connection=connection
         self.setObjectName("NasMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,400,400).size()).expandedTo(self.minimumSizeHint()))
-
-
         self.tableWidget = QtGui.QTableWidget(self)
-        
-
-
         self.setCentralWidget(self.tableWidget)
 
         self.statusbar = QtGui.QStatusBar(self)
@@ -503,16 +499,20 @@ class NasMdiChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.configureAction)
         
 
-        
-        
-#===============================================================================
-#        length_edit = QtGui.QComboBox()
-#        self.toolBar.addWidget(length_edit)
-#===============================================================================
-
+        #===============================================================================
+        #        length_edit = QtGui.QComboBox()
+        #        self.toolBar.addWidget(length_edit)
+        #===============================================================================
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        HeaderUtil.nullifySaved("nas_frame_header")
         self.retranslateUi()
         self.refresh()
         self.tableWidget = tableFormat(self.tableWidget)
+        if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader("nas_frame_header", bhdr)
+                HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
+        
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
@@ -629,10 +629,15 @@ class NasMdiChild(QtGui.QMainWindow):
             i+=1
         self.tableWidget.setColumnHidden(0, True)
 
-            
-        self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
+        #self.tableWidget.resizeColumnsToContents()
         self.tableWidget.setSortingEnabled(True)
 
+    def saveHeader(self, *args):
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("nas_frame_header", self.tableWidget)    
+            
+            
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
             self.delAction.setDisabled(True)

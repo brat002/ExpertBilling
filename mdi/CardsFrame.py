@@ -11,6 +11,8 @@ from time import mktime
 from CustomForms import ComboBoxDialog
 import datetime, calendar
 from helpers import transaction
+from helpers import HeaderUtil
+
 class AddCards(QtGui.QDialog):
     def __init__(self, connection, group, last_series=0):
         super(AddCards, self).__init__()
@@ -185,6 +187,7 @@ class CardsChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
+        bhdr = HeaderUtil.getBinaryHeader("cards_frame_header")
         super(CardsChild, self).__init__()
         self.connection = connection
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -280,14 +283,20 @@ class CardsChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionSellCard)
         self.toolBar.addAction(self.actionActivateCard)
         self.toolBar.addSeparator()
-
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        
         self.retranslateUi()
+        HeaderUtil.nullifySaved("cards_frame_header")
         self.refresh()
-#===============================================================================
+        
+        if not bhdr.isEmpty():
+            HeaderUtil.setBinaryHeader("cards_frame_header", bhdr)
+            HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
+        #===============================================================================
         self.connect(self.actionAddGroup, QtCore.SIGNAL("triggered()"), self.addGroup)
         self.connect(self.actionDelGroup, QtCore.SIGNAL("triggered()"), self.delGroup)
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editGroup)
-#        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editGroup)        
         self.connect(self.actionEnableGroup, QtCore.SIGNAL("triggered()"),  self.enableGroup)
         self.connect(self.actionDisableGroup, QtCore.SIGNAL("triggered()"),  self.disableGroup)
      
@@ -295,26 +304,21 @@ class CardsChild(QtGui.QMainWindow):
         self.connect(self.actionDisableCard, QtCore.SIGNAL("triggered()"),  self.disableCard)   
         self.connect(self.actionActivateCard, QtCore.SIGNAL("triggered()"),  self.activateCard)   
 
-        self.connect(self.actionSellCard, QtCore.SIGNAL("triggered()"),  self.sellCard)   
-
-        
-        
+        self.connect(self.actionSellCard, QtCore.SIGNAL("triggered()"),  self.sellCard)        
         
         self.connect(self.actionGenerateCards, QtCore.SIGNAL("triggered()"),  self.generateCards)
-# 
-#        
-#        
+    
         self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refreshTable)
-#        
-#        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
-#        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
-#        
-#        
-#        
-#        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
-#        
-#        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-#===============================================================================
+        #        
+        #        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
+        #        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
+        #        
+        #        
+        #        
+        #        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
+        #        
+        #        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+        #===============================================================================
         #self.addNodeLocalAction()
         #self.delNodeLocalAction()
         
@@ -589,12 +593,16 @@ class CardsChild(QtGui.QMainWindow):
             i+=1
             
         self.tableWidget.setColumnHidden(0, False)
-        self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
         self.tableWidget.setSortingEnabled(True)
 
 
 
-
+    def saveHeader(self, *args):
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("cards_frame_header", self.tableWidget)
+    
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
