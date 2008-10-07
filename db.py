@@ -201,14 +201,12 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     return cursor.fetchone()
 
 def get_account_data_by_username_dhcp(cursor, username):
-    cursor.execute(
-        """SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
-        bsat.tarif_id,   account.ipn_speed
+    sql = """SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
+        account.ipn_speed
         FROM billservice_account as account
-        JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
-        JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
-        JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
-        WHERE bsat.datetime<now() and account.ipn_mac_address='%s' ORDER BY bsat.datetime DESC LIMIT 1""" % username)
+        WHERE account.ipn_mac_address='%s' LIMIT 1""" % str(username)
+
+    cursor.execute(sql)
     return cursor.fetchone()
 
 def time_periods_by_tarif_id(cursor, tarif_id):

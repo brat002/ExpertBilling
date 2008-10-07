@@ -223,6 +223,7 @@ class SpeedEditDialog(QtGui.QDialog):
 class TransactionForm(QtGui.QDialog):
     def __init__(self, connection, model=None, account=None):
         super(TransactionForm, self).__init__()
+        #self.parent = parent
         self.model = model
         self.account = account
         self.connection = connection
@@ -255,9 +256,9 @@ class TransactionForm(QtGui.QDialog):
         self.pay_type_label.setGeometry(QtCore.QRect(13,10,111,20))
         self.pay_type_label.setObjectName("pay_type_label")
 
-        self.transactions_pushButton = QtGui.QPushButton(self)
-        self.transactions_pushButton.setGeometry(QtCore.QRect(10,130,106,26))
-        self.transactions_pushButton.setObjectName("transactions_pushButton")
+        #self.transactions_pushButton = QtGui.QPushButton(self)
+        #self.transactions_pushButton.setGeometry(QtCore.QRect(10,130,106,26))
+        #self.transactions_pushButton.setObjectName("transactions_pushButton")
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(210,130,167,26))
@@ -274,7 +275,7 @@ class TransactionForm(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         
-        QtCore.QObject.connect(self.transactions_pushButton,QtCore.SIGNAL("clicked()"),self.transactions_report)
+        #QtCore.QObject.connect(self.transactions_pushButton,QtCore.SIGNAL("clicked()"),self.transactions_report)
 
     def retranslateUi(self):
         self.setWindowTitle(u"Новая проводка для %s" % self.account.username)
@@ -284,7 +285,7 @@ class TransactionForm(QtGui.QDialog):
         self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Списать с балланса", None, QtGui.QApplication.UnicodeUTF8))
         self.summ_label.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
-        self.transactions_pushButton.setText(QtGui.QApplication.translate("Dialog", "История проводок", None, QtGui.QApplication.UnicodeUTF8))
+        #self.transactions_pushButton.setText(QtGui.QApplication.translate("Dialog", "История проводок", None, QtGui.QApplication.UnicodeUTF8))
     
     def accept(self):
         if self.payed_type_edit.currentText()==u"Пополнить балланс":
@@ -294,10 +295,15 @@ class TransactionForm(QtGui.QDialog):
             
         QtGui.QDialog.accept(self)
         
-    def transactions_report(self):
-        if self.account:
-            child = TransactionsReport(connection=self.connection, account = self.account)
-            child.exec_()
+#===============================================================================
+#    def transactions_report(self):
+#        if self.account:
+#            child = TransactionsReport(connection=self.connection, account = self.account)
+#            #print self.parentWidget().parent().workspace.addWindow(child)
+#            #self.parent().workspace.addWindow(child)
+#            #print "mainwindow", mainwindow
+#            child.show()
+#===============================================================================
             
 class ConnectDialog(QtGui.QDialog):
     _connectsql = {}

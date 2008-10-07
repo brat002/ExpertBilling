@@ -49,6 +49,7 @@ _restrictions = {\
                  "one_class" :[]\
                 }
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
+
 class TransactionsReport(QtGui.QMainWindow):
     def __init__(self, connection ,account=None):
 
@@ -1153,20 +1154,20 @@ class StatReport(QtGui.QMainWindow):
             #thread.start_new_thread(print_report, (self.centralWidget().document(), 1))
             
     def printDocument(self):
-        print self.centralWidget().physicalDpiX()
-        print self.centralWidget().logicalDpiX()
+        #print self.centralWidget().physicalDpiX()
+        #print self.centralWidget().logicalDpiX()
         document = self.centralWidget().document()
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setResolution(120)
         printer.setPageSize(QtGui.QPrinter.A4)
-        #dialog = QtGui.QPrintDialog(printer, self)
-        #dialog.setWindowTitle(self.tr("Print Document"))
-        #if dialog.exec_() != QtGui.QDialog.Accepted:
-            #return
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
         printer.setFullPage(True)
         printer.setResolution(120)
-        printer.setOutputFileName("lol.pdf")
-        print printer.resolution()
+        #printer.setOutputFileName("lol.pdf")
+        #print printer.resolution()
         document.print_(printer)
         
 
