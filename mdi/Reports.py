@@ -38,6 +38,7 @@ _charthidetabs = {\
              "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
              "nfs_total_classes_speed" : ("usersTab", "portsTab"),\
              "userstrafpie" : ("serversTab", "portsTab"),\
+             "nfs_multi_classes_speed" : ("usersTab", "portsTab"),\
              "sessions" : ("serversTab", "classesTab", "portsTab"),\
              "trans_deb" : ("usersTab", "serversTab", "classesTab", "portsTab"),\
              "trans_crd" : ("usersTab", "serversTab", "classesTab", "portsTab")
@@ -1110,16 +1111,16 @@ class StatReport(QtGui.QMainWindow):
         else:
             kwargs['options']['autoticks'] = False
           
-        #if self.child.users:
-        kwargs['users']   = self.child.users
+        if self.child.users:
+            kwargs['users']   = self.child.users
             
-        #if self.child.classes:
-        kwargs['classes'] = self.child.classes
+        if self.child.classes:
+            kwargs['classes'] = self.child.classes
             
-        #if self.child.servers:
-        kwargs['servers'] = self.child.servers
-        #if self.child.ports:
-        kwargs['ports']   = self.child.ports
+        if self.child.servers:
+            kwargs['servers'] = self.child.servers
+        if self.child.ports:
+            kwargs['ports']   = self.child.ports
         
         print kwargs
         brep = bpReportEdit()

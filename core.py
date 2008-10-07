@@ -1677,6 +1677,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #from Pyro.config import PYRO_COMPRESSION
         #print "compr",Pyro.config.PYRO_COMPRESSION
         Pyro.config.PYRO_COMPRESSION=True
+        
+        Pyro.config.PYRO_DETAILED_TRACEBACK = 1
+        Pyro.config.PYRO_PRINT_REMOTE_TRACEBACK = 1
+
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
         #daemon.adapter.setIdentification = setIdentification
