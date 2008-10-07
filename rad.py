@@ -272,35 +272,6 @@ class HandleDHCP(HandleBase):
         row = get_nas_by_ip(self.cur, self.nasip)
         return row
 
-    def create_speed(self, tarif_id, speed=''):
-        result_params=speed
-        if speed=='':
-            defaults = get_default_speed_parameters(self.cur, tarif_id)
-            speeds = get_speed_parameters(self.cur, tarif_id)
-            if defaults is None:
-                return None
-            result=[]
-            i=0
-            for speed in speeds:
-                #print speed[0],speed[1],speed[2]
-                if in_period(speed[0],speed[1],speed[2])==True:
-                    for s in speed[3:]:
-                        if s==0:
-                            res=0
-                        elif s=='':
-                            res=defaults[i]
-                        else:
-                            res=s
-                        result.append(res)
-                        i+=1
-            if speeds==[]:
-                result=defaults
-    
-            result_params=create_speed_string(result)
-            #print "params=", result_params
-
-        if self.nas_type[:8]==u'mikrotik' and result_params!='':
-            self.replypacket.AddAttribute((14988,8),result_params)
             
     def handle(self):
         #print self.nasip

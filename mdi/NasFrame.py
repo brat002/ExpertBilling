@@ -558,13 +558,8 @@ class NasMdiChild(QtGui.QMainWindow):
         id=self.getSelectedId()
         if id==0:
             return
-        try:
-            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
-        except:
-            return
-        import Pyro.core
 
-        if self.connection.configureNAS(str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)):
+        if self.connection.configureNAS(id):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))

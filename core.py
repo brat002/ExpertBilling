@@ -1700,11 +1700,15 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return True
 
     @authentconn
-    def configureNAS(self, host, login, password, configuration, cur=None, connection=None):
+    def configureNAS(self, id, cur=None, connection=None):
+        cur.execute("SELECT ipaddress, login, password, confstring FROM nas_nas WHERE id=%s" % id)
+        row = cur.fetchone()
+        #print row
+        #str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)
         try:
-            a=SSHClient(host, 22,login, password)
-            print configuration
-            print a.send_command(configuration)
+            a=SSHClient(row["ipaddress"], 22,row["login"], row["password"])
+            #print configuration
+            a.send_command(row["confstring"])
             a.close()
         except Exception, e:
             print e

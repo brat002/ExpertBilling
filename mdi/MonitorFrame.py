@@ -99,7 +99,7 @@ class MonitorFrame(QtGui.QMainWindow):
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         else:
             self.firsttime = True
-        self.thread.go(interval=10)
+        self.thread.go(interval=25)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -200,7 +200,7 @@ class MonitorFrame(QtGui.QMainWindow):
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()
             self.firsttime = False
-            print "firsttime"
+            #print "firsttime"
         else:
             if sessions:
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
