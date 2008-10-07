@@ -1,0 +1,9 @@
+{% if files %}
+    <ul style="list-style-type:none;">
+        {% for file in files %}
+	       <li><a href="/download/{{ file.file.url }}">{{ file.name }}</a><br>{{ file.description }}</li>
+		{% endfor %}
+	</ul>
+{% else %}
+    фаилов нет
+{% endif %}

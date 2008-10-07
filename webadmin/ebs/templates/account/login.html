@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if error_messge %}
+    <h1>{{ error_messge }}</h1>
+{% endif %}
+<form method="post">
+<table>
+{{ form }}
+</table>
+<input type="submit">
+</form>
+{% endblock %}
