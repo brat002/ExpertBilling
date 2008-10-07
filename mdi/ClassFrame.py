@@ -78,12 +78,14 @@ class ClassEdit(QtGui.QDialog):
         self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры направления", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить всю статистику", None, QtGui.QApplication.UnicodeUTF8))
+        self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить сырую статистику", None, QtGui.QApplication.UnicodeUTF8))
         self.passthrough_checkBox.setText(QtGui.QApplication.translate("Dialog", "Пометить и продолжить", None, QtGui.QApplication.UnicodeUTF8))
         self.color_label.setText(QtGui.QApplication.translate("Dialog", "Цвет направления", None, QtGui.QApplication.UnicodeUTF8))
         self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название группы направлений.", None, QtGui.QApplication.UnicodeUTF8))
         self.store_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю сырую статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
+        self.store_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю сырую статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
         self.passthrough_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого направления статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении лимитов.", None, QtGui.QApplication.UnicodeUTF8))
+        self.passthrough_checkBox.setToolTip(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого направления статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении лимитов.", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Цвет направления.", None, QtGui.QApplication.UnicodeUTF8))
     def setColor(self):    
         color = QtGui.QColorDialog.getColor(QtCore.Qt.green, self)
@@ -494,11 +496,12 @@ class ClassChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.addClassAction)
         self.toolBar.addAction(self.delClassAction)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.addClassNodeAction)
-        self.toolBar.addAction(self.delClassNodeAction)
-        self.toolBar.addSeparator()
         self.toolBar.addAction(self.upClassAction)
         self.toolBar.addAction(self.downClassAction)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.addClassNodeAction)
+        self.toolBar.addAction(self.delClassNodeAction)
+
         
         
         self.retranslateUi()

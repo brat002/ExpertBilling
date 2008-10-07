@@ -18,10 +18,11 @@ class Auth:
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """
 
-    def __init__(self, packetobject, packetfromcore, secret):
+    def __init__(self, packetobject, packetfromcore, secret, access_type):
         self.packet=packetobject
         self.code=packetfromcore.code
         self.secret = secret
+        self.access_type = access_type
         self.typeauth=self._DetectTypeAuth()
         try:
             ##Убрать это говно отсюда! Сделано в тестовых целях
@@ -35,7 +36,10 @@ class Auth:
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-        self.AccessAccept = self._CheckAuth()
+        if self.access_type!='DHCP':
+            self.AccessAccept = self._CheckAuth()
+        else:
+            self.AccessAccept = True
         self.attrs=packetfromcore._PktEncodeAttributes()
 
         

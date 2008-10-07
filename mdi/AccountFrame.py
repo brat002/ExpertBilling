@@ -2487,6 +2487,7 @@ class AddAccountFrame(QtGui.QDialog):
         
         self.retranslateUi()
         self.fixtures()
+        self.dhcpActions()
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки аккаунта", None, QtGui.QApplication.UnicodeUTF8))
@@ -2509,7 +2510,7 @@ class AddAccountFrame(QtGui.QDialog):
         self.assign_ipn_ip_from_dhcp_edit.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес с помощью DHCP", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_mac_address_label.setText(QtGui.QApplication.translate("Dialog", "Аппаратный адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", ">HH:HH:HH:HH:HH:HH;0", None, QtGui.QApplication.UnicodeUTF8))
+        #self.ipn_mac_address_edit.setInputMask(QtGui.QApplication.translate("Dialog", ">HH:HH:HH:HH:HH:HH;0", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_ip_address_label_2.setText(QtGui.QApplication.translate("Dialog", "Маска подсети", None, QtGui.QApplication.UnicodeUTF8))
         self.vpn_ip_address_label.setText(QtGui.QApplication.translate("Dialog", "VPN Адрес", None, QtGui.QApplication.UnicodeUTF8))
         #self.netmask_edit.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
@@ -2544,6 +2545,17 @@ class AddAccountFrame(QtGui.QDialog):
         " 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s \n"
         "64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s \n"
         "", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.ipn_mac_address_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Укажите MAC адрес клиента, если хотите сделать к нему привязку аккаунта.\nПараметр обязателен, если вы выбрали опцию DHCP.", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_mac_address_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Укажите MAC адрес клиента, если хотите сделать к нему привязку аккаунта.\nПараметр обязателен, если вы выбрали опцию DHCP. Указывайте, если хотите привязать авторизацию аккаунта к этому адресу для PPPOE/IPN тарифных планов.", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.netmask_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Укажите сетевую маску, которую должен получить клиент по DHCP вместе с адресом.", None, QtGui.QApplication.UnicodeUTF8))
+        self.netmask_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Укажите сетевую маску, которую должен получить клиент по DHCP вместе с адресом.", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.ipn_ip_address_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP адрес клиента в сети.", None, QtGui.QApplication.UnicodeUTF8))
+        self.ipn_ip_address_edit.setToolTip(QtGui.QApplication.translate("Dialog", "IP адрес клиента в сети. Указывайте, если хотите привязать авторизацию аккаунта к этому адресу для PPTP/IPN тарифных планов.", None, QtGui.QApplication.UnicodeUTF8))
+
+        
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Сетевые настройки", None, QtGui.QApplication.UnicodeUTF8))
         
         
@@ -2563,9 +2575,12 @@ class AddAccountFrame(QtGui.QDialog):
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+        self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)
+        
         self.ipn_ip_address_edit.setValidator(self.ipValidator)
         self.vpn_ip_address_edit.setValidator(self.ipValidator)
         self.netmask_edit.setValidator(self.ipValidator)
+        self.ipn_mac_address_edit.setValidator(self.macValidator)
         
         self.accounttarif_table.clear()
         self.accounttarif_table.setColumnCount(4)
@@ -2574,12 +2589,14 @@ class AddAccountFrame(QtGui.QDialog):
 
         makeHeaders(columns, self.accounttarif_table)
         
-    def dhcpActions(self, newstate):
+    def dhcpActions(self, newstate=0):
         
-        if newstate==2:
+        if self.assign_ipn_ip_from_dhcp_edit.checkState()==2:
             self.netmask_edit.setDisabled(False)
-        elif newstate==0:
+            self.netmask_edit.setText("")
+        elif self.assign_ipn_ip_from_dhcp_edit.checkState()==0:
             self.netmask_edit.setDisabled(True)
+            self.netmask_edit.setText("")
             
             
 
@@ -2738,21 +2755,22 @@ class AddAccountFrame(QtGui.QDialog):
                 self.connection.rollback()
                 return
     
-
-            if unicode(self.ipn_mac_address_edit.text()) != ':::::':
-                try:
-                    ipn_mac_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.ipn_mac_address_edit.text())).id
-                    if ipn_mac_address_account_id !=model.id :
+            if self.ipn_mac_address_edit.text().isEmpty()==False:
+                if self.macValidator.validate(self.ipn_mac_address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable:
+                    cnt = self.connection.get("SELECT count(*) as cnt FROM billservice_account WHERE ipn_mac_address='%s' and id<>%s" % (unicode(self.ipn_mac_address_edit.text()).upper(), model.id)).cnt
+                    if cnt>0 :
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
                         self.connection.rollback()
                         return
-                except Exception, ex:
-                    print ex
-                model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text())
+                    model.ipn_mac_address = unicode(self.ipn_mac_address_edit.text()).upper()
+                else:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте MAC адрес."))
+                    self.connection.rollback()
+                    return
             else:
-                model.ipn_mac_address = ''
-                    
-    
+                model.ipn_mac_address=""
+                
+            print model.ipn_mac_address
             
             model.nas_id = self.connection.get("SELECT id FROM nas_nas WHERE name='%s'" % str(self.nas_comboBox.currentText())).id
     
@@ -2795,7 +2813,8 @@ class AddAccountFrame(QtGui.QDialog):
             #self.connection.commit()
             #self.model=model
         except Exception, e:
-            print "!!!SAVE CREATE ERROR", e
+            import Pyro
+            print ''.join(Pyro.util.getPyroTraceback(e))
             import sys, traceback
             traceback.print_exc()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
@@ -2936,7 +2955,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -3374,11 +3393,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.nas_name,i,6, enabled=a.status)
             self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
-            self.addrow(a.suspended, i,9, enabled=a.status)
+            self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
+            self.addrow(a.suspended, i,10, enabled=a.status)
             #self.addrow(a.status, i,10, enabled=a.status)
-            self.addrow(a.balance_blocked, i,10, enabled=a.status)
-            self.addrow(a.disabled_by_limit,i,11, enabled=a.status)
-            self.addrow(a.created.strftime(self.strftimeFormat), i,12, enabled=a.status)
+            self.addrow(a.balance_blocked, i,11, enabled=a.status)
+            self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,13, enabled=a.status)
             
             #self.tableWidget.setRowHeight(i, 17)
             

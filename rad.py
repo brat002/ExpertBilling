@@ -122,11 +122,10 @@ class HandleAuth(HandleBase):
     
     def auth_NA(self):
         """
-        Denides access
+        Deny access
         """
         self.packetobject.username=None
         self.packetobject.password=None
-        # Access denided
         self.packetobject.code=3
         return self.secret, self.packetobject
     
@@ -250,6 +249,7 @@ class HandleDHCP(HandleBase):
     def __init__(self,  packetobject):
         self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject
+        self.secret = ""
 
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
@@ -261,18 +261,13 @@ class HandleDHCP(HandleBase):
         self.cur = self.connection.cursor()
 
 
-        row=self.get_nas_info()
-
-        if row==None:
-            self.cur.close()
-            self.connection.close()
-            return self.auth_NA()
-
-        self.nas_id=str(row[0])
-        self.nas_type=row[2]
-        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
-
-
+    def auth_NA(self):
+        """
+        Deny access
+        """
+        self.packetobject.code=3
+        return self.secret, self.packetobject
+    
     def get_nas_info(self):
         row = get_nas_by_ip(self.cur, self.nasip)
         return row
@@ -308,18 +303,31 @@ class HandleDHCP(HandleBase):
             self.replypacket.AddAttribute((14988,8),result_params)
             
     def handle(self):
+        #print self.nasip
+        row=self.get_nas_info()
+        #print row
+        if row==None:
+            #print 0
+            self.cur.close()
+            self.connection.close()
+            return self.auth_NA()
 
+        self.nas_id=str(row[0])
+        self.nas_type=row[2]
+        self.secret=str(row[1])
+        
+        self.replypacket=packet.Packet(secret=self.secret,dict=dict)
+        #print self.packetobject['User-Name'][0]
         row = get_account_data_by_username_dhcp(self.cur, self.packetobject['User-Name'][0])
 
         if row==None:
-            self.cur.close()
             #print 1
             self.cur.close()
             self.connection.close()
             return self.auth_NA()
 
     
-        nas_id, ipaddress, netmask, mac_address, tarif_id, speed = row
+        nas_id, ipaddress, netmask, mac_address, speed = row
 
         if int(nas_id)!=int(self.nas_id):
            self.cur.close()
@@ -332,11 +340,11 @@ class HandleDHCP(HandleBase):
         self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
         #self.replypacket.AddAttribute('Framed-Routing', 0)
         self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
-        self.replypacket.AddAttribute('Session-Timeout', 60*60*24)
+        self.replypacket.AddAttribute('Session-Timeout', session_timeout)
         #self.create_speed(tarif_id, speed=speed)
         self.cur.close()
         self.connection.close()
-        return self.replypacket
+        return self.secret, self.replypacket
 
 #acct class
 class HandleAcct(HandleBase):
@@ -523,7 +531,7 @@ class RadiusAuth(BaseAuth):
 
       def handle(self):
         global numauth
-        if numauth>=50:
+        if numauth>=80:
             print "PREVENTING DoS"
             
             return
@@ -542,17 +550,17 @@ class RadiusAuth(BaseAuth):
             coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type)
             secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
-            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret)
+            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
             del authobject
         elif access_type in ['DHCP'] :
             coreconnect = HandleDHCP(packetobject=packetobject)
-            packetfromcore=coreconnect.handle()
+            secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
-            packetobject.secret=packetfromcore.secret
-            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore)
+            #packetobject.secret=packetfromcore.secret
+            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
@@ -682,4 +690,10 @@ if __name__ == "__main__":
         #print e
         common_vpn=False
     
+    try:
+        session_timeout = int(config.get("dhcp", "session_timeout"))
+        #print "from config", common_vpn
+    except Exception, e:
+        #print e
+        session_timeout=86400
     main()
