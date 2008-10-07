@@ -2922,6 +2922,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection, parent, selected_account=None):
+        bhdr = HeaderUtil.getBinaryHeader("account_frame_header")
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
         self.connection = connection
@@ -3069,21 +3070,13 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
         self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
-
-        
-        
+ 
         self.connect(self.transactionAction, QtCore.SIGNAL("triggered()"), self.makeTransation)
-        
         self.connect(self.transactionReportAction, QtCore.SIGNAL("triggered()"), self.transactionReport) 
-        
         self.connect(self.actionDisableSession, QtCore.SIGNAL("triggered()"), self.accountDisable)
-        
         self.connect(self.actionEnableSession, QtCore.SIGNAL("triggered()"), self.accountEnable)
-
         self.connect(self.actionAddAccount, QtCore.SIGNAL("triggered()"), self.accountAdd)
-        
         self.connect(self.actionDeleteAccount, QtCore.SIGNAL("triggered()"), self.accountDelete)
-        
         self.connect(self.editTarifAction, QtCore.SIGNAL("triggered()"), self.editTarif)
         self.connect(self.editAccountAction, QtCore.SIGNAL("triggered()"), self.editframe)
         self.connectTree()
@@ -3093,7 +3086,12 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.refreshTree()
         setFirstActive(self.tarif_treeWidget)
         HeaderUtil.nullifySaved("account_frame_header")
+        #self.tableWidget.resizeColumnsToContents()
+        
         self.refresh()
+        if not bhdr.isEmpty():
+            HeaderUtil.setBinaryHeader("account_frame_header", bhdr)
+            HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
         self.thread.go(interval=60)
