@@ -1,0 +1,285 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>866</width>
+    <height>558</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" >
+   <item row="1" column="0" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" >
+    <widget class="MultiPageWidget" name="multipagewidget" >
+     <widget class="QWidget" name="page" >
+      <property name="windowTitle" >
+       <string>Контактная информация</string>
+      </property>
+      <widget class="QLineEdit" name="lineEdit" >
+       <property name="geometry" >
+        <rect>
+         <x>140</x>
+         <y>10</y>
+         <width>221</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>101</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>Контактное лицо</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_2" >
+       <property name="geometry" >
+        <rect>
+         <x>140</x>
+         <y>40</y>
+         <width>461</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_2" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>121</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>Организация</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_3" >
+       <property name="geometry" >
+        <rect>
+         <x>140</x>
+         <y>70</y>
+         <width>461</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_3" >
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>46</width>
+         <height>14</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>Телефон</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton" >
+       <property name="geometry" >
+        <rect>
+         <x>734</x>
+         <y>430</y>
+         <width>91</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text" >
+        <string>PushButton</string>
+       </property>
+       <property name="icon" >
+        <iconset>
+         <normaloff>E:/tango-icon-theme-0.8.1/32x32/actions/document-save.png</normaloff>E:/tango-icon-theme-0.8.1/32x32/actions/document-save.png</iconset>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="page_2" >
+      <property name="windowTitle" >
+       <string>Карточки в наличии</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2" >
+       <item row="0" column="0" colspan="2" >
+        <widget class="QTableWidget" name="tableWidget" >
+         <column>
+          <property name="text" >
+           <string>#</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Тип</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Серия</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>PIN</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Номинальная стоимость</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Цена продажи</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Дата начала</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Дата конца</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QCommandLinkButton" name="commandLinkButton" >
+         <property name="text" >
+          <string>Распечатать</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QCommandLinkButton" name="commandLinkButton_2" >
+         <property name="text" >
+          <string>Вернуть</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_3" >
+      <property name="windowTitle" >
+       <string>Активированные карточки</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3" >
+       <item row="0" column="0" >
+        <widget class="QTableWidget" name="tableWidget_2" >
+         <column>
+          <property name="text" >
+           <string>#</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Тип</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Серия</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>PIN</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Номинал</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Дата начала</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Дата окончания</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Дата продажи</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <zorder>buttonBox</zorder>
+  <zorder>multipagewidget</zorder>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MultiPageWidget</class>
+   <extends>QWidget</extends>
+   <header>multipagewidget.h</header>
+   <addpagemethod>addPage</addpagemethod>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
