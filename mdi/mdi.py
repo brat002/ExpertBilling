@@ -510,7 +510,7 @@ if __name__ == "__main__":
         mainwindow = MainWindow()
         mainwindow.show()
         #app.setStyle("cleanlooks")
-        mainwindow.setWindowIcon(QtGui.QIcon("images/icon.ico"))
+        mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("./style.qss","r").read())
         sys.exit(app.exec_())
         connection.commit()
