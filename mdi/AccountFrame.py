@@ -10,7 +10,7 @@ from helpers import dateDelim
 from helpers import connlogin
 from helpers import setFirstActive
 from helpers import tableHeight
-from helpers import HeaderUtil
+from helpers import HeaderUtil, SplitterUtil
 from types import BooleanType
 import copy
 
@@ -840,7 +840,7 @@ class TarifFrame(QtGui.QDialog):
     def timeAccessRowEdit(self):
         pass
  
-#-----------------------------Добавление строк в таблицы       
+    #-----------------------------Добавление строк в таблицы       
     def addTrafficCostRow(self):
         current_row = self.trafficcost_tableWidget.currentRow()+1
         self.trafficcost_tableWidget.insertRow(current_row)
@@ -990,7 +990,7 @@ class TarifFrame(QtGui.QDialog):
         except:
             pass
             
-#------------------tab actions         
+    #------------------tab actions         
     def timeaccessTabActivityActions(self):
         if self.time_access_service_checkbox.checkState()!=2:
             self.tab_3.setDisabled(True)
@@ -1039,11 +1039,11 @@ class TarifFrame(QtGui.QDialog):
             self.tab_7.setDisabled(False)
             #self.tabWidget.insertTab(7, self.tab_7,"")
             #self.retranslateUi()        
-#-------------------
+            #-------------------
 
 
 
-#-----------------------------Обработка редактирования таблиц
+    #-----------------------------Обработка редактирования таблиц
     def prepaidTrafficEdit(self,y,x):
         if x==1:
             try:
@@ -1329,7 +1329,6 @@ class TarifFrame(QtGui.QDialog):
             self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
 
-#----------------------------
 
     def getIdFromtable(self, tablewidget, row=0):
         tmp=tablewidget.item(row, 0)
@@ -2008,7 +2007,7 @@ class TarifFrame(QtGui.QDialog):
                         if cl not in traffic_class_models:
                             self.connection.delete("DELETE FROM billservice_trafficlimit_traffic_class WHERE trafficlimit_id=%d and trafficclass_id=%d " % (limit_id, cl))
                                             
-    #                limit.save()     
+                    #limit.save()     
                       
                     #Если это новая запись
                     #print 'id', id
@@ -2106,7 +2105,7 @@ class TarifFrame(QtGui.QDialog):
                         if cl not in traffic_class_models:
                             self.connection.delete("DELETE FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=%d and trafficclass_id=%d" % (transmit_node_id, cl))
                             #cl.traffictransmitnodes_set.remove(transmit_node)
-    #                        print "del"
+                            #print "del"
                             
                     time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 6).models]
                     if len(time_period_models)==0:
@@ -2923,6 +2922,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
     def __init__(self, connection, parent, selected_account=None):
         bhdr = HeaderUtil.getBinaryHeader("account_frame_header")
+        self.splname = "account_frame_splitter"
+        bspltr = SplitterUtil.getBinarySplitter(self.splname)
         super(AccountsMdiChild, self).__init__()
         self.parent = parent
         self.connection = connection
@@ -2960,7 +2961,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
+        sz.setWidth(self.width()*0.7 / 5)
         tree_header.setSizeHint(0,sz)
+        sz.setWidth(self.width()*0.3 / 5)
         tree_header.setSizeHint(1,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
         tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
@@ -3052,7 +3055,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        
+        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)        
         self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
         self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
         
@@ -3079,12 +3082,16 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.refreshTree()
         setFirstActive(self.tarif_treeWidget)
         HeaderUtil.nullifySaved("account_frame_header")
+        SplitterUtil.nullifySaved(self.splname)
         #self.tableWidget.resizeColumnsToContents()
         
         self.refresh()
         if not bhdr.isEmpty():
             HeaderUtil.setBinaryHeader("account_frame_header", bhdr)
             HeaderUtil.getHeader("account_frame_header", self.tableWidget)
+        if not bspltr.isEmpty():
+            SplitterUtil.setBinarySplitter(self.splname, bspltr)
+            SplitterUtil.getSplitter(self.splname, self.splitter)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
         self.thread.go(interval=60)
@@ -3439,7 +3446,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader("account_frame_header", self.tableWidget)
-    #---------------Local actions
+    def saveSplitter(self, *args):
+        SplitterUtil.saveSplitter(self.splname, self.splitter)
+        #---------------Local actions
     def delNodeLocalAction(self):
         #print self.tableWidget.currentRow()
         if self.tableWidget.currentRow()==-1:

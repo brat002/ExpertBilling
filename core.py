@@ -515,7 +515,7 @@ class periodical_service_bill(Thread):
                                     ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
                                     #self.connection.commit()
                     self.connection.commit()
-
+            gc.collect()
             time.sleep(180)
 
 class TimeAccessBill(Thread):
@@ -647,7 +647,7 @@ class TimeAccessBill(Thread):
                 self.cur.execute(query)
                 self.connection.commit()
 
-
+            gc.collect()
             time.sleep(30)
 
 
@@ -769,7 +769,8 @@ class NetFlowAggregate(Thread):
 
                 connection.commit()
             del raw_streams  
-
+            
+            gc.collect()
             time.sleep(60)
         cur.close()
         connection.close()
@@ -997,6 +998,7 @@ class NetFlowBill(Thread):
                 )
                 self.connection.commit()
             self.connection.commit()
+            gc.collect()
             time.sleep(40)
 
         #connection.close()
@@ -1121,7 +1123,8 @@ class limit_checker(Thread):
                         """ % (block, account_id))
 #                    print "limit_result=", block
 
-            self.connection.commit() 
+            self.connection.commit()
+            gc.collect()
             time.sleep(30)
 
 
@@ -1390,6 +1393,7 @@ class settlement_period_service_dog(Thread):
                 self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s,%s,now());" % (accounttarif_id, service_id))
 
                 self.connection.commit()
+            gc.collect()
             time.sleep(120)
 
 class ipn_service(Thread):
@@ -1541,6 +1545,7 @@ class ipn_service(Thread):
                         self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %d, '%s',%s , now());" % (row['account_id'], unicode(newspeed), sended_speed))
 
                 self.connection.commit()
+            gc.collect()
             time.sleep(60)
 
 

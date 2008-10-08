@@ -131,6 +131,58 @@ class HeaderUtil(object):
             print "Frame settings error: ", ex
             table.resizeColumnsToContents()
             
+class SplitterUtil(object):
+    @staticmethod
+    def nullifySaved(name):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(QtCore.QByteArray()))
+        except Exception, ex:
+            print "SplitterUtil settings nullify error: ", ex
+            
+    @staticmethod
+    def saveSplitter(name, splitter):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(splitter.saveState()))
+            #print "save header"
+        except Exception, ex:
+            print "SplitterUtil settings save error: ", ex
+            
+    @staticmethod
+    def setBinarySplitter(name, bspltr):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue(name, QtCore.QVariant(bspltr))
+        except Exception, ex:
+            print "HeaderUtil settings save error: ", ex
+            
+    @staticmethod
+    def getBinarySplitter(name):
+        bspltr = QtCore.QByteArray()
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            bspltr =  settings.value(name, QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        except Exception, ex:
+            print "Frame settings error: ", ex
+        return bspltr
+    
+    @staticmethod
+    def getSplitter(name, splitter):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            splitterState = settings.value(name, QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+            if not splitterState.isEmpty():
+                splitter.restoreState(splitterState)
+            else:
+                wwidth = splitter.parent().width()
+                splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
+        except Exception, ex:
+            print "Frame settings error: ", ex
+            wwidth = splitter.parent().width()
+            splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
+            
+
 def format_update (x,y):
     if y!='Null' and y!='None':
         if type(y)==StringType or type(y)==UnicodeType:

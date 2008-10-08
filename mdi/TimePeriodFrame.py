@@ -8,7 +8,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import setFirstActive
-from helpers import HeaderUtil
+from helpers import HeaderUtil, SplitterUtil
 from time import mktime
 
 import datetime, calendar
@@ -161,6 +161,8 @@ class TimePeriodChild(QtGui.QMainWindow):
 
     def __init__(self, connection):
         self.setname = "time_frame_header"
+        self.splname = "timeperiod_frame_splitter"
+        bspltr = SplitterUtil.getBinarySplitter(self.splname)
         bhdr = HeaderUtil.getBinaryHeader(self.setname)
         super(TimePeriodChild, self).__init__()
         self.connection = connection
@@ -247,6 +249,8 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.delConsAction)
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)
+        
         self.retranslateUi()
 
         self.refresh()
@@ -254,11 +258,15 @@ class TimePeriodChild(QtGui.QMainWindow):
         try:
             setFirstActive(self.treeWidget)
             HeaderUtil.nullifySaved(self.setname)
+            SplitterUtil.nullifySaved(self.splname)
             self.refreshTable()
             self.tableWidget = tableFormat(self.tableWidget)
             if not bhdr.isEmpty():
                 HeaderUtil.setBinaryHeader(self.setname, bhdr)
                 HeaderUtil.getHeader(self.setname, self.tableWidget)
+            if not bspltr.isEmpty():
+                SplitterUtil.setBinarySplitter(self.splname, bspltr)
+                SplitterUtil.getSplitter(self.splname, self.splitter)
         except Exception, ex:
             print "Error when setting first element active: ", ex
             pass
@@ -474,6 +482,8 @@ class TimePeriodChild(QtGui.QMainWindow):
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader(self.setname, self.tableWidget)
+    def saveSplitter(self, *args):
+        SplitterUtil.saveSplitter(self.splname, self.splitter)    
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 

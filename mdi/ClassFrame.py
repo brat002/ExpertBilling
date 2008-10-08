@@ -6,7 +6,7 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import setFirstActive
-from helpers import HeaderUtil
+from helpers import HeaderUtil, SplitterUtil
 from IPy import *
 
 class ClassEdit(QtGui.QDialog):
@@ -393,6 +393,8 @@ class ClassChild(QtGui.QMainWindow):
 
     def __init__(self, connection):
         bhdr = HeaderUtil.getBinaryHeader("class_frame_header")
+        self.splname = "class_frame_splitter"
+        bspltr = SplitterUtil.getBinarySplitter(self.splname)
         super(ClassChild, self).__init__()
         self.connection = connection
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -518,6 +520,7 @@ class ClassChild(QtGui.QMainWindow):
         
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)
         self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
         self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
         
@@ -542,10 +545,14 @@ class ClassChild(QtGui.QMainWindow):
         try:
             setFirstActive(self.treeWidget)
             HeaderUtil.nullifySaved("class_frame_header")
+            SplitterUtil.nullifySaved(self.splname)
             self.refreshTable()
             if not bhdr.isEmpty():
                 HeaderUtil.setBinaryHeader("class_frame_header", bhdr)
                 HeaderUtil.getHeader("class_frame_header", self.tableWidget)
+            if not bspltr.isEmpty():
+                SplitterUtil.setBinarySplitter(self.splname, bspltr)
+                SplitterUtil.getSplitter(self.splname, self.splitter)
         except Exception, ex:
             print "Error in setting first element active: ",ex
         
@@ -796,9 +803,14 @@ class ClassChild(QtGui.QMainWindow):
             headerItem.setIcon(QtGui.QIcon("images/tc.png"))
             
         self.tableWidget.setItem(x,y,headerItem)
+        
+        
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader("class_frame_header", self.tableWidget)
+            
+    def saveSplitter(self, *args):
+        SplitterUtil.saveSplitter(self.splname, self.splitter)
 
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
