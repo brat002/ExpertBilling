@@ -22,7 +22,7 @@ from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog, ConnectionWaiting
-from Reports import NetFlowReport, StatReport, ReportSelectDialog
+from Reports import NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChild
 
 #add speed "Загрузка канала пользователем"

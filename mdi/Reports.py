@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql
@@ -947,7 +947,7 @@ class NetFlowReport(QtGui.QMainWindow):
         
         
 
-class ReportSelectDialog(QtGui.QDialog):
+"""class ReportSelectDialog(QtGui.QDialog):
     def __init__(self,  connection):
         super(ReportSelectDialog, self).__init__()
         self.setObjectName("reportSelectDialog")
@@ -1043,7 +1043,7 @@ class ReportSelectDialog(QtGui.QDialog):
     
     def accept(self):
         self.selectedId = self.reportSelectList.selectedItems()[0].id
-        QtGui.QDialog.accept(self)
+        QtGui.QDialog.accept(self)"""
 
 class StatReport(QtGui.QMainWindow):
     def __init__(self, connection, chartinfo):
@@ -1064,9 +1064,6 @@ class StatReport(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.toolBar.setIconSize(QtCore.QSize(18,18))
-        
- 
-        #self.statusBar().addWidget(self.button_end)
 
         
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
@@ -1266,6 +1263,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.send_to_printer_checkBox = QtGui.QCheckBox(self.settings_groupBox)
         self.send_to_printer_checkBox.setGeometry(QtCore.QRect(20,110,261,21))
         self.send_to_printer_checkBox.setObjectName("send_to_printer_checkBox")
+        self.send_to_printer_checkBox.setVisible(False)
         self.tabWidget.addTab(self.mainTab,"")
 
         self.usersTab = QtGui.QWidget()

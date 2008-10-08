@@ -11,7 +11,7 @@ from time import mktime
 from CustomForms import ComboBoxDialog
 import datetime, calendar
 from helpers import transaction
-from helpers import HeaderUtil
+from helpers import HeaderUtil, SplitterUtil
 
 class AddCards(QtGui.QDialog):
     def __init__(self, connection, group, last_series=0):
@@ -188,6 +188,8 @@ class CardsChild(QtGui.QMainWindow):
 
     def __init__(self, connection):
         bhdr = HeaderUtil.getBinaryHeader("cards_frame_header")
+        self.splname = "cards_frame_splitter"
+        bspltr = SplitterUtil.getBinarySplitter(self.splname)
         super(CardsChild, self).__init__()
         self.connection = connection
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -285,14 +287,18 @@ class CardsChild(QtGui.QMainWindow):
         self.toolBar.addSeparator()
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        
+        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)        
         self.retranslateUi()
         HeaderUtil.nullifySaved("cards_frame_header")
+        SplitterUtil.nullifySaved(self.splname)
         self.refresh()
         
         if not bhdr.isEmpty():
             HeaderUtil.setBinaryHeader("cards_frame_header", bhdr)
             HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
+        if not bspltr.isEmpty():
+            SplitterUtil.setBinarySplitter(self.splname, bspltr)
+            SplitterUtil.getSplitter(self.splname, self.splitter)
         #===============================================================================
         self.connect(self.actionAddGroup, QtCore.SIGNAL("triggered()"), self.addGroup)
         self.connect(self.actionDelGroup, QtCore.SIGNAL("triggered()"), self.delGroup)
@@ -602,7 +608,10 @@ class CardsChild(QtGui.QMainWindow):
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader("cards_frame_header", self.tableWidget)
-    
+            
+    def saveSplitter(self, *args):
+        SplitterUtil.saveSplitter(self.splname, self.splitter)
+        
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
