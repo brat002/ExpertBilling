@@ -210,7 +210,10 @@ class cdDrawer(object):
         if callable(method):
             self.set_options(methodName, kwargs['options'])
             args = args[1:]
-            res =  method(*args, **kwargs)
+            try:
+                res =  method(*args, **kwargs)
+            except Exception, ex:
+                print "Exception %s in method %s" % (str(ex), methodName)
             res.append(kwargs['return'])
             return res
         else:
@@ -1239,7 +1242,7 @@ class cdDrawer(object):
         except Exception, ex:
             print "Session exception: ", ex
         # if username.count(username[0]) == len(username)
-        ucount = defaultdict(vlint)
+        ucount = defaultdict(int)
         for usr in username:
             ucount[usr] += 1
         unames = [key.lower() for key in ucount.iterkeys()]
@@ -1281,12 +1284,6 @@ class cdDrawer(object):
         # Add a title to the chart using 15 points Times Bold Itatic font, with white
         # (ffffff) text on a deep blue (000080) background
         c.addTitle(*optdict['addtitle'])
-
-        # Set the plotarea and size of pixels. Use alternative
-        # white/grey background. Enable both horizontal and vertical grids by setting their
-        # colors to grey (c0c0c0). Set vertical major grid (represents month boundaries) 2
-        # pixels in width
-        #c.setPlotArea(*optdict['setplotarea'])	
         c.setPlotArea(*spa)	
         # swap the x and y axes to create a horziontal box-whisker chart
         c.swapXY()	
@@ -1296,11 +1293,6 @@ class cdDrawer(object):
         #----
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-
-        # Set multi-style axis label formatting. Month labels are in Arial Bold font in "mmm
-        # d" format. Weekly labels just show the day of month and use minor tick (by using
-        # '-' as first character of format string).
-        #c.yAxis().setMultiFormat(StartOfMonthFilter(), "<*font=arialbd.ttf*>{value|mmm d}", StartOfDayFilter(), "-{value|d}")
 
         # Set the y-axis to shown on the top (right + swapXY = top)
         c.setYAxisOnRight()
