@@ -82,6 +82,55 @@ def setTableHeight(tableWidget):
     except Exception, ex:
         print "Error in setTableHeight: ", ex
 
+def card_template_parser(command_string='', command_dict={}):
+    
+    import re
+    if len(command_string) == 0 or len(command_dict) == 0:
+        return ''
+    pattern = re.compile('\$\w+?\$')
+    match = pattern.finditer(command_string)
+    if match is None:
+        return ''
+    params = [m.group()[1:-1] for m in match]
+    i = 0
+    for p in params :
+        if p in command_dict.keys() :
+            s = re.compile( '\$%s\$' % p)
+            command_string = s.sub(str(command_dict[p]),command_string)
+            i +=1
+            
+    return (command_string, i)
+
+#TODO:exceptions
+def write_cards(template_fname, pattern_dicts, strict=True):
+    if not os.path.exists(template_fname):
+        raise Exception("Template file doesn't exist!")
+    tmpl_basename = os.path.basename(template_fname)
+    #tmpl_dirname = os.pa
+    f = open(template_fname, "rb")
+    template_str = f.read()
+    f.close()
+    ext_str = ''
+    if template_fname[-4] == '.':
+        ext_str = template_fname[-4:]
+    elif template_fname[-5] == '.':
+        ext_str = template_fname[-5:]
+    i = 0
+    fnames = []
+    for pdict in pattern_dicts:
+        write_tstr, cnt = card_template_parser(template_str, pdict)
+        if strict and (cnt != len(pdict)):
+            print "Template %s was not fully parsed with dictionary %s and was discarded!" % (tmpl_basename, str(pdict))
+            continue
+        fname = template_fname + "_printandum_#" +str(i) +"__" + str(time.time()) + ext_str
+        f = open(fname, "wb")
+        f.write(write_tstr)
+        f.close()
+        fnames.append(fname)
+        i += 1
+    return (fnames, i)
+    
+    
 class HeaderUtil(object):
     @staticmethod
     def nullifySaved(name):
@@ -373,7 +422,7 @@ def transaction(account_id, type_id, approved, description, summ, bill):
     
 def humanable_bytes(a):
     """
-    Функция для удобного человеку предоставления обхёма трафика
+    Функция для удобного человеку предоставления объёма трафика
     """
     if a is not None:
         try:
