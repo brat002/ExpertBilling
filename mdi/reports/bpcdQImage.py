@@ -22,11 +22,12 @@ class bpcdQImage(object):
         self.options = {}
         kwargs['return'].update(ret)
         
-        qimgs = []
+        '''qimgs = []
         for img in imgs:
             qimg = QtGui.QImage()
             qimg.loadFromData(img, 'png')
-            qimgs.append(qimg)
+            qimgs.append(qimg)'''
+        qimgs = imgs
         
         return qimgs
         
