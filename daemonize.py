@@ -1,6 +1,13 @@
 import os, sys
-
-def daemonize (workdir="/",stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+from platform import uname
+workdir = os.path.split(sys.argv[0])[0]
+os.chdir(workdir)
+def daemonize (stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+    if uname()[0]!="Windows":
+        _daemonize (workdir=workdir,stdin=stdin, stdout=stdout, stderr=stderr)
+    
+    
+def _daemonize (workdir="/",stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
  
     '''This forks the current process into a daemon. The stdin, stdout, and
     stderr arguments are file names that will be opened and be used to replace

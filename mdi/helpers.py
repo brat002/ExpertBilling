@@ -420,7 +420,8 @@ class Worker(QtCore.QThread):
         while True:
             
             
-            time.sleep(self.interval)
+            
             print "emit"
             self.emit(QtCore.SIGNAL("refresh()"))
+            time.sleep(self.interval)
                     

@@ -39,6 +39,8 @@ class MonitorFrame(QtGui.QMainWindow):
         self.user_label = QtGui.QLabel(u" Пользователь  ")
         self.allTimeCheckbox = QtGui.QCheckBox(u"Включая завершённые")
         
+        self.checkBoxAutoRefresh = QtGui.QCheckBox(u"Автоматически обновлять")
+        
         self.menubar = QtGui.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0,0,802,21))
         self.menubar.setObjectName("menubar")
@@ -78,12 +80,14 @@ class MonitorFrame(QtGui.QMainWindow):
         self.toolBar.addWidget(self.userCombobox)
         self.toolBar.addSeparator()
         self.toolBar.addWidget(self.allTimeCheckbox)
+        self.toolBar.addWidget(self.checkBoxAutoRefresh)
         self.toolBar.addWidget(self.pushbutton)
         
         
 
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)
         QtCore.QObject.connect(self.actionResetSession, QtCore.SIGNAL("triggered()"), self.reset_action)
+        QtCore.QObject.connect(self.checkBoxAutoRefresh, QtCore.SIGNAL("stateChanged(int)"), self.autorefresh_state)
         self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.fixtures)
 
         tableHeader = self.tableWidget.horizontalHeader()
@@ -99,7 +103,7 @@ class MonitorFrame(QtGui.QMainWindow):
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         else:
             self.firsttime = True
-        self.thread.go(interval=25)
+        
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
@@ -113,6 +117,15 @@ class MonitorFrame(QtGui.QMainWindow):
         self.actionResetSession.setText(QtGui.QApplication.translate("MainWindow", "Сбросить сессию", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGoToUser.setText(QtGui.QApplication.translate("MainWindow", "Перейти к пользователю", None, QtGui.QApplication.UnicodeUTF8))
 
+    def autorefresh_state(self):
+        """
+        Метод, стартующий трэд, эмитирующий в родительское окно сигнал refresh()
+        """
+        if self.checkBoxAutoRefresh.checkState()==2:
+            self.thread.go(interval=25)
+        else:
+            self.thread.quit()
+            
     def closeEvent(self, event):
         """
         Terminate thread
@@ -148,7 +161,7 @@ class MonitorFrame(QtGui.QMainWindow):
         
     def reset_action(self):
         sessionid = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).sessionid)
-        print sessionid
+        #print sessionid
         self.connection.pod(session=sessionid)
         self.connection.create("UPDATE radius_activesession SET session_status='ACK' WHERE sessionid='%s'" % sessionid)
         self.connection.commit()
