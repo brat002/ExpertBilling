@@ -1,19 +1,15 @@
 #-*-coding=utf-8-*-
+import os, sys
 from daemonize import daemonize
-import os
-
-daemonize(os.path.abspath("."),"/dev/null", "/log.txt", "/log.txt")
-
 import socket, select, struct, datetime, time, sys, os
 
-if os.name!='nt':
-    os.chdir("/opt/ebs/data")
 from IPy import IP
 try:
     import mx.DateTime
 except:
     print "cannot inport mx"
-import settings
+    
+
 import psycopg2
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -128,7 +124,7 @@ class NetFlowPacket:
                 nas_id = cur.fetchone()[0]
                 nascache[addrport[0]] = nas_id
             except Exception, e:
-                print e
+                #print addrport[0], e
                 return
         flows=[]
         if nas_id!=None:	    
@@ -294,7 +290,9 @@ def applyFlow(keylist):
 
 
 def main ():
-    addrs = socket.getaddrinfo(settings.NF_HOST, settings.NF_PORT, socket.AF_UNSPEC,
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
+    addrs = socket.getaddrinfo(config.get("nf", "host"), config.get("nf", "port"), socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
     socks = []
     for addr in addrs:
@@ -331,8 +329,8 @@ def main ():
                 #print "len dcache ", len(dcache)
                 #print "time", time.clock()
                 #print nascache
-            print ipncache
-            print vpncache
+            #print ipncache
+            #print vpncache
             cur.connection.commit()
         try:
             NetFlowPacket(data, addrport, tFC)
@@ -357,11 +355,7 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
     sys.exit(1)
 
 if __name__=='__main__':
-    if os.name!='nt':
-        os.chdir("/opt/ebs/data")
-        config.read("/opt/ebs/data/ebs_config.ini")
-    else:
-        config.read("ebs_config.ini")
+    config.read("ebs_config.ini")
     try:
         db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
                                                                                            config.get("db", "username"),

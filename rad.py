@@ -1,4 +1,6 @@
 #-*-coding=utf-8-*-
+import sys
+from daemonize import daemonize
 
 from auth import Auth
 from time import clock
@@ -7,12 +9,13 @@ try:
 except:
     print 'cannot import mx'
 import os,datetime
+
 from SocketServer import ThreadingUDPServer
 from SocketServer import DatagramRequestHandler
+
 from threading import Thread
 import dictionary, packet
 
-    
 from utilites import in_period, create_speed_string
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
@@ -28,13 +31,9 @@ except:
 
 import ConfigParser
 
+from daemonize import daemonize
+daemonize("/dev/null", "log.txt", "log.txt")
 
-
-
-
-from logger import redirect_std
-
-#redirect_std("rad", redirect=config.get("stdout", "redirect"))
 
 global numauth, numacct
 
@@ -515,6 +514,7 @@ class RadiusAuth(BaseAuth):
         addrport=self.client_address
         #print addrport
         #print 1
+        print "BEFORE AUTH:%.20f" % (clock()-t)
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
@@ -553,7 +553,7 @@ class RadiusAuth(BaseAuth):
             del access_type
             del returndata
         numauth-=1
-        #print "AUTH:%.20f" % (clock()-t)
+        print "AFTER AUTH:%.20f" % (clock()-t)
 
 class RadiusAcct(BaseAuth):
 
@@ -615,7 +615,8 @@ def setpriority(pid=None,priority=1):
 
 def main():
 
-
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
 
     
     server_auth = Starter(("0.0.0.0", 1812), RadiusAuth)

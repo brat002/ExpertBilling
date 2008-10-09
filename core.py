@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 #from encodings import idna
-
+from daemonize import daemonize
 import time, datetime, os, sys, gc
 from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
@@ -37,6 +37,7 @@ config = ConfigParser.ConfigParser()
 from DBUtils.PooledDB import PooledDB
 
 from logger import redirect_std
+
 
 #redirect_std("core", redirect=config.get("stdout", "redirect"))
 #from mdi.helpers import Object as Object
@@ -1992,8 +1993,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 def main():
-    #print os.path.curdir
-    #dict=dictionary.Dictionary(os.path.normpath("./dicts/dictionary"), "./dicts/dictionary.microsoft","./dicts/dictionary.mikrotik","./dicts/dictionary.rfc3576")
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
     threads=[]
     threads.append(RPCServer())
@@ -2033,11 +2034,8 @@ if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing
     sys.exit(1)
     
 if __name__ == "__main__":
-    if os.name!='nt':
-        os.chdir("/opt/ebs/data")
-        config.read("/opt/ebs/data/ebs_config.ini")
-    else:
-        config.read("ebs_config.ini")
+
+    config.read("ebs_config.ini")
 
     pool = PooledDB(
         mincached=10,
