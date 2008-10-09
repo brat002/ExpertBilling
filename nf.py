@@ -1,6 +1,11 @@
 #-*-coding=utf-8-*-
+from daemonize import daemonize
+import os
+
+daemonize(os.abspath("."),"/dev/null", "/log.txt", "/log.txt")
 
 import socket, select, struct, datetime, time, sys, os
+
 if os.name!='nt':
     os.chdir("/opt/ebs/data")
 from IPy import IP
@@ -346,7 +351,7 @@ def main ():
 
 
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline']:
+if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline']:
     import sys
     print "License key error. Exit from application."
     sys.exit(1)
