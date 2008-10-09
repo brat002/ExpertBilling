@@ -635,10 +635,7 @@ if __name__ == "__main__":
     config = ConfigParser.ConfigParser()
     if os.name=='nt':
         setpriority(priority=4)
-        config.read("ebs_config.ini")
-    else:
-        os.chdir("/opt/ebs/data")
-        config.read("/opt/ebs/data/ebs_config.ini")
+    config.read("ebs_config.ini")
         
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
