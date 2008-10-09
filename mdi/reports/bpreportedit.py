@@ -234,15 +234,17 @@ class reportConstructor(Dispatcher, ContentHandler):
         imgpath = attrs['path']
         try:
             print imgpath
-            print os.path.normpath(imgpath)
+            imp2 = os.path.normpath(imgpath)
             print os.path.abspath(imgpath)
             #qimg = QtGui.QImage(os.path.normpath(imgpath), 'png')
             qimg = QtGui.QPixmap(os.path.normpath(imgpath), 'png')
             print qimg.physicalDpiX()
             print qimg.logicalDpiX()
             tdoc = self.editor.document()
-            tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(''.join(imgpath.split('/'))), QtCore.QVariant(qimg))
-            self.cursor.insertImage(''.join(imgpath.split('/')))
+            #tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(''.join(imgpath.split('/'))), QtCore.QVariant(qimg))
+            #self.cursor.insertImage(''.join(imgpath.split('/')))
+            tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(imp2), QtCore.QVariant(qimg))
+            self.cursor.insertImage(imp2)
         except Exception, ex: 
             print "<image> exception: ", ex
             
