@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import os, sys
-from PyQt4 import QtCore, QtGui, QtSql
+from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
@@ -1129,13 +1129,20 @@ class StatReport(QtGui.QMainWindow):
         self.textedit = None
         print editor.physicalDpiX()
         print editor.logicalDpiX()
-        #f = open("aaa.html", "wb")
-        #f.write(editor.document().toHtml())
-        #f.close()
+        f = open("aaa.html", "wb")
+        f.write(editor.document().toHtml())
+        f.close()
         if self.child.read_only_checkBox.checkState() == 2:
             editor.setReadOnly(True)
         #self.textedit.setDocument(editor.document())
-        self.setCentralWidget(editor)
+        #sht = editor.document().toHtml()
+        webv = QtWebKit.QWebView()
+        #webv.setHtml(sht)
+        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath("aaa1.html"))
+        print lfurl.toString()
+        webv.load(lfurl)
+        #self.setCentralWidget(editor)
+        self.setCentralWidget(webv)
         print editor.physicalDpiX()
         print editor.logicalDpiX()
         #ec = self.centralWidget().cursor()
@@ -1144,9 +1151,9 @@ class StatReport(QtGui.QMainWindow):
         #print ec.shape()
         #print self.centralWidget().cursor().shape()
         
-        self.show()
-        self.update()
-        self.show()
+        #self.show()
+        #self.update()
+        #self.show()
         if self.child.send_to_printer_checkBox.checkState() == 2:
             pass
             #self.printThread.run(self.centralWidget().document())
@@ -1156,7 +1163,7 @@ class StatReport(QtGui.QMainWindow):
     def printDocument(self):
         #print self.centralWidget().physicalDpiX()
         #print self.centralWidget().logicalDpiX()
-        document = self.centralWidget().document()
+        document = self.centralWidget()
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setResolution(120)
         printer.setPageSize(QtGui.QPrinter.A4)
