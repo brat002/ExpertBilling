@@ -716,3 +716,22 @@ class Card(models.Model):
     start_date = models.DateTimeField(blank=True, default='')
     end_date = models.DateTimeField(blank=True, default='')
     disabled= models.BooleanField(default=False, blank=True)
+    
+    
+class Operator(models.Model):
+    organization = models.CharField(max_length=255)
+    unp = models.CharField(max_length=40)
+    okpo = models.CharField(max_length=40)
+    contactperson = models.CharField(max_length=255)
+    director = models.CharField(max_length=255)
+    phone = models.CharField(max_length=40)
+    postaddress = models.CharField(max_length=255)
+    uraddress = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    
+class BankData(models.Model):
+    operator = models.ForeignKey(Operator)
+    bank = models.CharField(max_length=255)
+    bankcode = models.CharField(max_length=40)
+    rs = models.CharField(max_length=60)
+    currency = models.CharField(max_length=40)
