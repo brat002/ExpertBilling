@@ -2,7 +2,7 @@
 from daemonize import daemonize
 import os
 
-daemonize(os.abspath("."),"/dev/null", "/log.txt", "/log.txt")
+daemonize(os.path.abspath("."),"/dev/null", "/log.txt", "/log.txt")
 
 import socket, select, struct, datetime, time, sys, os
 

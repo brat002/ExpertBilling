@@ -1,4 +1,6 @@
-def daemonize (stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+import os, sys
+
+def daemonize (workdir="/",stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
  
     '''This forks the current process into a daemon. The stdin, stdout, and
     stderr arguments are file names that will be opened and be used to replace
@@ -17,7 +19,7 @@ def daemonize (stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
         sys.exit(1)
  
     # Decouple from parent environment.
-    os.chdir("/")
+    os.chdir(workdir)
     os.umask(0)
     os.setsid()
  
