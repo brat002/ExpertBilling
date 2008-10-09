@@ -17,6 +17,8 @@ import time
 
 #TODO: заменить сообщение о пустой выборке пустой картинкой
 _xmlpath = "reports/xml"
+reppath  = "reports/genhtml"
+
 _querydict = {\
               "get_nas"      : "SELECT name, type, ipaddress, id FROM nas_nas ORDER BY name;", \
 	      "get_usernames": "SELECT username, id FROM billservice_account ORDER BY username;", \
@@ -1129,8 +1131,9 @@ class StatReport(QtGui.QMainWindow):
         self.textedit = None
         print editor.physicalDpiX()
         print editor.logicalDpiX()
-        f = open("aaa.html", "wb")
-        f.write(editor.document().toHtml())
+        fname = reppath + "/" +self.chartinfo[1][0] + str(time.time()) + ".html"
+        f = open(fname, "wb")
+        f.write(editor.document().toHtml("utf-8").toUtf8())
         f.close()
         if self.child.read_only_checkBox.checkState() == 2:
             editor.setReadOnly(True)
@@ -1138,7 +1141,7 @@ class StatReport(QtGui.QMainWindow):
         #sht = editor.document().toHtml()
         webv = QtWebKit.QWebView()
         #webv.setHtml(sht)
-        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath("aaa1.html"))
+        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(fname))
         print lfurl.toString()
         webv.load(lfurl)
         #self.setCentralWidget(editor)

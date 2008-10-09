@@ -6,8 +6,11 @@ from xml.sax.handler import ContentHandler
 from xml.sax import parse
 from bpcdQImage import bpcdQImage as bpQImage
 import os
-#from psycopg2 import ProgrammingError
-#from bpplotadapter import bpplotAdapter
+import shutil
+#from .reports import reppath
+reppath  = "reports/genhtml"
+imgpath = "charts/"
+imgcachepath = "imgcache/"
 
 import time
 
@@ -237,14 +240,18 @@ class reportConstructor(Dispatcher, ContentHandler):
             imp2 = os.path.normpath(imgpath)
             print os.path.abspath(imgpath)
             #qimg = QtGui.QImage(os.path.normpath(imgpath), 'png')
-            qimg = QtGui.QPixmap(os.path.normpath(imgpath), 'png')
-            print qimg.physicalDpiX()
-            print qimg.logicalDpiX()
+            ifstat = os.stat(imp2)
+            qipath = os.path.normpath(os.path.normpath(imgcachepath) + "/" + str(ifstat.st_mtime)+ os.path.basename(imp2))
+            if not os.path.exists(qipath):
+                cppath  = os.path.normpath(os.path.normpath(reppath)+ "/" + os.path.normpath(imgcachepath) + "/" + str(ifstat.st_mtime) + os.path.basename(imp2))
+                shutil.copyfile(imp2, cppath)
+            
+            qimg = QtGui.QPixmap(cppath, 'png')
             tdoc = self.editor.document()
-            #tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(''.join(imgpath.split('/'))), QtCore.QVariant(qimg))
-            #self.cursor.insertImage(''.join(imgpath.split('/')))
-            tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(imp2), QtCore.QVariant(qimg))
-            self.cursor.insertImage(imp2)
+            tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(qipath), QtCore.QVariant(qimg))
+            self.cursor.insertImage(qipath)
+            #tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(imp2), QtCore.QVariant(qimg))
+            #self.cursor.insertImage(imp2)
         except Exception, ex: 
             print "<image> exception: ", ex
             
@@ -302,10 +309,21 @@ class reportConstructor(Dispatcher, ContentHandler):
             print "<chart> exception: " + str(ex) 
 
         i = 0
-        for qimg in qimgs:	    
+        for qimg in qimgs:
+            imname = os.path.normpath(imgpath + "/chart_" + str(time.time()) + ".png")
+            imwrpath = os.path.normpath(os.path.normpath(reppath)+ "/" + imname)
+            print imname
+            print imwrpath
+            f = open(imwrpath, "wb")
+            f.write(qimg)
+            f.close()
+            qqimg = QtGui.QPixmap(imwrpath, 'png')
             tdoc = self.editor.document()
+            tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(imname), QtCore.QVariant(qqimg))
+            self.cursor.insertImage(imname)
+            '''tdoc = self.editor.document()
             tdoc.addResource(QtGui.QTextDocument.ImageResource, QtCore.QUrl(cname + str(i)), QtCore.QVariant(qimg))
-            self.cursor.insertImage(cname + str(i))
+            self.cursor.insertImage(cname + str(i))'''
             i += 1
         if i == 0: self.cursor.insertText("Query is empty or database error!")
 
