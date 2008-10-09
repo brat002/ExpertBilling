@@ -1,285 +1,774 @@
 <ui version="4.0" >
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog" >
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>866</width>
-    <height>558</height>
+    <width>915</width>
+    <height>560</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Dialog</string>
+  <property name="minimumSize" >
+   <size>
+    <width>915</width>
+    <height>560</height>
+   </size>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="1" column="0" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" >
-    <widget class="MultiPageWidget" name="multipagewidget" >
-     <widget class="QWidget" name="page" >
-      <property name="windowTitle" >
-       <string>Контактная информация</string>
+  <property name="windowTitle" >
+   <string>Данные диллера</string>
+  </property>
+  <widget class="QWidget" name="centralwidget" >
+   <layout class="QGridLayout" name="gridLayout" >
+    <item row="0" column="0" >
+     <widget class="QTabWidget" name="tabWidget" >
+      <property name="currentIndex" >
+       <number>0</number>
       </property>
-      <widget class="QLineEdit" name="lineEdit" >
-       <property name="geometry" >
-        <rect>
-         <x>140</x>
-         <y>10</y>
-         <width>221</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>101</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Контактное лицо</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_2" >
-       <property name="geometry" >
-        <rect>
-         <x>140</x>
-         <y>40</y>
-         <width>461</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>50</y>
-         <width>121</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Организация</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_3" >
-       <property name="geometry" >
-        <rect>
-         <x>140</x>
-         <y>70</y>
-         <width>461</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>80</y>
-         <width>46</width>
-         <height>14</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>Телефон</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton" >
-       <property name="geometry" >
-        <rect>
-         <x>734</x>
-         <y>430</y>
-         <width>91</width>
-         <height>24</height>
-        </rect>
-       </property>
-       <property name="text" >
-        <string>PushButton</string>
-       </property>
-       <property name="icon" >
-        <iconset>
-         <normaloff>E:/tango-icon-theme-0.8.1/32x32/actions/document-save.png</normaloff>E:/tango-icon-theme-0.8.1/32x32/actions/document-save.png</iconset>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="page_2" >
-      <property name="windowTitle" >
-       <string>Карточки в наличии</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2" >
-       <item row="0" column="0" colspan="2" >
-        <widget class="QTableWidget" name="tableWidget" >
-         <column>
-          <property name="text" >
-           <string>#</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Тип</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Серия</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>PIN</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Номинальная стоимость</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Цена продажи</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Дата начала</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Дата конца</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item row="1" column="0" >
-        <widget class="QCommandLinkButton" name="commandLinkButton" >
-         <property name="text" >
-          <string>Распечатать</string>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Данные о диллере</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_contact" >
+        <property name="geometry" >
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>531</width>
+          <height>321</height>
+         </rect>
+        </property>
+        <property name="title" >
+         <string>Контактные данные</string>
+        </property>
+        <widget class="QLineEdit" name="lineEdit_postaddress" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>229</y>
+           <width>383</width>
+           <height>20</height>
+          </rect>
          </property>
         </widget>
-       </item>
-       <item row="1" column="1" >
-        <widget class="QCommandLinkButton" name="commandLinkButton_2" >
+        <widget class="QLabel" name="label_organization" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>20</y>
+           <width>88</width>
+           <height>20</height>
+          </rect>
+         </property>
          <property name="text" >
-          <string>Вернуть</string>
+          <string>Организация</string>
          </property>
         </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="page_3" >
-      <property name="windowTitle" >
-       <string>Активированные карточки</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_3" >
-       <item row="0" column="0" >
-        <widget class="QTableWidget" name="tableWidget_2" >
-         <column>
-          <property name="text" >
-           <string>#</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Тип</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Серия</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>PIN</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Номинал</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Дата начала</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Дата окончания</string>
-          </property>
-         </column>
-         <column>
-          <property name="text" >
-           <string>Дата продажи</string>
-          </property>
-         </column>
+        <widget class="QLineEdit" name="lineEdit_fax" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>199</y>
+           <width>191</width>
+           <height>20</height>
+          </rect>
+         </property>
         </widget>
-       </item>
-      </layout>
+        <widget class="QLineEdit" name="lineEdit_phone" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>169</y>
+           <width>191</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_organization" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>20</y>
+           <width>381</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_director" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>139</y>
+           <width>88</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>ФИО директора</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_postaddress" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>229</y>
+           <width>101</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Почтовый адрес</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_contactperson" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>109</y>
+           <width>88</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Контактное лицо</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_director" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>139</y>
+           <width>381</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_phone" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>169</y>
+           <width>88</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Телефон</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_contactperson" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>109</y>
+           <width>381</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_fax" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>199</y>
+           <width>88</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Факс</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_uraddress" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>259</y>
+           <width>383</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_uraddress" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>259</y>
+           <width>111</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Юридический адрес</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_email" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>289</y>
+           <width>381</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_email" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>290</y>
+           <width>111</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>E-mail</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_okpo" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>80</y>
+           <width>191</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_unp" >
+         <property name="geometry" >
+          <rect>
+           <x>120</x>
+           <y>50</y>
+           <width>191</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_unp" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>50</y>
+           <width>51</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>УНП</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_okpo" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>80</y>
+           <width>51</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>ОКПО</string>
+         </property>
+        </widget>
+        <zorder>lineEdit_postaddress</zorder>
+        <zorder>label_organization</zorder>
+        <zorder>lineEdit_fax</zorder>
+        <zorder>lineEdit_phone</zorder>
+        <zorder>lineEdit_organization</zorder>
+        <zorder>label_director</zorder>
+        <zorder>label_postaddress</zorder>
+        <zorder>label_contactperson</zorder>
+        <zorder>lineEdit_director</zorder>
+        <zorder>label_phone</zorder>
+        <zorder>lineEdit_contactperson</zorder>
+        <zorder>label_fax</zorder>
+        <zorder>lineEdit_postaddress</zorder>
+        <zorder>label_organization</zorder>
+        <zorder>lineEdit_fax</zorder>
+        <zorder>lineEdit_phone</zorder>
+        <zorder>lineEdit_organization</zorder>
+        <zorder>label_director</zorder>
+        <zorder>label_postaddress</zorder>
+        <zorder>label_contactperson</zorder>
+        <zorder>lineEdit_director</zorder>
+        <zorder>label_phone</zorder>
+        <zorder>lineEdit_contactperson</zorder>
+        <zorder>label_fax</zorder>
+        <zorder>lineEdit_uraddress</zorder>
+        <zorder>label_uraddress</zorder>
+        <zorder>lineEdit_email</zorder>
+        <zorder>label_email</zorder>
+        <zorder>lineEdit_okpo</zorder>
+        <zorder>lineEdit_unp</zorder>
+        <zorder>label_unp</zorder>
+        <zorder>label_okpo</zorder>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_bankdata" >
+        <property name="geometry" >
+         <rect>
+          <x>10</x>
+          <y>340</y>
+          <width>531</width>
+          <height>111</height>
+         </rect>
+        </property>
+        <property name="title" >
+         <string>Банковские реквизиты</string>
+        </property>
+        <widget class="QLabel" name="label_rs" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>51</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Р/с</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_bank" >
+         <property name="geometry" >
+          <rect>
+           <x>9</x>
+           <y>20</y>
+           <width>51</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Банк</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_rs" >
+         <property name="geometry" >
+          <rect>
+           <x>90</x>
+           <y>80</y>
+           <width>383</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_bank" >
+         <property name="geometry" >
+          <rect>
+           <x>90</x>
+           <y>20</y>
+           <width>383</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_bankcode" >
+         <property name="geometry" >
+          <rect>
+           <x>90</x>
+           <y>50</y>
+           <width>151</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_bankcode" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>61</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Код банка</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_billinfo" >
+        <property name="geometry" >
+         <rect>
+          <x>560</x>
+          <y>10</y>
+          <width>321</width>
+          <height>261</height>
+         </rect>
+        </property>
+        <property name="title" >
+         <string>Платёжная информация</string>
+        </property>
+        <widget class="QLabel" name="label_13" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Последяя покупка карт %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_15" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Всего приобретено %s карт на сумму %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_17" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>60</y>
+           <width>46</width>
+           <height>14</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Из них</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_18" >
+         <property name="geometry" >
+          <rect>
+           <x>20</x>
+           <y>80</y>
+           <width>291</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Карт предоплаты %s на сумму %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_20" >
+         <property name="geometry" >
+          <rect>
+           <x>20</x>
+           <y>100</y>
+           <width>291</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Карт доступа %s на сумму %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_22" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>130</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Всего оплачено карт на сумму %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_24" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>150</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Задолженность составляет %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_26" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>180</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Прибыль диллера %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>200</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Наша прибыль %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>220</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Убыток по скидке %s</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_billdata" >
+        <property name="geometry" >
+         <rect>
+          <x>560</x>
+          <y>280</y>
+          <width>321</width>
+          <height>171</height>
+         </rect>
+        </property>
+        <property name="title" >
+         <string>Условия оплаты</string>
+        </property>
+        <widget class="QSpinBox" name="spinBox_prepayment" >
+         <property name="geometry" >
+          <rect>
+           <x>150</x>
+           <y>20</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_prepayment" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Размер предоплаты в %</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_paydeffer" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>131</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Отсрочка платежа, дней</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_paydeffer" >
+         <property name="geometry" >
+          <rect>
+           <x>150</x>
+           <y>50</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_discount" >
+         <property name="geometry" >
+          <rect>
+           <x>150</x>
+           <y>80</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_discount" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>80</y>
+           <width>91</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Скидка в %</string>
+         </property>
+        </widget>
+       </widget>
+       <zorder>groupBox_contact</zorder>
+       <zorder>groupBox_bankdata</zorder>
+       <zorder>groupBox_billinfo</zorder>
+       <zorder>groupBox_billdata</zorder>
+       <zorder>lineEdit_okpo</zorder>
+       <zorder>lineEdit_unp</zorder>
+       <zorder>label_unp</zorder>
+       <zorder>label_okpo</zorder>
+      </widget>
+      <widget class="QWidget" name="tab_2" >
+       <attribute name="title" >
+        <string>Карточки в наличии</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2" >
+        <item row="0" column="0" >
+         <widget class="QTableWidget" name="tableWidget_3" >
+          <column>
+           <property name="text" >
+            <string>#</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Тип</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Серия</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>PIN</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Номинальная стоимость</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Цена продажи</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Дата начала</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Дата конца</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_3" >
+       <attribute name="title" >
+        <string>Активированные карточки</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_3" >
+        <item row="0" column="0" >
+         <widget class="QTableWidget" name="tableWidget_4" >
+          <column>
+           <property name="text" >
+            <string>#</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Тип</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Серия</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>PIN</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Номинал</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Дата начала</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Дата окончания</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Дата продажи</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
-    </widget>
-   </item>
-  </layout>
-  <zorder>buttonBox</zorder>
-  <zorder>multipagewidget</zorder>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar" />
+  <widget class="QToolBar" name="toolBar" >
+   <property name="windowTitle" >
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea" >
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak" >
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSave" />
+   <addaction name="actionPrepareBill" />
+   <addaction name="returnCardsAction" />
+  </widget>
+  <action name="actionSave" >
+   <property name="icon" >
+    <iconset>
+     <normaloff>../images/save.png</normaloff>../images/save.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="returnCardsAction" >
+   <property name="icon" >
+    <iconset>
+     <normaloff>../images/return.png</normaloff>../images/return.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Вернуть карточки</string>
+   </property>
+  </action>
+  <action name="actionPrepareBill" >
+   <property name="icon" >
+    <iconset>
+     <normaloff>../images/moneybook.png</normaloff>../images/moneybook.png</iconset>
+   </property>
+   <property name="text" >
+    <string>PrepareBill</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MultiPageWidget</class>
-   <extends>QWidget</extends>
-   <header>multipagewidget.h</header>
-   <addpagemethod>addPage</addpagemethod>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel" >
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel" >
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
