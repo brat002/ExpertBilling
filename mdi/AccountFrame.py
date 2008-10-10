@@ -181,14 +181,17 @@ class TarifFrame(QtGui.QDialog):
 
         self.tab_1 = QtGui.QWidget()
         self.tab_1.setObjectName("tab_1")
-
+        
+        self.checkBoxAllowExpressPay = QtGui.QCheckBox(self.tab_1)
+        self.checkBoxAllowExpressPay.setGeometry(QtCore.QRect(150,320,597,16))
+        
         self.tarif_description_edit = QtGui.QTextEdit(self.tab_1)
-        self.tarif_description_edit.setGeometry(QtCore.QRect(11,350,597,142))
+        self.tarif_description_edit.setGeometry(QtCore.QRect(11,365,597,132))
         self.tarif_description_edit.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByKeyboard|QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.NoTextInteraction|QtCore.Qt.TextBrowserInteraction|QtCore.Qt.TextEditable|QtCore.Qt.TextEditorInteraction|QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.tarif_description_edit.setObjectName("tarif_description_edit")
 
         self.tarif_description_label = QtGui.QLabel(self.tab_1)
-        self.tarif_description_label.setGeometry(QtCore.QRect(10,320,198,16))
+        self.tarif_description_label.setGeometry(QtCore.QRect(10,345,198,16))
         self.tarif_description_label.setObjectName("tarif_description_label")
 
         self.tarif_status_edit = QtGui.QCheckBox(self.tab_1)
@@ -723,6 +726,7 @@ class TarifFrame(QtGui.QDialog):
         self.speed_in_label.setText(QtGui.QApplication.translate("Dialog", "IN", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_max_label.setText(QtGui.QApplication.translate("Dialog", "MAX", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_min_label.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBoxAllowExpressPay.setText(QtGui.QApplication.translate("Dialog", "Разрешить активацию карт экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
         
         self.speed_table.clear()
         columns=[u'Id',u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
@@ -1387,6 +1391,7 @@ class TarifFrame(QtGui.QDialog):
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
                 
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            self.checkBoxAllowExpressPay.setChecked(bool(self.model.allow_express_pay))
             self.tarif_name_edit.setText(self.model.name)
             self.tarif_cost_edit.setText(unicode(self.model.cost))
             self.tarif_description_edit.setText(self.model.description)
@@ -1715,6 +1720,7 @@ class TarifFrame(QtGui.QDialog):
             model.ps_null_ballance_checkout = self.ps_null_ballance_checkout_edit.checkState()==2
             
             model.active = self.tarif_status_edit.checkState()==2
+            model.allow_express_pay = self.checkBoxAllowExpressPay.checkState()==2
             
             access_parameters.access_type = unicode(self.access_type_edit.currentText())
             access_parameters.access_time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.access_time_edit.currentText())).id
