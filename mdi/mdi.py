@@ -21,7 +21,7 @@ from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
 from MonitorFrame import MonitorFrame
 from SystemUser import SystemUserChild
-from CustomForms import ConnectDialog, ConnectionWaiting
+from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChild
 
@@ -178,6 +178,11 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMessageBox.about(self, u"О программе",
                                 u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
 
+    @connlogin
+    def aboutOperator(self):
+        child = OperatorDialog(connection=connection)
+        child.exec_()
+        
     @connlogin
     def cardsFrame(self):
         child = CardsChild(connection = connection)
@@ -367,6 +372,10 @@ class MainWindow(QtGui.QMainWindow):
         self.aboutAct = QtGui.QAction(self.tr("&About"), self)
         self.aboutAct.setStatusTip(self.tr("Show the application's About box"))
         self.connect(self.aboutAct, QtCore.SIGNAL("triggered()"), self.about)
+        
+        self.aboutOperAct = QtGui.QAction(self.tr("About &Operator"), self)
+        self.aboutOperAct.setStatusTip(self.tr("Show the operator info"))
+        self.connect(self.aboutOperAct, QtCore.SIGNAL("triggered()"), self.aboutOperator)
 
         self.aboutQtAct = QtGui.QAction(self.tr("About &Qt"), self)
         self.aboutQtAct.setStatusTip(self.tr("Show the Qt library's About box"))
@@ -403,6 +412,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
         self.helpMenu.addAction(self.aboutAct)
+        self.helpMenu.addAction(self.aboutOperAct)
         self.helpMenu.addAction(self.aboutQtAct)
 
     @connlogin

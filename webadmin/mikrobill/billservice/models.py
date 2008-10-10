@@ -725,6 +725,7 @@ class Operator(models.Model):
     contactperson = models.CharField(max_length=255)
     director = models.CharField(max_length=255)
     phone = models.CharField(max_length=40)
+    fax = models.CharField(max_length=40)
     postaddress = models.CharField(max_length=255)
     uraddress = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
