@@ -16,7 +16,7 @@
    </size>
   </property>
   <property name="windowTitle" >
-   <string>Данные диллера</string>
+   <string>Данные дилера</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QGridLayout" name="gridLayout" >
@@ -27,7 +27,7 @@
       </property>
       <widget class="QWidget" name="tab" >
        <attribute name="title" >
-        <string>Данные о диллере</string>
+        <string>Данные о дилере</string>
        </attribute>
        <widget class="QGroupBox" name="groupBox_contact" >
         <property name="geometry" >
@@ -408,7 +408,7 @@
           </rect>
          </property>
          <property name="text" >
-          <string>Последяя покупка карт %s</string>
+          <string>Последняя покупка карт %s</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_15" >
@@ -429,8 +429,8 @@
           <rect>
            <x>10</x>
            <y>60</y>
-           <width>46</width>
-           <height>14</height>
+           <width>301</width>
+           <height>16</height>
           </rect>
          </property>
          <property name="text" >
@@ -512,10 +512,23 @@
           </rect>
          </property>
          <property name="text" >
-          <string>Наша прибыль %s</string>
+          <string>Наша прибыль без скидки %s</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_2" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>240</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Убыток по скидке %s</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3" >
          <property name="geometry" >
           <rect>
            <x>10</x>
@@ -525,7 +538,7 @@
           </rect>
          </property>
          <property name="text" >
-          <string>Убыток по скидке %s</string>
+          <string>Наша прибыль со скидкой %s</string>
          </property>
         </widget>
        </widget>
@@ -549,6 +562,15 @@
            <width>91</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="frame" >
+          <bool>true</bool>
+         </property>
+         <property name="buttonSymbols" >
+          <enum>QAbstractSpinBox::UpDownArrows</enum>
+         </property>
+         <property name="maximum" >
+          <number>100</number>
          </property>
         </widget>
         <widget class="QLabel" name="label_prepayment" >
@@ -586,6 +608,9 @@
            <height>22</height>
           </rect>
          </property>
+         <property name="maximum" >
+          <number>100</number>
+         </property>
         </widget>
         <widget class="QSpinBox" name="spinBox_discount" >
          <property name="geometry" >
@@ -595,6 +620,15 @@
            <width>91</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="suffix" >
+          <string/>
+         </property>
+         <property name="prefix" >
+          <string/>
+         </property>
+         <property name="maximum" >
+          <number>100</number>
          </property>
         </widget>
         <widget class="QLabel" name="label_discount" >
@@ -610,15 +644,21 @@
           <string>Скидка в %</string>
          </property>
         </widget>
+        <widget class="QCheckBox" name="checkBox" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>301</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Разрешить продажу новых карт в случае неоплаты
+по отсрочке</string>
+         </property>
+        </widget>
        </widget>
-       <zorder>groupBox_contact</zorder>
-       <zorder>groupBox_bankdata</zorder>
-       <zorder>groupBox_billinfo</zorder>
-       <zorder>groupBox_billdata</zorder>
-       <zorder>lineEdit_okpo</zorder>
-       <zorder>lineEdit_unp</zorder>
-       <zorder>label_unp</zorder>
-       <zorder>label_okpo</zorder>
       </widget>
       <widget class="QWidget" name="tab_2" >
        <attribute name="title" >

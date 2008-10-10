@@ -1809,7 +1809,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if r==[]:
             return None
         return Object(r[0])
-
+        	
     @authentconn
     def get_list(self, sql, cur=None, connection=None):
         #print sql
