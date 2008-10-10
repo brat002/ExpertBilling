@@ -287,20 +287,8 @@ CREATE TABLE billservice_card (
 
 ALTER TABLE public.billservice_card OWNER TO mikrobill;
 
---
--- TOC entry 1669 (class 1259 OID 18647)
--- Dependencies: 2082 6
--- Name: billservice_cardgroup; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
-
-CREATE TABLE billservice_cardgroup (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    disabled boolean DEFAULT false
-);
 
 
-ALTER TABLE public.billservice_cardgroup OWNER TO mikrobill;
 
 --
 -- TOC entry 1670 (class 1259 OID 18651)
@@ -556,6 +544,7 @@ CREATE TABLE billservice_tariff (
     reset_tarif_cost boolean DEFAULT false,
     settlement_period_id integer,
     ps_null_ballance_checkout boolean DEFAULT false,
+    allow_express_pay boolean DEFAULT true;
     active boolean DEFAULT false,
     deleted boolean DEFAULT false
 );
@@ -978,8 +967,36 @@ CREATE TABLE nas_trafficnode (
 );
 
 
+
 ALTER TABLE public.nas_trafficnode OWNER TO mikrobill;
 
+
+CREATE TABLE billservice_operator
+(
+  id serial NOT NULL,
+  organization character varying(255) NOT NULL,
+  unp character varying(40) NOT NULL,
+  okpo character varying(40) NOT NULL,
+  contactperson character varying(255) NOT NULL,
+  director character varying(255) NOT NULL,
+  phone character varying(40) NOT NULL,
+  fax character varying(40) NOT NULL,
+  postaddress character varying(255) NOT NULL,
+  uraddress character varying(255) NOT NULL,
+  email character varying(255) NOT NULL
+);
+ALTER TABLE public.billservice_operator OWNER TO mikrobill;
+
+CREATE TABLE billservice_bankdata
+(
+  id serial NOT NULL,
+  operator_id integer NOT NULL,
+  bank character varying(255) NOT NULL,
+  bankcode character varying(40) NOT NULL,
+  rs character varying(60) NOT NULL,
+  currency character varying(40) NOT NULL
+);
+ALTER TABLE public.billservice_bankdata OWNER TO mikrobill;
 --
 -- TOC entry 20 (class 1255 OID 16403)
 -- Dependencies: 6
@@ -1789,38 +1806,9 @@ ALTER SEQUENCE billservice_card_id_seq OWNED BY billservice_card.id;
 SELECT pg_catalog.setval('billservice_card_id_seq', 1, false);
 
 
---
--- TOC entry 1725 (class 1259 OID 18935)
--- Dependencies: 6 1669
--- Name: billservice_cardgroup_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
-
-CREATE SEQUENCE billservice_cardgroup_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
 
 
-ALTER TABLE public.billservice_cardgroup_id_seq OWNER TO mikrobill;
 
---
--- TOC entry 2564 (class 0 OID 0)
--- Dependencies: 1725
--- Name: billservice_cardgroup_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
-ALTER SEQUENCE billservice_cardgroup_id_seq OWNED BY billservice_cardgroup.id;
-
-
---
--- TOC entry 2565 (class 0 OID 0)
--- Dependencies: 1725
--- Name: billservice_cardgroup_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
-SELECT pg_catalog.setval('billservice_cardgroup_id_seq', 1, false);
 
 
 --
@@ -1929,6 +1917,23 @@ SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 1, false);
 -- Dependencies: 6 1673
 -- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
 --
+CREATE SEQUENCE billservice_operator_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE public.billservice_operator_id_seq OWNER TO mikrobill;
+ALTER SEQUENCE billservice_operator_id_seq OWNED BY billservice_operator.id;
+
+CREATE SEQUENCE billservice_bankdata_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE public.billservice_bankdata_id_seq OWNER TO mikrobill;
+ALTER SEQUENCE billservice_bankdata_id_seq OWNED BY billservice_bankdata.id;
 
 CREATE SEQUENCE billservice_periodicalservice_id_seq
     INCREMENT BY 1
@@ -3219,13 +3224,6 @@ ALTER TABLE billservice_accounttarif ALTER COLUMN id SET DEFAULT nextval('billse
 ALTER TABLE billservice_card ALTER COLUMN id SET DEFAULT nextval('billservice_card_id_seq'::regclass);
 
 
---
--- TOC entry 2083 (class 2604 OID 19027)
--- Dependencies: 1725 1669
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
-ALTER TABLE billservice_cardgroup ALTER COLUMN id SET DEFAULT nextval('billservice_cardgroup_id_seq'::regclass);
 
 
 --
@@ -3543,6 +3541,9 @@ ALTER TABLE nas_nas ALTER COLUMN id SET DEFAULT nextval('nas_nas_id_seq'::regcla
 ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficclass_id_seq'::regclass);
 
 
+ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
+
+ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
 --
 -- TOC entry 2191 (class 2604 OID 19063)
 -- Dependencies: 1761 1706
@@ -3870,16 +3871,6 @@ COPY billservice_card (id, card_group_id, series, pin, sold, nominal, activated,
 \.
 
 
---
--- TOC entry 2489 (class 0 OID 18647)
--- Dependencies: 1669
--- Data for Name: billservice_cardgroup; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
-COPY billservice_cardgroup (id, name, disabled) FROM stdin;
-3	100	f
-5	werer	f
-\.
 
 
 --
@@ -11900,24 +11891,9 @@ ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 2261 (class 2606 OID 19109)
--- Dependencies: 1669 1669
--- Name: billservice_cardgroup_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
-ALTER TABLE ONLY billservice_cardgroup
-    ADD CONSTRAINT billservice_cardgroup_name_key UNIQUE (name);
 
 
---
--- TOC entry 2263 (class 2606 OID 19111)
--- Dependencies: 1669 1669
--- Name: billservice_cardgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
-ALTER TABLE ONLY billservice_cardgroup
-    ADD CONSTRAINT billservice_cardgroup_pkey PRIMARY KEY (id);
 
 
 --
@@ -11949,7 +11925,8 @@ ALTER TABLE ONLY billservice_onetimeservice
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_pkey PRIMARY KEY (id);
 
-
+ALTER TABLE billservice_operator
+  ADD CONSTRAINT billservice_operator_pkey PRIMARY KEY(id);
 --
 -- TOC entry 2278 (class 2606 OID 19119)
 -- Dependencies: 1673 1673
@@ -12209,7 +12186,8 @@ ALTER TABLE ONLY billservice_timeperiod
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_pkey PRIMARY KEY (id);
 
-
+ALTER TABLE billservice_bankdata
+  ADD CONSTRAINT billservice_bankdata_pkey PRIMARY KEY(id);
 --
 -- TOC entry 2342 (class 2606 OID 19171)
 -- Dependencies: 1689 1689 1689
@@ -12526,7 +12504,10 @@ CREATE INDEX auth_permission_content_type_id ON auth_permission USING btree (con
 
 CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accessparameters USING btree (access_time_id);
 
-
+CREATE INDEX billservice_bankdata_operator_id
+  ON billservice_bankdata
+  USING btree
+  (operator_id);
 --
 -- TOC entry 2236 (class 1259 OID 19231)
 -- Dependencies: 1663
@@ -13099,8 +13080,7 @@ ALTER TABLE ONLY billservice_card
 -- Name: billservice_card_card_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
 --
 
-ALTER TABLE ONLY billservice_card
-    ADD CONSTRAINT billservice_card_card_group_id_fkey FOREIGN KEY (card_group_id) REFERENCES billservice_cardgroup(id) ON DELETE CASCADE DEFERRABLE;
+
 
 
 --
@@ -13212,7 +13192,10 @@ ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
-
+ALTER TABLE billservice_bankdata
+  ADD CONSTRAINT billservice_bankdata_operator_id_fkey FOREIGN KEY (operator_id)
+      REFERENCES billservice_operator (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 --
 -- TOC entry 2443 (class 2606 OID 19437)

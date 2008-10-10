@@ -7,6 +7,7 @@ from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName
+from helpers import Object
 
 
 
@@ -604,6 +605,243 @@ class ConnectDialog(QtGui.QDialog):
         except Exception, ex:
             print ex
 
+class OperatorDialog(QtGui.QDialog):
+    def __init__(self, connection):
+        super(OperatorDialog, self).__init__()
+        self.connection = connection
+        self.op_model = None
+        self.bank_model = None
+        self.setObjectName("Operator")
+        self.resize(QtCore.QSize(QtCore.QRect(0,0,573, 575).size()).expandedTo(self.minimumSizeHint()))
+        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,573, 575).size()))
+        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,573, 575).size()))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.buttonBox = QtGui.QDialogButtonBox()
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.tabWidget = QtGui.QTabWidget()
+        self.tabWidget.setObjectName("tabWidget")
+        self.tab = QtGui.QWidget()
+        self.tab.setObjectName("tab1")
+        self.groupBox_contact = QtGui.QGroupBox(self.tab)
+        self.groupBox_contact.setGeometry(QtCore.QRect(10, 10, 531, 321))
+        self.groupBox_contact.setObjectName("groupBox_contact")
+        self.lineEdit_postaddress = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_postaddress.setGeometry(QtCore.QRect(120, 229, 383, 20))
+        self.lineEdit_postaddress.setObjectName("lineEdit_postaddress")
+        self.label_organization = QtGui.QLabel(self.groupBox_contact)
+        self.label_organization.setGeometry(QtCore.QRect(9, 20, 111, 20))
+        self.label_organization.setObjectName("label_organization")
+        self.lineEdit_fax = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_fax.setGeometry(QtCore.QRect(120, 199, 191, 20))
+        self.lineEdit_fax.setObjectName("lineEdit_fax")
+        self.lineEdit_phone = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_phone.setGeometry(QtCore.QRect(120, 169, 191, 20))
+        self.lineEdit_phone.setObjectName("lineEdit_phone")
+        self.lineEdit_organization = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_organization.setGeometry(QtCore.QRect(120, 20, 381, 20))
+        self.lineEdit_organization.setObjectName("lineEdit_organization")
+        self.label_director = QtGui.QLabel(self.groupBox_contact)
+        self.label_director.setGeometry(QtCore.QRect(9, 139, 111, 20))
+        self.label_director.setObjectName("label_director")
+        self.label_postaddress = QtGui.QLabel(self.groupBox_contact)
+        self.label_postaddress.setGeometry(QtCore.QRect(9, 229, 111, 20))
+        self.label_postaddress.setObjectName("label_postaddress")
+        self.label_contactperson = QtGui.QLabel(self.groupBox_contact)
+        self.label_contactperson.setGeometry(QtCore.QRect(9, 109, 111, 20))
+        self.label_contactperson.setObjectName("label_contactperson")
+        self.lineEdit_director = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_director.setGeometry(QtCore.QRect(120, 139, 381, 20))
+        self.lineEdit_director.setObjectName("lineEdit_director")
+        self.label_phone = QtGui.QLabel(self.groupBox_contact)
+        self.label_phone.setGeometry(QtCore.QRect(9, 169, 111, 20))
+        self.label_phone.setObjectName("label_phone")
+        self.lineEdit_contactperson = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_contactperson.setGeometry(QtCore.QRect(120, 109, 381, 20))
+        self.lineEdit_contactperson.setObjectName("lineEdit_contactperson")
+        self.label_fax = QtGui.QLabel(self.groupBox_contact)
+        self.label_fax.setGeometry(QtCore.QRect(9, 199, 111, 20))
+        self.label_fax.setObjectName("label_fax")
+        self.lineEdit_uraddress = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_uraddress.setGeometry(QtCore.QRect(120, 259, 383, 20))
+        self.lineEdit_uraddress.setObjectName("lineEdit_uraddress")
+        self.label_uraddress = QtGui.QLabel(self.groupBox_contact)
+        self.label_uraddress.setGeometry(QtCore.QRect(10, 259, 111, 20))
+        self.label_uraddress.setObjectName("label_uraddress")
+        self.lineEdit_email = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_email.setGeometry(QtCore.QRect(120, 289, 381, 20))
+        self.lineEdit_email.setObjectName("lineEdit_email")
+        self.label_email = QtGui.QLabel(self.groupBox_contact)
+        self.label_email.setGeometry(QtCore.QRect(10, 290, 111, 20))
+        self.label_email.setObjectName("label_email")
+        self.lineEdit_okpo = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_okpo.setGeometry(QtCore.QRect(120, 80, 191, 20))
+        self.lineEdit_okpo.setObjectName("lineEdit_okpo")
+        self.lineEdit_unp = QtGui.QLineEdit(self.groupBox_contact)
+        self.lineEdit_unp.setGeometry(QtCore.QRect(120, 50, 191, 20))
+        self.lineEdit_unp.setObjectName("lineEdit_unp")
+        self.label_unp = QtGui.QLabel(self.groupBox_contact)
+        self.label_unp.setGeometry(QtCore.QRect(9, 50, 111, 20))
+        self.label_unp.setObjectName("label_unp")
+        self.label_okpo = QtGui.QLabel(self.groupBox_contact)
+        self.label_okpo.setGeometry(QtCore.QRect(9, 80, 111, 20))
+        self.label_okpo.setObjectName("label_okpo")
+        self.groupBox_bankdata = QtGui.QGroupBox(self.tab)
+        self.groupBox_bankdata.setGeometry(QtCore.QRect(10, 340, 531, 141))
+        self.groupBox_bankdata.setObjectName("groupBox_bankdata")
+        self.label_rs = QtGui.QLabel(self.groupBox_bankdata)
+        self.label_rs.setGeometry(QtCore.QRect(10, 80, 111, 20))
+        self.label_rs.setObjectName("label_rs")
+        self.label_bank = QtGui.QLabel(self.groupBox_bankdata)
+        self.label_bank.setGeometry(QtCore.QRect(9, 20, 111, 20))
+        self.label_bank.setObjectName("label_bank")
+        self.lineEdit_rs = QtGui.QLineEdit(self.groupBox_bankdata)
+        self.lineEdit_rs.setGeometry(QtCore.QRect(120, 80, 383, 20))
+        self.lineEdit_rs.setObjectName("lineEdit_rs")
+        self.lineEdit_bank = QtGui.QLineEdit(self.groupBox_bankdata)
+        self.lineEdit_bank.setGeometry(QtCore.QRect(120, 20, 383, 20))
+        self.lineEdit_bank.setObjectName("lineEdit_bank")
+        self.lineEdit_bankcode = QtGui.QLineEdit(self.groupBox_bankdata)
+        self.lineEdit_bankcode.setGeometry(QtCore.QRect(120, 50, 151, 20))
+        self.lineEdit_bankcode.setObjectName("lineEdit_bankcode")
+        self.label_bankcode = QtGui.QLabel(self.groupBox_bankdata)
+        self.label_bankcode.setGeometry(QtCore.QRect(10, 50, 111, 16))
+        self.label_bankcode.setObjectName("label_bankcode")
+        self.lineEdit_currency = QtGui.QLineEdit(self.groupBox_bankdata)
+        self.lineEdit_currency.setGeometry(QtCore.QRect(120, 110, 151, 23))
+        self.lineEdit_currency.setObjectName("lineEdit_currency")
+        self.label_ = QtGui.QLabel(self.groupBox_bankdata)
+        self.label_.setGeometry(QtCore.QRect(10, 110, 111, 18))
+        self.label_.setObjectName("label_")
+        self.tabWidget.addTab(self.tab, "tab1")
+        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.setLayout(self.gridLayout)
+        self.retranslateUi()
+        self.tabWidget.setCurrentIndex(0)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.fixtures()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        #QtCore.QMetaObject.connectSlotsByName()
+        self.setTabOrder(self.tabWidget, self.lineEdit_organization)
+        self.setTabOrder(self.lineEdit_organization, self.lineEdit_unp)
+        self.setTabOrder(self.lineEdit_unp, self.lineEdit_okpo)
+        self.setTabOrder(self.lineEdit_okpo, self.lineEdit_contactperson)
+        self.setTabOrder(self.lineEdit_contactperson, self.lineEdit_director)
+        self.setTabOrder(self.lineEdit_director, self.lineEdit_phone)
+        self.setTabOrder(self.lineEdit_phone, self.lineEdit_fax)
+        self.setTabOrder(self.lineEdit_fax, self.lineEdit_postaddress)
+        self.setTabOrder(self.lineEdit_postaddress, self.lineEdit_uraddress)
+        self.setTabOrder(self.lineEdit_uraddress, self.lineEdit_email)
+        self.setTabOrder(self.lineEdit_email, self.lineEdit_bank)
+        self.setTabOrder(self.lineEdit_bank, self.lineEdit_bankcode)
+        self.setTabOrder(self.lineEdit_bankcode, self.lineEdit_rs)
+        self.setTabOrder(self.lineEdit_rs, self.lineEdit_currency)
+        self.setTabOrder(self.lineEdit_currency, self.buttonBox)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Operator", "Настройки системы", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_contact.setTitle(QtGui.QApplication.translate("Operator", "Контактные данные", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_organization.setText(QtGui.QApplication.translate("Operator", "Организация", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_director.setText(QtGui.QApplication.translate("Operator", "ФИО директора", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_postaddress.setText(QtGui.QApplication.translate("Operator", "Почтовый адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_contactperson.setText(QtGui.QApplication.translate("Operator", "Контактное лицо", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_phone.setText(QtGui.QApplication.translate("Operator", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_fax.setText(QtGui.QApplication.translate("Operator", "Факс", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_uraddress.setText(QtGui.QApplication.translate("Operator", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_email.setText(QtGui.QApplication.translate("Operator", "E-mail", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_unp.setText(QtGui.QApplication.translate("Operator", "УНП", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_okpo.setText(QtGui.QApplication.translate("Operator", "ОКПО", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_bankdata.setTitle(QtGui.QApplication.translate("Operator", "Банковские реквизиты", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_rs.setText(QtGui.QApplication.translate("Operator", "Р/с", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_bank.setText(QtGui.QApplication.translate("Operator", "Банк", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_bankcode.setText(QtGui.QApplication.translate("Operator", "Код банка", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_.setText(QtGui.QApplication.translate("Operator", "Валюта расчётов", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Operator", "Данные о организации", None, QtGui.QApplication.UnicodeUTF8))
+
+    def fixtures(self):
+        try:
+            self.op_model =self.connection.sql("SELECT * FROM billservice_operator;")[0]
+        except Exception, e:
+            print e
+            return
+        try:
+            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE operator_id=%d" % self.op_model.id)
+        except Exception, e:
+            print e
+            return
+            
+        self.lineEdit_organization.setText(self.op_model.organization)
+        self.lineEdit_okpo.setText(self.op_model.okpo)
+        self.lineEdit_unp.setText(self.op_model.unp)
+        self.lineEdit_contactperson.setText(self.op_model.contactperson)
+        self.lineEdit_director.setText(self.op_model.director)
+        self.lineEdit_phone.setText(self.op_model.phone)
+        self.lineEdit_fax.setText(self.op_model.fax)
+        self.lineEdit_postaddress.setText(self.op_model.postaddress)
+        self.lineEdit_uraddress.setText(self.op_model.uraddress)
+        self.lineEdit_email.setText(self.op_model.email)
+        
+        self.lineEdit_bank.setText(self.bank_model.bank)
+        self.lineEdit_bankcode.setText(self.bank_model.bankcode)
+        self.lineEdit_rs.setText(self.bank_model.rs)
+        self.lineEdit_currency.setText(self.bank_model.currency)
+        
+    def accept(self):
+        if self.op_model:
+            op_model = self.op_model
+        else:
+            op_model = Object()
+        if self.bank_model:
+            bank_model = self.bank_model
+        else:
+            bank_model = Object()
+        
+        op_model.organization = unicode(self.lineEdit_organization.text())
+        op_model.okpo = unicode(self.lineEdit_okpo.text())
+        op_model.unp = unicode(self.lineEdit_unp.text())
+        op_model.contactperson = unicode(self.lineEdit_contactperson.text())
+        op_model.director = unicode(self.lineEdit_director.text())
+        op_model.phone = unicode(self.lineEdit_phone.text())
+        op_model.fax = unicode(self.lineEdit_fax.text())
+        op_model.postaddress = unicode(self.lineEdit_postaddress.text())
+        op_model.uraddress = unicode(self.lineEdit_uraddress.text())
+        op_model.email = unicode(self.lineEdit_email.text())
+        
+        
+        bank_model.bank = unicode(self.lineEdit_bank.text())
+        bank_model.bankcode = unicode(self.lineEdit_bankcode.text())
+        bank_model.rs = unicode(self.lineEdit_rs.text())
+        bank_model.currency = unicode(self.lineEdit_currency.text())
+        
+        op_id = None
+        try:
+            op_id = self.connection.create(op_model.save("billservice_operator"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка!",
+                                u"Невозможно сохранить данные об организации!")
+            return
+        print op_id
+        if (op_id != None) and (op_id != -1):
+            bank_model.operator_id = op_id
+        elif self.bank_model==None:
+            raise Exception("Database model save error!")
+        try:
+            self.connection.create(bank_model.save("billservice_bankdata"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка!",
+                                u"Невозможно сохранить банковские данные!")
+            return
+        QtGui.QDialog.accept(self)
+        
 class ConnectionWaiting(QtGui.QDialog):
     def __init__(self):
         super(ConnectionWaiting, self).__init__()
