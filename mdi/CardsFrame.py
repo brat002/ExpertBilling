@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtWebKit
 
 from helpers import tableFormat
 
@@ -12,7 +12,12 @@ from CustomForms import ComboBoxDialog
 import datetime, calendar
 from helpers import transaction
 from helpers import HeaderUtil, SplitterUtil
+from helpers import write_cards
+import os
+from randgen import GenPasswd2
+import string
 
+templatedir = "cards"
 class AddCards(QtGui.QDialog):
     def __init__(self, connection,last_series=0):
         super(AddCards, self).__init__()
@@ -105,6 +110,7 @@ class AddCards(QtGui.QDialog):
         self.retranslateUi()
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
+        self.connect(self.toolButton_preview,QtCore.SIGNAL("clicked()"),self.preView)
         self.fixtures()
 
 
@@ -145,8 +151,7 @@ class AddCards(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
                 return        
             
-            from randgen import GenPasswd2
-            import string
+            
             
             mask=[]
             if self.l_checkBox.checkState()==2:
@@ -187,8 +192,37 @@ class AddCards(QtGui.QDialog):
         self.series_spinBox.setMinimum(self.last_series)
         self.start_dateTimeEdit.setMinimumDate(start)
         self.end_dateTimeEdit.setMinimumDate(start)
+        self.updateTemplates()
 
-
+    def preView(self):
+        tmplt = str(self.comboBox_templates.currentText())
+        if not tmplt:
+            QtGui.QMessageBox.warning(self, u"Внимание!", u"Вы не выбрали шаблон!")
+            return
+        mask=[]
+        if self.l_checkBox.checkState()==2:
+            mask+=string.letters
+        if self.numbers_checkBox.checkState()==2:
+            mask+=string.digits
+        tdct = {}
+        tdct["pin"] = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=mask)
+        wr_files, i = write_cards(templatedir + "/" + tmplt, [tdct], strict=None)
+        if i:
+            print wr_files
+            child = CardPreviewDialog(wr_files[0])
+            child.exec_()
+            os.remove(wr_files[0])
+        else:
+            QtGui.QMessageBox.warning(self, u"Внимание!", u"При создании шаблона для предпросмотра произошли ошибки!")
+        
+        
+    def updateTemplates(self):
+        #print os.listdir("cards")
+        #print [unicode(os.path.basename(tmplt)) for tmplt in os.listdir(templatedir) if (tmplt.find("__printandum__" == -1))]
+        self.comboBox_templates.addItems([unicode(tmplt) for tmplt in os.listdir(templatedir) if ((tmplt.find("_printandum_") == -1) and os.path.isfile(''.join((templatedir, '/',tmplt))))])
+        #templates = [unicode(os.path.basename(tmplt)) for tmplt in os.listdir(templatedir) if (tmplt.find("__printandum__" == -1))]
+        #for tstr in templates:
+            #self.comboBox_templates.addItem(unicode(tstr))
 
 class CardsChild(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -585,3 +619,34 @@ class CardsChild(QtGui.QMainWindow):
             self.delPeriodAction.setDisabled(False)
             
 
+
+class CardPreviewDialog(QtGui.QDialog):
+    def __init__(self, url):
+        
+        super(CardPreviewDialog, self).__init__()
+        self.setObjectName("CardPreviewDialog")
+        #self.filelist=[]
+        self.url = url
+        self.resize(636, 454)
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.card_webView = QtWebKit.QWebView()
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.card_webView.sizePolicy().hasHeightForWidth())
+        self.card_webView.setSizePolicy(sizePolicy)
+        self.card_webView.setUrl(QtCore.QUrl("about:blank"))
+        self.card_webView.setObjectName("card_webView")
+        self.gridLayout.addWidget(self.card_webView, 0, 0, 1, 1)
+        self.setLayout(self.gridLayout)
+        self.retranslateUi()
+        self.fixtures()
+        #QtCore.QMetaObject.connectSlotsByName()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("CardPreviewDialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        
+    def fixtures(self):
+        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(self.url))
+        self.card_webView.load(lfurl)
