@@ -338,19 +338,19 @@ class CardsChild(QtGui.QMainWindow):
         
         self.actionEnable_Card = QtGui.QAction(self)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("E:/tango-icon-theme-0.8.1/22x22/actions/go-first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("images/enable.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionEnable_Card.setIcon(icon1)
         self.actionEnable_Card.setObjectName("actionEnable_Card")
         self.actionDisable_Card = QtGui.QAction(self)
         
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("E:/tango-icon-theme-0.8.1/22x22/actions/go-last.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("images/disable.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionDisable_Card.setIcon(icon2)
         self.actionDisable_Card.setObjectName("actionDisable_Card")
         self.actionSell_Card = QtGui.QAction(self)
         
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("E:/tango-icon-theme-0.8.1/22x22/actions/edit-clear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap("images/dollar.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSell_Card.setIcon(icon3)
         self.actionSell_Card.setObjectName("actionSell_Card")
         
@@ -536,7 +536,7 @@ class CardsChild(QtGui.QMainWindow):
             if self.checkBox_sold.checkState() == 0 and self.checkBox_activated.checkState() == 0:
                 sql+=" AND start_date>'%s' and end_date<'%s'" % (start_date, end_date)
             
-        self.tableWidget.setSortingEnabled(False)
+        #self.tableWidget.setSortingEnabled(False)
 
             
         self.tableWidget.clearContents()
@@ -562,7 +562,7 @@ class CardsChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, False)
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
+        #self.tableWidget.setSortingEnabled(True)
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.dateTime()))
