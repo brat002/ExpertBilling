@@ -24,6 +24,7 @@ from SystemUser import SystemUserChild
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChild
+from DealerFrame import DealerMdiChild
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -101,7 +102,24 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.addWindow(child)
         
         child.show()
+    
+    @connlogin
+    def dealers(self):
+        self.workspace.windowList()
+        
 
+        child =  DealerMdiChild(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )
+        #child.
+
+        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        
+        child.show()        
 
     @connlogin
     def open(self):
@@ -258,6 +276,14 @@ class MainWindow(QtGui.QMainWindow):
         self.newAct.setStatusTip(u"Пользователи и тарифы")
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
+        self.dealerAct = QtGui.QAction(QtGui.QIcon("images/add.png"),
+                                    u"&Дилеры", self)
+        self.dealerAct.setShortcut(self.tr("Ctrl+D"))
+        self.dealerAct.setStatusTip(u"Дилеры")
+        self.connect(self.dealerAct, QtCore.SIGNAL("triggered()"), self.dealers)
+        
+
+
         self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
                                      u"&Серверы доступа", self)
         
@@ -396,6 +422,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.pasteAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAsAct)
+        self.fileMenu.addAction(self.dealerAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.reloginAct)
         self.fileMenu.addSeparator()

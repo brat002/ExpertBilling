@@ -13,11 +13,227 @@ import datetime, calendar
 from helpers import transaction
 from helpers import HeaderUtil, SplitterUtil
 from helpers import write_cards
-import os
+import os, datetime
 from randgen import GenPasswd2
 import string
 
 templatedir = "cards"
+strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
+class SaleCards(QtGui.QDialog):
+    def __init__(self, connection, cards):
+        bhdr = HeaderUtil.getBinaryHeader("sale_cards_frame_header")
+        super(SaleCards, self).__init__()
+        self.connection = connection
+        self.cards = cards # list of cards id
+        self.connection.commit()
+        
+        self.setObjectName("SaleCards")
+        self.resize(672, 645)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setGeometry(QtCore.QRect(20, 610, 641, 26))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.comboBox_dealer = QtGui.QComboBox(self)
+        self.comboBox_dealer.setGeometry(QtCore.QRect(60, 20, 601, 21))
+        self.comboBox_dealer.setObjectName("comboBox_dealer")
+        self.comboBox_dealer.addItem(QtCore.QString())
+        self.comboBox_dealer.addItem(QtCore.QString())
+        self.comboBox_dealer.addItem(QtCore.QString())
+        self.label_dealer = QtGui.QLabel(self)
+        self.label_dealer.setGeometry(QtCore.QRect(11, 20, 51, 21))
+        self.label_dealer.setObjectName("label_dealer")
+        self.groupBox_cards_actions = QtGui.QGroupBox(self)
+        self.groupBox_cards_actions.setGeometry(QtCore.QRect(10, 240, 651, 61))
+        self.groupBox_cards_actions.setObjectName("groupBox_cards_actions")
+        self.commandLinkButton_save = QtGui.QCommandLinkButton(self.groupBox_cards_actions)
+        self.commandLinkButton_save.setGeometry(QtCore.QRect(10, 20, 201, 31))
+        self.commandLinkButton_save.setObjectName("commandLinkButton_save")
+        self.commandLinkButton_bill = QtGui.QCommandLinkButton(self.groupBox_cards_actions)
+        self.commandLinkButton_bill.setGeometry(QtCore.QRect(220, 20, 201, 31))
+        self.commandLinkButton_bill.setObjectName("commandLinkButton_bill")
+        self.commandLinkButton_print = QtGui.QCommandLinkButton(self.groupBox_cards_actions)
+        self.commandLinkButton_print.setGeometry(QtCore.QRect(430, 20, 201, 31))
+        self.commandLinkButton_print.setObjectName("commandLinkButton_print")
+        self.groupBox_dealer_info = QtGui.QGroupBox(self)
+        self.groupBox_dealer_info.setGeometry(QtCore.QRect(10, 60, 321, 141))
+        self.groupBox_dealer_info.setObjectName("groupBox_dealer_info")
+        self.lineEdit_debet = QtGui.QLineEdit(self.groupBox_dealer_info)
+        self.lineEdit_debet.setGeometry(QtCore.QRect(140, 20, 171, 20))
+        self.lineEdit_debet.setObjectName("lineEdit_debet")
+        self.lineEdit_prepay = QtGui.QLineEdit(self.groupBox_dealer_info)
+        self.lineEdit_prepay.setGeometry(QtCore.QRect(140, 50, 81, 20))
+        self.lineEdit_prepay.setObjectName("lineEdit_prepay")
+        self.label_debet = QtGui.QLabel(self.groupBox_dealer_info)
+        self.label_debet.setGeometry(QtCore.QRect(11, 20, 119, 20))
+        self.label_debet.setObjectName("label_debet")
+        self.label_prepay_procs = QtGui.QLabel(self.groupBox_dealer_info)
+        self.label_prepay_procs.setGeometry(QtCore.QRect(11, 51, 119, 20))
+        self.label_prepay_procs.setObjectName("label_prepay_procs")
+        self.label_paydeffer = QtGui.QLabel(self.groupBox_dealer_info)
+        self.label_paydeffer.setGeometry(QtCore.QRect(11, 77, 119, 20))
+        self.label_paydeffer.setObjectName("label_paydeffer")
+        self.lineEdit_paydeffer = QtGui.QLineEdit(self.groupBox_dealer_info)
+        self.lineEdit_paydeffer.setGeometry(QtCore.QRect(140, 80, 81, 20))
+        self.lineEdit_paydeffer.setObjectName("lineEdit_paydeffer")
+        self.label_discount = QtGui.QLabel(self.groupBox_dealer_info)
+        self.label_discount.setGeometry(QtCore.QRect(10, 110, 61, 16))
+        self.label_discount.setObjectName("label_discount")
+        self.lineEdit_discount = QtGui.QLineEdit(self.groupBox_dealer_info)
+        self.lineEdit_discount.setGeometry(QtCore.QRect(140, 110, 81, 20))
+        self.lineEdit_discount.setObjectName("lineEdit_discount")
+        self.groupBox_bill_info = QtGui.QGroupBox(self)
+        self.groupBox_bill_info.setGeometry(QtCore.QRect(340, 60, 321, 141))
+        self.groupBox_bill_info.setMinimumSize(QtCore.QSize(300, 0))
+        self.groupBox_bill_info.setObjectName("groupBox_bill_info")
+        self.label_discount_amount = QtGui.QLabel(self.groupBox_bill_info)
+        self.label_discount_amount.setGeometry(QtCore.QRect(10, 80, 81, 20))
+        self.label_discount_amount.setObjectName("label_discount_amount")
+        self.lineEdit_discount_amount = QtGui.QLineEdit(self.groupBox_bill_info)
+        self.lineEdit_discount_amount.setGeometry(QtCore.QRect(90, 80, 113, 20))
+        self.lineEdit_discount_amount.setObjectName("lineEdit_discount_amount")
+        self.lineEdit_amount = QtGui.QLineEdit(self.groupBox_bill_info)
+        self.lineEdit_amount.setGeometry(QtCore.QRect(90, 50, 113, 20))
+        self.lineEdit_amount.setObjectName("lineEdit_amount")
+        self.label_amount = QtGui.QLabel(self.groupBox_bill_info)
+        self.label_amount.setGeometry(QtCore.QRect(10, 50, 61, 16))
+        self.label_amount.setObjectName("label_amount")
+        self.lineEdit_count_cards = QtGui.QLineEdit(self.groupBox_bill_info)
+        self.lineEdit_count_cards.setGeometry(QtCore.QRect(90, 20, 113, 20))
+        self.lineEdit_count_cards.setObjectName("lineEdit_count_cards")
+        self.label_count_carts = QtGui.QLabel(self.groupBox_bill_info)
+        self.label_count_carts.setGeometry(QtCore.QRect(10, 20, 71, 20))
+        self.label_count_carts.setObjectName("label_count_carts")
+        self.lineEdit_for_pay = QtGui.QLineEdit(self.groupBox_bill_info)
+        self.lineEdit_for_pay.setGeometry(QtCore.QRect(90, 110, 113, 20))
+        self.lineEdit_for_pay.setObjectName("lineEdit_for_pay")
+        self.label_for_pay = QtGui.QLabel(self.groupBox_bill_info)
+        self.label_for_pay.setGeometry(QtCore.QRect(10, 110, 71, 16))
+        self.label_for_pay.setObjectName("label_for_pay")
+        self.label_pay = QtGui.QLabel(self)
+        self.label_pay.setGeometry(QtCore.QRect(340, 210, 81, 21))
+        self.label_pay.setObjectName("label_pay")
+        self.lineEdit_pay = QtGui.QLineEdit(self)
+        self.lineEdit_pay.setGeometry(QtCore.QRect(430, 210, 231, 21))
+        self.lineEdit_pay.setObjectName("lineEdit_pay")
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget.setGeometry(QtCore.QRect(10, 310, 651, 291))
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+
+        self.retranslateUi()
+        
+        tableHeader = self.tableWidget.horizontalHeader()
+        
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        HeaderUtil.nullifySaved("sale_cards_frame_header")
+        
+        self.setTabOrder(self.comboBox_dealer, self.lineEdit_debet)
+        self.setTabOrder(self.lineEdit_debet, self.lineEdit_prepay)
+        self.setTabOrder(self.lineEdit_prepay, self.lineEdit_paydeffer)
+        self.setTabOrder(self.lineEdit_paydeffer, self.lineEdit_discount)
+        self.setTabOrder(self.lineEdit_discount, self.lineEdit_count_cards)
+        self.setTabOrder(self.lineEdit_count_cards, self.lineEdit_amount)
+        self.setTabOrder(self.lineEdit_amount, self.lineEdit_discount_amount)
+        self.setTabOrder(self.lineEdit_discount_amount, self.lineEdit_for_pay)
+        self.setTabOrder(self.lineEdit_for_pay, self.lineEdit_pay)
+        self.setTabOrder(self.lineEdit_pay, self.commandLinkButton_save)
+        self.setTabOrder(self.commandLinkButton_save, self.commandLinkButton_bill)
+        self.setTabOrder(self.commandLinkButton_bill, self.commandLinkButton_print)
+        self.setTabOrder(self.commandLinkButton_print, self.tableWidget)
+        self.setTabOrder(self.tableWidget, self.buttonBox)
+        self.refresh()
+        self.fixtures()
+        self.setWidgetsDisabled()
+        if not bhdr.isEmpty():
+            HeaderUtil.setBinaryHeader("sale_cards_frame_header", bhdr)
+            HeaderUtil.getHeader("sale_cards_frame_header", self.tableWidget)
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Продажа карт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_dealer.setText(QtGui.QApplication.translate("Dialog", "Дилер", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_cards_actions.setTitle(QtGui.QApplication.translate("Dialog", "Действия с партией карточек", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_save.setText(QtGui.QApplication.translate("Dialog", "Сохранить в файл", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_bill.setText(QtGui.QApplication.translate("Dialog", "Выписать счёт", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Распечатать", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_dealer_info.setTitle(QtGui.QApplication.translate("Dialog", "Иформация о дилере", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_debet.setText(QtGui.QApplication.translate("Dialog", "Задолженность", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_prepay_procs.setText(QtGui.QApplication.translate("Dialog", "Размер предоплаты, %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_paydeffer.setText(QtGui.QApplication.translate("Dialog", "Отсрочка платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_discount.setText(QtGui.QApplication.translate("Dialog", "Скидка, %", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_bill_info.setTitle(QtGui.QApplication.translate("Dialog", "Платёжная информация", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_discount_amount.setText(QtGui.QApplication.translate("Dialog", "Сумма скидки", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_amount.setText(QtGui.QApplication.translate("Dialog", "На сумму", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_count_carts.setText(QtGui.QApplication.translate("Dialog", "Кол-вол карт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_for_pay.setText(QtGui.QApplication.translate("Dialog", "К оплате", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_pay.setText(QtGui.QApplication.translate("Dialog", "Сумма оплаты", None, QtGui.QApplication.UnicodeUTF8))
+
+        columns = ["#",u"Серия",u"Номинал",u"PIN",u"Активировать с",u"Активировать по"]
+        makeHeaders(columns, self.tableWidget)
+        
+        
+    def fixtures(self):
+        self.lineEdit_count_cards.setText(unicode(len(self.cards)))
+        
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        
+        #print 'activated',activated
+        if value == None:
+            value = ""
+            
+        headerItem.setText(unicode(value))
+
+    
+        self.tableWidget.setItem(x,y,headerItem)
+        
+    def setWidgetsDisabled(self):
+        self.lineEdit_amount.setDisabled(True)
+        self.lineEdit_count_cards.setDisabled(True)
+        self.lineEdit_debet.setDisabled(True)
+        self.lineEdit_discount.setDisabled(True)
+        self.lineEdit_discount_amount.setDisabled(True)
+        self.lineEdit_for_pay.setDisabled(True)
+        self.lineEdit_paydeffer.setDisabled(True)
+        self.lineEdit_prepay.setDisabled(True)
+        
+    def refresh(self):
+        print self.cards
+        if len(self.cards)>0:
+           crd = "(" + ",".join(self.cards) + ")"
+        else:
+           crd = "(0)" 
+        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s;" % crd)
+        
+        self.tableWidget.setRowCount(len(cards))
+        
+        nominal = 0
+        i=0
+        for a in cards:
+            
+            self.addrow(a.id, i,0)
+            self.addrow(a.series, i,1)
+            self.addrow(a.nominal, i,2)
+            self.addrow(a.pin, i,3)
+            self.addrow(a.start_date.strftime(strftimeFormat), i,4)
+            self.addrow(a.end_date.strftime(strftimeFormat), i,5)
+            nominal += a.nominal
+            i+=1
+            
+        self.lineEdit_count_cards.setText(unicode(len(cards)))
+        self.lineEdit_amount.setText(unicode(nominal))
+        
+        HeaderUtil.getHeader("sale_cards_frame_header", self.tableWidget)
+        
+    def saveHeader(self, *args):
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("cards_frame_header", self.tableWidget)
+        
 class AddCards(QtGui.QDialog):
     def __init__(self, connection,last_series=0):
         super(AddCards, self).__init__()
@@ -169,7 +385,7 @@ class AddCards(QtGui.QDialog):
                 model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
                 model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
                 model.template = self.comboBox_templates.currentText()
-                model.created = now()
+                model.created = now
                 #model.sold=False
                 #model.activated=False
                 
@@ -178,7 +394,8 @@ class AddCards(QtGui.QDialog):
                 self.connection.create(model.save("billservice_card"))
             
             self.connection.commit()
-        except:
+        except Exception, e:
+            print e
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время генерации карт возникла непредвиденная ошибка."))
             return
@@ -367,6 +584,7 @@ class CardsChild(QtGui.QMainWindow):
         self.connect(self.actionDelete_Cards, QtCore.SIGNAL("triggered()"),  self.deleteCards)
         self.connect(self.actionEnable_Card, QtCore.SIGNAL("triggered()"),  self.enableCard)
         self.connect(self.actionDisable_Card, QtCore.SIGNAL("triggered()"),  self.disableCard)
+        self.connect(self.actionSell_Card, QtCore.SIGNAL("triggered()"),  self.saleCard )
         self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
         
@@ -414,6 +632,20 @@ class CardsChild(QtGui.QMainWindow):
 
         self.tableWidget.setColumnHidden(0, True)
 
+    def saleCard(self):
+        #cards = [self.tableWidget.item(x.row(),0) for x in self.tableWidget.selected(column = 0)]
+        
+        items = self.tableWidget.selectedIndexes()
+        cards = []
+        for item in items:
+            if item.column()>0:
+                continue
+            cards.append(unicode(self.tableWidget.item(item.row(), 0).text()))
+        #print a,b
+        
+        
+        child = SaleCards(connection=self.connection, cards = cards)
+        child.exec_()
         
     def fixtures(self):
         nominals = self.connection.sql("SELECT nominal FROM billservice_card GROUP BY nominal")
