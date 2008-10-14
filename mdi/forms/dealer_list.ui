@@ -19,9 +19,9 @@
       <property name="currentIndex" >
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab" >
+      <widget class="QWidget" name="tab_dealers" >
        <attribute name="title" >
-        <string>Tab 1</string>
+        <string>Дилеры</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2" >
         <item row="0" column="0" >
@@ -65,19 +65,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2" >
+      <widget class="QWidget" name="tab_sales" >
        <attribute name="title" >
-        <string>Tab 2</string>
+        <string>Запупки</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3" >
         <item row="0" column="0" >
-         <widget class="QWebView" name="webView" >
-          <property name="url" >
-           <url>
-            <string>http://www.google.com.by/</string>
-           </url>
-          </property>
-         </widget>
+         <widget class="QTableWidget" name="tableWidget_sales" />
         </item>
        </layout>
       </widget>
@@ -85,7 +79,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar" >
    <property name="windowTitle" >
     <string>toolBar</string>
@@ -100,6 +93,7 @@
    <addaction name="actionDelDealer" />
    <addaction name="actionSales" />
   </widget>
+  <widget class="QStatusBar" name="statusBar" />
   <action name="actionAddDealer" >
    <property name="icon" >
     <iconset>
@@ -128,13 +122,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QWebView</class>
-   <extends>QWidget</extends>
-   <header>QtWebKit/QWebView</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

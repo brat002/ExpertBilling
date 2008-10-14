@@ -763,12 +763,12 @@ class OperatorDialog(QtGui.QDialog):
 
     def fixtures(self):
         try:
-            self.op_model =self.connection.sql("SELECT * FROM billservice_operator;")[0]
+            self.op_model =self.connection.get("SELECT * FROM billservice_operator LIMIT 1;")
         except Exception, e:
             print e
             return
         try:
-            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE operator_id=%d" % self.op_model.id)
+            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE id=%d" % self.op_model.bank_id)
         except Exception, e:
             print e
             return
@@ -794,10 +794,28 @@ class OperatorDialog(QtGui.QDialog):
             op_model = self.op_model
         else:
             op_model = Object()
+            
         if self.bank_model:
             bank_model = self.bank_model
         else:
             bank_model = Object()
+        
+        bank_model.bank = unicode(self.lineEdit_bank.text())
+        bank_model.bankcode = unicode(self.lineEdit_bankcode.text())
+        bank_model.rs = unicode(self.lineEdit_rs.text())
+        bank_model.currency = unicode(self.lineEdit_currency.text())
+
+        try:
+            bank_id = self.connection.create(bank_model.save("billservice_bankdata"))
+            if bank_id==-1:
+                bank_id = self.bank_model.id
+        except Exception, e:
+            print e
+            self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка!",
+                                u"Невозможно сохранить данные!")
+            return
+        print "bank_id", bank_id
         
         op_model.organization = unicode(self.lineEdit_organization.text())
         op_model.okpo = unicode(self.lineEdit_okpo.text())
@@ -809,14 +827,11 @@ class OperatorDialog(QtGui.QDialog):
         op_model.postaddress = unicode(self.lineEdit_postaddress.text())
         op_model.uraddress = unicode(self.lineEdit_uraddress.text())
         op_model.email = unicode(self.lineEdit_email.text())
+        op_model.bank_id = bank_id
         
         
-        bank_model.bank = unicode(self.lineEdit_bank.text())
-        bank_model.bankcode = unicode(self.lineEdit_bankcode.text())
-        bank_model.rs = unicode(self.lineEdit_rs.text())
-        bank_model.currency = unicode(self.lineEdit_currency.text())
-        
-        op_id = None
+
+
         try:
             op_id = self.connection.create(op_model.save("billservice_operator"))
             self.connection.commit()
@@ -826,20 +841,8 @@ class OperatorDialog(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Ошибка!",
                                 u"Невозможно сохранить данные об организации!")
             return
-        print op_id
-        if (op_id != None) and (op_id != -1):
-            bank_model.operator_id = op_id
-        elif self.bank_model==None:
-            raise Exception("Database model save error!")
-        try:
-            self.connection.create(bank_model.save("billservice_bankdata"))
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()
-            QtGui.QMessageBox.warning(self, u"Ошибка!",
-                                u"Невозможно сохранить банковские данные!")
-            return
+
+
         QtGui.QDialog.accept(self)
         
 class ConnectionWaiting(QtGui.QDialog):

@@ -701,12 +701,8 @@ class Ports(models.Model):
     name = models.CharField(max_length=64, default='')
     description = models.CharField(max_length=255, default='')
     
-class CardGroup(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    disabled=models.BooleanField(blank=True, default=False)
-    
+
 class Card(models.Model):
-    card_group = models.ForeignKey(CardGroup)
     series = models.IntegerField()
     pin = models.CharField(max_length=255)
     sold = models.DateTimeField(blank=True, default=False)
@@ -716,7 +712,16 @@ class Card(models.Model):
     start_date = models.DateTimeField(blank=True, default='')
     end_date = models.DateTimeField(blank=True, default='')
     disabled= models.BooleanField(default=False, blank=True)
-    
+    created = models.DateTimeField()
+    template = models.CharField(max_length=255)
+  
+  
+class BankData(models.Model):
+    bank = models.CharField(max_length=255)
+    bankcode = models.CharField(max_length=40)
+    rs = models.CharField(max_length=60)
+    currency = models.CharField(max_length=40)
+
     
 class Operator(models.Model):
     organization = models.CharField(max_length=255)
@@ -729,10 +734,19 @@ class Operator(models.Model):
     postaddress = models.CharField(max_length=255)
     uraddress = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
+    bank = models.ForeignKey(BankData)
     
-class BankData(models.Model):
-    operator = models.ForeignKey(Operator)
-    bank = models.CharField(max_length=255)
-    bankcode = models.CharField(max_length=40)
-    rs = models.CharField(max_length=60)
-    currency = models.CharField(max_length=40)
+
+class Dealer(models.Model):
+    organization = models.CharField(max_length = 400)
+    unp  = models.CharField(max_length = 255)
+    okpo  = models.CharField(max_length = 255)
+    contactperson  = models.CharField(max_length = 255)
+    director  = models.CharField(max_length = 255)
+    phone  = models.CharField(max_length = 255)
+    fax  = models.CharField(max_length = 255)
+    postaddress  = models.CharField(max_length = 400)
+    uraddress  = models.CharField(max_length = 400)
+    email = models.EmailField(max_length=255)
+    bank = models.ForeignKey(BankData)
+    
