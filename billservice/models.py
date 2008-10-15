@@ -748,5 +748,10 @@ class Dealer(models.Model):
     postaddress  = models.CharField(max_length = 400)
     uraddress  = models.CharField(max_length = 400)
     email = models.EmailField(max_length=255)
+    prepayment = models.FloatField()
+    paydeffer = models.IntegerField()
+    discount = models.FloatField()
+    always_sell_cards = models.BooleanField()
+    
     bank = models.ForeignKey(BankData)
     
