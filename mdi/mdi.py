@@ -108,7 +108,7 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.windowList()
         
 
-        child =  DealerMdiChild(connection=connection)
+        child =  DealerMdiChild(parent=self, connection=connection)
         #child.setIcon( QPixmap("images/icon.ico") )
         #child.
 
