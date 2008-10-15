@@ -37,9 +37,7 @@ class SaleCards(QtGui.QDialog):
         self.comboBox_dealer = QtGui.QComboBox(self)
         self.comboBox_dealer.setGeometry(QtCore.QRect(60, 20, 601, 21))
         self.comboBox_dealer.setObjectName("comboBox_dealer")
-        self.comboBox_dealer.addItem(QtCore.QString())
-        self.comboBox_dealer.addItem(QtCore.QString())
-        self.comboBox_dealer.addItem(QtCore.QString())
+
         self.label_dealer = QtGui.QLabel(self)
         self.label_dealer.setGeometry(QtCore.QRect(11, 20, 51, 21))
         self.label_dealer.setObjectName("label_dealer")
@@ -179,6 +177,10 @@ class SaleCards(QtGui.QDialog):
         
     def fixtures(self):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
+        dealers = self.connection.sql("SELECT organization, contactperson FROM billservice_dealer")
+        
+        for dealer in dealers:
+            self.comboBox_dealer.addItem(unicode(u"%s, %s" % (dealer.organization, dealer.contactperson)))
         
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
