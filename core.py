@@ -706,7 +706,7 @@ class NetFlowAggregate(Thread):
                 tariff.active, tariff.traffic_transmit_service_id, tariff.id
                 FROM billservice_rawnetflowstream as nf
                 LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id ORDER BY datetime DESC LIMIT 1))
-                WHERE nf.fetched=False;""")
+                WHERE nf.fetched=False LIMIT 10000;""")
             raw_streams=cur.fetchall()
 
             """
@@ -877,7 +877,7 @@ class NetFlowBill(Thread):
                 JOIN billservice_accounttarif as accounttarif ON accounttarif.id=
                 (SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=nf.account_id and datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
                 LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id = tarif.settlement_period_id
-                WHERE for_checkout=True and checkouted=False and tarif.active=True ORDER BY nf.account_id ASC;
+                WHERE for_checkout=True and checkouted=False and tarif.active=True ORDER BY nf.account_id ASC LIMIT 10000;
                 """)
             rows=self.cur.fetchall()
 
