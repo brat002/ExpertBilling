@@ -7,6 +7,8 @@ from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
+from helpers import dateDelim
+strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
 class AddDealerFrame(QtGui.QMainWindow):
     def __init__(self, connection, model=None):
@@ -472,6 +474,7 @@ class DealerMdiChild(QtGui.QMainWindow):
 
     def __init__(self, parent, connection):
         bhdr = HeaderUtil.getBinaryHeader("dealer_frame_header")
+        shdr = HeaderUtil.getBinaryHeader("dealer_sales_frame_header")
         super(DealerMdiChild, self).__init__()
         #global connection
         self.connection=connection
@@ -508,6 +511,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setIconSize(QtCore.QSize(18, 18))
         self.toolBar.setObjectName("toolBar")
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.statusBar = QtGui.QStatusBar(self)
@@ -536,11 +540,17 @@ class DealerMdiChild(QtGui.QMainWindow):
 
 
         tableHeader = self.tableWidget.horizontalHeader()
+        tableSalesHeader = self.tableWidget_sales.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        self.connect(tableSalesHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveSalesHeader)
+        
         self.connect(self.actionAddDealer, QtCore.SIGNAL("triggered()"), self.addframe)
+        self.connect(self.actionDelDealer, QtCore.SIGNAL("triggered()"), self.delframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked (QTableWidgetItem *)"), self.refreshSales)
         
         HeaderUtil.nullifySaved("dealer_frame_header")
+        HeaderUtil.nullifySaved("dealer_sales_frame_header")
         self.retranslateUi()
         self.refresh()
         self.tableWidget = tableFormat(self.tableWidget)
@@ -548,7 +558,10 @@ class DealerMdiChild(QtGui.QMainWindow):
         if not bhdr.isEmpty():
                 HeaderUtil.setBinaryHeader("dealer_frame_header", bhdr)
                 HeaderUtil.getHeader("dealer_frame_header", self.tableWidget)
-        
+
+        if not shdr.isEmpty():
+                HeaderUtil.setBinaryHeader("dealer_sales_frame_header", shdr)
+                HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget_sales)        
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
@@ -565,7 +578,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget)
 
         self.tableWidget_sales.clear()
-        columns=[u"id", u"Дата", u"Количество", u"Сумма", u"Скидка", u"Отсрочка", u"Оплачено"]
+        columns=[u"id", u"Дата", u"Количество", u"Сумма к оплате", u"Скидка, %", u"Сумма скидки", u"Отсрочка, дней", u"Оплачено"]
         makeHeaders(columns, self.tableWidget_sales)
         
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_dealers), QtGui.QApplication.translate("MainWindow", "Дилеры", None, QtGui.QApplication.UnicodeUTF8))
@@ -593,16 +606,13 @@ class DealerMdiChild(QtGui.QMainWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
 
-    def delete(self):
+    def delframe(self):
         id=self.getSelectedId()
         if id>0:
-            if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
-                return
-            elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
+            if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete("nas_nas", id)
+                    self.connection.create("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -628,12 +638,12 @@ class DealerMdiChild(QtGui.QMainWindow):
         child.show()
         self.refresh()
 
-    def addrow(self, value, x, y):
+    def addrow(self, widget,value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/nas.png"))
-        self.tableWidget.setItem(x,y,headerItem)
+        widget.setItem(x,y,headerItem)
 
 
     def refresh(self):
@@ -641,30 +651,52 @@ class DealerMdiChild(QtGui.QMainWindow):
         #nasses=Nas.objects.all().order_by('id')
         #nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
         
-        data = self.connection.foselect("billservice_dealer")
+        data = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False")
         #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(data))
         i=0
         [u"id", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка", u"Отсрочка"]
         for d in data:
-            self.addrow(d.id, i,0)
-            self.addrow(d.organization, i,1)
-            self.addrow(d.contactperson, i,2)
-            self.addrow(d.contactperson, i,2)
-            #self.addrow(nas.ipaddress, i,3)
-            #self.tableWidget.setRowHeight(i, 14)
+            self.addrow(self.tableWidget, d.id, i,0)
+            self.addrow(self.tableWidget, d.organization, i,1)
+            self.addrow(self.tableWidget, d.contactperson, i,2)
+            #self.addrow(self.tableWidget, d.contactperson, i,2)
+
             i+=1
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader("dealer_frame_header", self.tableWidget)
-        #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.setSortingEnabled(True)
 
+        #self.tableWidget.resizeColumnsToContents()
+        #self.tableWidget.setSortingEnabled(True)
+
+    def refreshSales(self):
+        id = self.getSelectedId()
+        data = self.connection.sql("SELECT salecard.*, (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id=salecard.id) as cnt FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s;" % id)
+        self.tableWidget_sales.setRowCount(len(data))
+        i=0
+        for d in data:
+            self.addrow(self.tableWidget_sales, d.id, i,0)
+            self.addrow(self.tableWidget_sales, d.created.strftime(strftimeFormat), i,1)
+            self.addrow(self.tableWidget_sales, d.cnt, i,2)
+            self.addrow(self.tableWidget_sales, d.sum_for_pay, i, 3)
+            self.addrow(self.tableWidget_sales, d.discount, i, 4)
+            self.addrow(self.tableWidget_sales, d.discount_sum, i, 5)
+            self.addrow(self.tableWidget_sales, d.paydeffer, i, 6)
+            self.addrow(self.tableWidget_sales, d.pay, i, 7)
+            i+=1
+       
+        self.tableWidget_sales.setColumnHidden(0, True)
+        HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget)
+        
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader("dealer_frame_header", self.tableWidget)    
             
-            
+    def saveSalesHeader(self, *args):
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader("dealer_sales_frame_header", self.tableWidget_sales)   
+                        
     def delNodeLocalAction(self):
         if self.tableWidget.currentRow()==-1:
             self.delAction.setDisabled(True)

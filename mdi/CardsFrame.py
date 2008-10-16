@@ -20,12 +20,14 @@ import string
 templatedir = "cards"
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 class SaleCards(QtGui.QDialog):
-    def __init__(self, connection, cards):
+    def __init__(self, connection, cards, model=None):
         bhdr = HeaderUtil.getBinaryHeader("sale_cards_frame_header")
         super(SaleCards, self).__init__()
         self.connection = connection
         self.cards = cards # list of cards id
+        self.model = model
         self.connection.commit()
+        self.nominalsumm = 0
         
         self.setObjectName("SaleCards")
         self.resize(672, 645)
@@ -59,9 +61,12 @@ class SaleCards(QtGui.QDialog):
         self.lineEdit_debet = QtGui.QLineEdit(self.groupBox_dealer_info)
         self.lineEdit_debet.setGeometry(QtCore.QRect(140, 20, 171, 20))
         self.lineEdit_debet.setObjectName("lineEdit_debet")
-        self.lineEdit_prepay = QtGui.QLineEdit(self.groupBox_dealer_info)
-        self.lineEdit_prepay.setGeometry(QtCore.QRect(140, 50, 81, 20))
-        self.lineEdit_prepay.setObjectName("lineEdit_prepay")
+        self.spinBox_prepay = QtGui.QDoubleSpinBox(self.groupBox_dealer_info)
+        self.spinBox_prepay.setGeometry(QtCore.QRect(140, 50, 81, 20))
+        self.spinBox_prepay.setObjectName("spinBox_prepay")
+        self.spinBox_prepay.setMaximum(100)
+        self.spinBox_prepay.setDecimals(3)
+        
         self.label_debet = QtGui.QLabel(self.groupBox_dealer_info)
         self.label_debet.setGeometry(QtCore.QRect(11, 20, 119, 20))
         self.label_debet.setObjectName("label_debet")
@@ -71,15 +76,21 @@ class SaleCards(QtGui.QDialog):
         self.label_paydeffer = QtGui.QLabel(self.groupBox_dealer_info)
         self.label_paydeffer.setGeometry(QtCore.QRect(11, 77, 119, 20))
         self.label_paydeffer.setObjectName("label_paydeffer")
-        self.lineEdit_paydeffer = QtGui.QLineEdit(self.groupBox_dealer_info)
-        self.lineEdit_paydeffer.setGeometry(QtCore.QRect(140, 80, 81, 20))
-        self.lineEdit_paydeffer.setObjectName("lineEdit_paydeffer")
+        self.spinBox_paydeffer = QtGui.QSpinBox(self.groupBox_dealer_info)
+        self.spinBox_paydeffer.setGeometry(QtCore.QRect(140, 80, 81, 20))
+        self.spinBox_paydeffer.setObjectName("spinBox_paydeffer")
+        self.spinBox_paydeffer.setMaximum(365)
+        
+        
         self.label_discount = QtGui.QLabel(self.groupBox_dealer_info)
         self.label_discount.setGeometry(QtCore.QRect(10, 110, 61, 16))
         self.label_discount.setObjectName("label_discount")
-        self.lineEdit_discount = QtGui.QLineEdit(self.groupBox_dealer_info)
-        self.lineEdit_discount.setGeometry(QtCore.QRect(140, 110, 81, 20))
-        self.lineEdit_discount.setObjectName("lineEdit_discount")
+        self.spinBox_discount = QtGui.QDoubleSpinBox(self.groupBox_dealer_info)
+        self.spinBox_discount.setGeometry(QtCore.QRect(140, 110, 81, 20))
+        self.spinBox_discount.setObjectName("spinBox_discount")
+        self.spinBox_discount.setMaximum(100)
+        self.spinBox_discount.setDecimals(3)
+        
         self.groupBox_bill_info = QtGui.QGroupBox(self)
         self.groupBox_bill_info.setGeometry(QtCore.QRect(340, 60, 321, 141))
         self.groupBox_bill_info.setMinimumSize(QtCore.QSize(300, 0))
@@ -127,15 +138,19 @@ class SaleCards(QtGui.QDialog):
         
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.spinBox_discount, QtCore.SIGNAL("valueChanged (double)"), self.recalculateAmount)
+        QtCore.QObject.connect(self.spinBox_prepay, QtCore.SIGNAL("valueChanged (double)"), self.recalculateAmount)
+        QtCore.QObject.connect(self.lineEdit_pay, QtCore.SIGNAL("editingFinished ()"), self.recalculatePrepay)
+        
         QtCore.QMetaObject.connectSlotsByName(self)
         
         HeaderUtil.nullifySaved("sale_cards_frame_header")
         
         self.setTabOrder(self.comboBox_dealer, self.lineEdit_debet)
-        self.setTabOrder(self.lineEdit_debet, self.lineEdit_prepay)
-        self.setTabOrder(self.lineEdit_prepay, self.lineEdit_paydeffer)
-        self.setTabOrder(self.lineEdit_paydeffer, self.lineEdit_discount)
-        self.setTabOrder(self.lineEdit_discount, self.lineEdit_count_cards)
+        self.setTabOrder(self.lineEdit_debet, self.spinBox_prepay)
+        self.setTabOrder(self.spinBox_prepay, self.spinBox_paydeffer)
+        self.setTabOrder(self.spinBox_paydeffer, self.spinBox_discount)
+        self.setTabOrder(self.spinBox_discount, self.lineEdit_count_cards)
         self.setTabOrder(self.lineEdit_count_cards, self.lineEdit_amount)
         self.setTabOrder(self.lineEdit_amount, self.lineEdit_discount_amount)
         self.setTabOrder(self.lineEdit_discount_amount, self.lineEdit_for_pay)
@@ -147,6 +162,8 @@ class SaleCards(QtGui.QDialog):
         self.setTabOrder(self.tableWidget, self.buttonBox)
         self.refresh()
         self.fixtures()
+        QtCore.QObject.connect(self.comboBox_dealer,QtCore.SIGNAL("currentIndexChanged(int)"),self.dealerInfo)
+        self.comboBox_dealer.emit(QtCore.SIGNAL("currentIndexChanged(int)"), self.comboBox_dealer.currentIndex())
         self.setWidgetsDisabled()
         if not bhdr.isEmpty():
             HeaderUtil.setBinaryHeader("sale_cards_frame_header", bhdr)
@@ -175,13 +192,94 @@ class SaleCards(QtGui.QDialog):
         makeHeaders(columns, self.tableWidget)
         
         
+    def recalculateAmount(self, t=None):
+        print "recal"
+        discount = (float(self.spinBox_discount.value())/float(100.00))*float(self.nominalsumm)
+        #print "discount", discount
+        #print index, dealer.id
+
+
+        prepay = self.spinBox_prepay.value()
+        self.lineEdit_for_pay.setText(unicode((self.nominalsumm-discount)))
+        self.lineEdit_discount_amount.setText(unicode(discount))
+        self.lineEdit_pay.setText(unicode(float(self.nominalsumm-discount)*(prepay/100.00)))
+    
+    def recalculatePrepay(self):
+        self.spinBox_prepay.setValue(float(self.lineEdit_pay.text())/float(self.lineEdit_for_pay.text())*100)
+        
     def fixtures(self):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
-        dealers = self.connection.sql("SELECT organization, contactperson FROM billservice_dealer")
+        dealers = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False;")
         
+        i=0
         for dealer in dealers:
             self.comboBox_dealer.addItem(unicode(u"%s, %s" % (dealer.organization, dealer.contactperson)))
+            self.comboBox_dealer.setItemData(i, QtCore.QVariant(dealer.id))
+            if self.model:
+                if self.model.daler_id==dealer.id:
+                    self.model_dealer = dealer
+                    self.comboBox_dealer.setCurrentIndex(i)
+                    self.comboBox_dealer.setDisabled(True)
+            i+=1
+            
+    def dealerInfo(self, index):
+        id = self.comboBox_dealer.itemData(index).toInt()[0]
+
+        #print id
+        dealer = self.connection.get("SELECT * FROM billservice_dealer WHERE id=%s and deleted=False" % id)
+        self.model_dealer = dealer
+        self.spinBox_discount.setValue(dealer.discount)
+        self.spinBox_paydeffer.setValue(dealer.paydeffer)
+        self.spinBox_prepay.setValue(dealer.prepayment)
+        self.recalculateAmount()
+        #self.
         
+    def accept(self):
+        if self.model:
+            return
+        try:
+            model = Object()
+            now = datetime.datetime.now()
+            model.dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
+            model.pay = unicode(self.lineEdit_pay.text())
+            model.sum_for_pay = unicode(self.lineEdit_for_pay.text())
+            model.paydeffer = self.spinBox_paydeffer.value()
+            model.discount = self.spinBox_discount.value()
+            model.discount_sum = unicode(self.lineEdit_discount_amount.text())
+            model.prepayment = unicode(self.spinBox_prepay.value())
+            model.created = now 
+            
+            try:
+                salecard_id = self.connection.create(model.save("billservice_salecard"))
+                #self.connection.commit()
+            except Exception, e:
+                print e
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, данные не могут быть сохранены."))
+                return
+    
+            #print [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]
+            #self.connection.rollback()
+            #return
+            for card_id in [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]:
+                salecard = Object()
+                salecard.card_id = card_id
+                salecard.salecard_id = salecard_id
+                card = Object()
+                card.id = card_id
+                card.sold = now
+                self.connection.create(salecard.save("billservice_salecard_cards"))
+                self.connection.create(card.save("billservice_card"))
+    
+                
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, произошла непредвиденная ошибка. Отмена продажи."))
+            return 
+        QtGui.QDialog.accept(self)
+            
+    
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         
@@ -198,11 +296,11 @@ class SaleCards(QtGui.QDialog):
         self.lineEdit_amount.setDisabled(True)
         self.lineEdit_count_cards.setDisabled(True)
         self.lineEdit_debet.setDisabled(True)
-        self.lineEdit_discount.setDisabled(True)
+        #self.spinBox_discount.setDisabled(True)
         self.lineEdit_discount_amount.setDisabled(True)
         self.lineEdit_for_pay.setDisabled(True)
-        self.lineEdit_paydeffer.setDisabled(True)
-        self.lineEdit_prepay.setDisabled(True)
+        #self.spinBox_paydeffer.setDisabled(True)
+        #self.spinBox_prepay.setDisabled(True)
         
     def refresh(self):
         print self.cards
@@ -229,7 +327,7 @@ class SaleCards(QtGui.QDialog):
             
         self.lineEdit_count_cards.setText(unicode(len(cards)))
         self.lineEdit_amount.setText(unicode(nominal))
-        
+        self.nominalsumm=nominal
         HeaderUtil.getHeader("sale_cards_frame_header", self.tableWidget)
         
     def saveHeader(self, *args):
@@ -457,7 +555,7 @@ class CardsChild(QtGui.QMainWindow):
         
         self.setObjectName("CardsMDI")
         self.resize(947, 619)
-        self.setIconSize(QtCore.QSize(24, 24))
+        self.setIconSize(QtCore.QSize(18, 18))
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -647,7 +745,8 @@ class CardsChild(QtGui.QMainWindow):
         
         
         child = SaleCards(connection=self.connection, cards = cards)
-        child.exec_()
+        if child.exec_()==1:
+            self.refresh()
         
     def fixtures(self):
         nominals = self.connection.sql("SELECT nominal FROM billservice_card GROUP BY nominal")
@@ -719,6 +818,9 @@ class CardsChild(QtGui.QMainWindow):
         self.refresh()
         
     def deleteCards(self):
+        """
+        Добавить проверку-если карточка продана, она не может быть удалена
+        """
         ids=[]
         for index in self.tableWidget.selectedIndexes():
             #print index.column()
@@ -769,6 +871,8 @@ class CardsChild(QtGui.QMainWindow):
                 
             if self.checkBox_sold.checkState() == 0 and self.checkBox_activated.checkState() == 0:
                 sql+=" AND start_date>'%s' and end_date<'%s'" % (start_date, end_date)
+        else:
+            sql+=" WHERE sold is Null"
             
         #self.tableWidget.setSortingEnabled(False)
 
@@ -812,9 +916,6 @@ class CardsChild(QtGui.QMainWindow):
         
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-
-    def getTimeperiodId(self):
-        return self.treeWidget.currentItem().id
     
 
     def addrow(self, value, x, y, status, activated):
