@@ -21,7 +21,7 @@ config = ConfigParser.ConfigParser()
 
 import threading
 import gc
-#from DBUtils.PooledDB import PooledDB
+from DBUtils.PooledDB import PooledDB
 
 trafficclasses_pool = []
 dcache   = {}
@@ -331,7 +331,7 @@ def main ():
                 #print nascache
             #print ipncache
             #print vpncache
-            cur.connection.commit()
+            db_connection.commit()
         #try:
         NetFlowPacket(data, addrport, tFC)
         #except Exception, ex:
@@ -357,10 +357,19 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
 if __name__=='__main__':
     config.read("ebs_config.ini")
     try:
-        db_connection = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                                                           config.get("db", "username"),
-                                                                                           config.get("db", "host"),
-                                                                                           config.get("db", "password")))
+        pool = PooledDB(
+            mincached=1,
+            maxcached=2,
+            blocking=True,
+            #maxusage=20, 
+            creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                                   config.get("db", "username"),
+                                                                   config.get("db", "host"),
+                                                                   config.get("db", "password"))
+           )        
+        db_connection = pool.connection()
+        db_connection._con._con.set_client_encoding('UTF8')
         cur = db_connection.cursor()
     except Exception, ex:
         print "Unable to connect to the database ", ex
