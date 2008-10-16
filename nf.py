@@ -332,10 +332,10 @@ def main ():
             #print ipncache
             #print vpncache
             cur.connection.commit()
-        try:
-            NetFlowPacket(data, addrport, tFC)
-        except Exception, ex:
-            print "NFP exception %d: %s" % (i, ex)
+        #try:
+        NetFlowPacket(data, addrport, tFC)
+        #except Exception, ex:
+        #    print "NFP exception %d: %s" % (i, ex)
             #raise ex
             #ff += 1
             #time.sleep(0.1)
