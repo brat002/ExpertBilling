@@ -718,7 +718,11 @@ class NetFlowAggregate(Thread):
                      tarif_status, traffic_transmit_service, tarif_id = stream
 
                 if tarif_id==None:
-                    tarif_id = "Null"
+                    cur.execute(
+                        """
+                        DELETE FROM billservice_rawnetflowstream WHERE id=%s;
+                        """ % nf_id)
+                    continue
                 tarif_mode=False
                 #print nf_id
                 #Если у тарифа нет услуги доступа по трафику, значит метим статистику
