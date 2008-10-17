@@ -22,6 +22,9 @@ from db import get_account_data_by_username_dhcp,get_default_speed_parameters, g
 
 #import settings
 import psycopg2
+import psycopg2.extras
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+
 from DBUtils.PooledDB import PooledDB
 
 try:
@@ -87,6 +90,7 @@ class HandleNA(HandleBase):
         
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
 
 
@@ -116,6 +120,7 @@ class HandleAuth(HandleBase):
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
         self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
     
@@ -257,6 +262,7 @@ class HandleDHCP(HandleBase):
         
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
 
 
@@ -329,6 +335,7 @@ class HandleAcct(HandleBase):
         self.access_type=get_accesstype(self.packetobject)
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
 
     def get_bytes(self):

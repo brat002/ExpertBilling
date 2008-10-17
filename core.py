@@ -717,6 +717,8 @@ class NetFlowAggregate(Thread):
                 nf_id, nas_id, account_id, date_start, traffic_class_id, direction, src_addr, dst_addr, octets, src_port, dst_port, protocol, store, \
                      tarif_status, traffic_transmit_service, tarif_id = stream
 
+                if tarif_id==None:
+                    tarif_id = ""
                 tarif_mode=False
                 #print nf_id
                 #Если у тарифа нет услуги доступа по трафику, значит метим статистику
