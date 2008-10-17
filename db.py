@@ -184,7 +184,7 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     
     #print "!!!", common_vpn, at
     
-    sql="""
+    sql=u"""
     SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
     bsat.tarif_id, accessparameters.access_type, account.status, 
     account.balance_blocked, (account.ballance+account.credit) as ballance, 
