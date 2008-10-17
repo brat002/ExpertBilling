@@ -718,7 +718,7 @@ class NetFlowAggregate(Thread):
                      tarif_status, traffic_transmit_service, tarif_id = stream
 
                 if tarif_id==None:
-                    tarif_id = ""
+                    tarif_id = "Null"
                 tarif_mode=False
                 #print nf_id
                 #Если у тарифа нет услуги доступа по трафику, значит метим статистику
@@ -752,7 +752,7 @@ class NetFlowAggregate(Thread):
                     INSERT INTO billservice_netflowstream(
                     nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                     dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s',
+                    VALUES ('%s', '%s', %s, '%s', '%s', '%s', '%s',
                     '%s', '%s', '%s', '%s', '%s', '%s', '%s');
                     """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
                     )
