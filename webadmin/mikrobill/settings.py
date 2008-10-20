@@ -1,6 +1,6 @@
 
 # Django settings for mikrobill project.
-
+import os, sys
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -43,7 +43,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = 'c:/Python25/Scripts/mikrobill/media/'
+MEDIA_ROOT = os.path.abspath('./media')
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
@@ -64,6 +64,12 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.load_template_source',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
+    'django.core.context_processors.media',
+)
+
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,11 +85,10 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    'templates/',
+    os.path.abspath('./templates'),
 )
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -92,4 +97,7 @@ INSTALLED_APPS = (
     'radius',
     'nas',
     'billservice',
+    'lib',
 )
+
+CACHE_BACKEND = 'locmem:///'

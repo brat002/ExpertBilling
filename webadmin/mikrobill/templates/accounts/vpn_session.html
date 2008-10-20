@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if sessions %}
+<table class="table_border" cellpadding="0" cellspacing="0">
+    <tr>
+       <th class="first_row">Дата начала</th>
+       <th>Дата окончания</th>
+       <th>IP Адрес</th>
+       <th>Передано байт</th>
+       <th>Принято байт</th>
+	   <th>Время сессии</th>
+	   <th>Списано денег за время</th>
+	   <th>Списано денег за трафик</th>
+    </tr>
+    {% for session in sessions %}
+       <tr>
+	       <td class="first_row">{{ session.date_start|date_with_offset:"%d %b %Y" }}</td>
+		   <td>{{ session.date_end|date_with_offset:"%d %b %Y" }}</td>
+		   <td>{{ session.nas_id }}</td>
+		   <td align="right">{% trafic_format session.bytes_out %}</td>
+		   <td align="right">{% trafic_format session.bytes_in %}</td>
+		   <td>{{ session.session_time }}</td>
+		   <td align="right">{% writen_off_time session user %}</td>
+		   <td align="right">{% writen_off_trafic session user %}</td>
+	   </tr>
+    {% endfor%}
+</table>
+{% include 'paginator.html' %}
+{% else %}
+ <h1>Данных на данный момент нет</h1>
+{% endif %}
+{% endblock %}
+
+{% block menu_option %}
+    <li><a href="/accounts/logout/">Выйти</a></li>
+{% endblock%}

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Untitled Document</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/design.css">
+</head>
+
+<body>
+
+  
+    <div class="header" style="float: left; width: 100%">
+	   <div style="float: right"><img src="{{ MEDIA_URL }}img/design/header_right_image.gif" alt="1"></div>
+	   <div style="float: left"><img src="{{ MEDIA_URL }}img/design/header_left_image.jpg" alt="2"></div>
+	</div>
+	
+	<div>
+	   <div style="width:260px; float:left" class="meny_items">
+           <ul style="list-style-type: none">
+              <li><a href="/index/">Главная</a></li>
+              <li><a href="/transaction/">Биллинговая информация</a></li>
+              <li><a href="/card/activation/">Активация карточек</a></li>
+              <li><a href="/traffic/info/">Статистика по трафику</a></li>
+              <li><a href="/session/info/">Статистика по сессиям</a></li>
+              <li><a href="/password/change/">Сменить пароль</a></li>
+              {% block menu_option %}{% endblock%}
+           </ul>
+        </div>
+        <div style="width:740; float:left; padding-left:30px;">
+	       {% block content %}
+	       {% endblock%}
+	   </div>
+        
+	</div>
+	
+  </body>
+</html>
