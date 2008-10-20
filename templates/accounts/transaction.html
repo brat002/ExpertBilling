@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+{% if transactions %}
+<table class="table_border" cellpadding="0" cellspacing="0">
+    <tr>
+       <th class="first_row">Дата</th>
+       <th>Сумма</th>
+       <th>Описание</th>
+       <th>Документ</th>
+       <th>Комментарий</th>
+    </tr>
+    {% for transaction in transactions %}
+       <tr>
+           <td class="first_row">{{ transaction.created|date_with_offset:"%d %b %Y" }}</td>
+           <td align="right">{{ transaction.summ }}</td>
+           <td>{{ transaction.description }}</td>
+           <td>{{ transaction.bill }}</td>
+           <td>{{ transaction.comment }}</td>
+       </tr>
+    {% endfor%}
+</table>
+{% include 'paginator.html' %}
+{% else %}
+ <h1>Данных на данный момент нет</h1>
+{% endif %}
+{% endblock %}
+
+{% block menu_option %}
+    <li><a href="/accounts/logout/">Выйти</a></li>
+{% endblock%}

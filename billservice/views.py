@@ -1,1 +1,201 @@
-# Create your views here.
+ #-*- coding=UTF-8 -*-
+import datetime
+
+from django.http import Http404, HttpResponseRedirect
+from django.db import connection
+from django.core.cache import cache
+
+from billservice.settings import ACTIVATION_COUNT
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType 
+from billservice.forms import LoginForm, PasswordForm, CardForm
+from radius.models import ActiveSession  
+
+from lib.decorators import render_to
+
+
+
+@render_to('registration/login.html')
+def login(request):
+    error_message = True 
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            try:
+                user = Account.objects.get(username=form.cleaned_data['username'])
+                if user.password == form.cleaned_data['password']:
+                    request.session['user'] = user
+                    cache.set('activation_count', 0)
+                    cursor = connection.cursor()
+                    cursor.execute("""SELECT name, allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
+                    tarif = cursor.fetchone()
+                    tarif = tarif[1]
+                    if tarif:
+                        request.session['express_pay']=True
+                    request.session.modified = True
+                    return HttpResponseRedirect('/index/')
+                else:
+                    form = LoginForm()
+                    error_message = u'Error'
+                    return {
+                            'error_message':error_message,
+                            'form':form,
+                            }
+            except:
+                form = LoginForm()
+                error_message = u'Error 2'
+                return {
+                        'error_message':error_message,
+                        'form':form,
+                        }
+    else:
+         form = LoginForm()
+         return {
+                 'form':form,
+                }  
+         
+@render_to('accounts/index.html')
+def login_out(request):
+    if request.session.has_key('user'):
+        del request.session['user']
+    return HttpResponseRedirect('/index/')
+
+
+@render_to('accounts/index.html')
+def index(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    user = request.session['user']
+    cursor = connection.cursor()
+    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+    tarif = cursor.fetchone()
+    tarif = tarif[0]
+    tarifs = AccountTarif.objects.filter(account=user)
+    print user.status
+    return {
+            'account':user,
+            'tarif':tarif,
+            'tarifs':tarifs,
+            }
+    
+@render_to('accounts/netflowstream_info.html')
+def netflowstream_info(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    from lib.paginator import SimplePaginator
+    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']), 500, 'page')
+    return {
+            'net_flow_streams':paginator.get_page_items(),
+            'paginator': paginator,
+            }
+    
+
+@render_to('accounts/transaction.html')
+def transaction(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    from lib.paginator import SimplePaginator
+    paginator = SimplePaginator(request, Transaction.objects.filter(account=request.session['user']), 100, 'page')
+    return {
+            'transactions':paginator.get_page_items(),
+            'paginator': paginator,
+            }
+    
+@render_to('accounts/vpn_session.html')
+def vpn_session(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    from lib.paginator import SimplePaginator
+    user = request.session['user']
+    paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user), 50, 'page')
+    return {
+            'sessions':paginator.get_page_items(),
+            'paginator': paginator,
+            'user': user,
+            }
+
+@render_to('accounts/change_password.html')
+def change_password(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    if request.method == 'POST':
+        form = PasswordForm(request.POST)
+        if form.is_valid():
+            try:
+                user = request.session['user']
+                user = Account.objects.get(username=user.username)
+                if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
+                    user.password = form.cleaned_data['new_password']
+                    user.save()
+                    return HttpResponseRedirect('/index/')
+                else:
+                    return {
+                            'error_message': u'Проверьте пароль',
+                            'form':form,
+                            }
+            except:
+                form = PasswordForm()
+                return {
+                        'error_message': u'Пользователь не существует',
+                        'form':form,
+                        }
+    else:
+        form = PasswordForm()
+        return {
+                'form': form,
+                }
+        
+@render_to('accounts/card_acvation.html')
+def card_acvation(request):    
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    if not request.session.has_key('express_pay'):
+        return HttpResponseRedirect('/index/')
+    user = request.session['user']
+    if not user.status:
+        return HttpResponseRedirect('/index/')
+    if request.method == 'POST':
+        form = CardForm(request.POST)
+        if form.is_valid():
+            try:
+                card = Card.objects.get(series=form.cleaned_data['series'], pin=form.cleaned_data['pin'], sold__isnull=False, start_date__lte=datetime.datetime.now(), end_date__gte=datetime.datetime.now(), activated__isnull=True)
+                card.activated=datetime.datetime.now()
+                card.activated_by = user
+                card.save()
+                summ = -card.nominal
+                type = TransactionType.objects.get(internal_name=u'ACTIVATION_CARD')
+                user.ballance = user.ballance-summ
+                user.save()
+                request.session['user'] = user
+                request.session.modified = True
+                transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now())
+                transaction.save()
+                cache.set('activation_count', 0)
+                return HttpResponseRedirect('/index/')
+            except: 
+                count = cache.get('activation_count')
+                count = int(count)
+                if count <= ACTIVATION_COUNT:
+                    print count
+                    cache.set('activation_count', count+1)
+                else:
+                    user.status = False
+                    user.save()
+                    request.session['user'] = user
+                    request.session.modified = True
+                    cache.set('activation_count', 0) 
+                    return HttpResponseRedirect('/index/')
+                form = CardForm(request.POST)
+                return {
+                        'error_message':u"Ваша карточка уже активирована или она не может быть активирована!",
+                        'form': form,
+                        }
+        else:
+            return {
+                    'error_message': u"Проверьте заполнение формы",
+                    'form': form,
+                    }            
+    else:
+        form = CardForm()
+        return {
+                'form':form,
+                }

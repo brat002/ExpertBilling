@@ -7,6 +7,24 @@ import datetime, time
 
 # Create your models here.
 # choiCe
+
+PROTOCOLS = {'0':'-all-',
+           '37':'ddp',
+           '98':'encap', 
+           '3':'ggp', 
+           '47':'gre', 
+           '20':'hmp', 
+           '1':'icmp', 
+           '38':'idpr-cmtp', 
+           '2':'igmp', 
+           '4':'ipencap', 
+           '94':'ipip',  
+           '89':'ospf', 
+           '27':'rdp', 
+           '6':'tcp', 
+           '17':'udp'
+           }
+
 PERIOD_CHOISES=(
                 (u'DONT_REPEAT', u'Не повторять'),
                 (u'DAY',u'День'),
@@ -420,6 +438,7 @@ class Tariff(models.Model):
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, default=False )
     active            = models.BooleanField(default=False, blank=True)
     deleted           = models.BooleanField(default=False, blank=True)
+    allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, null=True, default=False)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -632,6 +651,9 @@ class RawNetFlowStream(models.Model):
 
     def __unicode__(self):
         return u"%s" % self.nas
+    
+    def get_protocol(self):
+        print 
 
 class NetFlowStream(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
@@ -661,6 +683,9 @@ class NetFlowStream(models.Model):
 
     def __unicode__(self):
         return u"%s" % self.nas
+    
+    def get_protocol(self): 
+        return PROTOCOLS[str(self.protocol)] 
 
 class SheduleLog(models.Model):
     account = models.ForeignKey(to=Account, unique=True)
