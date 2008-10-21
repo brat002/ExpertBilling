@@ -705,8 +705,8 @@ class NetFlowAggregate(Thread):
                 nf.dst_addr, nf.octets, nf.src_port, nf.dst_port, nf.protocol, nf.store,
                 tariff.active, tariff.traffic_transmit_service_id, tariff.id
                 FROM billservice_rawnetflowstream as nf
-                LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id ORDER BY datetime DESC LIMIT 1))
-                WHERE nf.fetched=False LIMIT 10000;""")
+                LEFT JOIN billservice_tariff as tariff ON (tariff.id = (select tarif_id from billservice_accounttarif where account_id=nf.account_id  and datetime<nf.date_start ORDER BY datetime DESC LIMIT 1))
+                WHERE nf.fetched=False LIMIT 40000;""")
             raw_streams=cur.fetchall()
 
             """

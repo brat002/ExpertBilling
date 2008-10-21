@@ -430,6 +430,11 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.emit(QtCore.SIGNAL("refresh()"))
         #self.destroy()
 
+    def addrow(self, widget,value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(unicode(value))
+        widget.setItem(x,y,headerItem)
+        
     def fixtures(self):
 
         if self.model:
@@ -456,7 +461,31 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.lineEdit_bankcode.setText(unicode(self.bank_model.bankcode))
             self.lineEdit_rs.setText(unicode(self.bank_model.rs))
             
-            
+            not_activated = self.connection.sql("SELECT * FROM billservice_card WHERE activated is Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+            self.tableWidget_not_activated.setRowCount(len(not_activated))
+            i=0
+            for d in not_activated:
+                self.addrow(self.tableWidget_not_activated, d.id, i,0)
+                self.addrow(self.tableWidget_not_activated, d.series, i,1)
+                self.addrow(self.tableWidget_not_activated, d.pin, i,2)
+                self.addrow(self.tableWidget_not_activated, d.nominal, i,3)
+                self.addrow(self.tableWidget_not_activated, d.start_date.strftime(strftimeFormat), i,4)
+                self.addrow(self.tableWidget_not_activated, d.end_date.strftime(strftimeFormat), i,5)
+                i+=1
+
+            activated = self.connection.sql("SELECT id, series, pin, nominal, start_date, end_date, activated FROM billservice_card WHERE activated is not Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+            self.tableWidget_activated.setRowCount(len(activated))
+            i=0
+            for d in activated:
+                self.addrow(self.tableWidget_activated, d.id, i,0)
+                self.addrow(self.tableWidget_activated, d.series, i,1)
+                self.addrow(self.tableWidget_activated, d.pin, i,2)
+                self.addrow(self.tableWidget_activated, d.nominal, i,3)
+                self.addrow(self.tableWidget_activated, d.start_date.strftime(strftimeFormat), i,4)
+                self.addrow(self.tableWidget_activated, d.end_date.strftime(strftimeFormat), i,5)
+                self.addrow(self.tableWidget_activated, d.activated.strftime(strftimeFormat), i,6)
+                i+=1
+
             #self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             #self.pppoe_checkBox.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             #self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
@@ -574,7 +603,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Дилеры", None, QtGui.QApplication.UnicodeUTF8))
 
         self.tableWidget.clear()
-        columns=[u"id", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка", u"Отсрочка"]
+        columns=[u"id", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка, %", u"Отсрочка, дней"]
         makeHeaders(columns, self.tableWidget)
 
         self.tableWidget_sales.clear()
@@ -647,11 +676,17 @@ class DealerMdiChild(QtGui.QMainWindow):
 
 
     def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
+        self.tableWidget.clearContents()
         #nasses=Nas.objects.all().order_by('id')
         #nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
         
-        data = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False")
+        data = self.connection.sql("""SELECT dealer.*, 
+        (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id)) as cardscount,
+        (SELECT count(*) FROM billservice_card as c WHERE c.activated is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id))
+        ) as activated,
+        (SELECT sum(sum_for_pay) FROM billservice_salecard WHERE dealer_id=dealer.id) as forpay,
+        (SELECT sum(pay) FROM billservice_salecard WHERE dealer_id=dealer.id) as pay
+        FROM billservice_dealer as dealer WHERE dealer.deleted=False;""")
         #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(data))
         i=0
@@ -660,7 +695,11 @@ class DealerMdiChild(QtGui.QMainWindow):
             self.addrow(self.tableWidget, d.id, i,0)
             self.addrow(self.tableWidget, d.organization, i,1)
             self.addrow(self.tableWidget, d.contactperson, i,2)
-            #self.addrow(self.tableWidget, d.contactperson, i,2)
+            self.addrow(self.tableWidget, d.cardscount, i,3)
+            self.addrow(self.tableWidget, d.activated, i,4)
+            self.addrow(self.tableWidget, d.pay - d.forpay, i,5)
+            self.addrow(self.tableWidget, d.discount, i,6)
+            self.addrow(self.tableWidget, d.paydeffer, i,7)
 
             i+=1
         self.tableWidget.setColumnHidden(0, True)
@@ -671,6 +710,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         #self.tableWidget.setSortingEnabled(True)
 
     def refreshSales(self):
+        self.tableWidget_sales.clearContents()
         id = self.getSelectedId()
         data = self.connection.sql("SELECT salecard.*, (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id=salecard.id) as cnt FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s;" % id)
         self.tableWidget_sales.setRowCount(len(data))
@@ -687,7 +727,7 @@ class DealerMdiChild(QtGui.QMainWindow):
             i+=1
        
         self.tableWidget_sales.setColumnHidden(0, True)
-        HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget)
+        HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget_sales)
         
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():

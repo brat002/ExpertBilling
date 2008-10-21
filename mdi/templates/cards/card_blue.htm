@@ -1,0 +1,14 @@
+	<table background="img/card_2.gif" style=" width:255px; height:143px; ">
+		<tr>
+			<td style="	font-size:36px; padding-left:10px; padding-top:50px; height:75px; *height:65px; ">
+				${card['nominal']}
+			</td>
+		</tr>
+		<tr style="font-size:10px; color:#FFFFFF; ">
+			<td width="171" height="17px" style="text-align:left; ">PIN: ${card['pin']}</td>
+			<td style="text-align:left; ">Серия: ${card['series']}</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="font-size:10px;">Активировать до: ${card['end_date']}</td>
+		</tr>
+	</table>
