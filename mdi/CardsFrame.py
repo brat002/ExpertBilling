@@ -16,8 +16,9 @@ from helpers import write_cards
 import os, datetime
 from randgen import GenPasswd2
 import string
-
-templatedir = "cards"
+from mako.template import Template
+from mako.lookup import TemplateLookup
+templatedir = "templates/cards/"
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 class SaleCards(QtGui.QDialog):
     def __init__(self, connection, cards, model=None):
@@ -140,7 +141,10 @@ class SaleCards(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QObject.connect(self.spinBox_discount, QtCore.SIGNAL("valueChanged (double)"), self.recalculateAmount)
         QtCore.QObject.connect(self.spinBox_prepay, QtCore.SIGNAL("valueChanged (double)"), self.recalculateAmount)
-        QtCore.QObject.connect(self.lineEdit_pay, QtCore.SIGNAL("editingFinished ()"), self.recalculatePrepay)
+        #QtCore.QObject.connect(self.lineEdit_pay, QtCore.SIGNAL("editingFinished ()"), self.recalculatePrepay)
+        
+        QtCore.QObject.connect(self.commandLinkButton_save, QtCore.SIGNAL("clicked()"), self.exportToXML)
+        QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCards)
         
         QtCore.QMetaObject.connectSlotsByName(self)
         
@@ -192,8 +196,64 @@ class SaleCards(QtGui.QDialog):
         makeHeaders(columns, self.tableWidget)
         
         
+    def exportToXML(self):
+        fileName = QtGui.QFileDialog.getSaveFileName(self,
+                                                  "Create XML File", "", "XML Files (*.xml)")
+        if fileName=="":
+            return
+        try:
+            f = open(fileName, "w")
+            f.write("<xml>")
+            for x in xrange(self.tableWidget.rowCount()):
+                #card = unicode(self.tableWidget.item(x,0).text())
+                f.write("<card>")
+                f.write("<id>%s</id>" % unicode(self.tableWidget.item(x,0).text()))
+                f.write("<series>%s</series>" % unicode(self.tableWidget.item(x,1).text()))
+                f.write("<nominal>%s</nominal>" % unicode(self.tableWidget.item(x,2).text()))
+                f.write("<pin>%s</pin>" % unicode(self.tableWidget.item(x,3).text()))
+                f.write("<date_start>%s</date_start>" % unicode(self.tableWidget.item(x,4).text()))
+                f.write("<date_end>%s</date_end>" % unicode(self.tableWidget.item(x,5).text()))
+                f.write("</card>")
+            f.write("</xml>")
+            f.close()
+            QtGui.QMessageBox.information(self, u"Данные сохранены", unicode(u"Данные сохранены успешно."))
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Данные не сохранены", unicode(u"Во время сохранения произошли ошибки."))
+            
+    def printCards(self):
+        
+        if len(self.cards)>0:
+           crd = "(" + ",".join(self.cards) + ")"
+        else:
+           crd = "(0)" 
+        #cards = self.con
+        #templatelookup = TemplateLookup(directories=['.'])
+        
+        cards = self.connection.sql_as_dict("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
+        data="""
+        <html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        </head>
+        <body>
+        """;
+        
+        for card in cards:
+            templ = Template(filename="templates/cards/%s" % card['template'], input_encoding='utf-8')
+            data+=templ.render_unicode(card=card)
+        import codecs
+        
+        data+="</body></html>"
+        file= open('templates/cards/cards.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/cards/cards.html")
+        a.exec_()
+        print data
+        
     def recalculateAmount(self, t=None):
-        print "recal"
+        #print "recal"
         discount = (float(self.spinBox_discount.value())/float(100.00))*float(self.nominalsumm)
         #print "discount", discount
         #print index, dealer.id
@@ -308,7 +368,7 @@ class SaleCards(QtGui.QDialog):
            crd = "(" + ",".join(self.cards) + ")"
         else:
            crd = "(0)" 
-        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s;" % crd)
+        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
         
         self.tableWidget.setRowCount(len(cards))
         
@@ -690,7 +750,7 @@ class CardsChild(QtGui.QMainWindow):
         
         self.retranslateUi()
         
-        HeaderUtil.nullifySaved("cards_frame_header")
+        #HeaderUtil.nullifySaved("cards_frame_header")
         
         self.filterActions()
         self.fixtures()
@@ -711,7 +771,7 @@ class CardsChild(QtGui.QMainWindow):
 
         self.tableWidget.clear()
         
-        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активиовано", u'Активировать c', u'Активировать по']
+        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
         makeHeaders(columns, self.tableWidget)
         
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Система карт оплаты", None, QtGui.QApplication.UnicodeUTF8))
@@ -924,9 +984,14 @@ class CardsChild(QtGui.QMainWindow):
         #print 'activated',activated
         if value == None:
             value = ""
+        
         headerItem.setText(unicode(value))
+        
         if status==True:
             headerItem.setTextColor(QtGui.QColor('#FF0100'))
+        
+        if y==5:
+            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         if activated == None and y==0:
             headerItem.setIcon(QtGui.QIcon("images/ok.png"))
         elif activated!=None and y==0:
@@ -962,26 +1027,56 @@ class CardPreviewDialog(QtGui.QDialog):
         self.setObjectName("CardPreviewDialog")
         #self.filelist=[]
         self.url = url
-        self.resize(636, 454)
-        self.gridLayout = QtGui.QGridLayout()
-        self.gridLayout.setObjectName("gridLayout")
-        self.card_webView = QtWebKit.QWebView()
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        self.setObjectName("Dialog")
+        self.resize(472, 636)
+        self.verticalLayout = QtGui.QVBoxLayout(self)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.webView = QtWebKit.QWebView(self)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.card_webView.sizePolicy().hasHeightForWidth())
-        self.card_webView.setSizePolicy(sizePolicy)
-        self.card_webView.setUrl(QtCore.QUrl("about:blank"))
-        self.card_webView.setObjectName("card_webView")
-        self.gridLayout.addWidget(self.card_webView, 0, 0, 1, 1)
-        self.setLayout(self.gridLayout)
+        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
+        self.webView.setSizePolicy(sizePolicy)
+        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setObjectName("webView")
+        self.verticalLayout.addWidget(self.webView)
+        self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton_print.setMinimumSize(QtCore.QSize(0, 40))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("images/printer.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_print.setIcon(icon)
+        self.commandLinkButton_print.setObjectName("commandLinkButton_print")
+        self.verticalLayout.addWidget(self.commandLinkButton_print)
+        
+        QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCard)
+
         self.retranslateUi()
         self.fixtures()
-        #QtCore.QMetaObject.connectSlotsByName()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("CardPreviewDialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Печатать", None, QtGui.QApplication.UnicodeUTF8))
+        #self.fixtures()
+        #QtCore.QMetaObject.connectSlotsByName()
         
     def fixtures(self):
         lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(self.url))
-        self.card_webView.load(lfurl)
+        self.webView.load(lfurl)
+        #self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrintBackgrounds, True)
+        #self.webView.settings().setShouldPrintBackground(True)
+        
+    def printCard(self):
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        #printer.setResolution(120)
+        printer.setPageSize(QtGui.QPrinter.A4)
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        printer.setFullPage(True)
+        #printer.setResolution(120)
+        #printer.setOutputFileName("lol.pdf")
+        #print printer.resolution()
+        self.webView.print_(printer)
+        
