@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 from PyQt4 import QtCore, QtGui
 
@@ -343,7 +343,10 @@ class SystemUserChild(QtGui.QMainWindow):
             self.addrow(user.username, i,1)
             self.addrow(user.status, i,2)
             self.addrow(user.created, i,3)
-            self.addrow(user.last_login.strftime(self.strftimeFormat), i,4)
+            try:
+                self.addrow(user.last_login.strftime(self.strftimeFormat), i,4)
+            except:
+                pass
             self.addrow(user.last_ip, i,5)
             self.addrow(user.host, i,6)
             self.tableWidget.setRowHeight(i, 14)
