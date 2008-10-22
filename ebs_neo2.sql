@@ -970,6 +970,15 @@ CREATE TABLE nas_trafficnode (
 
 ALTER TABLE public.nas_trafficnode OWNER TO mikrobill;
 
+CREATE TABLE billservice_bankdata
+(
+  id serial NOT NULL,
+  bank character varying(255) NOT NULL,
+  bankcode character varying(40) NOT NULL,
+  rs character varying(60) NOT NULL,
+  currency character varying(40) NOT NULL
+);
+ALTER TABLE public.billservice_bankdata OWNER TO mikrobill;
 
 CREATE TABLE billservice_operator
 (
@@ -983,20 +992,35 @@ CREATE TABLE billservice_operator
   fax character varying(40) NOT NULL,
   postaddress character varying(255) NOT NULL,
   uraddress character varying(255) NOT NULL,
-  email character varying(255) NOT NULL
+  email character varying(255) NOT NULL,
+  bank_id bigint NOT NULL
 );
 ALTER TABLE public.billservice_operator OWNER TO mikrobill;
 
-CREATE TABLE billservice_bankdata
+
+
+CREATE TABLE billservice_dealer
 (
   id serial NOT NULL,
-  operator_id integer NOT NULL,
-  bank character varying(255) NOT NULL,
-  bankcode character varying(40) NOT NULL,
-  rs character varying(60) NOT NULL,
-  currency character varying(40) NOT NULL
-);
-ALTER TABLE public.billservice_bankdata OWNER TO mikrobill;
+  organization character varying(400) NOT NULL,
+  unp character varying(255) NOT NULL,
+  okpo character varying(255) NOT NULL,
+  contactperson character varying(255) NOT NULL,
+  director character varying(255) NOT NULL,
+  phone character varying(255) NOT NULL,
+  fax character varying(255) NOT NULL,
+  postaddress character varying(400) NOT NULL,
+  uraddress character varying(400) NOT NULL,
+  email character varying(255) NOT NULL,
+  bank_id integer NOT NULL,
+  prepayment real,
+  paydeffer integer,
+  discount real,
+  always_sell_cards boolean NOT NULL DEFAULT false,
+  deleted boolean DEFAULT false
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_dealer OWNER TO mikrobill;
 --
 -- TOC entry 20 (class 1255 OID 16403)
 -- Dependencies: 6
@@ -1917,6 +1941,15 @@ SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 1, false);
 -- Dependencies: 6 1673
 -- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
 --
+CREATE SEQUENCE billservice_dealer_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE public.billservice_dealer_id_seq OWNER TO mikrobill;
+ALTER SEQUENCE billservice_dealer_id_seq OWNED BY billservice_dealer.id;
+
 CREATE SEQUENCE billservice_operator_id_seq
   INCREMENT 1
   MINVALUE 1
@@ -3544,6 +3577,8 @@ ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficcla
 ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
 
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
+
+ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
 --
 -- TOC entry 2191 (class 2604 OID 19063)
 -- Dependencies: 1761 1706
@@ -11325,23 +11360,12 @@ COPY billservice_timeperiod (id, name) FROM stdin;
 1	Круглосуточно
 \.
 
-
---
--- TOC entry 2509 (class 0 OID 18756)
--- Dependencies: 1689
--- Data for Name: billservice_timeperiod_time_period_nodes; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_timeperiod_time_period_nodes (id, timeperiod_id, timeperiodnode_id) FROM stdin;
 1	1	1
 \.
 
 
---
--- TOC entry 2510 (class 0 OID 18759)
--- Dependencies: 1690
--- Data for Name: billservice_timeperiodnode; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
+
 
 COPY billservice_timeperiodnode (id, name, time_start, length, repeat_after) FROM stdin;
 1	Сутки	2008-09-01 00:00:00.169	86400	DAY
@@ -11388,45 +11412,18 @@ COPY billservice_traffictransmitnodes (id, traffic_transmit_service_id, cost, ed
 1	1	40	0	0	t	t
 \.
 
-
---
--- TOC entry 2515 (class 0 OID 18795)
--- Dependencies: 1695
--- Data for Name: billservice_traffictransmitnodes_time_nodes; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_traffictransmitnodes_time_nodes (id, traffictransmitnodes_id, timeperiod_id) FROM stdin;
 1	1	1
 \.
-
-
---
--- TOC entry 2516 (class 0 OID 18798)
--- Dependencies: 1696
--- Data for Name: billservice_traffictransmitnodes_traffic_class; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_traffictransmitnodes_traffic_class (id, traffictransmitnodes_id, trafficclass_id) FROM stdin;
 1	1	1
 \.
 
-
---
--- TOC entry 2517 (class 0 OID 18801)
--- Dependencies: 1697
--- Data for Name: billservice_traffictransmitservice; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_traffictransmitservice (id, reset_traffic, cash_method, period_check) FROM stdin;
 1	f	SUMM	SP_START
 \.
 
-
---
--- TOC entry 2518 (class 0 OID 18807)
--- Dependencies: 1698
--- Data for Name: billservice_transaction; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_transaction (id, bill, account_id, type_id, approved, tarif_id, summ, description, created) FROM stdin;
 85		2	MANUAL_TRANSACTION	t	\N	-10000		2008-09-03 16:12:49.881
@@ -11892,6 +11889,8 @@ ALTER TABLE ONLY billservice_card
 
 
 
+ALTER TABLE billservice_dealer
+  ADD CONSTRAINT billservice_dealer_pkey PRIMARY KEY(id);
 
 
 
@@ -12238,11 +12237,6 @@ ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 2355 (class 2606 OID 19181)
--- Dependencies: 1693 1693 1693
--- Name: billservice_trafficlimit_traffic_class_trafficlimit_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_key UNIQUE (trafficlimit_id, trafficclass_id);
@@ -12504,10 +12498,17 @@ CREATE INDEX auth_permission_content_type_id ON auth_permission USING btree (con
 
 CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accessparameters USING btree (access_time_id);
 
-CREATE INDEX billservice_bankdata_operator_id
-  ON billservice_bankdata
+CREATE INDEX billservice_operator_bank_id
+  ON billservice_operator
   USING btree
-  (operator_id);
+  (bank_id);
+  
+  
+CREATE INDEX billservice_dealer_bank_id
+  ON billservice_dealer
+  USING btree
+  (bank_id);
+  
 --
 -- TOC entry 2236 (class 1259 OID 19231)
 -- Dependencies: 1663
@@ -12995,39 +12996,21 @@ ALTER TABLE ONLY auth_user_user_permissions
 
 
 --
--- TOC entry 2418 (class 2606 OID 19327)
--- Dependencies: 2337 1688 1662
--- Name: billservice_accessparameters_access_time_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_access_time_id_fkey FOREIGN KEY (access_time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
 
---
--- TOC entry 2419 (class 2606 OID 19332)
--- Dependencies: 1663 2393 1704
--- Name: billservice_account_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
 
 
 --
--- TOC entry 2420 (class 2606 OID 19337)
--- Dependencies: 2237 1664 1663
--- Name: billservice_accountipnspeed_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2422 (class 2606 OID 19342)
--- Dependencies: 1687 2333 1665
--- Name: billservice_accountprepaystime_prepaid_time_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
 --
 
 ALTER TABLE ONLY billservice_accountprepaystime
@@ -13075,19 +13058,7 @@ ALTER TABLE ONLY billservice_card
 
 
 --
--- TOC entry 2428 (class 2606 OID 19367)
--- Dependencies: 2262 1669 1668
--- Name: billservice_card_card_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
-
-
-
---
--- TOC entry 2429 (class 2606 OID 19372)
--- Dependencies: 1670 2237 1663
--- Name: billservice_netflowstream_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
@@ -13153,10 +13124,10 @@ ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE CASCADE DEFERRABLE;
 
 
---
--- TOC entry 2436 (class 2606 OID 19407)
--- Dependencies: 2299 1673 1679
--- Name: billservice_periodicalservice_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+ALTER TABLE billservice_dealer
+  ADD CONSTRAINT billservice_dealer_bank_id_fkey FOREIGN KEY (bank_id)
+      REFERENCES billservice_bankdata (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 --
 
 ALTER TABLE ONLY billservice_periodicalservice
@@ -13192,9 +13163,9 @@ ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
-ALTER TABLE billservice_bankdata
-  ADD CONSTRAINT billservice_bankdata_operator_id_fkey FOREIGN KEY (operator_id)
-      REFERENCES billservice_operator (id) MATCH SIMPLE
+ALTER TABLE billservice_operator
+  ADD CONSTRAINT billservice_operator_bank_id_fkey FOREIGN KEY (bank_id)
+      REFERENCES billservice_bankdata (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 --

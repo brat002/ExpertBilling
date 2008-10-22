@@ -303,7 +303,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.exitAct = QtGui.QAction(u"Выход", self)
         self.exitAct.setShortcut(self.tr("Ctrl+Q"))
-        self.exitAct.setStatusTip(u"Выход из прграммы")
+        self.exitAct.setStatusTip(u"Выход из программы")
         self.connect(self.exitAct, QtCore.SIGNAL("triggered()"), self.close)
 
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),

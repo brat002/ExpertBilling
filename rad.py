@@ -208,11 +208,11 @@ class HandleAuth(HandleBase):
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
-           self.cur.close()
-           self.connection.close()
-           #print 2
+            self.cur.close()
+            self.connection.close()
+            #print 2
            
-           return self.auth_NA()
+            return self.auth_NA()
 
 
         #TimeAccess
@@ -506,7 +506,7 @@ class BaseAuth(DatagramRequestHandler):
 
 class RadiusAuth(BaseAuth):
 
-      def handle(self):
+    def handle(self):
         global numauth
         if numauth>=80:
             print "PREVENTING DoS"
@@ -564,7 +564,7 @@ class RadiusAuth(BaseAuth):
 
 class RadiusAcct(BaseAuth):
 
-      def handle(self):
+    def handle(self):
         global numacct
         if numacct>=100:
             return "PREVENTING ACCT DoS"
@@ -650,7 +650,6 @@ if __name__ == "__main__":
         maxcached=10,
         blocking=True,
         creator=psycopg2,
-    #    setsession=['SET AUTOCOMMIT = 1'],
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
                                                                config.get("db", "username"),
                                                                config.get("db", "host"),

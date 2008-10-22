@@ -102,7 +102,7 @@ def card_template_parser(command_string='', command_dict={}):
     return (command_string, i)
 
 #TODO:exceptions
-def write_cards(template_fname, pattern_dicts, strict=True):
+def write_cards(template_fname, pattern_dicts, strict=True, adddicts=[]):
     if not os.path.exists(template_fname):
         raise Exception("Template file doesn't exist!")
     tmpl_basename = os.path.basename(template_fname)
@@ -118,6 +118,9 @@ def write_cards(template_fname, pattern_dicts, strict=True):
     i = 0
     fnames = []
     for pdict in pattern_dicts:
+        if adddicts:
+            for addct in adddicts:
+                pdict.update(addct)
         write_tstr, cnt = card_template_parser(template_str, pdict)
         if strict and (cnt != len(pdict)):
             print "Template %s was not fully parsed with dictionary %s and was discarded!" % (tmpl_basename, str(pdict))
