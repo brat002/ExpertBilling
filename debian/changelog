@@ -1,0 +1,6 @@
+ebs (1.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- yolta <ebs@isd.by>  Tue, 14 Oct 2008 08:46:16 -0700
+

@@ -1,0 +1,13 @@
+Source: ebs
+Section: unknown
+Priority: extra
+Maintainer: yolta <ebs@isd.by>
+Build-Depends:
+Standards-Version: 3.7.2
+
+Package: ebs
+Architecture: any
+Depends:
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
+
