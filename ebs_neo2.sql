@@ -1,19 +1,9 @@
---
--- PostgreSQL database dump
---
-
--- Started on 2008-09-08 12:04:43
-
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
 
---
--- TOC entry 482 (class 2612 OID 16386)
--- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: postgres
---
 
 CREATE PROCEDURAL LANGUAGE plpgsql;
 
@@ -26,11 +16,6 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
---
--- TOC entry 1655 (class 1259 OID 18560)
--- Dependencies: 6
--- Name: auth_group; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_group (
     id integer NOT NULL,
@@ -40,11 +25,6 @@ CREATE TABLE auth_group (
 
 ALTER TABLE public.auth_group OWNER TO mikrobill;
 
---
--- TOC entry 1656 (class 1259 OID 18563)
--- Dependencies: 6
--- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_group_permissions (
     id integer NOT NULL,
@@ -55,11 +35,6 @@ CREATE TABLE auth_group_permissions (
 
 ALTER TABLE public.auth_group_permissions OWNER TO mikrobill;
 
---
--- TOC entry 1657 (class 1259 OID 18566)
--- Dependencies: 6
--- Name: auth_message; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_message (
     id integer NOT NULL,
@@ -70,11 +45,6 @@ CREATE TABLE auth_message (
 
 ALTER TABLE public.auth_message OWNER TO mikrobill;
 
---
--- TOC entry 1658 (class 1259 OID 18572)
--- Dependencies: 6
--- Name: auth_permission; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_permission (
     id integer NOT NULL,
@@ -86,11 +56,6 @@ CREATE TABLE auth_permission (
 
 ALTER TABLE public.auth_permission OWNER TO mikrobill;
 
---
--- TOC entry 1659 (class 1259 OID 18575)
--- Dependencies: 6
--- Name: auth_user; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_user (
     id integer NOT NULL,
@@ -109,11 +74,6 @@ CREATE TABLE auth_user (
 
 ALTER TABLE public.auth_user OWNER TO mikrobill;
 
---
--- TOC entry 1660 (class 1259 OID 18578)
--- Dependencies: 6
--- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE auth_user_groups (
     id integer NOT NULL,
@@ -124,11 +84,7 @@ CREATE TABLE auth_user_groups (
 
 ALTER TABLE public.auth_user_groups OWNER TO mikrobill;
 
---
--- TOC entry 1661 (class 1259 OID 18581)
--- Dependencies: 6
--- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE auth_user_user_permissions (
     id integer NOT NULL,
@@ -139,11 +95,6 @@ CREATE TABLE auth_user_user_permissions (
 
 ALTER TABLE public.auth_user_user_permissions OWNER TO mikrobill;
 
---
--- TOC entry 1662 (class 1259 OID 18584)
--- Dependencies: 2039 2040 2041 2042 2043 2044 2045 6
--- Name: billservice_accessparameters; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_accessparameters (
     id integer NOT NULL,
@@ -161,11 +112,6 @@ CREATE TABLE billservice_accessparameters (
 
 ALTER TABLE public.billservice_accessparameters OWNER TO mikrobill;
 
---
--- TOC entry 1663 (class 1259 OID 18597)
--- Dependencies: 2047 2048 2049 2050 2051 2052 2053 2054 2055 2056 2057 2058 2059 2060 2061 2062 2063 2064 2065 6
--- Name: billservice_account; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_account (
     id integer NOT NULL,
@@ -196,11 +142,6 @@ CREATE TABLE billservice_account (
 
 ALTER TABLE public.billservice_account OWNER TO mikrobill;
 
---
--- TOC entry 1664 (class 1259 OID 18622)
--- Dependencies: 2067 2068 2069 2070 6
--- Name: billservice_accountipnspeed; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_accountipnspeed (
     id integer NOT NULL,
@@ -214,11 +155,6 @@ CREATE TABLE billservice_accountipnspeed (
 
 ALTER TABLE public.billservice_accountipnspeed OWNER TO mikrobill;
 
---
--- TOC entry 1665 (class 1259 OID 18629)
--- Dependencies: 2072 2073 6
--- Name: billservice_accountprepaystime; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_accountprepaystime (
     id integer NOT NULL,
@@ -231,11 +167,6 @@ CREATE TABLE billservice_accountprepaystime (
 
 ALTER TABLE public.billservice_accountprepaystime OWNER TO mikrobill;
 
---
--- TOC entry 1666 (class 1259 OID 18634)
--- Dependencies: 2075 2076 6
--- Name: billservice_accountprepaystrafic; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_accountprepaystrafic (
     id integer NOT NULL,
@@ -248,11 +179,6 @@ CREATE TABLE billservice_accountprepaystrafic (
 
 ALTER TABLE public.billservice_accountprepaystrafic OWNER TO mikrobill;
 
---
--- TOC entry 1667 (class 1259 OID 18639)
--- Dependencies: 6
--- Name: billservice_accounttarif; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_accounttarif (
     id integer NOT NULL,
@@ -264,11 +190,6 @@ CREATE TABLE billservice_accounttarif (
 
 ALTER TABLE public.billservice_accounttarif OWNER TO mikrobill;
 
---
--- TOC entry 1668 (class 1259 OID 18642)
--- Dependencies: 2079 2080 6
--- Name: billservice_card; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_card (
     id integer NOT NULL,
@@ -287,14 +208,6 @@ CREATE TABLE billservice_card (
 
 ALTER TABLE public.billservice_card OWNER TO mikrobill;
 
-
-
-
---
--- TOC entry 1670 (class 1259 OID 18651)
--- Dependencies: 2084 2085 2086 6
--- Name: billservice_netflowstream; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_netflowstream (
     id integer NOT NULL,
@@ -318,12 +231,6 @@ CREATE TABLE billservice_netflowstream (
 
 ALTER TABLE public.billservice_netflowstream OWNER TO mikrobill;
 
---
--- TOC entry 1671 (class 1259 OID 18660)
--- Dependencies: 2088 2089 6
--- Name: billservice_onetimeservice; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE TABLE billservice_onetimeservice (
     id integer NOT NULL,
     name character varying(255) DEFAULT ''::character varying,
@@ -333,11 +240,7 @@ CREATE TABLE billservice_onetimeservice (
 
 ALTER TABLE public.billservice_onetimeservice OWNER TO mikrobill;
 
---
--- TOC entry 1672 (class 1259 OID 18665)
--- Dependencies: 6
--- Name: billservice_onetimeservicehistory; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE billservice_onetimeservicehistory (
     id integer NOT NULL,
@@ -349,11 +252,6 @@ CREATE TABLE billservice_onetimeservicehistory (
 
 ALTER TABLE public.billservice_onetimeservicehistory OWNER TO mikrobill;
 
---
--- TOC entry 1673 (class 1259 OID 18668)
--- Dependencies: 2092 2093 6
--- Name: billservice_periodicalservice; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_periodicalservice (
     id integer NOT NULL,
@@ -366,11 +264,7 @@ CREATE TABLE billservice_periodicalservice (
 
 ALTER TABLE public.billservice_periodicalservice OWNER TO mikrobill;
 
---
--- TOC entry 1674 (class 1259 OID 18676)
--- Dependencies: 2095 6
--- Name: billservice_periodicalservicehistory; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE billservice_periodicalservicehistory (
     id integer NOT NULL,
@@ -382,11 +276,6 @@ CREATE TABLE billservice_periodicalservicehistory (
 
 ALTER TABLE public.billservice_periodicalservicehistory OWNER TO mikrobill;
 
---
--- TOC entry 1675 (class 1259 OID 18680)
--- Dependencies: 2097 2098 6
--- Name: billservice_ports; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_ports (
     id integer NOT NULL,
@@ -399,11 +288,7 @@ CREATE TABLE billservice_ports (
 
 ALTER TABLE public.billservice_ports OWNER TO mikrobill;
 
---
--- TOC entry 1676 (class 1259 OID 18685)
--- Dependencies: 2100 2101 2102 2103 6
--- Name: billservice_prepaidtraffic; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE billservice_prepaidtraffic (
     id integer NOT NULL,
@@ -417,11 +302,7 @@ CREATE TABLE billservice_prepaidtraffic (
 
 ALTER TABLE public.billservice_prepaidtraffic OWNER TO mikrobill;
 
---
--- TOC entry 1677 (class 1259 OID 18692)
--- Dependencies: 6
--- Name: billservice_prepaidtraffic_traffic_class; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE billservice_prepaidtraffic_traffic_class (
     id integer NOT NULL,
@@ -432,11 +313,6 @@ CREATE TABLE billservice_prepaidtraffic_traffic_class (
 
 ALTER TABLE public.billservice_prepaidtraffic_traffic_class OWNER TO mikrobill;
 
---
--- TOC entry 1678 (class 1259 OID 18695)
--- Dependencies: 2106 6
--- Name: billservice_rawnetflowstream; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_rawnetflowstream (
     id integer NOT NULL,
@@ -468,11 +344,6 @@ CREATE TABLE billservice_rawnetflowstream (
 
 ALTER TABLE public.billservice_rawnetflowstream OWNER TO mikrobill;
 
---
--- TOC entry 1679 (class 1259 OID 18702)
--- Dependencies: 2108 2109 6
--- Name: billservice_settlementperiod; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_settlementperiod (
     id integer NOT NULL,
@@ -486,11 +357,7 @@ CREATE TABLE billservice_settlementperiod (
 
 ALTER TABLE public.billservice_settlementperiod OWNER TO mikrobill;
 
---
--- TOC entry 1680 (class 1259 OID 18710)
--- Dependencies: 6
--- Name: billservice_shedulelog; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
+
 
 CREATE TABLE billservice_shedulelog (
     id integer NOT NULL,
@@ -506,11 +373,6 @@ CREATE TABLE billservice_shedulelog (
 
 ALTER TABLE public.billservice_shedulelog OWNER TO mikrobill;
 
---
--- TOC entry 1681 (class 1259 OID 18713)
--- Dependencies: 2112 2113 2114 2115 6
--- Name: billservice_systemuser; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_systemuser (
     id integer NOT NULL,

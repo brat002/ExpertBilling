@@ -18,6 +18,7 @@ config = ConfigParser.ConfigParser()
 from SocketServer import ThreadingUDPServer
 from SocketServer import DatagramRequestHandler
 from threading import Thread
+import gc
 
 #from logger import redirect_std
 
@@ -35,11 +36,12 @@ ipncache = {}
 vpncache = {}
 dcacheLock = threading.Lock()
 fqueueLock = threading.Lock()
+dbLock = threading.Lock()
 #nascache = []
 #tdMinute = datetime.timedelta(seconds=60)
 sleepTime = 291.0
 aggrTime = 120.0
-aggrNum = 1500
+aggrNum = 666
 nfFlowCache = None
 packetCount = None
 
@@ -53,6 +55,8 @@ class Starter(Thread):
         def run(self):
             server = ThreadingUDPServer(self.address, self.handler)
             server.allow_reuse_address = True
+            server.conn = pool.connection()
+            server.conn._con._con.set_isolation_level(0)
             server.serve_forever()
 
             
@@ -64,7 +68,7 @@ class NetFlowCollectHandle(BaseHandle):
     def handle(self):
         global packetCount
         global nfFlowCache
-        
+        #print self.server.conn
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=8192
         addrport=self.client_address
@@ -72,7 +76,7 @@ class NetFlowCollectHandle(BaseHandle):
         #if (packetCount % 50) == 0:
             #cur.connection.commit()
         try:
-            NetFlowPacket(data, addrport, nfFlowCache)
+            NetFlowPacket(data, addrport, nfFlowCache, self.server.conn.cursor())
         except Exception, ex:
             print "NFP exception %d: %s" % (packetCount, repr(ex))
         packetCount += 1
@@ -153,12 +157,12 @@ class NetFlowPacket:
     FLOW_TYPES = {
         5 : (Header5, Flow5),
     }
-    def __init__(self, data, addrport, flowCache):
+    def __init__(self, data, addrport, flowCache, sCur):
         
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        self.cur = self.connection.cursor()
-        
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_isolation_level(0)
+        #self.cur = self.connection.cursor()
+        self.cur = sCur
         self.fc = flowCache
         if len(data) < 16:
             raise ValueError, "Short packet"
@@ -173,7 +177,7 @@ class NetFlowPacket:
             except Exception, e:
                 print "Error na_id: %s, %s" % (addrport[0], repr(e))
                 self.cur.close()
-                self.connection.close()
+                #self.connection.close()
                 return
         flows=[]
         if nas_id!=None:	    
@@ -181,7 +185,7 @@ class NetFlowPacket:
             self.version = _nf[0]
             if not self.version in self.FLOW_TYPES.keys():
                 self.cur.close()
-                self.connection.close()
+                #self.connection.close()
                 raise RuntimeWarning, \
                       "NetFlow version %d is not yet implemented" % \
                       self.version
@@ -198,7 +202,7 @@ class NetFlowPacket:
                 self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
                 vpncache = vpncache.fromkeys([x[0] for x in self.cur.fetchall()], 1)
             self.cur.close()
-            self.connection.close()
+            #self.connection.close()
             for n in range(self.hdr.num_flows):
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
                 flow_data = data[offset:offset + flow_class.LENGTH]
@@ -233,7 +237,9 @@ class FlowCache:
         #key = ''.join([str(var) for var in (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)])
         val = dcache.get(key)
         if not val:
-            ###flow.cur = cur.connection.cursor()
+            #+++++++
+            #flow.cur = cur.connection.cursor()
+            #+++++++
             #self.stime = time.time()
             dcacheLock.acquire()
             i = 1
@@ -244,8 +250,10 @@ class FlowCache:
                 dcacheLock.release()
                 self.keylist.append(key)
                 if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
-                    ###tmr = threading.Timer(aggrTime, applyFlow, (self.keylist,))
-                    ###tmr.start()
+                    #++++
+                    #tmr = threading.Timer(aggrTime, applyFlow, (self.keylist,))
+                    #tmr.start()
+                    #++++
                     #-----------------
                     fqueueLock.acquire()
                     flowQueue.append((self.keylist, time.time()))
@@ -284,21 +292,6 @@ def monitorCache():
         #popList = []
         for k, v in dcache.items():
             #if (v.stime + tdMinute) <  datetime.datetime.now():
-            '''if (v.stime + aggrTime + 11) <  time.time():
-                popList.append(k)
-            try:
-                dcacheLock.acquire()                
-                for dkey in popList:
-                    try:
-                        flow = dcache.pop(dkey)
-                    except Exception, ex:
-                        print "monitor pop ", ex 
-                    else:
-                        flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-            except Exception, ex:
-                print "monitor exception ", ex
-            finally:
-                    dcacheLock.release()'''
 
             if (v.stime + aggrTime + 11) <  time.time():
                 try:
@@ -345,6 +338,7 @@ class FlowDequeThread(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
         
@@ -369,6 +363,8 @@ class FlowDequeThread(Thread):
                 time.sleep(abs(wtime))
             
             #TO-DO: переделать на execute_many
+            fcnt = 0
+            flst = []
             for key in keylist:
                 dcacheLock.acquire()
                 i = 1
@@ -377,24 +373,81 @@ class FlowDequeThread(Thread):
                     dcacheLock.release()
                     i = 0
                     #fcur = cur.connection.cursor()
-                    self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+                    #self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
                     #flow.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
-                    del flow
+                    #del flow
                     #fcur.close()
                     #flow.cur.connection.commit()
+                    flst.append(flow)
+                    fcnt += 1
+                    if fcnt == 17:
+                        dbLock.acquire()
+                        databaseQueue.append(flst)
+                        dbLock.release()
+                        flst = []
+                        fcnt = 0
                 except Exception, ex:
                     print "fdqThread exception: ", repr(ex)
-                    del flow
+                    #del flow
                     if i:
                         dcacheLock.release()
-            try:
+            if len(flst) > 0:
+                dbLock.acquire()
+                databaseQueue.append(flst)
+                dbLock.release()
+                flst = []
+            '''try:
                 #cur.connection.commit()
                 self.cur.connection.commit()
             except Exception, ex:
-                print "fdqThread commit error: ", repr(ex)
+                print "fdqThread commit error: ", repr(ex)'''
             del keylist
+            gc.collect()
             
+ 
+class DatabaseThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
+        self.cur = self.connection.cursor()
+    def run(self):
+        while True:
+            dbLock.acquire()
+            try:
+                flst = databaseQueue.pop(0)
+                dbLock.release()
+            except Exception, ex:
+                dbLock.release()
+                #print "empty dbqueue"
+                time.sleep(2)
+                continue
             
+            #print "dbqueue len: ", len(databaseQueue)
+            try:
+                for flow in flst:
+                    self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+                    del flow
+                
+                self.cur.connection.commit()
+            except Exception, ex:
+                print "dbThread error: ", repr(ex)
+                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.InterfaceError):
+                    sleep(10)
+            del flst
+                
+class ServiceThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.connection = pool.connection()
+        self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
+        self.cur = self.connection.cursor()
+    def run(self):
+        #TODO: перенести обновления кешей нас, ипн, впн, а также проверку на переполнение словаря
+        pass
+        
 def main ():
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
@@ -405,8 +458,12 @@ def main ():
     packetCount = 0
     nfFlowCache = FlowCache()
     
+    #-----
+    dbThread = DatabaseThread()
+    dbThread.start()
     fdqThread = FlowDequeThread()
     fdqThread.start()
+    #-----
     
     server_nf = Starter((config.get("nf", "host"), int(config.get("nf", "port"))), NetFlowCollectHandle)
     server_nf.start()
@@ -487,7 +544,7 @@ if __name__=='__main__':
         sys.exit()'''
     pool = PooledDB(
         mincached=5,
-        maxcached=17,
+        maxcached=9,
         blocking=True,
         creator=psycopg2,
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
@@ -498,6 +555,7 @@ if __name__=='__main__':
     db_connection = pool.connection() 
     cur = db_connection.cursor()
     flowQueue = []
+    databaseQueue = []
     main()
 
 
