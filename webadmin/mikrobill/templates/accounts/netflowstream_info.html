@@ -16,7 +16,7 @@
 	</tr>
 	{% for net_flow_stream in net_flow_streams%}
 	   <tr>
-	       <td class="first_row">{{ net_flow_stream.date_start|date_with_offset:"%d %b %Y в %m:%H" }}</td>
+	       <td class="first_row">{{ net_flow_stream.date_start|date_with_offset:"%d %b %Y  %m:%H" }}</td>
 		   <td>{{ net_flow_stream.src_addr }}</td>
 		   <td align="center">{{ net_flow_stream.src_port }}</td>
 		   <td>{{ net_flow_stream.dst_addr }}</td>
@@ -35,3 +35,7 @@
 {% block menu_option %}
     <li><a href="/accounts/logout/">Выйти</a></li>
 {% endblock%}
+
+{% block title %}
+    Статистика по трафику
+{% endblock %}
