@@ -6,6 +6,7 @@
     <h1>{{ error_message }}</h1>
 {% endif %}
 
+<div class="reg_centr">
 <div class="registration">
 <form method="post" action="/account/login/">
 <table cellpadding="5px;">
@@ -16,6 +17,7 @@
 <input type="image" src="{{ MEDIA_URL }}img/design/ok_button.gif" class="button"/>
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
+</div>
 </div>
 {% endblock %}
 
