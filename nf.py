@@ -39,9 +39,6 @@ fqueueLock = threading.Lock()
 dbLock = threading.Lock()
 #nascache = []
 #tdMinute = datetime.timedelta(seconds=60)
-sleepTime = 291.0
-aggrTime = 120.0
-aggrNum = 666
 nfFlowCache = None
 packetCount = None
 
@@ -66,20 +63,23 @@ class BaseHandle(DatagramRequestHandler):
     
 class NetFlowCollectHandle(BaseHandle):
     def handle(self):
-        global packetCount
+        #global packetCount
         global nfFlowCache
         #print self.server.conn
         data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=8192
         addrport=self.client_address
+        #print repr(addrport[0])
         #print "gotpacket: ", addrport
         #if (packetCount % 50) == 0:
             #cur.connection.commit()
         try:
-            NetFlowPacket(data, addrport, nfFlowCache, self.server.conn.cursor())
+            #========
+            #NetFlowPacket(data, addrport, nfFlowCache, self.server.conn.cursor())
+            NetFlowPacket(data, addrport, nfFlowCache, None)
         except Exception, ex:
-            print "NFP exception %d: %s" % (packetCount, repr(ex))
-        packetCount += 1
+            print "NFP exception: %s" % (repr(ex),)
+        #packetCount += 1
         #del data
         #del addrport
         
@@ -162,29 +162,38 @@ class NetFlowPacket:
         #self.connection = pool.connection()
         #self.connection._con._con.set_isolation_level(0)
         #self.cur = self.connection.cursor()
-        self.cur = sCur
-        self.fc = flowCache
+        #self.cur = sCur
+        #self.fc = flowCache
         if len(data) < 16:
             raise ValueError, "Short packet"
-
+        
+        #print nascache
         nas_id = nascache.get(addrport[0])
         if not nas_id:
-            self.cur.execute("""SELECT id from nas_nas WHERE  ipaddress='%s'""" % addrport[0])
-            #print "after_nas", time.clock()-a
-            try:
-                nas_id = self.cur.fetchone()[0]
-                nascache[addrport[0]] = nas_id
-            except Exception, e:
-                print "Error na_id: %s, %s" % (addrport[0], repr(e))
-                self.cur.close()
-                #self.connection.close()
-                return
+            #======
+            print "Nas_id not found: ", addrport[0]
+            return
+            #======
+            
+        #self.cur.execute("""SELECT id from nas_nas WHERE  ipaddress='%s'""" % addrport[0])
+        '''
+        try:
+            nas_id = self.cur.fetchone()[0]
+            nascache[addrport[0]] = nas_id
+        except Exception, e:
+            print "Error na_id: %s, %s" % (addrport[0], repr(e))
+            self.cur.close()
+            #self.connection.close()
+            return
+        '''
+            
         flows=[]
         if nas_id!=None:	    
             _nf = struct.unpack("!H", data[:2])
             self.version = _nf[0]
             if not self.version in self.FLOW_TYPES.keys():
-                self.cur.close()
+                #====
+                #self.cur.close()
                 #self.connection.close()
                 raise RuntimeWarning, \
                       "NetFlow version %d is not yet implemented" % \
@@ -192,8 +201,11 @@ class NetFlowPacket:
             hdr_class = self.FLOW_TYPES[self.version][0]
             flow_class = self.FLOW_TYPES[self.version][1]
             self.hdr = hdr_class(data[:hdr_class.LENGTH])
+            #======
+            """
             # получаем классы трафика
             global ipncache, vpncache
+
             if not ipncache:
                 self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
                 ipncache = ipncache.fromkeys([x[0] for x in self.cur.fetchall()], 1)
@@ -203,6 +215,7 @@ class NetFlowPacket:
                 vpncache = vpncache.fromkeys([x[0] for x in self.cur.fetchall()], 1)
             self.cur.close()
             #self.connection.close()
+            """
             for n in range(self.hdr.num_flows):
                 offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
                 flow_data = data[offset:offset + flow_class.LENGTH]
@@ -210,7 +223,8 @@ class NetFlowPacket:
                 flow.nas_id = nas_id
                 #if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
                 if vpncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr) or ipncache.has_key(flow.src_addr) or ipncache.has_key(flow.dst_addr):
-                    self.fc.addflow5(flow)
+                    #self.fc.addflow5(flow)
+                    flowCache.addflow5(flow)
 
 
 class FlowCache:
@@ -262,9 +276,13 @@ class FlowCache:
                     
                     self.keylist = []
                     self.stime = time.time()
+                    #=====
+                    '''
                     nascache = {}
                     ipncache = {}
                     vpncache = {}
+                    '''
+                    #=====
                     gc.collect()
                     #print 'reset'
             except Exception, ex:
@@ -337,10 +355,10 @@ def applyFlow(keylist):
 class FlowDequeThread(Thread):
     def __init__(self):
         Thread.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_isolation_level(0)
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor()
         
     def run(self):
         j = 0
@@ -357,6 +375,7 @@ class FlowDequeThread(Thread):
             
             print "len keylist ", len(keylist)
             print "len queue ", len(flowQueue)
+            print "len dbQueue: ", len(databaseQueue)
             wtime = time.time() - aggrTime - stime
             print wtime
             if wtime < 0:
@@ -380,7 +399,7 @@ class FlowDequeThread(Thread):
                     #flow.cur.connection.commit()
                     flst.append(flow)
                     fcnt += 1
-                    if fcnt == 17:
+                    if fcnt == 37:
                         dbLock.acquire()
                         databaseQueue.append(flst)
                         dbLock.release()
@@ -428,13 +447,22 @@ class DatabaseThread(Thread):
             try:
                 for flow in flst:
                     self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+                    #print self.cur.fetchone()
                     del flow
+                '''for ifl in range(len(flst)):
+                    flow = flst.pop()
+                    self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
+                    del flow''' 
                 
                 self.cur.connection.commit()
             except Exception, ex:
                 print "dbThread error: ", repr(ex)
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.InterfaceError):
-                    sleep(10)
+                    #dbLock.acquire()
+                    #databaseQueue.insert(0, flst)
+                    #dbLock.release()
+                    print "dbQueue len: ", len(databaseQueue)
+                    time.sleep(10)
             del flst
                 
 class ServiceThread(Thread):
@@ -446,7 +474,43 @@ class ServiceThread(Thread):
         self.cur = self.connection.cursor()
     def run(self):
         #TODO: перенести обновления кешей нас, ипн, впн, а также проверку на переполнение словаря
-        pass
+        global nascache
+        global ipncache
+        global vpncache
+        global databaseQueue
+        while True:
+            try:
+                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
+                nasvals = self.cur.fetchall()
+                nascache = dict(nasvals)
+                #print nascache
+                del nasvals
+            except Exception, ex:
+                print "Servicethread nascache exception: ", repr(ex)
+                
+            try:
+                self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+                icTmp = {}
+                ipncache = icTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+            except Exception, ex:
+                print "Servicethread ipncache exception: ", repr(ex)
+                
+            try:
+                self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
+                vcTmp = {}
+                vpncache = vcTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+            except Exception, ex:
+                print "Servicethread vpncache exception: ", repr(ex)
+             
+            try: 
+                if len(databaseQueue) > 1000000:
+                    databaseQueue = databaseQueue[10000:]
+            except Exception, ex:
+                print "Servicethread dbQueue exception: ", repr(ex)    
+                
+            gc.collect()
+            time.sleep(60)
+            
         
 def main ():
     if "-D" not in sys.argv:
@@ -459,8 +523,18 @@ def main ():
     nfFlowCache = FlowCache()
     
     #-----
+    svcThread = ServiceThread()
+    svcThread.start()
     dbThread = DatabaseThread()
     dbThread.start()
+    #~~~~~~
+    #dbThread2 = DatabaseThread()
+    #dbThread2.start()
+    #dbThread3 = DatabaseThread()
+    #dbThread3.start()
+    #dbThread4 = DatabaseThread()
+    #dbThread4.start()
+    #~~~~~~
     fdqThread = FlowDequeThread()
     fdqThread.start()
     #-----
@@ -556,6 +630,15 @@ if __name__=='__main__':
     cur = db_connection.cursor()
     flowQueue = []
     databaseQueue = []
+    sleepTime = 291.0
+    aggrTime = 120.0
+    aggrNum = 666
+    try:
+        sleepTime = float(config.get("nf", "sleeptime"))
+        aggrTime  = float(config.get("nf", "aggrtime"))
+        aggrNum   = float(config.get("nf", "aggrnum"))
+    except:
+        pass
     main()
 
 
