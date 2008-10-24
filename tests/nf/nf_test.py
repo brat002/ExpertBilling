@@ -17,11 +17,13 @@ s.connect(addrs[0][4])
 addrport=('10.10.1.100', 9996)
 
 plist.pop()
-     
+print len(plist)
 a=time.clock()
 ff = 0
 i = 0
 for i in range(1000):
+    a=time.clock()
     for data in plist:
         s.send(data)
-        time.sleep(0.001)
+        time.sleep(0.0005)
+    print time.clock() - a
