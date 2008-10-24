@@ -5,7 +5,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.db import connection
 from django.core.cache import cache
 
-from billservice.settings import ACTIVATION_COUNT
+from django.conf import settings
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType 
 from billservice.forms import LoginForm, PasswordForm, CardForm
 from radius.models import ActiveSession  
@@ -16,7 +16,7 @@ from lib.decorators import render_to
 
 @render_to('registration/login.html')
 def login(request):
-    error_message = True 
+    error_message = True
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -24,7 +24,15 @@ def login(request):
                 user = Account.objects.get(username=form.cleaned_data['username'])
                 if user.password == form.cleaned_data['password']:
                     request.session['user'] = user
-                    cache.set('activation_count', 0)
+                    if not cache.get(user.id):
+                        cache.set(user.id, {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
+                    else:
+                        cache_user = cache.get(user.id)
+                        if cache_user['blocked']:
+                            cache.set(user.id, {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
+                        else:
+                            cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)
+                          
                     cursor = connection.cursor()
                     cursor.execute("""SELECT name, allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
                     tarif = cursor.fetchone()
@@ -35,25 +43,31 @@ def login(request):
                     return HttpResponseRedirect('/index/')
                 else:
                     form = LoginForm()
-                    error_message = u'Error'
+                    error_message = u'Проверьте пароль'
                     return {
                             'error_message':error_message,
                             'form':form,
                             }
             except:
                 form = LoginForm()
-                error_message = u'Error 2'
+                error_message = u'Пользователь не найден в базе'
                 return {
                         'error_message':error_message,
                         'form':form,
                         }
+        else:
+            form = LoginForm()
+            error_message = u'Введите логин и пароль'
+            return {
+                    'error_message':error_message,
+                    'form':form,
+                    }
     else:
          form = LoginForm()
          return {
                  'form':form,
                 }  
          
-@render_to('accounts/index.html')
 def login_out(request):
     if request.session.has_key('user'):
         del request.session['user']
@@ -65,16 +79,26 @@ def index(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/account/login/')
     user = request.session['user']
+    if not cache.get(user.id):
+        del request.session['user']
+        return HttpResponseRedirect('/account/login/')
     cursor = connection.cursor()
     cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
     tarif = cursor.fetchone()
     tarif = tarif[0]
-    tarifs = AccountTarif.objects.filter(account=user)
-    print user.status
+    cache_user = cache.get(user.id)
+    if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
+        time = datetime.datetime.now() - cache_user['last_date']
+        if time.seconds > settings.BLOCKED_TIME:
+            cache.delete(user.id)
+            cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
+    date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
+    tarifs = AccountTarif.objects.filter(account=user, datetime__lt=date)
     return {
             'account':user,
             'tarif':tarif,
             'tarifs':tarifs,
+            'status': bool(cache_user['blocked']),
             }
     
 @render_to('accounts/netflowstream_info.html')
@@ -145,14 +169,25 @@ def change_password(request):
                 }
         
 @render_to('accounts/card_acvation.html')
-def card_acvation(request):    
+def card_acvation(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/account/login/')
     if not request.session.has_key('express_pay'):
         return HttpResponseRedirect('/index/')
     user = request.session['user']
-    if not user.status:
-        return HttpResponseRedirect('/index/')
+    if not cache.get(user.id):
+        return HttpResponseRedirect('/account/login/')
+    cache_user = cache.get(user.id)
+    if int(cache_user['count']) > settings.ACTIVATION_COUNT and not bool(cache_user['blocked']):
+        cache.delete(user.id)
+        cache.set(user.id, {'count':int(cache_user['count']),'last_date':cache_user['last_date'],'blocked':True,}, 86400*365)
+    if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
+        time = datetime.datetime.now() - cache_user['last_date']
+        if time.seconds > settings.BLOCKED_TIME:
+            cache.delete(user.id)
+            cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
+        else:
+            return HttpResponseRedirect('/index/')
     if request.method == 'POST':
         form = CardForm(request.POST)
         if form.is_valid():
@@ -169,27 +204,23 @@ def card_acvation(request):
                 request.session.modified = True
                 transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now())
                 transaction.save()
-                cache.set('activation_count', 0)
+                cache.delete(user.id)
+                cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
                 return HttpResponseRedirect('/index/')
             except: 
-                count = cache.get('activation_count')
-                count = int(count)
-                if count <= ACTIVATION_COUNT:
-                    print count
-                    cache.set('activation_count', count+1)
-                else:
-                    user.status = False
-                    user.save()
-                    request.session['user'] = user
-                    request.session.modified = True
-                    cache.set('activation_count', 0) 
-                    return HttpResponseRedirect('/index/')
+                if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
+                    cache.delete(user.id)
+                    cache.set(user.id, {'count':count+1,'last_date':cache_user['date'],'blocked':False,}, 86400*365)
                 form = CardForm(request.POST)
                 return {
                         'error_message':u"Ваша карточка уже активирована или она не может быть активирована!",
                         'form': form,
                         }
         else:
+            count = int(cache_user['count'])
+            if int(cache_user['count']) < settings.ACTIVATION_COUNT+1:
+                cache.delete(user.id)
+                cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
             return {
                     'error_message': u"Проверьте заполнение формы",
                     'form': form,

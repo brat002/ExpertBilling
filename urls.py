@@ -16,6 +16,7 @@ urlpatterns = patterns('',
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
+     (r'^$', 'index'),
      (r'^index/$', 'index'),
      (r'^account/login/$', 'login'),
      (r'^accounts/logout/$', 'login_out'),

@@ -17,11 +17,11 @@
     </tr>
     {% for session in sessions %}
        <tr>
-	       <td class="first_row">{{ session.date_start|date_with_offset:"%d %b %Y" }}</td>
-		   <td>{{ session.date_end|date_with_offset:"%d %b %Y" }}</td>
+	       <td class="first_row">{{ session.date_start|date_with_offset:"%d %b %Y %H.%m" }}</td>
+		   <td>{{ session.date_end|date_with_offset:"%d %b %Y %H.%m" }}</td>
 		   <td>{{ session.nas_id }}</td>
-		   <td align="right">{% trafic_format session.bytes_out %}</td>
-		   <td align="right">{% trafic_format session.bytes_in %}</td>
+		   <td align="right">{% trafic_format session.bytes_out %}&nbsp;</td>
+		   <td align="right">{% trafic_format session.bytes_in %}&nbsp;</td>
 		   <td>{{ session.session_time }}</td>
 		   <td align="right">{% writen_off_time session user %}</td>
 		   <td align="right">{% writen_off_trafic session user %}</td>
@@ -37,3 +37,7 @@
 {% block menu_option %}
     <li><a href="/accounts/logout/">Выйти</a></li>
 {% endblock%}
+
+{% block title %}
+    Статистика по сессиям
+{% endblock %}
