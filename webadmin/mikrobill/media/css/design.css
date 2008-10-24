@@ -85,6 +85,7 @@ td.first_row  {
 .registration {
     background: url('../img/design/registration_bg.gif');
     background-repeat: no-repeat;
+	margin-left:300px;
 	width:322px;
 	height:133px;
 }
