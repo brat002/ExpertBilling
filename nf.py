@@ -51,9 +51,9 @@ class Starter(Thread):
 
         def run(self):
             server = ThreadingUDPServer(self.address, self.handler)
-            server.allow_reuse_address = True
-            server.conn = pool.connection()
-            server.conn._con._con.set_isolation_level(0)
+            #server.allow_reuse_address = True
+            #server.conn = pool.connection()
+            #server.conn._con._con.set_isolation_level(0)
             server.serve_forever()
 
             
@@ -617,7 +617,7 @@ if __name__=='__main__':
         print "Unable to connect to the database ", ex
         sys.exit()'''
     pool = PooledDB(
-        mincached=5,
+        mincached=3,
         maxcached=9,
         blocking=True,
         creator=psycopg2,
