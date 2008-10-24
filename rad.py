@@ -27,8 +27,10 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 from DBUtils.PooledDB import PooledDB
 
+w32Import = False
 try:
     import win32api,win32process,win32con
+    w32Import = True
 except:
     pass
 
@@ -79,7 +81,7 @@ class HandleBase(object):
 
 class HandleNA(HandleBase):
 
-    def __init__(self,  packetobject):
+    def __init__(self,  packetobject, dbCur):
         """
         TO-DO: Сделать проверку в методе get_nas_info на тип доступа 
         """
@@ -87,17 +89,20 @@ class HandleNA(HandleBase):
         self.packetobject = packetobject.CreateReply()
 
 
-        
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
-
+        #-----
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_isolation_level(0)
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor()
+        #-----
+        self.cur = dbCur
 
     def handle(self):
         row=self.get_nas_info()
         self.cur.close()
-        self.connection.close()
+        #----
+        #self.connection.close()
+        #----
         
         if row is not None:
             self.packetobject.secret = str(row[1])
@@ -110,7 +115,7 @@ class HandleNA(HandleBase):
 #auth_class
 class HandleAuth(HandleBase):
 
-    def __init__(self,  packetobject, access_type):
+    def __init__(self,  packetobject, access_type, dbCur):
         self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
         self.access_type=access_type
@@ -119,11 +124,16 @@ class HandleAuth(HandleBase):
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
+        #-----
+        '''
         self.connection = pool.connection()
         self.connection._con._con.set_client_encoding('UTF8')
         self.connection._con._con.set_isolation_level(0)
         self.cur = self.connection.cursor()
-    
+        '''
+        #-----
+        self.cur = dbCur
+
     def auth_NA(self):
         """
         Deny access
@@ -181,7 +191,9 @@ class HandleAuth(HandleBase):
         #print row
         if row==None:
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             return None
 
         self.nas_id=str(row[0])
@@ -201,7 +213,9 @@ class HandleAuth(HandleBase):
         
         if row==None:
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             return self.auth_NA()
         
         #print 2
@@ -209,7 +223,9 @@ class HandleAuth(HandleBase):
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             #print 2
            
             return self.auth_NA()
@@ -227,22 +243,26 @@ class HandleAuth(HandleBase):
         #print 3
 
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
-           #print 4
-           self.replypacket.code=2
-           self.replypacket.username=str(username) #Нельзя юникод
-           self.replypacket.password=str(password) #Нельзя юникод
-           self.replypacket.AddAttribute('Service-Type', 2)
-           self.replypacket.AddAttribute('Framed-Protocol', 1)
-           self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-           #self.replypacket.AddAttribute('Framed-Routing', 0)
-           self.create_speed(tarif_id, speed=speed)
-           self.cur.close()
-           self.connection.close()
+            #print 4
+            self.replypacket.code=2
+            self.replypacket.username=str(username) #Нельзя юникод
+            self.replypacket.password=str(password) #Нельзя юникод
+            self.replypacket.AddAttribute('Service-Type', 2)
+            self.replypacket.AddAttribute('Framed-Protocol', 1)
+            self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+            #self.replypacket.AddAttribute('Framed-Routing', 0)
+            self.create_speed(tarif_id, speed=speed)
+            self.cur.close()
+            #----
+            #self.connection.close()
+            #----
         else:
-             self.cur.close()
-             self.connection.close()
-             #print 5
-             return self.auth_NA()
+            self.cur.close()
+            #----
+            #self.connection.close()
+            #----
+            #print 5
+            return self.auth_NA()
         #print 5
         #data_to_send=replypacket.ReplyPacket()
         return self.secret, self.replypacket
@@ -250,7 +270,7 @@ class HandleAuth(HandleBase):
 #auth_class
 class HandleDHCP(HandleBase):
 
-    def __init__(self,  packetobject):
+    def __init__(self,  packetobject, dbCur):
         self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject
         self.secret = ""
@@ -259,12 +279,15 @@ class HandleDHCP(HandleBase):
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
         #self.access_type=get_accesstype(self.packetobject)
-        
+        #----
+        '''
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
-
+        '''
+        #----
+        self.cur = dbCur
 
     def auth_NA(self):
         """
@@ -285,7 +308,9 @@ class HandleDHCP(HandleBase):
         if row==None:
             #print 0
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             return self.auth_NA()
 
         self.nas_id=str(row[0])
@@ -299,17 +324,21 @@ class HandleDHCP(HandleBase):
         if row==None:
             #print 1
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             return self.auth_NA()
 
     
         nas_id, ipaddress, netmask, mac_address, speed = row
 
         if int(nas_id)!=int(self.nas_id):
-           self.cur.close()
-           self.connection.close()
-           #print 2
-           return self.auth_NA()
+            self.cur.close()
+            #----
+            #self.connection.close()
+            #---
+            #print 2
+            return self.auth_NA()
 
         #print 4
         self.replypacket.code=2
@@ -319,7 +348,9 @@ class HandleDHCP(HandleBase):
         self.replypacket.AddAttribute('Session-Timeout', session_timeout)
         #self.create_speed(tarif_id, speed=speed)
         self.cur.close()
-        self.connection.close()
+        #----
+        #self.connection.close()
+        #----
         return self.secret, self.replypacket
 
 #acct class
@@ -328,15 +359,20 @@ class HandleAcct(HandleBase):
     process account information after connection
     """
 
-    def __init__(self, packetobject, nasip):
+    def __init__(self, packetobject, nasip, dbCur):
         self.packetobject=packetobject
         self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
         self.access_type=get_accesstype(self.packetobject)
+        #----
+        ''''
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
+        '''
+        #----
+        self.cur = dbCur
 
     def get_bytes(self):
         if self.packetobject.has_key('Acct-Input-Gigawords') and self.packetobject['Acct-Input-Gigawords'][0]!=0:
@@ -378,7 +414,9 @@ class HandleAcct(HandleBase):
         row=self.cur.fetchone()
         if row==None:
             self.cur.close()
-            self.connection.close()
+            #----
+            #self.connection.close()
+            #----
             return self.acct_NA()
 
         account_id, time_access=row
@@ -488,9 +526,12 @@ class HandleAcct(HandleBase):
                )
             #self.connection.commit()
         #print "acct end"
-        self.connection.commit()
+        self.cur.connection.commit()
         #print 5
-        self.connection.close()
+        #----
+        
+        #self.connection.close()
+        #----
         self.cur.close()
         
         #data_to_send=replypacket.ReplyPacket()
@@ -525,16 +566,19 @@ class RadiusAuth(BaseAuth):
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
-            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type)
+            #-----
+            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.server.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
+            #-----
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
             del authobject
         elif access_type in ['DHCP'] :
-            coreconnect = HandleDHCP(packetobject=packetobject)
+            #-----
+            coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.server.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
             #packetobject.secret=packetfromcore.secret
@@ -544,7 +588,8 @@ class RadiusAuth(BaseAuth):
             del packetfromcore
             del authobject
         else:
-            returnpacket = HandleNA(packetobject).handle()
+            #-----
+            returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
             if returnpacket is None:numauth-=1; return
             
             returndata=authNA(returnpacket)
@@ -575,7 +620,7 @@ class RadiusAcct(BaseAuth):
         addrport=self.client_address
         packetobject=packet.AcctPacket(dict=dict,packet=data)
 
-        coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0])
+        coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0], dbCur=self.server.dbconn.cursor())
         packetfromcore = coreconnect.handle()
         if packetfromcore is not None: 
             returndat=packetfromcore.ReplyPacket()
@@ -600,6 +645,11 @@ class Starter(Thread):
         def run(self):
             server = ThreadingUDPServer(self.address, self.handler)
             server.allow_reuse_address = True
+            #-----
+            server.dbconn = pool.connection()
+            server.dbconn._con._con.set_isolation_level(0)
+            server.dbconn._con._con.set_client_encoding('UTF8')
+            #-----
             server.serve_forever()
 
 def setpriority(pid=None,priority=1):
@@ -640,7 +690,7 @@ if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing
 
 if __name__ == "__main__":
     config = ConfigParser.ConfigParser()
-    if os.name=='nt':
+    if os.name=='nt' and w32Import:
         setpriority(priority=4)
     config.read("ebs_config.ini")        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
