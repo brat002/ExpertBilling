@@ -940,6 +940,8 @@ class NetFlowBill(Thread):
 
         
         trafic_transmit_nodes=self.cur.fetchall()
+        cost=0
+        min_from_start=0
         for node in trafic_transmit_nodes:
             trafic_transmit_node_id=node[0]
             trafic_cost=node[1]
@@ -949,11 +951,22 @@ class NetFlowBill(Thread):
             period_start=node[4]
             period_length=node[5]
             repeat_after=node[6]
-            result=in_period(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+            tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
             if result:
-                del trafic_transmit_nodes
-                return trafic_cost
-        return 0
+                """
+                Зачем здесь было это делать:
+                Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
+                но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
+                который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
+                значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
+                у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
+                """
+                if from_start<min_from_start or min_from_start==0:
+                    min_from_start=from_start
+                    cost=trafic_cost
+        del trafic_transmit_nodes
+        return cost
+
 
 
 

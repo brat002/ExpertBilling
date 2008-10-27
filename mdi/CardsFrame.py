@@ -792,7 +792,7 @@ class CardsChild(QtGui.QMainWindow):
 
         self.tableWidget.clear()
         
-        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активиовано", u'Активировать c', u'Активировать по']
+        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
         makeHeaders(columns, self.tableWidget)
         
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Система карт оплаты", None, QtGui.QApplication.UnicodeUTF8))
