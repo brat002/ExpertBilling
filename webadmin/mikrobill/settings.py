@@ -14,7 +14,7 @@ DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'post
 DATABASE_NAME = 'ebs6'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'mikrobill'             # Not used with sqlite3.
 DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
-DATABASE_HOST = '127.0.0.1'             # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
 
 # Local time zone for this installation. Choices can be found here:

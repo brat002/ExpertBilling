@@ -2952,6 +2952,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tarif_treeWidget.setObjectName("tarif_treeWidget")
         #self.tarif_treeWidget.headerItem().setText(0,"")
         self.tarif_treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget = tableFormat(self.tableWidget)
         
@@ -2972,7 +2973,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         sz.setWidth(self.width()*0.3 / 5)
         tree_header.setSizeHint(1,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
-        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        #tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
 
         self.setCentralWidget(self.splitter)
         
@@ -3054,7 +3055,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.transactionReportAction)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.isUntitled = True
+        #self.isUntitled = True
         #self.tableWidget.resizeColumnsToContents()
         self.resize(1100,600)
 
@@ -3281,7 +3282,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
         JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
         WHERE tarif.id=%s""" % self.getTarifId()).ipn_for_vpn
-        tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+        tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         #addf.show()
         if addf.exec_()==1:
@@ -3340,10 +3341,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
-            item.setText(0, u"%s" % tarif.name)
+            item.tarif_type = tarif.ttype
+            item.setText(0, u"%s %s" % (tarif.ttype, tarif.name))
             item.setIcon(0,QtGui.QIcon("images/folder.png"))
             #tariff_type = self.connection.get("SELECT get_tariff_type(%d);" % tarif.id)
-            item.setText(1, tarif.ttype)
+            #item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setDisabled(True)
             
@@ -3353,7 +3355,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
             
     def refresh(self, item=None, k=''):
-        self.tableWidget.setSortingEnabled(False)
+        #self.tableWidget.setSortingEnabled(False)
         #print item
         if item:
             id=item.id
@@ -3405,7 +3407,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
         HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
-        self.tableWidget.setSortingEnabled(True)
+        #self.tableWidget.setSortingEnabled(True)
 
     def accountEnable(self):
         id=self.getSelectedId()

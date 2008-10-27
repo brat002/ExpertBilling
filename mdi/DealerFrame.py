@@ -297,6 +297,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         #QtCore.QObject.connect(self.nas_comboBox,QtCore.SIGNAL("currentIndexChanged(int)"),self.refillActions)
         self.retranslateUi()
         self.fixtures()
+        self.disableElements()
 
 
     def retranslateUi(self):
@@ -430,6 +431,16 @@ class AddDealerFrame(QtGui.QMainWindow):
         #QtGui.QDialog.accept(self)
         self.emit(QtCore.SIGNAL("refresh()"))
         #self.destroy()
+
+    def disableElements(self):
+        self.lineEdit_buy_cards.setDisabled(True)
+        self.lineEdit_pay_sum.setDisabled(True)
+        self.lineEdit_buy_cards_sum.setDisabled(True)
+        self.lineEdit_debet_sum.setDisabled(True)
+        self.lineEdit_dealer_return.setDisabled(True)
+        self.lineEdit_operator_return_without_discount.setDisabled(True)
+        self.lineEdit_loss_for_discount.setDisabled(True)
+        self.lineEdit_cards_activated.setDisabled(True)
 
     def addrow(self, widget,value, x, y):
         headerItem = QtGui.QTableWidgetItem()
