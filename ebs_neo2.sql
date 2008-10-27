@@ -5,10 +5,8 @@ SET client_min_messages = warning;
 SET escape_string_warning = off;
 
 
-CREATE PROCEDURAL LANGUAGE plpgsql;
-
-
-ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
+--CREATE PROCEDURAL LANGUAGE plpgsql;
+--ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
 
 SET search_path = public, pg_catalog;
 
@@ -389,11 +387,6 @@ CREATE TABLE billservice_systemuser (
 
 ALTER TABLE public.billservice_systemuser OWNER TO mikrobill;
 
---
--- TOC entry 1682 (class 1259 OID 18723)
--- Dependencies: 2117 2118 2119 2120 2121 2122 6
--- Name: billservice_tariff; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_tariff (
     id integer NOT NULL,
@@ -414,11 +407,6 @@ CREATE TABLE billservice_tariff (
 
 ALTER TABLE public.billservice_tariff OWNER TO mikrobill;
 
---
--- TOC entry 1683 (class 1259 OID 18735)
--- Dependencies: 6
--- Name: billservice_tariff_onetime_services; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_tariff_onetime_services (
     id integer NOT NULL,
@@ -429,11 +417,6 @@ CREATE TABLE billservice_tariff_onetime_services (
 
 ALTER TABLE public.billservice_tariff_onetime_services OWNER TO mikrobill;
 
---
--- TOC entry 1684 (class 1259 OID 18738)
--- Dependencies: 6
--- Name: billservice_tariff_periodical_services; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_tariff_periodical_services (
     id integer NOT NULL,
@@ -444,11 +427,6 @@ CREATE TABLE billservice_tariff_periodical_services (
 
 ALTER TABLE public.billservice_tariff_periodical_services OWNER TO mikrobill;
 
---
--- TOC entry 1685 (class 1259 OID 18741)
--- Dependencies: 6
--- Name: billservice_tariff_traffic_limit; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_tariff_traffic_limit (
     id integer NOT NULL,
@@ -459,11 +437,6 @@ CREATE TABLE billservice_tariff_traffic_limit (
 
 ALTER TABLE public.billservice_tariff_traffic_limit OWNER TO mikrobill;
 
---
--- TOC entry 1686 (class 1259 OID 18744)
--- Dependencies: 2127 6
--- Name: billservice_timeaccessnode; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timeaccessnode (
     id integer NOT NULL,
@@ -475,11 +448,6 @@ CREATE TABLE billservice_timeaccessnode (
 
 ALTER TABLE public.billservice_timeaccessnode OWNER TO mikrobill;
 
---
--- TOC entry 1687 (class 1259 OID 18748)
--- Dependencies: 2129 2130 6
--- Name: billservice_timeaccessservice; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timeaccessservice (
     id integer NOT NULL,
@@ -490,11 +458,6 @@ CREATE TABLE billservice_timeaccessservice (
 
 ALTER TABLE public.billservice_timeaccessservice OWNER TO mikrobill;
 
---
--- TOC entry 1688 (class 1259 OID 18753)
--- Dependencies: 6
--- Name: billservice_timeperiod; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timeperiod (
     id integer NOT NULL,
@@ -504,11 +467,6 @@ CREATE TABLE billservice_timeperiod (
 
 ALTER TABLE public.billservice_timeperiod OWNER TO mikrobill;
 
---
--- TOC entry 1689 (class 1259 OID 18756)
--- Dependencies: 6
--- Name: billservice_timeperiod_time_period_nodes; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timeperiod_time_period_nodes (
     id integer NOT NULL,
@@ -519,11 +477,6 @@ CREATE TABLE billservice_timeperiod_time_period_nodes (
 
 ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO mikrobill;
 
---
--- TOC entry 1690 (class 1259 OID 18759)
--- Dependencies: 2134 2135 6
--- Name: billservice_timeperiodnode; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timeperiodnode (
     id integer NOT NULL,
@@ -536,11 +489,6 @@ CREATE TABLE billservice_timeperiodnode (
 
 ALTER TABLE public.billservice_timeperiodnode OWNER TO mikrobill;
 
---
--- TOC entry 1691 (class 1259 OID 18767)
--- Dependencies: 2137 2138 2139 2140 2141 2142 6
--- Name: billservice_timespeed; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_timespeed (
     id integer NOT NULL,
@@ -557,11 +505,6 @@ CREATE TABLE billservice_timespeed (
 
 ALTER TABLE public.billservice_timespeed OWNER TO mikrobill;
 
---
--- TOC entry 1692 (class 1259 OID 18776)
--- Dependencies: 2144 2145 2146 2147 2148 6
--- Name: billservice_trafficlimit; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_trafficlimit (
     id integer NOT NULL,
@@ -577,11 +520,6 @@ CREATE TABLE billservice_trafficlimit (
 
 ALTER TABLE public.billservice_trafficlimit OWNER TO mikrobill;
 
---
--- TOC entry 1693 (class 1259 OID 18784)
--- Dependencies: 6
--- Name: billservice_trafficlimit_traffic_class; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_trafficlimit_traffic_class (
     id integer NOT NULL,
@@ -592,11 +530,6 @@ CREATE TABLE billservice_trafficlimit_traffic_class (
 
 ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO mikrobill;
 
---
--- TOC entry 1694 (class 1259 OID 18787)
--- Dependencies: 2151 2152 2153 2154 2155 6
--- Name: billservice_traffictransmitnodes; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_traffictransmitnodes (
     id integer NOT NULL,
@@ -611,11 +544,6 @@ CREATE TABLE billservice_traffictransmitnodes (
 
 ALTER TABLE public.billservice_traffictransmitnodes OWNER TO mikrobill;
 
---
--- TOC entry 1695 (class 1259 OID 18795)
--- Dependencies: 6
--- Name: billservice_traffictransmitnodes_time_nodes; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_traffictransmitnodes_time_nodes (
     id integer NOT NULL,
@@ -626,11 +554,6 @@ CREATE TABLE billservice_traffictransmitnodes_time_nodes (
 
 ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO mikrobill;
 
---
--- TOC entry 1696 (class 1259 OID 18798)
--- Dependencies: 6
--- Name: billservice_traffictransmitnodes_traffic_class; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_traffictransmitnodes_traffic_class (
     id integer NOT NULL,
@@ -641,11 +564,6 @@ CREATE TABLE billservice_traffictransmitnodes_traffic_class (
 
 ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO mikrobill;
 
---
--- TOC entry 1697 (class 1259 OID 18801)
--- Dependencies: 2159 2160 2161 6
--- Name: billservice_traffictransmitservice; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_traffictransmitservice (
     id integer NOT NULL,
@@ -657,11 +575,6 @@ CREATE TABLE billservice_traffictransmitservice (
 
 ALTER TABLE public.billservice_traffictransmitservice OWNER TO mikrobill;
 
---
--- TOC entry 1698 (class 1259 OID 18807)
--- Dependencies: 6
--- Name: billservice_transaction; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_transaction (
     id integer NOT NULL,
@@ -678,11 +591,6 @@ CREATE TABLE billservice_transaction (
 
 ALTER TABLE public.billservice_transaction OWNER TO mikrobill;
 
---
--- TOC entry 1699 (class 1259 OID 18813)
--- Dependencies: 6
--- Name: billservice_transactiontype; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE billservice_transactiontype (
     id integer NOT NULL,
@@ -693,11 +601,6 @@ CREATE TABLE billservice_transactiontype (
 
 ALTER TABLE public.billservice_transactiontype OWNER TO mikrobill;
 
---
--- TOC entry 1700 (class 1259 OID 18816)
--- Dependencies: 2166 6
--- Name: django_admin_log; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE django_admin_log (
     id integer NOT NULL,
@@ -714,11 +617,6 @@ CREATE TABLE django_admin_log (
 
 ALTER TABLE public.django_admin_log OWNER TO mikrobill;
 
---
--- TOC entry 1701 (class 1259 OID 18823)
--- Dependencies: 6
--- Name: django_content_type; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE django_content_type (
     id integer NOT NULL,
@@ -730,11 +628,6 @@ CREATE TABLE django_content_type (
 
 ALTER TABLE public.django_content_type OWNER TO mikrobill;
 
---
--- TOC entry 1702 (class 1259 OID 18826)
--- Dependencies: 6
--- Name: django_session; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE django_session (
     session_key character varying(40) NOT NULL,
@@ -745,11 +638,6 @@ CREATE TABLE django_session (
 
 ALTER TABLE public.django_session OWNER TO mikrobill;
 
---
--- TOC entry 1703 (class 1259 OID 18832)
--- Dependencies: 6
--- Name: django_site; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE django_site (
     id integer NOT NULL,
@@ -760,11 +648,6 @@ CREATE TABLE django_site (
 
 ALTER TABLE public.django_site OWNER TO mikrobill;
 
---
--- TOC entry 1704 (class 1259 OID 18835)
--- Dependencies: 2169 2170 2171 2172 2173 2174 2175 2176 2177 6
--- Name: nas_nas; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE nas_nas (
     id integer NOT NULL,
@@ -791,11 +674,6 @@ CREATE TABLE nas_nas (
 
 ALTER TABLE public.nas_nas OWNER TO mikrobill;
 
---
--- TOC entry 1705 (class 1259 OID 18850)
--- Dependencies: 2179 2180 2181 6
--- Name: nas_trafficclass; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE nas_trafficclass (
     id integer NOT NULL,
@@ -809,11 +687,6 @@ CREATE TABLE nas_trafficclass (
 
 ALTER TABLE public.nas_trafficclass OWNER TO mikrobill;
 
---
--- TOC entry 1706 (class 1259 OID 18856)
--- Dependencies: 2183 2184 2185 2186 2187 2188 2189 2190 6
--- Name: nas_trafficnode; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE nas_trafficnode (
     id integer NOT NULL,
@@ -883,11 +756,7 @@ CREATE TABLE billservice_dealer
 )
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_dealer OWNER TO mikrobill;
---
--- TOC entry 20 (class 1255 OID 16403)
--- Dependencies: 6
--- Name: pg_buffercache_pages(); Type: FUNCTION; Schema: public; Owner: postgres
---
+
 
 CREATE FUNCTION pg_buffercache_pages() RETURNS SETOF record
     AS '$libdir/pg_buffercache', 'pg_buffercache_pages'
@@ -896,11 +765,6 @@ CREATE FUNCTION pg_buffercache_pages() RETURNS SETOF record
 
 ALTER FUNCTION public.pg_buffercache_pages() OWNER TO postgres;
 
---
--- TOC entry 1654 (class 1259 OID 16404)
--- Dependencies: 1839 6
--- Name: pg_buffercache; Type: VIEW; Schema: public; Owner: postgres
---
 
 CREATE VIEW pg_buffercache AS
     SELECT p.bufferid, p.relfilenode, p.reltablespace, p.reldatabase, p.relblocknumber, p.isdirty, p.usagecount FROM pg_buffercache_pages() p(bufferid integer, relfilenode oid, reltablespace oid, reldatabase oid, relblocknumber bigint, isdirty boolean, usagecount smallint);
@@ -908,11 +772,6 @@ CREATE VIEW pg_buffercache AS
 
 ALTER TABLE public.pg_buffercache OWNER TO postgres;
 
---
--- TOC entry 1707 (class 1259 OID 18870)
--- Dependencies: 2192 2193 6
--- Name: radius_activesession; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE radius_activesession (
     id integer NOT NULL,
@@ -936,11 +795,6 @@ CREATE TABLE radius_activesession (
 
 ALTER TABLE public.radius_activesession OWNER TO mikrobill;
 
---
--- TOC entry 1708 (class 1259 OID 18878)
--- Dependencies: 2195 2196 2197 2198 2199 2200 2201 2202 2203 6
--- Name: radius_session; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE TABLE radius_session (
     id integer NOT NULL,
@@ -965,12 +819,6 @@ CREATE TABLE radius_session (
 
 ALTER TABLE public.radius_session OWNER TO mikrobill;
 
---
--- TOC entry 425 (class 1247 OID 18895)
--- Dependencies: 6 1709
--- Name: targetinfo; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE targetinfo AS (
 	target oid,
 	schema oid,
@@ -988,12 +836,6 @@ CREATE TYPE targetinfo AS (
 
 ALTER TYPE public.targetinfo OWNER TO postgres;
 
---
--- TOC entry 427 (class 1247 OID 18898)
--- Dependencies: 6 1710
--- Name: var; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE var AS (
 	name text,
 	varclass character(1),
@@ -1008,13 +850,8 @@ CREATE TYPE var AS (
 
 ALTER TYPE public.var OWNER TO postgres;
 
---
--- TOC entry 21 (class 1255 OID 18899)
--- Dependencies: 6 482
--- Name: block_balance(integer); Type: FUNCTION; Schema: public; Owner: postgres
---
 
-CREATE FUNCTION block_balance(account_id integer) RETURNS void
+CREATE OR REPLACE FUNCTION block_balance(account_id integer) RETURNS void
     AS $$
 BEGIN
 	UPDATE billservice_account SET balance_blocked=TRUE WHERE id=account_id;
@@ -1026,13 +863,8 @@ $$
 
 ALTER FUNCTION public.block_balance(account_id integer) OWNER TO postgres;
 
---
--- TOC entry 22 (class 1255 OID 18900)
--- Dependencies: 6 482
--- Name: credit_account(integer, double precision); Type: FUNCTION; Schema: public; Owner: postgres
---
 
-CREATE FUNCTION credit_account(account_id integer, sum double precision) RETURNS void
+CREATE OR REPLACE FUNCTION credit_account(account_id integer, sum double precision) RETURNS void
     AS $$
 BEGIN
 	UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
@@ -1044,13 +876,8 @@ $$
 
 ALTER FUNCTION public.credit_account(account_id integer, sum double precision) OWNER TO postgres;
 
---
--- TOC entry 23 (class 1255 OID 18901)
--- Dependencies: 482 6
--- Name: debit_account(integer, double precision); Type: FUNCTION; Schema: public; Owner: postgres
---
 
-CREATE FUNCTION debit_account(account_id integer, sum double precision) RETURNS void
+CREATE OR REPLACE FUNCTION debit_account(account_id integer, sum double precision) RETURNS void
     AS $$
 BEGIN
 	UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
@@ -1062,13 +889,8 @@ $$
 
 ALTER FUNCTION public.debit_account(account_id integer, sum double precision) OWNER TO postgres;
 
---
--- TOC entry 24 (class 1255 OID 18902)
--- Dependencies: 6 482
--- Name: get_tarif(integer); Type: FUNCTION; Schema: public; Owner: postgres
---
 
-CREATE FUNCTION get_tarif(acc_id integer) RETURNS integer
+CREATE OR REPLACE FUNCTION get_tarif(acc_id integer) RETURNS integer
     AS $$
 declare
 xxx int;
@@ -1083,13 +905,8 @@ $$
 
 ALTER FUNCTION public.get_tarif(acc_id integer) OWNER TO postgres;
 
---
--- TOC entry 25 (class 1255 OID 18903)
--- Dependencies: 482 6
--- Name: get_tarif(integer, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: postgres
---
 
-CREATE FUNCTION get_tarif(acc_id integer, stamp timestamp with time zone) RETURNS integer
+CREATE OR REPLACE FUNCTION get_tarif(acc_id integer, stamp timestamp with time zone) RETURNS integer
     AS $$
 declare
 xxx int;
@@ -1104,13 +921,7 @@ $$
 
 ALTER FUNCTION public.get_tarif(acc_id integer, stamp timestamp with time zone) OWNER TO postgres;
 
---
--- TOC entry 26 (class 1255 OID 18904)
--- Dependencies: 6 482
--- Name: get_tariff_type(integer); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION get_tariff_type(tarif_id integer) RETURNS character varying
+CREATE OR REPLACE FUNCTION get_tariff_type(tarif_id integer) RETURNS character varying
     AS $$
 declare
 ttype character varying(255);
@@ -1128,13 +939,7 @@ $$
 
 ALTER FUNCTION public.get_tariff_type(tarif_id integer) OWNER TO postgres;
 
---
--- TOC entry 27 (class 1255 OID 18905)
--- Dependencies: 482 362 6
--- Name: on_tariff_delete_fun(billservice_tariff); Type: FUNCTION; Schema: public; Owner: mikrobill
---
-
-CREATE FUNCTION on_tariff_delete_fun(oldrow billservice_tariff) RETURNS record
+CREATE OR REPLACE FUNCTION on_tariff_delete_fun(oldrow billservice_tariff) RETURNS record
     AS $$
         BEGIN
         IF oldrow.traffic_transmit_service_id NOTNULL THEN
@@ -1156,13 +961,7 @@ $$
 
 ALTER FUNCTION public.on_tariff_delete_fun(oldrow billservice_tariff) OWNER TO mikrobill;
 
---
--- TOC entry 28 (class 1255 OID 18906)
--- Dependencies: 6 482
--- Name: unblock_balance(integer); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION unblock_balance(account_id integer) RETURNS void
+CREATE OR REPLACE FUNCTION unblock_balance(account_id integer) RETURNS void
     AS $$
 BEGIN
 	UPDATE billservice_account SET balance_blocked=FALSE WHERE id=account_id;
@@ -1221,11 +1020,6 @@ $BODY$
   
 ALTER FUNCTION append_netflow(integer, inet, inet, inet, integer, integer, bigint, bigint, integer, integer, integer, integer, integer, integer, integer, integer, integer) OWNER TO postgres;
 
---
--- TOC entry 1711 (class 1259 OID 18907)
--- Dependencies: 6 1655
--- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_group_id_seq
     START WITH 1
@@ -1234,32 +1028,10 @@ CREATE SEQUENCE auth_group_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_group_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2536 (class 0 OID 0)
--- Dependencies: 1711
--- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_group_id_seq OWNED BY auth_group.id;
-
-
---
--- TOC entry 2537 (class 0 OID 0)
--- Dependencies: 1711
--- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_group_id_seq', 1, false);
 
-
---
--- TOC entry 1712 (class 1259 OID 18909)
--- Dependencies: 1656 6
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_group_permissions_id_seq
     START WITH 1
@@ -1268,32 +1040,10 @@ CREATE SEQUENCE auth_group_permissions_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_group_permissions_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2538 (class 0 OID 0)
--- Dependencies: 1712
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_group_permissions_id_seq OWNED BY auth_group_permissions.id;
-
-
---
--- TOC entry 2539 (class 0 OID 0)
--- Dependencies: 1712
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_group_permissions_id_seq', 1, false);
 
-
---
--- TOC entry 1713 (class 1259 OID 18911)
--- Dependencies: 6 1657
--- Name: auth_message_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_message_id_seq
     START WITH 1
@@ -1302,32 +1052,10 @@ CREATE SEQUENCE auth_message_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_message_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2540 (class 0 OID 0)
--- Dependencies: 1713
--- Name: auth_message_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_message_id_seq OWNED BY auth_message.id;
-
-
---
--- TOC entry 2541 (class 0 OID 0)
--- Dependencies: 1713
--- Name: auth_message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_message_id_seq', 1, false);
 
-
---
--- TOC entry 1714 (class 1259 OID 18913)
--- Dependencies: 1658 6
--- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_permission_id_seq
     INCREMENT BY 1
@@ -1335,32 +1063,10 @@ CREATE SEQUENCE auth_permission_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_permission_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2542 (class 0 OID 0)
--- Dependencies: 1714
--- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_permission_id_seq OWNED BY auth_permission.id;
-
-
---
--- TOC entry 2543 (class 0 OID 0)
--- Dependencies: 1714
--- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_permission_id_seq', 129, true);
 
-
---
--- TOC entry 1715 (class 1259 OID 18915)
--- Dependencies: 6 1660
--- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_user_groups_id_seq
     START WITH 1
@@ -1369,32 +1075,10 @@ CREATE SEQUENCE auth_user_groups_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_user_groups_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2544 (class 0 OID 0)
--- Dependencies: 1715
--- Name: auth_user_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_user_groups_id_seq OWNED BY auth_user_groups.id;
-
-
---
--- TOC entry 2545 (class 0 OID 0)
--- Dependencies: 1715
--- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_user_groups_id_seq', 1, false);
 
-
---
--- TOC entry 1716 (class 1259 OID 18917)
--- Dependencies: 6 1659
--- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_user_id_seq
     START WITH 1
@@ -1403,32 +1087,10 @@ CREATE SEQUENCE auth_user_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_user_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2546 (class 0 OID 0)
--- Dependencies: 1716
--- Name: auth_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_user_id_seq OWNED BY auth_user.id;
-
-
---
--- TOC entry 2547 (class 0 OID 0)
--- Dependencies: 1716
--- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_user_id_seq', 1, false);
 
-
---
--- TOC entry 1717 (class 1259 OID 18919)
--- Dependencies: 1661 6
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE auth_user_user_permissions_id_seq
     START WITH 1
@@ -1437,32 +1099,10 @@ CREATE SEQUENCE auth_user_user_permissions_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2548 (class 0 OID 0)
--- Dependencies: 1717
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE auth_user_user_permissions_id_seq OWNED BY auth_user_user_permissions.id;
-
-
---
--- TOC entry 2549 (class 0 OID 0)
--- Dependencies: 1717
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('auth_user_user_permissions_id_seq', 1, false);
 
-
---
--- TOC entry 1718 (class 1259 OID 18921)
--- Dependencies: 1662 6
--- Name: billservice_accessparameters_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_accessparameters_id_seq
     INCREMENT BY 1
@@ -1470,32 +1110,10 @@ CREATE SEQUENCE billservice_accessparameters_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_accessparameters_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2550 (class 0 OID 0)
--- Dependencies: 1718
--- Name: billservice_accessparameters_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_accessparameters_id_seq OWNED BY billservice_accessparameters.id;
-
-
---
--- TOC entry 2551 (class 0 OID 0)
--- Dependencies: 1718
--- Name: billservice_accessparameters_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_accessparameters_id_seq', 3, true);
 
-
---
--- TOC entry 1719 (class 1259 OID 18923)
--- Dependencies: 6 1663
--- Name: billservice_account_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_account_id_seq
     INCREMENT BY 1
@@ -1503,32 +1121,10 @@ CREATE SEQUENCE billservice_account_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_account_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2552 (class 0 OID 0)
--- Dependencies: 1719
--- Name: billservice_account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_account_id_seq OWNED BY billservice_account.id;
-
-
---
--- TOC entry 2553 (class 0 OID 0)
--- Dependencies: 1719
--- Name: billservice_account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_account_id_seq', 34, true);
 
-
---
--- TOC entry 1720 (class 1259 OID 18925)
--- Dependencies: 6 1664
--- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_accountipnspeed_id_seq
     INCREMENT BY 1
@@ -1536,32 +1132,10 @@ CREATE SEQUENCE billservice_accountipnspeed_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_accountipnspeed_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2554 (class 0 OID 0)
--- Dependencies: 1720
--- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_accountipnspeed_id_seq OWNED BY billservice_accountipnspeed.id;
-
-
---
--- TOC entry 2555 (class 0 OID 0)
--- Dependencies: 1720
--- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_accountipnspeed_id_seq', 6, true);
 
-
---
--- TOC entry 1721 (class 1259 OID 18927)
--- Dependencies: 6 1665
--- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_accountprepaystime_id_seq
     START WITH 1
@@ -1570,32 +1144,10 @@ CREATE SEQUENCE billservice_accountprepaystime_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_accountprepaystime_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2556 (class 0 OID 0)
--- Dependencies: 1721
--- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_accountprepaystime_id_seq OWNED BY billservice_accountprepaystime.id;
-
-
---
--- TOC entry 2557 (class 0 OID 0)
--- Dependencies: 1721
--- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_accountprepaystime_id_seq', 1, false);
 
-
---
--- TOC entry 1722 (class 1259 OID 18929)
--- Dependencies: 6 1666
--- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_accountprepaystrafic_id_seq
     START WITH 1
@@ -1604,32 +1156,10 @@ CREATE SEQUENCE billservice_accountprepaystrafic_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_accountprepaystrafic_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2558 (class 0 OID 0)
--- Dependencies: 1722
--- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_accountprepaystrafic_id_seq OWNED BY billservice_accountprepaystrafic.id;
-
-
---
--- TOC entry 2559 (class 0 OID 0)
--- Dependencies: 1722
--- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_accountprepaystrafic_id_seq', 1, false);
 
-
---
--- TOC entry 1723 (class 1259 OID 18931)
--- Dependencies: 6 1667
--- Name: billservice_accounttarif_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_accounttarif_id_seq
     INCREMENT BY 1
@@ -1637,32 +1167,10 @@ CREATE SEQUENCE billservice_accounttarif_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_accounttarif_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2560 (class 0 OID 0)
--- Dependencies: 1723
--- Name: billservice_accounttarif_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_accounttarif_id_seq OWNED BY billservice_accounttarif.id;
-
-
---
--- TOC entry 2561 (class 0 OID 0)
--- Dependencies: 1723
--- Name: billservice_accounttarif_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_accounttarif_id_seq', 36, true);
 
-
---
--- TOC entry 1724 (class 1259 OID 18933)
--- Dependencies: 1668 6
--- Name: billservice_card_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_card_id_seq
     START WITH 1
@@ -1671,37 +1179,10 @@ CREATE SEQUENCE billservice_card_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_card_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2562 (class 0 OID 0)
--- Dependencies: 1724
--- Name: billservice_card_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_card_id_seq OWNED BY billservice_card.id;
-
-
---
--- TOC entry 2563 (class 0 OID 0)
--- Dependencies: 1724
--- Name: billservice_card_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_card_id_seq', 1, false);
 
-
-
-
-
-
-
---
--- TOC entry 1726 (class 1259 OID 18937)
--- Dependencies: 6 1670
--- Name: billservice_netflowstream_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_netflowstream_id_seq
     INCREMENT BY 1
@@ -1709,32 +1190,10 @@ CREATE SEQUENCE billservice_netflowstream_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_netflowstream_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2566 (class 0 OID 0)
--- Dependencies: 1726
--- Name: billservice_netflowstream_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_netflowstream_id_seq OWNED BY billservice_netflowstream.id;
-
-
---
--- TOC entry 2567 (class 0 OID 0)
--- Dependencies: 1726
--- Name: billservice_netflowstream_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_netflowstream_id_seq', 5956, true);
 
-
---
--- TOC entry 1727 (class 1259 OID 18939)
--- Dependencies: 1671 6
--- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_onetimeservice_id_seq
     START WITH 1
@@ -1743,32 +1202,11 @@ CREATE SEQUENCE billservice_onetimeservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_onetimeservice_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2568 (class 0 OID 0)
--- Dependencies: 1727
--- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_onetimeservice_id_seq OWNED BY billservice_onetimeservice.id;
-
-
---
--- TOC entry 2569 (class 0 OID 0)
--- Dependencies: 1727
--- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_onetimeservice_id_seq', 1, false);
 
 
---
--- TOC entry 1728 (class 1259 OID 18941)
--- Dependencies: 1672 6
--- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_onetimeservicehistory_id_seq
     START WITH 1
@@ -1777,32 +1215,12 @@ CREATE SEQUENCE billservice_onetimeservicehistory_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_onetimeservicehistory_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2570 (class 0 OID 0)
--- Dependencies: 1728
--- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_onetimeservicehistory_id_seq OWNED BY billservice_onetimeservicehistory.id;
-
-
---
--- TOC entry 2571 (class 0 OID 0)
--- Dependencies: 1728
--- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 1, false);
 
 
---
--- TOC entry 1729 (class 1259 OID 18943)
--- Dependencies: 6 1673
--- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
+
 CREATE SEQUENCE billservice_dealer_id_seq
   INCREMENT 1
   MINVALUE 1
@@ -1830,6 +1248,7 @@ CREATE SEQUENCE billservice_bankdata_id_seq
 ALTER TABLE public.billservice_bankdata_id_seq OWNER TO mikrobill;
 ALTER SEQUENCE billservice_bankdata_id_seq OWNED BY billservice_bankdata.id;
 
+
 CREATE SEQUENCE billservice_periodicalservice_id_seq
     INCREMENT BY 1
     NO MAXVALUE
@@ -1838,30 +1257,9 @@ CREATE SEQUENCE billservice_periodicalservice_id_seq
 
 
 ALTER TABLE public.billservice_periodicalservice_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2572 (class 0 OID 0)
--- Dependencies: 1729
--- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_periodicalservice_id_seq OWNED BY billservice_periodicalservice.id;
-
-
---
--- TOC entry 2573 (class 0 OID 0)
--- Dependencies: 1729
--- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_periodicalservice_id_seq', 1, true);
 
-
---
--- TOC entry 1730 (class 1259 OID 18945)
--- Dependencies: 1674 6
--- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     INCREMENT BY 1
@@ -1869,32 +1267,10 @@ CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_periodicalservicehistory_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2574 (class 0 OID 0)
--- Dependencies: 1730
--- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_periodicalservicehistory_id_seq OWNED BY billservice_periodicalservicehistory.id;
-
-
---
--- TOC entry 2575 (class 0 OID 0)
--- Dependencies: 1730
--- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_periodicalservicehistory_id_seq', 79, true);
 
-
---
--- TOC entry 1731 (class 1259 OID 18947)
--- Dependencies: 1675 6
--- Name: billservice_ports_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_ports_id_seq
     START WITH 1
@@ -1903,32 +1279,11 @@ CREATE SEQUENCE billservice_ports_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_ports_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2576 (class 0 OID 0)
--- Dependencies: 1731
--- Name: billservice_ports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_ports_id_seq OWNED BY billservice_ports.id;
-
-
---
--- TOC entry 2577 (class 0 OID 0)
--- Dependencies: 1731
--- Name: billservice_ports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_ports_id_seq', 1, false);
 
 
---
--- TOC entry 1732 (class 1259 OID 18949)
--- Dependencies: 6 1676
--- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_prepaidtraffic_id_seq
     START WITH 1
@@ -1937,32 +1292,10 @@ CREATE SEQUENCE billservice_prepaidtraffic_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_prepaidtraffic_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2578 (class 0 OID 0)
--- Dependencies: 1732
--- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_prepaidtraffic_id_seq OWNED BY billservice_prepaidtraffic.id;
-
-
---
--- TOC entry 2579 (class 0 OID 0)
--- Dependencies: 1732
--- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_prepaidtraffic_id_seq', 1, false);
 
-
---
--- TOC entry 1733 (class 1259 OID 18951)
--- Dependencies: 6 1677
--- Name: billservice_prepaidtraffic_traffic_class_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_prepaidtraffic_traffic_class_id_seq
     START WITH 1
@@ -1971,32 +1304,10 @@ CREATE SEQUENCE billservice_prepaidtraffic_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_prepaidtraffic_traffic_class_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2580 (class 0 OID 0)
--- Dependencies: 1733
--- Name: billservice_prepaidtraffic_traffic_class_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_prepaidtraffic_traffic_class_id_seq OWNED BY billservice_prepaidtraffic_traffic_class.id;
-
-
---
--- TOC entry 2581 (class 0 OID 0)
--- Dependencies: 1733
--- Name: billservice_prepaidtraffic_traffic_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_prepaidtraffic_traffic_class_id_seq', 1, false);
 
-
---
--- TOC entry 1734 (class 1259 OID 18953)
--- Dependencies: 6 1678
--- Name: billservice_rawnetflowstream_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_rawnetflowstream_id_seq
     INCREMENT BY 1
@@ -2004,32 +1315,10 @@ CREATE SEQUENCE billservice_rawnetflowstream_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_rawnetflowstream_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2582 (class 0 OID 0)
--- Dependencies: 1734
--- Name: billservice_rawnetflowstream_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_rawnetflowstream_id_seq OWNED BY billservice_rawnetflowstream.id;
-
-
---
--- TOC entry 2583 (class 0 OID 0)
--- Dependencies: 1734
--- Name: billservice_rawnetflowstream_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_rawnetflowstream_id_seq', 16653, true);
 
-
---
--- TOC entry 1735 (class 1259 OID 18955)
--- Dependencies: 1679 6
--- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_settlementperiod_id_seq
     INCREMENT BY 1
@@ -2037,32 +1326,10 @@ CREATE SEQUENCE billservice_settlementperiod_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_settlementperiod_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2584 (class 0 OID 0)
--- Dependencies: 1735
--- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_settlementperiod_id_seq OWNED BY billservice_settlementperiod.id;
-
-
---
--- TOC entry 2585 (class 0 OID 0)
--- Dependencies: 1735
--- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_settlementperiod_id_seq', 1, true);
 
-
---
--- TOC entry 1736 (class 1259 OID 18957)
--- Dependencies: 1680 6
--- Name: billservice_shedulelog_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_shedulelog_id_seq
     INCREMENT BY 1
@@ -2070,32 +1337,10 @@ CREATE SEQUENCE billservice_shedulelog_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_shedulelog_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2586 (class 0 OID 0)
--- Dependencies: 1736
--- Name: billservice_shedulelog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_shedulelog_id_seq OWNED BY billservice_shedulelog.id;
-
-
---
--- TOC entry 2587 (class 0 OID 0)
--- Dependencies: 1736
--- Name: billservice_shedulelog_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_shedulelog_id_seq', 12, true);
 
-
---
--- TOC entry 1737 (class 1259 OID 18959)
--- Dependencies: 6 1681
--- Name: billservice_systemuser_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_systemuser_id_seq
     START WITH 1
@@ -2104,32 +1349,10 @@ CREATE SEQUENCE billservice_systemuser_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_systemuser_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2588 (class 0 OID 0)
--- Dependencies: 1737
--- Name: billservice_systemuser_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_systemuser_id_seq OWNED BY billservice_systemuser.id;
-
-
---
--- TOC entry 2589 (class 0 OID 0)
--- Dependencies: 1737
--- Name: billservice_systemuser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_systemuser_id_seq', 1, false);
 
-
---
--- TOC entry 1738 (class 1259 OID 18961)
--- Dependencies: 1682 6
--- Name: billservice_tariff_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_tariff_id_seq
     INCREMENT BY 1
@@ -2137,32 +1360,11 @@ CREATE SEQUENCE billservice_tariff_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_tariff_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2590 (class 0 OID 0)
--- Dependencies: 1738
--- Name: billservice_tariff_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_tariff_id_seq OWNED BY billservice_tariff.id;
-
-
---
--- TOC entry 2591 (class 0 OID 0)
--- Dependencies: 1738
--- Name: billservice_tariff_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_tariff_id_seq', 2, true);
 
 
---
--- TOC entry 1739 (class 1259 OID 18963)
--- Dependencies: 1683 6
--- Name: billservice_tariff_onetime_services_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_tariff_onetime_services_id_seq
     START WITH 1
@@ -2171,32 +1373,10 @@ CREATE SEQUENCE billservice_tariff_onetime_services_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_tariff_onetime_services_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2592 (class 0 OID 0)
--- Dependencies: 1739
--- Name: billservice_tariff_onetime_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_tariff_onetime_services_id_seq OWNED BY billservice_tariff_onetime_services.id;
-
-
---
--- TOC entry 2593 (class 0 OID 0)
--- Dependencies: 1739
--- Name: billservice_tariff_onetime_services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_tariff_onetime_services_id_seq', 1, false);
 
-
---
--- TOC entry 1740 (class 1259 OID 18965)
--- Dependencies: 6 1684
--- Name: billservice_tariff_periodical_services_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_tariff_periodical_services_id_seq
     INCREMENT BY 1
@@ -2204,32 +1384,11 @@ CREATE SEQUENCE billservice_tariff_periodical_services_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_tariff_periodical_services_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2594 (class 0 OID 0)
--- Dependencies: 1740
--- Name: billservice_tariff_periodical_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_tariff_periodical_services_id_seq OWNED BY billservice_tariff_periodical_services.id;
-
-
---
--- TOC entry 2595 (class 0 OID 0)
--- Dependencies: 1740
--- Name: billservice_tariff_periodical_services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_tariff_periodical_services_id_seq', 1, true);
 
 
---
--- TOC entry 1741 (class 1259 OID 18967)
--- Dependencies: 1685 6
--- Name: billservice_tariff_traffic_limit_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_tariff_traffic_limit_id_seq
     START WITH 1
@@ -2238,32 +1397,11 @@ CREATE SEQUENCE billservice_tariff_traffic_limit_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_tariff_traffic_limit_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2596 (class 0 OID 0)
--- Dependencies: 1741
--- Name: billservice_tariff_traffic_limit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_tariff_traffic_limit_id_seq OWNED BY billservice_tariff_traffic_limit.id;
-
-
---
--- TOC entry 2597 (class 0 OID 0)
--- Dependencies: 1741
--- Name: billservice_tariff_traffic_limit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_tariff_traffic_limit_id_seq', 1, false);
 
 
---
--- TOC entry 1742 (class 1259 OID 18969)
--- Dependencies: 6 1686
--- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timeaccessnode_id_seq
     START WITH 1
@@ -2272,32 +1410,11 @@ CREATE SEQUENCE billservice_timeaccessnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_timeaccessnode_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2598 (class 0 OID 0)
--- Dependencies: 1742
--- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timeaccessnode_id_seq OWNED BY billservice_timeaccessnode.id;
-
-
---
--- TOC entry 2599 (class 0 OID 0)
--- Dependencies: 1742
--- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timeaccessnode_id_seq', 1, false);
 
 
---
--- TOC entry 1743 (class 1259 OID 18971)
--- Dependencies: 6 1687
--- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timeaccessservice_id_seq
     START WITH 1
@@ -2306,32 +1423,11 @@ CREATE SEQUENCE billservice_timeaccessservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_timeaccessservice_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2600 (class 0 OID 0)
--- Dependencies: 1743
--- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timeaccessservice_id_seq OWNED BY billservice_timeaccessservice.id;
-
-
---
--- TOC entry 2601 (class 0 OID 0)
--- Dependencies: 1743
--- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timeaccessservice_id_seq', 1, false);
 
 
---
--- TOC entry 1744 (class 1259 OID 18973)
--- Dependencies: 1688 6
--- Name: billservice_timeperiod_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timeperiod_id_seq
     INCREMENT BY 1
@@ -2341,30 +1437,10 @@ CREATE SEQUENCE billservice_timeperiod_id_seq
 
 
 ALTER TABLE public.billservice_timeperiod_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2602 (class 0 OID 0)
--- Dependencies: 1744
--- Name: billservice_timeperiod_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timeperiod_id_seq OWNED BY billservice_timeperiod.id;
-
-
---
--- TOC entry 2603 (class 0 OID 0)
--- Dependencies: 1744
--- Name: billservice_timeperiod_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timeperiod_id_seq', 1, true);
 
 
---
--- TOC entry 1745 (class 1259 OID 18975)
--- Dependencies: 1689 6
--- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timeperiod_time_period_nodes_id_seq
     INCREMENT BY 1
@@ -2372,32 +1448,11 @@ CREATE SEQUENCE billservice_timeperiod_time_period_nodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_timeperiod_time_period_nodes_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2604 (class 0 OID 0)
--- Dependencies: 1745
--- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timeperiod_time_period_nodes_id_seq OWNED BY billservice_timeperiod_time_period_nodes.id;
-
-
---
--- TOC entry 2605 (class 0 OID 0)
--- Dependencies: 1745
--- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timeperiod_time_period_nodes_id_seq', 1, true);
 
 
---
--- TOC entry 1746 (class 1259 OID 18977)
--- Dependencies: 6 1690
--- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timeperiodnode_id_seq
     INCREMENT BY 1
@@ -2405,32 +1460,11 @@ CREATE SEQUENCE billservice_timeperiodnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_timeperiodnode_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2606 (class 0 OID 0)
--- Dependencies: 1746
--- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timeperiodnode_id_seq OWNED BY billservice_timeperiodnode.id;
-
-
---
--- TOC entry 2607 (class 0 OID 0)
--- Dependencies: 1746
--- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timeperiodnode_id_seq', 1, true);
 
 
---
--- TOC entry 1747 (class 1259 OID 18979)
--- Dependencies: 1691 6
--- Name: billservice_timespeed_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_timespeed_id_seq
     START WITH 1
@@ -2439,32 +1473,11 @@ CREATE SEQUENCE billservice_timespeed_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_timespeed_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2608 (class 0 OID 0)
--- Dependencies: 1747
--- Name: billservice_timespeed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_timespeed_id_seq OWNED BY billservice_timespeed.id;
-
-
---
--- TOC entry 2609 (class 0 OID 0)
--- Dependencies: 1747
--- Name: billservice_timespeed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_timespeed_id_seq', 1, false);
 
 
---
--- TOC entry 1748 (class 1259 OID 18981)
--- Dependencies: 6 1692
--- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_trafficlimit_id_seq
     START WITH 1
@@ -2473,32 +1486,11 @@ CREATE SEQUENCE billservice_trafficlimit_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_trafficlimit_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2610 (class 0 OID 0)
--- Dependencies: 1748
--- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_trafficlimit_id_seq OWNED BY billservice_trafficlimit.id;
-
-
---
--- TOC entry 2611 (class 0 OID 0)
--- Dependencies: 1748
--- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_trafficlimit_id_seq', 1, false);
 
 
---
--- TOC entry 1749 (class 1259 OID 18983)
--- Dependencies: 6 1693
--- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_trafficlimit_traffic_class_id_seq
     START WITH 1
@@ -2507,32 +1499,11 @@ CREATE SEQUENCE billservice_trafficlimit_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_trafficlimit_traffic_class_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2612 (class 0 OID 0)
--- Dependencies: 1749
--- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_trafficlimit_traffic_class_id_seq OWNED BY billservice_trafficlimit_traffic_class.id;
-
-
---
--- TOC entry 2613 (class 0 OID 0)
--- Dependencies: 1749
--- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_trafficlimit_traffic_class_id_seq', 1, false);
 
 
---
--- TOC entry 1750 (class 1259 OID 18985)
--- Dependencies: 1694 6
--- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_traffictransmitnodes_id_seq
     INCREMENT BY 1
@@ -2540,32 +1511,11 @@ CREATE SEQUENCE billservice_traffictransmitnodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_traffictransmitnodes_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2614 (class 0 OID 0)
--- Dependencies: 1750
--- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_traffictransmitnodes_id_seq OWNED BY billservice_traffictransmitnodes.id;
-
-
---
--- TOC entry 2615 (class 0 OID 0)
--- Dependencies: 1750
--- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_id_seq', 1, true);
 
 
---
--- TOC entry 1751 (class 1259 OID 18987)
--- Dependencies: 6 1695
--- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq
     INCREMENT BY 1
@@ -2573,32 +1523,11 @@ CREATE SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_traffictransmitnodes_time_nodes_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2616 (class 0 OID 0)
--- Dependencies: 1751
--- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq OWNED BY billservice_traffictransmitnodes_time_nodes.id;
-
-
---
--- TOC entry 2617 (class 0 OID 0)
--- Dependencies: 1751
--- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_time_nodes_id_seq', 1, true);
 
 
---
--- TOC entry 1752 (class 1259 OID 18989)
--- Dependencies: 1696 6
--- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq
     INCREMENT BY 1
@@ -2606,32 +1535,11 @@ CREATE SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_traffictransmitnodes_traffic_class_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2618 (class 0 OID 0)
--- Dependencies: 1752
--- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq OWNED BY billservice_traffictransmitnodes_traffic_class.id;
-
-
---
--- TOC entry 2619 (class 0 OID 0)
--- Dependencies: 1752
--- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_traffic_class_id_seq', 1, true);
 
 
---
--- TOC entry 1753 (class 1259 OID 18991)
--- Dependencies: 1697 6
--- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_traffictransmitservice_id_seq
     INCREMENT BY 1
@@ -2639,32 +1547,11 @@ CREATE SEQUENCE billservice_traffictransmitservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_traffictransmitservice_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2620 (class 0 OID 0)
--- Dependencies: 1753
--- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_traffictransmitservice_id_seq OWNED BY billservice_traffictransmitservice.id;
-
-
---
--- TOC entry 2621 (class 0 OID 0)
--- Dependencies: 1753
--- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_traffictransmitservice_id_seq', 1, true);
 
 
---
--- TOC entry 1754 (class 1259 OID 18993)
--- Dependencies: 6 1698
--- Name: billservice_transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_transaction_id_seq
     INCREMENT BY 1
@@ -2672,32 +1559,11 @@ CREATE SEQUENCE billservice_transaction_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_transaction_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2622 (class 0 OID 0)
--- Dependencies: 1754
--- Name: billservice_transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_transaction_id_seq OWNED BY billservice_transaction.id;
-
-
---
--- TOC entry 2623 (class 0 OID 0)
--- Dependencies: 1754
--- Name: billservice_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_transaction_id_seq', 275, true);
 
 
---
--- TOC entry 1755 (class 1259 OID 18995)
--- Dependencies: 1699 6
--- Name: billservice_transactiontype_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE billservice_transactiontype_id_seq
     START WITH 1
@@ -2706,32 +1572,11 @@ CREATE SEQUENCE billservice_transactiontype_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_transactiontype_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2624 (class 0 OID 0)
--- Dependencies: 1755
--- Name: billservice_transactiontype_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE billservice_transactiontype_id_seq OWNED BY billservice_transactiontype.id;
-
-
---
--- TOC entry 2625 (class 0 OID 0)
--- Dependencies: 1755
--- Name: billservice_transactiontype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 1, false);
 
 
---
--- TOC entry 1756 (class 1259 OID 18997)
--- Dependencies: 6 1700
--- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE django_admin_log_id_seq
     START WITH 1
@@ -2740,32 +1585,11 @@ CREATE SEQUENCE django_admin_log_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.django_admin_log_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2626 (class 0 OID 0)
--- Dependencies: 1756
--- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE django_admin_log_id_seq OWNED BY django_admin_log.id;
-
-
---
--- TOC entry 2627 (class 0 OID 0)
--- Dependencies: 1756
--- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('django_admin_log_id_seq', 1, false);
 
 
---
--- TOC entry 1757 (class 1259 OID 18999)
--- Dependencies: 6 1701
--- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE django_content_type_id_seq
     INCREMENT BY 1
@@ -2773,32 +1597,11 @@ CREATE SEQUENCE django_content_type_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.django_content_type_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2628 (class 0 OID 0)
--- Dependencies: 1757
--- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE django_content_type_id_seq OWNED BY django_content_type.id;
-
-
---
--- TOC entry 2629 (class 0 OID 0)
--- Dependencies: 1757
--- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('django_content_type_id_seq', 43, true);
 
 
---
--- TOC entry 1758 (class 1259 OID 19001)
--- Dependencies: 1703 6
--- Name: django_site_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE django_site_id_seq
     INCREMENT BY 1
@@ -2806,32 +1609,11 @@ CREATE SEQUENCE django_site_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.django_site_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2630 (class 0 OID 0)
--- Dependencies: 1758
--- Name: django_site_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE django_site_id_seq OWNED BY django_site.id;
-
-
---
--- TOC entry 2631 (class 0 OID 0)
--- Dependencies: 1758
--- Name: django_site_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('django_site_id_seq', 1, true);
 
 
---
--- TOC entry 1759 (class 1259 OID 19003)
--- Dependencies: 6 1704
--- Name: nas_nas_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE nas_nas_id_seq
     INCREMENT BY 1
@@ -2839,32 +1621,11 @@ CREATE SEQUENCE nas_nas_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.nas_nas_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2632 (class 0 OID 0)
--- Dependencies: 1759
--- Name: nas_nas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE nas_nas_id_seq OWNED BY nas_nas.id;
-
-
---
--- TOC entry 2633 (class 0 OID 0)
--- Dependencies: 1759
--- Name: nas_nas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('nas_nas_id_seq', 1, true);
 
 
---
--- TOC entry 1760 (class 1259 OID 19005)
--- Dependencies: 6 1705
--- Name: nas_trafficclass_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE nas_trafficclass_id_seq
     INCREMENT BY 1
@@ -2872,32 +1633,11 @@ CREATE SEQUENCE nas_trafficclass_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.nas_trafficclass_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2634 (class 0 OID 0)
--- Dependencies: 1760
--- Name: nas_trafficclass_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE nas_trafficclass_id_seq OWNED BY nas_trafficclass.id;
-
-
---
--- TOC entry 2635 (class 0 OID 0)
--- Dependencies: 1760
--- Name: nas_trafficclass_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('nas_trafficclass_id_seq', 4, true);
 
 
---
--- TOC entry 1761 (class 1259 OID 19007)
--- Dependencies: 1706 6
--- Name: nas_trafficnode_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE nas_trafficnode_id_seq
     INCREMENT BY 1
@@ -2905,32 +1645,11 @@ CREATE SEQUENCE nas_trafficnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.nas_trafficnode_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2636 (class 0 OID 0)
--- Dependencies: 1761
--- Name: nas_trafficnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE nas_trafficnode_id_seq OWNED BY nas_trafficnode.id;
-
-
---
--- TOC entry 2637 (class 0 OID 0)
--- Dependencies: 1761
--- Name: nas_trafficnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('nas_trafficnode_id_seq', 6, true);
 
 
---
--- TOC entry 1762 (class 1259 OID 19009)
--- Dependencies: 1707 6
--- Name: radius_activesession_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE radius_activesession_id_seq
     INCREMENT BY 1
@@ -2938,32 +1657,11 @@ CREATE SEQUENCE radius_activesession_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.radius_activesession_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2638 (class 0 OID 0)
--- Dependencies: 1762
--- Name: radius_activesession_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE radius_activesession_id_seq OWNED BY radius_activesession.id;
-
-
---
--- TOC entry 2639 (class 0 OID 0)
--- Dependencies: 1762
--- Name: radius_activesession_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('radius_activesession_id_seq', 53, true);
 
 
---
--- TOC entry 1763 (class 1259 OID 19011)
--- Dependencies: 6 1708
--- Name: radius_session_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
---
 
 CREATE SEQUENCE radius_session_id_seq
     START WITH 1
@@ -2972,537 +1670,79 @@ CREATE SEQUENCE radius_session_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.radius_session_id_seq OWNER TO mikrobill;
-
---
--- TOC entry 2640 (class 0 OID 0)
--- Dependencies: 1763
--- Name: radius_session_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
---
-
 ALTER SEQUENCE radius_session_id_seq OWNED BY radius_session.id;
-
-
---
--- TOC entry 2641 (class 0 OID 0)
--- Dependencies: 1763
--- Name: radius_session_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
---
-
 SELECT pg_catalog.setval('radius_session_id_seq', 1, false);
 
 
---
--- TOC entry 2032 (class 2604 OID 19013)
--- Dependencies: 1711 1655
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
+
 
 ALTER TABLE auth_group ALTER COLUMN id SET DEFAULT nextval('auth_group_id_seq'::regclass);
-
-
---
--- TOC entry 2033 (class 2604 OID 19014)
--- Dependencies: 1712 1656
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('auth_group_permissions_id_seq'::regclass);
-
-
---
--- TOC entry 2034 (class 2604 OID 19015)
--- Dependencies: 1713 1657
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
-ALTER TABLE auth_message ALTER COLUMN id SET DEFAULT nextval('auth_message_id_seq'::regclass);
-
-
---
--- TOC entry 2035 (class 2604 OID 19016)
--- Dependencies: 1714 1658
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
-ALTER TABLE auth_permission ALTER COLUMN id SET DEFAULT nextval('auth_permission_id_seq'::regclass);
-
-
---
--- TOC entry 2036 (class 2604 OID 19017)
--- Dependencies: 1716 1659
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
+ALTER TABLE auth_message ALTER COLUMN id SET DEFAULT nextval('auth_message_id_seq'::regclass);ALTER TABLE auth_permission ALTER COLUMN id SET DEFAULT nextval('auth_permission_id_seq'::regclass);
 ALTER TABLE auth_user ALTER COLUMN id SET DEFAULT nextval('auth_user_id_seq'::regclass);
-
-
---
--- TOC entry 2037 (class 2604 OID 19018)
--- Dependencies: 1715 1660
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE auth_user_groups ALTER COLUMN id SET DEFAULT nextval('auth_user_groups_id_seq'::regclass);
-
-
---
--- TOC entry 2038 (class 2604 OID 19019)
--- Dependencies: 1717 1661
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE auth_user_user_permissions ALTER COLUMN id SET DEFAULT nextval('auth_user_user_permissions_id_seq'::regclass);
-
-
---
--- TOC entry 2046 (class 2604 OID 19020)
--- Dependencies: 1718 1662
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_accessparameters ALTER COLUMN id SET DEFAULT nextval('billservice_accessparameters_id_seq'::regclass);
-
-
---
--- TOC entry 2066 (class 2604 OID 19021)
--- Dependencies: 1719 1663
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_account ALTER COLUMN id SET DEFAULT nextval('billservice_account_id_seq'::regclass);
-
-
---
--- TOC entry 2071 (class 2604 OID 19022)
--- Dependencies: 1720 1664
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_accountipnspeed ALTER COLUMN id SET DEFAULT nextval('billservice_accountipnspeed_id_seq'::regclass);
-
-
---
--- TOC entry 2074 (class 2604 OID 19023)
--- Dependencies: 1721 1665
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_accountprepaystime ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystime_id_seq'::regclass);
-
-
---
--- TOC entry 2077 (class 2604 OID 19024)
--- Dependencies: 1722 1666
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_accountprepaystrafic ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystrafic_id_seq'::regclass);
-
-
---
--- TOC entry 2078 (class 2604 OID 19025)
--- Dependencies: 1723 1667
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_accounttarif ALTER COLUMN id SET DEFAULT nextval('billservice_accounttarif_id_seq'::regclass);
-
-
---
--- TOC entry 2081 (class 2604 OID 19026)
--- Dependencies: 1724 1668
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_card ALTER COLUMN id SET DEFAULT nextval('billservice_card_id_seq'::regclass);
-
-
-
-
---
--- TOC entry 2087 (class 2604 OID 19028)
--- Dependencies: 1726 1670
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_netflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_netflowstream_id_seq'::regclass);
-
-
---
--- TOC entry 2090 (class 2604 OID 19029)
--- Dependencies: 1727 1671
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_onetimeservice ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservice_id_seq'::regclass);
-
-
---
--- TOC entry 2091 (class 2604 OID 19030)
--- Dependencies: 1728 1672
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_onetimeservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservicehistory_id_seq'::regclass);
-
-
---
--- TOC entry 2094 (class 2604 OID 19031)
--- Dependencies: 1729 1673
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_periodicalservice ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservice_id_seq'::regclass);
-
-
---
--- TOC entry 2096 (class 2604 OID 19032)
--- Dependencies: 1730 1674
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_periodicalservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservicehistory_id_seq'::regclass);
-
-
---
--- TOC entry 2099 (class 2604 OID 19033)
--- Dependencies: 1731 1675
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_ports ALTER COLUMN id SET DEFAULT nextval('billservice_ports_id_seq'::regclass);
-
-
---
--- TOC entry 2104 (class 2604 OID 19034)
--- Dependencies: 1732 1676
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_prepaidtraffic ALTER COLUMN id SET DEFAULT nextval('billservice_prepaidtraffic_id_seq'::regclass);
-
-
---
--- TOC entry 2105 (class 2604 OID 19035)
--- Dependencies: 1733 1677
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_prepaidtraffic_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_prepaidtraffic_traffic_class_id_seq'::regclass);
-
-
---
--- TOC entry 2107 (class 2604 OID 19036)
--- Dependencies: 1734 1678
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_rawnetflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_rawnetflowstream_id_seq'::regclass);
-
-
---
--- TOC entry 2110 (class 2604 OID 19037)
--- Dependencies: 1735 1679
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_settlementperiod ALTER COLUMN id SET DEFAULT nextval('billservice_settlementperiod_id_seq'::regclass);
-
-
---
--- TOC entry 2111 (class 2604 OID 19038)
--- Dependencies: 1736 1680
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_shedulelog ALTER COLUMN id SET DEFAULT nextval('billservice_shedulelog_id_seq'::regclass);
-
-
---
--- TOC entry 2116 (class 2604 OID 19039)
--- Dependencies: 1737 1681
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_systemuser ALTER COLUMN id SET DEFAULT nextval('billservice_systemuser_id_seq'::regclass);
-
-
---
--- TOC entry 2123 (class 2604 OID 19040)
--- Dependencies: 1738 1682
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_tariff ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_id_seq'::regclass);
-
-
---
--- TOC entry 2124 (class 2604 OID 19041)
--- Dependencies: 1739 1683
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_tariff_onetime_services ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_onetime_services_id_seq'::regclass);
-
-
---
--- TOC entry 2125 (class 2604 OID 19042)
--- Dependencies: 1740 1684
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_tariff_periodical_services ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_periodical_services_id_seq'::regclass);
-
-
---
--- TOC entry 2126 (class 2604 OID 19043)
--- Dependencies: 1741 1685
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_tariff_traffic_limit ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_traffic_limit_id_seq'::regclass);
-
-
---
--- TOC entry 2128 (class 2604 OID 19044)
--- Dependencies: 1742 1686
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timeaccessnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessnode_id_seq'::regclass);
-
-
---
--- TOC entry 2131 (class 2604 OID 19045)
--- Dependencies: 1743 1687
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timeaccessservice ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessservice_id_seq'::regclass);
-
-
---
--- TOC entry 2132 (class 2604 OID 19046)
--- Dependencies: 1744 1688
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timeperiod ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_id_seq'::regclass);
-
-
---
--- TOC entry 2133 (class 2604 OID 19047)
--- Dependencies: 1745 1689
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timeperiod_time_period_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_time_period_nodes_id_seq'::regclass);
-
-
---
--- TOC entry 2136 (class 2604 OID 19048)
--- Dependencies: 1746 1690
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timeperiodnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiodnode_id_seq'::regclass);
-
-
---
--- TOC entry 2143 (class 2604 OID 19049)
--- Dependencies: 1747 1691
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_timespeed ALTER COLUMN id SET DEFAULT nextval('billservice_timespeed_id_seq'::regclass);
-
-
---
--- TOC entry 2149 (class 2604 OID 19050)
--- Dependencies: 1748 1692
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_trafficlimit ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_id_seq'::regclass);
-
-
---
--- TOC entry 2150 (class 2604 OID 19051)
--- Dependencies: 1749 1693
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_trafficlimit_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_traffic_class_id_seq'::regclass);
-
-
---
--- TOC entry 2156 (class 2604 OID 19052)
--- Dependencies: 1750 1694
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_traffictransmitnodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_id_seq'::regclass);
-
-
---
--- TOC entry 2157 (class 2604 OID 19053)
--- Dependencies: 1751 1695
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_traffictransmitnodes_time_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_time_nodes_id_seq'::regclass);
-
-
---
--- TOC entry 2158 (class 2604 OID 19054)
--- Dependencies: 1752 1696
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_traffictransmitnodes_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_traffic_class_id_seq'::regclass);
-
-
---
--- TOC entry 2162 (class 2604 OID 19055)
--- Dependencies: 1753 1697
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_traffictransmitservice ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitservice_id_seq'::regclass);
-
-
---
--- TOC entry 2163 (class 2604 OID 19056)
--- Dependencies: 1754 1698
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_transaction ALTER COLUMN id SET DEFAULT nextval('billservice_transaction_id_seq'::regclass);
-
-
---
--- TOC entry 2164 (class 2604 OID 19057)
--- Dependencies: 1755 1699
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE billservice_transactiontype ALTER COLUMN id SET DEFAULT nextval('billservice_transactiontype_id_seq'::regclass);
-
-
---
--- TOC entry 2165 (class 2604 OID 19058)
--- Dependencies: 1756 1700
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE django_admin_log ALTER COLUMN id SET DEFAULT nextval('django_admin_log_id_seq'::regclass);
-
-
---
--- TOC entry 2167 (class 2604 OID 19059)
--- Dependencies: 1757 1701
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE django_content_type ALTER COLUMN id SET DEFAULT nextval('django_content_type_id_seq'::regclass);
-
-
---
--- TOC entry 2168 (class 2604 OID 19060)
--- Dependencies: 1758 1703
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE django_site ALTER COLUMN id SET DEFAULT nextval('django_site_id_seq'::regclass);
-
-
---
--- TOC entry 2178 (class 2604 OID 19061)
--- Dependencies: 1759 1704
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE nas_nas ALTER COLUMN id SET DEFAULT nextval('nas_nas_id_seq'::regclass);
-
-
---
--- TOC entry 2182 (class 2604 OID 19062)
--- Dependencies: 1760 1705
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficclass_id_seq'::regclass);
-
-
 ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
-
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
-
 ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
---
--- TOC entry 2191 (class 2604 OID 19063)
--- Dependencies: 1761 1706
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE nas_trafficnode ALTER COLUMN id SET DEFAULT nextval('nas_trafficnode_id_seq'::regclass);
-
-
---
--- TOC entry 2194 (class 2604 OID 19064)
--- Dependencies: 1762 1707
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE radius_activesession ALTER COLUMN id SET DEFAULT nextval('radius_activesession_id_seq'::regclass);
-
-
---
--- TOC entry 2204 (class 2604 OID 19065)
--- Dependencies: 1763 1708
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE radius_session ALTER COLUMN id SET DEFAULT nextval('radius_session_id_seq'::regclass);
 
-
---
--- TOC entry 2475 (class 0 OID 18560)
--- Dependencies: 1655
--- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY auth_group (id, name) FROM stdin;
 \.
 
 
---
--- TOC entry 2476 (class 0 OID 18563)
--- Dependencies: 1656
--- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY auth_group_permissions (id, group_id, permission_id) FROM stdin;
 \.
-
-
---
--- TOC entry 2477 (class 0 OID 18566)
--- Dependencies: 1657
--- Data for Name: auth_message; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY auth_message (id, user_id, message) FROM stdin;
 \.
 
-
---
--- TOC entry 2478 (class 0 OID 18572)
--- Dependencies: 1658
--- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 1	Can add permission	1	add_permission
@@ -3637,41 +1877,18 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 \.
 
 
---
--- TOC entry 2479 (class 0 OID 18575)
--- Dependencies: 1659
--- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY auth_user (id, username, first_name, last_name, email, password, is_staff, is_active, is_superuser, last_login, date_joined) FROM stdin;
 \.
 
-
---
--- TOC entry 2480 (class 0 OID 18578)
--- Dependencies: 1660
--- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY auth_user_groups (id, user_id, group_id) FROM stdin;
 \.
 
 
---
--- TOC entry 2481 (class 0 OID 18581)
--- Dependencies: 1661
--- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
 \.
 
 
---
--- TOC entry 2482 (class 0 OID 18584)
--- Dependencies: 1662
--- Data for Name: billservice_accessparameters; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_accessparameters (id, access_type, access_time_id, max_limit, min_limit, burst_limit, burst_treshold, burst_time, priority, ipn_for_vpn) FROM stdin;
 1	PPTP	1	512k/512k	0/0	0/0	0/0	0/0	8	f
@@ -3680,1034 +1897,41 @@ COPY billservice_accessparameters (id, access_type, access_time_id, max_limit, m
 \.
 
 
---
--- TOC entry 2483 (class 0 OID 18597)
--- Dependencies: 1663
--- Data for Name: billservice_account; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
+
 
 COPY billservice_account (id, username, password, fullname, email, address, nas_id, vpn_ip_address, assign_ipn_ip_from_dhcp, ipn_ip_address, ipn_mac_address, ipn_status, status, suspended, created, ballance, credit, disabled_by_limit, balance_blocked, ipn_speed, vpn_speed, netmask) FROM stdin;
-30	musa	uexcq3SK				1	23.2.1.12	f	0.0.0.0		f	t	f	2008-09-05 16:38:57.517	0	0	f	f			0.0.0.0
-31	nauthem	gMFJV9x2				1	2.22.1.2	f	0.0.0.0		f	t	f	2008-09-05 16:39:19.957	0	0	f	f			0.0.0.0
-32	moredeb	kSTVRxLr				1	54.23.22.1	f	0.0.0.0		f	t	f	2008-09-05 16:40:33.977	0	0	f	f			0.0.0.0
-33	folb	fEJYpjCV				1	1.1.1.1	f	0.0.0.0		f	t	f	2008-09-05 17:32:26.195	0	0	f	f			0.0.0.0
-34	neire	NE2pAN8y				1	192.168.11.140	f	0.0.0.0		f	t	f	2008-09-05 17:47:28.291	0	0	f	f			0.0.0.0
-2	dmitry	4321				1	192.168.11.103	f	0.0.0.0		f	t	f	2008-09-03 16:10:49.449	31933.344245907148	0	f	f			0.0.0.0
-22	malmifof	QZ0ldIDD				1	1.1.1.1	f	0.0.0.0		f	t	f	2008-09-04 16:25:49.972	-1038.1111111099999	0	f	f			0.0.0.0
-23	nethau	j7kaftoh				1	4.44.4.44	f	0.0.0.0		f	t	f	2008-09-04 16:28:06.798	54371.444444445588	0	f	f			0.0.0.0
-24	niroal	GOzf1J9N				1	2.2.2.2	f	0.0.0.0		f	t	f	2008-09-04 16:43:09.188	-656.22222222000005	0	f	f			0.0.0.0
-25	eilbauf	sEhffvJN				1	2.2.22.2	f	0.0.0.0		f	t	f	2008-09-05 13:00:28.365	7593.6666666666988	0	f	f			0.0.0.0
-26	joasself	0q98r4Vd				1	4.44.4.48	f	0.0.0.0		f	t	f	2008-09-05 15:36:01.384	0	0	f	f			0.0.0.0
-27	huj	Xvdgb6zv				1	11.11.11.11	f	0.0.0.0		f	t	f	2008-09-05 16:16:40.833	0	0	f	f			0.0.0.0
-28	daumoath	7ke6p8CK				1	3.12.6.4	f	0.0.0.0		f	t	f	2008-09-05 16:21:50.048	0	0	f	f			0.0.0.0
-29	albi	4Ys6KZL8				1	44.4.42.2	f	0.0.0.0		f	t	f	2008-09-05 16:38:46.499	0	0	f	f			0.0.0.0
 \.
-
-
---
--- TOC entry 2484 (class 0 OID 18622)
--- Dependencies: 1664
--- Data for Name: billservice_accountipnspeed; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_accountipnspeed (id, account_id, speed, state, static, datetime) FROM stdin;
 \.
 
-
---
--- TOC entry 2485 (class 0 OID 18629)
--- Dependencies: 1665
--- Data for Name: billservice_accountprepaystime; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_accountprepaystime (id, account_tarif_id, prepaid_time_service_id, size, datetime) FROM stdin;
 \.
-
-
---
--- TOC entry 2486 (class 0 OID 18634)
--- Dependencies: 1666
--- Data for Name: billservice_accountprepaystrafic; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_accountprepaystrafic (id, account_tarif_id, prepaid_traffic_id, size, datetime) FROM stdin;
 \.
 
 
---
--- TOC entry 2487 (class 0 OID 18639)
--- Dependencies: 1667
--- Data for Name: billservice_accounttarif; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_accounttarif (id, account_id, tarif_id, datetime) FROM stdin;
-4	2	1	2008-09-03 16:10:50.589
-24	22	1	2008-09-04 16:25:50.065
-25	23	1	2008-09-04 16:28:06.891
-26	24	1	2008-09-04 16:43:09.282
-27	25	1	2008-09-05 13:00:28.428
-28	26	1	2008-09-05 15:36:01.431
-29	27	1	2008-09-05 16:16:40.88
-30	28	1	2008-09-05 16:21:50.142
-31	29	1	2008-09-05 16:38:46.53
-32	30	1	2008-09-05 16:38:57.548
-33	31	1	2008-09-05 16:39:19.988
-34	32	1	2008-09-05 16:40:34.024
-35	33	1	2008-09-05 17:32:26.227
-36	34	1	2008-09-05 17:47:28.306
 \.
-
-
---
--- TOC entry 2488 (class 0 OID 18642)
--- Dependencies: 1668
--- Data for Name: billservice_card; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_card (id, card_group_id, series, pin, sold, nominal, activated, activated_by_id, start_date, end_date, disabled) FROM stdin;
 \.
 
-
-
-
---
--- TOC entry 2490 (class 0 OID 18651)
--- Dependencies: 1670
--- Data for Name: billservice_netflowstream; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_netflowstream (id, nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id, direction, traffic_transmit_node_id, dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout) FROM stdin;
-2790	1	2	1	2008-09-03 16:24:15.422	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1967	40981	80	6	t	t
-2791	1	2	1	2008-09-03 16:24:15.438	72.14.205.17	1	INPUT	\N	192.168.11.103	789	80	40981	6	t	t
-2768	1	2	1	2008-09-03 16:22:55.265	192.168.11.103	1	OUTPUT	\N	72.14.205.111	2608	44606	995	6	t	t
-2769	1	2	1	2008-09-03 16:22:57.268	72.14.205.111	1	INPUT	\N	192.168.11.103	67088	995	44606	6	t	t
-2774	1	2	1	2008-09-03 16:23:15.308	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1803	59359	80	6	t	t
-2775	1	2	1	2008-09-03 16:23:15.324	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	59359	6	t	t
-2776	1	2	1	2008-09-03 16:23:17.296	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	59361	6	t	t
-2777	1	2	1	2008-09-03 16:23:17.296	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	59361	80	6	t	t
-2778	1	2	1	2008-09-03 16:23:29.281	72.14.205.113	1	INPUT	\N	192.168.11.103	2557	80	54193	6	t	t
-2779	1	2	1	2008-09-03 16:23:29.296	192.168.11.103	1	OUTPUT	\N	72.14.205.113	35173	54193	80	6	t	t
-2780	1	2	1	2008-09-03 16:23:29.343	74.125.12.26	1	INPUT	\N	192.168.11.103	4258	80	34739	6	t	t
-2781	1	2	1	2008-09-03 16:23:29.343	192.168.11.103	1	OUTPUT	\N	74.125.12.26	4984	34739	80	6	t	t
-2806	1	2	1	2008-09-03 16:25:01.594	72.14.205.17	1	INPUT	\N	192.168.11.103	8875	80	40982	6	t	t
-2807	1	2	1	2008-09-03 16:25:01.61	72.14.205.17	1	INPUT	\N	192.168.11.103	1750	80	40987	6	t	t
-2808	1	2	1	2008-09-03 16:25:01.626	192.168.11.103	1	OUTPUT	\N	72.14.205.17	15724	40982	80	6	t	t
-2809	1	2	1	2008-09-03 16:25:01.641	192.168.11.103	1	OUTPUT	\N	72.14.205.17	4256	40987	80	6	t	t
-2810	1	2	1	2008-09-03 16:25:01.657	72.14.205.17	1	INPUT	\N	192.168.11.103	3388	80	40985	6	t	t
-2811	1	2	1	2008-09-03 16:25:01.673	192.168.11.103	1	OUTPUT	\N	72.14.205.17	8348	40985	80	6	t	t
-2812	1	2	1	2008-09-03 16:25:01.688	72.14.205.17	1	INPUT	\N	192.168.11.103	3388	80	40984	6	t	t
-2813	1	2	1	2008-09-03 16:25:01.704	192.168.11.103	1	OUTPUT	\N	72.14.205.17	8348	40984	80	6	t	t
-2814	1	2	1	2008-09-03 16:25:01.72	72.14.205.17	1	INPUT	\N	192.168.11.103	1750	80	40986	6	t	t
-2815	1	2	1	2008-09-03 16:25:01.735	192.168.11.103	1	OUTPUT	\N	72.14.205.17	4256	40986	80	6	t	t
-3002	1	2	1	2008-09-03 16:30:51.444	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	50461	6	t	t
-3003	1	2	1	2008-09-03 16:30:51.46	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	50461	80	6	t	t
-3051	1	2	1	2008-09-03 16:32:49.371	192.168.11.103	1	OUTPUT	\N	194.67.45.123	746	48983	80	6	t	t
-3052	1	2	1	2008-09-03 16:32:49.386	194.67.45.123	1	INPUT	\N	192.168.11.103	636	80	48983	6	t	t
-3053	1	2	1	2008-09-03 16:32:55.203	192.168.11.103	1	OUTPUT	\N	195.137.160.40	872	48114	110	6	t	t
-3054	1	2	1	2008-09-03 16:32:55.219	192.168.11.103	1	OUTPUT	\N	195.137.160.40	876	48115	110	6	t	t
-3055	1	2	1	2008-09-03 16:32:55.234	195.137.160.40	1	INPUT	\N	192.168.11.103	1439	110	48114	6	t	t
-3056	1	2	1	2008-09-03 16:32:55.25	195.137.160.40	1	INPUT	\N	192.168.11.103	2273	110	48115	6	t	t
-3057	1	2	1	2008-09-03 16:32:55.265	192.168.11.103	1	OUTPUT	\N	72.14.205.111	1098	35345	995	6	t	t
-3058	1	2	1	2008-09-03 16:32:55.281	72.14.205.111	1	INPUT	\N	192.168.11.103	1966	995	35345	6	t	t
-3059	1	2	1	2008-09-03 16:32:59.257	192.168.11.103	1	OUTPUT	\N	194.67.45.123	724	48988	80	6	t	t
-3060	1	2	1	2008-09-03 16:32:59.273	194.67.45.123	1	INPUT	\N	192.168.11.103	636	80	48988	6	t	t
-3061	1	2	1	2008-09-03 16:32:59.289	192.168.11.103	1	OUTPUT	\N	194.67.45.123	715	48987	80	6	t	t
-3062	1	2	1	2008-09-03 16:32:59.304	194.67.45.123	1	INPUT	\N	192.168.11.103	679	80	48987	6	t	t
-3063	1	2	1	2008-09-03 16:33:01.207	146.102.42.85	1	INPUT	\N	192.168.11.103	1126	80	50668	6	t	t
-3064	1	2	1	2008-09-03 16:33:01.222	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1084	50668	80	6	t	t
-3065	1	2	1	2008-09-03 16:33:03.265	192.168.11.103	1	OUTPUT	\N	194.67.45.123	715	48989	80	6	t	t
-3066	1	2	1	2008-09-03 16:33:03.281	194.67.45.123	1	INPUT	\N	192.168.11.103	627	80	48989	6	t	t
-3068	1	2	1	2008-09-03 16:33:03.312	192.168.11.103	1	OUTPUT	\N	194.67.45.123	724	48990	80	6	t	t
-3069	1	2	1	2008-09-03 16:33:03.327	194.67.45.123	1	INPUT	\N	192.168.11.103	636	80	48990	6	t	t
-3071	1	2	1	2008-09-03 16:33:05.214	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	50461	80	6	t	t
-3072	1	2	1	2008-09-03 16:33:05.23	72.14.205.18	1	INPUT	\N	192.168.11.103	178	80	50461	6	t	t
-3073	1	2	1	2008-09-03 16:33:07.195	72.14.205.17	1	INPUT	\N	192.168.11.103	652	80	37095	6	t	t
-3074	1	2	1	2008-09-03 16:33:07.21	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1752	37095	80	6	t	t
-3075	1	2	1	2008-09-03 16:33:09.191	192.168.11.103	1	OUTPUT	\N	194.67.45.123	715	48992	80	6	t	t
-3076	1	2	1	2008-09-03 16:33:09.206	194.67.45.123	1	INPUT	\N	192.168.11.103	627	80	48992	6	t	t
-3077	1	2	1	2008-09-03 16:33:09.222	194.67.45.60	1	INPUT	\N	192.168.11.103	5930	80	38026	6	t	t
-3078	1	2	1	2008-09-03 16:33:09.222	192.168.11.103	1	OUTPUT	\N	194.67.45.60	3658	38026	80	6	t	t
-3079	1	2	1	2008-09-03 16:33:09.269	72.14.207.127	1	INPUT	\N	192.168.11.103	46323	80	40136	6	t	t
-3080	1	2	1	2008-09-03 16:33:09.284	192.168.11.103	1	OUTPUT	\N	72.14.207.127	10608	40136	80	6	t	t
-3045	1	2	1	2008-09-03 16:32:47.235	146.102.42.85	1	INPUT	\N	192.168.11.103	1285	80	50579	6	t	t
-3046	1	2	1	2008-09-03 16:32:47.235	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1084	50579	80	6	t	t
-3047	1	2	1	2008-09-03 16:32:49.246	192.168.11.103	1	OUTPUT	\N	194.67.45.123	737	48981	80	6	t	t
-3048	1	2	1	2008-09-03 16:32:49.262	194.67.45.123	1	INPUT	\N	192.168.11.103	627	80	48981	6	t	t
-3145	1	2	1	2008-09-03 16:34:52.967	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	37095	6	t	t
-3146	1	2	1	2008-09-03 16:34:52.967	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	37095	80	6	t	t
-3431	1	2	1	2008-09-03 16:44:51.009	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50770	80	6	t	t
-3432	1	2	1	2008-09-03 16:44:51.025	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50770	6	t	t
-3477	1	2	1	2008-09-03 16:47:21.273	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3478	1	2	1	2008-09-03 16:47:21.305	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3523	1	2	1	2008-09-03 16:51:03.194	192.168.11.103	1	OUTPUT	\N	72.14.205.83	104	35523	80	6	t	t
-3524	1	2	1	2008-09-03 16:51:03.209	72.14.205.83	1	INPUT	\N	192.168.11.103	178	80	35523	6	t	t
-3574	1	2	1	2008-09-03 16:53:20.995	209.85.201.125	1	INPUT	\N	192.168.11.103	642	5222	50494	6	t	t
-2743	1	2	1	2008-09-03 16:21:37.249	192.168.11.103	1	OUTPUT	\N	140.90.128.70	945	38983	80	6	t	t
-2744	1	2	1	2008-09-03 16:21:37.265	140.90.128.70	1	INPUT	\N	192.168.11.103	7589	80	38982	6	t	t
-2745	1	2	1	2008-09-03 16:21:37.28	140.90.128.70	1	INPUT	\N	192.168.11.103	7618	80	38983	6	t	t
-2740	1	2	1	2008-09-03 16:21:37.218	192.168.11.103	1	OUTPUT	\N	140.90.128.70	893	38985	80	6	t	t
-2741	1	2	1	2008-09-03 16:21:37.233	140.90.128.70	1	INPUT	\N	192.168.11.103	7579	80	38985	6	t	t
-2742	1	2	1	2008-09-03 16:21:37.233	192.168.11.103	1	OUTPUT	\N	140.90.128.70	945	38982	80	6	t	t
-2762	1	2	1	2008-09-03 16:22:49.242	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	59361	6	t	t
-2763	1	2	1	2008-09-03 16:22:49.257	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	59361	80	6	t	t
-2764	1	2	1	2008-09-03 16:22:53.247	192.168.11.103	1	OUTPUT	\N	195.137.160.40	816	46198	110	6	t	t
-2765	1	2	1	2008-09-03 16:22:53.263	192.168.11.103	1	OUTPUT	\N	195.137.160.40	812	46197	110	6	t	t
-2766	1	2	1	2008-09-03 16:22:53.278	195.137.160.40	1	INPUT	\N	192.168.11.103	2213	110	46198	6	t	t
-2767	1	2	1	2008-09-03 16:22:53.294	195.137.160.40	1	INPUT	\N	192.168.11.103	1379	110	46197	6	t	t
-2746	1	2	1	2008-09-03 16:22:01.31	72.14.205.18	1	INPUT	\N	192.168.11.103	3388	80	59359	6	t	t
-2747	1	2	1	2008-09-03 16:22:01.326	72.14.205.18	1	INPUT	\N	192.168.11.103	3388	80	59360	6	t	t
-2748	1	2	1	2008-09-03 16:22:01.342	72.14.205.18	1	INPUT	\N	192.168.11.103	1204	80	59362	6	t	t
-2749	1	2	1	2008-09-03 16:22:01.342	72.14.205.18	1	INPUT	\N	192.168.11.103	3934	80	59358	6	t	t
-2751	1	2	1	2008-09-03 16:22:01.373	192.168.11.103	1	OUTPUT	\N	72.14.205.18	8348	59360	80	6	t	t
-2752	1	2	1	2008-09-03 16:22:01.388	192.168.11.103	1	OUTPUT	\N	72.14.205.18	9712	59358	80	6	t	t
-2753	1	2	1	2008-09-03 16:22:01.404	192.168.11.103	1	OUTPUT	\N	72.14.205.18	2892	59362	80	6	t	t
-2755	1	2	1	2008-09-03 16:22:15.226	192.168.11.103	1	OUTPUT	\N	72.14.205.18	11955	59357	80	6	t	t
-2756	1	2	1	2008-09-03 16:22:15.242	72.14.205.18	1	INPUT	\N	192.168.11.103	6843	80	59357	6	t	t
-2758	1	2	1	2008-09-03 16:22:19.185	72.14.205.18	1	INPUT	\N	192.168.11.103	3631	80	59361	6	t	t
-2759	1	2	1	2008-09-03 16:22:19.201	192.168.11.103	1	OUTPUT	\N	72.14.205.18	8625	59361	80	6	t	t
-2750	1	2	1	2008-09-03 16:22:01.357	192.168.11.103	1	OUTPUT	\N	72.14.205.18	8348	59359	80	6	t	t
-2784	1	2	1	2008-09-03 16:24:11.37	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	59362	80	6	t	t
-2785	1	2	1	2008-09-03 16:24:11.37	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	59360	80	6	t	t
-2786	1	2	1	2008-09-03 16:24:11.385	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	59358	80	6	t	t
-2787	1	2	1	2008-09-03 16:24:11.401	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	59362	6	t	t
-2788	1	2	1	2008-09-03 16:24:11.416	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	59360	6	t	t
-2789	1	2	1	2008-09-03 16:24:11.432	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	59358	6	t	t
-2782	1	2	1	2008-09-03 16:23:53.345	209.85.201.125	1	INPUT	\N	192.168.11.103	36140	5222	50494	6	t	t
-2783	1	2	1	2008-09-03 16:23:53.361	192.168.11.103	1	OUTPUT	\N	209.85.201.125	3558	50494	5222	6	t	t
-2805	1	2	1	2008-09-03 16:24:51.424	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-2799	1	2	1	2008-09-03 16:24:37.421	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	59361	80	6	t	t
-2804	1	2	1	2008-09-03 16:24:51.409	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-2798	1	2	1	2008-09-03 16:24:37.405	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	59361	6	t	t
-2828	1	2	1	2008-09-03 16:25:41.524	192.168.11.103	1	OUTPUT	\N	74.125.12.26	104	34739	80	6	t	t
-2829	1	2	1	2008-09-03 16:25:41.54	72.14.205.113	1	INPUT	\N	192.168.11.103	104	80	54193	6	t	t
-2830	1	2	1	2008-09-03 16:25:41.555	74.125.12.26	1	INPUT	\N	192.168.11.103	104	80	34739	6	t	t
-2831	1	2	1	2008-09-03 16:25:51.929	192.168.11.103	1	OUTPUT	\N	209.85.201.125	300	50494	5222	6	t	t
-2832	1	2	1	2008-09-03 16:25:53.509	209.85.201.125	1	INPUT	\N	192.168.11.103	361	5222	50494	6	t	t
-2827	1	2	1	2008-09-03 16:25:41.508	192.168.11.103	1	OUTPUT	\N	72.14.205.113	104	54193	80	6	t	t
-2872	1	2	1	2008-09-03 16:26:41.622	192.168.11.103	1	OUTPUT	\N	209.85.201.125	40	50494	5222	6	t	t
-2879	1	2	1	2008-09-03 16:26:55.579	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	40982	6	t	t
-2880	1	2	1	2008-09-03 16:26:55.594	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	40982	80	6	t	t
-2871	1	2	1	2008-09-03 16:26:41.606	209.85.201.125	1	INPUT	\N	192.168.11.103	62	5222	50494	6	t	t
-2907	1	2	1	2008-09-03 16:28:01.803	72.14.205.18	1	INPUT	\N	192.168.11.103	2296	80	50461	6	t	t
-2908	1	2	1	2008-09-03 16:28:01.819	72.14.205.18	1	INPUT	\N	192.168.11.103	3388	80	50465	6	t	t
-2909	1	2	1	2008-09-03 16:28:01.85	192.168.11.103	1	OUTPUT	\N	72.14.205.18	5620	50461	80	6	t	t
-2910	1	2	1	2008-09-03 16:28:01.865	192.168.11.103	1	OUTPUT	\N	72.14.205.18	8348	50465	80	6	t	t
-2911	1	2	1	2008-09-03 16:28:01.881	72.14.205.18	1	INPUT	\N	192.168.11.103	8337	80	50460	6	t	t
-2912	1	2	1	2008-09-03 16:28:01.897	192.168.11.103	1	OUTPUT	\N	72.14.205.18	15608	50460	80	6	t	t
-2913	1	2	1	2008-09-03 16:28:01.928	72.14.205.18	1	INPUT	\N	192.168.11.103	1750	80	50462	6	t	t
-2914	1	2	1	2008-09-03 16:28:01.943	72.14.205.18	1	INPUT	\N	192.168.11.103	1750	80	50463	6	t	t
-2816	1	2	1	2008-09-03 16:25:05.444	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	59361	6	t	t
-2817	1	2	1	2008-09-03 16:25:05.459	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	59361	80	6	t	t
-2867	1	2	1	2008-09-03 16:26:27.556	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	40982	6	t	t
-2820	1	2	1	2008-09-03 16:25:15.473	192.168.11.103	1	OUTPUT	\N	72.14.205.17	7423	40983	80	6	t	t
-2821	1	2	1	2008-09-03 16:25:15.488	72.14.205.17	1	INPUT	\N	192.168.11.103	2973	80	40983	6	t	t
-2833	1	2	1	2008-09-03 16:26:15.539	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1803	40987	80	6	t	t
-2834	1	2	1	2008-09-03 16:26:15.555	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	40987	6	t	t
-2868	1	2	1	2008-09-03 16:26:27.571	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	40982	80	6	t	t
-2915	1	2	1	2008-09-03 16:28:01.959	192.168.11.103	1	OUTPUT	\N	72.14.205.18	4256	50463	80	6	t	t
-2916	1	2	1	2008-09-03 16:28:01.975	192.168.11.103	1	OUTPUT	\N	72.14.205.18	4256	50462	80	6	t	t
-2883	1	2	1	2008-09-03 16:27:11.593	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	40986	80	6	t	t
-2884	1	2	1	2008-09-03 16:27:11.608	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	40985	80	6	t	t
-2885	1	2	1	2008-09-03 16:27:11.624	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	40984	80	6	t	t
-2886	1	2	1	2008-09-03 16:27:11.639	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	40986	6	t	t
-2887	1	2	1	2008-09-03 16:27:11.671	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	40985	6	t	t
-2888	1	2	1	2008-09-03 16:27:11.686	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	40984	6	t	t
-2897	1	2	1	2008-09-03 16:27:22.799	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-2898	1	2	1	2008-09-03 16:27:22.815	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-2891	1	2	1	2008-09-03 16:27:15.682	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1967	50459	80	6	t	t
-2892	1	2	1	2008-09-03 16:27:15.698	72.14.205.18	1	INPUT	\N	192.168.11.103	789	80	50459	6	t	t
-2917	1	2	1	2008-09-03 16:28:15.631	192.168.11.103	1	OUTPUT	\N	72.14.205.18	10151	50464	80	6	t	t
-2918	1	2	1	2008-09-03 16:28:15.663	72.14.205.18	1	INPUT	\N	192.168.11.103	4065	80	50464	6	t	t
-2895	1	2	1	2008-09-03 16:27:19.584	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	40982	6	t	t
-2896	1	2	1	2008-09-03 16:27:19.599	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	40982	80	6	t	t
-3105	1	2	1	2008-09-03 16:33:31.193	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1963	37098	80	6	t	t
-3106	1	2	1	2008-09-03 16:33:31.209	72.14.205.17	1	INPUT	\N	192.168.11.103	789	80	37098	6	t	t
-3109	1	2	1	2008-09-03 16:33:31.287	193.0.0.193	1	INPUT	\N	192.168.11.103	7392	0	0	1	t	t
-3110	1	2	1	2008-09-03 16:33:33.221	72.14.205.17	1	INPUT	\N	192.168.11.103	2348	80	37100	6	t	t
-3111	1	2	1	2008-09-03 16:33:33.236	72.14.205.17	1	INPUT	\N	192.168.11.103	7441	80	37099	6	t	t
-3112	1	2	1	2008-09-03 16:33:33.252	72.14.205.17	1	INPUT	\N	192.168.11.103	3934	80	37104	6	t	t
-3113	1	2	1	2008-09-03 16:33:33.267	72.14.205.17	1	INPUT	\N	192.168.11.103	3934	80	37103	6	t	t
-3114	1	2	1	2008-09-03 16:33:33.283	192.168.11.103	1	OUTPUT	\N	72.14.205.17	12984	37099	80	6	t	t
-3194	1	2	1	2008-09-03 16:35:35.039	192.168.11.103	1	OUTPUT	\N	72.14.205.17	8676	37103	80	6	t	t
-3201	1	2	1	2008-09-03 16:35:44.879	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	37095	6	t	t
-3202	1	2	1	2008-09-03 16:35:44.895	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	37095	80	6	t	t
-3216	1	2	1	2008-09-03 16:36:36.791	72.14.205.19	1	INPUT	\N	192.168.11.103	540	80	58648	6	t	t
-3217	1	2	1	2008-09-03 16:36:36.806	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1589	58648	80	6	t	t
-3218	1	2	1	2008-09-03 16:36:40.783	192.168.11.103	1	OUTPUT	\N	195.40.122.105	104	41974	80	6	t	t
-3219	1	2	1	2008-09-03 16:36:40.798	195.40.122.105	1	INPUT	\N	192.168.11.103	104	80	41974	6	t	t
-3175	1	2	1	2008-09-03 16:35:32.887	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1801	37100	80	6	t	t
-3176	1	2	1	2008-09-03 16:35:32.903	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	37100	6	t	t
-3177	1	2	1	2008-09-03 16:35:32.919	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	37104	80	6	t	t
-3178	1	2	1	2008-09-03 16:35:32.934	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	37101	80	6	t	t
-3179	1	2	1	2008-09-03 16:35:32.95	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	37102	80	6	t	t
-3180	1	2	1	2008-09-03 16:35:32.965	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	37104	6	t	t
-3181	1	2	1	2008-09-03 16:35:32.981	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	37101	6	t	t
-3182	1	2	1	2008-09-03 16:35:33.012	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	37102	6	t	t
-3183	1	2	1	2008-09-03 16:35:34.883	72.14.205.19	1	INPUT	\N	192.168.11.103	1204	80	58650	6	t	t
-3309	1	2	1	2008-09-03 16:40:12.313	72.14.205.18	1	INPUT	\N	192.168.11.103	652	80	53743	6	t	t
-3310	1	2	1	2008-09-03 16:40:12.329	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1753	53743	80	6	t	t
-3311	1	2	1	2008-09-03 16:40:20.247	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3312	1	2	1	2008-09-03 16:40:20.263	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3280	1	2	1	2008-09-03 16:39:30.397	64.12.25.174	1	INPUT	\N	192.168.11.103	42139	5190	37056	6	t	t
-3281	1	2	1	2008-09-03 16:39:30.412	192.168.11.103	1	OUTPUT	\N	64.12.25.174	5943	37056	5190	6	t	t
-3282	1	2	1	2008-09-03 16:39:30.428	217.76.32.61	1	INPUT	\N	192.168.11.103	983	80	46441	6	t	t
-3283	1	2	1	2008-09-03 16:39:30.444	192.168.11.103	1	OUTPUT	\N	217.76.32.61	832	46441	80	6	t	t
-3284	1	2	1	2008-09-03 16:39:30.444	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1801	37103	80	6	t	t
-3285	1	2	1	2008-09-03 16:39:30.459	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	37103	6	t	t
-3286	1	2	1	2008-09-03 16:39:32.392	217.76.32.61	1	INPUT	\N	192.168.11.103	983	80	46435	6	t	t
-3287	1	2	1	2008-09-03 16:39:32.408	192.168.11.103	1	OUTPUT	\N	217.76.32.61	832	46435	80	6	t	t
-3288	1	2	1	2008-09-03 16:39:36.383	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	58648	6	t	t
-3289	1	2	1	2008-09-03 16:39:36.398	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	58648	80	6	t	t
-3290	1	2	1	2008-09-03 16:39:40.373	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53733	80	6	t	t
-3291	1	2	1	2008-09-03 16:39:40.389	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53735	80	6	t	t
-2955	1	2	1	2008-09-03 16:28:49.688	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50646	80	6	t	t
-2956	1	2	1	2008-09-03 16:28:49.703	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50646	6	t	t
-2961	1	2	1	2008-09-03 16:29:07.933	72.14.205.18	1	INPUT	\N	192.168.11.103	540	80	50461	6	t	t
-2962	1	2	1	2008-09-03 16:29:07.949	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1589	50461	80	6	t	t
-2963	1	2	1	2008-09-03 16:29:15.503	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1803	50465	80	6	t	t
-2947	1	2	1	2008-09-03 16:28:41.556	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	40982	6	t	t
-2964	1	2	1	2008-09-03 16:29:15.503	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	50465	6	t	t
-2948	1	2	1	2008-09-03 16:28:41.572	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	40982	80	6	t	t
-2949	1	2	1	2008-09-03 16:28:45.583	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50579	80	6	t	t
-2950	1	2	1	2008-09-03 16:28:45.598	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50579	6	t	t
-2953	1	2	1	2008-09-03 16:28:49.61	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50645	80	6	t	t
-2954	1	2	1	2008-09-03 16:28:49.625	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50645	6	t	t
-2981	1	2	1	2008-09-03 16:30:05.432	146.102.42.85	1	INPUT	\N	192.168.11.103	1357	80	50646	6	t	t
-2982	1	2	1	2008-09-03 16:30:05.448	146.102.42.85	1	INPUT	\N	192.168.11.103	2662	80	50645	6	t	t
-2983	1	2	1	2008-09-03 16:30:05.464	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1136	50645	80	6	t	t
-2984	1	2	1	2008-09-03 16:30:11.395	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	50462	80	6	t	t
-2985	1	2	1	2008-09-03 16:30:11.41	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	50460	80	6	t	t
-2986	1	2	1	2008-09-03 16:30:11.41	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	50463	80	6	t	t
-2987	1	2	1	2008-09-03 16:30:11.426	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	50462	6	t	t
-2988	1	2	1	2008-09-03 16:30:11.441	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	50460	6	t	t
-2989	1	2	1	2008-09-03 16:30:11.457	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	50463	6	t	t
-2990	1	2	1	2008-09-03 16:30:15.406	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1967	49165	80	6	t	t
-2991	1	2	1	2008-09-03 16:30:15.421	72.14.205.19	1	INPUT	\N	192.168.11.103	789	80	49165	6	t	t
-2975	1	2	1	2008-09-03 16:29:45.501	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50668	80	6	t	t
-2976	1	2	1	2008-09-03 16:29:45.517	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50668	6	t	t
-2977	1	2	1	2008-09-03 16:29:47.733	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50689	80	6	t	t
-2978	1	2	1	2008-09-03 16:29:47.749	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50689	6	t	t
-2979	1	2	1	2008-09-03 16:29:55.412	193.0.0.193	1	INPUT	\N	192.168.11.103	28896	0	0	1	t	t
-2980	1	2	1	2008-09-03 16:30:05.417	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1084	50646	80	6	t	t
-2965	1	2	1	2008-09-03 16:29:24.259	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-2966	1	2	1	2008-09-03 16:29:24.275	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-2969	1	2	1	2008-09-03 16:29:33.514	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	50461	6	t	t
-2970	1	2	1	2008-09-03 16:29:33.53	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	50461	80	6	t	t
-2971	1	2	1	2008-09-03 16:29:37.51	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50656	80	6	t	t
-2972	1	2	1	2008-09-03 16:29:37.526	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50656	6	t	t
-2994	1	2	1	2008-09-03 16:30:41.377	209.85.201.125	1	INPUT	\N	192.168.11.103	445	5222	50494	6	t	t
-2995	1	2	1	2008-09-03 16:30:41.377	192.168.11.103	1	OUTPUT	\N	209.85.201.125	40	50494	5222	6	t	t
-3036	1	2	1	2008-09-03 16:32:31.282	72.14.205.17	1	INPUT	\N	192.168.11.103	2447	80	37069	6	t	t
-3037	1	2	1	2008-09-03 16:32:35.29	217.76.32.61	1	INPUT	\N	192.168.11.103	614	80	41484	6	t	t
-3038	1	2	1	2008-09-03 16:32:35.305	192.168.11.103	1	OUTPUT	\N	217.76.32.61	897	41484	80	6	t	t
-3039	1	2	1	2008-09-03 16:32:39.391	192.168.11.103	1	OUTPUT	\N	81.19.70.13	758	44502	80	6	t	t
-3040	1	2	1	2008-09-03 16:32:39.406	81.19.70.13	1	INPUT	\N	192.168.11.103	1437	80	44502	6	t	t
-3041	1	2	1	2008-09-03 16:32:39.422	192.168.11.103	1	OUTPUT	\N	194.67.45.123	685	48972	80	6	t	t
-3042	1	2	1	2008-09-03 16:32:39.438	194.67.45.123	1	INPUT	\N	192.168.11.103	627	80	48972	6	t	t
-3043	1	2	1	2008-09-03 16:32:39.453	192.168.11.103	1	OUTPUT	\N	194.67.45.123	694	48975	80	6	t	t
-3044	1	2	1	2008-09-03 16:32:39.469	194.67.45.123	1	INPUT	\N	192.168.11.103	636	80	48975	6	t	t
-3017	1	2	1	2008-09-03 16:31:43.324	209.85.201.125	1	INPUT	\N	192.168.11.103	465	5222	50494	6	t	t
-3018	1	2	1	2008-09-03 16:31:43.34	192.168.11.103	1	OUTPUT	\N	209.85.201.125	80	50494	5222	6	t	t
-3019	1	2	1	2008-09-03 16:31:43.356	192.168.11.103	1	OUTPUT	\N	146.102.42.85	52	50646	80	6	t	t
-3020	1	2	1	2008-09-03 16:31:43.356	192.168.11.103	1	OUTPUT	\N	146.102.42.85	52	50656	80	6	t	t
-3021	1	2	1	2008-09-03 16:31:43.371	146.102.42.85	1	INPUT	\N	192.168.11.103	52	80	50646	6	t	t
-3022	1	2	1	2008-09-03 16:31:43.387	146.102.42.85	1	INPUT	\N	192.168.11.103	52	80	50656	6	t	t
-3035	1	2	1	2008-09-03 16:32:31.266	192.168.11.103	1	OUTPUT	\N	72.14.205.17	3301	37069	80	6	t	t
-3011	1	2	1	2008-09-03 16:31:01.418	72.14.205.19	1	INPUT	\N	192.168.11.103	789	80	49166	6	t	t
-3012	1	2	1	2008-09-03 16:31:13.373	193.0.0.193	1	INPUT	\N	192.168.11.103	3444	0	0	1	t	t
-3013	1	2	1	2008-09-03 16:31:21.396	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3014	1	2	1	2008-09-03 16:31:21.411	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3004	1	2	1	2008-09-03 16:30:57.375	146.102.42.85	1	INPUT	\N	192.168.11.103	1146	80	50579	6	t	t
-3005	1	2	1	2008-09-03 16:30:57.391	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50579	80	6	t	t
-3006	1	2	1	2008-09-03 16:30:57.406	146.102.42.85	1	INPUT	\N	192.168.11.103	1146	80	50668	6	t	t
-3007	1	2	1	2008-09-03 16:30:57.422	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50668	80	6	t	t
-3010	1	2	1	2008-09-03 16:31:01.402	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1967	49166	80	6	t	t
-3025	1	2	1	2008-09-03 16:31:49.318	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	50461	6	t	t
-3026	1	2	1	2008-09-03 16:31:49.333	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	50461	80	6	t	t
-3029	1	2	1	2008-09-03 16:32:11.26	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50645	80	6	t	t
-3030	1	2	1	2008-09-03 16:32:11.275	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50645	6	t	t
-3031	1	2	1	2008-09-03 16:32:25.232	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50689	80	6	t	t
-3032	1	2	1	2008-09-03 16:32:25.247	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50689	6	t	t
-3081	1	2	1	2008-09-03 16:33:09.30	74.125.47.165	1	INPUT	\N	192.168.11.103	70957	80	59132	6	t	t
-3082	1	2	1	2008-09-03 16:33:09.315	192.168.11.103	1	OUTPUT	\N	74.125.47.165	15989	59132	80	6	t	t
-3083	1	2	1	2008-09-03 16:33:09.315	192.168.11.103	1	OUTPUT	\N	194.67.45.123	724	48993	80	6	t	t
-3084	1	2	1	2008-09-03 16:33:09.331	194.67.45.123	1	INPUT	\N	192.168.11.103	688	80	48993	6	t	t
-3085	1	2	1	2008-09-03 16:33:09.347	194.67.45.60	1	INPUT	\N	192.168.11.103	8054	80	38027	6	t	t
-3086	1	2	1	2008-09-03 16:33:09.362	192.168.11.103	1	OUTPUT	\N	194.67.45.60	3685	38027	80	6	t	t
-3087	1	2	1	2008-09-03 16:33:09.378	217.76.32.61	1	INPUT	\N	192.168.11.103	47299	80	41491	6	t	t
-3088	1	2	1	2008-09-03 16:33:09.393	192.168.11.103	1	OUTPUT	\N	217.76.32.61	29269	41491	80	6	t	t
-3089	1	2	1	2008-09-03 16:33:09.409	217.76.32.61	1	INPUT	\N	192.168.11.103	150723	80	41485	6	t	t
-3090	1	2	1	2008-09-03 16:33:09.409	192.168.11.103	1	OUTPUT	\N	217.76.32.61	34351	41485	80	6	t	t
-3091	1	2	1	2008-09-03 16:33:09.424	217.76.32.61	1	INPUT	\N	192.168.11.103	144373	80	41487	6	t	t
-3092	1	2	1	2008-09-03 16:33:09.44	192.168.11.103	1	OUTPUT	\N	217.76.32.61	40450	41487	80	6	t	t
-3093	1	2	1	2008-09-03 16:33:09.456	217.76.32.61	1	INPUT	\N	192.168.11.103	63253	80	41488	6	t	t
-3094	1	2	1	2008-09-03 16:33:09.471	192.168.11.103	1	OUTPUT	\N	217.76.32.61	33093	41488	80	6	t	t
-3095	1	2	1	2008-09-03 16:33:13.183	129.33.13.208	1	INPUT	\N	192.168.11.103	361655	80	59564	6	t	t
-3096	1	2	1	2008-09-03 16:33:13.198	192.168.11.103	1	OUTPUT	\N	129.33.13.208	21078	59564	80	6	t	t
-3097	1	2	1	2008-09-03 16:33:15.194	129.33.13.208	1	INPUT	\N	192.168.11.103	246841	80	59565	6	t	t
-3098	1	2	1	2008-09-03 16:33:15.21	192.168.11.103	1	OUTPUT	\N	129.33.13.208	16161	59565	80	6	t	t
-3099	1	2	1	2008-09-03 16:33:15.225	217.76.32.61	1	INPUT	\N	192.168.11.103	59676	80	41492	6	t	t
-3100	1	2	1	2008-09-03 16:33:15.257	192.168.11.103	1	OUTPUT	\N	217.76.32.61	34345	41492	80	6	t	t
-3101	1	2	1	2008-09-03 16:33:17.19	217.76.32.61	1	INPUT	\N	192.168.11.103	375473	80	41486	6	t	t
-3102	1	2	1	2008-09-03 16:33:17.237	192.168.11.103	1	OUTPUT	\N	217.76.32.61	40007	41486	80	6	t	t
-3103	1	2	1	2008-09-03 16:33:21.182	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3104	1	2	1	2008-09-03 16:33:21.182	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3127	1	2	1	2008-09-03 16:33:47.13	192.168.11.103	1	OUTPUT	\N	217.76.32.61	780	41485	80	6	t	t
-3128	1	2	1	2008-09-03 16:33:47.146	217.76.32.61	1	INPUT	\N	192.168.11.103	983	80	41491	6	t	t
-3129	1	2	1	2008-09-03 16:33:47.161	192.168.11.103	1	OUTPUT	\N	217.76.32.61	780	41491	80	6	t	t
-3131	1	2	1	2008-09-03 16:34:21.047	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3132	1	2	1	2008-09-03 16:34:21.062	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3126	1	2	1	2008-09-03 16:33:47.115	217.76.32.61	1	INPUT	\N	192.168.11.103	983	80	41485	6	t	t
-3115	1	2	1	2008-09-03 16:33:33.283	192.168.11.103	1	OUTPUT	\N	72.14.205.17	5620	37100	80	6	t	t
-3116	1	2	1	2008-09-03 16:33:33.299	192.168.11.103	1	OUTPUT	\N	72.14.205.17	9712	37103	80	6	t	t
-3117	1	2	1	2008-09-03 16:33:33.314	192.168.11.103	1	OUTPUT	\N	72.14.205.17	9712	37104	80	6	t	t
-3118	1	2	1	2008-09-03 16:33:33.33	72.14.205.17	1	INPUT	\N	192.168.11.103	1802	80	37101	6	t	t
-3119	1	2	1	2008-09-03 16:33:33.345	72.14.205.17	1	INPUT	\N	192.168.11.103	1802	80	37102	6	t	t
-3120	1	2	1	2008-09-03 16:33:33.361	192.168.11.103	1	OUTPUT	\N	72.14.205.17	4256	37101	80	6	t	t
-3121	1	2	1	2008-09-03 16:33:33.377	192.168.11.103	1	OUTPUT	\N	72.14.205.17	4204	37102	80	6	t	t
-3122	1	2	1	2008-09-03 16:33:35.17	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	37095	6	t	t
-3123	1	2	1	2008-09-03 16:33:35.185	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	37095	80	6	t	t
-3135	1	2	1	2008-09-03 16:34:38.98	195.40.122.105	1	INPUT	\N	192.168.11.103	86463	80	41974	6	t	t
-3136	1	2	1	2008-09-03 16:34:38.995	192.168.11.103	1	OUTPUT	\N	195.40.122.105	4785	41974	80	6	t	t
-3139	1	2	1	2008-09-03 16:34:40.991	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41484	80	6	t	t
-3140	1	2	1	2008-09-03 16:34:41.007	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41484	6	t	t
-3184	1	2	1	2008-09-03 16:35:34.899	72.14.205.19	1	INPUT	\N	192.168.11.103	3934	80	58648	6	t	t
-3185	1	2	1	2008-09-03 16:35:34.915	72.14.205.19	1	INPUT	\N	192.168.11.103	2842	80	58649	6	t	t
-3186	1	2	1	2008-09-03 16:35:34.93	72.14.205.19	1	INPUT	\N	192.168.11.103	4480	80	58647	6	t	t
-3187	1	2	1	2008-09-03 16:35:34.946	72.14.205.19	1	INPUT	\N	192.168.11.103	2842	80	58651	6	t	t
-3188	1	2	1	2008-09-03 16:35:34.961	192.168.11.103	1	OUTPUT	\N	72.14.205.19	2892	58650	80	6	t	t
-3189	1	2	1	2008-09-03 16:35:34.977	192.168.11.103	1	OUTPUT	\N	72.14.205.19	9712	58648	80	6	t	t
-3190	1	2	1	2008-09-03 16:35:34.993	192.168.11.103	1	OUTPUT	\N	72.14.205.19	6984	58649	80	6	t	t
-3191	1	2	1	2008-09-03 16:35:35.008	192.168.11.103	1	OUTPUT	\N	72.14.205.19	11076	58647	80	6	t	t
-3192	1	2	1	2008-09-03 16:35:35.008	192.168.11.103	1	OUTPUT	\N	72.14.205.19	6984	58651	80	6	t	t
-3193	1	2	1	2008-09-03 16:35:35.024	72.14.205.17	1	INPUT	\N	192.168.11.103	5534	80	37103	6	t	t
-3152	1	2	1	2008-09-03 16:35:10.978	192.168.11.103	1	OUTPUT	\N	194.67.45.60	104	38026	80	6	t	t
-3153	1	2	1	2008-09-03 16:35:10.978	192.168.11.103	1	OUTPUT	\N	74.125.47.165	104	59132	80	6	t	t
-3154	1	2	1	2008-09-03 16:35:10.994	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50668	80	6	t	t
-3155	1	2	1	2008-09-03 16:35:11.009	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41488	6	t	t
-3156	1	2	1	2008-09-03 16:35:11.025	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41487	6	t	t
-3157	1	2	1	2008-09-03 16:35:11.041	194.67.45.60	1	INPUT	\N	192.168.11.103	104	80	38027	6	t	t
-3158	1	2	1	2008-09-03 16:35:11.056	194.67.45.60	1	INPUT	\N	192.168.11.103	104	80	38026	6	t	t
-3159	1	2	1	2008-09-03 16:35:11.072	74.125.47.165	1	INPUT	\N	192.168.11.103	104	80	59132	6	t	t
-3160	1	2	1	2008-09-03 16:35:11.087	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50668	6	t	t
-3161	1	2	1	2008-09-03 16:35:11.087	192.168.11.103	1	OUTPUT	\N	72.14.207.127	104	40136	80	6	t	t
-3162	1	2	1	2008-09-03 16:35:11.103	72.14.207.127	1	INPUT	\N	192.168.11.103	104	80	40136	6	t	t
-3163	1	2	1	2008-09-03 16:35:14.955	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41492	80	6	t	t
-3164	1	2	1	2008-09-03 16:35:14.97	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41492	6	t	t
-3165	1	2	1	2008-09-03 16:35:16.935	217.76.32.61	1	INPUT	\N	192.168.11.103	983	80	41486	6	t	t
-3166	1	2	1	2008-09-03 16:35:16.951	192.168.11.103	1	OUTPUT	\N	217.76.32.61	832	41486	80	6	t	t
-3167	1	2	1	2008-09-03 16:35:17.044	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	36691	80	6	t	t
-3168	1	2	1	2008-09-03 16:35:17.06	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	36691	6	t	t
-3169	1	2	1	2008-09-03 16:35:20.974	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3170	1	2	1	2008-09-03 16:35:20.974	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3171	1	2	1	2008-09-03 16:35:24.888	192.168.11.103	1	OUTPUT	\N	129.33.13.208	104	59565	80	6	t	t
-3172	1	2	1	2008-09-03 16:35:24.903	192.168.11.103	1	OUTPUT	\N	129.33.13.208	104	59564	80	6	t	t
-3173	1	2	1	2008-09-03 16:35:24.919	129.33.13.208	1	INPUT	\N	192.168.11.103	104	80	59565	6	t	t
-3174	1	2	1	2008-09-03 16:35:24.935	129.33.13.208	1	INPUT	\N	192.168.11.103	104	80	59564	6	t	t
-3149	1	2	1	2008-09-03 16:35:10.931	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41488	80	6	t	t
-3150	1	2	1	2008-09-03 16:35:10.947	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41487	80	6	t	t
-3151	1	2	1	2008-09-03 16:35:10.963	192.168.11.103	1	OUTPUT	\N	194.67.45.60	104	38027	80	6	t	t
-3206	1	2	1	2008-09-03 16:35:46.953	146.102.42.85	1	INPUT	\N	192.168.11.103	4535	80	50579	6	t	t
-3207	1	2	1	2008-09-03 16:35:46.969	192.168.11.103	1	OUTPUT	\N	146.102.42.85	3200	50579	80	6	t	t
-3208	1	2	1	2008-09-03 16:35:54.859	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41491	80	6	t	t
-3209	1	2	1	2008-09-03 16:35:54.859	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41485	80	6	t	t
-3210	1	2	1	2008-09-03 16:35:54.875	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41491	6	t	t
-3211	1	2	1	2008-09-03 16:35:54.89	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41485	6	t	t
-3212	1	2	1	2008-09-03 16:36:18.827	146.102.42.85	1	INPUT	\N	192.168.11.103	1233	80	36691	6	t	t
-3213	1	2	1	2008-09-03 16:36:18.842	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	36691	80	6	t	t
-3214	1	2	1	2008-09-03 16:36:20.823	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3215	1	2	1	2008-09-03 16:36:20.838	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3220	1	2	1	2008-09-03 16:37:04.735	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	58648	6	t	t
-3221	1	2	1	2008-09-03 16:37:04.751	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	58648	80	6	t	t
-3222	1	2	1	2008-09-03 16:37:18.688	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	41486	80	6	t	t
-3223	1	2	1	2008-09-03 16:37:18.703	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	41486	6	t	t
-3224	1	2	1	2008-09-03 16:37:22.694	209.85.201.125	1	INPUT	\N	192.168.11.103	642	5222	50494	6	t	t
-3225	1	2	1	2008-09-03 16:37:22.71	192.168.11.103	1	OUTPUT	\N	209.85.201.125	300	50494	5222	6	t	t
-3252	1	2	1	2008-09-03 16:38:20.575	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3253	1	2	1	2008-09-03 16:38:20.591	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3254	1	2	1	2008-09-03 16:38:24.519	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	36691	80	6	t	t
-3255	1	2	1	2008-09-03 16:38:24.535	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	36691	6	t	t
-3279	1	2	1	2008-09-03 16:39:22.40	192.168.11.103	1	OUTPUT	\N	205.188.13.28	2569	35347	5190	6	t	t
-3271	1	2	1	2008-09-03 16:39:12.455	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	58648	80	6	t	t
-3272	1	2	1	2008-09-03 16:39:14.45	205.188.153.121	1	INPUT	\N	192.168.11.103	519	5190	51199	6	t	t
-3273	1	2	1	2008-09-03 16:39:14.45	192.168.11.103	1	OUTPUT	\N	205.188.153.121	401	51199	5190	6	t	t
-3274	1	2	1	2008-09-03 16:39:16.461	64.12.201.42	1	INPUT	\N	192.168.11.103	1748	5190	60756	6	t	t
-3275	1	2	1	2008-09-03 16:39:16.477	192.168.11.103	1	OUTPUT	\N	64.12.201.42	804	60756	5190	6	t	t
-3276	1	2	1	2008-09-03 16:39:20.389	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3277	1	2	1	2008-09-03 16:39:20.405	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3278	1	2	1	2008-09-03 16:39:22.384	205.188.13.28	1	INPUT	\N	192.168.11.103	1170	5190	35347	6	t	t
-3268	1	2	1	2008-09-03 16:39:12.408	217.76.32.61	1	INPUT	\N	192.168.11.103	314636	80	46435	6	t	t
-3269	1	2	1	2008-09-03 16:39:12.424	192.168.11.103	1	OUTPUT	\N	217.76.32.61	11995	46435	80	6	t	t
-3270	1	2	1	2008-09-03 16:39:12.439	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	58648	6	t	t
-3302	1	2	1	2008-09-03 16:39:52.345	193.0.0.193	1	INPUT	\N	192.168.11.103	23352	0	0	1	t	t
-3305	1	2	1	2008-09-03 16:40:10.365	217.76.32.61	1	INPUT	\N	192.168.11.103	1043	80	46446	6	t	t
-3306	1	2	1	2008-09-03 16:40:10.365	192.168.11.103	1	OUTPUT	\N	217.76.32.61	944	46446	80	6	t	t
-3307	1	2	1	2008-09-03 16:40:10.38	217.76.32.61	1	INPUT	\N	192.168.11.103	1043	80	46447	6	t	t
-3308	1	2	1	2008-09-03 16:40:10.396	192.168.11.103	1	OUTPUT	\N	217.76.32.61	944	46447	80	6	t	t
-3226	1	2	1	2008-09-03 16:37:28.68	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	58648	6	t	t
-3227	1	2	1	2008-09-03 16:37:28.696	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	58648	80	6	t	t
-3228	1	2	1	2008-09-03 16:37:30.707	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1801	58649	80	6	t	t
-3229	1	2	1	2008-09-03 16:37:30.707	72.14.205.19	1	INPUT	\N	192.168.11.103	677	80	58649	6	t	t
-3230	1	2	1	2008-09-03 16:37:30.754	146.102.42.85	1	INPUT	\N	192.168.11.103	1507	80	50579	6	t	t
-3231	1	2	1	2008-09-03 16:37:30.769	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1084	50579	80	6	t	t
-3232	1	2	1	2008-09-03 16:37:32.687	192.168.11.103	1	OUTPUT	\N	72.14.205.19	104	58647	80	6	t	t
-3233	1	2	1	2008-09-03 16:37:32.687	192.168.11.103	1	OUTPUT	\N	72.14.205.19	104	58651	80	6	t	t
-3234	1	2	1	2008-09-03 16:37:32.702	72.14.205.19	1	INPUT	\N	192.168.11.103	104	80	58647	6	t	t
-3235	1	2	1	2008-09-03 16:37:32.718	72.14.205.19	1	INPUT	\N	192.168.11.103	104	80	58651	6	t	t
-3236	1	2	1	2008-09-03 16:37:34.838	72.14.205.18	1	INPUT	\N	192.168.11.103	1750	80	53732	6	t	t
-3237	1	2	1	2008-09-03 16:37:34.853	72.14.205.18	1	INPUT	\N	192.168.11.103	4480	80	53735	6	t	t
-3238	1	2	1	2008-09-03 16:37:34.869	72.14.205.17	1	INPUT	\N	192.168.11.103	9301	80	37103	6	t	t
-3239	1	2	1	2008-09-03 16:37:34.916	192.168.11.103	1	OUTPUT	\N	72.14.205.18	4256	53732	80	6	t	t
-3240	1	2	1	2008-09-03 16:37:34.916	192.168.11.103	1	OUTPUT	\N	72.14.205.17	18120	37103	80	6	t	t
-3241	1	2	1	2008-09-03 16:37:34.931	192.168.11.103	1	OUTPUT	\N	72.14.205.18	11076	53735	80	6	t	t
-3242	1	2	1	2008-09-03 16:37:34.947	72.14.205.18	1	INPUT	\N	192.168.11.103	2842	80	53731	6	t	t
-3243	1	2	1	2008-09-03 16:37:34.963	72.14.205.18	1	INPUT	\N	192.168.11.103	1204	80	53733	6	t	t
-3244	1	2	1	2008-09-03 16:37:34.978	192.168.11.103	1	OUTPUT	\N	72.14.205.18	6984	53731	80	6	t	t
-3245	1	2	1	2008-09-03 16:37:34.994	192.168.11.103	1	OUTPUT	\N	72.14.205.18	2892	53733	80	6	t	t
-3246	1	2	1	2008-09-03 16:37:35.009	72.14.205.18	1	INPUT	\N	192.168.11.103	1299	80	53734	6	t	t
-3247	1	2	1	2008-09-03 16:37:35.025	192.168.11.103	1	OUTPUT	\N	72.14.205.18	2956	53734	80	6	t	t
-3248	1	2	1	2008-09-03 16:37:35.04	217.76.32.61	1	INPUT	\N	192.168.11.103	321611	80	46435	6	t	t
-3249	1	2	1	2008-09-03 16:37:35.056	192.168.11.103	1	OUTPUT	\N	217.76.32.61	15131	46435	80	6	t	t
-3250	1	2	1	2008-09-03 16:37:35.072	217.76.32.61	1	INPUT	\N	192.168.11.103	1043	80	46441	6	t	t
-3251	1	2	1	2008-09-03 16:37:35.087	192.168.11.103	1	OUTPUT	\N	217.76.32.61	944	46441	80	6	t	t
-3256	1	2	1	2008-09-03 16:38:46.515	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	58648	6	t	t
-3257	1	2	1	2008-09-03 16:38:46.515	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	58648	80	6	t	t
-3316	1	2	1	2008-09-03 16:40:32.297	192.168.11.103	1	OUTPUT	\N	64.12.25.174	150	37056	5190	6	t	t
-3313	1	2	1	2008-09-03 16:40:30.255	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1965	53744	80	6	t	t
-3314	1	2	1	2008-09-03 16:40:30.271	72.14.205.18	1	INPUT	\N	192.168.11.103	789	80	53744	6	t	t
-3315	1	2	1	2008-09-03 16:40:32.266	64.12.25.174	1	INPUT	\N	192.168.11.103	560	5190	37056	6	t	t
-3354	1	2	1	2008-09-03 16:41:30.281	72.14.205.18	1	INPUT	\N	192.168.11.103	49735	80	53750	6	t	t
-3355	1	2	1	2008-09-03 16:41:30.328	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	53743	6	t	t
-3356	1	2	1	2008-09-03 16:41:30.343	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	53743	80	6	t	t
-3353	1	2	1	2008-09-03 16:41:30.265	192.168.11.103	1	OUTPUT	\N	72.14.205.18	26593	53750	80	6	t	t
-3359	1	2	1	2008-09-03 16:41:36.302	192.168.11.103	1	OUTPUT	\N	146.102.42.85	3148	50766	80	6	t	t
-3360	1	2	1	2008-09-03 16:41:36.318	146.102.42.85	1	INPUT	\N	192.168.11.103	4064	80	50766	6	t	t
-3361	1	2	1	2008-09-03 16:41:40.286	209.85.201.125	1	INPUT	\N	192.168.11.103	62	5222	50494	6	t	t
-3362	1	2	1	2008-09-03 16:41:40.301	192.168.11.103	1	OUTPUT	\N	209.85.201.125	40	50494	5222	6	t	t
-3363	1	2	1	2008-09-03 16:41:42.293	64.12.25.174	1	INPUT	\N	192.168.11.103	241	5190	37056	6	t	t
-3364	1	2	1	2008-09-03 16:41:42.309	192.168.11.103	1	OUTPUT	\N	64.12.25.174	40	37056	5190	6	t	t
-3373	1	2	1	2008-09-03 16:42:30.452	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1801	53747	80	6	t	t
-3374	1	2	1	2008-09-03 16:42:30.468	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	53747	6	t	t
-3375	1	2	1	2008-09-03 16:42:34.482	146.102.42.85	1	INPUT	\N	192.168.11.103	1267	80	50769	6	t	t
-3376	1	2	1	2008-09-03 16:42:34.482	192.168.11.103	1	OUTPUT	\N	146.102.42.85	52	50769	80	6	t	t
-3377	1	2	1	2008-09-03 16:42:46.526	146.102.42.85	1	INPUT	\N	192.168.11.103	1322	80	50770	6	t	t
-3378	1	2	1	2008-09-03 16:42:46.557	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50770	80	6	t	t
-3405	1	2	1	2008-09-03 16:43:30.639	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1803	53746	80	6	t	t
-3406	1	2	1	2008-09-03 16:43:30.655	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	53746	6	t	t
-3407	1	2	1	2008-09-03 16:43:34.654	64.12.25.174	1	INPUT	\N	192.168.11.103	76	5190	37056	6	t	t
-3408	1	2	1	2008-09-03 16:43:34.669	192.168.11.103	1	OUTPUT	\N	64.12.25.174	40	37056	5190	6	t	t
-3409	1	2	1	2008-09-03 16:43:44.722	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53743	80	6	t	t
-3410	1	2	1	2008-09-03 16:43:44.737	72.14.205.18	1	INPUT	\N	192.168.11.103	178	80	53743	6	t	t
-3411	1	2	1	2008-09-03 16:43:44.753	72.14.205.83	1	INPUT	\N	192.168.11.103	540	80	35524	6	t	t
-3412	1	2	1	2008-09-03 16:43:44.784	192.168.11.103	1	OUTPUT	\N	72.14.205.83	1589	35524	80	6	t	t
-3423	1	2	1	2008-09-03 16:44:30.889	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1803	53748	80	6	t	t
-3424	1	2	1	2008-09-03 16:44:30.905	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	53748	6	t	t
-3425	1	2	1	2008-09-03 16:44:36.927	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50769	80	6	t	t
-3426	1	2	1	2008-09-03 16:44:36.942	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50766	80	6	t	t
-3427	1	2	1	2008-09-03 16:44:36.958	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50769	6	t	t
-3428	1	2	1	2008-09-03 16:44:36.958	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50766	6	t	t
-3429	1	2	1	2008-09-03 16:44:42.948	64.12.25.174	1	INPUT	\N	192.168.11.103	560	5190	37056	6	t	t
-3430	1	2	1	2008-09-03 16:44:42.964	192.168.11.103	1	OUTPUT	\N	64.12.25.174	150	37056	5190	6	t	t
-3292	1	2	1	2008-09-03 16:39:40.389	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53734	80	6	t	t
-3293	1	2	1	2008-09-03 16:39:40.404	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53731	80	6	t	t
-3294	1	2	1	2008-09-03 16:39:40.404	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50579	80	6	t	t
-3295	1	2	1	2008-09-03 16:39:40.42	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	53733	6	t	t
-3296	1	2	1	2008-09-03 16:39:40.435	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	53735	6	t	t
-3297	1	2	1	2008-09-03 16:39:40.451	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	53734	6	t	t
-3298	1	2	1	2008-09-03 16:39:40.467	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	53731	6	t	t
-3299	1	2	1	2008-09-03 16:39:40.482	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50579	6	t	t
-3365	1	2	1	2008-09-03 16:41:50.306	146.102.42.85	1	INPUT	\N	192.168.11.103	1285	80	50767	6	t	t
-3366	1	2	1	2008-09-03 16:41:50.322	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50767	80	6	t	t
-3367	1	2	1	2008-09-03 16:42:12.387	146.102.42.85	1	INPUT	\N	192.168.11.103	1233	80	50765	6	t	t
-3368	1	2	1	2008-09-03 16:42:12.402	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50765	80	6	t	t
-3369	1	2	1	2008-09-03 16:42:14.394	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	46447	80	6	t	t
-3370	1	2	1	2008-09-03 16:42:14.409	192.168.11.103	1	OUTPUT	\N	217.76.32.61	104	46446	80	6	t	t
-3451	1	2	1	2008-09-03 16:45:31.108	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1803	54901	80	6	t	t
-3452	1	2	1	2008-09-03 16:45:31.123	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	54901	6	t	t
-3625	1	2	1	2008-09-03 16:56:14.698	64.12.25.174	1	INPUT	\N	192.168.11.103	1569	5190	37056	6	t	t
-3626	1	2	1	2008-09-03 16:56:14.714	192.168.11.103	1	OUTPUT	\N	64.12.25.174	331	37056	5190	6	t	t
-3352	1	2	1	2008-09-03 16:41:24.259	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52625	53748	80	6	t	t
-3318	1	2	1	2008-09-03 16:40:54.183	192.168.11.103	1	OUTPUT	\N	64.12.25.174	301	37056	5190	6	t	t
-3319	1	2	1	2008-09-03 16:40:58.158	192.168.11.103	1	OUTPUT	\N	146.102.42.85	2176	50766	80	6	t	t
-3320	1	2	1	2008-09-03 16:40:58.173	146.102.42.85	1	INPUT	\N	192.168.11.103	1397	80	50766	6	t	t
-3345	1	2	1	2008-09-03 16:41:22.236	72.14.205.18	1	INPUT	\N	192.168.11.103	66116	80	53747	6	t	t
-3346	1	2	1	2008-09-03 16:41:22.283	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52980	53747	80	6	t	t
-3347	1	2	1	2008-09-03 16:41:22.346	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50770	80	6	t	t
-3348	1	2	1	2008-09-03 16:41:22.346	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50770	6	t	t
-3349	1	2	1	2008-09-03 16:41:24.227	72.14.205.18	1	INPUT	\N	192.168.11.103	139832	80	53745	6	t	t
-3350	1	2	1	2008-09-03 16:41:24.227	192.168.11.103	1	OUTPUT	\N	72.14.205.18	69823	53745	80	6	t	t
-3351	1	2	1	2008-09-03 16:41:24.243	72.14.205.18	1	INPUT	\N	192.168.11.103	129721	80	53748	6	t	t
-3317	1	2	1	2008-09-03 16:40:54.167	64.12.25.174	1	INPUT	\N	192.168.11.103	1338	5190	37056	6	t	t
-3323	1	2	1	2008-09-03 16:41:00.169	192.168.11.103	1	OUTPUT	\N	146.102.42.85	2176	50765	80	6	t	t
-3324	1	2	1	2008-09-03 16:41:00.184	146.102.42.85	1	INPUT	\N	192.168.11.103	1159	80	50765	6	t	t
-3325	1	2	1	2008-09-03 16:41:00.293	192.168.11.103	1	OUTPUT	\N	146.102.42.85	1092	50767	80	6	t	t
-3326	1	2	1	2008-09-03 16:41:00.324	146.102.42.85	1	INPUT	\N	192.168.11.103	112	80	50767	6	t	t
-3329	1	2	1	2008-09-03 16:41:04.168	72.14.205.18	1	INPUT	\N	192.168.11.103	20299	80	53746	6	t	t
-3330	1	2	1	2008-09-03 16:41:04.184	192.168.11.103	1	OUTPUT	\N	72.14.205.18	46852	53746	80	6	t	t
-3331	1	2	1	2008-09-03 16:41:04.231	74.125.47.167	1	INPUT	\N	192.168.11.103	570	80	39248	6	t	t
-3332	1	2	1	2008-09-03 16:41:04.231	192.168.11.103	1	OUTPUT	\N	74.125.47.167	919	39248	80	6	t	t
-3335	1	2	1	2008-09-03 16:41:06.168	72.14.205.18	1	INPUT	\N	192.168.11.103	87535	80	53749	6	t	t
-3336	1	2	1	2008-09-03 16:41:06.184	192.168.11.103	1	OUTPUT	\N	72.14.205.18	36506	53749	80	6	t	t
-3337	1	2	1	2008-09-03 16:41:06.199	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	53743	6	t	t
-3338	1	2	1	2008-09-03 16:41:06.215	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	53743	80	6	t	t
-3341	1	2	1	2008-09-03 16:41:20.213	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3342	1	2	1	2008-09-03 16:41:20.229	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3343	1	2	1	2008-09-03 16:41:22.204	192.168.11.103	1	OUTPUT	\N	146.102.42.85	4240	50769	80	6	t	t
-3344	1	2	1	2008-09-03 16:41:22.22	146.102.42.85	1	INPUT	\N	192.168.11.103	4189	80	50769	6	t	t
-3372	1	2	1	2008-09-03 16:42:14.425	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	46446	6	t	t
-3371	1	2	1	2008-09-03 16:42:14.425	217.76.32.61	1	INPUT	\N	192.168.11.103	104	80	46447	6	t	t
-3379	1	2	1	2008-09-03 16:42:50.541	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	53743	6	t	t
-3380	1	2	1	2008-09-03 16:42:50.556	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	53743	80	6	t	t
-3381	1	2	1	2008-09-03 16:42:50.572	192.168.11.103	1	OUTPUT	\N	195.137.160.40	816	48907	110	6	t	t
-3382	1	2	1	2008-09-03 16:42:50.588	192.168.11.103	1	OUTPUT	\N	195.137.160.40	812	48906	110	6	t	t
-3383	1	2	1	2008-09-03 16:42:50.603	195.137.160.40	1	INPUT	\N	192.168.11.103	2213	110	48907	6	t	t
-3384	1	2	1	2008-09-03 16:42:50.619	195.137.160.40	1	INPUT	\N	192.168.11.103	1379	110	48906	6	t	t
-3385	1	2	1	2008-09-03 16:42:52.548	192.168.11.103	1	OUTPUT	\N	64.233.179.109	1038	41284	995	6	t	t
-3386	1	2	1	2008-09-03 16:42:52.564	64.233.179.109	1	INPUT	\N	192.168.11.103	1922	995	41284	6	t	t
-3387	1	2	1	2008-09-03 16:42:54.555	64.12.25.174	1	INPUT	\N	192.168.11.103	1982	5190	37056	6	t	t
-3388	1	2	1	2008-09-03 16:42:54.571	192.168.11.103	1	OUTPUT	\N	64.12.25.174	420	37056	5190	6	t	t
-3389	1	2	1	2008-09-03 16:42:58.538	72.14.205.18	1	INPUT	\N	192.168.11.103	13104	80	53746	6	t	t
-3390	1	2	1	2008-09-03 16:42:58.554	72.14.205.83	1	INPUT	\N	192.168.11.103	11032	80	35524	6	t	t
-3391	1	2	1	2008-09-03 16:42:58.57	192.168.11.103	1	OUTPUT	\N	72.14.205.18	32736	53746	80	6	t	t
-3392	1	2	1	2008-09-03 16:42:58.585	192.168.11.103	1	OUTPUT	\N	72.14.205.83	27444	35524	80	6	t	t
-3393	1	2	1	2008-09-03 16:42:58.601	72.14.205.83	1	INPUT	\N	192.168.11.103	11032	80	35523	6	t	t
-3394	1	2	1	2008-09-03 16:42:58.617	72.14.205.18	1	INPUT	\N	192.168.11.103	8736	80	53748	6	t	t
-3395	1	2	1	2008-09-03 16:42:58.632	192.168.11.103	1	OUTPUT	\N	72.14.205.18	21876	53748	80	6	t	t
-3396	1	2	1	2008-09-03 16:42:58.648	192.168.11.103	1	OUTPUT	\N	72.14.205.83	27444	35523	80	6	t	t
-3397	1	2	1	2008-09-03 16:42:58.664	72.14.205.18	1	INPUT	\N	192.168.11.103	8788	80	53745	6	t	t
-3398	1	2	1	2008-09-03 16:42:58.679	192.168.11.103	1	OUTPUT	\N	72.14.205.18	21876	53745	80	6	t	t
-3399	1	2	1	2008-09-03 16:42:58.695	72.14.205.18	1	INPUT	\N	192.168.11.103	10564	80	53749	6	t	t
-3400	1	2	1	2008-09-03 16:42:58.711	192.168.11.103	1	OUTPUT	\N	72.14.205.18	7540	53749	80	6	t	t
-3401	1	2	1	2008-09-03 16:43:06.567	192.168.11.103	1	OUTPUT	\N	74.125.47.167	104	39248	80	6	t	t
-3402	1	2	1	2008-09-03 16:43:06.583	74.125.47.167	1	INPUT	\N	192.168.11.103	104	80	39248	6	t	t
-3403	1	2	1	2008-09-03 16:43:20.65	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3404	1	2	1	2008-09-03 16:43:20.666	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3413	1	2	1	2008-09-03 16:43:50.728	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50767	80	6	t	t
-3414	1	2	1	2008-09-03 16:43:50.759	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50767	6	t	t
-3415	1	2	1	2008-09-03 16:44:16.901	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3416	1	2	1	2008-09-03 16:44:16.916	192.168.11.103	1	OUTPUT	\N	64.12.201.42	40	60756	5190	6	t	t
-3417	1	2	1	2008-09-03 16:44:20.853	192.168.11.103	1	OUTPUT	\N	146.102.42.85	104	50765	80	6	t	t
-3418	1	2	1	2008-09-03 16:44:20.868	146.102.42.85	1	INPUT	\N	192.168.11.103	104	80	50765	6	t	t
-3419	1	2	1	2008-09-03 16:44:20.884	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3420	1	2	1	2008-09-03 16:44:20.90	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3421	1	2	1	2008-09-03 16:44:22.86	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3422	1	2	1	2008-09-03 16:44:22.876	192.168.11.103	1	OUTPUT	\N	205.188.13.28	40	35347	5190	6	t	t
-3433	1	2	1	2008-09-03 16:44:59.022	72.14.205.17	1	INPUT	\N	192.168.11.103	9940	80	54901	6	t	t
-3434	1	2	1	2008-09-03 16:44:59.038	72.14.205.17	1	INPUT	\N	192.168.11.103	8302	80	54899	6	t	t
-3435	1	2	1	2008-09-03 16:44:59.054	72.14.205.17	1	INPUT	\N	192.168.11.103	11578	80	54900	6	t	t
-3436	1	2	1	2008-09-03 16:44:59.069	72.14.205.83	1	INPUT	\N	192.168.11.103	19149	80	35523	6	t	t
-3437	1	2	1	2008-09-03 16:44:59.085	192.168.11.103	1	OUTPUT	\N	72.14.205.17	24716	54901	80	6	t	t
-3438	1	2	1	2008-09-03 16:44:59.085	192.168.11.103	1	OUTPUT	\N	72.14.205.17	28808	54900	80	6	t	t
-3439	1	2	1	2008-09-03 16:44:59.101	192.168.11.103	1	OUTPUT	\N	72.14.205.17	20624	54899	80	6	t	t
-3440	1	2	1	2008-09-03 16:44:59.116	192.168.11.103	1	OUTPUT	\N	72.14.205.83	29281	35523	80	6	t	t
-3441	1	2	1	2008-09-03 16:44:59.132	72.14.205.18	1	INPUT	\N	192.168.11.103	11466	80	53749	6	t	t
-3442	1	2	1	2008-09-03 16:44:59.148	192.168.11.103	1	OUTPUT	\N	72.14.205.18	28644	53749	80	6	t	t
-3443	1	2	1	2008-09-03 16:44:59.164	72.14.205.18	1	INPUT	\N	192.168.11.103	3181	80	53745	6	t	t
-3444	1	2	1	2008-09-03 16:44:59.164	192.168.11.103	1	OUTPUT	\N	72.14.205.18	6884	53745	80	6	t	t
-3445	1	2	1	2008-09-03 16:45:07.004	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35524	6	t	t
-3446	1	2	1	2008-09-03 16:45:07.02	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35524	80	6	t	t
-3447	1	2	1	2008-09-03 16:45:17.088	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3448	1	2	1	2008-09-03 16:45:17.104	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3449	1	2	1	2008-09-03 16:45:21.118	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3450	1	2	1	2008-09-03 16:45:21.134	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3457	1	2	1	2008-09-03 16:46:21.275	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3458	1	2	1	2008-09-03 16:46:21.275	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3459	1	2	1	2008-09-03 16:46:31.288	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1803	54900	80	6	t	t
-3460	1	2	1	2008-09-03 16:46:31.303	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	54900	6	t	t
-3461	1	2	1	2008-09-03 16:46:57.28	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35524	6	t	t
-3462	1	2	1	2008-09-03 16:46:57.28	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35524	80	6	t	t
-3463	1	2	1	2008-09-03 16:47:01.279	72.14.205.83	1	INPUT	\N	192.168.11.103	8190	80	35523	6	t	t
-3464	1	2	1	2008-09-03 16:47:01.295	72.14.205.83	1	INPUT	\N	192.168.11.103	5572	80	42346	6	t	t
-3465	1	2	1	2008-09-03 16:47:01.295	72.14.205.18	1	INPUT	\N	192.168.11.103	12012	80	53745	6	t	t
-3466	1	2	1	2008-09-03 16:47:01.31	72.14.205.83	1	INPUT	\N	192.168.11.103	11578	80	42345	6	t	t
-3467	1	2	1	2008-09-03 16:47:01.326	192.168.11.103	1	OUTPUT	\N	72.14.205.83	20460	35523	80	6	t	t
-3468	1	2	1	2008-09-03 16:47:01.342	192.168.11.103	1	OUTPUT	\N	72.14.205.83	13804	42346	80	6	t	t
-3469	1	2	1	2008-09-03 16:47:01.357	192.168.11.103	1	OUTPUT	\N	72.14.205.18	30060	53745	80	6	t	t
-3470	1	2	1	2008-09-03 16:47:01.373	192.168.11.103	1	OUTPUT	\N	72.14.205.83	28808	42345	80	6	t	t
-3471	1	2	1	2008-09-03 16:47:01.388	72.14.205.18	1	INPUT	\N	192.168.11.103	11466	80	53749	6	t	t
-3472	1	2	1	2008-09-03 16:47:01.388	192.168.11.103	1	OUTPUT	\N	72.14.205.18	28644	53749	80	6	t	t
-3473	1	2	1	2008-09-03 16:47:01.42	72.14.205.17	1	INPUT	\N	192.168.11.103	14711	80	54899	6	t	t
-3474	1	2	1	2008-09-03 16:47:01.435	192.168.11.103	1	OUTPUT	\N	72.14.205.17	17277	54899	80	6	t	t
-3475	1	2	1	2008-09-03 16:47:17.275	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3476	1	2	1	2008-09-03 16:47:17.29	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3453	1	2	1	2008-09-03 16:45:35.106	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35524	6	t	t
-3454	1	2	1	2008-09-03 16:45:35.122	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35524	80	6	t	t
-3455	1	2	1	2008-09-03 16:45:43.136	64.12.25.174	1	INPUT	\N	192.168.11.103	1422	5190	37056	6	t	t
-3456	1	2	1	2008-09-03 16:45:43.151	192.168.11.103	1	OUTPUT	\N	64.12.25.174	300	37056	5190	6	t	t
-3479	1	2	1	2008-09-03 16:47:47.282	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3480	1	2	1	2008-09-03 16:47:47.328	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3505	1	2	1	2008-09-03 16:49:41.217	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35523	6	t	t
-3506	1	2	1	2008-09-03 16:49:41.233	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35523	80	6	t	t
-3507	1	2	1	2008-09-03 16:49:47.247	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3508	1	2	1	2008-09-03 16:49:47.263	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3534	1	2	1	2008-09-03 16:51:37.281	192.168.11.103	1	OUTPUT	\N	140.90.128.70	893	36822	80	6	t	t
-3535	1	2	1	2008-09-03 16:51:37.281	140.90.128.70	1	INPUT	\N	192.168.11.103	7580	80	36822	6	t	t
-3536	1	2	1	2008-09-03 16:51:41.212	192.168.11.103	1	OUTPUT	\N	140.90.128.70	893	36824	80	6	t	t
-3537	1	2	1	2008-09-03 16:51:41.227	140.90.128.70	1	INPUT	\N	192.168.11.103	7586	80	36824	6	t	t
-3538	1	2	1	2008-09-03 16:51:41.243	209.85.201.125	1	INPUT	\N	192.168.11.103	62	5222	50494	6	t	t
-3539	1	2	1	2008-09-03 16:51:41.259	192.168.11.103	1	OUTPUT	\N	209.85.201.125	40	50494	5222	6	t	t
-3540	1	2	1	2008-09-03 16:51:43.193	192.168.11.103	1	OUTPUT	\N	140.90.128.70	841	36823	80	6	t	t
-3541	1	2	1	2008-09-03 16:51:43.208	140.90.128.70	1	INPUT	\N	192.168.11.103	7566	80	36823	6	t	t
-3542	1	2	1	2008-09-03 16:51:47.186	64.12.25.174	1	INPUT	\N	192.168.11.103	1663	5190	37056	6	t	t
-3543	1	2	1	2008-09-03 16:51:47.186	192.168.11.103	1	OUTPUT	\N	64.12.25.174	340	37056	5190	6	t	t
-3544	1	2	1	2008-09-03 16:51:49.151	72.14.205.19	1	INPUT	\N	192.168.11.103	138	80	60691	6	t	t
-3545	1	2	1	2008-09-03 16:51:49.167	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	60691	80	6	t	t
-3579	1	2	1	2008-09-03 16:53:35.018	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	60691	80	6	t	t
-3578	1	2	1	2008-09-03 16:53:35.002	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	60691	6	t	t
-3581	1	2	1	2008-09-03 16:53:46.935	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3582	1	2	1	2008-09-03 16:53:46.95	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3623	1	2	1	2008-09-03 16:55:48.79	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	46414	6	t	t
-3624	1	2	1	2008-09-03 16:55:48.805	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	46414	80	6	t	t
-3657	1	2	1	2008-09-03 16:57:36.581	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	46414	80	6	t	t
-3658	1	2	1	2008-09-03 16:57:46.528	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3659	1	2	1	2008-09-03 16:57:46.543	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3656	1	2	1	2008-09-03 16:57:36.565	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	46414	6	t	t
-3684	1	2	1	2008-09-03 16:59:34.299	64.12.25.174	1	INPUT	\N	192.168.11.103	2245	5190	37056	6	t	t
-3685	1	2	1	2008-09-03 16:59:34.315	192.168.11.103	1	OUTPUT	\N	64.12.25.174	420	37056	5190	6	t	t
-3481	1	2	1	2008-09-03 16:47:49.25	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35523	6	t	t
-3482	1	2	1	2008-09-03 16:47:49.265	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35523	80	6	t	t
-3483	1	2	1	2008-09-03 16:48:21.256	192.168.11.103	1	OUTPUT	\N	209.85.201.125	300	50494	5222	6	t	t
-3484	1	2	1	2008-09-03 16:48:21.272	209.85.201.125	1	INPUT	\N	192.168.11.103	361	5222	50494	6	t	t
-3485	1	2	1	2008-09-03 16:48:31.253	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1803	53745	80	6	t	t
-3486	1	2	1	2008-09-03 16:48:31.269	72.14.205.18	1	INPUT	\N	192.168.11.103	677	80	53745	6	t	t
-3487	1	2	1	2008-09-03 16:48:53.231	205.188.13.28	1	INPUT	\N	192.168.11.103	167	5190	35347	6	t	t
-3488	1	2	1	2008-09-03 16:48:53.247	192.168.11.103	1	OUTPUT	\N	205.188.13.28	116	35347	5190	6	t	t
-3489	1	2	1	2008-09-03 16:48:57.246	64.12.25.174	1	INPUT	\N	192.168.11.103	1115	5190	37056	6	t	t
-3490	1	2	1	2008-09-03 16:48:57.246	192.168.11.103	1	OUTPUT	\N	64.12.25.174	221	37056	5190	6	t	t
-3491	1	2	1	2008-09-03 16:49:09.242	192.168.11.103	1	OUTPUT	\N	72.14.205.83	104	42345	80	6	t	t
-3492	1	2	1	2008-09-03 16:49:09.242	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	54899	80	6	t	t
-3493	1	2	1	2008-09-03 16:49:09.258	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	53749	80	6	t	t
-3494	1	2	1	2008-09-03 16:49:09.274	72.14.205.83	1	INPUT	\N	192.168.11.103	104	80	42345	6	t	t
-3495	1	2	1	2008-09-03 16:49:09.289	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	54899	6	t	t
-3496	1	2	1	2008-09-03 16:49:09.305	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	53749	6	t	t
-3497	1	2	1	2008-09-03 16:49:11.242	72.14.205.83	1	INPUT	\N	192.168.11.103	74	80	35523	6	t	t
-3498	1	2	1	2008-09-03 16:49:11.257	192.168.11.103	1	OUTPUT	\N	72.14.205.83	52	35523	80	6	t	t
-3499	1	2	1	2008-09-03 16:49:17.287	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3500	1	2	1	2008-09-03 16:49:17.302	192.168.11.103	1	OUTPUT	\N	64.12.201.42	40	60756	5190	6	t	t
-3501	1	2	1	2008-09-03 16:49:21.254	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3502	1	2	1	2008-09-03 16:49:21.254	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3503	1	2	1	2008-09-03 16:49:31.22	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1966	60690	80	6	t	t
-3504	1	2	1	2008-09-03 16:49:31.236	72.14.205.19	1	INPUT	\N	192.168.11.103	789	80	60690	6	t	t
-3509	1	2	1	2008-09-03 16:50:03.211	72.14.205.19	1	INPUT	\N	192.168.11.103	9845	80	60692	6	t	t
-3510	1	2	1	2008-09-03 16:50:03.227	72.14.205.19	1	INPUT	\N	192.168.11.103	9394	80	60693	6	t	t
-3511	1	2	1	2008-09-03 16:50:03.242	72.14.205.19	1	INPUT	\N	192.168.11.103	19362	80	60691	6	t	t
-3512	1	2	1	2008-09-03 16:50:03.258	192.168.11.103	1	OUTPUT	\N	72.14.205.19	23416	60692	80	6	t	t
-3513	1	2	1	2008-09-03 16:50:03.274	72.14.205.19	1	INPUT	\N	192.168.11.103	6023	80	60695	6	t	t
-3514	1	2	1	2008-09-03 16:50:03.289	72.14.205.19	1	INPUT	\N	192.168.11.103	11032	80	60696	6	t	t
-3515	1	2	1	2008-09-03 16:50:03.305	192.168.11.103	1	OUTPUT	\N	72.14.205.19	28353	60691	80	6	t	t
-3516	1	2	1	2008-09-03 16:50:03.305	192.168.11.103	1	OUTPUT	\N	72.14.205.19	23352	60693	80	6	t	t
-3517	1	2	1	2008-09-03 16:50:03.32	192.168.11.103	1	OUTPUT	\N	72.14.205.19	27444	60696	80	6	t	t
-3518	1	2	1	2008-09-03 16:50:03.336	192.168.11.103	1	OUTPUT	\N	72.14.205.19	13816	60695	80	6	t	t
-3519	1	2	1	2008-09-03 16:50:03.352	72.14.205.19	1	INPUT	\N	192.168.11.103	9394	80	60694	6	t	t
-3520	1	2	1	2008-09-03 16:50:03.367	192.168.11.103	1	OUTPUT	\N	72.14.205.19	23352	60694	80	6	t	t
-3521	1	2	1	2008-09-03 16:50:21.222	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3522	1	2	1	2008-09-03 16:50:21.237	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3525	1	2	1	2008-09-03 16:51:03.225	72.14.205.19	1	INPUT	\N	192.168.11.103	540	80	60691	6	t	t
-3526	1	2	1	2008-09-03 16:51:03.225	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1589	60691	80	6	t	t
-3527	1	2	1	2008-09-03 16:51:17.221	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3528	1	2	1	2008-09-03 16:51:17.237	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3529	1	2	1	2008-09-03 16:51:21.183	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3530	1	2	1	2008-09-03 16:51:21.199	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3531	1	2	1	2008-09-03 16:51:31.182	192.168.11.103	1	OUTPUT	\N	72.14.205.19	1803	60693	80	6	t	t
-3532	1	2	1	2008-09-03 16:51:31.198	72.14.205.19	1	INPUT	\N	192.168.11.103	677	80	60693	6	t	t
-3533	1	2	1	2008-09-03 16:51:31.213	192.168.11.103	1	OUTPUT	\N	193.0.0.193	151788	0	0	1	t	t
-3546	1	2	1	2008-09-03 16:51:51.148	72.14.205.19	1	INPUT	\N	192.168.11.103	10920	80	60694	6	t	t
-3547	1	2	1	2008-09-03 16:51:51.163	72.14.205.19	1	INPUT	\N	192.168.11.103	11917	80	60695	6	t	t
-3548	1	2	1	2008-09-03 16:51:51.179	72.14.205.17	1	INPUT	\N	192.168.11.103	2747	80	49917	6	t	t
-3549	1	2	1	2008-09-03 16:51:51.195	192.168.11.103	1	OUTPUT	\N	72.14.205.19	27280	60694	80	6	t	t
-3550	1	2	1	2008-09-03 16:51:51.195	192.168.11.103	1	OUTPUT	\N	72.14.205.17	5620	49917	80	6	t	t
-3551	1	2	1	2008-09-03 16:51:51.21	72.14.205.17	1	INPUT	\N	192.168.11.103	5572	80	49916	6	t	t
-3552	1	2	1	2008-09-03 16:51:51.226	72.14.205.17	1	INPUT	\N	192.168.11.103	13216	80	49915	6	t	t
-3553	1	2	1	2008-09-03 16:51:51.241	192.168.11.103	1	OUTPUT	\N	72.14.205.19	28708	60695	80	6	t	t
-3554	1	2	1	2008-09-03 16:51:51.257	192.168.11.103	1	OUTPUT	\N	72.14.205.17	32900	49915	80	6	t	t
-3555	1	2	1	2008-09-03 16:51:51.273	192.168.11.103	1	OUTPUT	\N	72.14.205.17	13804	49916	80	6	t	t
-3556	1	2	1	2008-09-03 16:51:51.288	72.14.205.19	1	INPUT	\N	192.168.11.103	19861	80	60696	6	t	t
-3557	1	2	1	2008-09-03 16:51:51.288	192.168.11.103	1	OUTPUT	\N	72.14.205.19	30645	60696	80	6	t	t
-3561	1	2	1	2008-09-03 16:52:51.03	192.168.11.103	1	OUTPUT	\N	195.137.160.40	812	39865	110	6	t	t
-3562	1	2	1	2008-09-03 16:52:51.046	192.168.11.103	1	OUTPUT	\N	195.137.160.40	816	39866	110	6	t	t
-3563	1	2	1	2008-09-03 16:52:51.061	195.137.160.40	1	INPUT	\N	192.168.11.103	1379	110	39865	6	t	t
-3564	1	2	1	2008-09-03 16:52:51.077	195.137.160.40	1	INPUT	\N	192.168.11.103	2213	110	39866	6	t	t
-3565	1	2	1	2008-09-03 16:52:53.027	192.168.11.103	1	OUTPUT	\N	64.233.179.109	1510	52877	995	6	t	t
-3566	1	2	1	2008-09-03 16:52:53.042	64.233.179.109	1	INPUT	\N	192.168.11.103	8183	995	52877	6	t	t
-3567	1	2	1	2008-09-03 16:53:07.019	72.14.205.19	1	INPUT	\N	192.168.11.103	74	80	60691	6	t	t
-3568	1	2	1	2008-09-03 16:53:07.034	192.168.11.103	1	OUTPUT	\N	72.14.205.19	52	60691	80	6	t	t
-3575	1	2	1	2008-09-03 16:53:21.01	192.168.11.103	1	OUTPUT	\N	209.85.201.125	340	50494	5222	6	t	t
-3576	1	2	1	2008-09-03 16:53:30.993	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1803	49917	80	6	t	t
-3577	1	2	1	2008-09-03 16:53:31.009	72.14.205.17	1	INPUT	\N	192.168.11.103	677	80	49917	6	t	t
-3572	1	2	1	2008-09-03 16:53:17.017	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3573	1	2	1	2008-09-03 16:53:17.033	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3602	1	2	1	2008-09-03 16:54:30.938	72.14.205.18	1	INPUT	\N	192.168.11.103	789	80	46415	6	t	t
-3599	1	2	1	2008-09-03 16:54:28.91	72.14.205.18	1	INPUT	\N	192.168.11.103	652	80	46414	6	t	t
-3600	1	2	1	2008-09-03 16:54:28.926	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1753	46414	80	6	t	t
-3601	1	2	1	2008-09-03 16:54:30.922	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1967	46415	80	6	t	t
-3583	1	2	1	2008-09-03 16:53:52.925	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3584	1	2	1	2008-09-03 16:53:52.94	192.168.11.103	1	OUTPUT	\N	205.188.13.28	40	35347	5190	6	t	t
-3585	1	2	1	2008-09-03 16:53:56.918	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	49916	80	6	t	t
-3586	1	2	1	2008-09-03 16:53:56.933	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	49915	80	6	t	t
-3587	1	2	1	2008-09-03 16:53:56.949	192.168.11.103	1	OUTPUT	\N	72.14.205.19	104	60695	80	6	t	t
-3588	1	2	1	2008-09-03 16:53:56.965	192.168.11.103	1	OUTPUT	\N	72.14.205.19	104	60696	80	6	t	t
-3589	1	2	1	2008-09-03 16:53:56.98	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	49916	6	t	t
-3590	1	2	1	2008-09-03 16:53:56.98	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	49915	6	t	t
-3591	1	2	1	2008-09-03 16:53:56.996	72.14.205.19	1	INPUT	\N	192.168.11.103	104	80	60695	6	t	t
-3592	1	2	1	2008-09-03 16:53:57.011	72.14.205.19	1	INPUT	\N	192.168.11.103	104	80	60696	6	t	t
-3595	1	2	1	2008-09-03 16:54:18.912	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3596	1	2	1	2008-09-03 16:54:18.912	192.168.11.103	1	OUTPUT	\N	64.12.201.42	40	60756	5190	6	t	t
-3597	1	2	1	2008-09-03 16:54:20.908	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3598	1	2	1	2008-09-03 16:54:20.908	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3604	1	2	1	2008-09-03 16:54:52.838	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	46414	6	t	t
-3605	1	2	1	2008-09-03 16:54:52.854	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	46414	80	6	t	t
-3617	1	2	1	2008-09-03 16:55:30.836	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1966	46418	80	6	t	t
-3618	1	2	1	2008-09-03 16:55:30.851	72.14.205.18	1	INPUT	\N	192.168.11.103	789	80	46418	6	t	t
-3619	1	2	1	2008-09-03 16:55:30.867	64.12.25.174	1	INPUT	\N	192.168.11.103	1609	5190	37056	6	t	t
-3620	1	2	1	2008-09-03 16:55:30.867	192.168.11.103	1	OUTPUT	\N	64.12.25.174	377	37056	5190	6	t	t
-3609	1	2	1	2008-09-03 16:55:20.822	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3610	1	2	1	2008-09-03 16:55:20.837	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3611	1	2	1	2008-09-03 16:55:20.853	193.0.0.193	1	INPUT	\N	192.168.11.103	58464	0	0	1	t	t
-3613	1	2	1	2008-09-03 16:55:24.815	72.14.205.113	1	INPUT	\N	192.168.11.103	2301	80	49891	6	t	t
-3614	1	2	1	2008-09-03 16:55:24.83	192.168.11.103	1	OUTPUT	\N	72.14.205.113	35179	49891	80	6	t	t
-3615	1	2	1	2008-09-03 16:55:24.877	74.125.12.23	1	INPUT	\N	192.168.11.103	3682	80	35958	6	t	t
-3616	1	2	1	2008-09-03 16:55:24.877	192.168.11.103	1	OUTPUT	\N	74.125.12.23	3065	35958	80	6	t	t
-3642	1	2	1	2008-09-03 16:56:30.711	72.14.205.17	1	INPUT	\N	192.168.11.103	11163	80	50011	6	t	t
-3638	1	2	1	2008-09-03 16:56:18.831	192.168.11.103	1	OUTPUT	\N	72.14.205.17	8348	50013	80	6	t	t
-3639	1	2	1	2008-09-03 16:56:20.702	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3640	1	2	1	2008-09-03 16:56:20.718	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3641	1	2	1	2008-09-03 16:56:30.695	192.168.11.103	1	OUTPUT	\N	72.14.205.17	27883	50011	80	6	t	t
-3629	1	2	1	2008-09-03 16:56:18.706	72.14.205.17	1	INPUT	\N	192.168.11.103	9940	80	50012	6	t	t
-3630	1	2	1	2008-09-03 16:56:18.722	72.14.205.17	1	INPUT	\N	192.168.11.103	20492	80	50009	6	t	t
-3631	1	2	1	2008-09-03 16:56:18.738	72.14.205.17	1	INPUT	\N	192.168.11.103	16492	80	50010	6	t	t
-3632	1	2	1	2008-09-03 16:56:18.753	192.168.11.103	1	OUTPUT	\N	72.14.205.17	24664	50012	80	6	t	t
-3633	1	2	1	2008-09-03 16:56:18.769	72.14.205.17	1	INPUT	\N	192.168.11.103	3388	80	50014	6	t	t
-3634	1	2	1	2008-09-03 16:56:18.784	72.14.205.17	1	INPUT	\N	192.168.11.103	3388	80	50013	6	t	t
-3635	1	2	1	2008-09-03 16:56:18.784	192.168.11.103	1	OUTPUT	\N	72.14.205.17	31081	50009	80	6	t	t
-3636	1	2	1	2008-09-03 16:56:18.80	192.168.11.103	1	OUTPUT	\N	72.14.205.17	41084	50010	80	6	t	t
-3637	1	2	1	2008-09-03 16:56:18.816	192.168.11.103	1	OUTPUT	\N	72.14.205.17	8348	50014	80	6	t	t
-3653	1	2	1	2008-09-03 16:57:28.583	192.168.11.103	1	OUTPUT	\N	72.14.205.113	104	49891	80	6	t	t
-3654	1	2	1	2008-09-03 16:57:28.599	74.125.12.23	1	INPUT	\N	192.168.11.103	104	80	35958	6	t	t
-3655	1	2	1	2008-09-03 16:57:28.614	72.14.205.113	1	INPUT	\N	192.168.11.103	104	80	49891	6	t	t
-3646	1	2	1	2008-09-03 16:57:14.598	209.85.201.125	1	INPUT	\N	192.168.11.103	1207	5222	50494	6	t	t
-3647	1	2	1	2008-09-03 16:57:14.614	192.168.11.103	1	OUTPUT	\N	209.85.201.125	120	50494	5222	6	t	t
-3644	1	2	1	2008-09-03 16:57:12.587	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	46414	6	t	t
-3645	1	2	1	2008-09-03 16:57:12.603	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	46414	80	6	t	t
-3650	1	2	1	2008-09-03 16:57:16.594	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3651	1	2	1	2008-09-03 16:57:16.609	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3652	1	2	1	2008-09-03 16:57:28.567	192.168.11.103	1	OUTPUT	\N	74.125.12.23	104	35958	80	6	t	t
-3672	1	2	1	2008-09-03 16:58:28.465	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	50010	6	t	t
-3660	1	2	1	2008-09-03 16:57:50.519	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3661	1	2	1	2008-09-03 16:57:50.534	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3670	1	2	1	2008-09-03 16:58:28.434	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	50013	6	t	t
-3671	1	2	1	2008-09-03 16:58:28.45	72.14.205.17	1	INPUT	\N	192.168.11.103	104	80	50014	6	t	t
-3663	1	2	1	2008-09-03 16:58:04.535	72.14.205.17	1	INPUT	\N	192.168.11.103	540	80	50009	6	t	t
-3664	1	2	1	2008-09-03 16:58:04.55	192.168.11.103	1	OUTPUT	\N	72.14.205.17	1589	50009	80	6	t	t
-3667	1	2	1	2008-09-03 16:58:28.403	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	50013	80	6	t	t
-3668	1	2	1	2008-09-03 16:58:28.419	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	50014	80	6	t	t
-3669	1	2	1	2008-09-03 16:58:28.419	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	50010	80	6	t	t
-3683	1	2	1	2008-09-03 16:59:18.304	192.168.11.103	1	OUTPUT	\N	64.12.201.42	40	60756	5190	6	t	t
-3674	1	2	1	2008-09-03 16:58:50.431	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3675	1	2	1	2008-09-03 16:58:52.395	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3676	1	2	1	2008-09-03 16:58:52.411	192.168.11.103	1	OUTPUT	\N	205.188.13.28	40	35347	5190	6	t	t
-3679	1	2	1	2008-09-03 16:59:00.346	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	50009	80	6	t	t
-3682	1	2	1	2008-09-03 16:59:18.289	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3673	1	2	1	2008-09-03 16:58:50.415	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3678	1	2	1	2008-09-03 16:59:00.33	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	50009	6	t	t
-3686	1	2	1	2008-09-03 16:59:50.278	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3687	1	2	1	2008-09-03 16:59:50.294	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3688	1	2	1	2008-09-03 16:59:54.269	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	50009	6	t	t
-3689	1	2	1	2008-09-03 16:59:54.285	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	50009	80	6	t	t
-3715	1	2	1	2008-09-03 17:01:20.228	192.168.11.103	1	OUTPUT	\N	209.85.201.125	170	50494	5222	6	t	t
-3696	1	2	1	2008-09-03 17:00:50.11	192.168.11.103	1	OUTPUT	\N	72.14.205.17	52	50009	80	6	t	t
-3713	1	2	1	2008-09-03 17:01:20.197	192.168.11.103	1	OUTPUT	\N	64.12.25.174	701	37056	5190	6	t	t
-3714	1	2	1	2008-09-03 17:01:20.213	209.85.201.125	1	INPUT	\N	192.168.11.103	321	5222	50494	6	t	t
-3695	1	2	1	2008-09-03 17:00:50.11	72.14.205.17	1	INPUT	\N	192.168.11.103	74	80	50009	6	t	t
-3698	1	2	1	2008-09-03 17:01:00.071	205.188.13.28	1	INPUT	\N	192.168.11.103	167	5190	35347	6	t	t
-3699	1	2	1	2008-09-03 17:01:00.087	192.168.11.103	1	OUTPUT	\N	205.188.13.28	116	35347	5190	6	t	t
-3702	1	2	1	2008-09-03 17:01:20.057	72.14.205.18	1	INPUT	\N	192.168.11.103	16861	80	37914	6	t	t
-3703	1	2	1	2008-09-03 17:01:20.072	72.14.205.18	1	INPUT	\N	192.168.11.103	10486	80	37915	6	t	t
-3704	1	2	1	2008-09-03 17:01:20.088	72.14.205.18	1	INPUT	\N	192.168.11.103	7210	80	37917	6	t	t
-3705	1	2	1	2008-09-03 17:01:20.088	192.168.11.103	1	OUTPUT	\N	72.14.205.18	22885	37914	80	6	t	t
-3706	1	2	1	2008-09-03 17:01:20.104	192.168.11.103	1	OUTPUT	\N	72.14.205.18	17896	37917	80	6	t	t
-3707	1	2	1	2008-09-03 17:01:20.119	192.168.11.103	1	OUTPUT	\N	72.14.205.18	26080	37915	80	6	t	t
-3708	1	2	1	2008-09-03 17:01:20.135	72.14.205.18	1	INPUT	\N	192.168.11.103	7756	80	37918	6	t	t
-3709	1	2	1	2008-09-03 17:01:20.15	192.168.11.103	1	OUTPUT	\N	72.14.205.18	19260	37918	80	6	t	t
-3710	1	2	1	2008-09-03 17:01:20.166	72.14.205.18	1	INPUT	\N	192.168.11.103	8848	80	37919	6	t	t
-3711	1	2	1	2008-09-03 17:01:20.166	64.12.25.174	1	INPUT	\N	192.168.11.103	3787	5190	37056	6	t	t
-3712	1	2	1	2008-09-03 17:01:20.182	192.168.11.103	1	OUTPUT	\N	72.14.205.18	21988	37919	80	6	t	t
-3716	1	2	1	2008-09-03 17:01:35.989	192.168.11.103	1	OUTPUT	\N	72.14.205.18	33341	37916	80	6	t	t
-3717	1	2	1	2008-09-03 17:01:36.005	72.14.205.18	1	INPUT	\N	192.168.11.103	13347	80	37916	6	t	t
-3718	1	2	1	2008-09-03 17:01:39.98	209.85.201.125	1	INPUT	\N	192.168.11.103	465	5222	50494	6	t	t
-3719	1	2	1	2008-09-03 17:01:39.996	192.168.11.103	1	OUTPUT	\N	209.85.201.125	80	50494	5222	6	t	t
-3720	1	2	1	2008-09-03 17:01:39.996	192.168.11.103	1	OUTPUT	\N	64.12.25.174	181	37056	5190	6	t	t
-3721	1	2	1	2008-09-03 17:01:41.975	64.12.25.174	1	INPUT	\N	192.168.11.103	301	5190	37056	6	t	t
-3722	1	2	1	2008-09-03 17:01:47.962	192.168.11.103	1	OUTPUT	\N	72.14.205.17	104	50009	80	6	t	t
-3723	1	2	1	2008-09-03 17:01:47.977	72.14.205.17	1	INPUT	\N	192.168.11.103	178	80	50009	6	t	t
-3724	1	2	1	2008-09-03 17:01:47.977	72.14.205.18	1	INPUT	\N	192.168.11.103	540	80	37914	6	t	t
-3725	1	2	1	2008-09-03 17:01:47.993	192.168.11.103	1	OUTPUT	\N	72.14.205.18	1590	37914	80	6	t	t
-3758	1	2	1	2008-09-03 17:04:33.619	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	37914	80	6	t	t
-3730	1	2	1	2008-09-03 17:02:59.828	192.168.11.103	1	OUTPUT	\N	195.137.160.40	816	59868	110	6	t	t
-3755	1	2	1	2008-09-03 17:04:17.627	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3756	1	2	1	2008-09-03 17:04:17.642	192.168.11.103	1	OUTPUT	\N	64.12.201.42	40	60756	5190	6	t	t
-3757	1	2	1	2008-09-03 17:04:33.619	72.14.205.18	1	INPUT	\N	192.168.11.103	325	80	37914	6	t	t
-3729	1	2	1	2008-09-03 17:02:59.813	192.168.11.103	1	OUTPUT	\N	195.137.160.40	812	59867	110	6	t	t
-3732	1	2	1	2008-09-03 17:03:01.839	195.137.160.40	1	INPUT	\N	192.168.11.103	1379	110	59867	6	t	t
-3733	1	2	1	2008-09-03 17:03:01.855	195.137.160.40	1	INPUT	\N	192.168.11.103	2213	110	59868	6	t	t
-3734	1	2	1	2008-09-03 17:03:11.785	64.12.25.174	1	INPUT	\N	192.168.11.103	640	5190	37056	6	t	t
-3735	1	2	1	2008-09-03 17:03:11.785	192.168.11.103	1	OUTPUT	\N	64.12.25.174	80	37056	5190	6	t	t
-3736	1	2	1	2008-09-03 17:03:11.801	72.14.205.18	1	INPUT	\N	192.168.11.103	74	80	37914	6	t	t
-3737	1	2	1	2008-09-03 17:03:11.817	192.168.11.103	1	OUTPUT	\N	72.14.205.18	52	37914	80	6	t	t
-3740	1	2	1	2008-09-03 17:03:17.756	192.168.11.103	1	OUTPUT	\N	64.233.179.109	2248	35146	995	6	t	t
-3741	1	2	1	2008-09-03 17:03:19.767	64.233.179.109	1	INPUT	\N	192.168.11.103	18363	995	35146	6	t	t
-3742	1	2	1	2008-09-03 17:03:21.778	192.168.11.103	1	OUTPUT	\N	209.85.201.125	510	50494	5222	6	t	t
-3743	1	2	1	2008-09-03 17:03:21.778	209.85.201.125	1	INPUT	\N	192.168.11.103	963	5222	50494	6	t	t
-3744	1	2	1	2008-09-03 17:03:27.748	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	37917	80	6	t	t
-3745	1	2	1	2008-09-03 17:03:27.763	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	37915	80	6	t	t
-3746	1	2	1	2008-09-03 17:03:27.763	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	37919	80	6	t	t
-3747	1	2	1	2008-09-03 17:03:27.779	192.168.11.103	1	OUTPUT	\N	72.14.205.18	104	37918	80	6	t	t
-3748	1	2	1	2008-09-03 17:03:27.795	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	37917	6	t	t
-3749	1	2	1	2008-09-03 17:03:27.81	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	37915	6	t	t
-3750	1	2	1	2008-09-03 17:03:27.826	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	37919	6	t	t
-3751	1	2	1	2008-09-03 17:03:27.841	72.14.205.18	1	INPUT	\N	192.168.11.103	104	80	37918	6	t	t
-3753	1	2	1	2008-09-03 17:04:15.647	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3754	1	2	1	2008-09-03 17:04:15.663	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3761	1	2	1	2008-09-03 17:04:51.56	193.0.0.193	1	INPUT	\N	192.168.11.103	33432	0	0	1	t	t
-3762	1	2	1	2008-09-03 17:04:57.546	192.168.11.103	1	OUTPUT	\N	193.0.0.193	66276	0	0	1	t	t
-3769	1	2	1	2008-09-03 17:05:31.479	72.14.205.18	1	INPUT	\N	192.168.11.103	666	80	37914	6	t	t
-3760	1	2	1	2008-09-03 17:04:45.59	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3771	1	2	1	2008-09-03 17:05:59.38	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3759	1	2	1	2008-09-03 17:04:45.575	192.168.11.103	1	OUTPUT	\N	64.12.25.174	46	37056	5190	6	t	t
-3779	1	2	1	2008-09-03 17:08:09.081	64.12.25.174	1	INPUT	\N	192.168.11.103	640	5190	37056	6	t	t
-3776	1	2	1	2008-09-03 17:06:59.266	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3775	1	2	1	2008-09-03 17:06:53.281	209.85.201.125	1	INPUT	\N	192.168.11.103	992	5222	50494	6	t	t
-3783	1	2	1	2008-09-03 17:09:16.945	64.12.201.42	1	INPUT	\N	192.168.11.103	40	5190	60756	6	t	t
-3785	1	2	1	2008-09-03 17:09:50.861	64.12.25.174	1	INPUT	\N	192.168.11.103	40	5190	37056	6	t	t
-3782	1	2	1	2008-09-03 17:08:58.974	205.188.13.28	1	INPUT	\N	192.168.11.103	40	5190	35347	6	t	t
-3774	1	2	1	2008-09-03 17:06:47.28	64.12.25.174	1	INPUT	\N	192.168.11.103	1116	5190	37056	6	t	t
-3781	1	2	1	2008-09-03 17:08:48.998	64.12.25.174	1	INPUT	\N	192.168.11.103	1400	5190	37056	6	t	t
 \.
-
-
---
--- TOC entry 2491 (class 0 OID 18660)
--- Dependencies: 1671
--- Data for Name: billservice_onetimeservice; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_onetimeservice (id, name, cost) FROM stdin;
 \.
 
-
---
--- TOC entry 2492 (class 0 OID 18665)
--- Dependencies: 1672
--- Data for Name: billservice_onetimeservicehistory; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_onetimeservicehistory (id, accounttarif_id, onetimeservice_id, datetime) FROM stdin;
 \.
 
-
---
--- TOC entry 2493 (class 0 OID 18668)
--- Dependencies: 1673
--- Data for Name: billservice_periodicalservice; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_periodicalservice (id, name, settlement_period_id, cost, cash_method) FROM stdin;
-1	20$ в месяц	1	44000	GRADUAL
 \.
-
-
---
--- TOC entry 2494 (class 0 OID 18676)
--- Dependencies: 1674
--- Data for Name: billservice_periodicalservicehistory; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_periodicalservicehistory (id, service_id, transaction_id, datetime) FROM stdin;
-2	1	19	2008-09-02 17:53:21.602
-3	1	20	2008-09-02 19:02:14.728
-4	1	21	2008-09-02 20:05:08.492
-5	1	23	2008-09-02 21:05:19.068
-6	1	24	2008-09-02 22:08:08.295
-7	1	25	2008-09-02 23:10:58.699
-8	1	26	2008-09-03 00:11:20.284
-9	1	27	2008-09-03 01:11:21.256
-10	1	28	2008-09-03 02:14:18.569
-11	1	29	2008-09-03 03:17:14.85
-12	1	30	2008-09-03 04:20:11.138
-13	1	31	2008-09-03 05:20:11.431
-14	1	32	2008-09-03 06:23:01.147
-15	1	33	2008-09-03 07:23:18.27
-16	1	34	2008-09-03 08:26:08.965
-17	1	35	2008-09-03 09:29:00.372
-18	1	36	2008-09-03 10:31:51.262
-19	1	39	2008-09-03 11:34:48.319
-20	1	41	2008-09-03 12:36:02.44
-21	1	42	2008-09-03 13:39:01.348
-22	1	43	2008-09-03 14:39:46.283
-23	1	67	2008-09-03 15:39:47.443
-24	1	159	2008-09-03 17:12:42.545
-25	1	160	2008-09-03 18:13:53.644
-26	1	161	2008-09-03 19:13:54.896
-27	1	164	2008-09-03 20:15:38.834
-28	1	165	2008-09-03 21:18:29.789
-29	1	166	2008-09-03 22:18:37.592
-30	1	167	2008-09-03 23:21:56.514
-31	1	168	2008-09-04 00:24:44.954
-32	1	178	2008-09-04 10:42:35.816
-33	1	179	2008-09-04 10:42:35.863
-34	1	207	2008-09-04 11:15:09.64
-35	1	208	2008-09-04 11:15:09.655
-36	1	209	2008-09-04 11:15:09.655
-37	1	210	2008-09-04 11:15:09.671
-38	1	211	2008-09-04 11:15:09.671
-39	1	212	2008-09-04 11:15:09.686
-40	1	213	2008-09-04 11:15:09.686
-41	1	230	2008-09-04 11:43:52.532
-42	1	231	2008-09-04 11:43:52.829
-43	1	232	2008-09-04 12:05:12.59
-44	1	233	2008-09-04 12:05:12.606
-45	1	234	2008-09-04 12:17:11.079
-46	1	235	2008-09-04 12:17:11.095
-47	1	236	2008-09-04 12:17:11.095
-48	1	237	2008-09-04 12:17:11.11
-49	1	238	2008-09-04 12:17:11.11
-50	1	239	2008-09-04 12:17:11.126
-51	1	240	2008-09-04 12:17:11.126
-52	1	241	2008-09-04 12:44:11.772
-53	1	242	2008-09-04 12:44:12.006
-54	1	243	2008-09-04 13:05:14.818
-55	1	244	2008-09-04 13:05:14.818
-56	1	245	2008-09-04 13:17:18.70
-57	1	246	2008-09-04 13:17:18.70
-58	1	247	2008-09-04 13:17:18.716
-59	1	248	2008-09-04 13:17:18.732
-60	1	249	2008-09-04 13:17:18.732
-61	1	250	2008-09-04 13:17:18.747
-62	1	251	2008-09-04 13:17:18.747
-63	1	252	2008-09-04 14:33:54.082
-64	1	256	2008-09-04 16:27:15.779
-65	1	258	2008-09-05 11:36:20.434
-66	1	259	2008-09-05 11:36:20.574
-67	1	260	2008-09-05 11:36:20.605
-68	1	261	2008-09-05 12:53:13.017
-69	1	265	2008-09-05 13:00:59.023
-70	1	266	2008-09-05 13:00:59.054
-71	1	267	2008-09-05 14:37:59.405
-72	1	268	2008-09-05 14:37:59.64
-73	1	269	2008-09-05 14:37:59.656
-74	1	270	2008-09-05 16:12:50.647
-75	1	271	2008-09-05 16:12:50.678
-76	1	272	2008-09-05 16:12:50.694
-77	1	273	2008-09-05 17:32:11.28
-78	1	274	2008-09-05 17:32:11.42
-79	1	275	2008-09-05 17:32:11.452
 \.
-
-
---
--- TOC entry 2495 (class 0 OID 18680)
--- Dependencies: 1675
--- Data for Name: billservice_ports; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 38801	1	6	tcpmux	TCP Port Service Multiplexer rfc-1078
@@ -11083,299 +8307,78 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 45173	65301	6	pcanywhere	Used sometimes by PCAnywhere
 \.
 
-
---
--- TOC entry 2496 (class 0 OID 18685)
--- Dependencies: 1676
--- Data for Name: billservice_prepaidtraffic; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_prepaidtraffic (id, traffic_transmit_service_id, in_direction, out_direction, transit_direction, size) FROM stdin;
 \.
-
-
---
--- TOC entry 2497 (class 0 OID 18692)
--- Dependencies: 1677
--- Data for Name: billservice_prepaidtraffic_traffic_class; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_prepaidtraffic_traffic_class (id, prepaidtraffic_id, trafficclass_id) FROM stdin;
 \.
 
-
---
--- TOC entry 2498 (class 0 OID 18695)
--- Dependencies: 1678
--- Data for Name: billservice_rawnetflowstream; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_rawnetflowstream (id, nas_id, date_start, src_addr, traffic_class_id, direction, dst_addr, next_hop, in_index, out_index, packets, octets, src_port, dst_port, tcp_flags, protocol, tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched) FROM stdin;
-16653	1	2008-09-05 18:05:56.672	10.10.1.100	3	OUTPUT	10.10.1.2	10.10.1.2	0	1	2	296	9996	9996	0	17	0	0	0	0	0	f
 \.
-
-
---
--- TOC entry 2499 (class 0 OID 18702)
--- Dependencies: 1679
--- Data for Name: billservice_settlementperiod; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_settlementperiod (id, name, time_start, length, length_in, autostart) FROM stdin;
-1	+Месяц	2008-09-02 15:54:07	0	MONTH	t
 \.
-
-
---
--- TOC entry 2500 (class 0 OID 18710)
--- Dependencies: 1680
--- Data for Name: billservice_shedulelog; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_shedulelog (id, account_id, ballance_checkout, prepaid_traffic_reset, prepaid_traffic_accrued, prepaid_time_reset, prepaid_time_accrued, balance_blocked) FROM stdin;
-5	2	\N	\N	\N	\N	\N	2008-09-04 11:47:03.805021
 \.
-
-
---
--- TOC entry 2501 (class 0 OID 18713)
--- Dependencies: 1681
--- Data for Name: billservice_systemuser; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_systemuser (id, username, password, last_ip, last_login, description, created, status, host) FROM stdin;
-11	dmitry	pass	\N	2008-07-24 17:27:37.024		\N	t	\N
-9	admin	1a1dc91c907325c69271ddf0c944bc72	\N	2008-08-21 14:28:22.10	123	\N	t	0.0.0.0/0
+1	admin	21232f297a57a5a743894a0e4a801fc3	\N	2008-08-21 14:28:22.10	Default admin account	\N	t	0.0.0.0/0
 \.
-
-
---
--- TOC entry 2502 (class 0 OID 18723)
--- Dependencies: 1682
--- Data for Name: billservice_tariff; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_tariff (id, name, description, access_parameters_id, time_access_service_id, traffic_transmit_service_id, cost, reset_tarif_cost, settlement_period_id, ps_null_ballance_checkout, active, deleted) FROM stdin;
-2	Тариф 10$		3	\N	\N	0	f	\N	f	t	f
-1	Internet 20$		2	\N	1	5000	f	1	f	t	f
 \.
-
-
---
--- TOC entry 2503 (class 0 OID 18735)
--- Dependencies: 1683
--- Data for Name: billservice_tariff_onetime_services; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_tariff_onetime_services (id, tariff_id, onetimeservice_id) FROM stdin;
 \.
 
-
---
--- TOC entry 2504 (class 0 OID 18738)
--- Dependencies: 1684
--- Data for Name: billservice_tariff_periodical_services; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_tariff_periodical_services (id, tariff_id, periodicalservice_id) FROM stdin;
-1	1	1
 \.
-
-
---
--- TOC entry 2505 (class 0 OID 18741)
--- Dependencies: 1685
--- Data for Name: billservice_tariff_traffic_limit; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_tariff_traffic_limit (id, tariff_id, trafficlimit_id) FROM stdin;
 \.
 
-
---
--- TOC entry 2506 (class 0 OID 18744)
--- Dependencies: 1686
--- Data for Name: billservice_timeaccessnode; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_timeaccessnode (id, time_access_service_id, time_period_id, cost) FROM stdin;
 \.
-
-
---
--- TOC entry 2507 (class 0 OID 18748)
--- Dependencies: 1687
--- Data for Name: billservice_timeaccessservice; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_timeaccessservice (id, prepaid_time, reset_time) FROM stdin;
 \.
 
-
---
--- TOC entry 2508 (class 0 OID 18753)
--- Dependencies: 1688
--- Data for Name: billservice_timeperiod; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_timeperiod (id, name) FROM stdin;
-1	Круглосуточно
 \.
 
 COPY billservice_timeperiod_time_period_nodes (id, timeperiod_id, timeperiodnode_id) FROM stdin;
-1	1	1
 \.
 
 
 
 
 COPY billservice_timeperiodnode (id, name, time_start, length, repeat_after) FROM stdin;
-1	Сутки	2008-09-01 00:00:00.169	86400	DAY
 \.
-
-
---
--- TOC entry 2511 (class 0 OID 18767)
--- Dependencies: 1691
--- Data for Name: billservice_timespeed; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_timespeed (id, access_parameters_id, time_id, max_limit, min_limit, burst_limit, burst_treshold, burst_time, priority) FROM stdin;
 \.
 
-
---
--- TOC entry 2512 (class 0 OID 18776)
--- Dependencies: 1692
--- Data for Name: billservice_trafficlimit; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_trafficlimit (id, name, settlement_period_id, size, in_direction, out_direction, transit_direction, mode) FROM stdin;
 \.
-
-
---
--- TOC entry 2513 (class 0 OID 18784)
--- Dependencies: 1693
--- Data for Name: billservice_trafficlimit_traffic_class; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_trafficlimit_traffic_class (id, trafficlimit_id, trafficclass_id) FROM stdin;
 \.
 
-
---
--- TOC entry 2514 (class 0 OID 18787)
--- Dependencies: 1694
--- Data for Name: billservice_traffictransmitnodes; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY billservice_traffictransmitnodes (id, traffic_transmit_service_id, cost, edge_start, edge_end, in_direction, out_direction) FROM stdin;
-1	1	40	0	0	t	t
 \.
 
 COPY billservice_traffictransmitnodes_time_nodes (id, traffictransmitnodes_id, timeperiod_id) FROM stdin;
-1	1	1
 \.
 
 COPY billservice_traffictransmitnodes_traffic_class (id, traffictransmitnodes_id, trafficclass_id) FROM stdin;
-1	1	1
 \.
 
 COPY billservice_traffictransmitservice (id, reset_traffic, cash_method, period_check) FROM stdin;
-1	f	SUMM	SP_START
 \.
-
 
 COPY billservice_transaction (id, bill, account_id, type_id, approved, tarif_id, summ, description, created) FROM stdin;
-85		2	MANUAL_TRANSACTION	t	\N	-10000		2008-09-03 16:12:49.881
-95		2	NETFLOW_BILL	t	1	3.7321853637700002		2008-09-03 16:22:41.653
-99		2	NETFLOW_BILL	t	1	6.1932373046900002		2008-09-03 16:24:42.24
-101		2	NETFLOW_BILL	t	1	0.023536682128900002		2008-09-03 16:25:20.51
-103		2	NETFLOW_BILL	t	1	2.8338623046899998		2008-09-03 16:26:44.407
-105		2	NETFLOW_BILL	t	1	0.0086975097656299995		2008-09-03 16:27:25.883
-107		2	NETFLOW_BILL	t	1	2.8160858154300001		2008-09-03 16:28:46.519
-109		2	NETFLOW_BILL	t	1	0.31841278076200003		2008-09-03 16:29:26.316
-111		2	NETFLOW_BILL	t	1	1.64905548096		2008-09-03 16:30:46.824
-113		2	NETFLOW_BILL	t	1	0.35541534423799997		2008-09-03 16:31:26.375
-115		2	NETFLOW_BILL	t	1	0.51082611083999996		2008-09-03 16:32:47.094
-117		2	NETFLOW_BILL	t	1	72.116355896000002		2008-09-03 16:33:27.292
-119		2	NETFLOW_BILL	t	1	6.6181945800799999		2008-09-03 16:34:47.40
-121		2	NETFLOW_BILL	t	1	0.21804809570299999		2008-09-03 16:35:27.569
-123		2	NETFLOW_BILL	t	1	3.1549072265600002		2008-09-03 16:36:47.769
-124		2	NETFLOW_BILL	t	1	0.048675537109400001		2008-09-03 16:37:27.394
-125		2	NETFLOW_BILL	t	1	15.7289505005		2008-09-03 16:38:47.949
-126		2	NETFLOW_BILL	t	1	12.7585983276		2008-09-03 16:39:27.406
-128		2	NETFLOW_BILL	t	1	3.3966827392600001		2008-09-03 16:40:48.228
-131		2	NETFLOW_BILL	t	1	27.6099777222		2008-09-03 16:41:27.668
-133		2	NETFLOW_BILL	t	1	3.5253143310500001		2008-09-03 16:42:48.941
-135		2	NETFLOW_BILL	t	1	8.1473922729500003		2008-09-03 16:43:27.82
-136		2	NETFLOW_BILL	t	1	0.36926269531299999		2008-09-03 16:44:49.786
-137		2	NETFLOW_BILL	t	1	7.7622985839799998		2008-09-03 16:45:27.864
-138		2	NETFLOW_BILL	t	1	0.278434753418		2008-09-03 16:46:50.298
-139		2	NETFLOW_BILL	t	1	7.7547073364300001		2008-09-03 16:47:27.86
-140		2	NETFLOW_BILL	t	1	0.12790679931599999		2008-09-03 16:48:50.388
-141		2	NETFLOW_BILL	t	1	0.217247009277		2008-09-03 16:49:27.872
-142		2	NETFLOW_BILL	t	1	7.8386688232399999		2008-09-03 16:50:50.619
-143		2	NETFLOW_BILL	t	1	5.9988403320300003		2008-09-03 16:51:27.775
-144		2	NETFLOW_BILL	t	1	8.8059997558600003		2008-09-03 16:52:50.827
-145		2	NETFLOW_BILL	t	1	0.70903778076199997		2008-09-03 16:53:27.756
-146		2	NETFLOW_BILL	t	1	0.26153564453099998		2008-09-03 16:54:50.982
-147		2	NETFLOW_BILL	t	1	4.1217422485400004		2008-09-03 16:55:27.753
-148		2	NETFLOW_BILL	t	1	7.9646301269500004		2008-09-03 16:56:51.072
-149		2	NETFLOW_BILL	t	1	0.074577331543000003		2008-09-03 16:57:27.656
-150		2	NETFLOW_BILL	t	1	0.1318359375		2008-09-03 16:58:51.039
-151		2	NETFLOW_BILL	t	1	0.029640197753900002		2008-09-03 16:59:27.575
-152		2	NETFLOW_BILL	t	1	0.12519836425799999		2008-09-03 17:00:50.936
-153		2	NETFLOW_BILL	t	1	6.2812042236299996		2008-09-03 17:01:27.618
-154		2	NETFLOW_BILL	t	1	1.9121932983400001		2008-09-03 17:02:50.849
-155		2	NETFLOW_BILL	t	1	1.12827301025		2008-09-03 17:04:37.549
-156		2	NETFLOW_BILL	t	1	3.8337707519499999		2008-09-03 17:06:37.515
-157		2	NETFLOW_BILL	t	1	0.10635375976600001		2008-09-03 17:08:37.355
-158		2	NETFLOW_BILL	t	1	0.0579833984375		2008-09-03 17:10:37.196
-159		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 17:12:42.545
-160		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 18:13:53.644
-161		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 19:13:54.896
-164		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 20:15:38.834
-165		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 21:18:29.789
-166		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 22:18:37.592
-167		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-03 23:21:56.514
-168		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 00:24:44.954
-178		2	PS_GRADUAL	t	1	611.11111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 10:42:35.816
-230		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 11:43:52.532
-241		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 12:44:11.772
-252		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 14:33:54.082
-253	qqq	2	MANUAL_TRANSACTION	t	\N	-123		2008-09-04 14:37:48.772
-254	ass	2	MANUAL_TRANSACTION	t	\N	-23232		2008-09-04 14:42:47.337
-255	aaa	22	MANUAL_TRANSACTION	t	\N	-123		2008-09-04 16:26:41.115
-256		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-04 16:27:15.779
-257	asasa	23	MANUAL_TRANSACTION	t	\N	-222		2008-09-04 16:28:18.234
-258		2	PS_GRADUAL	t	1	1161.1111111099999	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 11:36:20.434
-259		22	PS_GRADUAL	t	1	1161.1111111099999	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 11:36:20.574
-260		23	PS_GRADUAL	t	1	1161.1111111099999	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 11:36:20.605
-261		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 12:53:13.017
-262	asd	23	MANUAL_TRANSACTION	t	\N	-55555		2008-09-05 13:00:06.747
-263	asa	24	MANUAL_TRANSACTION	t	\N	-566		2008-09-05 13:00:39.743
-264	qwq	25	MANUAL_TRANSACTION	t	\N	-7777		2008-09-05 13:00:49.812
-265		23	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 13:00:59.023
-266		24	PS_GRADUAL	t	1	1222.22222222	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 13:00:59.054
-267		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 14:37:59.405
-268		23	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 14:37:59.64
-269		25	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 14:37:59.656
-270		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 16:12:50.647
-271		23	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 16:12:50.678
-272		25	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 16:12:50.694
-273		2	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 17:32:11.28
-274		23	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 17:32:11.42
-275		25	PS_GRADUAL	t	1	61.111111111100001	Проводка по периодической услуге со cнятием суммы в течении периода	2008-09-05 17:32:11.452
 \.
-
-
---
--- TOC entry 2519 (class 0 OID 18813)
--- Dependencies: 1699
--- Data for Name: billservice_transactiontype; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY billservice_transactiontype (id, name, internal_name) FROM stdin;
 1	Периодическая услуга со снатием денег в течении расччё	PS_GRADUAL
@@ -11389,22 +8392,8 @@ COPY billservice_transactiontype (id, name, internal_name) FROM stdin;
 9	Разовая услуга	ONETIME_SERVICE
 \.
 
-
---
--- TOC entry 2520 (class 0 OID 18816)
--- Dependencies: 1700
--- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY django_admin_log (id, action_time, user_id, content_type_id, object_id, object_repr, action_flag, change_message) FROM stdin;
 \.
-
-
---
--- TOC entry 2521 (class 0 OID 18823)
--- Dependencies: 1701
--- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY django_content_type (id, name, app_label, model) FROM stdin;
 1	permission	auth	permission
@@ -11452,1535 +8441,453 @@ COPY django_content_type (id, name, app_label, model) FROM stdin;
 43	card	billservice	card
 \.
 
-
---
--- TOC entry 2522 (class 0 OID 18826)
--- Dependencies: 1702
--- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY django_session (session_key, session_data, expire_date) FROM stdin;
 \.
-
-
---
--- TOC entry 2523 (class 0 OID 18832)
--- Dependencies: 1703
--- Data for Name: django_site; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY django_site (id, domain, name) FROM stdin;
 1	example.com	example.com
 \.
 
-
---
--- TOC entry 2524 (class 0 OID 18835)
--- Dependencies: 1704
--- Data for Name: nas_nas; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
-
 COPY nas_nas (id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink) FROM stdin;
-1	mikrotik2.9	MikroTik	10.10.1.100	123	admin	admin	t	t	t	/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id	/ip firewall address-list set [find comment=$user_id] disabled=no	/ip firewall address-list set [find comment=$user_id] disabled=yes	/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find comment=$username-$user_id]	/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit	/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit comment=$username-$user_id  target-addresses=$account_ipn_ip/32	/interface $access_type-server remove [find user=$username]		f
 \.
 
-
---
--- TOC entry 2525 (class 0 OID 18850)
--- Dependencies: 1705
--- Data for Name: nas_trafficclass; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY nas_trafficclass (id, name, weight, color, store, passthrough) FROM stdin;
-1	VPN Internet	1	#ff50f7	f	f
-2	VPN Межабонентский	0	#e9d9ff	f	f
-3	ISD Local	2	#fff2bc	f	f
-4	ISD Internet	3	#f4ff79	f	f
 \.
-
-
---
--- TOC entry 2526 (class 0 OID 18856)
--- Dependencies: 1706
--- Data for Name: nas_trafficnode; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY nas_trafficnode (id, traffic_class_id, name, direction, protocol, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop) FROM stdin;
-1	1	VPN IN	INPUT	0	0.0.0.0	0.0.0.0	0	192.168.11.0	255.255.255.0	0	0.0.0.0
-2	1	VPN Out	OUTPUT	0	192.168.11.0	255.255.255.0	0	0.0.0.0	0.0.0.0	0	0.0.0.0
-3	3	ISD IN	INPUT	0	10.10.1.0	255.255.255.0	0	10.10.1.0	255.255.255.0	0	0.0.0.0
-4	3	ISD Out	OUTPUT	0	10.10.1.0	255.255.255.0	0	10.10.1.0	255.255.255.0	0	0.0.0.0
-6	4	ISD Out	OUTPUT	0	10.10.1.0	255.255.255.0	0	0.0.0.0	0.0.0.0	0	0.0.0.0
-5	4	ISD In	INPUT	0	0.0.0.0	0.0.0.0	0	10.10.1.0	255.255.255.0	0	0.0.0.0
 \.
 
-
---
--- TOC entry 2527 (class 0 OID 18870)
--- Dependencies: 1707
--- Data for Name: radius_activesession; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY radius_activesession (id, account_id, sessionid, interrim_update, date_start, date_end, caller_id, called_id, nas_id, session_time, framed_protocol, bytes_in, bytes_out, session_status, speed_string, framed_ip_address) FROM stdin;
-37	2	81f00004	2008-09-03 16:13:32.466227	2008-09-03 16:13:53.969	2008-09-03 16:13:32.466227	10.10.1.4	10.10.1.100	10.10.1.100	\N	PPTP	\N	\N	NACK	512k/512k80/00/00/00/0	\N
-36	2	81f00003	2008-09-03 16:12:35.716976	2008-09-03 16:12:57.25	2008-09-03 16:12:35.716976	10.10.1.4	10.10.1.100	10.10.1.100	\N	PPTP	\N	\N	NACK	512k/512k80/00/00/00/0	\N
-38	2	81f00005	2008-09-03 16:16:12.828234	2008-09-03 16:16:34.132	2008-09-03 16:16:12.828234	10.10.1.4	10.10.1.100	10.10.1.100	\N	PPTP	\N	\N	NACK	512k/512k80/00/00/00/0	\N
-39	2	81000000	2008-09-03 16:18:51.751616	2008-09-03 16:19:12.792	2008-09-03 16:18:51.751616	10.10.1.4	10.10.1.100	10.10.1.100	\N	PPTP	\N	\N	NACK	512k/512k80/00/00/00/0	\N
-40	2	81100000	2008-09-03 17:04:29.13	2008-09-03 16:20:59.749	2008-09-03 17:04:40.992	10.10.1.4	10.10.1.100	10.10.1.100	2611	PPTP	4586037	2541625	ACK	512k/512k80/00/00/00/0	\N
 \.
 
-
---
--- TOC entry 2528 (class 0 OID 18878)
--- Dependencies: 1708
--- Data for Name: radius_session; Type: TABLE DATA; Schema: public; Owner: mikrobill
---
 
 COPY radius_session (id, account_id, sessionid, interrim_update, date_start, date_end, caller_id, called_id, nas_id, session_time, framed_protocol, bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic, disconnect_status, framed_ip_address) FROM stdin;
 \.
 
 
---
--- TOC entry 2206 (class 2606 OID 19067)
--- Dependencies: 1655 1655
--- Name: auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_name_key UNIQUE (name);
-
-
---
--- TOC entry 2210 (class 2606 OID 19069)
--- Dependencies: 1656 1656 1656
--- Name: auth_group_permissions_group_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_key UNIQUE (group_id, permission_id);
 
 
---
--- TOC entry 2212 (class 2606 OID 19071)
--- Dependencies: 1656 1656
--- Name: auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2208 (class 2606 OID 19073)
--- Dependencies: 1655 1655
--- Name: auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
 
 
---
--- TOC entry 2214 (class 2606 OID 19075)
--- Dependencies: 1657 1657
--- Name: auth_message_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2218 (class 2606 OID 19077)
--- Dependencies: 1658 1658 1658
--- Name: auth_permission_content_type_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_content_type_id_key UNIQUE (content_type_id, codename);
 
 
---
--- TOC entry 2220 (class 2606 OID 19079)
--- Dependencies: 1658 1658
--- Name: auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2226 (class 2606 OID 19081)
--- Dependencies: 1660 1660
--- Name: auth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2228 (class 2606 OID 19083)
--- Dependencies: 1660 1660 1660
--- Name: auth_user_groups_user_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_key UNIQUE (user_id, group_id);
-
-
---
--- TOC entry 2222 (class 2606 OID 19085)
--- Dependencies: 1659 1659
--- Name: auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2230 (class 2606 OID 19087)
--- Dependencies: 1661 1661
--- Name: auth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2232 (class 2606 OID 19089)
--- Dependencies: 1661 1661 1661
--- Name: auth_user_user_permissions_user_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_key UNIQUE (user_id, permission_id);
 
-
---
--- TOC entry 2224 (class 2606 OID 19091)
--- Dependencies: 1659 1659
--- Name: auth_user_username_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_username_key UNIQUE (username);
-
-
---
--- TOC entry 2235 (class 2606 OID 19093)
--- Dependencies: 1662 1662
--- Name: billservice_accessparameters_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2238 (class 2606 OID 19095)
--- Dependencies: 1663 1663
--- Name: billservice_account_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2240 (class 2606 OID 19097)
--- Dependencies: 1663 1663
--- Name: billservice_account_username_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_username_key UNIQUE (username);
 
-
---
--- TOC entry 2243 (class 2606 OID 19099)
--- Dependencies: 1664 1664
--- Name: billservice_accountipnspeed_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2246 (class 2606 OID 19101)
--- Dependencies: 1665 1665
--- Name: billservice_accountprepaystime_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2250 (class 2606 OID 19103)
--- Dependencies: 1666 1666
--- Name: billservice_accountprepaystrafic_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2254 (class 2606 OID 19105)
--- Dependencies: 1667 1667
--- Name: billservice_accounttarif_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2259 (class 2606 OID 19107)
--- Dependencies: 1668 1668
--- Name: billservice_card_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE billservice_dealer
   ADD CONSTRAINT billservice_dealer_pkey PRIMARY KEY(id);
 
-
-
-
---
--- TOC entry 2267 (class 2606 OID 19113)
--- Dependencies: 1670 1670
--- Name: billservice_netflowstream_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2272 (class 2606 OID 19115)
--- Dependencies: 1671 1671
--- Name: billservice_onetimeservice_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_onetimeservice
     ADD CONSTRAINT billservice_onetimeservice_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2276 (class 2606 OID 19117)
--- Dependencies: 1672 1672
--- Name: billservice_onetimeservicehistory_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_pkey PRIMARY KEY (id);
 
 ALTER TABLE billservice_operator
   ADD CONSTRAINT billservice_operator_pkey PRIMARY KEY(id);
---
--- TOC entry 2278 (class 2606 OID 19119)
--- Dependencies: 1673 1673
--- Name: billservice_periodicalservice_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2281 (class 2606 OID 19121)
--- Dependencies: 1674 1674
--- Name: billservice_periodicalservicehistory_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_periodicalservicehistory
     ADD CONSTRAINT billservice_periodicalservicehistory_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2285 (class 2606 OID 19123)
--- Dependencies: 1675 1675
--- Name: billservice_ports_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_ports
     ADD CONSTRAINT billservice_ports_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2287 (class 2606 OID 19125)
--- Dependencies: 1676 1676
--- Name: billservice_prepaidtraffic_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT billservice_prepaidtraffic_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2290 (class 2606 OID 19127)
--- Dependencies: 1677 1677
--- Name: billservice_prepaidtraffic_traffic_class_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2292 (class 2606 OID 19129)
--- Dependencies: 1677 1677 1677
--- Name: billservice_prepaidtraffic_traffic_class_prepaidtraffic_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_prepaidtraffic_id_key UNIQUE (prepaidtraffic_id, trafficclass_id);
-
-
---
--- TOC entry 2295 (class 2606 OID 19131)
--- Dependencies: 1678 1678
--- Name: billservice_rawnetflowstream_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_rawnetflowstream
     ADD CONSTRAINT billservice_rawnetflowstream_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2298 (class 2606 OID 19133)
--- Dependencies: 1679 1679
--- Name: billservice_settlementperiod_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_name_key UNIQUE (name);
-
-
---
--- TOC entry 2300 (class 2606 OID 19135)
--- Dependencies: 1679 1679
--- Name: billservice_settlementperiod_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2302 (class 2606 OID 19137)
--- Dependencies: 1680 1680
--- Name: billservice_shedulelog_account_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_key UNIQUE (account_id);
-
-
---
--- TOC entry 2304 (class 2606 OID 19139)
--- Dependencies: 1680 1680
--- Name: billservice_shedulelog_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2306 (class 2606 OID 19141)
--- Dependencies: 1681 1681
--- Name: billservice_systemuser_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_systemuser
     ADD CONSTRAINT billservice_systemuser_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2308 (class 2606 OID 19143)
--- Dependencies: 1681 1681
--- Name: billservice_systemuser_username_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_systemuser
     ADD CONSTRAINT billservice_systemuser_username_key UNIQUE (username);
 
-
---
--- TOC entry 2311 (class 2606 OID 19145)
--- Dependencies: 1682 1682
--- Name: billservice_tariff_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_name_key UNIQUE (name);
-
-
---
--- TOC entry 2318 (class 2606 OID 19147)
--- Dependencies: 1683 1683
--- Name: billservice_tariff_onetime_services_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_tariff_onetime_services
     ADD CONSTRAINT billservice_tariff_onetime_services_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2320 (class 2606 OID 19149)
--- Dependencies: 1683 1683 1683
--- Name: billservice_tariff_onetime_services_tariff_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_tariff_onetime_services
     ADD CONSTRAINT billservice_tariff_onetime_services_tariff_id_key UNIQUE (tariff_id, onetimeservice_id);
-
-
---
--- TOC entry 2322 (class 2606 OID 19151)
--- Dependencies: 1684 1684
--- Name: billservice_tariff_periodical_services_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_tariff_periodical_services
     ADD CONSTRAINT billservice_tariff_periodical_services_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2324 (class 2606 OID 19153)
--- Dependencies: 1684 1684 1684
--- Name: billservice_tariff_periodical_services_tariff_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_tariff_periodical_services
     ADD CONSTRAINT billservice_tariff_periodical_services_tariff_id_key UNIQUE (tariff_id, periodicalservice_id);
-
-
---
--- TOC entry 2313 (class 2606 OID 19155)
--- Dependencies: 1682 1682
--- Name: billservice_tariff_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2326 (class 2606 OID 19157)
--- Dependencies: 1685 1685
--- Name: billservice_tariff_traffic_limit_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_tariff_traffic_limit
     ADD CONSTRAINT billservice_tariff_traffic_limit_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2328 (class 2606 OID 19159)
--- Dependencies: 1685 1685 1685
--- Name: billservice_tariff_traffic_limit_tariff_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_tariff_traffic_limit
     ADD CONSTRAINT billservice_tariff_traffic_limit_tariff_id_key UNIQUE (tariff_id, trafficlimit_id);
 
-
---
--- TOC entry 2330 (class 2606 OID 19161)
--- Dependencies: 1686 1686
--- Name: billservice_timeaccessnode_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2334 (class 2606 OID 19163)
--- Dependencies: 1687 1687
--- Name: billservice_timeaccessservice_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_timeaccessservice
     ADD CONSTRAINT billservice_timeaccessservice_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2336 (class 2606 OID 19165)
--- Dependencies: 1688 1688
--- Name: billservice_timeperiod_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_name_key UNIQUE (name);
 
-
---
--- TOC entry 2338 (class 2606 OID 19167)
--- Dependencies: 1688 1688
--- Name: billservice_timeperiod_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2340 (class 2606 OID 19169)
--- Dependencies: 1689 1689
--- Name: billservice_timeperiod_time_period_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_pkey PRIMARY KEY (id);
 
 ALTER TABLE billservice_bankdata
   ADD CONSTRAINT billservice_bankdata_pkey PRIMARY KEY(id);
---
--- TOC entry 2342 (class 2606 OID 19171)
--- Dependencies: 1689 1689 1689
--- Name: billservice_timeperiod_time_period_nodes_timeperiod_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_key UNIQUE (timeperiod_id, timeperiodnode_id);
 
-
---
--- TOC entry 2344 (class 2606 OID 19173)
--- Dependencies: 1690 1690
--- Name: billservice_timeperiodnode_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_timeperiodnode
     ADD CONSTRAINT billservice_timeperiodnode_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2347 (class 2606 OID 19175)
--- Dependencies: 1691 1691
--- Name: billservice_timespeed_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2350 (class 2606 OID 19177)
--- Dependencies: 1692 1692
--- Name: billservice_trafficlimit_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2353 (class 2606 OID 19179)
--- Dependencies: 1693 1693
--- Name: billservice_trafficlimit_traffic_class_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_key UNIQUE (trafficlimit_id, trafficclass_id);
-
-
---
--- TOC entry 2357 (class 2606 OID 19183)
--- Dependencies: 1694 1694
--- Name: billservice_traffictransmitnodes_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnodes_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2360 (class 2606 OID 19185)
--- Dependencies: 1695 1695 1695
--- Name: billservice_traffictransmitnodes_ti_traffictransmitnodes_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_ti_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, timeperiod_id);
-
-
---
--- TOC entry 2362 (class 2606 OID 19187)
--- Dependencies: 1695 1695
--- Name: billservice_traffictransmitnodes_time_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2364 (class 2606 OID 19189)
--- Dependencies: 1696 1696 1696
--- Name: billservice_traffictransmitnodes_tr_traffictransmitnodes_id_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_tr_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, trafficclass_id);
-
-
---
--- TOC entry 2366 (class 2606 OID 19191)
--- Dependencies: 1696 1696
--- Name: billservice_traffictransmitnodes_traffic_class_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_class_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2368 (class 2606 OID 19193)
--- Dependencies: 1697 1697
--- Name: billservice_traffictransmitservice_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_traffictransmitservice
     ADD CONSTRAINT billservice_traffictransmitservice_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2371 (class 2606 OID 19195)
--- Dependencies: 1698 1698
--- Name: billservice_transaction_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2374 (class 2606 OID 19197)
--- Dependencies: 1699 1699
--- Name: billservice_transactiontype_internal_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_internal_name_key UNIQUE (internal_name);
-
-
---
--- TOC entry 2376 (class 2606 OID 19199)
--- Dependencies: 1699 1699
--- Name: billservice_transactiontype_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_name_key UNIQUE (name);
 
-
---
--- TOC entry 2378 (class 2606 OID 19201)
--- Dependencies: 1699 1699
--- Name: billservice_transactiontype_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2381 (class 2606 OID 19203)
--- Dependencies: 1700 1700
--- Name: django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2384 (class 2606 OID 19205)
--- Dependencies: 1701 1701 1701
--- Name: django_content_type_app_label_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_app_label_key UNIQUE (app_label, model);
-
-
---
--- TOC entry 2386 (class 2606 OID 19207)
--- Dependencies: 1701 1701
--- Name: django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2388 (class 2606 OID 19209)
--- Dependencies: 1702 1702
--- Name: django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY django_session
     ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
-
-
---
--- TOC entry 2390 (class 2606 OID 19211)
--- Dependencies: 1703 1703
--- Name: django_site_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY django_site
     ADD CONSTRAINT django_site_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2392 (class 2606 OID 19213)
--- Dependencies: 1704 1704
--- Name: nas_nas_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY nas_nas
     ADD CONSTRAINT nas_nas_name_key UNIQUE (name);
-
-
---
--- TOC entry 2394 (class 2606 OID 19215)
--- Dependencies: 1704 1704
--- Name: nas_nas_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY nas_nas
     ADD CONSTRAINT nas_nas_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2396 (class 2606 OID 19217)
--- Dependencies: 1705 1705
--- Name: nas_trafficclass_name_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_name_key UNIQUE (name);
-
-
---
--- TOC entry 2398 (class 2606 OID 19219)
--- Dependencies: 1705 1705
--- Name: nas_trafficclass_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2400 (class 2606 OID 19221)
--- Dependencies: 1705 1705
--- Name: nas_trafficclass_weight_key; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_weight_key UNIQUE (weight);
-
-
---
--- TOC entry 2402 (class 2606 OID 19223)
--- Dependencies: 1706 1706
--- Name: nas_trafficnode_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2406 (class 2606 OID 19225)
--- Dependencies: 1707 1707
--- Name: radius_activesession_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT radius_activesession_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 2409 (class 2606 OID 19227)
--- Dependencies: 1708 1708
--- Name: radius_session_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT radius_session_pkey PRIMARY KEY (id);
 
-
---
--- TOC entry 2215 (class 1259 OID 19228)
--- Dependencies: 1657
--- Name: auth_message_user_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX auth_message_user_id ON auth_message USING btree (user_id);
-
-
---
--- TOC entry 2216 (class 1259 OID 19229)
--- Dependencies: 1658
--- Name: auth_permission_content_type_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX auth_permission_content_type_id ON auth_permission USING btree (content_type_id);
 
-
---
--- TOC entry 2233 (class 1259 OID 19230)
--- Dependencies: 1662
--- Name: billservice_accessparameters_access_time_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accessparameters USING btree (access_time_id);
 
-CREATE INDEX billservice_operator_bank_id
-  ON billservice_operator
-  USING btree
-  (bank_id);
+CREATE INDEX billservice_operator_bank_id ON billservice_operator USING btree (bank_id);  
   
+CREATE INDEX billservice_dealer_bank_id ON billservice_dealer USING btree (bank_id);
   
-CREATE INDEX billservice_dealer_bank_id
-  ON billservice_dealer
-  USING btree
-  (bank_id);
-  
---
--- TOC entry 2236 (class 1259 OID 19231)
--- Dependencies: 1663
--- Name: billservice_account_nas_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_account_nas_id ON billservice_account USING btree (nas_id);
 
-CREATE INDEX billservice_account_vpn_ip_address
-  ON billservice_account
-  USING btree
-  (vpn_ip_address);
-CREATE INDEX billservice_account_ipn_ip_address
-  ON billservice_account
-  USING btree
-  (ipn_ip_address);
---
--- TOC entry 2241 (class 1259 OID 19232)
--- Dependencies: 1664
--- Name: billservice_accountipnspeed_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
+CREATE INDEX billservice_account_vpn_ip_address ON billservice_account USING btree (vpn_ip_address);
+  
+CREATE INDEX billservice_account_ipn_ip_address ON billservice_account USING btree (ipn_ip_address);
 
 CREATE INDEX billservice_accountipnspeed_account_id ON billservice_accountipnspeed USING btree (account_id);
 
-
---
--- TOC entry 2244 (class 1259 OID 19233)
--- Dependencies: 1665
--- Name: billservice_accountprepaystime_account_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_accountprepaystime_account_tarif_id ON billservice_accountprepaystime USING btree (account_tarif_id);
-
-
---
--- TOC entry 2247 (class 1259 OID 19234)
--- Dependencies: 1665
--- Name: billservice_accountprepaystime_prepaid_time_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_accountprepaystime_prepaid_time_service_id ON billservice_accountprepaystime USING btree (prepaid_time_service_id);
 
-
---
--- TOC entry 2248 (class 1259 OID 19235)
--- Dependencies: 1666
--- Name: billservice_accountprepaystrafic_account_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_accountprepaystrafic_account_tarif_id ON billservice_accountprepaystrafic USING btree (account_tarif_id);
-
-
---
--- TOC entry 2251 (class 1259 OID 19236)
--- Dependencies: 1666
--- Name: billservice_accountprepaystrafic_prepaid_traffic_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_accountprepaystrafic_prepaid_traffic_id ON billservice_accountprepaystrafic USING btree (prepaid_traffic_id);
 
-
---
--- TOC entry 2252 (class 1259 OID 19237)
--- Dependencies: 1667
--- Name: billservice_accounttarif_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_accounttarif_account_id ON billservice_accounttarif USING btree (account_id);
-
-
---
--- TOC entry 2255 (class 1259 OID 19238)
--- Dependencies: 1667
--- Name: billservice_accounttarif_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_accounttarif_tarif_id ON billservice_accounttarif USING btree (tarif_id);
 
-
---
--- TOC entry 2256 (class 1259 OID 19239)
--- Dependencies: 1668
--- Name: billservice_card_activated_by_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_card_activated_by_id ON billservice_card USING btree (activated_by_id);
-
-
---
--- TOC entry 2257 (class 1259 OID 19240)
--- Dependencies: 1668
--- Name: billservice_card_card_group_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_card_card_group_id ON billservice_card USING btree (card_group_id);
 
-
---
--- TOC entry 2264 (class 1259 OID 19241)
--- Dependencies: 1670
--- Name: billservice_netflowstream_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_netflowstream_account_id ON billservice_netflowstream USING btree (account_id);
-
-
---
--- TOC entry 2265 (class 1259 OID 19242)
--- Dependencies: 1670
--- Name: billservice_netflowstream_nas_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_netflowstream_nas_id ON billservice_netflowstream USING btree (nas_id);
 
-
---
--- TOC entry 2268 (class 1259 OID 19243)
--- Dependencies: 1670
--- Name: billservice_netflowstream_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_netflowstream_tarif_id ON billservice_netflowstream USING btree (tarif_id);
-
-
---
--- TOC entry 2269 (class 1259 OID 19244)
--- Dependencies: 1670
--- Name: billservice_netflowstream_traffic_class_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_netflowstream_traffic_class_id ON billservice_netflowstream USING btree (traffic_class_id);
 
-
---
--- TOC entry 2270 (class 1259 OID 19245)
--- Dependencies: 1670
--- Name: billservice_netflowstream_traffic_transmit_node_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_netflowstream_traffic_transmit_node_id ON billservice_netflowstream USING btree (traffic_transmit_node_id);
-
-
---
--- TOC entry 2273 (class 1259 OID 19246)
--- Dependencies: 1672
--- Name: billservice_onetimeservicehistory_accounttarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_onetimeservicehistory_accounttarif_id ON billservice_onetimeservicehistory USING btree (accounttarif_id);
 
-
---
--- TOC entry 2274 (class 1259 OID 19247)
--- Dependencies: 1672
--- Name: billservice_onetimeservicehistory_onetimeservice_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_onetimeservicehistory_onetimeservice_id ON billservice_onetimeservicehistory USING btree (onetimeservice_id);
-
-
---
--- TOC entry 2279 (class 1259 OID 19248)
--- Dependencies: 1673
--- Name: billservice_periodicalservice_settlement_period_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_periodicalservice_settlement_period_id ON billservice_periodicalservice USING btree (settlement_period_id);
 
-
---
--- TOC entry 2282 (class 1259 OID 19249)
--- Dependencies: 1674
--- Name: billservice_periodicalservicehistory_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_periodicalservicehistory_service_id ON billservice_periodicalservicehistory USING btree (service_id);
-
-
---
--- TOC entry 2283 (class 1259 OID 19250)
--- Dependencies: 1674
--- Name: billservice_periodicalservicehistory_transaction_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_periodicalservicehistory_transaction_id ON billservice_periodicalservicehistory USING btree (transaction_id);
 
-
---
--- TOC entry 2288 (class 1259 OID 19251)
--- Dependencies: 1676
--- Name: billservice_prepaidtraffic_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_prepaidtraffic_traffic_transmit_service_id ON billservice_prepaidtraffic USING btree (traffic_transmit_service_id);
-
-
---
--- TOC entry 2293 (class 1259 OID 19252)
--- Dependencies: 1678
--- Name: billservice_rawnetflowstream_nas_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_rawnetflowstream_nas_id ON billservice_rawnetflowstream USING btree (nas_id);
 
-
---
--- TOC entry 2296 (class 1259 OID 19253)
--- Dependencies: 1678
--- Name: billservice_rawnetflowstream_traffic_class_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_rawnetflowstream_traffic_class_id ON billservice_rawnetflowstream USING btree (traffic_class_id);
-
-
---
--- TOC entry 2309 (class 1259 OID 19254)
--- Dependencies: 1682
--- Name: billservice_tariff_access_parameters_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_tariff_access_parameters_id ON billservice_tariff USING btree (access_parameters_id);
 
-
---
--- TOC entry 2314 (class 1259 OID 19255)
--- Dependencies: 1682
--- Name: billservice_tariff_settlement_period_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_tariff_settlement_period_id ON billservice_tariff USING btree (settlement_period_id);
-
-
---
--- TOC entry 2315 (class 1259 OID 19256)
--- Dependencies: 1682
--- Name: billservice_tariff_time_access_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_tariff_time_access_service_id ON billservice_tariff USING btree (time_access_service_id);
 
-
---
--- TOC entry 2316 (class 1259 OID 19257)
--- Dependencies: 1682
--- Name: billservice_tariff_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_tariff_traffic_transmit_service_id ON billservice_tariff USING btree (traffic_transmit_service_id);
-
-
---
--- TOC entry 2331 (class 1259 OID 19258)
--- Dependencies: 1686
--- Name: billservice_timeaccessnode_time_access_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_timeaccessnode_time_access_service_id ON billservice_timeaccessnode USING btree (time_access_service_id);
 
-
---
--- TOC entry 2332 (class 1259 OID 19259)
--- Dependencies: 1686
--- Name: billservice_timeaccessnode_time_period_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_timeaccessnode_time_period_id ON billservice_timeaccessnode USING btree (time_period_id);
-
-
---
--- TOC entry 2345 (class 1259 OID 19260)
--- Dependencies: 1691
--- Name: billservice_timespeed_access_parameters_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_timespeed_access_parameters_id ON billservice_timespeed USING btree (access_parameters_id);
 
-
---
--- TOC entry 2348 (class 1259 OID 19261)
--- Dependencies: 1691
--- Name: billservice_timespeed_time_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_timespeed_time_id ON billservice_timespeed USING btree (time_id);
-
-
---
--- TOC entry 2351 (class 1259 OID 19262)
--- Dependencies: 1692
--- Name: billservice_trafficlimit_settlement_period_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_trafficlimit_settlement_period_id ON billservice_trafficlimit USING btree (settlement_period_id);
 
-
---
--- TOC entry 2358 (class 1259 OID 19263)
--- Dependencies: 1694
--- Name: billservice_traffictransmitnodes_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_traffictransmitnodes_traffic_transmit_service_id ON billservice_traffictransmitnodes USING btree (traffic_transmit_service_id);
-
-
---
--- TOC entry 2369 (class 1259 OID 19264)
--- Dependencies: 1698
--- Name: billservice_transaction_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX billservice_transaction_account_id ON billservice_transaction USING btree (account_id);
 
-
---
--- TOC entry 2372 (class 1259 OID 19265)
--- Dependencies: 1698
--- Name: billservice_transaction_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX billservice_transaction_tarif_id ON billservice_transaction USING btree (tarif_id);
-
-
---
--- TOC entry 2379 (class 1259 OID 19266)
--- Dependencies: 1700
--- Name: django_admin_log_content_type_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX django_admin_log_content_type_id ON django_admin_log USING btree (content_type_id);
 
-
---
--- TOC entry 2382 (class 1259 OID 19267)
--- Dependencies: 1700
--- Name: django_admin_log_user_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX django_admin_log_user_id ON django_admin_log USING btree (user_id);
-
-
---
--- TOC entry 2403 (class 1259 OID 19268)
--- Dependencies: 1706
--- Name: nas_trafficnode_traffic_class_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
 
 CREATE INDEX nas_trafficnode_traffic_class_id ON nas_trafficnode USING btree (traffic_class_id);
 
-
---
--- TOC entry 2404 (class 1259 OID 19269)
--- Dependencies: 1707
--- Name: radius_activesession_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX radius_activesession_account_id ON radius_activesession USING btree (account_id);
 
-
---
--- TOC entry 2407 (class 1259 OID 19270)
--- Dependencies: 1708
--- Name: radius_session_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
---
-
 CREATE INDEX radius_session_account_id ON radius_session USING btree (account_id);
-
-
---
--- TOC entry 1840 (class 2618 OID 19271)
--- Dependencies: 1682 27 1682 1682
--- Name: on_tariff_delete_rule; Type: RULE; Schema: public; Owner: mikrobill
---
 
 CREATE RULE on_tariff_delete_rule AS ON DELETE TO billservice_tariff DO SELECT on_tariff_delete_fun(old.*) AS on_tariff_delete_fun;
 
 
---
--- TOC entry 2473 (class 2606 OID 19272)
--- Dependencies: 1663 1707 2237
--- Name: account_id_refs_id_16c70393; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT account_id_refs_id_16c70393 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2474 (class 2606 OID 19277)
--- Dependencies: 2237 1663 1708
--- Name: account_id_refs_id_600b3363; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT account_id_refs_id_600b3363 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2421 (class 2606 OID 19282)
--- Dependencies: 2253 1667 1665
--- Name: account_tarif_id_refs_id_48fe22d0; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT account_tarif_id_refs_id_48fe22d0 FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2423 (class 2606 OID 19287)
--- Dependencies: 2253 1667 1666
--- Name: account_tarif_id_refs_id_7d07606a; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT account_tarif_id_refs_id_7d07606a FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2410 (class 2606 OID 19292)
--- Dependencies: 1655 1656 2207
--- Name: auth_group_permissions_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2411 (class 2606 OID 19297)
--- Dependencies: 1658 1656 2219
--- Name: auth_group_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2412 (class 2606 OID 19302)
--- Dependencies: 2221 1659 1657
--- Name: auth_message_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2414 (class 2606 OID 19307)
--- Dependencies: 2207 1655 1660
--- Name: auth_user_groups_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2415 (class 2606 OID 19312)
--- Dependencies: 1660 2221 1659
--- Name: auth_user_groups_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2416 (class 2606 OID 19317)
--- Dependencies: 1661 1658 2219
--- Name: auth_user_user_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2417 (class 2606 OID 19322)
--- Dependencies: 1661 1659 2221
--- Name: auth_user_user_permissions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
 
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_access_time_id_fkey FOREIGN KEY (access_time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
 
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
---
-
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_prepaid_time_service_id_fkey FOREIGN KEY (prepaid_time_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2424 (class 2606 OID 19347)
--- Dependencies: 1666 2286 1676
--- Name: billservice_accountprepaystrafic_prepaid_traffic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_prepaid_traffic_id_fkey FOREIGN KEY (prepaid_traffic_id) REFERENCES billservice_prepaidtraffic(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2425 (class 2606 OID 19352)
--- Dependencies: 2237 1663 1667
--- Name: billservice_accounttarif_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2426 (class 2606 OID 19357)
--- Dependencies: 1667 1682 2312
--- Name: billservice_accounttarif_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2427 (class 2606 OID 19362)
--- Dependencies: 2237 1663 1668
--- Name: billservice_card_activated_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_activated_by_id_fkey FOREIGN KEY (activated_by_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
-
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2430 (class 2606 OID 19377)
--- Dependencies: 2393 1704 1670
--- Name: billservice_netflowstream_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2431 (class 2606 OID 19382)
--- Dependencies: 2312 1682 1670
--- Name: billservice_netflowstream_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2432 (class 2606 OID 19387)
--- Dependencies: 1705 2397 1670
--- Name: billservice_netflowstream_traffic_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2433 (class 2606 OID 19392)
--- Dependencies: 1694 1670 2356
--- Name: billservice_netflowstream_traffic_transmit_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_traffic_transmit_node_id_fkey FOREIGN KEY (traffic_transmit_node_id) REFERENCES billservice_traffictransmitnodes(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2434 (class 2606 OID 19397)
--- Dependencies: 1672 2253 1667
--- Name: billservice_onetimeservicehistory_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2435 (class 2606 OID 19402)
--- Dependencies: 2271 1672 1671
--- Name: billservice_onetimeservicehistory_onetimeservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE CASCADE DEFERRABLE;
@@ -12990,37 +8897,15 @@ ALTER TABLE billservice_dealer
   ADD CONSTRAINT billservice_dealer_bank_id_fkey FOREIGN KEY (bank_id)
       REFERENCES billservice_bankdata (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
---
 
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2437 (class 2606 OID 19412)
--- Dependencies: 1673 2277 1674
--- Name: billservice_periodicalservicehistory_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_periodicalservicehistory
     ADD CONSTRAINT billservice_periodicalservicehistory_service_id_fkey FOREIGN KEY (service_id) REFERENCES billservice_periodicalservice(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2439 (class 2606 OID 19417)
--- Dependencies: 1677 1676 2286
--- Name: billservice_prepaidtraffic_traffic_class_prepaidtraffic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_prepaidtraffic_id_fkey FOREIGN KEY (prepaidtraffic_id) REFERENCES billservice_prepaidtraffic(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2440 (class 2606 OID 19422)
--- Dependencies: 2397 1677 1705
--- Name: billservice_prepaidtraffic_traffic_class_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_prepaidtraffic_traffic_class
     ADD CONSTRAINT billservice_prepaidtraffic_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
@@ -13030,331 +8915,104 @@ ALTER TABLE billservice_operator
       REFERENCES billservice_bankdata (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
---
--- TOC entry 2443 (class 2606 OID 19437)
--- Dependencies: 2237 1680 1663
--- Name: billservice_shedulelog_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2444 (class 2606 OID 19442)
--- Dependencies: 1682 1662 2234
--- Name: billservice_tariff_access_parameters_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2448 (class 2606 OID 19447)
--- Dependencies: 1671 1683 2271
--- Name: billservice_tariff_onetime_services_onetimeservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_tariff_onetime_services
     ADD CONSTRAINT billservice_tariff_onetime_services_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2449 (class 2606 OID 19452)
--- Dependencies: 2312 1682 1683
--- Name: billservice_tariff_onetime_services_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_tariff_onetime_services
     ADD CONSTRAINT billservice_tariff_onetime_services_tariff_id_fkey FOREIGN KEY (tariff_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2450 (class 2606 OID 19457)
--- Dependencies: 1673 1684 2277
--- Name: billservice_tariff_periodical_service_periodicalservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_tariff_periodical_services
     ADD CONSTRAINT billservice_tariff_periodical_service_periodicalservice_id_fkey FOREIGN KEY (periodicalservice_id) REFERENCES billservice_periodicalservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2451 (class 2606 OID 19462)
--- Dependencies: 1684 1682 2312
--- Name: billservice_tariff_periodical_services_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_tariff_periodical_services
     ADD CONSTRAINT billservice_tariff_periodical_services_tariff_id_fkey FOREIGN KEY (tariff_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2445 (class 2606 OID 19467)
--- Dependencies: 2299 1679 1682
--- Name: billservice_tariff_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2446 (class 2606 OID 19472)
--- Dependencies: 2333 1682 1687
--- Name: billservice_tariff_time_access_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2452 (class 2606 OID 19477)
--- Dependencies: 1682 1685 2312
--- Name: billservice_tariff_traffic_limit_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_tariff_traffic_limit
     ADD CONSTRAINT billservice_tariff_traffic_limit_tariff_id_fkey FOREIGN KEY (tariff_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
---
--- TOC entry 2453 (class 2606 OID 19482)
--- Dependencies: 1685 2349 1692
--- Name: billservice_tariff_traffic_limit_trafficlimit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_tariff_traffic_limit
     ADD CONSTRAINT billservice_tariff_traffic_limit_trafficlimit_id_fkey FOREIGN KEY (trafficlimit_id) REFERENCES billservice_trafficlimit(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2447 (class 2606 OID 19487)
--- Dependencies: 2367 1697 1682
--- Name: billservice_tariff_traffic_transmit_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_traffic_transmit_service_id_fkey FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2454 (class 2606 OID 19492)
--- Dependencies: 2333 1687 1686
--- Name: billservice_timeaccessnode_time_access_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2455 (class 2606 OID 19497)
--- Dependencies: 1686 1688 2337
--- Name: billservice_timeaccessnode_time_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_period_id_fkey FOREIGN KEY (time_period_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2456 (class 2606 OID 19502)
--- Dependencies: 1689 1688 2337
--- Name: billservice_timeperiod_time_period_nodes_timeperiod_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2457 (class 2606 OID 19507)
--- Dependencies: 2343 1689 1690
--- Name: billservice_timeperiod_time_period_nodes_timeperiodnode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiodnode_id_fkey FOREIGN KEY (timeperiodnode_id) REFERENCES billservice_timeperiodnode(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2458 (class 2606 OID 19512)
--- Dependencies: 1691 2234 1662
--- Name: billservice_timespeed_access_parameters_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2459 (class 2606 OID 19517)
--- Dependencies: 1688 2337 1691
--- Name: billservice_timespeed_time_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_time_id_fkey FOREIGN KEY (time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2460 (class 2606 OID 19522)
--- Dependencies: 2299 1692 1679
--- Name: billservice_trafficlimit_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2461 (class 2606 OID 19527)
--- Dependencies: 1693 2397 1705
--- Name: billservice_trafficlimit_traffic_class_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2462 (class 2606 OID 19532)
--- Dependencies: 2349 1693 1692
--- Name: billservice_trafficlimit_traffic_class_trafficlimit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_fkey FOREIGN KEY (trafficlimit_id) REFERENCES billservice_trafficlimit(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2463 (class 2606 OID 19537)
--- Dependencies: 1697 2367 1694
--- Name: billservice_traffictransmitnod_traffic_transmit_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnod_traffic_transmit_service_id_fkey FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2464 (class 2606 OID 19542)
--- Dependencies: 2356 1694 1695
--- Name: billservice_traffictransmitnodes__traffictransmitnodes_id_fkey1; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes__traffictransmitnodes_id_fkey1 FOREIGN KEY (traffictransmitnodes_id) REFERENCES billservice_traffictransmitnodes(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2466 (class 2606 OID 19547)
--- Dependencies: 2356 1696 1694
--- Name: billservice_traffictransmitnodes_t_traffictransmitnodes_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_t_traffictransmitnodes_id_fkey FOREIGN KEY (traffictransmitnodes_id) REFERENCES billservice_traffictransmitnodes(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2465 (class 2606 OID 19552)
--- Dependencies: 1695 1688 2337
--- Name: billservice_traffictransmitnodes_time_nodes_timeperiod_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2467 (class 2606 OID 19557)
--- Dependencies: 1696 1705 2397
--- Name: billservice_traffictransmitnodes_traffic_c_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_c_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2468 (class 2606 OID 19562)
--- Dependencies: 1663 1698 2237
--- Name: billservice_transaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2469 (class 2606 OID 19567)
--- Dependencies: 1698 1682 2312
--- Name: billservice_transaction_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2413 (class 2606 OID 19572)
--- Dependencies: 1658 1701 2385
--- Name: content_type_id_refs_id_728de91f; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT content_type_id_refs_id_728de91f FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2470 (class 2606 OID 19577)
--- Dependencies: 1700 1701 2385
--- Name: django_admin_log_content_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_content_type_id_fkey FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2471 (class 2606 OID 19582)
--- Dependencies: 2221 1659 1700
--- Name: django_admin_log_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
-
---
--- TOC entry 2472 (class 2606 OID 19587)
--- Dependencies: 1705 2397 1706
--- Name: nas_trafficnode_traffic_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
-
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
-
-
---
--- TOC entry 2438 (class 2606 OID 19592)
--- Dependencies: 1676 1697 2367
--- Name: traffic_transmit_service_id_refs_id_4797c3b9; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
---
 
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT traffic_transmit_service_id_refs_id_4797c3b9 FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
 
 
---
--- TOC entry 2533 (class 0 OID 0)
--- Dependencies: 6
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
@@ -13362,31 +9020,11 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
---
--- TOC entry 2534 (class 0 OID 0)
--- Dependencies: 20
--- Name: pg_buffercache_pages(); Type: ACL; Schema: public; Owner: postgres
---
-
 REVOKE ALL ON FUNCTION pg_buffercache_pages() FROM PUBLIC;
 REVOKE ALL ON FUNCTION pg_buffercache_pages() FROM postgres;
 GRANT ALL ON FUNCTION pg_buffercache_pages() TO postgres;
 
 
---
--- TOC entry 2535 (class 0 OID 0)
--- Dependencies: 1654
--- Name: pg_buffercache; Type: ACL; Schema: public; Owner: postgres
---
-
 REVOKE ALL ON TABLE pg_buffercache FROM PUBLIC;
 REVOKE ALL ON TABLE pg_buffercache FROM postgres;
 GRANT ALL ON TABLE pg_buffercache TO postgres;
-
-
--- Completed on 2008-09-08 12:04:49
-
---
--- PostgreSQL database dump complete
---
-
