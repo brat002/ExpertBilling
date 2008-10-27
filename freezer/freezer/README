@@ -24,7 +24,7 @@ Dependencies:
 To compile a final file across different platforms the
 freezer uses GCC (Dev-C++ under Windows). And it links
 program with Python library and zlib. So be sure that
-all these installed in your system.
+all these are installed in your system.
 
 Usage:
 ------
@@ -36,7 +36,7 @@ Your can use it in three ways:
 
 
 (0)
-python freezer.py -l --pkey="qwerty" --pmod=prot.py --amods=alg:alg/__init__.py,alg.sort:alg/sort.py -d "D:/Dev-Cpp/" prg.py
+python freezer.py -l --pkey="qwerty" --pmod=prot.py --amods=alg:alg/__init__.py,alg.sort:alg/sort.py -d "D:\\Dev-Cpp\\" prg.py
 
 (1)
 # Freezefile

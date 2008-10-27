@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.5
 ####################################################################################################
 """
 General:
@@ -55,36 +55,32 @@ _CHUNK_2 = r"""	{ 0 }
 #include <malloc.h>
 #include <zlib.h>
 
-#if defined UNDER_MUSTDIE
-# define DLL_IMPORT     __declspec(dllimport)
-#else
-# define DLL_IMPORT
-#endif
+int PyRun_SimpleString( const char * command ) __attribute__((dllimport));
+
+static void initSysPath() { %s }
 """
 
-_CHUNK_3 = r"""
-DLL_IMPORT FrozenModule *PyImport_FrozenModules;
+_CHUNK_3 = r"""PyRun_SimpleString( "import sys; sys.path.insert( 0, 'modules' )" );"""
 
-DLL_IMPORT int Py_SetProgramName( char * );
-DLL_IMPORT int PySys_SetArgv( int argc, char ** argv );
-DLL_IMPORT int PyImport_ImportFrozenModule( char * );
-DLL_IMPORT int Py_Initialize();
-DLL_IMPORT int Py_Finalize();
-DLL_IMPORT int PyErr_Print();
+_CHUNK_4 = r"""
+FrozenModule * __attribute__((dllimport)) PyImport_FrozenModules;
 
-DLL_IMPORT int Py_FrozenFlag;
-DLL_IMPORT int Py_NoSiteFlag;
-DLL_IMPORT int Py_IgnoreEnvironmentFlag;
-DLL_IMPORT int Py_OptimizeFlag;
+int Py_SetProgramName( char * ) __attribute__((dllimport));
+int PySys_SetArgv( int argc, char ** argv ) __attribute__((dllimport));
+int PyImport_ImportFrozenModule( char * ) __attribute__((dllimport));
+int Py_Initialize() __attribute__((dllimport));
+int Py_Finalize() __attribute__((dllimport));
+int PyErr_Print() __attribute__((dllimport));
+
+int __attribute__((dllimport)) Py_FrozenFlag, Py_NoSiteFlag;
 
 static
 int
 unpackBytecode()
 {
 	uLongf out_sz;
-	register idx = 0;
 
-	for ( ; _packed_modules[ idx ].name; idx++ ) {
+	for ( register int idx = 0; _packed_modules[ idx ].name; idx++ ) {
 		out_sz = _frozen_modules[ idx ].size;
 		if ( !( _frozen_modules[ idx ].code = malloc( out_sz ) ) ) {
 			fputs( "error: there is no enough memory\n", stderr );
@@ -103,10 +99,7 @@ int main( int argc, char ** argv )
 {
 	int result = 0;
 
-	Py_NoSiteFlag = 1;
-	Py_FrozenFlag = 1;
-	Py_IgnoreEnvironmentFlag = 1;
-	Py_OptimizeFlag = 1;
+	Py_NoSiteFlag = Py_FrozenFlag = 1;
 	Py_SetProgramName( argv[ 0 ] );
 	Py_Initialize();
 	PySys_SetArgv( argc, argv );
@@ -115,6 +108,7 @@ int main( int argc, char ** argv )
 		Py_Finalize();
 		return 1;
 	}
+	initSysPath();
 	switch ( PyImport_ImportFrozenModule( "__main__" ) )
 	{
 	case 0:
@@ -130,45 +124,41 @@ int main( int argc, char ** argv )
 }
 """
 
-_CHUNK_4 = r"""
+_CHUNK_5 = r"""
 typedef struct PyObject PyObject;
 
-DLL_IMPORT FrozenModule *PyImport_FrozenModules;
+FrozenModule * __attribute__((dllimport)) PyImport_FrozenModules;
 
-DLL_IMPORT int Py_SetProgramName( char * );
-DLL_IMPORT int PySys_SetArgv( int argc, char ** argv );
+int Py_SetProgramName( char * ) __attribute__((dllimport));
+int PySys_SetArgv( int argc, char ** argv ) __attribute__((dllimport));
 
-DLL_IMPORT int PyImport_ImportFrozenModule( char * );
-DLL_IMPORT PyObject * PyImport_ExecCodeModuleEx( char * name, PyObject * co, char * pathname );
+int PyImport_ImportFrozenModule( char * ) __attribute__((dllimport));
+PyObject * PyImport_ExecCodeModuleEx( char * name, PyObject * co, char * pathname ) __attribute__((dllimport));
 
-DLL_IMPORT int PyErr_Print();
-DLL_IMPORT int Py_Initialize();
-DLL_IMPORT int Py_Finalize();
+int PyErr_Print() __attribute__((dllimport));
+int Py_Initialize() __attribute__((dllimport));
+int Py_Finalize() __attribute__((dllimport));
 
-DLL_IMPORT int Py_FrozenFlag;
-DLL_IMPORT int Py_NoSiteFlag;
-DLL_IMPORT int Py_IgnoreEnvironmentFlag;
-DLL_IMPORT int Py_OptimizeFlag;
+int __attribute__((dllimport)) Py_FrozenFlag;
+int __attribute__((dllimport)) Py_NoSiteFlag;
 
-DLL_IMPORT PyObject * PyObject_CallFunction( PyObject * callable, char * format, ... );
-DLL_IMPORT PyObject * PyErr_Occurred();
+PyObject * PyObject_CallFunction( PyObject * callable, char * format, ... ) __attribute__((dllimport));
+PyObject * PyErr_Occurred() __attribute__((dllimport));
 
-DLL_IMPORT PyObject * PyMarshal_ReadObjectFromString( char * string, int len );
-DLL_IMPORT PyObject * PyModule_GetDict( PyObject * module );
-DLL_IMPORT PyObject * PyDict_GetItemString( PyObject * p, char * key );
+PyObject * PyMarshal_ReadObjectFromString( char * string, int len ) __attribute__((dllimport));
+PyObject * PyModule_GetDict( PyObject * module ) __attribute__((dllimport));
+PyObject * PyDict_GetItemString( PyObject * p, char * key ) __attribute__((dllimport));
 
-DLL_IMPORT const char * PyString_AsString( PyObject * string );
-DLL_IMPORT int PyString_Size( PyObject * string );
+const char * PyString_AsString( PyObject * string ) __attribute__((dllimport));
+int PyString_Size( PyObject * string ) __attribute__((dllimport));
 
-DLL_IMPORT void Py_DecRef( PyObject * o );
+void Py_DecRef( PyObject * o ) __attribute__((dllimport));
 
 static
 void
 decryptBuffer( register char * buf, register int count )
 {
-	register idx;
-
-	for ( idx = 0; idx < count; idx++, buf++ ) {
+	for ( register int idx = 0; idx < count; idx++, buf++ ) {
 		*buf = ~*buf;
 		*buf = ( *buf & 0x80 ) | ( ( *buf >> 1 ) & 0x20 ) | ( ( *buf >> 2 ) & 0x08 ) | ( ( *buf >> 3 ) & 0x02 ) |
 		       ( *buf & 0x01 ) | ( ( *buf << 1 ) & 0x04 ) | ( ( *buf << 2 ) & 0x10 ) | ( ( *buf << 3 ) & 0x40 );
@@ -210,9 +200,7 @@ unpackBytecode()
 		return 0;
 	}
 
-	register idx;
-
-	for ( idx = 0; _packed_modules[ idx ].name; idx++ ) {
+	for ( register int idx = 0; _packed_modules[ idx ].name; idx++ ) {
 		if ( ( in_sz = _packed_modules[ idx ].size ) % ( key_len + 1 ) ) {
 			fputs( "error: invalid key length\n"
 			       "This is illegal copy of program\n", stderr );
@@ -234,10 +222,7 @@ unpackBytecode()
 				src += key_len + 1;
 			}
 		}
-
-		register i, j;
-
-		for ( i = 0, j = 0; i < in_sz; i++, j++ ) {
+		for ( register int i = 0, j = 0; i < in_sz; i++, j++ ) {
 			if ( j == key_len ) j = 0;
 			_packed_modules[ idx ].code[ i ] ^= key[ j ];
 		}
@@ -261,10 +246,7 @@ int main( int argc, char ** argv )
 {
 	int result = 0;
 
-	Py_NoSiteFlag = 1;
-	Py_FrozenFlag = 1;
-	Py_IgnoreEnvironmentFlag = 1;
-	Py_OptimizeFlag = 1;
+	Py_NoSiteFlag = Py_FrozenFlag = 1;
 	Py_SetProgramName( argv[ 0 ] );
 	Py_Initialize();
 	PySys_SetArgv( argc, argv );
@@ -273,6 +255,7 @@ int main( int argc, char ** argv )
 		Py_Finalize();
 		return 1;
 	}
+	initSysPath();
 	switch ( PyImport_ImportFrozenModule( "__main__" ) )
 	{
 	case 0:
@@ -290,7 +273,7 @@ int main( int argc, char ** argv )
 
 ####################################################################################################
 
-import sys, os, os.path
+import sys, os, os.path, modulefinder
 
 _flags = {
 	'SHOW_HELP': False,           # show help and quit
@@ -303,11 +286,12 @@ _flags = {
 	'ADDITIONAL_MODULES': {},     # additional modules that will be freezed
 	'LOCATION': None,             # path where Freezefile is located
 	'COMPILE': True,              # compile result
-	'DEV_CPP_DIR': 'C:/Dev-Cpp/', # path to Dev-C++ (Windows only)
+	'DEV_CPP_DIR': 'C:\\Dev-Cpp\\', # path to Dev-C++ (Windows only)
+	'STAND_ALONE': False,         # make program independent (copy required Python modules)
 }
 
 _USAGE = r"""
-Usage: freezer [options] [PY_FILE]
+Usage: freezer [options] [PY_FILE [C_FILE ]]
  Freezes Python module and creates binary
  executable with optional anti-copy protection.
 Options:
@@ -316,20 +300,33 @@ Options:
  -m MOD, --pmod=MOD     use module MOD as protection unit.
                         This file must implement function
                         'getKey' which returns a string
- -l,     --local        freeze local (not in sys.path) modules
-                        that imported from main (and so on)
- --amods=MODS           freeze additional modules MODS that
+ -l                     freeze local program modules
+ --amods=MODS           include additional modules MODS that
                         cannot be found by introspection.
                         MODS are separated by commas pairs
                         MODNAME:FILENAME (for example
-                        --amods=pkg.io:io.py,data:data.py)
- -o FILENAME            name of generated .c file
+                        --amods='pkg.io:io.py,data:data.py')
  -g                     generate .c file only - do not compile
  -d DIR                 specify a directory where Dev-C++ is
                         installed (Windows only; by default
-                        is 'C:/Dev-Cpp/')
-Without any arguments freezer attempts to locate and
-execute file 'Freezefile' in current directory."""
+                        is 'C:\Dev-Cpp\')
+ -a                     make a stand-alone program, i.e. copy all
+                        required modules to local directory 'modules'
+ Without any arguments freezer attempts to locate and
+ execute file 'Freezefile' in current directory.
+Freezefile variables:
+ PY_FILE            - name of a main module (str)
+ C_FILE             - name of generated .c file (str)
+ PROTECTION_KEY     - key for encryption (str)
+ PROTECTION_MODULE  - name of a protection module (str)
+ FREEZE_LOCAL       - include local modules to the freezing (bool)
+ ADDITIONAL_MODULES - modules that also must be froze (dict)
+ COMPILE            - compile program at last or not (bool)
+ STAND_ALONE        - copy shared module into local directory
+                      or not (bool)
+"""
+
+####################################################################################################
 
 class FreezerError( RuntimeError ): pass
 
@@ -342,7 +339,7 @@ def _dumpCode( code ):
 def _packBytecode( bytecode ):
 	import zlib
 	result = zlib.compress( bytecode, zlib.Z_BEST_COMPRESSION )
-	print( 'Compressing bytecode:\n\t%d -> %d' % ( len( bytecode ), len( result ) ) )
+	print( 'Compressing bytecode %d -> %d' % ( len( bytecode ), len( result ) ) )
 	return result
 
 # Returns a list containing segments of 'string' -
@@ -376,94 +373,102 @@ def _encryptString( string, key = None ):
 		result += chr( 0xff & ~(
 			( ch & 0x80 ) | ( ( ch << 1 ) & 0x40 ) | ( ( ch << 2 ) & 0x20 ) | ( ( ch << 3 ) & 0x10 ) | \
 			( ch & 0x01 ) | ( ( ch >> 1 ) & 0x02 ) | ( ( ch >> 2 ) & 0x04 ) | ( ( ch >> 3 ) & 0x08 )
-		) )
+		))
 	return result
-
-# Returns a C-string enclosed in "", where every
-# original character present in hex mode '\x<hexcode>'
-def _representString( string ):
-	result = '"'
-	for ch in string: result += '\\x%02X' % ord( ch )
-	return result + '"'
 
 # Writes frozen in 'string' module to file 'f'
 def _writeToFile( f, string, arr_name ):
+	def representString( string ):
+		result = '"'
+		for ch in string: result += '\\x%02X' % ord( ch )
+		return result + '"'
 	f.write( '\nstatic char %s[] =\n' % arr_name )
 	for s in _splitString( string, 16 ):
-		f.write( '\t%s\n' % _representString( s ) )
+		f.write( '\t%s\n' % representString( s ) )
 	f.write( ';\n' )
 
 # Compiles file 'filename' to executable
 def _makeBinary():
-	if sys.platform == 'win32':
-		flags = {
-			'CC': _flags[ 'DEV_CPP_DIR' ] + 'bin/gcc.exe',
-			'CFLAGS': '-DUNDER_MUSTDIE -I"%s"' % ( _flags[ 'DEV_CPP_DIR' ] + 'include' ),
-			'SRC': _flags[ 'C_FILE' ],
-			'LFLAGS': '-L"%s" -lpython%s -lzlib' % ( _flags[ 'DEV_CPP_DIR' ] + 'lib', sys.version[ : 3 ] ),
-			'TARGET': _flags[ 'C_FILE' ][ : -1 ] + 'exe',
-		}
-	else:
-		flags = {
-			'CC': 'gcc',
-			'CFLAGS': '',
-			'SRC': _flags[ 'C_FILE' ],
-			'LFLAGS': '-lpython%s -lz' % sys.version[ : 3 ],
-			'TARGET': _flags[ 'C_FILE' ][ : -2 ]
-		}
-	cmd = '%(CC)s %(CFLAGS)s %(SRC)s %(LFLAGS)s -o %(TARGET)s' % flags
-	print( 'Compiling:\n\t' + cmd )
+	args = {
+		'CC': os.path.join( _flags[ 'DEV_CPP_DIR' ], 'bin', 'gcc.exe' ),
+		'CFLAGS': '-std=gnu99 -I"%s"' % os.path.join( _flags[ 'DEV_CPP_DIR' ], 'include' ),
+		'SRC': _flags[ 'C_FILE' ],
+		'LFLAGS': '-L"%s" -lpython%s -lzlib' % ( os.path.join( _flags[ 'DEV_CPP_DIR' ], 'lib' ), sys.version[ : 3 ] ),
+		'TARGET': _flags[ 'C_FILE' ][ : -1 ] + 'exe',
+	} if sys.platform == 'win32' else {
+		'CC': 'gcc',
+		'CFLAGS': '-std=gnu99 -w',
+		'SRC': _flags[ 'C_FILE' ],
+		'LFLAGS': '-lpython%s -lz' % sys.version[ : 3 ],
+		'TARGET': _flags[ 'C_FILE' ][ : -2 ]
+	}
+	cmd = '%(CC)s %(CFLAGS)s %(SRC)s %(LFLAGS)s -o %(TARGET)s' % args
+	print( '==================================================' )
+	print( 'Compiling ' + cmd )
 	os.system( cmd )
 
-def _readFile( filename ):
+# Reads and compiles a content of a file
+def _compileFile( filename ):
 	f = open( filename )
-	result = f.read()
+	text = f.read()
 	f.close()
-	return result
+	return compile( text, '', 'exec' )
+
+def _fixModulesNames( modules ):
+	for name, mod in modules.iteritems():
+		if mod.__file__ and mod.__file__ in _flags[ 'ADDITIONAL_MODULES' ].values():
+			for mod_name, file_name in _flags[ 'ADDITIONAL_MODULES' ].iteritems():
+				if mod.__file__ == file_name: mod.__name__ = mod_name; break
 
 # Returns loaded modules
 def _getModules():
-	import modulefinder
-	mf = modulefinder.ModuleFinder( _flags[ 'SEARCH_PATH' ], False, sys.path )
+	mf = modulefinder.ModuleFinder( [ _flags[ 'SEARCH_PATH' ] ], False, sys.path )
+	for file_name in _flags[ 'ADDITIONAL_MODULES' ].itervalues(): mf.load_file( file_name )
+	_fixModulesNames( mf.modules )
 	mf.run_script( _flags[ 'PY_FILE' ] )
-	result = mf.modules
-	del mf
-	if not _flags[ 'FREEZE_LOCAL' ]: result = { '__main__' : result[ '__main__' ] }
-	for modname, filename in _flags[ 'ADDITIONAL_MODULES' ].iteritems():
-		m = modulefinder.Module( modname, filename )
-		m.__code__ = compile( _readFile( filename ), '', 'exec' )
-		result[ modname ] = m
+	print( '==================================================' )
+	print( 'Loading modules:' )
+	for m in mf.modules.itervalues():
+		print( '\t%s: %s' % ( m.__name__, m.__file__ ) )
+	result = [ mf.modules[ '__main__' ] ]
+	if _flags[ 'FREEZE_LOCAL' ]:
+		for name, mod in mf.modules.iteritems():
+			if mod.__name__ != '__main__' and mod.__code__ and mod.__file__.startswith( _flags[ 'SEARCH_PATH' ] ): result.append( mod )
+	print( '==================================================' )
+	print( 'Selecting modules for freezing:' )
+	for m in result:
+		print( '\t%s: %s' % ( m.__name__, m.__file__ ) )
 	return result
 
+# Creates plain project without any protection
 def _createSimple():
 	f = open( _flags[ 'C_FILE' ], 'w' )
 	mods = _getModules()
 	table = []
-	for name in reversed( mods.keys() ):
-		m = mods[ name ]
-		if m.__code__: # preventing dumping of built-in modules
-			print( "Dumping '%s'" % name )
-			bytecode = _dumpCode( m.__code__ )
-			item = [
-				name, # internal name
-				'__main__' if name == '__main__' else '_mod_' + '__'.join( name.split( '.' ) ), # variable name
-				len( bytecode ) # actual size of a bytecode
-			]
-			bytecode = _packBytecode( bytecode )
-			item.append( len( bytecode ) ) # size of packed bytecode
-			_writeToFile( f, bytecode, item[ 1 ] )
-			table.append( item )
+	print( '==================================================' )
+	for m in reversed( mods ):
+		print( "Dumping '%s'" % m.__name__ )
+		bytecode = _dumpCode( m.__code__ )
+		item = [
+			m.__name__, # internal name
+			'__main__' if m.__name__ == '__main__' else '_mod_' + '__'.join( m.__name__.split( '.' ) ), # variable name
+			len( bytecode ) # actual size of a bytecode
+		]
+		bytecode = _packBytecode( bytecode )
+		item.append( len( bytecode ) ) # size of packed bytecode
+		_writeToFile( f, bytecode, item[ 1 ] )
+		table.append( item )
 	f.write( _CHUNK_0 )
 	for item in table:
 		f.write( '\t{ "%s", %s, %d },\n' % ( item[ 0 ], item[ 1 ], item[ 3 ] ) )
 	f.write( _CHUNK_1 )
 	for item in table:
 		f.write( '\t{ "%s", 0, %d },\n' % ( item[ 0 ], item[ 2 ] ) )
-	f.write( _CHUNK_2 )
-	f.write( _CHUNK_3 )
+	f.write( _CHUNK_2 % ( _CHUNK_3 if _flags[ 'STAND_ALONE' ] else '' ) )
+	f.write( _CHUNK_4 )
 	f.close()
-	if _flags[ 'COMPILE' ]: _makeBinary()
 
+# Creates complex project with a protection
 def _createAdvanced():
 	# adds to bytecode useless data
 	def messBytecode( code ):
@@ -480,56 +485,115 @@ def _createAdvanced():
 	f = open( _flags[ 'C_FILE' ], 'w' )
 	# packing protection module first
 	print( 'Dumping protection module' )
-	bytecode = _dumpCode( compile( _readFile( _flags[ 'PROTECTION_MODULE' ] ), '', 'exec' ) )
+	bytecode = _dumpCode( _compileFile( _flags[ 'PROTECTION_MODULE' ] ) )
 	f.write( '\n#define PROT_BYTECODE_SIZE     %s\n' % len( bytecode ) )
 	_writeToFile( f, _encryptString( _packBytecode( bytecode ) ), '__prot__' )
 	mods = _getModules()
 	table = []
-	for name in reversed( mods.keys() ):
-		m = mods[ name ]
-		if m.__code__: # preventing dumping of built-in modules
-			print( "Dumping '%s'" % name )
-			bytecode = _dumpCode( m.__code__ )
-			item = [
-				name, # internal name
-				'__main__' if name == '__main__' else '_mod_' + '__'.join( name.split( '.' ) ), # variable name
-				len( bytecode ) # actual size of a bytecode
-			]
-			bytecode = messBytecode( _encryptString( _packBytecode( bytecode ), _flags[ 'PROTECTION_KEY' ] ) )
-			item.append( len( bytecode ) ) # size of packed bytecode
-			_writeToFile( f, bytecode, item[ 1 ] )
-			table.append( item )
+	print( '==================================================' )
+	for m in reversed( mods ):
+		print( "Dumping '%s'" % m.__name__ )
+		bytecode = _dumpCode( m.__code__ )
+		item = [
+			m.__name__, # internal name
+			'__main__' if m.__name__ == '__main__' else '_mod_' + '__'.join( m.__name__.split( '.' ) ), # variable name
+			len( bytecode ) # actual size of a bytecode
+		]
+		bytecode = messBytecode( _encryptString( _packBytecode( bytecode ), _flags[ 'PROTECTION_KEY' ] ) )
+		item.append( len( bytecode ) ) # size of packed bytecode
+		_writeToFile( f, bytecode, item[ 1 ] )
+		table.append( item )
 	f.write( _CHUNK_0 )
 	for item in table:
 		f.write( '\t{ "%s", %s, %d },\n' % ( item[ 0 ], item[ 1 ], item[ 3 ] ) )
 	f.write( _CHUNK_1 )
 	for item in table:
 		f.write( '\t{ "%s", 0, %d },\n' % ( item[ 0 ], item[ 2 ] ) )
-	f.write( _CHUNK_2 )
-	f.write( _CHUNK_4 )
+	f.write( _CHUNK_2 % ( _CHUNK_3 if _flags[ 'STAND_ALONE' ] else '' ) )
+	f.write( _CHUNK_5 )
 	f.close()
-	if _flags[ 'COMPILE' ]: _makeBinary()
+
+# Copies required modules to a local directory 'modules'
+def _copyModules():
+	name_pairs = []
+	py_dirs = sys.path[ 1 : ]
+	mf = modulefinder.ModuleFinder( [ _flags[ 'SEARCH_PATH' ] ] + py_dirs )
+	for file_name in _flags[ 'ADDITIONAL_MODULES' ].itervalues(): mf.load_file( file_name ) # also finding dependencies of these modules
+	_fixModulesNames( mf.modules )
+	mf.run_script( _flags[ 'PY_FILE' ] )
+	print( '==================================================' )
+	print( 'Detecting required modules:' )
+	for m in mf.modules.itervalues():
+		print( '\t%s: %s' % ( m.__name__, m.__file__ ) )
+	for mod in mf.modules.itervalues():
+		# excluding main and built-in modules
+		if ( mod.__name__ == '__main__' or ( not mod.__code__ and not mod.__file__ ) ): continue
+		if mod.__file__.startswith( _flags[ 'SEARCH_PATH' ] ): # local module
+			if (
+				mod.__file__.endswith( '.so' )
+				or mod.__file__.endswith( '.pyd' )
+				or not _flags[ 'FREEZE_LOCAL' ]
+			): name_pairs.append( ( mod.__name__.replace( '.', os.path.sep ) + os.path.splitext( mod.__file__ )[ 1 ], mod.__file__ ) )
+			continue
+		loc = ''
+		for d in py_dirs:
+			if d in mod.__file__ and len( d ) > len( loc ): loc = d # finding the longest prefix (directory name)
+		if loc: name_pairs.append( ( mod.__file__.replace( loc + os.path.sep, '' ), mod.__file__ ) )
+		else: name_pairs.append((
+			mod.__name__.replace( '.', os.path.sep )
+				+ ( os.path.sep + '__init__' if '__init__' in os.path.basename( mod.__file__ ) else '' )
+				+ os.path.splitext( mod.__file__ )[ 1 ],
+			mod.__file__
+		))
+	del mf
+	mod_dir = os.path.join( os.path.dirname( _flags[ 'C_FILE' ] ), 'modules' ) # target directory
+	command = 'copy' if sys.platform == 'win32' else 'cp'
+	print( '==================================================' )
+	for p in name_pairs:
+		dest_dir = os.path.join( mod_dir, os.path.dirname( p[ 0 ] ) )
+		if not os.path.exists( dest_dir ): os.makedirs( dest_dir )
+		dest_file = os.path.join( mod_dir, p[ 0 ] )
+		if (
+			( not dest_file.endswith( '.py' ) and not os.path.exists( dest_file ) ) or
+			( dest_file.endswith( '.py' ) and not os.path.exists( dest_file + 'c' ) )
+		): # if module is not copied and compiled yet
+			print( 'Copying %s\n     to %s' % ( p[ 1 ], dest_file ) )
+			os.system( "%s '%s' '%s'" % ( command, p[ 1 ], dest_file ) )
+	print( '==================================================' )
+	import compileall
+	compileall.compile_dir( mod_dir )
+	print( '==================================================' )
+	print( 'Cleaning up...' )
+	for p in name_pairs:
+		file_name = os.path.join( mod_dir, p[ 0 ] )
+		if file_name.endswith( 'py' ) and os.path.exists( file_name ): os.remove( file_name )
 
 # Analizes flags
 def _analizeFlags():
 	if _flags[ 'SHOW_HELP' ]:
 		print( _USAGE )
 		sys.exit( 0 )
-	if _flags[ 'FREEZE_LOCAL' ]:
-		path = os.path.dirname( _flags[ 'PY_FILE' ] )
-		if path: _flags[ 'SEARCH_PATH' ] = [ path ]
-		else:    _flags[ 'SEARCH_PATH' ] = '.'
+	# fixing local path
+	path = os.path.dirname( _flags[ 'PY_FILE' ] )
+	if path: _flags[ 'SEARCH_PATH' ] = path
+	else: _flags[ 'SEARCH_PATH' ] = '.' + os.path.sep
+	# correcting pathes of modules
+	for name, path in _flags[ 'ADDITIONAL_MODULES' ].iteritems():
+		if not os.path.dirname( path ): _flags[ 'ADDITIONAL_MODULES' ][ name ] = os.path.join( _flags[ 'SEARCH_PATH' ], path )
 	if not _flags[ 'PY_FILE' ]:
-		raise FreezerError, 'missing main module'
+		raise FreezerError( 'missing main module' )
 	if not _flags[ 'PROTECTION_KEY' ] and not _flags[ 'PROTECTION_MODULE' ]:
 		_createSimple()
 	elif _flags[ 'PROTECTION_KEY' ] and _flags[ 'PROTECTION_MODULE' ]:
 		_createAdvanced()
 	elif not _flags[ 'PROTECTION_KEY' ]:
-		raise FreezerError, 'missing protection key'
+		raise FreezerError( 'missing protection key' )
 	else:
-		raise FreezerError, 'missing protection module'
-	if _flags[ 'DEV_CPP_DIR' ][ -1 ] != '/': _flags[ 'DEV_CPP_DIR' ] += '/'
+		raise FreezerError( 'missing protection module' )
+	if _flags[ 'COMPILE' ]: _makeBinary()
+	if _flags[ 'STAND_ALONE' ]: _copyModules()
+	print( '==================================================' )
+	print( 'Done!' )
 
 # Analizes given arguments
 def _parseArguments( args ):
@@ -549,6 +613,8 @@ def _parseArguments( args ):
 		_flags[ 'COMPILE' ] = args[ 'compile' ]
 	if 'dev_cpp_dir' in args.keys():
 		_flags[ 'DEV_CPP_DIR' ] = args[ 'dev_cpp_dir' ]
+	if 'stand_alone' in args.keys():
+		_flags[ 'STAND_ALONE' ] = args[ 'stand_alone' ]
 
 # Gets options from command line
 def _parseCommandLine():
@@ -556,27 +622,33 @@ def _parseCommandLine():
 		import getopt
 		opts, args = getopt.getopt(
 			sys.argv[ 1 : ],
-			'hk:m:lo:gd:',
+			'hk:m:lo:gd:a',
 			[ 'help', 'pkey=', 'pmod=', 'amods=' ]
 		)
 		for o in opts:
-			if   o[ 0 ] == '-h' or o[ 0 ] == '--help' : _flags[ 'SHOW_HELP' ]         = True
-			elif o[ 0 ] == '-k' or o[ 0 ] == '--pkey':  _flags[ 'PROTECTION_KEY' ]    = o[ 1 ]
-			elif o[ 0 ] == '-m' or o[ 0 ] == '--pmod':  _flags[ 'PROTECTION_MODULE' ] = o[ 1 ]
-			elif o[ 0 ] == '-l':                        _flags[ 'FREEZE_LOCAL' ]      = True
-			elif o[ 0 ] == '-o':                        _flags[ 'C_FILE' ]            = o[ 1 ]
-			elif o[ 0 ] == '-g':                        _flags[ 'COMPILE' ]           = False
-			elif o[ 0 ] == '-d':                        _flags[ 'DEV_CPP_DIR' ]       = o[ 1 ]
+			if   o[ 0 ] == '-h' or o[ 0 ] == '--help' :
+				_flags[ 'SHOW_HELP' ] = True
+			elif o[ 0 ] == '-k' or o[ 0 ] == '--pkey':
+				_flags[ 'PROTECTION_KEY' ] = o[ 1 ]
+			elif o[ 0 ] == '-m' or o[ 0 ] == '--pmod':
+				_flags[ 'PROTECTION_MODULE' ] = o[ 1 ]
+			elif o[ 0 ] == '-l':
+				_flags[ 'FREEZE_LOCAL' ] = True
+			elif o[ 0 ] == '-g':
+				_flags[ 'COMPILE' ] = False
+			elif o[ 0 ] == '-d':
+				_flags[ 'DEV_CPP_DIR' ] = o[ 1 ]
+			elif o[ 0 ] == '-a':
+				_flags[ 'STAND_ALONE' ] = True
 			elif o[ 0 ] == '--amods':
 				for pair in o[ 1 ].split( ',' ):
 					modname, filename = pair.split( ':' )
 					_flags[ 'ADDITIONAL_MODULES' ][ modname ] = filename					
 		if args:
 			_flags[ 'PY_FILE' ] = args[ 0 ]
-			if not _flags[ 'C_FILE' ]: _flags[ 'C_FILE' ]  = args[ 0 ][ : -2 ] + 'c'
-	except getopt.GetoptError, err:
-		print( err )
-		sys.exit( 1 )
+			if len( args ) == 2: _flags[ 'C_FILE' ] = args[ 1 ]
+			else: _flags[ 'C_FILE' ] = args[ 0 ][ : -2 ] + 'c'
+	except: raise
 
 # Parses variables in 'Freezefile'
 def _parseVariables():
@@ -605,6 +677,8 @@ def _parseVariables():
 	except NameError: pass
 	try: _flags[ 'COMPILE' ] = COMPILE
 	except NameError: pass
+	try: _flags[ 'STAND_ALONE' ] = STAND_ALONE
+	except NameError: pass
 
 ####################################################################################################
 
@@ -623,14 +697,16 @@ Optional arguments:
  pkey        - string value of protection key (must be coupled with 'pmod')
  pmod        - name of module that implements function 'getKey'
  local       - boolean value that enables/disables freezing of
-               dependent local modules ('False' by default)c
+               dependent local modules ('False' by default)
  amods       - dictionary containing pairs MODULE_NAME:MODULE_FILE
                of additonal modules, which cannot be detected by
-               introspection but also must be froze into executable
+               introspection
  compile     - boolean value that enables/disables compilation of
                generated file ('True' by default)
  dev_cpp_dir - specify a directory where Dev-C++ is installed
-               (Windows only; by default is 'C:/Dev-Cpp/')
+               (Windows only, defaults to 'C:/Dev-Cpp/')
+ stand_alone - make program independent by copying required modules
+               from system directories to local 'modules' (defaults to 'False')
 """
 	_parseArguments( args )
 	_analizeFlags()
@@ -643,12 +719,12 @@ def _main(): # called from command line
 			if os.path.exists( filename ):
 				execfile( filename, globals() )
 				_parseVariables()
-			else: raise FreezerError, "cannot stat 'Freezefile'"
+			else: raise FreezerError( "cannot stat 'Freezefile'" )
 		else: _parseCommandLine()
 		_analizeFlags()
 		sys.exit( 0 )
-	except FreezerError, err:
-		print( sys.argv[ 0 ] + ': ' + str( err ) )
-		sys.exit( 1 )
+	except Exception, err:raise
+#		print( sys.argv[ 0 ] + ': ' + str( err ) )
+#		sys.exit( 1 )
 
 if __name__ == '__main__': _main()
