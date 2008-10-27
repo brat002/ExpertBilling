@@ -74,18 +74,18 @@ class ClassEdit(QtGui.QDialog):
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Направление трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Класс трафика", None, QtGui.QApplication.UnicodeUTF8))
+        self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры класса", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.store_edit.setText(QtGui.QApplication.translate("Dialog", "Хранить сырую статистику", None, QtGui.QApplication.UnicodeUTF8))
         self.passthrough_checkBox.setText(QtGui.QApplication.translate("Dialog", "Пометить и продолжить", None, QtGui.QApplication.UnicodeUTF8))
-        self.color_label.setText(QtGui.QApplication.translate("Dialog", "Цвет направления", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название группы направлений.", None, QtGui.QApplication.UnicodeUTF8))
-        self.store_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю сырую статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
+        self.color_label.setText(QtGui.QApplication.translate("Dialog", "Цвет класса", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название класса.", None, QtGui.QApplication.UnicodeUTF8))
+        self.store_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю СЫРУЮ статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
         self.store_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Опция позволяет сохранять всю сырую статистику в таблице billservice_rawnetflowstream базы данных.\nНе используйте эту опцию, если не уверены, зачем это вам нужно.", None, QtGui.QApplication.UnicodeUTF8))
-        self.passthrough_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого направления статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении лимитов.", None, QtGui.QApplication.UnicodeUTF8))
-        self.passthrough_checkBox.setToolTip(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого направления статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении лимитов.", None, QtGui.QApplication.UnicodeUTF8))
+        self.passthrough_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого класса статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении квот.", None, QtGui.QApplication.UnicodeUTF8))
+        self.passthrough_checkBox.setToolTip(QtGui.QApplication.translate("Dialog", "Пометить попавшую под одно из правил этого класса статистику и продолжить сравнивать с другими направлениями.\nДанная опция позволяет выделить из статистики, пападающей под обширные правила, отдельные записи и произвести по ним начисления трафика или использовать в определении квот.", None, QtGui.QApplication.UnicodeUTF8))
         self.color_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Цвет направления.", None, QtGui.QApplication.UnicodeUTF8))
     def setColor(self):    
         color = QtGui.QColorDialog.getColor(QtCore.Qt.green, self)
@@ -332,8 +332,8 @@ class ClassNodeFrame(QtGui.QDialog):
         
         src_ip = unicode(self.src_ip_edit.text())
         if src_ip:
-            print src_ip
-            print self.ipValidator.validate(src_ip, 0)
+            #print src_ip
+            #print self.ipValidator.validate(src_ip, 0)
             if self.ipValidator.validate(src_ip, 0)[0] != QtGui.QValidator.Acceptable:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src IP до конца."))
                 return
@@ -423,7 +423,7 @@ class ClassChild(QtGui.QMainWindow):
         self.splitter.setObjectName("splitter")
 
         self.treeWidget = QtGui.QTreeWidget(self.splitter)
-        self.treeWidget.setColumnCount(2)
+        self.treeWidget.setColumnCount(1)
 
         self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
@@ -436,9 +436,10 @@ class ClassChild(QtGui.QMainWindow):
         sz = QtCore.QSize()
         sz.setHeight(hght)
         tree_header.setSizeHint(0,sz)
-        tree_header.setSizeHint(1,sz)
-        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Направления", None, QtGui.QApplication.UnicodeUTF8))
-        tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Цвет", None, QtGui.QApplication.UnicodeUTF8))
+        #tree_header.setSizeHint(1,sz)
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Классы", None, QtGui.QApplication.UnicodeUTF8))
+        #tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Цвет", None, QtGui.QApplication.UnicodeUTF8))
+        
         wwidth =  self.width()
         self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
         #self.splitter.moveSplitter(150, 0)
@@ -565,9 +566,10 @@ class ClassChild(QtGui.QMainWindow):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Направления трафика", None, QtGui.QApplication.UnicodeUTF8))
         
-        self.tableWidget.clear()        
-        columns = ['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Next Hop']
+        #self.tableWidget.clearContents()        
+        columns = ['#', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Next Hop']
         makeHeaders(columns, self.tableWidget)
+        
 
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.addClassAction.setText(QtGui.QApplication.translate("MainWindow", "Add class", None, QtGui.QApplication.UnicodeUTF8))
@@ -630,14 +632,14 @@ class ClassChild(QtGui.QMainWindow):
         elif direction == u"down":
             item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())-1).id
             
-        print "item_swap_id=", item_swap_id
+        #print "item_swap_id=", item_swap_id
         
         model1 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_changed_id)
         model2 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_swap_id)
-        print model1.name, model2.name
+        #print model1.name, model2.name
         a=model1.weight+0
         b=model2.weight+0
-        print "a,b", a,b, model1.id, model2.id
+        #print "a,b", a,b, model1.id, model2.id
         model1.weight=1000001
         try:
             
@@ -674,7 +676,7 @@ class ClassChild(QtGui.QMainWindow):
 
     def downClass(self):
         index=self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
-        print "index, self.treeWidget.topLevelItemCount()", index, self.treeWidget.topLevelItemCount()
+        #print "index, self.treeWidget.topLevelItemCount()", index, self.treeWidget.topLevelItemCount()
         if index==self.treeWidget.topLevelItemCount()-1:
             return
         
@@ -697,9 +699,9 @@ class ClassChild(QtGui.QMainWindow):
             item.id = clas.id
             item.setText(0, clas.name)
             item.setIcon(0,QtGui.QIcon("images/folder.png"))
-            item.setBackgroundColor(1, QtGui.QColor(clas.color))
+            item.setBackgroundColor(0, QtGui.QColor(clas.color))
             if clas.passthrough==True:
-                item.setIcon(1, QtGui.QIcon("images/down.png"))
+                item.setIcon(0, QtGui.QIcon("images/down.png"))
             
         if curItem != -1:
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
@@ -753,12 +755,13 @@ class ClassChild(QtGui.QMainWindow):
             self.refreshTable()
         
     def refreshTable(self, widget=None):
-        self.tableWidget.setSortingEnabled(False)
+        #self.tableWidget.setSortingEnabled(False)
         if not widget:
             class_id=self.getClassId()
         else:
             class_id=widget.id
         self.tableWidget.clearContents()
+        self.tableWidget.setColumnHidden(0, True)
         #print text
         model = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % class_id)
         nodes = self.connection.sql("SELECT * FROM nas_trafficnode WHERE traffic_class_id=%d ORDER BY id" % model.id)
@@ -780,12 +783,11 @@ class ClassChild(QtGui.QMainWindow):
             self.addrow(node.dst_port, i,7)
             self.addrow(node.next_hop, i,8)
             #self.tableWidget.setRowHeight(i, 17)
-            self.tableWidget.setColumnHidden(0, True)
-
             i+=1
+        
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader("class_frame_header", self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
+        #self.tableWidget.setSortingEnabled(True)
         
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())

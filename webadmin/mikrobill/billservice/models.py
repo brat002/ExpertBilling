@@ -783,12 +783,18 @@ class Dealer(models.Model):
 
 class SaleCard(models.Model):
     dealer = models.ForeignKey(Dealer)
-    pay = models.FloatField()
+    #pay = models.FloatField()
     sum_for_pay = models.FloatField()
     paydeffer = models.IntegerField()
     discount = models.FloatField()
     discount_sum = models.FloatField()
     prepayment = models.FloatField()
     cards = models.ManyToManyField(Card)
+    created = models.DateTimeField()
+    
+class DealerPay(models.Model):
+    dealer = models.ForeignKey(Dealer)
+    pay = models.FloatField()
+    salecard = models.ForeignKey(SaleCard, blank=True, null=True)
     created = models.DateTimeField()
     

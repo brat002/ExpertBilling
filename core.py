@@ -1491,6 +1491,7 @@ class settlement_period_service_dog(Thread):
     
                         #Если балланса не хватает - отключить пользователя
                         self.connection.commit()
+                    
                     if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
                         #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                         #В начале каждого расчётного периода

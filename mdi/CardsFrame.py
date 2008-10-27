@@ -174,25 +174,25 @@ class SaleCards(QtGui.QDialog):
             HeaderUtil.getHeader("sale_cards_frame_header", self.tableWidget)
         
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "РџСЂРѕРґР°Р¶Р° РєР°СЂС‚", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_dealer.setText(QtGui.QApplication.translate("Dialog", "Р”РёР»РµСЂ", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_cards_actions.setTitle(QtGui.QApplication.translate("Dialog", "Р”РµР№СЃС‚РІРёСЏ СЃ РїР°СЂС‚РёРµР№ РєР°СЂС‚РѕС‡РµРє", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_save.setText(QtGui.QApplication.translate("Dialog", "РЎРѕС…СЂР°РЅРёС‚СЊ РІ С„Р°Р№Р»", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_bill.setText(QtGui.QApplication.translate("Dialog", "Р’С‹РїРёСЃР°С‚СЊ СЃС‡С‘С‚", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Р Р°СЃРїРµС‡Р°С‚Р°С‚СЊ", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_dealer_info.setTitle(QtGui.QApplication.translate("Dialog", "РС„РѕСЂРјР°С†РёСЏ Рѕ РґРёР»РµСЂРµ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_debet.setText(QtGui.QApplication.translate("Dialog", "Р—Р°РґРѕР»Р¶РµРЅРЅРѕСЃС‚СЊ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_prepay_procs.setText(QtGui.QApplication.translate("Dialog", "Р Р°Р·РјРµСЂ РїСЂРµРґРѕРїР»Р°С‚С‹, %", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_paydeffer.setText(QtGui.QApplication.translate("Dialog", "РћС‚СЃСЂРѕС‡РєР° РїР»Р°С‚РµР¶Р°", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_discount.setText(QtGui.QApplication.translate("Dialog", "РЎРєРёРґРєР°, %", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_bill_info.setTitle(QtGui.QApplication.translate("Dialog", "РџР»Р°С‚С‘Р¶РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_discount_amount.setText(QtGui.QApplication.translate("Dialog", "РЎСѓРјРјР° СЃРєРёРґРєРё", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_amount.setText(QtGui.QApplication.translate("Dialog", "РќР° СЃСѓРјРјСѓ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_count_carts.setText(QtGui.QApplication.translate("Dialog", "РљРѕР»-РІРѕР» РєР°СЂС‚", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_for_pay.setText(QtGui.QApplication.translate("Dialog", "Рљ РѕРїР»Р°С‚Рµ", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_pay.setText(QtGui.QApplication.translate("Dialog", "РЎСѓРјРјР° РѕРїР»Р°С‚С‹", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Продажа карт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_dealer.setText(QtGui.QApplication.translate("Dialog", "Дилер", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_cards_actions.setTitle(QtGui.QApplication.translate("Dialog", "Действия с партией карточек", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_save.setText(QtGui.QApplication.translate("Dialog", "Сохранить в файл", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_bill.setText(QtGui.QApplication.translate("Dialog", "Выписать счёт", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Распечатать", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_dealer_info.setTitle(QtGui.QApplication.translate("Dialog", "Иформация о дилере", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_debet.setText(QtGui.QApplication.translate("Dialog", "Задолженность", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_prepay_procs.setText(QtGui.QApplication.translate("Dialog", "Размер предоплаты, %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_paydeffer.setText(QtGui.QApplication.translate("Dialog", "Отсрочка платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_discount.setText(QtGui.QApplication.translate("Dialog", "Скидка, %", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_bill_info.setTitle(QtGui.QApplication.translate("Dialog", "Платёжная информация", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_discount_amount.setText(QtGui.QApplication.translate("Dialog", "Сумма скидки", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_amount.setText(QtGui.QApplication.translate("Dialog", "На сумму", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_count_carts.setText(QtGui.QApplication.translate("Dialog", "Кол-вол карт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_for_pay.setText(QtGui.QApplication.translate("Dialog", "К оплате", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_pay.setText(QtGui.QApplication.translate("Dialog", "Сумма оплаты", None, QtGui.QApplication.UnicodeUTF8))
 
-        columns = ["#",u"РЎРµСЂРёСЏ",u"РќРѕРјРёРЅР°Р»",u"PIN",u"РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ СЃ",u"РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ РїРѕ"]
+        columns = ["#",u"Серия",u"Номинал",u"PIN",u"Активировать с",u"Активировать по"]
         makeHeaders(columns, self.tableWidget)
         
         
@@ -250,7 +250,7 @@ class SaleCards(QtGui.QDialog):
         file.flush()
         a=CardPreviewDialog(url="templates/cards/cards.html")
         a.exec_()
-        print data
+        #print data
         
     def recalculateAmount(self, t=None):
         #print "recal"
@@ -297,11 +297,12 @@ class SaleCards(QtGui.QDialog):
     def accept(self):
         if self.model:
             return
+    
         try:
             model = Object()
             now = datetime.datetime.now()
             model.dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
-            model.pay = unicode(self.lineEdit_pay.text())
+            #model.pay = 
             model.sum_for_pay = unicode(self.lineEdit_for_pay.text())
             model.paydeffer = self.spinBox_paydeffer.value()
             model.discount = self.spinBox_discount.value()
@@ -314,9 +315,17 @@ class SaleCards(QtGui.QDialog):
                 #self.connection.commit()
             except Exception, e:
                 print e
-                QtGui.QMessageBox.warning(self, u"РћС€РёР±РєР°", unicode(u"Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ, РґР°РЅРЅС‹Рµ РЅРµ РјРѕРіСѓС‚ Р±С‹С‚СЊ СЃРѕС…СЂР°РЅРµРЅС‹."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, данные не могут быть сохранены."))
                 return
-    
+            
+            if unicode(self.lineEdit_pay.text())>0:
+                if QtGui.QMessageBox.question(self, u"Зачислить сумму на счёт?" , u'''Произвести запись оплаты за эту партию карт?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                    pay = Object()
+                    pay.dealer_id = model.dealer_id
+                    pay.salecard_id = salecard_id
+                    pay.pay = unicode(self.lineEdit_pay.text() or 0)
+                    pay.created = now
+                    self.connection.create(pay.save("billservice_dealerpay"))
             #print [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]
             #self.connection.rollback()
             #return
@@ -335,7 +344,7 @@ class SaleCards(QtGui.QDialog):
         except Exception, e:
             print e
             self.connection.rollback()
-            QtGui.QMessageBox.warning(self, u"РћС€РёР±РєР°", unicode(u"Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ, РїСЂРѕРёР·РѕС€Р»Р° РЅРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР°. РћС‚РјРµРЅР° РїСЂРѕРґР°Р¶Рё."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, произошла непредвиденная ошибка. Отмена продажи."))
             return 
         QtGui.QDialog.accept(self)
             
@@ -783,7 +792,7 @@ class CardsChild(QtGui.QMainWindow):
 
         self.tableWidget.clear()
         
-        columns=['#', u'РЎРµСЂРёСЏ', u'РќРѕРјРёРЅР°Р»', u'PIN', u"РџСЂРѕРґР°РЅРѕ", u"РђРєС‚РёРІРёСЂРѕРІР°РЅРѕ", u'РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ c', u'РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ РїРѕ']
+        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активиовано", u'Активировать c', u'Активировать по']
         makeHeaders(columns, self.tableWidget)
         
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Система карт оплаты", None, QtGui.QApplication.UnicodeUTF8))
@@ -891,7 +900,6 @@ class CardsChild(QtGui.QMainWindow):
         
     def deleteCards(self):
         """
-        Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ-РµСЃР»Рё РєР°СЂС‚РѕС‡РєР° РїСЂРѕРґР°РЅР°, РѕРЅР° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ СѓРґР°Р»РµРЅР°
         """
         ids=[]
         for index in self.tableWidget.selectedIndexes():
@@ -903,7 +911,7 @@ class CardsChild(QtGui.QMainWindow):
             
             try:
                 #ids.append()
-                self.connection.iddelete("billservice_card", int(i))
+                self.connection.delete("DELETE FROM billservice_card WHERE sold is Null and id=%s" % i)
             except Exception, e:
                 pass  
             
@@ -1067,8 +1075,8 @@ class CardPreviewDialog(QtGui.QDialog):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "РџСЂРµРґРїСЂРѕСЃРјРѕС‚СЂ", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "РџРµС‡Р°С‚Р°С‚СЊ", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Печатать", None, QtGui.QApplication.UnicodeUTF8))
         #self.fixtures()
         #QtCore.QMetaObject.connectSlotsByName()
         

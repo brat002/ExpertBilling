@@ -3294,7 +3294,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         if value==None:
             value=''
         if color:
-            if int(value)<0:
+            if float(value)<0:
                 headerItem.setBackgroundColor(QtGui.QColor(color))
                 headerItem.setTextColor(QtGui.QColor('#ffffff'))
         
@@ -3302,17 +3302,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
             headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         
         if type(value)==BooleanType and value==True:
-            if y==10:
+            if y==11:
                 headerItem.setIcon(QtGui.QIcon("images/money_false.png"))
                 headerItem.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
-            else:
+            elif y in [10,12]:
                 headerItem.setIcon(QtGui.QIcon("images/ok.png"))
             value=u""
         elif type(value)==BooleanType and value==False:
-            if y==10:
+            if y==11:
                 headerItem.setIcon(QtGui.QIcon("images/money_true.png"))
                 headerItem.setToolTip(u"На счету достаточно средств")
-            else:
+            elif y in [10,12]:
                 headerItem.setIcon(QtGui.QIcon("images/false.png"))
             value=u""
             
