@@ -1,15 +1,16 @@
 #-*-coding=utf-8*-
 
 import os
-from PyQt4 import QtCore, QtGui, QtSql
+from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
 from Reports import TransactionsReport
 from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName
 from helpers import Object
-
-
+from helpers import dateDelim
+from mako.template import Template
+strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
@@ -239,6 +240,7 @@ class TransactionForm(QtGui.QDialog):
         self.summ_edit = QtGui.QLineEdit(self.groupBox)
         self.summ_edit.setGeometry(QtCore.QRect(130,20,231,20))
         self.summ_edit.setObjectName("summ_edit")
+        self.summ_edit.setValidator(QtGui.QDoubleValidator(self.summ_edit))
 
         self.summ_label = QtGui.QLabel(self.groupBox)
         self.summ_label.setGeometry(QtCore.QRect(10,20,111,20))
@@ -257,9 +259,9 @@ class TransactionForm(QtGui.QDialog):
         self.pay_type_label.setGeometry(QtCore.QRect(13,10,111,20))
         self.pay_type_label.setObjectName("pay_type_label")
 
-        #self.transactions_pushButton = QtGui.QPushButton(self)
-        #self.transactions_pushButton.setGeometry(QtCore.QRect(10,130,106,26))
-        #self.transactions_pushButton.setObjectName("transactions_pushButton")
+        self.pushButton_cheque_print = QtGui.QPushButton(self)
+        self.pushButton_cheque_print.setGeometry(QtCore.QRect(10,130,106,26))
+        self.pushButton_cheque_print.setObjectName("pushButton_cheque_print")
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(210,130,167,26))
@@ -276,7 +278,7 @@ class TransactionForm(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         
-        #QtCore.QObject.connect(self.transactions_pushButton,QtCore.SIGNAL("clicked()"),self.transactions_report)
+        QtCore.QObject.connect(self.pushButton_cheque_print,QtCore.SIGNAL("clicked()"),self.cheque_print)
 
     def retranslateUi(self):
         self.setWindowTitle(u"Новая проводка для %s" % self.account.username)
@@ -286,7 +288,7 @@ class TransactionForm(QtGui.QDialog):
         self.payed_type_edit.addItem(QtGui.QApplication.translate("Dialog", "Списать с балланса", None, QtGui.QApplication.UnicodeUTF8))
         self.summ_label.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
-        #self.transactions_pushButton.setText(QtGui.QApplication.translate("Dialog", "История проводок", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_cheque_print.setText(QtGui.QApplication.translate("Dialog", "Печать чека", None, QtGui.QApplication.UnicodeUTF8))
     
     def accept(self):
         if self.payed_type_edit.currentText()==u"Пополнить балланс":
@@ -296,15 +298,24 @@ class TransactionForm(QtGui.QDialog):
             
         QtGui.QDialog.accept(self)
         
-#===============================================================================
-#    def transactions_report(self):
-#        if self.account:
-#            child = TransactionsReport(connection=self.connection, account = self.account)
-#            #print self.parentWidget().parent().workspace.addWindow(child)
-#            #self.parent().workspace.addWindow(child)
-#            #print "mainwindow", mainwindow
-#            child.show()
-#===============================================================================
+    def cheque_print(self):
+        if self.account:
+            import datetime
+            account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % self.account.id)
+            #child = TransactionsReport(connection=self.connection, account = self.account)
+            templ = Template(filename="templates/cheque.htm", input_encoding='utf-8')
+            data=templ.render_unicode(account=account, sum=unicode(self.summ_edit.text()), document = unicode(self.payed_document_edit.text()), created=datetime.datetime.now().strftime(strftimeFormat))
+
+            file= open('templates/tmp/cheque.html', 'wb')
+            file.write(data.encode("utf-8", 'replace'))
+            file.flush()
+            a=CardPreviewDialog(url="templates/tmp/cheque.html")
+            a.exec_()
+            
+            #print self.parentWidget().parent().workspace.addWindow(child)
+            #self.parent().workspace.addWindow(child)
+            #print "mainwindow", mainwindow
+            #child.show()
             
 class ConnectDialog(QtGui.QDialog):
     _connectsql = {}
@@ -873,3 +884,62 @@ class ConnectionWaiting(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Подключение...", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Подключаемся", None, QtGui.QApplication.UnicodeUTF8))
         
+class CardPreviewDialog(QtGui.QDialog):
+    def __init__(self, url):
+        super(CardPreviewDialog, self).__init__()
+        self.setObjectName("CardPreviewDialog")
+        #self.filelist=[]
+        self.url = url
+        self.setObjectName("Dialog")
+        self.resize(472, 636)
+        self.verticalLayout = QtGui.QVBoxLayout(self)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.webView = QtWebKit.QWebView(self)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
+        self.webView.setSizePolicy(sizePolicy)
+        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setObjectName("webView")
+        self.verticalLayout.addWidget(self.webView)
+        self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton_print.setMinimumSize(QtCore.QSize(0, 40))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("images/printer.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_print.setIcon(icon)
+        self.commandLinkButton_print.setObjectName("commandLinkButton_print")
+        self.verticalLayout.addWidget(self.commandLinkButton_print)
+        
+        QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCard)
+
+        self.retranslateUi()
+        self.fixtures()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Печатать", None, QtGui.QApplication.UnicodeUTF8))
+        #self.fixtures()
+        #QtCore.QMetaObject.connectSlotsByName()
+        
+    def fixtures(self):
+        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(self.url))
+        self.webView.load(lfurl)
+        #self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrintBackgrounds, True)
+        #self.webView.settings().setShouldPrintBackground(True)
+        
+    def printCard(self):
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        #printer.setResolution(120)
+        printer.setPageSize(QtGui.QPrinter.A4)
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        printer.setFullPage(True)
+        #printer.setResolution(120)
+        #printer.setOutputFileName("lol.pdf")
+        #print printer.resolution()
+        self.webView.print_(printer)
+                            

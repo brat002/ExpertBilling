@@ -2971,7 +2971,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         sz.setWidth(self.width()*0.7 / 5)
         tree_header.setSizeHint(0,sz)
         sz.setWidth(self.width()*0.3 / 5)
-        tree_header.setSizeHint(1,sz)
+        #tree_header.setSizeHint(1,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
         #tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -3151,7 +3151,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
                     WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif_id)
             if len(accounts)>0:
-                tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+                tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
                 tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
@@ -3199,7 +3199,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #print num
 
     def addframe(self):
-        tarif_type = str(self.tarif_treeWidget.currentItem().text(1)) 
+        tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         self.connection.commit()
         #self.connection.flush()
         id = self.getTarifId()

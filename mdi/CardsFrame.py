@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 
-from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
@@ -8,7 +8,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from time import mktime
-from CustomForms import ComboBoxDialog
+from CustomForms import ComboBoxDialog, CardPreviewDialog
 import datetime, calendar
 from helpers import transaction
 from helpers import HeaderUtil, SplitterUtil
@@ -18,6 +18,7 @@ from randgen import GenPasswd2
 import string
 from mako.template import Template
 from mako.lookup import TemplateLookup
+
 templatedir = "templates/cards/"
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 class SaleCards(QtGui.QDialog):
@@ -126,6 +127,8 @@ class SaleCards(QtGui.QDialog):
         self.lineEdit_pay = QtGui.QLineEdit(self)
         self.lineEdit_pay.setGeometry(QtCore.QRect(430, 210, 231, 21))
         self.lineEdit_pay.setObjectName("lineEdit_pay")
+        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self.summ_edit))
+        
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setGeometry(QtCore.QRect(10, 310, 651, 291))
         self.tableWidget.setObjectName("tableWidget")
@@ -145,6 +148,8 @@ class SaleCards(QtGui.QDialog):
         
         QtCore.QObject.connect(self.commandLinkButton_save, QtCore.SIGNAL("clicked()"), self.exportToXML)
         QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCards)
+        QtCore.QObject.connect(self.commandLinkButton_bill, QtCore.SIGNAL("clicked()"), self.print_invoice)
+        
         
         QtCore.QMetaObject.connectSlotsByName(self)
         
@@ -242,7 +247,7 @@ class SaleCards(QtGui.QDialog):
         for card in cards:
             templ = Template(filename="templates/cards/%s" % card['template'], input_encoding='utf-8')
             data+=templ.render_unicode(card=card)
-        import codecs
+
         
         data+="</body></html>"
         file= open('templates/cards/cards.html', 'wb')
@@ -252,6 +257,31 @@ class SaleCards(QtGui.QDialog):
         a.exec_()
         #print data
         
+    def print_invoice(self):
+        if len(self.cards)>0:
+           crd = "(" + ",".join(self.cards) + ")"
+        else:
+           crd = "(0)"
+        dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
+        
+        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
+        operator = self.connection.get("SELECT operator.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_operator as operator JOIN billservice_bankdata as bankdata ON bankdata.id=operator.bank_id LIMIT 1")
+        print dealer_id
+        dealer = self.connection.get("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s" % dealer_id)
+        
+        templ = Template(filename="templates/invoice.htm", input_encoding='utf-8')
+        data=templ.render_unicode(cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
+                                  cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
+                                  discount_sum = unicode(self.lineEdit_discount_amount.text()), pay = unicode(self.lineEdit_pay.text()),
+                                  paydeffer = (datetime.datetime.now()+datetime.timedelta(days=self.spinBox_paydeffer.value())).strftime(strftimeFormat))
+               
+        file= open('templates/tmp/invoice.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/tmp/invoice.html")
+        a.exec_()
+        
+
     def recalculateAmount(self, t=None):
         #print "recal"
         discount = (float(self.spinBox_discount.value())/float(100.00))*float(self.nominalsumm)
@@ -430,6 +460,7 @@ class AddCards(QtGui.QDialog):
         self.nominal_lineEdit = QtGui.QLineEdit(self.params_groupBox)
         self.nominal_lineEdit.setGeometry(QtCore.QRect(110, 50, 171, 20))
         self.nominal_lineEdit.setObjectName("nominal_lineEdit")
+        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self))
         self.count_label = QtGui.QLabel(self.params_groupBox)
         self.count_label.setGeometry(QtCore.QRect(10, 80, 80, 21))
         self.count_label.setObjectName("count_label")
@@ -1041,63 +1072,5 @@ class CardsChild(QtGui.QMainWindow):
             
 
 
-class CardPreviewDialog(QtGui.QDialog):
-    def __init__(self, url):
-        
-        super(CardPreviewDialog, self).__init__()
-        self.setObjectName("CardPreviewDialog")
-        #self.filelist=[]
-        self.url = url
-        self.setObjectName("Dialog")
-        self.resize(472, 636)
-        self.verticalLayout = QtGui.QVBoxLayout(self)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.webView = QtWebKit.QWebView(self)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
-        self.webView.setSizePolicy(sizePolicy)
-        self.webView.setUrl(QtCore.QUrl("about:blank"))
-        self.webView.setObjectName("webView")
-        self.verticalLayout.addWidget(self.webView)
-        self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
-        self.commandLinkButton_print.setMinimumSize(QtCore.QSize(0, 40))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/printer.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.commandLinkButton_print.setIcon(icon)
-        self.commandLinkButton_print.setObjectName("commandLinkButton_print")
-        self.verticalLayout.addWidget(self.commandLinkButton_print)
-        
-        QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCard)
 
-        self.retranslateUi()
-        self.fixtures()
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_print.setText(QtGui.QApplication.translate("Dialog", "Печатать", None, QtGui.QApplication.UnicodeUTF8))
-        #self.fixtures()
-        #QtCore.QMetaObject.connectSlotsByName()
-        
-    def fixtures(self):
-        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(self.url))
-        self.webView.load(lfurl)
-        #self.webView.settings().setAttribute(QtWebKit.QWebSettings.PrintBackgrounds, True)
-        #self.webView.settings().setShouldPrintBackground(True)
-        
-    def printCard(self):
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        #printer.setResolution(120)
-        printer.setPageSize(QtGui.QPrinter.A4)
-        dialog = QtGui.QPrintDialog(printer, self)
-        dialog.setWindowTitle(self.tr("Print Document"))
-        if dialog.exec_() != QtGui.QDialog.Accepted:
-            return
-        printer.setFullPage(True)
-        #printer.setResolution(120)
-        #printer.setOutputFileName("lol.pdf")
-        #print printer.resolution()
-        self.webView.print_(printer)
         
