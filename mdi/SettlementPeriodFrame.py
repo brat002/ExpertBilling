@@ -358,7 +358,7 @@ class SettlementPeriodChild(QtGui.QMainWindow):
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/sp.png"))
         self.tableWidget.setItem(x,y,headerItem)
-        #self.tablewidget.setShowGrid(False)
+
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader(self.setname, self.tableWidget)

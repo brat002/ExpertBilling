@@ -103,8 +103,7 @@ class MonitorFrame(QtGui.QMainWindow):
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         else:
             self.firsttime = True
-        
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Монитор активности", None, QtGui.QApplication.UnicodeUTF8))
@@ -208,7 +207,6 @@ class MonitorFrame(QtGui.QMainWindow):
             self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 8)
             self.addrow(self.tableWidget, session.session_time, i, 9)
             self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
-            #self.tableWidget.setRowHeight(i, 14)
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()
@@ -219,7 +217,6 @@ class MonitorFrame(QtGui.QMainWindow):
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         
         self.tableWidget.setColumnHidden(0, True)
-        #self.tableWidget.setSortingEnabled(True)
         self.tableWidget.setSortingEnabled(True)
 
         
