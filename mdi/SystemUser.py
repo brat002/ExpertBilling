@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 from PyQt4 import QtCore, QtGui
 
@@ -9,6 +9,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
+from ebsWindow import ebsTableWindow
 
 
 class PasswordEditFrame(QtGui.QDialog):
@@ -210,6 +211,108 @@ class SystemUserFrame(QtGui.QDialog):
 
 
 
+class SystemEbs(ebsTableWindow):
+    def __init__(self, connection):
+        columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP', u'Разрешённые адреса']
+        initargs = {"setname":"users_frame_header", "objname":"SystemEbsMDI", "winsize":(0,0,634,365), "wintitle":"Системные пользователи", "tablecolumns":columns}
+        super(SystemEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
+        self.setDockNestingEnabled(False)
+        self.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks|QtGui.QMainWindow.AnimatedDocks)
+        self.statusbar = QtGui.QStatusBar(self)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
+    def ebsPostInit(self, initargs):
+        
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete)]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction"], self.toolBar:["addAction", "delAction"]}
+        self.actionCreator(actList, objDict)
+
+        
+    def retranslateUI(self, initargs):
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
+    
+    def addframe(self):
+        addf = SystemUserFrame(connection=self.connection)
+        #addf.show()
+        if addf.exec_()==1:
+            self.refresh()
+            
+    def delete(self):
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            try:
+                #self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
+                self.connection.iddelete("billservice_systemuser", self.getSelectedId())
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+        self.refresh()
+
+
+    def editframe(self):
+        try:
+            model=self.connection.get("SELECT * FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
+        except:
+            return
+            
+
+        addf = SystemUserFrame(connection=self.connection, model=model)
+        
+        if addf.exec_()==1:
+            self.refresh()
+
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        if value == None:
+            value = ''
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
+        headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+
+
+    def refresh(self):
+        self.tableWidget.setSortingEnabled(False)
+        #nasses=Nas.objects.all().order_by('id')
+        #users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
+        users = self.connection.foselect("billservice_systemuser")
+        #self.tableWidget.setRowCount(nasses.count())
+        self.tableWidget.setRowCount(len(users))
+        i=0
+        for user in users:
+            self.addrow(user.id, i,0)
+            self.addrow(user.username, i,1)
+            self.addrow(user.status, i,2)
+            self.addrow(user.created, i,3)
+            try:
+                self.addrow(user.last_login.strftime(self.strftimeFormat), i,4)
+            except:
+                pass
+            self.addrow(user.last_ip, i,5)
+            self.addrow(user.host, i,6)
+            self.tableWidget.setRowHeight(i, 14)
+            i+=1
+        self.tableWidget.setColumnHidden(0, True)
+
+            
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
+        self.tableWidget.setSortingEnabled(True)
+    
+        
 class SystemUserChild(QtGui.QMainWindow):
     sequenceNumber = 1
 

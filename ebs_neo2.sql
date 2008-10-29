@@ -21,7 +21,7 @@ CREATE TABLE auth_group (
 );
 
 
-ALTER TABLE public.auth_group OWNER TO mikrobill;
+ALTER TABLE public.auth_group OWNER TO ebs;
 
 
 CREATE TABLE auth_group_permissions (
@@ -31,7 +31,7 @@ CREATE TABLE auth_group_permissions (
 );
 
 
-ALTER TABLE public.auth_group_permissions OWNER TO mikrobill;
+ALTER TABLE public.auth_group_permissions OWNER TO ebs;
 
 
 CREATE TABLE auth_message (
@@ -41,7 +41,7 @@ CREATE TABLE auth_message (
 );
 
 
-ALTER TABLE public.auth_message OWNER TO mikrobill;
+ALTER TABLE public.auth_message OWNER TO ebs;
 
 
 CREATE TABLE auth_permission (
@@ -52,7 +52,7 @@ CREATE TABLE auth_permission (
 );
 
 
-ALTER TABLE public.auth_permission OWNER TO mikrobill;
+ALTER TABLE public.auth_permission OWNER TO ebs;
 
 
 CREATE TABLE auth_user (
@@ -70,7 +70,7 @@ CREATE TABLE auth_user (
 );
 
 
-ALTER TABLE public.auth_user OWNER TO mikrobill;
+ALTER TABLE public.auth_user OWNER TO ebs;
 
 
 CREATE TABLE auth_user_groups (
@@ -80,7 +80,7 @@ CREATE TABLE auth_user_groups (
 );
 
 
-ALTER TABLE public.auth_user_groups OWNER TO mikrobill;
+ALTER TABLE public.auth_user_groups OWNER TO ebs;
 
 
 
@@ -91,7 +91,7 @@ CREATE TABLE auth_user_user_permissions (
 );
 
 
-ALTER TABLE public.auth_user_user_permissions OWNER TO mikrobill;
+ALTER TABLE public.auth_user_user_permissions OWNER TO ebs;
 
 
 CREATE TABLE billservice_accessparameters (
@@ -108,7 +108,7 @@ CREATE TABLE billservice_accessparameters (
 );
 
 
-ALTER TABLE public.billservice_accessparameters OWNER TO mikrobill;
+ALTER TABLE public.billservice_accessparameters OWNER TO ebs;
 
 
 CREATE TABLE billservice_account (
@@ -138,7 +138,7 @@ CREATE TABLE billservice_account (
 );
 
 
-ALTER TABLE public.billservice_account OWNER TO mikrobill;
+ALTER TABLE public.billservice_account OWNER TO ebs;
 
 
 CREATE TABLE billservice_accountipnspeed (
@@ -151,7 +151,7 @@ CREATE TABLE billservice_accountipnspeed (
 );
 
 
-ALTER TABLE public.billservice_accountipnspeed OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountipnspeed OWNER TO ebs;
 
 
 CREATE TABLE billservice_accountprepaystime (
@@ -163,7 +163,7 @@ CREATE TABLE billservice_accountprepaystime (
 );
 
 
-ALTER TABLE public.billservice_accountprepaystime OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountprepaystime OWNER TO ebs;
 
 
 CREATE TABLE billservice_accountprepaystrafic (
@@ -175,7 +175,7 @@ CREATE TABLE billservice_accountprepaystrafic (
 );
 
 
-ALTER TABLE public.billservice_accountprepaystrafic OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountprepaystrafic OWNER TO ebs;
 
 
 CREATE TABLE billservice_accounttarif (
@@ -186,7 +186,7 @@ CREATE TABLE billservice_accounttarif (
 );
 
 
-ALTER TABLE public.billservice_accounttarif OWNER TO mikrobill;
+ALTER TABLE public.billservice_accounttarif OWNER TO ebs;
 
 
 CREATE TABLE billservice_card (
@@ -204,7 +204,7 @@ CREATE TABLE billservice_card (
 );
 
 
-ALTER TABLE public.billservice_card OWNER TO mikrobill;
+ALTER TABLE public.billservice_card OWNER TO ebs;
 
 
 CREATE TABLE billservice_netflowstream (
@@ -227,7 +227,7 @@ CREATE TABLE billservice_netflowstream (
 );
 
 
-ALTER TABLE public.billservice_netflowstream OWNER TO mikrobill;
+ALTER TABLE public.billservice_netflowstream OWNER TO ebs;
 
 CREATE TABLE billservice_onetimeservice (
     id integer NOT NULL,
@@ -236,7 +236,7 @@ CREATE TABLE billservice_onetimeservice (
 );
 
 
-ALTER TABLE public.billservice_onetimeservice OWNER TO mikrobill;
+ALTER TABLE public.billservice_onetimeservice OWNER TO ebs;
 
 
 
@@ -248,7 +248,7 @@ CREATE TABLE billservice_onetimeservicehistory (
 );
 
 
-ALTER TABLE public.billservice_onetimeservicehistory OWNER TO mikrobill;
+ALTER TABLE public.billservice_onetimeservicehistory OWNER TO ebs;
 
 
 CREATE TABLE billservice_periodicalservice (
@@ -260,7 +260,7 @@ CREATE TABLE billservice_periodicalservice (
 );
 
 
-ALTER TABLE public.billservice_periodicalservice OWNER TO mikrobill;
+ALTER TABLE public.billservice_periodicalservice OWNER TO ebs;
 
 
 
@@ -272,7 +272,7 @@ CREATE TABLE billservice_periodicalservicehistory (
 );
 
 
-ALTER TABLE public.billservice_periodicalservicehistory OWNER TO mikrobill;
+ALTER TABLE public.billservice_periodicalservicehistory OWNER TO ebs;
 
 
 CREATE TABLE billservice_ports (
@@ -284,7 +284,7 @@ CREATE TABLE billservice_ports (
 );
 
 
-ALTER TABLE public.billservice_ports OWNER TO mikrobill;
+ALTER TABLE public.billservice_ports OWNER TO ebs;
 
 
 
@@ -298,7 +298,7 @@ CREATE TABLE billservice_prepaidtraffic (
 );
 
 
-ALTER TABLE public.billservice_prepaidtraffic OWNER TO mikrobill;
+ALTER TABLE public.billservice_prepaidtraffic OWNER TO ebs;
 
 
 
@@ -309,7 +309,7 @@ CREATE TABLE billservice_prepaidtraffic_traffic_class (
 );
 
 
-ALTER TABLE public.billservice_prepaidtraffic_traffic_class OWNER TO mikrobill;
+ALTER TABLE public.billservice_prepaidtraffic_traffic_class OWNER TO ebs;
 
 
 CREATE TABLE billservice_rawnetflowstream (
@@ -340,7 +340,7 @@ CREATE TABLE billservice_rawnetflowstream (
 );
 
 
-ALTER TABLE public.billservice_rawnetflowstream OWNER TO mikrobill;
+ALTER TABLE public.billservice_rawnetflowstream OWNER TO ebs;
 
 
 CREATE TABLE billservice_settlementperiod (
@@ -353,7 +353,7 @@ CREATE TABLE billservice_settlementperiod (
 );
 
 
-ALTER TABLE public.billservice_settlementperiod OWNER TO mikrobill;
+ALTER TABLE public.billservice_settlementperiod OWNER TO ebs;
 
 
 
@@ -369,7 +369,7 @@ CREATE TABLE billservice_shedulelog (
 );
 
 
-ALTER TABLE public.billservice_shedulelog OWNER TO mikrobill;
+ALTER TABLE public.billservice_shedulelog OWNER TO ebs;
 
 
 CREATE TABLE billservice_systemuser (
@@ -385,7 +385,7 @@ CREATE TABLE billservice_systemuser (
 );
 
 
-ALTER TABLE public.billservice_systemuser OWNER TO mikrobill;
+ALTER TABLE public.billservice_systemuser OWNER TO ebs;
 
 
 CREATE TABLE billservice_tariff (
@@ -399,13 +399,13 @@ CREATE TABLE billservice_tariff (
     reset_tarif_cost boolean DEFAULT false,
     settlement_period_id integer,
     ps_null_ballance_checkout boolean DEFAULT false,
-    allow_express_pay boolean DEFAULT true;
+    allow_express_pay boolean DEFAULT true,
     active boolean DEFAULT false,
     deleted boolean DEFAULT false
 );
 
 
-ALTER TABLE public.billservice_tariff OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff OWNER TO ebs;
 
 
 CREATE TABLE billservice_tariff_onetime_services (
@@ -415,7 +415,7 @@ CREATE TABLE billservice_tariff_onetime_services (
 );
 
 
-ALTER TABLE public.billservice_tariff_onetime_services OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_onetime_services OWNER TO ebs;
 
 
 CREATE TABLE billservice_tariff_periodical_services (
@@ -425,7 +425,7 @@ CREATE TABLE billservice_tariff_periodical_services (
 );
 
 
-ALTER TABLE public.billservice_tariff_periodical_services OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_periodical_services OWNER TO ebs;
 
 
 CREATE TABLE billservice_tariff_traffic_limit (
@@ -435,7 +435,7 @@ CREATE TABLE billservice_tariff_traffic_limit (
 );
 
 
-ALTER TABLE public.billservice_tariff_traffic_limit OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_traffic_limit OWNER TO ebs;
 
 
 CREATE TABLE billservice_timeaccessnode (
@@ -446,7 +446,7 @@ CREATE TABLE billservice_timeaccessnode (
 );
 
 
-ALTER TABLE public.billservice_timeaccessnode OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeaccessnode OWNER TO ebs;
 
 
 CREATE TABLE billservice_timeaccessservice (
@@ -456,7 +456,7 @@ CREATE TABLE billservice_timeaccessservice (
 );
 
 
-ALTER TABLE public.billservice_timeaccessservice OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeaccessservice OWNER TO ebs;
 
 
 CREATE TABLE billservice_timeperiod (
@@ -465,7 +465,7 @@ CREATE TABLE billservice_timeperiod (
 );
 
 
-ALTER TABLE public.billservice_timeperiod OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiod OWNER TO ebs;
 
 
 CREATE TABLE billservice_timeperiod_time_period_nodes (
@@ -475,7 +475,7 @@ CREATE TABLE billservice_timeperiod_time_period_nodes (
 );
 
 
-ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO ebs;
 
 
 CREATE TABLE billservice_timeperiodnode (
@@ -487,7 +487,7 @@ CREATE TABLE billservice_timeperiodnode (
 );
 
 
-ALTER TABLE public.billservice_timeperiodnode OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiodnode OWNER TO ebs;
 
 
 CREATE TABLE billservice_timespeed (
@@ -503,7 +503,7 @@ CREATE TABLE billservice_timespeed (
 );
 
 
-ALTER TABLE public.billservice_timespeed OWNER TO mikrobill;
+ALTER TABLE public.billservice_timespeed OWNER TO ebs;
 
 
 CREATE TABLE billservice_trafficlimit (
@@ -518,7 +518,7 @@ CREATE TABLE billservice_trafficlimit (
 );
 
 
-ALTER TABLE public.billservice_trafficlimit OWNER TO mikrobill;
+ALTER TABLE public.billservice_trafficlimit OWNER TO ebs;
 
 
 CREATE TABLE billservice_trafficlimit_traffic_class (
@@ -528,7 +528,7 @@ CREATE TABLE billservice_trafficlimit_traffic_class (
 );
 
 
-ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO mikrobill;
+ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO ebs;
 
 
 CREATE TABLE billservice_traffictransmitnodes (
@@ -542,7 +542,7 @@ CREATE TABLE billservice_traffictransmitnodes (
 );
 
 
-ALTER TABLE public.billservice_traffictransmitnodes OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes OWNER TO ebs;
 
 
 CREATE TABLE billservice_traffictransmitnodes_time_nodes (
@@ -552,7 +552,7 @@ CREATE TABLE billservice_traffictransmitnodes_time_nodes (
 );
 
 
-ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO ebs;
 
 
 CREATE TABLE billservice_traffictransmitnodes_traffic_class (
@@ -562,7 +562,7 @@ CREATE TABLE billservice_traffictransmitnodes_traffic_class (
 );
 
 
-ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO ebs;
 
 
 CREATE TABLE billservice_traffictransmitservice (
@@ -573,7 +573,7 @@ CREATE TABLE billservice_traffictransmitservice (
 );
 
 
-ALTER TABLE public.billservice_traffictransmitservice OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitservice OWNER TO ebs;
 
 
 CREATE TABLE billservice_transaction (
@@ -589,7 +589,7 @@ CREATE TABLE billservice_transaction (
 );
 
 
-ALTER TABLE public.billservice_transaction OWNER TO mikrobill;
+ALTER TABLE public.billservice_transaction OWNER TO ebs;
 
 
 CREATE TABLE billservice_transactiontype (
@@ -599,7 +599,7 @@ CREATE TABLE billservice_transactiontype (
 );
 
 
-ALTER TABLE public.billservice_transactiontype OWNER TO mikrobill;
+ALTER TABLE public.billservice_transactiontype OWNER TO ebs;
 
 
 CREATE TABLE django_admin_log (
@@ -615,7 +615,7 @@ CREATE TABLE django_admin_log (
 );
 
 
-ALTER TABLE public.django_admin_log OWNER TO mikrobill;
+ALTER TABLE public.django_admin_log OWNER TO ebs;
 
 
 CREATE TABLE django_content_type (
@@ -626,7 +626,7 @@ CREATE TABLE django_content_type (
 );
 
 
-ALTER TABLE public.django_content_type OWNER TO mikrobill;
+ALTER TABLE public.django_content_type OWNER TO ebs;
 
 
 CREATE TABLE django_session (
@@ -636,7 +636,7 @@ CREATE TABLE django_session (
 );
 
 
-ALTER TABLE public.django_session OWNER TO mikrobill;
+ALTER TABLE public.django_session OWNER TO ebs;
 
 
 CREATE TABLE django_site (
@@ -646,7 +646,7 @@ CREATE TABLE django_site (
 );
 
 
-ALTER TABLE public.django_site OWNER TO mikrobill;
+ALTER TABLE public.django_site OWNER TO ebs;
 
 
 CREATE TABLE nas_nas (
@@ -672,7 +672,7 @@ CREATE TABLE nas_nas (
 );
 
 
-ALTER TABLE public.nas_nas OWNER TO mikrobill;
+ALTER TABLE public.nas_nas OWNER TO ebs;
 
 
 CREATE TABLE nas_trafficclass (
@@ -685,7 +685,7 @@ CREATE TABLE nas_trafficclass (
 );
 
 
-ALTER TABLE public.nas_trafficclass OWNER TO mikrobill;
+ALTER TABLE public.nas_trafficclass OWNER TO ebs;
 
 
 CREATE TABLE nas_trafficnode (
@@ -703,21 +703,21 @@ CREATE TABLE nas_trafficnode (
 
 
 
-ALTER TABLE public.nas_trafficnode OWNER TO mikrobill;
+ALTER TABLE public.nas_trafficnode OWNER TO ebs;
 
 CREATE TABLE billservice_bankdata
 (
-  id serial NOT NULL,
+  id bigint NOT NULL,
   bank character varying(255) NOT NULL,
   bankcode character varying(40) NOT NULL,
   rs character varying(60) NOT NULL,
   currency character varying(40) NOT NULL
 );
-ALTER TABLE public.billservice_bankdata OWNER TO mikrobill;
+ALTER TABLE public.billservice_bankdata OWNER TO ebs;
 
 CREATE TABLE billservice_operator
 (
-  id serial NOT NULL,
+  id bigint NOT NULL,
   organization character varying(255) NOT NULL,
   unp character varying(40) NOT NULL,
   okpo character varying(40) NOT NULL,
@@ -730,13 +730,13 @@ CREATE TABLE billservice_operator
   email character varying(255) NOT NULL,
   bank_id bigint NOT NULL
 );
-ALTER TABLE public.billservice_operator OWNER TO mikrobill;
+ALTER TABLE public.billservice_operator OWNER TO ebs;
 
 
 
 CREATE TABLE billservice_dealer
 (
-  id serial NOT NULL,
+  id bigint NOT NULL,
   organization character varying(400) NOT NULL,
   unp character varying(255) NOT NULL,
   okpo character varying(255) NOT NULL,
@@ -755,23 +755,7 @@ CREATE TABLE billservice_dealer
   deleted boolean DEFAULT false
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_dealer OWNER TO mikrobill;
-
-
-CREATE FUNCTION pg_buffercache_pages() RETURNS SETOF record
-    AS '$libdir/pg_buffercache', 'pg_buffercache_pages'
-    LANGUAGE c;
-
-
-ALTER FUNCTION public.pg_buffercache_pages() OWNER TO postgres;
-
-
-CREATE VIEW pg_buffercache AS
-    SELECT p.bufferid, p.relfilenode, p.reltablespace, p.reldatabase, p.relblocknumber, p.isdirty, p.usagecount FROM pg_buffercache_pages() p(bufferid integer, relfilenode oid, reltablespace oid, reldatabase oid, relblocknumber bigint, isdirty boolean, usagecount smallint);
-
-
-ALTER TABLE public.pg_buffercache OWNER TO postgres;
-
+ALTER TABLE billservice_dealer OWNER TO ebs;
 
 CREATE TABLE radius_activesession (
     id integer NOT NULL,
@@ -793,7 +777,7 @@ CREATE TABLE radius_activesession (
 );
 
 
-ALTER TABLE public.radius_activesession OWNER TO mikrobill;
+ALTER TABLE public.radius_activesession OWNER TO ebs;
 
 
 CREATE TABLE radius_session (
@@ -817,7 +801,7 @@ CREATE TABLE radius_session (
 );
 
 
-ALTER TABLE public.radius_session OWNER TO mikrobill;
+ALTER TABLE public.radius_session OWNER TO ebs;
 
 CREATE TYPE targetinfo AS (
 	target oid,
@@ -959,7 +943,7 @@ $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.on_tariff_delete_fun(oldrow billservice_tariff) OWNER TO mikrobill;
+ALTER FUNCTION public.on_tariff_delete_fun(oldrow billservice_tariff) OWNER TO ebs;
 
 CREATE OR REPLACE FUNCTION unblock_balance(account_id integer) RETURNS void
     AS $$
@@ -1028,7 +1012,7 @@ CREATE SEQUENCE auth_group_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_group_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_group_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_group_id_seq OWNED BY auth_group.id;
 SELECT pg_catalog.setval('auth_group_id_seq', 1, false);
 
@@ -1040,7 +1024,7 @@ CREATE SEQUENCE auth_group_permissions_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_group_permissions_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_group_permissions_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_group_permissions_id_seq OWNED BY auth_group_permissions.id;
 SELECT pg_catalog.setval('auth_group_permissions_id_seq', 1, false);
 
@@ -1052,7 +1036,7 @@ CREATE SEQUENCE auth_message_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_message_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_message_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_message_id_seq OWNED BY auth_message.id;
 SELECT pg_catalog.setval('auth_message_id_seq', 1, false);
 
@@ -1063,7 +1047,7 @@ CREATE SEQUENCE auth_permission_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_permission_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_permission_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_permission_id_seq OWNED BY auth_permission.id;
 SELECT pg_catalog.setval('auth_permission_id_seq', 129, true);
 
@@ -1075,7 +1059,7 @@ CREATE SEQUENCE auth_user_groups_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_user_groups_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_user_groups_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_user_groups_id_seq OWNED BY auth_user_groups.id;
 SELECT pg_catalog.setval('auth_user_groups_id_seq', 1, false);
 
@@ -1087,7 +1071,7 @@ CREATE SEQUENCE auth_user_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_user_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_user_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_user_id_seq OWNED BY auth_user.id;
 SELECT pg_catalog.setval('auth_user_id_seq', 1, false);
 
@@ -1099,7 +1083,7 @@ CREATE SEQUENCE auth_user_user_permissions_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO mikrobill;
+ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_user_user_permissions_id_seq OWNED BY auth_user_user_permissions.id;
 SELECT pg_catalog.setval('auth_user_user_permissions_id_seq', 1, false);
 
@@ -1110,7 +1094,7 @@ CREATE SEQUENCE billservice_accessparameters_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_accessparameters_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_accessparameters_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_accessparameters_id_seq OWNED BY billservice_accessparameters.id;
 SELECT pg_catalog.setval('billservice_accessparameters_id_seq', 3, true);
 
@@ -1121,7 +1105,7 @@ CREATE SEQUENCE billservice_account_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_account_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_account_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_account_id_seq OWNED BY billservice_account.id;
 SELECT pg_catalog.setval('billservice_account_id_seq', 34, true);
 
@@ -1132,7 +1116,7 @@ CREATE SEQUENCE billservice_accountipnspeed_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_accountipnspeed_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountipnspeed_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_accountipnspeed_id_seq OWNED BY billservice_accountipnspeed.id;
 SELECT pg_catalog.setval('billservice_accountipnspeed_id_seq', 6, true);
 
@@ -1144,7 +1128,7 @@ CREATE SEQUENCE billservice_accountprepaystime_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_accountprepaystime_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountprepaystime_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_accountprepaystime_id_seq OWNED BY billservice_accountprepaystime.id;
 SELECT pg_catalog.setval('billservice_accountprepaystime_id_seq', 1, false);
 
@@ -1156,7 +1140,7 @@ CREATE SEQUENCE billservice_accountprepaystrafic_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_accountprepaystrafic_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_accountprepaystrafic_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_accountprepaystrafic_id_seq OWNED BY billservice_accountprepaystrafic.id;
 SELECT pg_catalog.setval('billservice_accountprepaystrafic_id_seq', 1, false);
 
@@ -1167,7 +1151,7 @@ CREATE SEQUENCE billservice_accounttarif_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_accounttarif_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_accounttarif_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_accounttarif_id_seq OWNED BY billservice_accounttarif.id;
 SELECT pg_catalog.setval('billservice_accounttarif_id_seq', 36, true);
 
@@ -1179,7 +1163,7 @@ CREATE SEQUENCE billservice_card_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_card_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_card_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_card_id_seq OWNED BY billservice_card.id;
 SELECT pg_catalog.setval('billservice_card_id_seq', 1, false);
 
@@ -1190,7 +1174,7 @@ CREATE SEQUENCE billservice_netflowstream_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_netflowstream_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_netflowstream_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_netflowstream_id_seq OWNED BY billservice_netflowstream.id;
 SELECT pg_catalog.setval('billservice_netflowstream_id_seq', 5956, true);
 
@@ -1202,7 +1186,7 @@ CREATE SEQUENCE billservice_onetimeservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_onetimeservice_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_onetimeservice_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_onetimeservice_id_seq OWNED BY billservice_onetimeservice.id;
 SELECT pg_catalog.setval('billservice_onetimeservice_id_seq', 1, false);
 
@@ -1215,7 +1199,7 @@ CREATE SEQUENCE billservice_onetimeservicehistory_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_onetimeservicehistory_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_onetimeservicehistory_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_onetimeservicehistory_id_seq OWNED BY billservice_onetimeservicehistory.id;
 SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 1, false);
 
@@ -1227,8 +1211,10 @@ CREATE SEQUENCE billservice_dealer_id_seq
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.billservice_dealer_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_dealer_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_dealer_id_seq OWNED BY billservice_dealer.id;
+SELECT pg_catalog.setval('billservice_dealer_id_seq', 1, false);
+
 
 CREATE SEQUENCE billservice_operator_id_seq
   INCREMENT 1
@@ -1236,8 +1222,10 @@ CREATE SEQUENCE billservice_operator_id_seq
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.billservice_operator_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_operator_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_operator_id_seq OWNED BY billservice_operator.id;
+SELECT pg_catalog.setval('billservice_operator_id_seq', 1, false);
+
 
 CREATE SEQUENCE billservice_bankdata_id_seq
   INCREMENT 1
@@ -1245,8 +1233,9 @@ CREATE SEQUENCE billservice_bankdata_id_seq
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.billservice_bankdata_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_bankdata_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_bankdata_id_seq OWNED BY billservice_bankdata.id;
+SELECT pg_catalog.setval('billservice_bankdata_id_seq', 1, false);
 
 
 CREATE SEQUENCE billservice_periodicalservice_id_seq
@@ -1256,7 +1245,7 @@ CREATE SEQUENCE billservice_periodicalservice_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billservice_periodicalservice_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_periodicalservice_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_periodicalservice_id_seq OWNED BY billservice_periodicalservice.id;
 SELECT pg_catalog.setval('billservice_periodicalservice_id_seq', 1, true);
 
@@ -1267,7 +1256,7 @@ CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_periodicalservicehistory_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_periodicalservicehistory_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_periodicalservicehistory_id_seq OWNED BY billservice_periodicalservicehistory.id;
 SELECT pg_catalog.setval('billservice_periodicalservicehistory_id_seq', 79, true);
 
@@ -1279,7 +1268,7 @@ CREATE SEQUENCE billservice_ports_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_ports_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_ports_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_ports_id_seq OWNED BY billservice_ports.id;
 SELECT pg_catalog.setval('billservice_ports_id_seq', 1, false);
 
@@ -1292,7 +1281,7 @@ CREATE SEQUENCE billservice_prepaidtraffic_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_prepaidtraffic_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_prepaidtraffic_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_prepaidtraffic_id_seq OWNED BY billservice_prepaidtraffic.id;
 SELECT pg_catalog.setval('billservice_prepaidtraffic_id_seq', 1, false);
 
@@ -1304,7 +1293,7 @@ CREATE SEQUENCE billservice_prepaidtraffic_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_prepaidtraffic_traffic_class_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_prepaidtraffic_traffic_class_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_prepaidtraffic_traffic_class_id_seq OWNED BY billservice_prepaidtraffic_traffic_class.id;
 SELECT pg_catalog.setval('billservice_prepaidtraffic_traffic_class_id_seq', 1, false);
 
@@ -1315,7 +1304,7 @@ CREATE SEQUENCE billservice_rawnetflowstream_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_rawnetflowstream_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_rawnetflowstream_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_rawnetflowstream_id_seq OWNED BY billservice_rawnetflowstream.id;
 SELECT pg_catalog.setval('billservice_rawnetflowstream_id_seq', 16653, true);
 
@@ -1326,7 +1315,7 @@ CREATE SEQUENCE billservice_settlementperiod_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_settlementperiod_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_settlementperiod_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_settlementperiod_id_seq OWNED BY billservice_settlementperiod.id;
 SELECT pg_catalog.setval('billservice_settlementperiod_id_seq', 1, true);
 
@@ -1337,7 +1326,7 @@ CREATE SEQUENCE billservice_shedulelog_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_shedulelog_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_shedulelog_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_shedulelog_id_seq OWNED BY billservice_shedulelog.id;
 SELECT pg_catalog.setval('billservice_shedulelog_id_seq', 12, true);
 
@@ -1349,7 +1338,7 @@ CREATE SEQUENCE billservice_systemuser_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_systemuser_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_systemuser_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_systemuser_id_seq OWNED BY billservice_systemuser.id;
 SELECT pg_catalog.setval('billservice_systemuser_id_seq', 1, false);
 
@@ -1360,7 +1349,7 @@ CREATE SEQUENCE billservice_tariff_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_tariff_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_tariff_id_seq OWNED BY billservice_tariff.id;
 SELECT pg_catalog.setval('billservice_tariff_id_seq', 2, true);
 
@@ -1373,7 +1362,7 @@ CREATE SEQUENCE billservice_tariff_onetime_services_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_tariff_onetime_services_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_onetime_services_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_tariff_onetime_services_id_seq OWNED BY billservice_tariff_onetime_services.id;
 SELECT pg_catalog.setval('billservice_tariff_onetime_services_id_seq', 1, false);
 
@@ -1384,7 +1373,7 @@ CREATE SEQUENCE billservice_tariff_periodical_services_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_tariff_periodical_services_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_periodical_services_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_tariff_periodical_services_id_seq OWNED BY billservice_tariff_periodical_services.id;
 SELECT pg_catalog.setval('billservice_tariff_periodical_services_id_seq', 1, true);
 
@@ -1397,7 +1386,7 @@ CREATE SEQUENCE billservice_tariff_traffic_limit_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_tariff_traffic_limit_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_tariff_traffic_limit_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_tariff_traffic_limit_id_seq OWNED BY billservice_tariff_traffic_limit.id;
 SELECT pg_catalog.setval('billservice_tariff_traffic_limit_id_seq', 1, false);
 
@@ -1410,7 +1399,7 @@ CREATE SEQUENCE billservice_timeaccessnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_timeaccessnode_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeaccessnode_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timeaccessnode_id_seq OWNED BY billservice_timeaccessnode.id;
 SELECT pg_catalog.setval('billservice_timeaccessnode_id_seq', 1, false);
 
@@ -1423,7 +1412,7 @@ CREATE SEQUENCE billservice_timeaccessservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_timeaccessservice_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeaccessservice_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timeaccessservice_id_seq OWNED BY billservice_timeaccessservice.id;
 SELECT pg_catalog.setval('billservice_timeaccessservice_id_seq', 1, false);
 
@@ -1436,7 +1425,7 @@ CREATE SEQUENCE billservice_timeperiod_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billservice_timeperiod_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiod_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timeperiod_id_seq OWNED BY billservice_timeperiod.id;
 SELECT pg_catalog.setval('billservice_timeperiod_id_seq', 1, true);
 
@@ -1448,7 +1437,7 @@ CREATE SEQUENCE billservice_timeperiod_time_period_nodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_timeperiod_time_period_nodes_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiod_time_period_nodes_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timeperiod_time_period_nodes_id_seq OWNED BY billservice_timeperiod_time_period_nodes.id;
 SELECT pg_catalog.setval('billservice_timeperiod_time_period_nodes_id_seq', 1, true);
 
@@ -1460,7 +1449,7 @@ CREATE SEQUENCE billservice_timeperiodnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_timeperiodnode_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timeperiodnode_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timeperiodnode_id_seq OWNED BY billservice_timeperiodnode.id;
 SELECT pg_catalog.setval('billservice_timeperiodnode_id_seq', 1, true);
 
@@ -1473,7 +1462,7 @@ CREATE SEQUENCE billservice_timespeed_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_timespeed_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_timespeed_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_timespeed_id_seq OWNED BY billservice_timespeed.id;
 SELECT pg_catalog.setval('billservice_timespeed_id_seq', 1, false);
 
@@ -1486,7 +1475,7 @@ CREATE SEQUENCE billservice_trafficlimit_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_trafficlimit_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_trafficlimit_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_trafficlimit_id_seq OWNED BY billservice_trafficlimit.id;
 SELECT pg_catalog.setval('billservice_trafficlimit_id_seq', 1, false);
 
@@ -1499,7 +1488,7 @@ CREATE SEQUENCE billservice_trafficlimit_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_trafficlimit_traffic_class_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_trafficlimit_traffic_class_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_trafficlimit_traffic_class_id_seq OWNED BY billservice_trafficlimit_traffic_class.id;
 SELECT pg_catalog.setval('billservice_trafficlimit_traffic_class_id_seq', 1, false);
 
@@ -1511,7 +1500,7 @@ CREATE SEQUENCE billservice_traffictransmitnodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_traffictransmitnodes_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_traffictransmitnodes_id_seq OWNED BY billservice_traffictransmitnodes.id;
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_id_seq', 1, true);
 
@@ -1523,7 +1512,7 @@ CREATE SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_traffictransmitnodes_time_nodes_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes_time_nodes_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq OWNED BY billservice_traffictransmitnodes_time_nodes.id;
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_time_nodes_id_seq', 1, true);
 
@@ -1535,7 +1524,7 @@ CREATE SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_traffictransmitnodes_traffic_class_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitnodes_traffic_class_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq OWNED BY billservice_traffictransmitnodes_traffic_class.id;
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_traffic_class_id_seq', 1, true);
 
@@ -1547,7 +1536,7 @@ CREATE SEQUENCE billservice_traffictransmitservice_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_traffictransmitservice_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_traffictransmitservice_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_traffictransmitservice_id_seq OWNED BY billservice_traffictransmitservice.id;
 SELECT pg_catalog.setval('billservice_traffictransmitservice_id_seq', 1, true);
 
@@ -1559,7 +1548,7 @@ CREATE SEQUENCE billservice_transaction_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_transaction_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_transaction_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_transaction_id_seq OWNED BY billservice_transaction.id;
 SELECT pg_catalog.setval('billservice_transaction_id_seq', 275, true);
 
@@ -1572,7 +1561,7 @@ CREATE SEQUENCE billservice_transactiontype_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.billservice_transactiontype_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_transactiontype_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_transactiontype_id_seq OWNED BY billservice_transactiontype.id;
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 1, false);
 
@@ -1585,7 +1574,7 @@ CREATE SEQUENCE django_admin_log_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.django_admin_log_id_seq OWNER TO mikrobill;
+ALTER TABLE public.django_admin_log_id_seq OWNER TO ebs;
 ALTER SEQUENCE django_admin_log_id_seq OWNED BY django_admin_log.id;
 SELECT pg_catalog.setval('django_admin_log_id_seq', 1, false);
 
@@ -1597,7 +1586,7 @@ CREATE SEQUENCE django_content_type_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.django_content_type_id_seq OWNER TO mikrobill;
+ALTER TABLE public.django_content_type_id_seq OWNER TO ebs;
 ALTER SEQUENCE django_content_type_id_seq OWNED BY django_content_type.id;
 SELECT pg_catalog.setval('django_content_type_id_seq', 43, true);
 
@@ -1609,7 +1598,7 @@ CREATE SEQUENCE django_site_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.django_site_id_seq OWNER TO mikrobill;
+ALTER TABLE public.django_site_id_seq OWNER TO ebs;
 ALTER SEQUENCE django_site_id_seq OWNED BY django_site.id;
 SELECT pg_catalog.setval('django_site_id_seq', 1, true);
 
@@ -1621,7 +1610,7 @@ CREATE SEQUENCE nas_nas_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.nas_nas_id_seq OWNER TO mikrobill;
+ALTER TABLE public.nas_nas_id_seq OWNER TO ebs;
 ALTER SEQUENCE nas_nas_id_seq OWNED BY nas_nas.id;
 SELECT pg_catalog.setval('nas_nas_id_seq', 1, true);
 
@@ -1633,7 +1622,7 @@ CREATE SEQUENCE nas_trafficclass_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.nas_trafficclass_id_seq OWNER TO mikrobill;
+ALTER TABLE public.nas_trafficclass_id_seq OWNER TO ebs;
 ALTER SEQUENCE nas_trafficclass_id_seq OWNED BY nas_trafficclass.id;
 SELECT pg_catalog.setval('nas_trafficclass_id_seq', 4, true);
 
@@ -1645,7 +1634,7 @@ CREATE SEQUENCE nas_trafficnode_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.nas_trafficnode_id_seq OWNER TO mikrobill;
+ALTER TABLE public.nas_trafficnode_id_seq OWNER TO ebs;
 ALTER SEQUENCE nas_trafficnode_id_seq OWNED BY nas_trafficnode.id;
 SELECT pg_catalog.setval('nas_trafficnode_id_seq', 6, true);
 
@@ -1657,7 +1646,7 @@ CREATE SEQUENCE radius_activesession_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.radius_activesession_id_seq OWNER TO mikrobill;
+ALTER TABLE public.radius_activesession_id_seq OWNER TO ebs;
 ALTER SEQUENCE radius_activesession_id_seq OWNED BY radius_activesession.id;
 SELECT pg_catalog.setval('radius_activesession_id_seq', 53, true);
 
@@ -1670,7 +1659,7 @@ CREATE SEQUENCE radius_session_id_seq
     NO MINVALUE
     CACHE 1;
 
-ALTER TABLE public.radius_session_id_seq OWNER TO mikrobill;
+ALTER TABLE public.radius_session_id_seq OWNER TO ebs;
 ALTER SEQUENCE radius_session_id_seq OWNED BY radius_session.id;
 SELECT pg_catalog.setval('radius_session_id_seq', 1, false);
 
@@ -8345,15 +8334,33 @@ COPY billservice_timeaccessservice (id, prepaid_time, reset_time) FROM stdin;
 \.
 
 COPY billservice_timeperiod (id, name) FROM stdin;
+1	Круглосуточно
+2	Понедельник
+3	Вторник
+4	Рабочая неделя
+5	Weekend
 \.
 
 COPY billservice_timeperiod_time_period_nodes (id, timeperiod_id, timeperiodnode_id) FROM stdin;
+1	1	1
+4	4	4
+5	4	5
+6	4	6
+7	4	7
+8	4	8
+9	5	9
+10	5	10
 \.
 
-
-
-
 COPY billservice_timeperiodnode (id, name, time_start, length, repeat_after) FROM stdin;
+4	Понедельник	2008-01-07 00:00:00	86400	WEEK
+6	Среда	2008-01-09 00:00:00	86400	WEEK
+5	Вторник	2008-01-08 00:00:00	86400	WEEK
+7	Четверг	2008-01-10 00:00:00	86400	WEEK
+8	Пятница	2008-01-11 00:00:00	86400	WEEK
+10	Воскресенье	2008-01-13 00:00:00	86400	WEEK
+1	Сутки	2008-01-01 00:00:00	86400	DAY
+9	Суббота	2008-01-12 00:00:00	86400	WEEK
 \.
 
 COPY billservice_timespeed (id, access_parameters_id, time_id, max_limit, min_limit, burst_limit, burst_treshold, burst_time, priority) FROM stdin;
@@ -8381,7 +8388,7 @@ COPY billservice_transaction (id, bill, account_id, type_id, approved, tarif_id,
 \.
 
 COPY billservice_transactiontype (id, name, internal_name) FROM stdin;
-1	Периодическая услуга со снатием денег в течении расччё	PS_GRADUAL
+1	Периодическая услуга со снятием денег в течении расчётного периода	PS_GRADUAL
 2	Периодическая услуга со снятием денег в конце расчётного периода	PS_AT_END
 3	периодическая услуга со снятием денег в начале расчётного периода	PS_AT_START
 4	Снятие денег за время, проведённое в сети	TIME_ACCESS
@@ -8455,7 +8462,7 @@ COPY nas_nas (id, type, name, ipaddress, secret, login, password, allow_pptp, al
 COPY nas_trafficclass (id, name, weight, color, store, passthrough) FROM stdin;
 \.
 
-COPY nas_trafficnode (id, traffic_class_id, name, direction, protocol, src_ip, src_mask, src_port, dst_ip, dst_mask, dst_port, next_hop) FROM stdin;
+COPY nas_trafficnode (id, traffic_class_id, name, direction, protocol, src_ip, src_port, dst_ip, dst_port, next_hop) FROM stdin;
 \.
 
 
@@ -8473,14 +8480,12 @@ ALTER TABLE ONLY auth_group
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_key UNIQUE (group_id, permission_id);
 
-
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
 
 
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
-
 
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_pkey PRIMARY KEY (id);
@@ -9019,12 +9024,3 @@ REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
-
-REVOKE ALL ON FUNCTION pg_buffercache_pages() FROM PUBLIC;
-REVOKE ALL ON FUNCTION pg_buffercache_pages() FROM postgres;
-GRANT ALL ON FUNCTION pg_buffercache_pages() TO postgres;
-
-
-REVOKE ALL ON TABLE pg_buffercache FROM PUBLIC;
-REVOKE ALL ON TABLE pg_buffercache FROM postgres;
-GRANT ALL ON TABLE pg_buffercache TO postgres;

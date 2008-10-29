@@ -3486,4 +3486,4 @@ class AccountsMdiChild(QtGui.QMainWindow):
         """
         self.thread.terminate()
         event.accept()
-#---------------------------
+    #---------------------------

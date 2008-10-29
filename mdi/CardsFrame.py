@@ -636,6 +636,7 @@ class CardsChild(QtGui.QMainWindow):
         
         self.setObjectName("CardsMDI")
         self.resize(947, 619)
+        #self.resize(QtCore.QSize(QtCore.QRect(0,0,967, 639).size()).expandedTo(self.minimumSizeHint()))
         self.setIconSize(QtCore.QSize(18, 18))
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")

@@ -8,6 +8,8 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 
+from ebsWindow import ebsTableWindow
+
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -448,6 +450,144 @@ class AddNasFrame(QtGui.QDialog):
 
 
 
+class NasEbs(ebsTableWindow):
+    def __init__(self, connection):
+        columns=[u"id", u"Имя", u"Тип", u"IP"]
+        initargs = {"setname":"nas_frame_header", "objname":"NasEbsMDI", "winsize":(0,0,400,400), "wintitle":"Серверы доступа", "tablecolumns":columns}
+        super(NasEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.statusbar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        """self.addAction = QtGui.QAction(self)
+        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
+
+        self.delAction = QtGui.QAction(self)
+        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
+        
+        self.editAction = QtGui.QAction(self)
+        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
+
+        self.configureAction = QtGui.QAction(self)
+        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.configureAction.setMenuRole(QtGui.QAction.NoRole)
+        
+        self.editAction = QtGui.QAction(self)
+        self.editAction.setIcon(QtGui.QIcon("images/open.png"))"""
+        
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        """self.tableWidget.addAction(self.editAction)
+        self.tableWidget.addAction(self.addAction)
+        self.tableWidget.addAction(self.delAction)
+        self.tableWidget.addAction(self.configureAction)"""
+        
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        """self.toolBar.addAction(self.addAction)
+        self.toolBar.addAction(self.delAction)
+        self.toolBar.addAction(self.configureAction)"""
+        
+    def ebsPostInit(self, initargs):
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+
+        """self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.editframe)
+        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
+        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
+        self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)"""
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("configureAction", "Конфигурировать", "images/configure.png", self.configure)]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction", "configureAction"], self.toolBar:["addAction", "delAction", "configureAction"]}
+        self.actionCreator(actList, objDict)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        #self.delNodeLocalAction(self.delAction, self.configureAction)
+        self.delNodeLocalAction()
+        
+    def retranslateUI(self, initargs):
+        super(NasEbs, self).retranslateUI(initargs)
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        """
+        self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))     
+        self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "Конфигурировать", None, QtGui.QApplication.UnicodeUTF8))
+        """
+    
+    def addframe(self):
+        model=None
+        addf = AddNasFrame(connection=self.connection, model=model)
+        addf.exec_()
+        self.refresh()
+
+    def configure(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+        if self.connection.configureNAS(id):
+            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
+
+    def delete(self):
+        id=self.getSelectedId()
+        if id>0:
+            if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
+                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
+                return
+            elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
+                try:
+                    #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
+                    self.connection.iddelete("nas_nas", id)
+                    self.connection.commit()
+                    self.refresh()
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
+                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
+        
+    def editframe(self):
+        try:
+            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
+        except:
+            model=None
+
+        addf = AddNasFrame(connection=self.connection, model=model)
+        addf.exec_()
+        self.refresh()
+
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/nas.png"))
+        self.tableWidget.setItem(x,y,headerItem)
+
+
+    def refresh(self):
+        self.tableWidget.setSortingEnabled(False)
+        nasses = self.connection.foselect("nas_nas")
+        self.tableWidget.setRowCount(len(nasses))
+        i=0
+        for nas in nasses:
+            self.addrow(nas.id, i,0)
+            self.addrow(nas.name, i,1)
+            self.addrow(nas.type, i,2)
+            self.addrow(nas.ipaddress, i,3)
+            self.tableWidget.setRowHeight(i, 14)
+            i+=1
+        self.tableWidget.setColumnHidden(0, True)
+
+        HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
+        #self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.setSortingEnabled(True)
+    
+
+    def delNodeLocalAction(self):
+        super(NasEbs, self).delNodeLocalAction(self.delAction, self.configureAction)
 class NasMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
@@ -465,7 +605,6 @@ class NasMdiChild(QtGui.QMainWindow):
         self.setStatusBar(self.statusbar)
 
         self.toolBar = QtGui.QToolBar(self)
-        #self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
@@ -523,8 +662,7 @@ class NasMdiChild(QtGui.QMainWindow):
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
-        #self.show()
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
@@ -547,10 +685,8 @@ class NasMdiChild(QtGui.QMainWindow):
 
 
     def addframe(self):
-
         model=None
         addf = AddNasFrame(connection=self.connection, model=model)
-        #addf.show()
         addf.exec_()
         self.refresh()
 
@@ -558,7 +694,6 @@ class NasMdiChild(QtGui.QMainWindow):
         id=self.getSelectedId()
         if id==0:
             return
-
         if self.connection.configureNAS(id):
             QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
         else:
@@ -609,10 +744,7 @@ class NasMdiChild(QtGui.QMainWindow):
 
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
-        #nasses=Nas.objects.all().order_by('id')
-        #nasses=self.connection.sql("SELECT * FROM nas_nas ORDER BY id")
         nasses = self.connection.foselect("nas_nas")
-        #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(nasses))
         i=0
         for nas in nasses:
