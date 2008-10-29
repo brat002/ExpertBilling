@@ -1,0 +1,287 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>613</width>
+    <height>394</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Выберите нужную конфигурацию</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" >
+   <item row="1" column="0" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" >
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Выберите нужные опции</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7" >
+      <item row="0" column="0" >
+       <widget class="QGroupBox" name="groupBox_2" >
+        <property name="title" >
+         <string>PPTP</string>
+        </property>
+        <property name="checkable" >
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3" >
+         <item row="0" column="0" colspan="3" >
+          <widget class="QLabel" name="label" >
+           <property name="text" >
+            <string>Виртуальный IP адрес PPTP сервера</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="3" >
+          <widget class="QLineEdit" name="lineEdit" >
+           <property name="toolTip" >
+            <string>Виртуальный адрес, который получит внутренний интерфейс PPTP сервера при подключении клиента.
+К примеру 192.168.10.1, 192.168.11.1, 172.31.3.1 и т.д.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" >
+          <widget class="QCheckBox" name="checkBox" >
+           <property name="text" >
+            <string>PAP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1" >
+          <widget class="QCheckBox" name="checkBox_4" >
+           <property name="text" >
+            <string>CHAP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2" >
+          <widget class="QCheckBox" name="checkBox_5" >
+           <property name="text" >
+            <string>MSCHAP2</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item rowspan="2" row="0" column="1" >
+       <widget class="QGroupBox" name="groupBox_3" >
+        <property name="title" >
+         <string>PPPOE</string>
+        </property>
+        <property name="checkable" >
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5" >
+         <item row="0" column="0" colspan="3" >
+          <widget class="QLabel" name="label_2" >
+           <property name="text" >
+            <string>Виртуальный IP адрес PPPOE сервера</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="3" >
+          <widget class="QLineEdit" name="lineEdit_2" >
+           <property name="toolTip" >
+            <string>Виртуальный адрес, который получит внутренний интерфейс PPPOE сервера при подключении клиента.
+К примеру 192.168.10.1, 192.168.11.1, 172.31.3.1 и т.д.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="3" >
+          <widget class="QLabel" name="label_4" >
+           <property name="text" >
+            <string>Имя интерфейса, на котором нужно включить PPPOE</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2" >
+          <widget class="QLineEdit" name="lineEdit_4" />
+         </item>
+         <item row="4" column="0" >
+          <widget class="QCheckBox" name="checkBox_7" >
+           <property name="text" >
+            <string>CHAP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" >
+          <widget class="QCheckBox" name="checkBox_8" >
+           <property name="text" >
+            <string>PAP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2" >
+          <widget class="QCheckBox" name="checkBox_6" >
+           <property name="text" >
+            <string>MSCHAP2</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item rowspan="2" row="1" column="0" >
+       <widget class="QGroupBox" name="groupBox_6" >
+        <property name="title" >
+         <string>Безопасность</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2" >
+         <item row="0" column="0" >
+          <widget class="QCheckBox" name="checkBox_2" >
+           <property name="text" >
+            <string>Защитить от Bruteforce атак</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" >
+          <widget class="QCheckBox" name="checkBox_9" >
+           <property name="text" >
+            <string>Защитить от SMTP спамеров</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" >
+          <widget class="QCheckBox" name="checkBox_10" >
+           <property name="text" >
+            <string>Защитить от вредоносного трафика</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QGroupBox" name="groupBox_4" >
+        <property name="title" >
+         <string>Базовая настройка файервола</string>
+        </property>
+        <property name="checkable" >
+         <bool>false</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4" >
+         <item row="0" column="0" >
+          <widget class="QCheckBox" name="checkBox_3" >
+           <property name="text" >
+            <string>Настроить для использования шлюзом в интернет</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QGroupBox" name="groupBox_5" >
+        <property name="title" >
+         <string>RADIUS</string>
+        </property>
+        <property name="checkable" >
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_6" >
+         <item row="0" column="0" >
+          <widget class="QLabel" name="label_3" >
+           <property name="text" >
+            <string>IP адрес RADIUS сервера</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" >
+          <widget class="QLineEdit" name="lineEdit_3" />
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="QGroupBox" name="groupBox_7" >
+        <property name="title" >
+         <string>Приоритезация трафика</string>
+        </property>
+        <widget class="QCheckBox" name="checkBox_11" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>301</width>
+           <height>19</height>
+          </rect>
+         </property>
+         <property name="text" >
+          <string>Раздать приоритеты трафику</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_12" >
+         <property name="geometry" >
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>301</width>
+           <height>19</height>
+          </rect>
+         </property>
+         <property name="toolTip" >
+          <string>Вы сами сможете изменить это значение на вкладке Queue Tree окна Queues</string>
+         </property>
+         <property name="text" >
+          <string>Ограничить пропускную способность до 512k/512k</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+  <zorder>buttonBox</zorder>
+  <zorder>groupBox</zorder>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
