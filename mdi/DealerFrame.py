@@ -215,6 +215,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.tableWidget_not_activated = QtGui.QTableWidget(self.tab_not_activated)
         self.tableWidget_not_activated.setObjectName("tableWidget_not_activated")
         self.tableWidget_not_activated = tableFormat(self.tableWidget_not_activated)
+        self.tableWidget_not_activated.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         
 
         self.gridLayout_2.addWidget(self.tableWidget_not_activated, 0, 0, 1, 1)
@@ -260,6 +261,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         
         
         self.connect(self.actionSave, QtCore.SIGNAL("triggered()"),  self.accept)
+        self.connect(self.returnCardsAction, QtCore.SIGNAL("triggered()"),  self.returnCards)
         
         QtCore.QMetaObject.connectSlotsByName(self)
         self.setTabOrder(self.lineEdit_organization, self.lineEdit_unp)
@@ -432,6 +434,21 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.emit(QtCore.SIGNAL("refresh()"))
         #self.destroy()
 
+    def returnCards(self):
+        items = self.tableWidget_not_activated.selectedIndexes()
+        cards = []
+        for item in items:
+            if item.column()>0:
+                continue
+            cards.append(unicode(self.tableWidget_not_activated.item(item.row(), 0).text()))
+            
+            
+        for card_id in cards:
+            self.connection.delete("DELETE FROM billservice_salecard_cards WHERE card_id=%s; UPDATE billservice_card SET sold=Null WHERE id=%s;" % (card_id, card_id))
+            
+        self.connection.commit()
+        self.fixtures()
+    
     def disableElements(self):
         self.lineEdit_buy_cards.setDisabled(True)
         self.lineEdit_pay_sum.setDisabled(True)
