@@ -310,7 +310,7 @@ class ClassNodeFrame(QtGui.QDialog):
             #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
             self.next_hop_edit.setText(unicode(self.model.next_hop))
         else:
-            default=u'0.0.0.0'
+            default=u'0.0.0.0/0'
             self.src_ip_edit.setText(default)
             #self.src_mask_edit.setText(default)            
             self.dst_ip_edit.setText(default)
