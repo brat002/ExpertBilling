@@ -683,7 +683,7 @@ def main():
     server_acct.start()
 
 import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing','medusa', 'Billing.NemirovOnline']:
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing','medusa', 'Billing.NemirovOnline', 'iserver']:
     import sys
     print "Licension key error. Exit from application."
     sys.exit(1)
