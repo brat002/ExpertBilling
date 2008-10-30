@@ -591,7 +591,7 @@ def main ():
 
 
 import socket
-if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline']:
+if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline', 'iserver']:
     import sys
     print "License key error. Exit from application."
     sys.exit(1)
