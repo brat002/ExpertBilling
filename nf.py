@@ -133,6 +133,7 @@ class Flow5(Flow):
             raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), self.LENGTH)
 
         _ff = struct.unpack("!4s4s4sHHIIIIHHBBBBHHBBH", data)
+        print _ff
         self.src_addr = self._int_to_ipv4(_ff[0])
         self.dst_addr = self._int_to_ipv4(_ff[1])
         self.next_hop = self._int_to_ipv4(_ff[2])
