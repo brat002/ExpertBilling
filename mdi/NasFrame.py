@@ -587,7 +587,7 @@ class NasEbs(ebsTableWindow):
     
 
     def delNodeLocalAction(self):
-        super(NasEbs, self).delNodeLocalAction(self.delAction, self.configureAction)
+        super(NasEbs, self).delNodeLocalAction([self.delAction, self.configureAction])
 class NasMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
