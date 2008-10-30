@@ -154,7 +154,7 @@ class Flow5(Flow):
         self.src_netmask_length = _ff[17]
         self.dst_netmask_length = _ff[18]
         
-        print self.src_addr, self.dst_addr
+        #print self.src_addr, self.dst_addr
 
 class NetFlowPacket:
     FLOW_TYPES = {
