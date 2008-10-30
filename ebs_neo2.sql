@@ -757,6 +757,41 @@ CREATE TABLE billservice_dealer
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_dealer OWNER TO ebs;
 
+CREATE TABLE billservice_dealerpay
+(
+  id bigint NOT NULL,
+  dealer_id integer NOT NULL,
+  pay double precision NOT NULL,
+  salecard_id integer NOT NULL,
+  created timestamp with time zone NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_dealerpay OWNER TO ebs;
+
+CREATE TABLE billservice_salecard
+(
+  id bigint NOT NULL,
+  dealer_id integer NOT NULL,
+  pay double precision NOT NULL,
+  sum_for_pay double precision NOT NULL,
+  paydeffer integer NOT NULL,
+  discount double precision NOT NULL,
+  discount_sum double precision NOT NULL,
+  prepayment double precision NOT NULL,
+  created timestamp with time zone NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_salecard OWNER TO ebs;
+
+CREATE TABLE billservice_salecard_cards
+(
+  id bigint NOT NULL,
+  salecard_id integer NOT NULL,
+  card_id integer NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_salecard_cards OWNER TO ebs;
+
 CREATE TABLE radius_activesession (
     id integer NOT NULL,
     account_id integer NOT NULL,
@@ -1214,6 +1249,37 @@ CREATE SEQUENCE billservice_dealer_id_seq
 ALTER TABLE public.billservice_dealer_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_dealer_id_seq OWNED BY billservice_dealer.id;
 SELECT pg_catalog.setval('billservice_dealer_id_seq', 1, false);
+
+CREATE SEQUENCE billservice_dealerpay_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE billservice_dealerpay_id_seq OWNER TO ebs;
+ALTER SEQUENCE billservice_dealerpay_id_seq OWNED BY billservice_dealerpay.id;
+SELECT pg_catalog.setval('billservice_dealerpay_id_seq', 1, false);
+
+CREATE SEQUENCE billservice_salecard_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 13
+  CACHE 1;
+ALTER TABLE billservice_salecard_id_seq OWNER TO ebs;
+ALTER SEQUENCE billservice_salecard_id_seq OWNED BY billservice_salecard.id;
+SELECT pg_catalog.setval('billservice_salecard_id_seq', 1, false);
+
+CREATE SEQUENCE billservice_salecard_cards_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1027
+  CACHE 1;
+ALTER TABLE billservice_salecard_cards_id_seq OWNER TO ebs;
+ALTER SEQUENCE billservice_salecard_cards_id_seq OWNED BY billservice_salecard_cards.id;
+SELECT pg_catalog.setval('billservice_salecard_cards_id_seq', 1, false);
+
 
 
 CREATE SEQUENCE billservice_operator_id_seq
@@ -1717,6 +1783,9 @@ ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficcla
 ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
 ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
+ALTER TABLE billservice_dealerpay ALTER COLUMN id SET DEFAULT nextval('billservice_dealerpay_id_seq'::regclass);
+ALTER TABLE billservice_salecard ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_id_seq'::regclass);
+ALTER TABLE billservice_salecard_cards ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_cards_id_seq'::regclass);
 ALTER TABLE nas_trafficnode ALTER COLUMN id SET DEFAULT nextval('nas_trafficnode_id_seq'::regclass);
 ALTER TABLE radius_activesession ALTER COLUMN id SET DEFAULT nextval('radius_activesession_id_seq'::regclass);
 ALTER TABLE radius_session ALTER COLUMN id SET DEFAULT nextval('radius_session_id_seq'::regclass);
@@ -8541,6 +8610,18 @@ ALTER TABLE ONLY billservice_card
 
 ALTER TABLE billservice_dealer
   ADD CONSTRAINT billservice_dealer_pkey PRIMARY KEY(id);
+  
+ALTER TABLE billservice_dealerpay
+  ADD CONSTRAINT billservice_dealerpay_pkey PRIMARY KEY(id);
+  
+ALTER TABLE billservice_salecard
+  ADD CONSTRAINT billservice_salecard_pkey PRIMARY KEY(id);
+  
+ALTER TABLE billservice_salecard_cards
+  ADD CONSTRAINT billservice_salecard_cards_pkey PRIMARY KEY(id);
+  
+ALTER TABLE billservice_salecard_cards
+  ADD CONSTRAINT billservice_salecard_cards_salecard_id_key UNIQUE(salecard_id, card_id);
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_pkey PRIMARY KEY (id);
@@ -8731,6 +8812,12 @@ CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accesspa
 CREATE INDEX billservice_operator_bank_id ON billservice_operator USING btree (bank_id);  
   
 CREATE INDEX billservice_dealer_bank_id ON billservice_dealer USING btree (bank_id);
+
+CREATE INDEX billservice_dealerpay_dealer_id ON billservice_dealerpay USING btree (dealer_id);
+  
+CREATE INDEX billservice_dealerpay_salecard_id ON billservice_dealerpay USING btree (salecard_id);
+  
+CREATE INDEX billservice_salecard_dealer_id ON billservice_salecard USING btree (dealer_id);
   
 CREATE INDEX billservice_account_nas_id ON billservice_account USING btree (nas_id);
 
@@ -8819,6 +8906,7 @@ CREATE INDEX radius_session_account_id ON radius_session USING btree (account_id
 CREATE RULE on_tariff_delete_rule AS ON DELETE TO billservice_tariff DO SELECT on_tariff_delete_fun(old.*) AS on_tariff_delete_fun;
 
 
+
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT account_id_refs_id_16c70393 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
@@ -8901,6 +8989,31 @@ ALTER TABLE ONLY billservice_onetimeservicehistory
 ALTER TABLE billservice_dealer
   ADD CONSTRAINT billservice_dealer_bank_id_fkey FOREIGN KEY (bank_id)
       REFERENCES billservice_bankdata (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_dealerpay
+  ADD CONSTRAINT billservice_dealerpay_dealer_id_fkey FOREIGN KEY (dealer_id)
+      REFERENCES billservice_dealer (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_dealerpay
+  ADD CONSTRAINT billservice_dealerpay_salecard_id_fkey FOREIGN KEY (salecard_id)
+      REFERENCES billservice_salecard (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_salecard
+  ADD CONSTRAINT billservice_salecard_dealer_id_fkey FOREIGN KEY (dealer_id)
+      REFERENCES billservice_dealer (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_salecard_cards
+  ADD CONSTRAINT billservice_salecard_cards_card_id_fkey FOREIGN KEY (card_id)
+      REFERENCES billservice_card (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_salecard_cards
+  ADD CONSTRAINT billservice_salecard_cards_salecard_id_fkey FOREIGN KEY (salecard_id)
+      REFERENCES billservice_salecard (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE ONLY billservice_periodicalservice
