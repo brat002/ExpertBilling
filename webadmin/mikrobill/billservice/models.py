@@ -779,6 +779,7 @@ class Dealer(models.Model):
     always_sell_cards = models.BooleanField()
     
     bank = models.ForeignKey(BankData)
+    deleted = models.BooleanField()
     
 
 class SaleCard(models.Model):

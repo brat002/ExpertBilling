@@ -2310,7 +2310,7 @@ def main():
         for t in threads:
             #time.sleep(1)
             #print t
-            print 'thread status', t.getName(), t.isAlive()
+            #print 'thread status', t.getName(), t.isAlive()
             if not t.isAlive():
                 print 'restarting thread', t.getName(), str(t)
                 #t.__init__()

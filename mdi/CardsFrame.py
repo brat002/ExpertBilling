@@ -127,7 +127,7 @@ class SaleCards(QtGui.QDialog):
         self.lineEdit_pay = QtGui.QLineEdit(self)
         self.lineEdit_pay.setGeometry(QtCore.QRect(430, 210, 231, 21))
         self.lineEdit_pay.setObjectName("lineEdit_pay")
-        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self.summ_edit))
+        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self.lineEdit_pay))
         
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setGeometry(QtCore.QRect(10, 310, 651, 291))
@@ -460,7 +460,7 @@ class AddCards(QtGui.QDialog):
         self.nominal_lineEdit = QtGui.QLineEdit(self.params_groupBox)
         self.nominal_lineEdit.setGeometry(QtCore.QRect(110, 50, 171, 20))
         self.nominal_lineEdit.setObjectName("nominal_lineEdit")
-        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self))
+        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self.lineEdit_pay))
         self.count_label = QtGui.QLabel(self.params_groupBox)
         self.count_label.setGeometry(QtCore.QRect(10, 80, 80, 21))
         self.count_label.setObjectName("count_label")
