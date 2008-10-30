@@ -133,7 +133,7 @@ class Flow5(Flow):
             raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), self.LENGTH)
 
         _ff = struct.unpack("!4s4s4sHHIIIIHHBBBBHHBBH", data)
-        print _ff
+        #print _ff
         self.src_addr = self._int_to_ipv4(_ff[0])
         self.dst_addr = self._int_to_ipv4(_ff[1])
         self.next_hop = self._int_to_ipv4(_ff[2])
@@ -153,6 +153,8 @@ class Flow5(Flow):
         self.dst_as = _ff[16]
         self.src_netmask_length = _ff[17]
         self.dst_netmask_length = _ff[18]
+        
+        print self.src_addr, self.dst_addr
 
 class NetFlowPacket:
     FLOW_TYPES = {
