@@ -8,6 +8,8 @@ from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
 from helpers import humanable_bytes
+from ebsWindow import ebsTableWindow
+from ebsWindow import ebsTabs_n_TablesWindow
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
@@ -52,6 +54,168 @@ _restrictions = {\
                 }
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
+class TransactionsReportEbs(ebsTableWindow):
+    def __init__(self, connection ,account=None):
+        self.account = account
+        columns=[u'#', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
+        initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
+        super(TransactionsReportEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.user_edit = QtGui.QComboBox(self)
+        self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
+        self.user_edit.setObjectName("user_edit")    
+        
+        dt_now = datetime.datetime.now()
+        
+        self.date_start = QtGui.QDateTimeEdit(self)
+        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        self.date_start.setCalendarPopup(True)
+        self.date_start.setObjectName("date_start")
+
+        self.date_end = QtGui.QDateTimeEdit(self)
+        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
+        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.date_end.setCalendarPopup(True)
+        self.date_end.setObjectName("date_end")
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.date_start.setDateTime(settings.value("trans_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("trans_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+
+        self.date_start_label = QtGui.QLabel(self)
+        self.date_start_label.setMargin(10)
+        self.date_start_label.setObjectName("date_start_label")
+
+        self.date_end_label = QtGui.QLabel(self)
+        self.date_end_label.setMargin(10)
+        self.date_end_label.setObjectName("date_end_label")
+
+        self.user_label = QtGui.QLabel(self)
+        self.user_label.setMargin(10)
+        self.user_label.setObjectName("user_label")
+
+        self.go_pushButton = QtGui.QPushButton(self)
+        self.go_pushButton.setGeometry(QtCore.QRect(590,40,101,25))
+        self.go_pushButton.setObjectName("go_pushButton")        
+        self.system_transactions_checkbox = QtGui.QCheckBox(self)
+        self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
+
+        self.toolBar = QtGui.QToolBar(self)      
+        
+        self.toolBar.addWidget(self.user_label)
+        self.toolBar.addWidget(self.user_edit)
+        
+        self.toolBar.addWidget(self.date_start_label)
+        self.toolBar.addWidget(self.date_start)
+        self.toolBar.addWidget(self.date_end_label)
+        self.toolBar.addWidget(self.date_end)
+        self.toolBar.addWidget(self.system_transactions_checkbox)
+        self.toolBar.addWidget(self.go_pushButton)
+        self.toolBar.addSeparator()        
+        
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+    def ebsPostInit(self, initargs):
+        QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
+        actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction)]
+        objDict = {self.tableWidget:["actionDeleteTransaction"]}
+        self.actionCreator(actList, objDict)
+        
+    def retranslateUI(self, initargs):
+        super(TransactionsReportEbs, self).retranslateUI(initargs)
+        self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
+        self.user_label.setText(QtGui.QApplication.translate("Dialog", "Пользователь", None, QtGui.QApplication.UnicodeUTF8))
+        self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Пыщь", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
+        
+    def refresh(self):
+        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        for account in accounts:
+            self.user_edit.addItem(account.username)
+        
+        if self.account:
+            self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
+            self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
+
+
+    def addrow(self, value, x, y):
+        if value==None:
+            value=""
+            
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+                
+    def refresh_table(self):
+        self.tableWidget.setSortingEnabled(False)
+        self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
+        self.tableWidget.clearContents()
+        start_date = self.date_start.dateTime().toPyDateTime()
+        end_date = self.date_end.dateTime().toPyDateTime()
+        
+        if self.system_transactions_checkbox.checkState()==2:
+            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
+                                            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+                                            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
+                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
+        else:
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name
+            FROM billservice_transaction as transaction
+            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
+            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
+
+        self.tableWidget.setRowCount(len(transactions))
+        i=0
+        ballance = 0
+        write_on = 0
+        write_off = 0
+        for transaction in transactions:
+            self.addrow(transaction.id, i, 0)
+            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 1)
+            self.addrow(transaction.bill, i, 2)
+            self.addrow(transaction.transaction_type_name, i, 3)
+            self.addrow(transaction.tariff_name, i, 4)
+            self.addrow(transaction.summ, i, 5)
+            self.addrow(transaction.description, i, 6)
+            i+=1
+        self.tableWidget.setColumnHidden(0, True)
+                
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("trans_date_start", QtCore.QVariant(self.date_start.dateTime()))
+            settings.setValue("trans_date_end", QtCore.QVariant(self.date_end.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
+        self.tableWidget.setSortingEnabled(True)
+        
+    def delete_transaction(self):
+        ids = []
+        #import Pyro
+        for index in self.tableWidget.selectedIndexes():
+            print index.row(), index.column()
+            if index.column()>1:
+                continue
+            
+            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            try:
+                ids.append(int(i))
+            except Exception, e:
+                print "can not convert transaction id to int"      
+        
+        self.connection.transaction_delete(ids)     
+            
+        self.refresh_table()
+     
 class TransactionsReport(QtGui.QMainWindow):
     def __init__(self, connection ,account=None):
 
@@ -63,6 +227,14 @@ class TransactionsReport(QtGui.QMainWindow):
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget = tableFormat(self.tableWidget) 
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        
+
+        self.setCentralWidget(self.tableWidget)
+        
         self.user_edit = QtGui.QComboBox(self)
         self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
         self.user_edit.setObjectName("user_edit")
@@ -104,39 +276,24 @@ class TransactionsReport(QtGui.QMainWindow):
         self.go_pushButton.setGeometry(QtCore.QRect(590,40,101,25))
         self.go_pushButton.setObjectName("go_pushButton")
 
-        self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget = tableFormat(self.tableWidget) 
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        
 
-        self.setCentralWidget(self.tableWidget)
         
         self.system_transactions_checkbox = QtGui.QCheckBox(self)
-        #self.system_transactions_checkbox.setMargin(10)
         self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
-
 
         self.toolBar = QtGui.QToolBar(self)
         
         
         self.toolBar.addWidget(self.user_label)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.user_edit)
         
         self.toolBar.addWidget(self.date_start_label)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.date_start)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.date_end_label)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.date_end)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.system_transactions_checkbox)
-        #self.toolBar.addSeparator()
         self.toolBar.addWidget(self.go_pushButton)
-        self.toolBar.addSeparator()
-        
+        self.toolBar.addSeparator()      
         
         
         self.toolBar.setMovable(False)
@@ -251,7 +408,7 @@ class TransactionsReport(QtGui.QMainWindow):
         
     def delete_transaction(self):
         ids = []
-        import Pyro
+        #import Pyro
         for index in self.tableWidget.selectedIndexes():
             print index.row(), index.column()
             if index.column()>1:
@@ -261,11 +418,9 @@ class TransactionsReport(QtGui.QMainWindow):
             try:
                 ids.append(int(i))
             except Exception, e:
-                print "can not convert transaction id to int"
+                print "can not convert transaction id to int"      
         
-        
-        self.connection.transaction_delete(ids)
-        
+        self.connection.transaction_delete(ids)      
             
         self.refresh_table()
         
@@ -510,6 +665,348 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.end_date = self.to_dateTimeEdit.dateTime().toPyDateTime()
         QtGui.QDialog.accept(self)
         
+        
+class NetFlowReportEbs(ebsTabs_n_TablesWindow):
+    def __init__(self, connection):
+        columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
+        columns_t1=[u'Класс', u'Принято',u'Передано', u'Сумма',''] 
+        initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Серверы доступа"}
+        tabargs= [["tab0", columns_t0, "Детальная статистика"], ["tab1", columns_t1, "Сводная статистика"]]
+        self.child = ReportPropertiesDialog(connection = connection)
+        super(NetFlowReportEbs, self).__init__(connection, initargs, tabargs)
+        
+    def ebsPreInit(self, initargs, tabargs):
+        self.current_page=0
+        self.protocols_reverse = {
+          '0':'',
+          '37': 'ddp',
+          '98': 'encap',
+          '3': 'ggp',
+          '47': 'gre',
+          '20': 'hmp',
+          '1' : 'ICMP',
+          '38':'idpr-cmtp',
+          '2': 'igmp',
+          '4': 'ipencap',
+          '94': 'ipip',
+          '89': 'ospf',
+          '27': 'rdp',
+          '6' : 'TCP',
+          '17': 'UDP'
+          }
+        
+        
+    def ebsInterInit(self, initargs, tabargs):
+        self.label = QtGui.QLabel(u"Навигатор")
+        self.button_start = QtGui.QPushButton()
+        self.button_start.setText(u"|<<")
+        self.button_start.setMaximumHeight(19)
+        self.button_start.setMaximumWidth(28)
+        
+        self.button_back = QtGui.QPushButton()
+        self.button_back.setText(u"<")
+        self.button_back.setMaximumHeight(19)
+        self.button_back.setMaximumWidth(28)
+
+        self.button_forward = QtGui.QPushButton()
+        self.button_forward.setText(u">")
+        self.button_forward.setMaximumHeight(19)
+        self.button_forward.setMaximumWidth(28)
+        self.status_label= QtGui.QLabel()
+        
+        self.statusbar = QtGui.QStatusBar(self)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        
+        self.statusBar().addWidget(self.label)
+        self.statusBar().addWidget(self.button_start)
+        self.statusBar().addWidget(self.button_back)
+        self.statusBar().addWidget(self.button_forward)
+        self.statusBar().addWidget(self.status_label)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.tab0_tableWidget.setColumnHidden(0, False)
+        self.tab1_tableWidget.setColumnHidden(0, False)
+        
+    def ebsPostInit(self, initargs, tabargs):
+        QtCore.QObject.connect(self.button_start, QtCore.SIGNAL("clicked()"), self.startPage)
+        QtCore.QObject.connect(self.button_forward, QtCore.SIGNAL("clicked()"), self.addPage)
+        QtCore.QObject.connect(self.button_back, QtCore.SIGNAL("clicked()"), self.delPage)
+        
+        actList=[("configureAction", "Конфигурировать", "images/configure.png", self.configure)]
+        objDict = {self.toolBar:["configureAction"]}
+        self.actionCreator(actList, objDict)
+        
+        self.tableWidget = self.tab0_tableWidget
+        self.tableWidget_summary = self.tab1_tableWidget
+        
+    def retranslateUI(self, initargs, tabargs):
+        super(NetFlowReportEbs, self).retranslateUI(initargs, tabargs)
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+    
+    def addrow(self, value, x, y, color=None):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        if color:
+            headerItem.setBackgroundColor(QtGui.QColor(color))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/account.png"))
+        headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+ 
+    def startPage(self):
+        self.current_page=0
+        self.refresh()
+         
+    def addPage(self):
+        self.current_page+=1
+        self.refresh()
+        
+    def delPage(self):
+        if self.current_page-1>=0:
+            self.current_page-=1
+            self.refresh()
+        
+    def getProtocol(self, value):
+        if str(value) in self.protocols_reverse:
+            return self.protocols_reverse['%s' % value]
+        return value
+        
+    def configure(self):
+        if self.child.exec_()!=1:
+            return
+        if self.tabWidget.currentIndex()==0:
+            self.current_page=0
+            self.refresh()
+        elif self.tabWidget.currentIndex()==1:
+            self.refresh_summary()
+        
+    def addRowSummary(self, value, x, y, color=None, user=False):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        if color:
+            headerItem.setBackgroundColor(QtGui.QColor(color))
+
+        if user==True:
+            headerItem.setIcon(QtGui.QIcon("images/account.png"))
+
+        headerItem.setText(unicode(value))
+        self.tableWidget_summary.setItem(x,y,headerItem)
+
+    def summ(self, x,y):
+        if x==None:
+            x=0
+        if y==None:
+            y=0
+        return x+y
+                
+    def refresh_summary(self):            
+        sql_acc=''
+        if len(self.child.users)>0:
+            sql_acc= """ AND account_id IN (%s) """ % ','.join(map(str, self.child.users))
+            
+        sql="""
+        SELECT class.name, class.color, 
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+        FROM nas_trafficnode as node
+        JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
+        """ % (sql_acc, self.child.start_date, self.child.end_date, sql_acc, self.child.start_date, self.child.end_date)
+
+        if len(self.child.classes)>0:
+            sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
+            
+                    
+        sql+="GROUP BY class.id, class.name,class.color"
+        
+        #print sql
+        data = self.connection.sql(sql)
+        i=0
+        self.tableWidget_summary.clearContents()
+        classes_count = len(data)+1
+        self.tableWidget_summary.setRowCount(classes_count)
+        self.tableWidget_summary.setSpan(i,0,0,5)
+        self.addRowSummary(u"Общая статистика по классам", i, 0, color='#ffffff')
+        i+=1
+        for flow in data:
+            self.addRowSummary(flow.name, i, 0, color=flow.color)
+            self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
+            self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
+            self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
+            self.addRowSummary(u'', i, 4, color=flow.color)
+            i+=1
+
+  
+        if sql_acc!="":
+            if len(self.child.users)>0:
+                sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
+
+            sql="""
+            SELECT account.username, class.name, class.color, 
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+            FROM nas_trafficnode as node
+            JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
+            JOIN billservice_account as account ON account.id IN %s
+            """ % (self.child.start_date, self.child.end_date, self.child.start_date, self.child.end_date, sql_acc)
+    
+            if len(self.child.classes)>0:
+                sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
+                
+                        
+            sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id,class.name"
+            
+            print sql
+            data = self.connection.sql(sql)
+            #i=0
+            self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
+            oldusername = ''
+            self.tableWidget_summary.setSpan(i,0,0,5)
+            self.addRowSummary(u"Подробно", i, 0, color='#ffffff')
+            i+=1
+            for flow in data:
+                if flow.username!=oldusername:
+                    self.tableWidget_summary.setRowHeight(i,22)
+                    self.tableWidget_summary.setSpan(i,0,0,5)
+                    self.addRowSummary(flow.username, i, 0, color='#ffffff', user=True)
+                    i+=1
+                self.addRowSummary(flow.name, i, 0, color=flow.color)
+                self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
+                self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
+                self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
+                self.addRowSummary(u'', i, 4, color=flow.color)
+                oldusername=flow.username
+                i+=1 
+        
+        HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_summary)
+
+                    
+    def refresh(self):        
+        self.status_label.setText(u"Подождите, идёт обработка.")
+        #self.tableWidget.setSortingEnabled(False)
+        if self.child.with_grouping_checkBox.checkState()==0:
+            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
+            netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
+            account.username as account_username, class.name as class_name, class.color as class_color, ports.name as port_name, 
+            ports.description as port_description, ports1.name as port_name1, ports1.description as port_description1
+            FROM billservice_netflowstream as netflowstream
+            LEFT JOIN billservice_ports as ports ON ports.protocol = netflowstream.protocol and netflowstream.src_port = ports.port
+            LEFT JOIN billservice_ports as ports1 ON ports1.protocol = netflowstream.protocol and netflowstream.dst_port = ports1.port
+            JOIN billservice_account as account ON account.id = netflowstream.account_id
+            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id             
+            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date) 
+            print 1
+        elif self.child.with_grouping_checkBox.checkState()==2:
+            sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
+            FROM billservice_netflowstream as netflowstream
+            JOIN billservice_account as account ON account.id = netflowstream.account_id
+            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id            
+            WHERE date_start between '%s' and '%s'
+            
+            """ % (self.child.start_date, self.child.end_date)
+            print 2            
+        
+        if len(self.child.users)>0 or len(self.child.classes)>0:
+            sql+=" AND " 
+        
+        if len(self.child.users)>0:
+            sql+= """ netflowstream.account_id IN (%s) """ % ','.join(map(str, self.child.users))
+            
+        if len(self.child.users)>0 and len(self.child.classes)>0:
+            sql+=""" and """
+        
+        if len(self.child.classes)>0:
+            sql+=""" netflowstream.traffic_class_id in (%s)"""  % ','.join(map(str, self.child.classes))
+            
+        if self.child.with_grouping_checkBox.checkState()==2:
+            sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
+        
+        if self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==0:
+            sql+="ORDER BY netflowstream.id ASC"
+        elif self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==2:
+            sql+="ORDER BY netflowstream.id DESC"
+            
+        if self.current_page==0:
+            sql+=" LIMIT 100"
+        else:            
+            sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
+        flows = self.connection.sql(sql)
+        i=0
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(len(flows))
+        octets_in_summ=0
+        octets_out_summ=0
+
+        c=self.current_page*500
+        #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
+        for flow in flows:
+            self.addrow(c, i, 0)
+            if self.child.with_grouping_checkBox.checkState()==0:
+                if flow.direction=='INPUT':
+                    octets_in_summ+=int(flow.octets)
+                elif flow.direction=='OUTPUT':
+                    octets_out_summ+=int(flow.octets)
+                
+                if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1==None):                
+                    if flow.port_name==None and flow.port_name1!=None:
+                        flow.port_name=flow.port_name1
+                        flow.port_description=flow.port_description1
+                    elif flow.port_name==None:
+                        flow.port_description=''    
+                        
+                    if flow.port_name!='' and flow.port_name is not None:
+                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                    else:
+                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
+                    self.tableWidget.item(i,3).setToolTip(flow.port_description)                
+                 
+                elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name==None):                
+                    if flow.port_name1==None and flow.port_name!=None:
+                        flow.port_name1 = flow.port_name
+                        flow.port_description1 = flow.port_description
+                    elif flow.port_name1==None: 
+                        flow.port_name1=""    
+                        flow.port_description1 = ""   
+                    if flow.port_name1!='' and flow.port_name1 is not None:
+                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
+                    else:
+                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
+                    self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
+                else:
+                    self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
+
+
+                self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 7)
+                self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 4)
+    
+                self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 5)
+            else:
+                self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
+                self.addrow(flow.src_addr, i, 4)
+                self.addrow(flow.dst_addr, i, 5)
+                
+            self.addrow(flow.account_username, i, 1)            
+            self.addrow(humanable_bytes(flow.octets), i, 6)
+            self.addrow("%s %s" % (flow.class_name, flow.direction), i, 2, color=flow.class_color)
+            
+            #self.tableWidget.setRowHeight(i, 16)            
+            i+=1
+            c+=1
+        
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname+"_tab_0", self.tableWidget)
+        self.status_label.setText(u"Готово")
+  
+        
+        
+
 class NetFlowReport(QtGui.QMainWindow):
     def __init__(self, connection):
         """
@@ -558,9 +1055,6 @@ class NetFlowReport(QtGui.QMainWindow):
         self.button_forward.setText(u">")
         self.button_forward.setMaximumHeight(19)
         self.button_forward.setMaximumWidth(28)
-        #self.button_forward.setFlat(True)
-
-        #self.button.setMaximumHeight(17)
         self.status_label= QtGui.QLabel()
         #self.status_label.setMinimumWidth(600)
         
@@ -920,17 +1414,6 @@ class NetFlowReport(QtGui.QMainWindow):
             
             self.addrow(humanable_bytes(flow.octets), i, 6)
             self.addrow("%s %s" % (flow.class_name, flow.direction), i, 2, color=flow.class_color)
-            #self.addrow(flow.direction, i, 4)
-            
-            
-            
-            
-            #print dns.reversename.to_address(n)
-            #try:
-           #     self.addrow(socket.gethostbyaddr(flow.src_addr)[0], i, 5)
-            #except:
-            #    self.addrow(flow.src_addr, i, 5)
-
             
             self.tableWidget.setRowHeight(i, 16)
             
@@ -1093,12 +1576,10 @@ class StatReport(QtGui.QMainWindow):
         self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "configureAction", None, QtGui.QApplication.UnicodeUTF8))
 
         
-    def configure(self):
-        
+    def configure(self):        
         if self.child.exec_()!=1:
             return
-
-    
+        
         self.refresh()
                 
     def refresh(self):

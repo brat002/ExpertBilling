@@ -214,7 +214,7 @@ class SystemUserFrame(QtGui.QDialog):
 class SystemEbs(ebsTableWindow):
     def __init__(self, connection):
         columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP', u'Разрешённые адреса']
-        initargs = {"setname":"users_frame_header", "objname":"SystemEbsMDI", "winsize":(0,0,634,365), "wintitle":"Системные пользователи", "tablecolumns":columns}
+        initargs = {"setname":"users_frame_header", "objname":"SystemEbsMDI", "winsize":(0,0,634,365), "wintitle":"Системные пользователи", "tablecolumns":columns, "tablesize":(0,0,631,311)}
         super(SystemEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -242,6 +242,7 @@ class SystemEbs(ebsTableWindow):
 
         
     def retranslateUI(self, initargs):
+        super(SystemEbs, self).retranslateUI(initargs)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
     
     def addframe(self):
@@ -285,11 +286,8 @@ class SystemEbs(ebsTableWindow):
 
 
     def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
-        #nasses=Nas.objects.all().order_by('id')
-        #users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
+        #self.tableWidget.setSortingEnabled(False)
         users = self.connection.foselect("billservice_systemuser")
-        #self.tableWidget.setRowCount(nasses.count())
         self.tableWidget.setRowCount(len(users))
         i=0
         for user in users:
@@ -304,13 +302,12 @@ class SystemEbs(ebsTableWindow):
             self.addrow(user.last_ip, i,5)
             self.addrow(user.host, i,6)
             self.tableWidget.setRowHeight(i, 14)
-            i+=1
-        self.tableWidget.setColumnHidden(0, True)
-
+            i+=1            
             
-        #self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.setColumnHidden(0, True)
         HeaderUtil.getHeader(self.setname, self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
+        
+        #self.tableWidget.setSortingEnabled(True)
     
         
 class SystemUserChild(QtGui.QMainWindow):
