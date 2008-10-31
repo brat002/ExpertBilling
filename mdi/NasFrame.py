@@ -68,6 +68,116 @@ actions = {
                'pod': ''
                },
 }
+class ConfigureDialog(QtGui.QDialog):
+    def __init__(self):
+        super(ConfigureDialog, self).__init__()
+        self.setObjectName("ConfigureDialog")
+        self.resize(354, 484)
+        self.setMinimumSize(QtCore.QSize(354, 490))
+        self.setMaximumSize(QtCore.QSize(354, 490))
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.groupBox_options = QtGui.QGroupBox(self)
+        self.groupBox_options.setObjectName("groupBox_options")
+        self.groupBox_pptp = QtGui.QGroupBox(self.groupBox_options)
+        self.groupBox_pptp.setGeometry(QtCore.QRect(11, 25, 314, 101))
+        self.groupBox_pptp.setCheckable(True)
+        self.groupBox_pptp.setChecked(False)
+        self.groupBox_pptp.setObjectName("groupBox_pptp")
+        self.lineEdit_pptp_ip = QtGui.QLineEdit(self.groupBox_pptp)
+        self.lineEdit_pptp_ip.setGeometry(QtCore.QRect(11, 45, 292, 21))
+        self.lineEdit_pptp_ip.setObjectName("lineEdit_pptp_ip")
+        self.label_pptp_ip = QtGui.QLabel(self.groupBox_pptp)
+        self.label_pptp_ip.setGeometry(QtCore.QRect(11, 25, 292, 16))
+        self.label_pptp_ip.setObjectName("label_pptp_ip")
+        self.checkBox_pptp_pap = QtGui.QCheckBox(self.groupBox_pptp)
+        self.checkBox_pptp_pap.setGeometry(QtCore.QRect(11, 71, 93, 19))
+        self.checkBox_pptp_pap.setObjectName("checkBox_pptp_pap")
+        self.checkBox_pptp_chap = QtGui.QCheckBox(self.groupBox_pptp)
+        self.checkBox_pptp_chap.setGeometry(QtCore.QRect(110, 71, 94, 19))
+        self.checkBox_pptp_chap.setChecked(True)
+        self.checkBox_pptp_chap.setObjectName("checkBox_pptp_chap")
+        self.checkBox_pptp_mschap2 = QtGui.QCheckBox(self.groupBox_pptp)
+        self.checkBox_pptp_mschap2.setGeometry(QtCore.QRect(210, 71, 93, 19))
+        self.checkBox_pptp_mschap2.setObjectName("checkBox_pptp_mschap2")
+        self.groupBox_firewall = QtGui.QGroupBox(self.groupBox_options)
+        self.groupBox_firewall.setGeometry(QtCore.QRect(11, 270, 314, 61))
+        self.groupBox_firewall.setCheckable(False)
+        self.groupBox_firewall.setObjectName("groupBox_firewall")
+        self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_firewall)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.checkBox_configure_gateway = QtGui.QCheckBox(self.groupBox_firewall)
+        self.checkBox_configure_gateway.setObjectName("checkBox_configure_gateway")
+        self.gridLayout_4.addWidget(self.checkBox_configure_gateway, 0, 0, 1, 1)
+        self.groupBox_radius = QtGui.QGroupBox(self.groupBox_options)
+        self.groupBox_radius.setGeometry(QtCore.QRect(10, 140, 311, 122))
+        self.groupBox_radius.setCheckable(True)
+        self.groupBox_radius.setChecked(False)
+        self.groupBox_radius.setObjectName("groupBox_radius")
+        self.label_radiu_server_ip = QtGui.QLabel(self.groupBox_radius)
+        self.label_radiu_server_ip.setGeometry(QtCore.QRect(11, 25, 289, 16))
+        self.label_radiu_server_ip.setObjectName("label_radiu_server_ip")
+        self.lineEdit_radius_server_ip = QtGui.QLineEdit(self.groupBox_radius)
+        self.lineEdit_radius_server_ip.setGeometry(QtCore.QRect(11, 45, 289, 21))
+        self.lineEdit_radius_server_ip.setObjectName("lineEdit_radius_server_ip")
+        self.timeEdit_interim_update = QtGui.QTimeEdit(self.groupBox_radius)
+        self.timeEdit_interim_update.setGeometry(QtCore.QRect(11, 91, 289, 21))
+        self.timeEdit_interim_update.setMinimumTime(QtCore.QTime(0, 0, 30))
+        self.timeEdit_interim_update.setCurrentSection(QtGui.QDateTimeEdit.SecondSection)
+        self.timeEdit_interim_update.setCalendarPopup(False)
+        self.timeEdit_interim_update.setObjectName("timeEdit_interim_update")
+        self.label_interim = QtGui.QLabel(self.groupBox_radius)
+        self.label_interim.setGeometry(QtCore.QRect(11, 71, 289, 16))
+        self.label_interim.setObjectName("label_interim")
+        self.groupBox_security = QtGui.QGroupBox(self.groupBox_options)
+        self.groupBox_security.setGeometry(QtCore.QRect(11, 340, 314, 86))
+        self.groupBox_security.setObjectName("groupBox_security")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_security)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.checkBox_smtp_spamers = QtGui.QCheckBox(self.groupBox_security)
+        self.checkBox_smtp_spamers.setObjectName("checkBox_smtp_spamers")
+        self.gridLayout_2.addWidget(self.checkBox_smtp_spamers, 0, 0, 1, 1)
+        self.checkBox_malicious_trafic = QtGui.QCheckBox(self.groupBox_security)
+        self.checkBox_malicious_trafic.setObjectName("checkBox_malicious_trafic")
+        self.gridLayout_2.addWidget(self.checkBox_malicious_trafic, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_options, 0, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Выберите нужную конфигурацию", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_options.setTitle(QtGui.QApplication.translate("Dialog", "Выберите нужные опции", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_pptp.setTitle(QtGui.QApplication.translate("Dialog", "Включить PPTP сервер", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_pptp_ip.setToolTip(QtGui.QApplication.translate("Dialog", "Виртуальный адрес, который получит внутренний интерфейс PPTP сервера при подключении клиента.\n"
+"К примеру 192.168.10.1, 192.168.11.1, 172.31.3.1 и т.д.", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_pptp_ip.setText(QtGui.QApplication.translate("Dialog", "Виртуальный IP адрес PPTP сервера", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_pptp_pap.setText(QtGui.QApplication.translate("Dialog", "PAP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_pptp_chap.setText(QtGui.QApplication.translate("Dialog", "CHAP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_pptp_mschap2.setText(QtGui.QApplication.translate("Dialog", "MSCHAP2", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_firewall.setTitle(QtGui.QApplication.translate("Dialog", "Базовая настройка файервола", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_configure_gateway.setText(QtGui.QApplication.translate("Dialog", "Настроить для использования шлюзом в интернет", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius.setTitle(QtGui.QApplication.translate("Dialog", "Включить RADIUS авторизацию для PPTP", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radiu_server_ip.setToolTip(QtGui.QApplication.translate("Dialog", "IP адрес сервера с биллингом", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radiu_server_ip.setText(QtGui.QApplication.translate("Dialog", "IP адрес RADIUS сервера", None, QtGui.QApplication.UnicodeUTF8))
+        self.timeEdit_interim_update.setToolTip(QtGui.QApplication.translate("Dialog", "Интервал времени, через который на RADIUS сервер должны поступать Accounting пакеты", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_interim.setText(QtGui.QApplication.translate("Dialog", "Interim Interval", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_security.setTitle(QtGui.QApplication.translate("Dialog", "Безопасность", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_smtp_spamers.setText(QtGui.QApplication.translate("Dialog", "Защитить от SMTP спамеров", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_malicious_trafic.setText(QtGui.QApplication.translate("Dialog", "Защитить от вредоносного трафика", None, QtGui.QApplication.UnicodeUTF8))
+
+        ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
+        ipValidator = QtGui.QRegExpValidator(ipRx, self)
+        
+        self.lineEdit_pptp_ip.setValidator(ipValidator)
+        self.lineEdit_radius_server_ip.setValidator(ipValidator)
 
 class AddNasFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -694,10 +804,36 @@ class NasMdiChild(QtGui.QMainWindow):
         id=self.getSelectedId()
         if id==0:
             return
-        if self.connection.configureNAS(id):
-            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
+        child = ConfigureDialog()
+        if child.exec_()==1:
+            pptp_enable = child.groupBox_pptp.isChecked() == True
+            auth_types_pap=False
+            auth_types_chap = False
+            auth_types_mschap2 = False
+            pptp_ip='0.0.0.0'
+            if pptp_enable:
+                auth_types_pap = child.checkBox_pptp_pap.checkState()==2
+                auth_types_chap = child.checkBox_pptp_chap.checkState()==2
+                auth_types_mschap2 = child.checkBox_pptp_mschap2.checkState()==2
+                pptp_ip = unicode(child.lineEdit_pptp_ip.text())
+
+            radius_enable = child.groupBox_radius.isChecked()
+            radius_server_ip='0.0.0.0'
+            interim_update='00:00:00'
+            if radius_enable:
+                radius_server_ip = unicode(child.lineEdit_radius_server_ip.text())
+                interim_update = unicode(child.timeEdit_interim_update.text())
+                
+            configure_smtp = child.checkBox_smtp_spamers.checkState()==2
+            configure_gateway = child.checkBox_configure_gateway.checkState()==2
+            protect_malicious_trafic = child.checkBox_malicious_trafic.checkState()==2
+            
+            
+            
+            if self.connection.configureNAS(id,pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic):
+                QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+            else:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
 
 
 
@@ -773,3 +909,5 @@ class NasMdiChild(QtGui.QMainWindow):
             self.delAction.setDisabled(False)
             self.configureAction.setDisabled(False)
             
+            
+

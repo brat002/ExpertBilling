@@ -11,7 +11,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs_ukr'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs6'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'mikrobill'             # Not used with sqlite3.
 DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
 DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.

@@ -1702,15 +1702,15 @@ class TarifFrame(QtGui.QDialog):
             access_parameters = Object()
             previous_ipn_for_vpn_state = False
             
-            if unicode(self.tarif_name_edit.text())=="":
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
-                return
-            if unicode(self.access_time_edit.currentText())=="":
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
-                return
-            if (unicode(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
-                QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть указано только для VPN планов")
-                return
+        if unicode(self.tarif_name_edit.text())=="":
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
+            return
+        if unicode(self.access_time_edit.currentText())=="":
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
+            return
+        if (unicode(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть указано только для VPN планов")
+            return
         try:
             
             model.name = unicode(self.tarif_name_edit.text())

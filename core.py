@@ -40,7 +40,86 @@ config = ConfigParser.ConfigParser()
 
 from DBUtils.PooledDB import PooledDB
 
-from logger import redirect_std
+rules={
+       
+        'allow_pptp':u"""/ppp profile add name=internet only-one=yes use-compression=no use-encryption=yes use-vj-compression=yes local-address=%s;/interface pptp-server server set enabled=yes authentication=%s default-profile=internet;
+        """,
+        'allow_radius':u"""
+        /ppp aaa set accounting=yes use-radius=yes interim-update=%s; /radius add address=%s disabled=no secret=%s timeout=3000;""",
+        'smtp_protect' : u"""
+        /ip firewall filter
+
+add chain=forward protocol=tcp dst-port=25 src-address-list=spammer
+action=drop comment="BLOCK SPAMMERS OR INFECTED USERS"
+
+add chain=forward protocol=tcp dst-port=25 connection-limit=30,32 limit=50,5 action=add-src-to-address-list
+address-list=spammer address-list-timeout=30m comment="Detect and add-list SMTP virus or spammers"
+
+/system script
+add name="spammers" source=":log error \"----------Users detected like \
+    SPAMMERS -------------\";
+\n:foreach i in \[/ip firewall address-list find \
+    list=spammer\] do={:set usser \[/ip firewall address-list get \$i \
+    address\];
+\n:foreach j in=\[/ip hotspot active find address=\$usser\] \
+    do={:set ip \[/ip hotspot active get \$j user\];
+\n:log error \$ip;
+\n:log \
+    error \$usser} };" policy=ftp,read,write,policy,test,winbox  """,
+    
+    "malicious_trafic":"""
+    
+    /ip firewall filter
+add chain=forward connection-state=established comment="allow established connections"  
+add chain=forward connection-state=related comment="allow related connections"
+add chain=forward connection-state=invalid action=drop comment="drop invalid connections"  
+
+add chain=virus protocol=tcp dst-port=135-139 action=drop comment="Drop Blaster Worm" 
+add chain=virus protocol=udp dst-port=135-139 action=drop comment="Drop Messenger Worm"    
+add chain=virus protocol=tcp dst-port=445 action=drop comment="Drop Blaster Worm" 
+add chain=virus protocol=udp dst-port=445 action=drop comment="Drop Blaster Worm" 
+add chain=virus protocol=tcp dst-port=593 action=drop comment="________" 
+add chain=virus protocol=tcp dst-port=1024-1030 action=drop comment="________" 
+add chain=virus protocol=tcp dst-port=1080 action=drop comment="Drop MyDoom" 
+add chain=virus protocol=tcp dst-port=1214 action=drop comment="________" 
+add chain=virus protocol=tcp dst-port=1363 action=drop comment="ndm requester" 
+add chain=virus protocol=tcp dst-port=1364 action=drop comment="ndm server" 
+add chain=virus protocol=tcp dst-port=1368 action=drop comment="screen cast" 
+add chain=virus protocol=tcp dst-port=1373 action=drop comment="hromgrafx" 
+add chain=virus protocol=tcp dst-port=1377 action=drop comment="cichlid" 
+add chain=virus protocol=tcp dst-port=1433-1434 action=drop comment="Worm" 
+add chain=virus protocol=tcp dst-port=2745 action=drop comment="Bagle Virus" 
+add chain=virus protocol=tcp dst-port=2283 action=drop comment="Drop Dumaru.Y" 
+add chain=virus protocol=tcp dst-port=2535 action=drop comment="Drop Beagle" 
+add chain=virus protocol=tcp dst-port=2745 action=drop comment="Drop Beagle.C-K" 
+add chain=virus protocol=tcp dst-port=3127-3128 action=drop comment="Drop MyDoom" 
+add chain=virus protocol=tcp dst-port=3410 action=drop comment="Drop Backdoor OptixPro"
+add chain=virus protocol=tcp dst-port=4444 action=drop comment="Worm" 
+add chain=virus protocol=udp dst-port=4444 action=drop comment="Worm" 
+add chain=virus protocol=tcp dst-port=5554 action=drop comment="Drop Sasser" 
+add chain=virus protocol=tcp dst-port=8866 action=drop comment="Drop Beagle.B" 
+add chain=virus protocol=tcp dst-port=9898 action=drop comment="Drop Dabber.A-B" 
+add chain=virus protocol=tcp dst-port=10080 action=drop comment="Drop MyDoom.B" 
+add chain=virus protocol=tcp dst-port=12345 action=drop comment="Drop NetBus" 
+add chain=virus protocol=tcp dst-port=17300 action=drop comment="Drop Kuang2" 
+add chain=virus protocol=tcp dst-port=27374 action=drop comment="Drop SubSeven" 
+add chain=virus protocol=tcp dst-port=65506 action=drop comment="Drop PhatBot, Agobot, Gaobot"
+
+add chain=forward action=jump jump-target=virus comment="jump to the virus chain"
+
+add chain=forward action=accept protocol=tcp dst-port=80 comment="Allow HTTP" 
+add chain=forward action=accept protocol=tcp dst-port=25 comment="Allow SMTP" 
+add chain=forward protocol=tcp comment="allow TCP"
+add chain=forward protocol=icmp comment="allow ping"
+add chain=forward protocol=udp comment="allow udp"
+add chain=forward action=drop comment="drop everything else"
+
+ """,
+    'gateway':u"""
+    /ip firewall nat add chain=srcnat src-address=0.0.0.0/0 action=masquerade
+    """
+        
+       }
 
 #redirect_std("core", redirect=config.get("stdout", "redirect"))
 #from mdi.helpers import Object as Object
@@ -1998,15 +2077,64 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return True
 
     @authentconn
-    def configureNAS(self, id, cur=None, connection=None):
-        cur.execute("SELECT ipaddress, login, password, confstring FROM nas_nas WHERE id=%s" % id)
+    def configureNAS(self, id, pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic, cur=None, connection=None):
+        cur.execute("SELECT ipaddress, login, password, secret FROM nas_nas WHERE id=%s" % id)
         row = cur.fetchone()
         #print row
-        #str(model.ipaddress), str(model.login), str(model.password), str(model.confstring)
+        confstring = ''
+        #print 1
+        if pptp_enable:
+            auth_types=''
+            #print 2
+            if auth_types_pap==auth_types_chap==auth_types_mschap2:
+                #print 3
+                auth_types="pap, chap, mschap2"
+            else:    
+                if auth_types_pap==True:
+                    auth_types='pap'
+                    
+                if auth_types_chap==True and auth_types_pap==True:
+                    auth_types+=','
+                    
+                if auth_types_chap==True:
+                    auth_types+='chap'
+                    
+                if auth_types_mschap2==True and (auth_types_chap==True or auth_types_pap==True):
+                    auth_types+=','
+                    
+                if auth_types_mschap2==True:
+                    auth_types+='mschap2'
+                
+            confstring = unicode(rules['allow_pptp'] % (pptp_ip, auth_types))
+            #print 4
+            #print rules['allow_pptp'] % (pptp_ip, auth_types)
+            
+        if radius_enable==True:
+            #print rules['allow_radius'],{'interim_update': interim_update, 'secret':row['secret'], 'server_ip':radius_server_ip}
+            #print rules['allow_radius'] % {'interim_update': interim_update, 'secret':row['secret'], 'server_ip':radius_server_ip}
+            data = rules['allow_radius'] % (interim_update, row['secret'], radius_server_ip)
+            #print data
+            confstring+=unicode(data)
+            #print 5
+            
+        if configure_smtp==True:
+            confstring+=rules['smtp_protect']
+            #print 6
+            
+        if configure_gateway==True:
+            confstring+=rules['gateway']
+            #print 7
+        
+        if protect_malicious_trafic==True:
+        
+            confstring+=rules['malicious_trafic']
+            #print 8
+        
+        #print confstring
         try:
             a=SSHClient(row["ipaddress"], 22,row["login"], row["password"])
             #print configuration
-            a.send_command(row["confstring"])
+            a.send_command(confstring)
             a.close()
         except Exception, e:
             print e
