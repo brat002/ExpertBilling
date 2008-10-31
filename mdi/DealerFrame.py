@@ -503,7 +503,12 @@ class AddDealerFrame(QtGui.QMainWindow):
             (SELECT sum(nominal) FROM billservice_card WHERE activated is not Null and id IN (SELECT id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as activated_nominals_sum
             FROM billservice_dealer as dealer WHERE id=%s;
             """ % self.model.id)
-            self.label_last_sale_date_z.setText(unicode(data.last_sale.strftime(strftimeFormat)))
+            
+            try:
+                self.label_last_sale_date_z.setText(unicode(data.last_sale.strftime(strftimeFormat)))
+            except Exception, e:
+                print e
+                
             self.lineEdit_buy_cards.setText(unicode(data.cardcount or 0))
             self.lineEdit_pay_sum.setText(unicode(data.pay or 0))
             self.lineEdit_buy_cards_sum.setText(unicode(data.for_pay or 0))
@@ -754,7 +759,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
 
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/nas.png"))
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
         widget.setItem(x,y,headerItem)
 
 
@@ -771,6 +776,8 @@ class DealerMdiChild(QtGui.QMainWindow):
         (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id) as pay
         FROM billservice_dealer as dealer WHERE dealer.deleted=False ORDER BY id;""")
         #self.tableWidget.setRowCount(nasses.count())
+        if data is None:
+            data=[]
         self.tableWidget.setRowCount(len(data))
         i=0
         [u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка", u"Отсрочка"]
