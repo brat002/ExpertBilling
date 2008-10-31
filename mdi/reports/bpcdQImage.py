@@ -18,9 +18,13 @@ class bpcdQImage(object):
         print args
         print kwargs
         imgs  = self.connection.makeChart(*args, **kwargs)
-        ret = imgs.pop()
+        
         self.options = {}
-        kwargs['return'].update(ret)
+        try:
+            ret = imgs.pop()
+            kwargs['return'].update(ret)
+        except:
+            pass
         
         '''qimgs = []
         for img in imgs:

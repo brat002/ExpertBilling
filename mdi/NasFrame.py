@@ -157,7 +157,7 @@ class ConfigureDialog(QtGui.QDialog):
         self.groupBox_options.setTitle(QtGui.QApplication.translate("Dialog", "Выберите нужные опции", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_pptp.setTitle(QtGui.QApplication.translate("Dialog", "Включить PPTP сервер", None, QtGui.QApplication.UnicodeUTF8))
         self.lineEdit_pptp_ip.setToolTip(QtGui.QApplication.translate("Dialog", "Виртуальный адрес, который получит внутренний интерфейс PPTP сервера при подключении клиента.\n"
-"К примеру 192.168.10.1, 192.168.11.1, 172.31.3.1 и т.д.", None, QtGui.QApplication.UnicodeUTF8))
+                                                                      "К примеру 192.168.10.1, 192.168.11.1, 172.31.3.1 и т.д.", None, QtGui.QApplication.UnicodeUTF8))
         self.label_pptp_ip.setText(QtGui.QApplication.translate("Dialog", "Виртуальный IP адрес PPTP сервера", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_pptp_pap.setText(QtGui.QApplication.translate("Dialog", "PAP", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_pptp_chap.setText(QtGui.QApplication.translate("Dialog", "CHAP", None, QtGui.QApplication.UnicodeUTF8))
@@ -574,58 +574,25 @@ class NasEbs(ebsTableWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        self.toolBar.setIconSize(QtCore.QSize(18,18))
-        """self.addAction = QtGui.QAction(self)
-        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
-
-        self.delAction = QtGui.QAction(self)
-        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
-        
-        self.editAction = QtGui.QAction(self)
-        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
-
-        self.configureAction = QtGui.QAction(self)
-        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
-        self.configureAction.setMenuRole(QtGui.QAction.NoRole)
-        
-        self.editAction = QtGui.QAction(self)
-        self.editAction.setIcon(QtGui.QIcon("images/open.png"))"""
-        
+        self.toolBar.setIconSize(QtCore.QSize(18,18))      
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        """self.tableWidget.addAction(self.editAction)
-        self.tableWidget.addAction(self.addAction)
-        self.tableWidget.addAction(self.delAction)
-        self.tableWidget.addAction(self.configureAction)"""
-        
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        """self.toolBar.addAction(self.addAction)
-        self.toolBar.addAction(self.delAction)
-        self.toolBar.addAction(self.configureAction)"""
+
         
     def ebsPostInit(self, initargs):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
-        """self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.editframe)
-        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
-        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
-        self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)"""
         actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("configureAction", "Конфигурировать", "images/configure.png", self.configure)]
         objDict = {self.tableWidget:["editAction", "addAction", "delAction", "configureAction"], self.toolBar:["addAction", "delAction", "configureAction"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        #self.delNodeLocalAction(self.delAction, self.configureAction)
         self.delNodeLocalAction()
         
     def retranslateUI(self, initargs):
         super(NasEbs, self).retranslateUI(initargs)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        """
-        self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))     
-        self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "Конфигурировать", None, QtGui.QApplication.UnicodeUTF8))
-        """
+
     
     def addframe(self):
         model=None
@@ -637,10 +604,36 @@ class NasEbs(ebsTableWindow):
         id=self.getSelectedId()
         if id==0:
             return
-        if self.connection.configureNAS(id):
-            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
+        child = ConfigureDialog()
+        if child.exec_()==1:
+            pptp_enable = child.groupBox_pptp.isChecked() == True
+            auth_types_pap=False
+            auth_types_chap = False
+            auth_types_mschap2 = False
+            pptp_ip='0.0.0.0'
+            if pptp_enable:
+                auth_types_pap = child.checkBox_pptp_pap.checkState()==2
+                auth_types_chap = child.checkBox_pptp_chap.checkState()==2
+                auth_types_mschap2 = child.checkBox_pptp_mschap2.checkState()==2
+                pptp_ip = unicode(child.lineEdit_pptp_ip.text())
+
+            radius_enable = child.groupBox_radius.isChecked()
+            radius_server_ip='0.0.0.0'
+            interim_update='00:00:00'
+            if radius_enable:
+                radius_server_ip = unicode(child.lineEdit_radius_server_ip.text())
+                interim_update = unicode(child.timeEdit_interim_update.text())
+                
+            configure_smtp = child.checkBox_smtp_spamers.checkState()==2
+            configure_gateway = child.checkBox_configure_gateway.checkState()==2
+            protect_malicious_trafic = child.checkBox_malicious_trafic.checkState()==2
+            
+            
+            
+            if self.connection.configureNAS(id,pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic):
+                QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+            else:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
 
     def delete(self):
         id=self.getSelectedId()
@@ -678,7 +671,7 @@ class NasEbs(ebsTableWindow):
 
 
     def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
+        #self.tableWidget.setSortingEnabled(False)
         nasses = self.connection.foselect("nas_nas")
         self.tableWidget.setRowCount(len(nasses))
         i=0
@@ -687,13 +680,13 @@ class NasEbs(ebsTableWindow):
             self.addrow(nas.name, i,1)
             self.addrow(nas.type, i,2)
             self.addrow(nas.ipaddress, i,3)
-            self.tableWidget.setRowHeight(i, 14)
+            #self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
         #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.setSortingEnabled(True)
+        #self.tableWidget.setSortingEnabled(True)
     
 
     def delNodeLocalAction(self):
@@ -890,7 +883,7 @@ class NasMdiChild(QtGui.QMainWindow):
             self.addrow(nas.ipaddress, i,3)
             self.tableWidget.setRowHeight(i, 14)
             i+=1
-        self.tableWidget.setColumnHidden(0, True)
+        #self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
         #self.tableWidget.resizeColumnsToContents()

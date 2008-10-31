@@ -14,17 +14,12 @@ from helpers import HeaderUtil, SplitterUtil
 from types import BooleanType
 import copy
 
-#from django.contrib.auth.models import User
-
-#from billservice.models import Account, AccountTarif,  Transaction, TransactionType,   Tariff, AccountTarif, SettlementPeriod, TimePeriod, AccessParameters, TimeSpeed, TimeAccessService, TimeAccessNode, OneTimeService, PeriodicalService, TrafficLimit, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic
-#from nas.models import IPAddressPool, Nas, TrafficClass
-#from django.db import transaction
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
 from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
 import time
-from Reports import TransactionsReport
+from Reports import TransactionsReportEbs as TransactionsReport
 
 from helpers import tableFormat
 from helpers import transaction, makeHeaders

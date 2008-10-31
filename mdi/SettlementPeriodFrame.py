@@ -2,6 +2,7 @@
 
 from PyQt4 import QtCore, QtGui
 
+from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
 from helpers import Object as Object
@@ -217,6 +218,118 @@ class AddSettlementPeriod(QtGui.QDialog):
 
 
 
+
+class SettlementPeriodEbs(ebsTableWindow):
+    def __init__(self, connection):
+        columns=['Id', u'Название', u'Начинается при активации', u'Начало', u'Продолжительность в периодах', u'Продолжительность в секундах']
+        initargs = {"setname":"setper_frame_period", "objname":"SettlementPeriodMDI", "winsize":(0,0,827,476), "wintitle":"Расчётные периоды", "tablecolumns":columns, "tablesize":(0,0,821,401)}
+        super(SettlementPeriodEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.menubar = QtGui.QMenuBar(self)
+        self.menubar.setGeometry(QtCore.QRect(0,0,827,21))
+        self.menubar.setObjectName("menubar")
+        self.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(self)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
+    def ebsPostInit(self, initargs):
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_period)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+
+        actList=[("addAction", "Добавить", "images/add.png", self.add_period), ("editAction", "Настройки", "images/open.png", self.edit_period), ("delAction", "Удалить", "images/del.png", self.del_period)]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction"], self.toolBar:["addAction", "delAction"]}
+        self.actionCreator(actList, objDict)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.delNodeLocalAction()
+        
+    def retranslateUI(self, initargs):
+        super(SettlementPeriodEbs, self).retranslateUI(initargs)
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+
+    def add_period(self):
+        child=AddSettlementPeriod(connection=self.connection)
+        child.exec_()
+        self.refresh()
+
+    def del_period(self):
+        '''id=self.getSelectedId()
+
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.delete("DELETE FROM billservice_settlementperiod WHERE id=%d" % id)
+
+        self.refresh()'''
+        id=self.getSelectedId()
+        if id>0:
+            if self.connection.sql("""SELECT id FROM billservice_tariff WHERE (settlement_period_id=%d)""" % id):
+                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
+                return
+            elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                try:
+                    #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
+                    self.connection.iddelete("billservice_settlementperiod", id)
+                    self.connection.commit()
+                    self.refresh()
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
+                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
+
+
+    def edit_period(self):
+        id=self.getSelectedId()
+        try:
+            model=self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" %id)
+        except:
+            return
+
+
+        child=AddSettlementPeriod(connection=self.connection, model=model)
+        child.exec_()
+
+        self.refresh()
+
+
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/sp.png"))
+        self.tableWidget.setItem(x,y,headerItem)
+
+    def refresh(self):
+        self.tableWidget.setSortingEnabled(False)
+        periods = self.connection.foselect("billservice_settlementperiod")
+        self.tableWidget.setRowCount(len(periods))
+        #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
+        i=0
+        for period in periods:
+            self.addrow(period.id, i,0)
+            self.addrow(period.name, i,1)
+            self.addrow(period.autostart, i,2)
+            self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
+            self.addrow(period.length_in, i,4)            
+            self.addrow(period.length, i,5)
+            #self.tableWidget.setRowHeight(i, 17)
+            self.tableWidget.setColumnHidden(0, True)
+            #self.tableWidget.setRowHeight(i, 14)
+            i+=1
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
+        self.tableWidget.setSortingEnabled(True)
+            
+    def delNodeLocalAction(self):
+        super(SettlementPeriodEbs, self).delNodeLocalAction([self.delAction])
+
 class SettlementPeriodChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
@@ -362,12 +475,10 @@ class SettlementPeriodChild(QtGui.QMainWindow):
     def saveHeader(self, *args):
         if self.tableWidget.rowCount():
             HeaderUtil.saveHeader(self.setname, self.tableWidget)
+            
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
-        #periods=SettlementPeriod.objects.all().order_by('id')
-        #periods=self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE deleted=FALSE ORDER BY id")
         periods = self.connection.foselect("billservice_settlementperiod")
-        #self.tableWidget.setRowCount(periods.count())
         self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
@@ -376,12 +487,11 @@ class SettlementPeriodChild(QtGui.QMainWindow):
             self.addrow(period.name, i,1)
             self.addrow(period.autostart, i,2)
             self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
-            self.addrow(period.length_in, i,4)
-            
+            self.addrow(period.length_in, i,4)            
             self.addrow(period.length, i,5)
-            self.tableWidget.setRowHeight(i, 17)
+            #self.tableWidget.setRowHeight(i, 17)
             self.tableWidget.setColumnHidden(0, True)
-            self.tableWidget.setRowHeight(i, 14)
+            #self.tableWidget.setRowHeight(i, 14)
             i+=1
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
