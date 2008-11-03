@@ -230,10 +230,10 @@ def in_period(time_start, length, repeat_after, now=None):
             delta_days = now - time_start
             
             #Когда будет начало в текущем периоде.
-            nums,ost = divmod(delta_days.days*86400+delta_days.seconds, 604800)
-            tnc = now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc = tnc+datetime.timedelta(seconds=length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
+            tnc=start+relativedelta(weeks=nums)
+            tkc=tnc+relativedelta(weeks=1)
+
             #print time_start, delta_days.seconds
             if now>=tnc and now<=tkc:
                 #print "WEEK TRUE"
@@ -301,10 +301,10 @@ def in_period_info(time_start, length, repeat_after, now=None):
         elif repeat_after=='WEEK':
             delta_days=now - time_start
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 604800)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
+            tnc=start+relativedelta(weeks=nums)
+            tkc=tnc+relativedelta(weeks=1)
+
             if now>=tnc and now<=tkc:
                 result=True
 
@@ -317,8 +317,10 @@ def in_period_info(time_start, length, repeat_after, now=None):
 
         elif repeat_after=='YEAR':
             #Февраль!
-            tnc=datetime.datetime(now.year, time_start.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
-            tkc=tnc+datetime.timedelta(seconds=length)
+            
+            tnc=start+relativedelta(years=relativedelta(now, time_start).years)
+            tkc=tnc+relativedelta(years=1)
+            
             if now>=tnc and now<=tkc:
                 result=True
 
@@ -381,9 +383,9 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             length=604800
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
+            tnc=start+relativedelta(weeks=nums)
+            tkc=tnc+relativedelta(weeks=1)
+
             return (tnc, tkc, length)
         elif repeat_after=='MONTH':
             if prev==False:
@@ -399,12 +401,9 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         elif repeat_after=='YEAR':
             #Февраль!
             #To-DO: Добавить проверку на prev 
-            tnc=datetime.datetime(now.year, time_start.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
-            if calendar.isleap(tnc.year)==True:
-                length=366
-            else:
-                length=365
-            tkc=tnc+datetime.timedelta(seconds=length)
+            tnc=start+relativedelta(years=relativedelta(now, time_start).years)
+
+            tkc=tnc+relativedelta(years=1)
             delta=tkc-tnc
             return (tnc, tkc, delta.seconds)
 
