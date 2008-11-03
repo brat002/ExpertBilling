@@ -460,7 +460,7 @@ class AddCards(QtGui.QDialog):
         self.nominal_lineEdit = QtGui.QLineEdit(self.params_groupBox)
         self.nominal_lineEdit.setGeometry(QtCore.QRect(110, 50, 171, 20))
         self.nominal_lineEdit.setObjectName("nominal_lineEdit")
-        self.lineEdit_pay.setValidator(QtGui.QDoubleValidator(self.lineEdit_pay))
+        self.nominal_lineEdit.setValidator(QtGui.QDoubleValidator(self.nominal_lineEdit))
         self.count_label = QtGui.QLabel(self.params_groupBox)
         self.count_label.setGeometry(QtCore.QRect(10, 80, 80, 21))
         self.count_label.setObjectName("count_label")
