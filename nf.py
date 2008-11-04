@@ -25,8 +25,8 @@ import gc
 #redirect_std("nf", redirect=config.get("stdout", "redirect"))
 
 import threading
-import gc
-from DBUtils.PooledDB import PooledDB
+#import gc
+#from DBUtils.PooledDB import PooledDB
 
 trafficclasses_pool = []
 dcache   = {}
@@ -427,16 +427,21 @@ class FlowDequeThread(Thread):
             gc.collect()
             
  
+#TODO: save when overflow
+#TODO:save when error
+#TODO: executemany
 class DatabaseThread(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
+        #self.connection._con._con.set_isolation_level(0)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
+        
     def run(self):
         while True:
             dbLock.acquire()
+            executed = None
             try:
                 flst = databaseQueue.pop(0)
                 dbLock.release()
@@ -445,13 +450,14 @@ class DatabaseThread(Thread):
                 #print "empty dbqueue"
                 time.sleep(2)
                 continue
-            
+            executed = 0
             #print "dbqueue len: ", len(databaseQueue)
             try:
                 for flow in flst:
                     self.cur.execute("""SELECT * FROM append_netflow(%d, '%s', '%s','%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);""" % (flow.nas_id,flow.src_addr, flow.dst_addr, flow.next_hop, flow.in_index, flow.out_index, flow.packets, flow.octets, flow.src_port, flow.dst_port, flow.tcp_flags, flow.protocol, flow.tos, flow.source_as, flow.dst_as, flow.src_netmask_length, flow.dst_netmask_length))
                     #print self.cur.fetchone()
-                    print "flow src: %s ---- dst %s" % (flow.src_addr, flow.dst_addr)
+                    #print "flow src: %s ---- dst %s" % (flow.src_addr, flow.dst_addr)
+                    executed += 1
                     del flow
                 '''for ifl in range(len(flst)):
                     flow = flst.pop()
@@ -460,11 +466,37 @@ class DatabaseThread(Thread):
                 
                 self.cur.connection.commit()
             except Exception, ex:
+                if executed:
+                    try:
+                        self.cur.connection.commit()
+                    except: pass
+                    flsLeft = flst[executed:]
+                    if flsLeft:
+                        dbLock.acquire()
+                        try:
+                            databaseQueue.insert(0, flsLeft)
+                            dbLock.release()
+                        except Exception, ex:
+                            dbLock.release()
+                if executed == 0:
+                    dbLock.acquire()
+                    try:
+                        databaseQueue.insert(0, flst)
+                        dbLock.release()
+                    except Exception, ex:
+                        dbLock.release()
                 print "dbThread error: ", repr(ex)
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.InterfaceError):
-                    #dbLock.acquire()
-                    #databaseQueue.insert(0, flst)
-                    #dbLock.release()
+                    try:
+                        self.cur = self.connection.cursor()
+                    except Exception, ex:
+                        print repr(ex)
+                        time.sleep(5)
+                        try:
+                            self.connection = pool.connection()
+                            self.connection._con._con.set_client_encoding('UTF8')
+                        except Exception, ex:
+                            print repr(ex)
                     print "dbQueue len: ", len(databaseQueue)
                     time.sleep(10)
             del flst
@@ -473,8 +505,8 @@ class ServiceThread(Thread):
     def __init__(self):
         
         self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.connection._con._con.set_isolation_level(0)
+        self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
         Thread.__init__(self)
         
@@ -486,40 +518,53 @@ class ServiceThread(Thread):
         global databaseQueue
         while True:
             try:
-                try:
-                    self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
-                    nasvals = self.cur.fetchall()
-                    nascache = dict(nasvals)
-                    #print nascache
-                    del nasvals
-                except Exception, ex:
-                    print "Servicethread nascache exception: ", repr(ex)
-                    
-                try:
-                    self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
-                    icTmp = {}
-                    ipncache = icTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
-                except Exception, ex:
-                    print "Servicethread ipncache exception: ", repr(ex)
-                    
-                try:
-                    self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
-                    vcTmp = {}
-                    vpncache = vcTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
-                except Exception, ex:
-                    print "Servicethread vpncache exception: ", repr(ex)
-                 
-                """try: 
-                    if len(databaseQueue) > 1000000:
-                        databaseQueue = databaseQueue[10000:]
-                except Exception, ex:
-                    print "Servicethread dbQueue exception: ", repr(ex)    """
-                    
-                gc.collect()
-                time.sleep(60)
+                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
+                nasvals = self.cur.fetchall()
+                nascache = dict(nasvals)
+                #print nascache
+                del nasvals
             except Exception, ex:
-                print "Servicethread: ", repr(ex)
-                time.sleep(60)
+                print "Servicethread nascache exception: ", repr(ex)
+                try:
+                    self.cur = self.connection.cursor()
+                except Exception, ex:
+                    print repr(ex)
+                    time.sleep(5)
+                    try:
+                        self.connection = pool.connection()
+                        self.connection._con._con.set_client_encoding('UTF8')
+                    except Exception, ex:
+                        print repr(ex)
+                        time.sleep(10)
+                        contunue
+                
+            try:
+                self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+                icTmp = {}
+                ipncache = icTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+            except Exception, ex:
+                print "Servicethread ipncache exception: ", repr(ex)
+                
+            try:
+                self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
+                vcTmp = {}
+                vpncache = vcTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+            except Exception, ex:
+                print "Servicethread vpncache exception: ", repr(ex)
+             
+            """try: 
+                if len(databaseQueue) > 1000000:
+                    databaseQueue = databaseQueue[10000:]
+            except Exception, ex:
+                print "Servicethread dbQueue exception: ", repr(ex)"""
+                
+            try:
+                self.cur.connection.commit()
+            except: pass
+                
+            gc.collect()
+            time.sleep(60)
+               
             
         
 def main ():
@@ -552,7 +597,7 @@ def main ():
     server_nf = Starter((config.get("nf", "host"), int(config.get("nf", "port"))), NetFlowCollectHandle)
     server_nf.start()
     
-    cur.connection.commit()
+    #cur.connection.commit()
     """'''addrs = socket.getaddrinfo(config.get("nf", "host"), config.get("nf", "port"), socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
     socks = []
@@ -608,26 +653,9 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
 
 if __name__=='__main__':
     config.read("ebs_config.ini")
-    '''try:
-        pool = PooledDB(
-            mincached=1,
-            maxcached=2,
-            blocking=True,
-            #maxusage=20, 
-            creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                                   config.get("db", "username"),
-                                                                   config.get("db", "host"),
-                                                                   config.get("db", "password"))
-           )        
-        db_connection = pool.connection()
-        db_connection._con._con.set_client_encoding('UTF8')
-        cur = db_connection.cursor()
-    except Exception, ex:
-        print "Unable to connect to the database ", ex
-        sys.exit()'''
+
     pool = PooledDB(
-        mincached=3,
+        mincached=2,
         maxcached=9,
         blocking=True,
         creator=psycopg2,
@@ -636,8 +664,9 @@ if __name__=='__main__':
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
-    db_connection = pool.connection() 
-    cur = db_connection.cursor()
+
+    #db_connection = pool.connection() 
+    #cur = db_connection.cursor()
     flowQueue = []
     databaseQueue = []
     sleepTime = 291.0
