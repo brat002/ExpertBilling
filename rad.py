@@ -106,7 +106,7 @@ class HandleNA(HandleBase):
         
         if row is not None:
             self.packetobject.secret = str(row[1])
-            return self.auth_NA()
+            return "", self.auth_NA()
         
     def get_nas_info(self):
         row = get_nas_by_ip(self.cur, self.nasip)
@@ -149,7 +149,7 @@ class HandleAuth(HandleBase):
             defaults = get_default_speed_parameters(self.cur, tarif_id)
             speeds = get_speed_parameters(self.cur, tarif_id)
             if defaults is None:
-                return None
+                return "0/0"
             result=[]
             #print speeds
 
@@ -194,15 +194,15 @@ class HandleAuth(HandleBase):
             #----
             #self.connection.close()
             #----
-            return None
-
+            return '',None
+        #print 1
         self.nas_id=str(row[0])
         self.nas_type=row[2]
         self.multilink = row[3]
         self.secret = str(row[1])
         #print str(row[1])
         self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
-        
+        #print 2
         try:
             station_id=self.packetobject['Calling-Station-Id'][0]
         except:
@@ -210,14 +210,14 @@ class HandleAuth(HandleBase):
         #print self.replypacket.secret
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         #print 1, row
-        
+        #print 3
         if row==None:
             self.cur.close()
             #----
             #self.connection.close()
             #----
             return self.auth_NA()
-        
+        #print 4
         #print 2
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
@@ -230,7 +230,7 @@ class HandleAuth(HandleBase):
            
             return self.auth_NA()
 
-
+        #print 5
         #TimeAccess
         rows = time_periods_by_tarif_id(self.cur, tarif_id)
         allow_dial=False
@@ -241,7 +241,7 @@ class HandleAuth(HandleBase):
                 #print 3
                 break
         #print 3
-
+        #print 6
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
             #print 4
             self.replypacket.code=2
@@ -253,6 +253,7 @@ class HandleAuth(HandleBase):
             #self.replypacket.AddAttribute('Framed-Routing', 0)
             self.create_speed(tarif_id, speed=speed)
             self.cur.close()
+            #print 7
             #----
             #self.connection.close()
             #----
@@ -262,6 +263,7 @@ class HandleAuth(HandleBase):
             #self.connection.close()
             #----
             #print 5
+            #print 8
             return self.auth_NA()
         #print 5
         #data_to_send=replypacket.ReplyPacket()
@@ -549,7 +551,7 @@ class RadiusAuth(BaseAuth):
 
     def handle(self):
         global numauth
-        if numauth>=80:
+        if numauth>=50:
             print "PREVENTING DoS"
             
             return
@@ -562,14 +564,15 @@ class RadiusAuth(BaseAuth):
         addrport=self.client_address
         #print addrport
         #print 1
-        print "BEFORE AUTH:%.20f" % (clock()-t)
+        #print "BEFORE AUTH:%.20f" % (clock()-t)
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         if access_type in ['PPTP', 'PPPOE']:
+            print "Auth Type %s" % access_type
             #-----
             coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.server.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
-            if packetfromcore is None: numauth-=1; return
+            if packetfromcore is None: numauth-=1; print "Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]);return
             #-----
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
             returndata=authobject.ReturnPacket()
@@ -605,7 +608,7 @@ class RadiusAuth(BaseAuth):
             del access_type
             del returndata
         numauth-=1
-        print "AFTER AUTH:%.20f" % (clock()-t)
+        print "AUTH time:%.8f" % (clock()-t)
 
 class RadiusAcct(BaseAuth):
 

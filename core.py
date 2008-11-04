@@ -1347,7 +1347,9 @@ class limit_checker(Thread):
                               sp_length_in, \
                               autostart_sp = row 
                     #print "limit check", account_id
-    
+                    if in_direction==out_direction==False:
+                        continue
+                    
                     if limit_id==None:
                         #пишем в базу состояние пользователя
                         self.cur.execute(

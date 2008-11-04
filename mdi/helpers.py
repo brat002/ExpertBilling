@@ -81,7 +81,6 @@ def setTableHeight(tableWidget):
         tableWidget.verticalHeader().setDefaultSectionSize(height+3)
     except Exception, ex:
         print "Error in setTableHeight: ", ex
-
 def card_template_parser(command_string='', command_dict={}):
     
     import re
