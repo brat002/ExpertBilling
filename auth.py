@@ -30,7 +30,7 @@ class Auth:
             self.plainpassword=packetfromcore.password
         except Exception, e:
             print e
-            
+
         self.ident=''
         self.AccessAccept=False
         self.NTResponse=''
@@ -46,16 +46,14 @@ class Auth:
     def ReturnPacket(self):
             self.Reply=self.packet.CreateReply()
             self.Reply.secret = self.secret
-            #print 'secret=', self.secret
             if self.AccessAccept:
                 self.Reply.code=self.code
+                if (self.typeauth=='MSCHAP2') and (self.code!=3):
+                      self.Reply.AddAttribute((311,26),self._MSchapSuccess())
+                return self.Reply.ReplyPacket(self.attrs)
             else:
                 self.Reply.code=3
-                
-            if (self.typeauth=='MSCHAP2') and (self.code!=3):
-                  self.Reply.AddAttribute((311,26),self._MSchapSuccess())
-            #print self.Reply.secret
-            return self.Reply.ReplyPacket(self.attrs)
+                return self.Reply.ReplyPacket()
         
     def _DetectTypeAuth(self):
         if self.packet.has_key('User-Password'):
@@ -74,9 +72,12 @@ class Auth:
         логина и пароля.
         To Do: Если ядро ответило: доступ запретить-пропускаем.
         """
+        #print "r", self.code
         if self.code!=3:
             if self.typeauth=='PAP':
+                #print self._PwDecrypt()
                 if self._PwDecrypt():
+                    #print 'pap=', True
                     return True
             elif self.typeauth=='CHAP':
                 if self._CHAPDecrypt():
@@ -116,7 +117,7 @@ class Auth:
         password=self.packet["User-Password"][0]
         authenticator=self.packet.authenticator
         while password:
-            hash=md5.new(self.packet.secret+authenticator).digest()
+            hash=md5.new(self.secret+authenticator).digest()
             for i in range(16):
         		pw+=chr(ord(hash[i]) ^ ord(password[i]))
         
@@ -124,8 +125,8 @@ class Auth:
         
         while pw.endswith("\x00"):
         	pw=pw[:-1]
-        	
-        return pw==password
+        
+        return pw==self.plainpassword
         
     #Функции для генерации MSCHAP2 response
     def _convert_key(self, key):

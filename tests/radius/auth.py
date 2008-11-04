@@ -5,6 +5,7 @@ import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 import time
+from threading import Thread
 a=time.clock()
 srv=Client(server="localhost",
         secret="123",
@@ -17,7 +18,7 @@ req["NAS-IP-Address"] = "10.10.1.100"
 req["NAS-Port"] = 0
 req["Service-Type"] = "Login-User"
 req["NAS-Identifier"] = "MikroTik"
-req["User-Password"]=req.PwCrypt("WUoKLf3n")
+req["User-Password"]=req.PwCrypt("123456")
 
 #req["Called-Station-Id"] = "00-04-5F-00-0F-D1"
 #req["Calling-Station-Id"] = "00-01-24-80-B3-9C"
@@ -26,20 +27,41 @@ req["User-Password"]=req.PwCrypt("WUoKLf3n")
 req['NAS-Port-Type'] = 'Virtual'
 req['Calling-Station-Id']='10.10.1.2'
 
-f=file("request", "wb")
-f.write(req.ReplyPacket())
-f.flush()
+#f=file("request", "wb")
+#f.write(req.ReplyPacket())
+#f.flush()
 
-for x in range(0,1000000):
-    try:
-    	#print "Sending authentication request"
-    	reply=srv.SendPacket(req)
-    except pyrad.client.Timeout:
-    	print "RADIUS server does not reply"
-    	sys.exit(1)
-    except socket.error, error:
-    	print "Network error: " + error[1]
-    	sys.exit(1)
+class AuthRequest(Thread):
+      def __init__ (self):
+            Thread.__init__(self)
+
+      def run(self):
+            #sock.connect(addr)
+            for x in xrange(0,1000):
+                try:
+                    #print "Sending authentication request"
+                    reply=srv.SendPacket(req)
+                except pyrad.client.Timeout:
+                    print "RADIUS server does not reply"
+                    sys.exit(1)
+                except socket.error, error:
+                    print "Network error: " + error[1]
+                    sys.exit(1)
+                    
+                time.sleep(5)
+                  
+
+b=[]
+for i in xrange(0,1000):
+      #print
+      a=AuthRequest()
+      b.append(a.start())
+
+time.sleep(20)
+
+for i in b:
+      i.join()
+      
     
 #===============================================================================
 #    if reply.code==pyrad.packet.AccessAccept:
@@ -50,6 +72,7 @@ for x in range(0,1000000):
 
 print time.clock()-a
 print "Attributes returned by server:"
+print "Code:", reply.code
 for i in reply.keys():
 	print "%s: %s" % (i, reply[i])
 

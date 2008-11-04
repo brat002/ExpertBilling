@@ -618,7 +618,7 @@ class AddCards(QtGui.QDialog):
         except Exception, e:
             print e
         try:
-            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE operator_id=%d" % self.op_model.id)
+            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE id=(SELECT bank_id FROM billservice_operator WHERE id=%d)" % self.op_model.id)
         except Exception, e:
             print e
             

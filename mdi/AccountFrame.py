@@ -824,11 +824,12 @@ class TarifFrame(QtGui.QDialog):
             
         if item_type=='checkbox':
             item = QtGui.QCheckBox()
-
+            item = QtGui.QTableWidgetItem()
+            #print "value", value
             item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
-            widget.setCellWidget(x,y, item)
-
+            #widget.setCellWidget(x,y, item)
+            widget.setItem(x, y, item)
             
 
         #if type(value)==BooleanType and value==True:
@@ -1538,7 +1539,7 @@ class TarifFrame(QtGui.QDialog):
                     JOIN billservice_trafficlimit_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
                     WHERE ttc.trafficlimit_id=%d
                     """ % node.id)
-                
+
                     self.addrow(self.limit_tableWidget, node.id,i, 0)
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
@@ -1957,7 +1958,7 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.limit_tableWidget, i)
                     #print self.limit_tableWidget.item(i, 1), self.limit_tableWidget.item(i, 3), self.limit_tableWidget.item(i, 8), self.limit_tableWidget.cellWidget(i, 4)
-                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 7)==None or self.limit_tableWidget.item(i, 4)==None:
+                    if (self.limit_tableWidget.cellWidget(i, 5).checkState()==self.limit_tableWidget.cellWidget(i, 6).checkState()==0) or self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 7)==None or self.limit_tableWidget.item(i, 4)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
                         self.connection.rollback()
                         return

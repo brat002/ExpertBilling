@@ -471,11 +471,13 @@ class DatabaseThread(Thread):
                 
 class ServiceThread(Thread):
     def __init__(self):
-        Thread.__init__(self)
+        
         self.connection = pool.connection()
         self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
+        #self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
+        Thread.__init__(self)
+        
     def run(self):
         #TODO: перенести обновления кешей нас, ипн, впн, а также проверку на переполнение словаря
         global nascache
@@ -484,36 +486,40 @@ class ServiceThread(Thread):
         global databaseQueue
         while True:
             try:
-                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
-                nasvals = self.cur.fetchall()
-                nascache = dict(nasvals)
-                #print nascache
-                del nasvals
+                try:
+                    self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
+                    nasvals = self.cur.fetchall()
+                    nascache = dict(nasvals)
+                    #print nascache
+                    del nasvals
+                except Exception, ex:
+                    print "Servicethread nascache exception: ", repr(ex)
+                    
+                try:
+                    self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
+                    icTmp = {}
+                    ipncache = icTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+                except Exception, ex:
+                    print "Servicethread ipncache exception: ", repr(ex)
+                    
+                try:
+                    self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
+                    vcTmp = {}
+                    vpncache = vcTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
+                except Exception, ex:
+                    print "Servicethread vpncache exception: ", repr(ex)
+                 
+                """try: 
+                    if len(databaseQueue) > 1000000:
+                        databaseQueue = databaseQueue[10000:]
+                except Exception, ex:
+                    print "Servicethread dbQueue exception: ", repr(ex)    """
+                    
+                gc.collect()
+                time.sleep(60)
             except Exception, ex:
-                print "Servicethread nascache exception: ", repr(ex)
-                
-            try:
-                self.cur.execute("SELECT ipn_ip_address FROM billservice_account;")
-                icTmp = {}
-                ipncache = icTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
-            except Exception, ex:
-                print "Servicethread ipncache exception: ", repr(ex)
-                
-            try:
-                self.cur.execute("SELECT vpn_ip_address FROM billservice_account;")
-                vcTmp = {}
-                vpncache = vcTmp.fromkeys([x[0] for x in self.cur.fetchall()], 1)
-            except Exception, ex:
-                print "Servicethread vpncache exception: ", repr(ex)
-             
-            try: 
-                if len(databaseQueue) > 1000000:
-                    databaseQueue = databaseQueue[10000:]
-            except Exception, ex:
-                print "Servicethread dbQueue exception: ", repr(ex)    
-                
-            gc.collect()
-            time.sleep(60)
+                print "Servicethread: ", repr(ex)
+                time.sleep(60)
             
         
 def main ():
