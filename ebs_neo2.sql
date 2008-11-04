@@ -365,7 +365,8 @@ CREATE TABLE billservice_shedulelog (
     prepaid_traffic_accrued timestamp without time zone,
     prepaid_time_reset timestamp without time zone,
     prepaid_time_accrued timestamp without time zone,
-    balance_blocked timestamp without time zone
+    balance_blocked timestamp without time zone,
+    accounttarif_id integer
 );
 
 
@@ -8664,6 +8665,9 @@ ALTER TABLE ONLY billservice_settlementperiod
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_key UNIQUE (account_id);
+    
+ALTER TABLE billservice_shedulelog
+  ADD CONSTRAINT billservice_shedulelog_accounttarif_id UNIQUE(accounttarif_id);
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_pkey PRIMARY KEY (id);
@@ -9035,6 +9039,12 @@ ALTER TABLE billservice_operator
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
+    
+ALTER TABLE billservice_shedulelog
+  ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
+      REFERENCES billservice_accounttarif (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
