@@ -1,7 +1,8 @@
 #-*-coding=utf-8-*-
 #from encodings import idna
 from daemonize import daemonize
-import time, datetime, os, sys, gc
+import time, datetime, os, sys, gc, traceback
+
 from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
 import dictionary
 from threading import Thread
@@ -232,8 +233,8 @@ class check_vpn_access(Thread):
                                  SELECT account.id, account.vpn_ip_address, account.ipn_ip_address, account.ipn_mac_address, radius.sessionid as  sessionid
                                  FROM radius_activesession as radius 
                                  JOIN billservice_account as account ON radius.account_id=account.id
-                                 WHERE account.username='%s'
-                                 """ % session['name'])
+                                 WHERE account.username=%s
+                                 """ , (session['name'],))
                 account = self.cur.fetchone()
                 #print "account", account
                 if account is not None:
@@ -258,7 +259,7 @@ class check_vpn_access(Thread):
             self.cur.execute("""
                              UPDATE radius_activesession
                              SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='ACK'
-                             WHERE date_end is Null and nas_id='%s';""" % nas['ipaddress'])
+                             WHERE date_end is Null and nas_id=%s;""", (nas['ipaddress'],))
             self.connection.commit()
 
 
@@ -342,12 +343,12 @@ class check_vpn_access(Thread):
                 rows=self.cur.fetchall()
                 for row in rows:
                     result=None
-    
+                    print row['balance']
                     if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
                         """
                             Делаем проверку на то, изменилась ли скорость.
                             """
-                        print "check"
+                        #print "check"
                         if row['vpn_speed']=='':
                             speed=self.create_speed(row['tarif_id'], row['nas_type'])
                         else:
@@ -358,7 +359,7 @@ class check_vpn_access(Thread):
                         #print row
                         #print row['speed_string'],"!!!", newspeed, type(row['speed_string']), type(newspeed)
                         if row['speed_string']!=newspeed:
-                            print "set speed"
+                            print "set speed", newspeed
                             coa_result=change_speed(dict=dict, account_id=row['account_id'], 
                                                     account_name=str(row['username']), 
                                                     account_vpn_ip=row['vpn_ip_address'], 
@@ -378,9 +379,9 @@ class check_vpn_access(Thread):
                             if coa_result==True:
                                 self.cur.execute("""
                                     UPDATE radius_activesession
-                                    SET speed_string='%s'
+                                    SET speed_string=%s
                                     WHERE id=%s;
-                                    """ % (newspeed, row['id']))
+                                    """ , (newspeed, row['id'],))
                     else:
                         result = PoD(dict=dict,
                                      account_id=row['account_id'], 
@@ -407,7 +408,7 @@ class check_vpn_access(Thread):
                     if result is not None:
                         self.cur.execute("""
                             UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
-                            """, (disconnect_result, row['session']))
+                            """, (disconnect_result, row['session'],))
     
                 self.connection.commit()
                 #self.cur.close()
@@ -480,7 +481,7 @@ class periodical_service_bill(Thread):
                                      WHERE a.tarif_id=%d and b.suspended=False AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id'''
                     self.cur.execute("""SELECT a.account_id,  max(a.datetime), max((SELECT max((b.ballance+b.credit)) AS ballance FROM billservice_account as b WHERE a.account_id=b.id AND b.suspended=False)) as ballance
                                      FROM  billservice_accounttarif as a 
-                                     WHERE a.tarif_id=%d  AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id"""% tariff_id)
+                                     WHERE a.tarif_id=%s  AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id""",  (tariff_id,))
                     accounts=self.cur.fetchall()
                     # Получаем параметры каждой перодической услуги в выбранном ТП
                     '''self.cur.execute("""
@@ -495,7 +496,7 @@ class periodical_service_bill(Thread):
                                      c.length, c.length_in, c.autostart
                                      FROM billservice_periodicalservice as b 
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
-                                     WHERE b.id IN (SELECT periodicalservice_id FROM billservice_tariff_periodical_services WHERE tariff_id=%d);""" % tariff_id)
+                                     WHERE b.id IN (SELECT periodicalservice_id FROM billservice_tariff_periodical_services WHERE tariff_id=%s);""" , (tariff_id,))
                     rows_ps=self.cur.fetchall()
                     # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                     for row_ps in rows_ps:
@@ -514,7 +515,7 @@ class periodical_service_bill(Thread):
                                     time_start_ps=account_datetime
                                 # Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
-                                self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;" % (ps_id, tariff_id, account_id))
+                                self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;", (ps_id, tariff_id, account_id,))
                                 now=datetime.datetime.now()
                                 if ps_cash_method=="GRADUAL":
                                     """
@@ -714,9 +715,9 @@ class TimeAccessBill(Thread):
                     # рассчитав соотв снятия.
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     self.cur.execute("""
-                                     SELECT session_time FROM radius_session WHERE sessionid='%s' AND checkouted_by_time=True
+                                     SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time=True
                                      ORDER BY interrim_update DESC LIMIT 1
-                                     """ % session_id)
+                                     """, (session_id,))
                     try:
                         old_time=self.cur.fetchone()[0]
                     except:
@@ -726,7 +727,7 @@ class TimeAccessBill(Thread):
                     self.cur.execute(
                         """
                         SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
-                        """ % accountt_tarif_id)
+                        """, (accountt_tarif_id,))
     
                     try:
                         prepaid_id, prepaid=self.cur.fetchone()
@@ -741,7 +742,7 @@ class TimeAccessBill(Thread):
                         elif total_time>=prepaid:
                             total_time=total_time-prepaid
                             prepaid=0
-                        self.cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                        self.cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
     
     
                     # Получаем список временных периодов и их стоимость у периодической услуги
@@ -753,7 +754,7 @@ class TimeAccessBill(Thread):
                         """ % ps_id)'''
                     self.cur.execute("""SELECT tan.time_period_id, tan.cost
                         FROM billservice_timeaccessnode as tan
-                        WHERE (tan.time_period_id NOTNULL) AND (tan.time_access_service_id=%s)""" % ps_id)
+                        WHERE (tan.time_period_id NOTNULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
                     periods=self.cur.fetchall()
                     for period in periods:
                         period_id=period[0]
@@ -768,7 +769,7 @@ class TimeAccessBill(Thread):
                             """ % period_id)'''
                         self.cur.execute("""SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
                             FROM billservice_timeperiodnode as tpn
-                            WHERE (%s IN (SELECT tptpn.timeperiod_id from billservice_timeperiod_time_period_nodes as tptpn WHERE tpn.id=tptpn.timeperiodnode_id))""" % period_id)
+                            WHERE (%s IN (SELECT tptpn.timeperiod_id from billservice_timeperiod_time_period_nodes as tptpn WHERE tpn.id=tptpn.timeperiodnode_id))""", (period_id,))
                         period_nodes_data=cur.fetchall()
                         for period_node in period_nodes_data:
                             period_id=period_node[0]
@@ -793,10 +794,10 @@ class TimeAccessBill(Thread):
                     query="""
                          UPDATE radius_session
                          SET checkouted_by_time=True
-                         WHERE sessionid='%s'
-                         AND account_id='%s'
-                         AND interrim_update='%s'
-                         """ % (session_id, account_id, interrim_update)
+                         WHERE sessionid=%s
+                         AND account_id=%s
+                         AND interrim_update=%s
+                         """, (session_id, account_id, interrim_update,)
                     self.cur.execute(query)
                     self.connection.commit()
     
@@ -880,7 +881,7 @@ class NetFlowAggregate(Thread):
                         cur.execute(
                             """
                             DELETE FROM billservice_rawnetflowstream WHERE id=%s;
-                            """ % nf_id)
+                            """, (nf_id,))
                         continue
                     tarif_mode=False
                     #print nf_id
@@ -903,7 +904,7 @@ class NetFlowAggregate(Thread):
                                 WHERE (id IN 
                                 (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
                                 (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id IN 
-                                (SELECT id FROM billservice_traffictransmitnodes WHERE traffic_transmit_service_id=%s))))""" % traffic_transmit_service)
+                                (SELECT id FROM billservice_traffictransmitnodes WHERE traffic_transmit_service_id=%s))))""", (traffic_transmit_service,))
         
                             periods=cur.fetchall()
                             ts_pool[traffic_transmit_service] = self.check_period(periods)
@@ -915,9 +916,9 @@ class NetFlowAggregate(Thread):
                         INSERT INTO billservice_netflowstream(
                         nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                         dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                        VALUES ('%s', '%s', %s, '%s', '%s', '%s', '%s',
-                        '%s', '%s', '%s', '%s', '%s', '%s', '%s');
-                        """ % (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s);
+                        """, (nas_id, account_id, tarif_id, direction, date_start,src_addr, traffic_class_id, dst_addr, octets,src_port, dst_port, protocol, False, tarif_mode,)
                         )
     
     
@@ -926,12 +927,12 @@ class NetFlowAggregate(Thread):
                         cur.execute(
                             """
                             UPDATE billservice_rawnetflowstream SET fetched=True WHERE id=%s
-                            """ % nf_id)
+                            """, (nf_id,))
                     else:
                         cur.execute(
                             """
                             DELETE FROM billservice_rawnetflowstream WHERE id=%s;
-                            """ % nf_id)
+                            """, (nf_id,))
     
                     connection.commit()
                 del raw_streams  
@@ -997,16 +998,6 @@ class NetFlowBill(Thread):
             return 0
 
         #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
-        '''self.cur.execute(
-            """
-            SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
-            FROM billservice_traffictransmitnodes as ttsn
-            JOIN billservice_traffictransmitnodes_traffic_class as tcn ON tcn.traffictransmitnodes_id=ttsn.id
-            JOIN billservice_traffictransmitnodes_time_nodes as tns ON tns.traffictransmitnodes_id=ttsn.id
-            JOIN billservice_timeperiod_time_period_nodes ON billservice_timeperiod_time_period_nodes.timeperiod_id=tns.timeperiod_id
-            JOIN billservice_timeperiodnode AS tpn on tpn.id=billservice_timeperiod_time_period_nodes.timeperiodnode_id 
-            WHERE ((ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end<='%s'/(1024*1024)) or (ttsn.edge_start>='%s'/(1024*1024) and ttsn.edge_end='0' ) ) and ttsn.traffic_transmit_service_id='%s' and tcn.trafficclass_id='%s' and ttsn.%s;
-            """ % (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d))'''
         self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
             FROM billservice_traffictransmitnodes as ttsn
             JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
@@ -1015,7 +1006,7 @@ class NetFlowBill(Thread):
             WHERE ((ttsn.edge_start>='%s' AND ttsn.edge_end<='%s') OR (ttsn.edge_start>='%s' AND ttsn.edge_end='0' ))
             AND (ttsn.traffic_transmit_service_id='%s') 
             AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
-            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d))
+            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d,))
 
         
         trafic_transmit_nodes=self.cur.fetchall()
@@ -1142,8 +1133,8 @@ class NetFlowBill(Thread):
                                 """
                                 SELECT sum(octets)
                                 FROM billservice_netflowstream
-                                WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between '%s' and '%s'
-                                """ % ( tarif_id, account_id, settlement_period_start, settlement_period_end))
+                                WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between %s and %s
+                                """ , ( tarif_id, account_id, settlement_period_start, settlement_period_end,))
     
                             octets_summ=self.cur.fetchone()[0] or 0
                         else:
@@ -1187,7 +1178,7 @@ class NetFlowBill(Thread):
                                 prepaid=0
     
     
-                            self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""" % (prepaid, prepaid_id))
+                            self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
     
                         summ=(trafic_cost*octets)/(1024000)
     
@@ -1200,7 +1191,7 @@ class NetFlowBill(Thread):
                         UPDATE billservice_netflowstream
                         SET checkouted=True
                         WHERE id=%s;
-                        """ % nf_id)
+                        """, (nf_id,))
     
                 rows=None
     
@@ -1277,44 +1268,12 @@ class limit_checker(Thread):
         self.connection = pool.connection()
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor()
-        #self.connection = None
-        #self.connection = pool.getconn()
-        #self.connection = psycopg2.connect(dsn)
-        #self.connection.set_client_encoding('UTF8')
-        #self.cur = self.connection.cursor()
-        #self.conn = True
+
 
     def run(self):
 
         while True:
             try:
-                """print self.getName() + " threadstart"
-                #if self.connection == None:
-                if not self.conn:
-                    global poolInitTime
-                    global poolInitDelta
-                    global poolInitConnected
-                    #global pool
-                    if poolInitConnected:
-                        try:
-                            #poolInitLock.acquire()
-                            #self.connection = pool.getconn()
-                            self.connection = psycopg2.connect(dsn)
-                            print self.connection
-                            self.connection.set_client_encoding('UTF8')
-                            self.conn = True
-                        except Exception, ex:
-                            print "limit_checker get connection error: ", ex
-                        finally:
-                            #poolInitLock.release()
-                            pass
-                if (self.cur == None) or (self.cur.closed):
-                    if self.connection != None:
-                        if not self.connection.closed:
-                            self.cur = self.connection.cursor()
-                    else:
-                        raise psycopg2.InterfaceError("Cursor is down and connection is closed.")"""
-                
                 """
                 Выбираем тарифные планы, у которых есть лимиты
                 """
@@ -1357,7 +1316,7 @@ class limit_checker(Thread):
                             UPDATE billservice_account
                             SET disabled_by_limit=%s
                             WHERE id=%s;
-                            """ % (False, account_id))
+                            """, (False, account_id,))
     
                         continue
     
@@ -1395,7 +1354,7 @@ class limit_checker(Thread):
                          JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
                          WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
     
-                         """ % (account_id, limit_id, settlement_period_start, settlement_period_end, d)
+                         """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,)
     
     
                     self.cur.execute(query)
@@ -1420,7 +1379,7 @@ class limit_checker(Thread):
                             UPDATE billservice_account
                             SET disabled_by_limit=%s
                             WHERE id=%s;
-                            """ % (block, account_id))
+                            """ , (block, account_id,))
     
     
                 self.connection.commit()
@@ -1498,20 +1457,27 @@ class settlement_period_service_dog(Thread):
 
 
     def run(self):
-
+        """
+        Сделать привязку к пользователю через billservice_accounttarif
+        """
 
 
         while True:
             try:
                 self.cur.execute(
                     """
-                    SELECT shedulelog.id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, shedulelog.ballance_checkout::timestamp without time zone, 
-                    shedulelog.prepaid_traffic_reset::timestamp without time zone, shedulelog.prepaid_time_reset::timestamp without time zone,
-                    sp.time_start::timestamp without time zone, sp.length, sp.length_in,sp.autostart, accounttarif.id, 
+                    SELECT shedulelog.id, shedulelog.accounttarif_id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, 
+                    shedulelog.ballance_checkout::timestamp without time zone, 
+                    shedulelog.prepaid_traffic_reset::timestamp without time zone, 
+                    shedulelog.prepaid_time_reset::timestamp without time zone,
+                    sp.time_start::timestamp without time zone, sp.length, 
+                    sp.length_in,sp.autostart, accounttarif.id, 
                     accounttarif.datetime::timestamp without time zone,  
                     tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, 
                     tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time,
-                    shedulelog.balance_blocked::timestamp without time zone, shedulelog.prepaid_traffic_accrued::timestamp without time zone, shedulelog.prepaid_time_accrued::timestamp without time zone
+                    shedulelog.balance_blocked::timestamp without time zone, 
+                    shedulelog.prepaid_traffic_accrued::timestamp without time zone, 
+                    shedulelog.prepaid_time_accrued::timestamp without time zone
                     FROM billservice_account as account
                     LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
                     JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
@@ -1520,12 +1486,12 @@ class settlement_period_service_dog(Thread):
                     LEFT JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
                     LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
                     LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
-                    WHERE account.status=True and tariff.active=True
+                    WHERE account.status=True and tariff.active=True;
                     """)
     
                 rows=self.cur.fetchall()
                 for row in rows:
-                    (shedulelog_id, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
+                    (shedulelog_id, accounttarif_id_shedulelog, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
                      time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
                      reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id,
                      reset_traffic, reset_time, balance_blocked, prepaid_traffic_accrued, prepaid_time_accrued) = row
@@ -1554,8 +1520,8 @@ class settlement_period_service_dog(Thread):
                                 """
                                 SELECT sum(summ)
                                 FROM billservice_transaction
-                                WHERE created > '%s' and created< '%s' and account_id=%s and tarif_id=%s;
-                                """ % (period_start, period_end, account_id, tarif_id))
+                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s;
+                                """, (period_start, period_end, account_id, tarif_id,))
                             summ=self.cur.fetchone()[0]
                             if summ==None:
                                 summ=0
@@ -1573,14 +1539,14 @@ class settlement_period_service_dog(Thread):
                                 )
     
     
-                            self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;" % account_id)
+                            self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;", (account_id,))
                             shedulelog_id =self.cur.fetchone()
                             print "shedulelog_id", shedulelog_id
     
                             if shedulelog_id==None:
                                 self.cur.execute("""
-                                                 INSERT INTO billservice_shedulelog(account_id, ballance_checkout) values(%d, now());
-                                                 """ % account_id)
+                                                 INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, now());
+                                                 """, (account_id, accounttarif_id,))
     
     
                         #Если балланса не хватает - отключить пользователя
@@ -1592,17 +1558,17 @@ class settlement_period_service_dog(Thread):
                         self.cur.execute(
                             """
                             UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
-                            """ % (account_id, cost))
+                            """, (account_id, cost,))
     
     
                         self.cur.execute("""
                                          UPDATE billservice_shedulelog SET balance_blocked = now() WHERE account_id=%s RETURNING id;
-                                         """ % account_id)
+                                         """, (account_id,))
     
                         if self.cur.fetchone()==None:
                             self.cur.execute("""
-                                             INSERT INTO billservice_shedulelog(account_id, balance_blocked) values(%d, now()); 
-                                             """ % account_id)
+                                             INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, now()); 
+                                             """, (account_id, accounttarif_id,))
                     if account_balance_blocked==True and account_balance>=cost:
                         """
                         Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
@@ -1612,24 +1578,24 @@ class settlement_period_service_dog(Thread):
                         self.cur.execute(
                             """
                             UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
-                            """ % (account_id))                            
+                            """, (account_id,))                            
     
                         self.connection.commit()
                     if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
-                    if (prepaid_traffic_reset<period_start and reset_traffic==True) or traffic_transmit_service_id is None:
+                    if (prepaid_traffic_reset<period_start and reset_traffic==True) or traffic_transmit_service_id is None or accounttarif_id!=accounttarif_id_shedulelog:
                         """
-                        
+                        (Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план
                         """
                         self.cur.execute(
                             """
                             DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
                             """ % accounttarif_id)
     
-                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=now() WHERE account_id=%s RETURNING id;", (account_id,))
                         if self.cur.fetchone()==None:
                             self.cur.execute("""
-                                             INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_reset) values(%d, now()) ;
-                                             """ % account_id)    
+                                             INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, now()) ;
+                                             """, (account_id, accounttarif_id,))    
                         self.connection.commit()
     
                     if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
@@ -1639,7 +1605,7 @@ class settlement_period_service_dog(Thread):
                             SELECT id, size
                             FROM billservice_prepaidtraffic
                             WHERE traffic_transmit_service_id=%s;
-                            """ % traffic_transmit_service_id)
+                            """, (traffic_transmit_service_id,))
     
                         prepais=self.cur.fetchall()
                         u=False
@@ -1650,24 +1616,24 @@ class settlement_period_service_dog(Thread):
                                 """
                                 UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=now()
                                 WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
-                                """ % (size, accounttarif_id, prepaid_traffic_id))
+                                """, (size, accounttarif_id, prepaid_traffic_id,))
                             if self.cur.fetchone() is None:
                                 #print 'INSERT'
                                 #print accounttarif_id, prepaid_traffic_id, size
                                 self.cur.execute(
                                     """
                                     INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
-                                    VALUES(%d,%d, %f*1024000, now());
-                                    """ % (accounttarif_id, prepaid_traffic_id, size))                            
+                                    VALUES(%s, %s, %f*1024000, now());
+                                    """, (accounttarif_id, prepaid_traffic_id, size,))                            
                         if u==True:
-                            self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                            self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;", (account_id,))
                             if self.cur.fetchone()==None:
                                 self.cur.execute("""
-                                                 INSERT INTO billservice_shedulelog(account_id, prepaid_traffic_accrued) values(%d, now()) ;
-                                                 """ % account_id)  
+                                                 INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, now()) ;
+                                                 """, (account_id, accounttarif_id,))  
                         self.connection.commit() 
     
-                    if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id:
+                    if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id  or accounttarif_id!=accounttarif_id_shedulelog:
     
                         if reset_time:
                             #снять время и начислить новое
@@ -1675,13 +1641,13 @@ class settlement_period_service_dog(Thread):
                                 """
                                 DELETE FROM billservice_accountprepaystime
                                 WHERE account_tarif=%s;
-                                """ % accounttarif_id)
+                                """, (accounttarif_id,))
     
-                            self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;" % account_id)
+                            self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;", (account_id,))
                             if self.cur.fetchone()==None:
                                 self.cur.execute("""
-                                                 INSERT INTO billservice_shedulelog(account_id, prepaid_time_reset) values(%d, now()) ;
-                                                 """ % account_id)        
+                                                 INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) values(%s, %s, now()) ;
+                                                 """, (account_id, accounttarif_id,))        
                             self.connection.commit()    
     
                     if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
@@ -1692,21 +1658,21 @@ class settlement_period_service_dog(Thread):
                             SET size=size+(SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s),
                             datetime=now()
                             WHERE account_tarif_id=%s RETURNING id;
-                            """ % (time_access_service_id, accounttarif_id))
+                            """, (time_access_service_id, accounttarif_id,))
                         if self.cur.fetchone()==None:
                             self.cur.execute(
                                 """
                                 INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id)
-                                VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%d), now(), %d);
-                                """ % (accounttarif_id, time_access_service_id, time_access_service_id))
+                                VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s), now(), %s);
+                                """, (accounttarif_id, time_access_service_id, time_access_service_id,))
     
     
     
-                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=now() WHERE account_id=%s RETURNING id;" % account_id)
+                        self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=now() WHERE account_id=%s RETURNING id;", (account_id,))
                         if self.cur.fetchone()==None:
                             cur.execute("""
-                                        INSERT INTO billservice_shedulelog(account_id, prepaid_time_accrued) values(%d, now()) ;
-                                        """ % account_id)
+                                        INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, now()) ;
+                                        """, (account_id, accounttarif_id,))
                     self.connection.commit()
                     
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
@@ -1734,7 +1700,7 @@ class settlement_period_service_dog(Thread):
                         summ=cost,
                         description=u"Снятие денег по разовой услуге %s" % service_name
                     )
-                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s,%s,now());" % (accounttarif_id, service_id))
+                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s, %s, now());", (accounttarif_id, service_id,))
     
                     self.connection.commit()
                 gc.collect()
@@ -1762,7 +1728,7 @@ class ipn_service(Thread):
 
     def check_period(self, rows):
         for row in rows:
-            if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
+            if in_period(row['time_start'], row['length'], row['repeat_after'])==True:
                 return True
         return False
 
@@ -1770,7 +1736,7 @@ class ipn_service(Thread):
         defaults = get_default_speed_parameters(self.cur, tarif_id)
         speeds = get_speed_parameters(self.cur, tarif_id)
         for speed in speeds:
-            if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
+            if in_period(speed['time_start'], speed['length'], speed['repeat_after'])==True:
                 defaults = comparator(defaults, speed)
                 return defaults
 
@@ -1817,7 +1783,7 @@ class ipn_service(Thread):
                     sended=None
                     recreate_speed = False
                     period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
-    
+                    print period
                     if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_status']==True and row['account_balance_blocked']==False:
                         #print u"ВКЛЮЧАЕМ",row['account_username']
                         #шлём команду, на включение пользователя, account_ipn_status=True
@@ -1850,7 +1816,7 @@ class ipn_service(Thread):
                                       account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], \
                                       nas_password=row['nas_password'], format_string=row['nas_user_disable'])
     
-                        if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (False, row['account_id']))
+                        if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, row['account_id'],))
     
     
     
@@ -1889,11 +1855,11 @@ class ipn_service(Thread):
                         data_for_save=''
                         #print speed
     
-                        self.cur.execute("UPDATE billservice_accountipnspeed SET speed='%s', state=%s WHERE account_id=%s RETURNING id;" % (newspeed, sended_speed, row['account_id']))
+                        self.cur.execute("UPDATE billservice_accountipnspeed SET speed=%s, state=%s WHERE account_id=%s RETURNING id;", (newspeed, sended_speed, row['account_id'],))
                         id = self.cur.fetchone()
                         #print 'id=', id
                         if id==None:
-                            self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %d, '%s',%s , now());" % (row['account_id'], unicode(newspeed), sended_speed))
+                            self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s , now());", (row['account_id'], unicode(newspeed), sended_speed,))
     
                     self.connection.commit()
                 gc.collect()
@@ -1903,6 +1869,9 @@ class ipn_service(Thread):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
+                    traceback.print_exc(file=sys.stdout)
+
+
                 gc.collect()
                 time.sleep(60)
 
@@ -2179,8 +2148,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             elif action=='create':
                 command = row['user_add_action']
             elif action =='delete':
-                #set_account_deleted(cur, account_id)
-                #self.iddelete("billservice_account", account_id)
                 command = row['user_delete_action']
             #print command
     
@@ -2188,6 +2155,27 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                           account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
                           account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                           nas_password=row['nas_password'], format_string=command)
+ 
+            if action=='create' and sended==True:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (True, True, row['account_id']))
+                
+            elif action=='create' and sended==False:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+            
+            if action =='delete'  and sended==True:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+            elif action =='delete'  and sended==False:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+
+            if action=='disable' and sended==True:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, row['account_id'],))
+                
+            if action=='enable' and sended==True:
+                cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (True, row['account_id'],))
+        connection.commit()
+
+#            if sended==False:
+#                cur.execute("UPDATE billservice_account SET ipn_status=%s", (ipn_status,))
         del account_id
         del row
         del account

@@ -102,21 +102,21 @@ class dbRoutine(object):
 
     @staticmethod
     def db_delete_netflowstream_stat(*args, **kwargs):
-        return cur.execute("DELETE FROM billservice_netflowstream WHERE date_start BETWEEN '%s' AND '%s'; " % ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
+        return cur.execute("DELETE FROM billservice_netflowstream WHERE date_start BETWEEN %s AND %s; " , ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
 
     @staticmethod
     def db_delete_rawnetflowstream_stat(*args, **kwargs):
-        return cur.execute("DELETE FROM billservice_rawnetflowstream WHERE date_start BETWEEN '%s' AND '%s'; " % ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
+        return cur.execute("DELETE FROM billservice_rawnetflowstream WHERE date_start BETWEEN %s AND %s; " , ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
 
 #Primitives
 
 def get_nas_by_ip(cursor, ip):
 
-    cursor.execute("""SELECT id, secret, type, multilink from nas_nas WHERE ipaddress='%s';""" % ip)
+    cursor.execute("""SELECT id, secret, type, multilink from nas_nas WHERE ipaddress=%s;""" , (ip,))
     return cursor.fetchone()
 
 def set_account_deleted(cursor, account_id):
-    cursor.execute('''UPDATE billservice_account SET deleted=TRUE WHERE id=%d''' % account_id)
+    cursor.execute('''UPDATE billservice_account SET deleted=TRUE WHERE id=%s''' , (account_id,))
     try:
         return cursor.fetchone()[0]
     except:
@@ -136,7 +136,7 @@ def get_default_speed_parameters(cursor, tarif):
                     FROM billservice_accessparameters as accessparameters
                     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
                     WHERE tariff.id=%s;
-                    """ % tarif)
+                    """ , (tarif,))
     return cursor.fetchone()
 
 def get_speed_parameters(cursor, tarif):
@@ -156,7 +156,7 @@ def get_speed_parameters(cursor, tarif):
                     JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
                     JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id
                     WHERE tariff.id=%s
-                    """ % tarif)
+                    """ , (tarif,))
 
     return cursor.fetchall()
 
@@ -201,12 +201,16 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     return cursor.fetchone()
 
 def get_account_data_by_username_dhcp(cursor, username):
-    sql = """SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
+    """
+    username = mac address
+    """
+    
+    cursor.execute("""SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
         account.ipn_speed
         FROM billservice_account as account
-        WHERE account.ipn_mac_address='%s' LIMIT 1""" % str(username)
+        WHERE account.ipn_mac_address=%s LIMIT 1""" , (str(username),))
 
-    cursor.execute(sql)
+
     return cursor.fetchone()
 
 def time_periods_by_tarif_id(cursor, tarif_id):
@@ -217,11 +221,11 @@ def time_periods_by_tarif_id(cursor, tarif_id):
                     JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
                     JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
                     JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
-                    WHERE bst.id=%s""" % tarif_id)
+                    WHERE bst.id=%s""", (int(tarif_id),))
     return cursor.fetchall()
 
 def transaction(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
-    print 'new transaction'
+    #print 'new transaction'
     if not created:
         created=datetime.datetime.now()
 
@@ -229,8 +233,8 @@ def transaction(cursor, account, approved, type, summ, description, created=None
                    UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
                     INSERT INTO billservice_transaction(bill,
                     account_id, approved, type_id, tarif_id, summ, description, created)
-                    VALUES ('%s', %s, %s, '%s', %s, %s, '%s', '%s') RETURNING id;
-                    """ % (summ, account, bill, account, approved, type, tarif , summ, description, created))
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
+                    """ , (summ, account, bill, account, approved, type, tarif , summ, description, created,))
 
     tr_id=cursor.fetchone()[0]
     print tr_id
@@ -243,14 +247,14 @@ def transaction(cursor, account, approved, type, summ, description, created=None
 def delete_transaction(cursor, id):
 
     cursor.execute("""
-                   DELETE FROM billservice_transaction WHERE id=%d RETURNING account_id, summ;
-                   """ % id)
+                   DELETE FROM billservice_transaction WHERE id=%s RETURNING account_id, summ;
+                   """ , (id,))
 
     row=cursor.fetchone()
 
     cursor.execute("""
                    UPDATE billservice_account
-                   SET ballance=ballance+%s WHERE id=%s""" % (row['summ'], row['account_id']))
+                   SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))
 
 
 def ps_history(cursor, ps_id, transaction, created=None):
@@ -258,14 +262,14 @@ def ps_history(cursor, ps_id, transaction, created=None):
         created=datetime.datetime.now()
     cursor.execute("""
                    INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                   """, (ps_id, transaction, created))
+                   """, (ps_id, transaction, created,))
 
 def get_last_checkout(cursor, ps_id, tarif, account):
     cursor.execute("""
                    SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
                     JOIN billservice_transaction as t ON t.id=psh.transaction_id
                     WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
-                    """ % (ps_id, tarif, account))
+                    """ , (ps_id, tarif, account,))
     try:
         return cursor.fetchone()[0]
     except:

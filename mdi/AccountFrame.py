@@ -39,9 +39,90 @@ class CustomWidget(QtGui.QTableWidgetItem):
         for model in models:
             label += "%s \n" % model.name
         
-        self.setText(label[0:-2])
+        self.setText(label)
+        
+class tableImageWidget(QtGui.QWidget):
+    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False, ipn_status=False, ipn_added=False):
+        super(tableImageWidget,self).__init__()
+        
+        #self.resize(78, 20)
+        self.horizontalLayout = QtGui.QHBoxLayout(self)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        self.horizontalLayout.setMargin(0)
+
+        self.toolButton_active = QtGui.QToolButton(self)
+        self.toolButton_active.resize(17,17)
+        self.toolButton_active.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_active.setMaximumSize(QtCore.QSize(17, 17))
+        
+        
+        self.horizontalLayout.addWidget(self.toolButton_active)
+        self.toolButton_balance_blocked = QtGui.QToolButton(self)
+        self.toolButton_balance_blocked.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_balance_blocked.setMaximumSize(QtCore.QSize(17, 17))
         
 
+        self.toolButton_balance_blocked.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_balance_blocked)
+        
+        self.toolButton_trafic_limit = QtGui.QToolButton(self)
+        self.toolButton_trafic_limit.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_trafic_limit.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_trafic_limit.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_trafic_limit)
+
+        self.toolButton_ipn_status = QtGui.QToolButton(self)
+        self.toolButton_ipn_status.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_status)
+        
+        self.toolButton_ipn_added = QtGui.QToolButton(self)
+        self.toolButton_ipn_added.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_added)
+        
+        if nops==False:
+            self.toolButton_active.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_active.setToolTip(u"Периодические услуги не списывают деньги")
+        else:
+            self.toolButton_active.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_active.setToolTip(u"Периодические услуги действуют")
+    
+        if balance_blocked==True:
+            self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_false.png"))
+            self.toolButton_balance_blocked.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
+        else:
+            self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_true.png"))
+            self.toolButton_balance_blocked.setToolTip(u"На счету достаточно средств")
+        
+        if trafic_limit==True: 
+            self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_trafic_limit.setToolTip(u"Пользователь исчерпал лимит трафика")
+        else:
+            self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_trafic_limit.setToolTip(u"Пользователь не исчерпал лимит трафика")
+
+        if ipn_status==True: 
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь активен в ACL на NAS")
+        else:
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь не активен в ACL на NAS")
+            
+
+        if ipn_added==True: 
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь добавлен в ACL на NAS")
+        else:
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
+        
+        #self.show()
+                                           
+        
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection,ttype, account=None, model=None):
         super(AddAccountTarif, self).__init__()
@@ -586,11 +667,11 @@ class TarifFrame(QtGui.QDialog):
         self.fixtures()
         self.speed_table = tableFormat(self.speed_table)
         self.timeaccess_table = tableFormat(self.timeaccess_table)
-        self.limit_tableWidget = tableFormat(self.limit_tableWidget)
+        self.limit_tableWidget = tableFormat(self.limit_tableWidget, no_vsection_size=True)
         self.periodical_tableWidget = tableFormat(self.periodical_tableWidget)
         self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
-        self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget)
-        self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget)
+        self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget, no_vsection_size=True)
+        self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget, no_vsection_size=True)
         self.tabWidget.setCurrentIndex(0)
         
 #------------Connects
@@ -819,17 +900,22 @@ class TarifFrame(QtGui.QDialog):
             
         if not item_type:
             item = QtGui.QTableWidgetItem()
-            item.setText(unicode(value))               
+            item.setText(unicode(value))
+            #item.setTextAlignment (QtCore.Qt.AlignRight)               
             widget.setItem(x, y, item)
             
         if item_type=='checkbox':
             item = QtGui.QCheckBox()
-            item = QtGui.QTableWidgetItem()
+            #item = QtGui.QTableWidgetItem()
+            #item.setText(u"Да")
             #print "value", value
-            item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            
-            #widget.setCellWidget(x,y, item)
-            widget.setItem(x, y, item)
+            #item.setTextAlignment (QtCore.Qt.AlignRight)
+            #item.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            #item.setChecked(True)
+            widget.setCellWidget(x,y, item)
+            widget.cellWidget(x,y).setChecked(value)
+            #widget.cellWidget(x,y).setAlignment(QtCore.Qt.AlignRight)
+            #widget.setItem(x, y, item)
             
 
         #if type(value)==BooleanType and value==True:
@@ -1629,6 +1715,7 @@ class TarifFrame(QtGui.QDialog):
                         self.trafficcost_tableWidget.setItem(i,6, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 7)
                         i+=1
+                        
                     self.trafficcost_tableWidget.resizeRowsToContents()
                     self.trafficcost_tableWidget.resizeColumnsToContents()
                     self.trafficcost_tableWidget.setColumnHidden(0, True)
@@ -1645,6 +1732,10 @@ class TarifFrame(QtGui.QDialog):
         self.onetimeTabActivityActions()
         self.periodicalServicesTabActivityActions()
         self.limitTabActivityActions()
+        self.trafficcost_tableWidget.resizeRowsToContents()
+        self.trafficcost_tableWidget.resizeColumnsToContents()
+        
+        #self.trafficcost_tableWidget.resizeRowsToContents()
 
     def get_speed(self, speed):
         
@@ -2675,7 +2766,7 @@ class AddAccountFrame(QtGui.QDialog):
                 model.disabled_by_limit = False
                 
             model.username = unicode(self.username_edit.text())
-    
+            print 1
             model.password = unicode(self.password_edit.text())
             model.fullname = unicode(self.fullname_lineEdit.text())
             model.email = unicode(self.email_lineEdit.text())
@@ -2794,8 +2885,9 @@ class AddAccountFrame(QtGui.QDialog):
                     model.ipn_status=False
                 self.connection.create(model.save("billservice_account"))
             else:
-                
+                print 123
                 model.id=self.connection.create(model.save("billservice_account"))
+                print 321
                 #Создаём AccounTarif
                 #print 1111
                 accounttarif = Object()
@@ -2902,7 +2994,7 @@ class AddAccountFrame(QtGui.QDialog):
                 self.addrow(a.id, i,0)
                 self.addrow(a.tarif_name, i,1)
                 self.addrow(a.datetime.strftime(self.strftimeFormat), i,2)
-                self.accounttarif_table.setRowHeight(i, 17)
+                #self.accounttarif_table.setRowHeight(i, 17)
                 self.accounttarif_table.setColumnHidden(0, True)
                 i+=1
             #self.tabWidget.resizeColumnsToContents()
@@ -2954,7 +3046,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
   
-        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Статус', u"Дата подключения"]
         #self.tableWidget.setColumnCount(len(columns))
         
         makeHeaders(columns, self.tableWidget)
@@ -3298,20 +3390,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
         elif not enabled:
             headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         
-        if type(value)==BooleanType and value==True:
-            if y==11:
-                headerItem.setIcon(QtGui.QIcon("images/money_false.png"))
-                headerItem.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
-            elif y in [10,12]:
-                headerItem.setIcon(QtGui.QIcon("images/ok.png"))
-            value=u""
-        elif type(value)==BooleanType and value==False:
-            if y==11:
-                headerItem.setIcon(QtGui.QIcon("images/money_true.png"))
-                headerItem.setToolTip(u"На счету достаточно средств")
-            elif y in [10,12]:
-                headerItem.setIcon(QtGui.QIcon("images/false.png"))
-            value=u""
             
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/user.png"))
@@ -3368,7 +3446,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #tarif = self.connection.foselect("billservice_tariff", id)
         
         
-        accounts = self.connection.sql("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name FROM billservice_account AS acc WHERE (%d IN (SELECT tarif_id FROM billservice_accounttarif WHERE account_id=acc.id)) ORDER BY acc.username ASC;""" % self.getTarifId())
+        accounts = self.connection.sql("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+        FROM billservice_account AS acc 
+        WHERE %d=get_tarif(acc.id) ORDER BY acc.username ASC;""" % self.getTarifId())
         #self.connection.commit()
         #print accounts
 
@@ -3389,10 +3469,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
             self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
             self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
-            self.addrow(a.suspended, i,10, enabled=a.status)
-            self.addrow(a.balance_blocked, i,11, enabled=a.status)
-            self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-            self.addrow(a.created.strftime(self.strftimeFormat), i,13, enabled=a.status)
+            #self.addrow(a.suspended, i,10, enabled=a.status)
+            #self.addrow(a.balance_blocked, i,11, enabled=a.status)
+            self.tableWidget.setCellWidget(i,10,tableImageWidget(nops=True, balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+            #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
             
             #self.tableWidget.setRowHeight(i, 17)
             
@@ -3401,9 +3482,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
-        HeaderUtil.getHeader("account_frame_header", self.tableWidget)
+        #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         #self.tableWidget.setSortingEnabled(True)
+        
 
     def accountEnable(self):
         id=self.getSelectedId()
