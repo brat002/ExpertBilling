@@ -10,10 +10,11 @@ dateDelim = "."
 connectDBName = "exbillusers"
 tableHeight = 17
 
-def tableFormat(table):
+def tableFormat(table, no_vsection_size=False):
     #setTableHeight(table)
     #table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height()+3)
-    table.verticalHeader().setDefaultSectionSize(tableHeight)
+    if no_vsection_size==False:
+        table.verticalHeader().setDefaultSectionSize(tableHeight)
     table.setFrameShape(QtGui.QFrame.Panel)
     table.setFrameShadow(QtGui.QFrame.Sunken)
     #table.setAlternatingRowColors(True)
