@@ -155,6 +155,7 @@ class PeriodicalService(models.Model):
     Справочник периодических услуг
     TO-DO: Сделать справочники валют
     """
+    tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
     cost              = models.FloatField(verbose_name=u'Стоимость услуги', default=0, blank=True)
@@ -195,6 +196,7 @@ class OneTimeService(models.Model):
     Справочник разовых услуг
     TO-DO: Сделать справочники валют
     """
+    tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название разовой услуги', default='', blank=True)
     cost              = models.FloatField(verbose_name=u'Стоимость разовой услуги', default=0, blank=True)
 
@@ -402,6 +404,7 @@ class AccountPrepaysTime(models.Model):
         verbose_name_plural = u"Предоплаченное время пользователей"
 
 class TrafficLimit(models.Model):
+    tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Лимит на класс', blank=True, null=True)
@@ -427,9 +430,9 @@ class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана', unique = True)
     description       = models.TextField(verbose_name=u'Описание тарифного плана', blank=True, default='')
     access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
-    traffic_limit     = models.ManyToManyField(to=TrafficLimit, verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
-    periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
-    onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
+    #traffic_limit     = models.ManyToManyField(to=TrafficLimit, verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
+    #periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
+    #onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
