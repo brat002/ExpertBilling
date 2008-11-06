@@ -511,7 +511,7 @@ class AddNasFrame(QtGui.QDialog):
         
 
         try:
-            self.connection.create(model.save(table="nas_nas"))
+            self.connection.save(model.save(table="nas_nas"))
             self.connection.commit()
         except Exception, e:
             print e

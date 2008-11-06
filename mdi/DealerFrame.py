@@ -379,15 +379,12 @@ class AddDealerFrame(QtGui.QMainWindow):
         bank_model.currency = ""
         
         try:
-            bank_id = self.connection.create(bank_model.save("billservice_bankdata"))
+            self.bank_model = bank_model
+            self.bank_model.id = self.connection.save(bank_model.save("billservice_bankdata"))
             """
             Защита от двойного обавления при создании записи
             """
 
-            if bank_id==-1:
-                bank_id = self.bank_model.id
-            self.bank_model = bank_model
-            self.bank_model.id = bank_id
             
         except Exception, e:
             print 1,e
@@ -416,17 +413,14 @@ class AddDealerFrame(QtGui.QMainWindow):
 
 
         try:
-            model_id = self.connection.create(model.save(table="billservice_dealer"))
+            self.model = model
+            self.model.id = self.connection.save(model.save(table="billservice_dealer"))
             self.connection.commit()
             """
             Защита от двойного обавления при создании записи
             """
-            if model_id==-1:
-                model_id = self.model.id
-            self.model = model
-            self.model.id = model_id
         except Exception, e:
-            print 2,e
+            print e
             self.connection.rollback()
             
         self.model.id = model_id
@@ -608,7 +602,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         model.pay = text[0]
         model.created = datetime.datetime.now()
         try:
-            self.connection.create(model.save("billservice_dealerpay"))
+            self.connection.save(model.save("billservice_dealerpay"))
             self.connection.commit()
         except:
             self.connection.rollback()
@@ -633,7 +627,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
             if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.create("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
+                    self.connection.save("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -864,7 +858,7 @@ class DealerMdiChild(QtGui.QMainWindow):
         model.pay = text[0]
         model.created = datetime.datetime.now()
         try:
-            self.connection.create(model.save("billservice_dealerpay"))
+            self.connection.save(model.save("billservice_dealerpay"))
             self.connection.commit()
         except:
             self.connection.rollback()
@@ -894,7 +888,7 @@ class DealerMdiChild(QtGui.QMainWindow):
             if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.create("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
+                    self.connection.save("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:

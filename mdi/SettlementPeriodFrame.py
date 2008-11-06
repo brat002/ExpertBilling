@@ -178,7 +178,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         model.time_start=self.datetime_edit.dateTime().toPyDateTime()
 
         try:
-            self.connection.create(model.save("billservice_settlementperiod"))
+            self.connection.save(model.save("billservice_settlementperiod"))
             self.connection.commit()
         except Exception, e:
             print e

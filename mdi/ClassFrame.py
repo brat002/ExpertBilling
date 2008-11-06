@@ -125,7 +125,7 @@ class ClassEdit(QtGui.QDialog):
         model.passthrough = self.passthrough_checkBox.checkState()==2
         #model.save()
         try:
-            self.connection.create(model.save("nas_trafficclass"))
+            self.connection.save(model.save("nas_trafficclass"))
             self.connection.commit()
         except Exception, e:
             print e
@@ -643,14 +643,14 @@ class ClassChild(QtGui.QMainWindow):
         model1.weight=1000001
         try:
             
-            self.connection.create(model1.save("nas_trafficclass"))
+            self.connection.save(model1.save("nas_trafficclass"))
             
             model2.weight=a
             model1.weight=b
             
-            self.connection.create(model2.save("nas_trafficclass"))
+            self.connection.save(model2.save("nas_trafficclass"))
             
-            self.connection.create(model1.save("nas_trafficclass"))
+            self.connection.save(model1.save("nas_trafficclass"))
             
             #self.connection.create(model2.save("nas_trafficclass"))
             self.connection.commit()
@@ -718,7 +718,7 @@ class ClassChild(QtGui.QMainWindow):
         if child.exec_()==1:
             child.model.traffic_class_id=model.id
             try:
-                self.connection.create(child.model.save("nas_trafficnode"))
+                self.connection.save(child.model.save("nas_trafficnode"))
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -747,7 +747,7 @@ class ClassChild(QtGui.QMainWindow):
         child=ClassNodeFrame(connection=self.connection, model=model)
         if child.exec_()==1:
             try:
-                self.connection.create(child.model.save("nas_trafficnode"))
+                self.connection.save(child.model.save("nas_trafficnode"))
                 self.connection.commit()
             except Exception, e:
                 print e

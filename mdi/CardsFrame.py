@@ -341,7 +341,7 @@ class SaleCards(QtGui.QDialog):
             model.created = now 
             
             try:
-                salecard_id = self.connection.create(model.save("billservice_salecard"))
+                salecard_id = self.connection.save(model.save("billservice_salecard"))
                 #self.connection.commit()
             except Exception, e:
                 print e
@@ -355,7 +355,7 @@ class SaleCards(QtGui.QDialog):
                     pay.salecard_id = salecard_id
                     pay.pay = unicode(self.lineEdit_pay.text() or 0)
                     pay.created = now
-                    self.connection.create(pay.save("billservice_dealerpay"))
+                    self.connection.save(pay.save("billservice_dealerpay"))
             #print [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]
             #self.connection.rollback()
             #return
@@ -366,8 +366,8 @@ class SaleCards(QtGui.QDialog):
                 card = Object()
                 card.id = card_id
                 card.sold = now
-                self.connection.create(salecard.save("billservice_salecard_cards"))
-                self.connection.create(card.save("billservice_card"))
+                self.connection.save(salecard.save("billservice_salecard_cards"))
+                self.connection.save(card.save("billservice_card"))
     
                 
             self.connection.commit()
@@ -591,9 +591,9 @@ class AddCards(QtGui.QDialog):
                 #model.sold=False
                 #model.activated=False
                 
-                print model.pin
-                print model.__dict__
-                self.connection.create(model.save("billservice_card"))
+                #print model.pin
+                #print model.__dict__
+                self.connection.save(model.save("billservice_card"))
             
             self.connection.commit()
         except Exception, ex:
@@ -901,7 +901,7 @@ class CardsChild(QtGui.QMainWindow):
                 #ids.append()
                 model=self.connection.get("SELECT * FROM billservice_card WHERE id=%s" % int(i))
                 model.disabled=False
-                self.connection.create(model.save("billservice_card"))
+                self.connection.save(model.save("billservice_card"))
                 self.connection.commit()
  
             except Exception, e:
@@ -922,7 +922,7 @@ class CardsChild(QtGui.QMainWindow):
                 #ids.append()
                 model=self.connection.get("SELECT * FROM billservice_card WHERE id=%s" % int(i))
                 model.disabled=True
-                self.connection.create(model.save("billservice_card"))
+                self.connection.save(model.save("billservice_card"))
                 self.connection.commit()
 
             except Exception, e:
