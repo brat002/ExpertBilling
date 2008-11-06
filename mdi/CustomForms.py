@@ -83,6 +83,7 @@ class ComboBoxDialog(QtGui.QDialog):
         self.items = items
         self.selected_item = selected_item
         self.title = title
+        self.selected_id = None
         
         self.resize(QtCore.QSize(QtCore.QRect(0,0,318,89).size()).expandedTo(self.minimumSizeHint()))
         
@@ -120,10 +121,16 @@ class ComboBoxDialog(QtGui.QDialog):
         i=0
         for item in self.items:
             self.comboBox.addItem(item.name)
+            self.comboBox.setItemData(i, QtCore.QVariant(item.id))
             if unicode(item.name) == unicode(self.selected_item):
                 self.comboBox.setCurrentIndex(i)
+                
             i+=1
             
+    def accept(self):
+        self.selected_id = self.comboBox.itemData(self.comboBox.currentIndex()).toInt()[0]
+        QtGui.QDialog.accept(self)
+        
 class SpeedEditDialog(QtGui.QDialog):
     def __init__(self, item, title):
         super(SpeedEditDialog, self).__init__()
@@ -817,16 +824,14 @@ class OperatorDialog(QtGui.QDialog):
         bank_model.currency = unicode(self.lineEdit_currency.text())
 
         try:
-            bank_id = self.connection.create(bank_model.save("billservice_bankdata"))
-            if bank_id==-1:
-                bank_id = self.bank_model.id
+            self.bank_model.id = self.connection.save(bank_model.save("billservice_bankdata"))
         except Exception, e:
             print e
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка!",
                                 u"Невозможно сохранить данные!")
             return
-        print "bank_id", bank_id
+        print "bank_id", self.bank_model.id
         
         op_model.organization = unicode(self.lineEdit_organization.text())
         op_model.okpo = unicode(self.lineEdit_okpo.text())
@@ -838,13 +843,13 @@ class OperatorDialog(QtGui.QDialog):
         op_model.postaddress = unicode(self.lineEdit_postaddress.text())
         op_model.uraddress = unicode(self.lineEdit_uraddress.text())
         op_model.email = unicode(self.lineEdit_email.text())
-        op_model.bank_id = bank_id
+        op_model.bank_id = self.bank_model.id
         
         
 
 
         try:
-            op_id = self.connection.create(op_model.save("billservice_operator"))
+            self.connection.create(op_model.save("billservice_operator"))
             self.connection.commit()
         except Exception, e:
             print e

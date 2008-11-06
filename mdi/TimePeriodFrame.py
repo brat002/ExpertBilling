@@ -117,13 +117,13 @@ class AddTimePeriod(QtGui.QDialog):
             
             model.repeat_after=unicode(self.repeat_edit.currentText())
     
-            if 'id' in model.__dict__:
+            if model.hasattr('id'):
                 #Update
-                self.connection.create(model.save("billservice_timeperiodnode"))
+                self.connection.save(model.save("billservice_timeperiodnode"))
             else:
                 #Insert
                 self.nodemodel=model
-                self.nodemodel.id = self.connection.create(model.save("billservice_timeperiodnode"))
+                self.nodemodel.id = self.connection.save(model.save("billservice_timeperiodnode"))
                 #print self.nodemodel.id
             self.connection.commit()
         except Exception, e:
@@ -329,7 +329,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         try:      
             self.connection.commit()
-            if not self.connection.create(model.save(table="billservice_timeperiod")):
+            if not self.connection.save(model.save(table="billservice_timeperiod")):
                 QtGui.QMessageBox.warning(self, u"Ошибка",
                             u"Вероятно, такое название уже есть в списке.")
             self.connection.commit()
@@ -384,7 +384,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         try:
             model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % model.id)
             model.name=unicode(text[0])
-            self.connection.create(model.save('billservice_timeperiod'))    
+            self.connection.save(model.save('billservice_timeperiod'))    
             self.conection.commit()            
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
@@ -403,7 +403,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         child=AddTimePeriod(connection=self.connection)
         if child.exec_()==1:
             try:
-                self.connection.create("INSERT INTO billservice_timeperiod_time_period_nodes(timeperiod_id, timeperiodnode_id) VALUES(%d, %d)" % (model.id, child.nodemodel.id))
+                self.connection.save("INSERT INTO billservice_timeperiod_time_period_nodes(timeperiod_id, timeperiodnode_id) VALUES(%d, %d)" % (model.id, child.nodemodel.id))
                 self.connection.commit()
             except Exception, e:
                 print e

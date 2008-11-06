@@ -335,7 +335,7 @@ class MonitorFrame(QtGui.QMainWindow):
         sessionid = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).sessionid)
         #print sessionid
         self.connection.pod(session=sessionid)
-        self.connection.create("UPDATE radius_activesession SET session_status='ACK' WHERE sessionid='%s'" % sessionid)
+        self.connection.save("UPDATE radius_activesession SET session_status='ACK' WHERE sessionid='%s'" % sessionid)
         self.connection.commit()
         self.fixtures()
         

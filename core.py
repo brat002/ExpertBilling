@@ -1,5 +1,5 @@
 #-*-coding=utf-8-*-
-#from encodings import idna
+
 from daemonize import daemonize
 import time, datetime, os, sys, gc, traceback
 
@@ -26,17 +26,17 @@ from psycopg2.pool import ThreadedConnectionPool
 
 
 import psycopg2.extras
-#import psycopg2._psycopg.extensions.connection.
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+
 import psycopg2
 import IPy
-
-
 
 from chartprovider.bpplotadapter import bpplotAdapter
 from chartprovider.bpcdplot import cdDrawer
 
 import ConfigParser
+
 config = ConfigParser.ConfigParser()
 
 from DBUtils.PooledDB import PooledDB
@@ -125,67 +125,7 @@ add chain=forward action=drop comment="drop everything else"
 #redirect_std("core", redirect=config.get("stdout", "redirect"))
 #from mdi.helpers import Object as Object
 
-#TODO: имхо слип тредов надо вынести в опции
-
-"""config.read("ebs_config.ini")
-
-
-
-dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-
-                                                               config.get("db", "password"))
-
-psycopg2.threadsafety = 1
-#pool = None                                                               
-#pool = ThreadedConnectionPool(15, 60, dsn)
-
-poolInitTime = datetime.datetime.now()
-poolInitLock = threading.Lock()
-poolInitDelta = datetime.timedelta(minutes=1)
-poolInitConnected = True
-poolInitCloseAll = False
-def poolReconnect():
-    print "poolreconnect"
-    global poolInitTime
-    global poolInitDelta
-    global poolInitConnected
-    global poolInitCloseAll
-    #if (poolInitTime + poolInitDelta) <= datetime.datetime.now():
-    if not poolInitConnected and ((poolInitTime + poolInitDelta) <= datetime.datetime.now()):
-        print "timetest OK"
-        global poolInitLock
-        poolInitLock.acquire()
-        try:
-            global pool
-            global dsn
-        
-            #pool.closeall()
-            '''for ckey in pool._used.iterkeys():
-                pool.putconn(key=ckey)'''
-            if not poolInitCloseAll:
-                #pool.closeall()
-                poolInitCloseAll = True
-            time.sleep(10)
-            psycopg2.connect(dsn)
-            #pool._pool = []
-            #pool = ThreadedConnectionPool(15, 60, dsn)
-            #for i in range(15):
-                #pool._pool.append(psycopg2.connect(dsn))
-        except Exception, ex:
-            print "poolreconnect: noconnect: ", ex
-        else:
-            poolInitTime = datetime.datetime.now()
-            poolInitConnected = True
-            poolInitCloseAll = False
-            #pool.closed = False
-            print "connect: ", poolInitTime
-        finally:
-            #pool._lock.release()
-            poolInitLock.release()
-"""
-            
+   
 def comparator(d, s):
     for key in s:
         if s[key]!='' and s[key]!='Null' and s[key]!='None':
@@ -458,7 +398,7 @@ class periodical_service_bill(Thread):
                 #выбираем список тарифных планов у которых есть периодические услуги
                 self.cur.execute("""SELECT id, settlement_period_id, ps_null_ballance_checkout  
                                  FROM billservice_tariff  as tarif
-                                 WHERE id in (SELECT tariff_id FROM billservice_tariff_periodical_services) AND tarif.active=True""")
+                                 WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
                 rows=self.cur.fetchall()
                 #print "SELECT TP"
                 #перебираем тарифные планы
@@ -487,16 +427,15 @@ class periodical_service_bill(Thread):
                     '''self.cur.execute("""
                                      SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start::timestamp without time zone,
                                      c.length, c.length_in, c.autostart
-                                     FROM billservice_tariff_periodical_services as p
-                                     JOIN billservice_periodicalservice as b ON p.periodicalservice_id=b.id
+                                     FROM  billservice_periodicalservice as b
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
-                                     WHERE p.tariff_id=%d
+                                     WHERE b.tarif_id=%d
                                      """ % tariff_id)'''
                     self.cur.execute("""SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start,
                                      c.length, c.length_in, c.autostart
                                      FROM billservice_periodicalservice as b 
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
-                                     WHERE b.id IN (SELECT periodicalservice_id FROM billservice_tariff_periodical_services WHERE tariff_id=%s);""" , (tariff_id,))
+                                     WHERE b.tarif_id=%s;""" , (tariff_id,))
                     rows_ps=self.cur.fetchall()
                     # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                     for row_ps in rows_ps:
@@ -754,7 +693,7 @@ class TimeAccessBill(Thread):
                         """ % ps_id)'''
                     self.cur.execute("""SELECT tan.time_period_id, tan.cost
                         FROM billservice_timeaccessnode as tan
-                        WHERE (tan.time_period_id NOTNULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
+                        WHERE (tan.time_period_id NOT NULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
                     periods=self.cur.fetchall()
                     for period in periods:
                         period_id=period[0]
@@ -809,7 +748,7 @@ class TimeAccessBill(Thread):
                 else:
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
-                time.sleep(30)
+                time.sleep(50)
 
 
 class NetFlowAggregate(Thread):
@@ -1042,37 +981,9 @@ class NetFlowBill(Thread):
 
     def run(self):
         while True:
-            
-
             try:
-                """print self.getName() + " threadstart"
-                #if self.connection == None:
-                if not self.conn:
-                    global poolInitTime
-                    global poolInitDelta
-                    global poolInitConnected
-                    #global pool
-                    if poolInitConnected:
-                        try:
-                            #poolInitLock.acquire()
-                            #self.connection = pool.getconn()
-                            self.connection = psycopg2.connect(dsn)
-                            print self.connection
-                            self.connection.set_client_encoding('UTF8')
-                            self.conn = True
-                        except Exception, ex:
-                            print "NetFlowBill get connection error: ", ex
-                        finally:
-                            pass
-                            #poolInitLock.release()
-                if (self.cur == None) or (self.cur.closed):
-                    if self.connection != None:
-                        if not self.connection.closed:
-                            self.cur = self.connection.cursor()"""
-            
                 a=time.clock()
-                
-                #!!!
+
                 self.cur.execute(
                     """
                     SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.direction, nf.octets, bs_acc.username, 
@@ -1209,7 +1120,7 @@ class NetFlowBill(Thread):
                     self.connection.commit()
                 self.connection.commit()
                 gc.collect()
-                time.sleep(40)
+                time.sleep(45)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -1217,44 +1128,6 @@ class NetFlowBill(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 #gc.collect()
                 time.sleep(40)
-
-        """except Exception, ex:
-                ''''if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + str(ex)
-                else:
-                    print self.getName() + ": exception: " + str(ex)
-                time.sleep(40)'''
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + str(ex)
-                    print "closed"
-                    global poolInitConnected
-                    global poolInitLock
-                    poolInitLock.acquire()
-                    #poolInitConnected = False
-                    try:
-                        #if self.connection and not self.connection.closed:
-                        if self.conn: 
-                            self.cur.close()
-                            self.cur = None
-                            self.connection.close()
-                            #pool.putconn(self.connection)
-                            #self.connection = None
-                            self.conn = False
-                    except:
-                        print "closeexcept"
-                    finally:
-                        poolInitLock.release()
-                        #poolReconnect()
-                elif isinstance(ex, psycopg2.InterfaceError):
-                    print self.getName() + ": DB interface exception: " + str(ex)
-                    #poolReconnect()
-                else:
-                    print self.getName() + ": exception: " + str(ex)
-                    print repr(ex)
-                    #poolReconnect()
-                gc.collect()
-                time.sleep(40)"""
-                
 
         #connection.close()
 
@@ -1285,8 +1158,7 @@ class limit_checker(Thread):
                     FROM billservice_tariff as tarif
                     JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id and acctt.datetime=(SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
                     JOIN billservice_account as account ON account.id=acctt.account_id
-                    LEFT JOIN billservice_tariff_traffic_limit as ttl ON ttl.tariff_id=tarif.id
-                    LEFT JOIN billservice_trafficlimit as tlimit ON tlimit.id = ttl.trafficlimit_id
+                    LEFT JOIN billservice_trafficlimit as tlimit ON tlimit.tarif_id = tarif.id
                     LEFT JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period_id
                     ORDER BY account.id ASC;
                     """)
@@ -1349,15 +1221,13 @@ class limit_checker(Thread):
                             d+=","
                         d+="'OUTPUT'"
     
-                    query="""
+
+                    self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf
                          JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
                          WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
     
-                         """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,)
-    
-    
-                    self.cur.execute(query)
+                         """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,))
     
                     tsize=0
                     sizes=self.cur.fetchall()
@@ -1385,46 +1255,15 @@ class limit_checker(Thread):
                 self.connection.commit()
                 #print self.getName() + " threadend"
                 gc.collect()
-                time.sleep(30)
+                time.sleep(110)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
-                time.sleep(30)
-            """except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + str(ex)
-                    print "closed"
-                    global poolInitConnected
-                    global poolInitLock
-                    poolInitLock.acquire()
-                    #poolInitConnected = False
-                    try:
-                        #if self.connection and not self.connection.closed:
-                        if self.conn:
-                            self.cur.close()
-                            self.cur = None
-                            self.connection.close()
-                            #pool.putconn(self.connection)
-                            #self.connection = None
-                            self.conn = False
-                    except:
-                        print "closeexcept"
-                    finally:
-                        #pass
-                        poolInitLock.release()
-                        #poolReconnect()
-                elif isinstance(ex, psycopg2.InterfaceError):
-                    print self.getName() + ": DB interface exception: " + str(ex)
-                    #poolReconnect()
-                else:
-                    print self.getName() + ": exception: " + str(ex)
-                    print repr(ex)
-                    #poolReconnect()
-                gc.collect()
-                time.sleep(30)"""
+                time.sleep(110)
+
                 
 
 
@@ -1681,8 +1520,7 @@ class settlement_period_service_dog(Thread):
                                  WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif
                                  FROM billservice_account as account
                                  JOIN billservice_tariff as tarif ON tarif.id=get_tarif(account.id)
-                                 JOIN billservice_tariff_onetime_services as ots ON ots.tariff_id=tarif.id
-                                 JOIN billservice_onetimeservice as service ON service.id=ots.onetimeservice_id
+                                 JOIN billservice_onetimeservice as service ON service.tarif_id=tarif.id
                                  LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
                                  WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
                                  WHERE (account.ballance+account.credit)>0 and oth.id is Null;
@@ -1863,7 +1701,7 @@ class ipn_service(Thread):
     
                     self.connection.commit()
                 gc.collect()
-                time.sleep(60)
+                time.sleep(70)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -2012,9 +1850,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection._con._con.set_isolation_level(1)
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
-        '''self.listconnection = pool.connection()
-	self.listconnection._con._con.set_client_encoding('UTF8')
-	self.listcur = self.listconnection.cursor()'''
         self.ticket = ''
         #self._cddrawer = cdDrawer()
 
@@ -2039,7 +1874,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def testCredentials(self, host, login, password, cur=None, connection=None):
         try:
-            print host, login, password
+            #print host, login, password
             a=SSHClient(host, 22,login, password)
             a.close()
         except Exception, e:
@@ -2333,15 +2168,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
     @authentconn
-    def create(self, sql, cur=None, connection=None):
+    def save(self, sql, cur=None, connection=None):
         #print sql
         cur.execute(sql)
 
         #print cur.fetchone()
-        try:
-            id = cur.fetchone()['id']
-        except:
-            id=-1
+
+        id = cur.fetchone()['id']
+
         #connection.commit()
 
         return id

@@ -186,7 +186,7 @@ class SystemUserFrame(QtGui.QDialog):
             model.description = unicode(self.comment_edit.text())
             model.status = self.status_checkBox.checkState()==2
             try:
-                self.connection.create(model.save(table="billservice_systemuser"))
+                self.connection.save(model.save(table="billservice_systemuser"))
                 self.connection.commit()
             except Exception, e:
                 print e
