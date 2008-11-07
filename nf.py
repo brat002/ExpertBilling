@@ -568,9 +568,6 @@ class ServiceThread(Thread):
             
         
 def main ():
-    if "-D" not in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
-        
         
     global packetCount
     global nfFlowCache
@@ -652,6 +649,9 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
     sys.exit(1)
 
 if __name__=='__main__':
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
+    
     config.read("ebs_config.ini")
 
     pool = PooledDB(
