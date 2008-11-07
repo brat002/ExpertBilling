@@ -639,6 +639,7 @@ class NasEbs(ebsTableWindow):
         id=self.getSelectedId()
         if id>0:
             if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
+                print "accounts on NAS", self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id)
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
                 return
             elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
@@ -838,6 +839,7 @@ class NasMdiChild(QtGui.QMainWindow):
         id=self.getSelectedId()
         if id>0:
             if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
+                print self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id)
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
                 return
             elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
