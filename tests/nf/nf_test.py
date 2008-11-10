@@ -7,14 +7,15 @@ packets = f.read()
 plist = packets.split('======')
 hst = '0.0.0.0'
 prt = 9996
-addrs = socket.getaddrinfo(config.get("nf", "host"), config.get("nf", "port"), socket.AF_UNSPEC,
+addrs = socket.getaddrinfo(config.get("nf", "host"), 1234, socket.AF_UNSPEC,
                                socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
 #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 print addrs
 s = socket.socket(addrs[0][0], addrs[0][1])
-s.connect(addrs[0][4])
+s.connect(('127.0.0.1', 9996))
+print addrs[0][4]
 
-addrport=('10.10.1.100', 9996)
+#addrport=('10.10.1.100', 9996)
 
 plist.pop()
 print len(plist)
@@ -25,5 +26,5 @@ for i in range(1000):
     a=time.clock()
     for data in plist:
         s.send(data)
-        time.sleep(0.0005)
+        #time.sleep(0.0005)
     print time.clock() - a
