@@ -2,7 +2,7 @@
 import os, sys
 from daemonize import daemonize
 import socket, select, struct, datetime, time, sys, os
-
+import asyncore
 from IPy import IP
 try:
     import mx.DateTime
@@ -43,18 +43,47 @@ nfFlowCache = None
 packetCount = None
 
 
+class reception_server(asyncore.dispatcher):
+    def __init__(self, host, port):
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind( (host, port) )
+
+    def handle_connect(self):
+        #print 'New packet'
+        pass
+    
+    
+    def handle_read(self):
+        global nfFlowCache
+        data, addrport = self.recvfrom(8192)
+        assert len(data)<=8192
+        try:
+            NetFlowPacket(data, addrport, nfFlowCache, None)
+        except Exception, ex:
+            print "NFP exception: %s" % (repr(ex),)
+        
+    def writable(self):
+        return (0)
+    
 class Starter(Thread):
-        def __init__ (self, address, handler):
-            self.address=address
+        def __init__ (self, host, port, handler):
+            self.host=host
+            self.port=port
             self.handler=handler
             Thread.__init__(self)
 
         def run(self):
-            server = ThreadingUDPServer(self.address, self.handler)
+            #server = ThreadingUDPServer(self.address, self.handler)
             #server.allow_reuse_address = True
             #server.conn = pool.connection()
             #server.conn._con._con.set_isolation_level(0)
-            server.serve_forever()
+            #server.serve_forever()
+            
+            reception_server(self.host, self.port)
+            
+            while 1: 
+                asyncore.poll(0.010)
 
             
 class BaseHandle(DatagramRequestHandler):
@@ -591,7 +620,7 @@ def main ():
     fdqThread.start()
     #-----
     
-    server_nf = Starter((config.get("nf", "host"), int(config.get("nf", "port"))), NetFlowCollectHandle)
+    server_nf = Starter(config.get("nf", "host"), int(config.get("nf", "port")), NetFlowCollectHandle)
     server_nf.start()
     
     #cur.connection.commit()

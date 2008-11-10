@@ -14,10 +14,10 @@
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QGridLayout" name="gridLayout" >
-    <item row="0" column="1" >
+    <item row="0" column="0" >
      <widget class="QTabWidget" name="tabWidget" >
       <property name="currentIndex" >
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab" >
        <attribute name="title" >
@@ -76,66 +76,6 @@
             <widget class="QToolButton" name="generate_password_toolButton" >
              <property name="text" >
               <string>#</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="1" >
-         <widget class="QGroupBox" name="groupBox_2" >
-          <property name="minimumSize" >
-           <size>
-            <width>391</width>
-            <height>84</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>391</width>
-            <height>84</height>
-           </size>
-          </property>
-          <property name="title" >
-           <string>Договор</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4" >
-           <item row="0" column="0" >
-            <widget class="QLabel" name="label_2" >
-             <property name="text" >
-              <string>Дата подключения</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1" >
-            <widget class="QLineEdit" name="lineEdit" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" >
-            <widget class="QLabel" name="label_4" >
-             <property name="text" >
-              <string>Номер договора</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1" >
-            <widget class="QLineEdit" name="lineEdit_2" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2" >
-            <widget class="QToolButton" name="toolButton" >
-             <property name="text" >
-              <string/>
-             </property>
-             <property name="icon" >
-              <iconset>
-               <normaloff>../images/printer.png</normaloff>../images/printer.png</iconset>
              </property>
             </widget>
            </item>
@@ -320,6 +260,66 @@
           </layout>
          </widget>
         </item>
+        <item row="0" column="1" >
+         <widget class="QGroupBox" name="groupBox_2" >
+          <property name="minimumSize" >
+           <size>
+            <width>391</width>
+            <height>84</height>
+           </size>
+          </property>
+          <property name="maximumSize" >
+           <size>
+            <width>391</width>
+            <height>84</height>
+           </size>
+          </property>
+          <property name="title" >
+           <string>Договор</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_4" >
+           <item row="0" column="0" >
+            <widget class="QLabel" name="label_2" >
+             <property name="text" >
+              <string>Дата подключения</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" >
+            <widget class="QLineEdit" name="lineEdit" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" >
+            <widget class="QLabel" name="label_4" >
+             <property name="text" >
+              <string>Номер договора</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" >
+            <widget class="QLineEdit" name="lineEdit_2" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2" >
+            <widget class="QToolButton" name="toolButton" >
+             <property name="text" >
+              <string/>
+             </property>
+             <property name="icon" >
+              <iconset>
+               <normaloff>../images/printer.png</normaloff>../images/printer.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
         <item rowspan="3" row="2" column="0" >
          <widget class="QGroupBox" name="groupBox_3" >
           <property name="minimumSize" >
@@ -415,6 +415,48 @@
           </layout>
          </widget>
         </item>
+        <item row="5" column="0" colspan="2" >
+         <widget class="QGroupBox" name="groupBox_4" >
+          <property name="minimumSize" >
+           <size>
+            <width>781</width>
+            <height>51</height>
+           </size>
+          </property>
+          <property name="maximumSize" >
+           <size>
+            <width>781</width>
+            <height>51</height>
+           </size>
+          </property>
+          <property name="title" >
+           <string>Статус</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout" >
+           <item>
+            <widget class="QCheckBox" name="status_edit" >
+             <property name="text" >
+              <string>Активен в системе</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_5" >
+             <property name="text" >
+              <string>Включен на сервере доступа</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_6" >
+             <property name="text" >
+              <string>Добавлен на сервер доступа</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
         <item row="3" column="1" >
          <widget class="QGroupBox" name="groupBox_8" >
           <property name="minimumSize" >
@@ -504,61 +546,13 @@
           </layout>
          </widget>
         </item>
-        <item row="5" column="0" colspan="2" >
-         <widget class="QGroupBox" name="groupBox_4" >
-          <property name="minimumSize" >
-           <size>
-            <width>781</width>
-            <height>51</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>781</width>
-            <height>51</height>
-           </size>
-          </property>
-          <property name="title" >
-           <string>Статус</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout" >
-           <item>
-            <widget class="QCheckBox" name="status_edit" >
-             <property name="text" >
-              <string>Активен в системе</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_5" >
-             <property name="text" >
-              <string>Включен на сервере доступа</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_6" >
-             <property name="text" >
-              <string>Добавлен на сервер доступа</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
        </layout>
-       <zorder>suspended_edit</zorder>
        <zorder>account_data_groupBox</zorder>
        <zorder>account_info_groupBox</zorder>
        <zorder>groupBox</zorder>
        <zorder>groupBox_2</zorder>
-       <zorder>commandLinkButton_2</zorder>
-       <zorder>groupBox_2</zorder>
-       <zorder>address_lineEdit</zorder>
-       <zorder>lastname_edit</zorder>
        <zorder>groupBox_3</zorder>
        <zorder>groupBox_4</zorder>
-       <zorder>commandLinkButton</zorder>
        <zorder>groupBox_8</zorder>
        <zorder>ballance_info_groupBox</zorder>
       </widget>
@@ -1072,8 +1066,6 @@
      </widget>
     </item>
    </layout>
-   <zorder>mdiArea</zorder>
-   <zorder>tabWidget</zorder>
   </widget>
   <widget class="QToolBar" name="toolBar" >
    <property name="windowTitle" >
