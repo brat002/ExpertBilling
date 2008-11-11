@@ -24,9 +24,7 @@ class reception_server(asyncore.dispatcher):
 
     def handle_write(self):
         sent = self.sendto(self.buffer, (self.host, self.port))
-        
-        #self.send('123')
-        #self.buffer=''
+
         self.buffer = self.buffer[sent:]
 
 reception_server('10.10.1.2', 1812)

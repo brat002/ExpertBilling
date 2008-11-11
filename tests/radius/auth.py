@@ -48,20 +48,23 @@ class AuthRequest(Thread):
                     print "Network error: " + error[1]
                     sys.exit(1)
                     
-                time.sleep(5)
+                #time.sleep(1)
                   
 
 b=[]
-for i in xrange(0,1000):
+zz=time.clock()
+for i in xrange(0,100):
       #print
       a=AuthRequest()
-      b.append(a.start())
+      a.start()
+      b.append(a)
 
-time.sleep(20)
+
 
 for i in b:
-      i.join()
-      
+    #print i
+    i.join()
+print time.clock()-zz      
     
 #===============================================================================
 #    if reply.code==pyrad.packet.AccessAccept:

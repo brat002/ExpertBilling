@@ -10,8 +10,11 @@ except:
     print 'cannot import mx'
 import os,datetime
 
-from SocketServer import ThreadingUDPServer
-from SocketServer import DatagramRequestHandler
+#from SocketServer import ThreadingUDPServer
+#from SocketServer import DatagramRequestHandler
+
+import socket
+import asyncore
 
 from threading import Thread
 import dictionary, packet
@@ -36,7 +39,6 @@ except:
 
 import ConfigParser
 
-from daemonize import daemonize
 daemonize("/dev/null", "log.txt", "log.txt")
 
 
@@ -46,6 +48,68 @@ numauth=0
 numacct=0
 gigaword = 4294967296
 
+class AsyncUDPServer(asyncore.dispatcher):
+    ac_out_buffer_size = 8096*10
+    ac_in_buffer_size = 8096*10
+    
+    def __init__(self, host, port):
+#        self.buffer=''
+        self.outbuf = []
+
+        asyncore.dispatcher.__init__(self)
+
+        self.host = host
+        self.port = port
+        self.dbconn = None
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind( (host, port) )
+        self.set_reuse_addr()
+
+        
+    def handle_read_event (self):
+        try:
+            data, addr = self.socket.recvfrom(4096)
+        except:
+            import traceback
+            traceback.print_exc()
+            return
+        self.handle_readfrom(data, addr)
+
+
+    def handle_readfrom(self,data, address):
+        pass
+
+    def writable (self):
+        return len(self.outbuf)
+
+    def sendto (self, data, addr):
+        self.outbuf.append((data, addr))
+        self.initiate_send()
+
+    def initiate_send(self):
+        b = self.outbuf
+        while len(b):
+            data, addr = b[0]
+            del b[0]
+            try:
+                result = self.socket.sendto (data, addr)
+                if result != len(data):
+                    self.log('Sent packet truncated to %d bytes' % result)
+            except socket.error, why:
+                if why[0] == EWOULDBLOCK:
+                    return
+                else:
+                    raise socket.error, why
+
+    def handle_error (self, *info):
+        import traceback
+        traceback.print_exc()
+        print 'uncaptured python exception, closing channel %s' % `self`
+        self.close()
+    
+    def handle_close(self):
+        self.close()
+        
 def authNA(packet):
     return packet.ReplyPacket()
 
@@ -87,22 +151,11 @@ class HandleNA(HandleBase):
         """
         self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject.CreateReply()
-
-
-        #-----
-        #self.connection = pool.connection()
-        #self.connection._con._con.set_isolation_level(0)
-        #self.connection._con._con.set_client_encoding('UTF8')
-        #self.cur = self.connection.cursor()
-        #-----
         self.cur = dbCur
 
     def handle(self):
         row=self.get_nas_info()
         self.cur.close()
-        #----
-        #self.connection.close()
-        #----
         
         if row is not None:
             self.packetobject.secret = str(row[1])
@@ -124,14 +177,7 @@ class HandleAuth(HandleBase):
         #for key,value in packetobject.items():
         #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
         
-        #-----
-        '''
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.connection._con._con.set_isolation_level(0)
-        self.cur = self.connection.cursor()
-        '''
-        #-----
+
         self.cur = dbCur
 
     def auth_NA(self):
@@ -217,14 +263,14 @@ class HandleAuth(HandleBase):
             #----
             #self.connection.close()
             #----
-            print "Unknown User", self.packetobject['User-Name'][0]
+            #print "Unknown User", self.packetobject['User-Name'][0]
             return self.auth_NA()
 
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
             self.cur.close()
-            print "Unallowed NAS for user ", self.packetobject['User-Name'][0]
+            #print "Unallowed NAS for user ", self.packetobject['User-Name'][0]
             return self.auth_NA()
 
 
@@ -236,7 +282,7 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 break
 
-        print "Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status)
+        #print "Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status)
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
             self.replypacket.code=2
             self.replypacket.username=str(username) #Нельзя юникод
@@ -245,7 +291,7 @@ class HandleAuth(HandleBase):
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
             self.create_speed(tarif_id, speed=speed)
-            print "Setting Speed For User" , self.speed
+            #print "Setting Speed For User" , self.speed
             self.cur.close()
 
         else:
@@ -491,39 +537,36 @@ class HandleAcct(HandleBase):
         
         return self.replypacket
 
+class AsyncAuth(AsyncUDPServer):
+    def __init__(self, host, port, dbconn):
+        self.outbuf = []
+        AsyncUDPServer.__init__(self, host, port)
+        self.dbconn = dbconn
 
-#radius
-class BaseAuth(DatagramRequestHandler):
-    def handle(self):
-        pass
 
+        
 
-class RadiusAuth(BaseAuth):
-
-    def handle(self):
+    def handle_readfrom(self,data, address):
         global numauth
-        if numauth>=80:
+        if numauth>=180:
             print "PREVENTING DoS"
-            
             return
-        
-        
         t = clock()
         returndata=''
-        data=self.request[0] # or recv(bufsize, flags)
+        #data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
-        addrport=self.client_address
+        addrport=address
         #print "BEFORE AUTH:%.20f" % (clock()-t)
         packetobject=packet.Packet(dict=dict,packet=data)
         access_type = get_accesstype(packetobject)
         numauth+=1
         if access_type in ['PPTP', 'PPPOE']:
             print "Auth Type %s" % access_type
-            #-----
-            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.server.dbconn.cursor())
+
+            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; print "Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]);return
-            #-----
+
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
             print "Password check:", authobject.AccessAccept
             returndata=authobject.ReturnPacket()
@@ -532,10 +575,9 @@ class RadiusAuth(BaseAuth):
             del authobject
         elif access_type in ['DHCP'] :
             #-----
-            coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.server.dbconn.cursor())
+            coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
             if packetfromcore is None: numauth-=1; return
-            #packetobject.secret=packetfromcore.secret
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
             returndata=authobject.ReturnPacket()
             del coreconnect
@@ -545,66 +587,58 @@ class RadiusAuth(BaseAuth):
             #-----
             returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
             if returnpacket is None:numauth-=1; return
-            
             returndata=authNA(returnpacket)
-            
-        #print returndata    
+             
+        numauth-=1 
+        print "AUTH time:%.8f" % (clock()-t)
         if returndata!="":
-            self.socket.sendto(returndata,addrport)
-            #print numauth
-            
+            self.sendto(returndata,address)
             del data
             del addrport
             del packetobject
             del access_type
             del returndata
-        numauth-=1
-        print "AUTH time:%.8f" % (clock()-t)
 
-class RadiusAcct(BaseAuth):
+class AsyncAcc(AsyncUDPServer):
+    def __init__(self, host, port, dbconn):
+        self.outbuf = []
+        AsyncUDPServer.__init__(self, host, port)
+        self.dbconn = dbconn
 
-    def handle(self):
+    def handle_readfrom(self,data, address):
         global numacct
         if numacct>=100:
             return "PREVENTING ACCT DoS"
         numacct+=1
         t = clock()
-        data=self.request[0] # or recv(bufsize, flags)
         assert len(data)<=4096
-        addrport=self.client_address
+        addrport=address
         packetobject=packet.AcctPacket(dict=dict,packet=data)
 
-        coreconnect = HandleAcct(packetobject=packetobject, nasip=self.client_address[0], dbCur=self.server.dbconn.cursor())
+        coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=self.dbconn.cursor())
         packetfromcore = coreconnect.handle()
         if packetfromcore is not None: 
             returndat=packetfromcore.ReplyPacket()
             self.socket.sendto(returndat,addrport)
             del returndat
-        #print "ACC:%.20f" % (clock()-t)
-        #del coreconnect
-        #print numacct
+        print "ACC:%.20f" % (clock()-t)
         numacct-=1
         del packetfromcore
         del coreconnect
-        
-
-
 
 class Starter(Thread):
-        def __init__ (self, address, handler):
+        def __init__ (self, address, port, handler):
             self.address=address
+            self.port = port
             self.handler=handler
             Thread.__init__(self)
 
         def run(self):
-            server = ThreadingUDPServer(self.address, self.handler)
-            server.allow_reuse_address = True
-            #-----
-            server.dbconn = pool.connection()
-            server.dbconn._con._con.set_isolation_level(0)
-            server.dbconn._con._con.set_client_encoding('UTF8')
-            #-----
-            server.serve_forever()
+            dbconn = pool.connection()
+            dbconn._con._con.set_isolation_level(0)
+            dbconn._con._con.set_client_encoding('UTF8')
+            server = self.handler(self.address, self.port, dbconn)
+
 
 def setpriority(pid=None,priority=1):
     """ Set The Priority of a Windows Process.  Priority is a value between 0-5 where
@@ -630,11 +664,15 @@ def main():
         daemonize("/dev/null", "log.txt", "log.txt")
 
     
-    server_auth = Starter(("0.0.0.0", 1812), RadiusAuth)
+    server_auth = Starter("0.0.0.0", 1812, AsyncAuth)
     server_auth.start()
+    
 
-    server_acct = Starter(("0.0.0.0", 1813), RadiusAcct)
+    server_acct = Starter("0.0.0.0", 1813, AsyncAcc)
     server_acct.start()
+    
+    while 1: 
+        asyncore.poll(0.01)
 
 import socket
 if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing','medusa', 'Billing.NemirovOnline', 'iserver']:
