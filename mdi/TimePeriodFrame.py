@@ -507,7 +507,6 @@ class TimePeriodChild(QtGui.QMainWindow):
         except Exception, ex:
             print ex
         self.treeWidget.clear()
-
         periods=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY id ASC")
         for period in periods:
             #item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
@@ -515,9 +514,6 @@ class TimePeriodChild(QtGui.QMainWindow):
             item.setIcon(0,QtGui.QIcon("images/folder.png"))
             item.setText(0, period.name)
             item.id = period.id
-            #print item
-            #self.timeperiod_list_edit.addItem(item)
-            #self.
         if curItem != -1:
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
             

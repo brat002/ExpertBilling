@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 import Pyro.core
 import traceback
+from ebsWindow import ebsTable_n_TreeWindow
 from helpers import Object as Object
 from helpers import dateDelim
 from helpers import connlogin
@@ -2973,6 +2974,69 @@ class AddAccountFrame(QtGui.QDialog):
 
 
 
+class AccountsMdiEbs(ebsTable_n_TreeWindow):
+    def __init__(self, connection, parent, selected_account=None):
+        columns=[u'id', u'Имя пользователя', u'Балланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
+        initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
+        self.parent = parent
+        self.thread = Worker()
+        self.selected_account = selected_account
+        super(AccountsMdiEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.tarif_treeWidget = self.treeWidget
+        
+    def ebsPostInit(self, initargs):
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
+        self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
+
+        actList=[("addAction", "Добавить аккаунт", "images/add.png", self.addframe), \
+                 ("delAction", "Удалить аккаунт", "images/del.png", self.delete), \
+                 ("addTarifAction", "Добавить тариф", "images/folder_add.png", self.addTarif), \
+                 ("delTarifAction", "Удалить тариф", "images/folder_delete.png", self.delTarif), \
+                 ("transactionAction", "Пополнить счёт", "images/pay.png", self.makeTransation), \
+                 ("transactionReportAction", "История платежей", "images/moneybook.png", self.transactionReport), \
+                 ("actionEnableSession", "Включить на сервере доступа", "images/add.png", self.accountEnable), \
+                 ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \
+                 ("actionAddAccount", "Добавить на сервер доступа", "images/add.png", self.accountAdd), \
+                 ("actionDeleteAccount", "Удалить с сервера доступа", "images/del.png", self.accountDelete), \
+                 ("editTarifAction", "Редактировать", "images/open.png", self.editTarif)\
+                 ("editAccountAction", "Редактировать", "images/configure.png", self.editframe)\
+                ]
+        
+
+        objDict = {self.treeWidget:["editTarifAction", "addTarifAction", "delAction", "configureAction"], \
+                   self.tableWidget:["editAction", "addAction", "delAction", "configureAction"], \
+                   self.toolBar:["addAction", "delAction", "configureAction"]\
+                  }
+        self.tarif_treeWidget.addAction(self.editTarifAction)
+        self.tarif_treeWidget.addAction(self.addTarifAction)
+        self.tarif_treeWidget.addAction(self.delTarifAction)
+        
+        self.tableWidget.addAction(self.editAccountAction)
+        self.tableWidget.addAction(self.addAction)
+        self.tableWidget.addAction(self.delAction)
+        self.tableWidget.addAction(self.transactionAction)
+        self.tableWidget.addAction(self.actionEnableSession)
+        self.tableWidget.addAction(self.actionDisableSession)
+                        
+        self.tableWidget.addAction(self.actionAddAccount)
+        self.tableWidget.addAction(self.actionDeleteAccount)
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.toolBar.addAction(self.addTarifAction)
+        self.toolBar.addAction(self.delTarifAction)
+        self.toolBar.addSeparator()        
+        self.toolBar.addAction(self.addAction)
+        self.toolBar.addAction(self.delAction)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.transactionAction)
+        self.toolBar.addAction(self.transactionReportAction)
+        self.actionCreator(actList, objDict)
+        self.delNodeLocalAction()
+        
 class AccountsMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
@@ -3018,9 +3082,9 @@ class AccountsMdiChild(QtGui.QMainWindow):
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
-        sz.setWidth(self.width()*0.7 / 5)
+        #sz.setWidth(self.width()*0.7 / 5)
         tree_header.setSizeHint(0,sz)
-        sz.setWidth(self.width()*0.3 / 5)
+        #sz.setWidth(self.width()*0.3 / 5)
         #tree_header.setSizeHint(1,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Тарифы", None, QtGui.QApplication.UnicodeUTF8))
         #tree_header.setText(1,QtGui.QApplication.translate("MainWindow", "Тип", None, QtGui.QApplication.UnicodeUTF8))
@@ -3034,7 +3098,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.setStatusBar(self.statusbar)
 
         self.toolBar = QtGui.QToolBar(self)
-        #self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         
@@ -3105,8 +3168,6 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.transactionReportAction)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        #self.isUntitled = True
-        #self.tableWidget.resizeColumnsToContents()
         self.resize(1100,600)
 
 
@@ -3132,6 +3193,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connect(self.actionDeleteAccount, QtCore.SIGNAL("triggered()"), self.accountDelete)
         self.connect(self.editTarifAction, QtCore.SIGNAL("triggered()"), self.editTarif)
         self.connect(self.editAccountAction, QtCore.SIGNAL("triggered()"), self.editframe)
+        
         self.connectTree()
         
         

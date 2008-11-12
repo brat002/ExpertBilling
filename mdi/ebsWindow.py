@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 from helpers import Object as Object
 from helpers import makeHeaders
-from helpers import HeaderUtil
+from helpers import HeaderUtil, SplitterUtil
 from helpers import dateDelim
 
 class ebsTableWindow(QtGui.QMainWindow):
@@ -36,8 +36,8 @@ class ebsTableWindow(QtGui.QMainWindow):
         
         
         if not bhdr.isEmpty():
-                HeaderUtil.setBinaryHeader(self.setname, bhdr)
-                HeaderUtil.getHeader(self.setname, self.tableWidget)
+            HeaderUtil.setBinaryHeader(self.setname, bhdr)
+            HeaderUtil.getHeader(self.setname, self.tableWidget)
         else: self.firsttime = False
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
@@ -230,6 +230,176 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
             
     def delNodeLocalAction(self, actList):
         if self.tableWidget.currentRow()==-1:
+            for actObj in actList:
+                actObj.setDisabled(True)
+        else:
+            for actObj in actList:
+                actObj.setDisabled(False)
+    
+
+                
+class ebsTable_n_TreeWindow(QtGui.QMainWindow):
+    sequenceNumber = 1
+    def __init__(self, connection, initargs):
+        #print initargs
+        self.setname = initargs["setname"] + "_table"
+        self.splname = initargs["setname"] + "_splitter"
+        bhdr = HeaderUtil.getBinaryHeader(self.setname)
+        bspltr = SplitterUtil.getBinarySplitter(self.splname)
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
+        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
+        #------------
+        self.ebsPreInit(initargs)
+        #------------
+        super(ebsTableWindow, self).__init__()
+        self.setObjectName(initargs["objname"])
+        self.connection = connection
+        self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        
+        self.splitter = QtGui.QSplitter(self)
+        self.splitter.setGeometry(QtCore.QRect(*initargs["spltsize"]))
+        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter.setObjectName("splitter")
+        
+        self.treeWidget = QtGui.QTreeWidget(self.splitter)
+        
+        self.tableWidget = QtGui.QTableWidget(self.splitter)
+        self.tableWidget.setObjectName("tableWidget")
+        if initargs.has_key("tablesize"):
+            self.tableWidget.setGeometry(QtCore.QRect(*initargs["tablesize"]))
+        self.setCentralWidget(self.tableWidget)
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
+        tree_header = self.treeWidget.headerItem()
+        hght = self.tableWidget.horizontalHeader().maximumHeight()
+        sz = QtCore.QSize()
+        sz.setHeight(hght)
+        tree_header.setSizeHint(0,sz)
+        tree_header.setText(0,QtGui.QApplication.translate("MainWindow", initargs["treeheader"], None, QtGui.QApplication.UnicodeUTF8))
+        wwidth =  self.width()
+        self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
+        self.setCentralWidget(self.splitter)
+        
+        if initargs.has_key("menubarsize"):
+            self.menubar = QtGui.QMenuBar(self)
+            self.menubar.setGeometry(QtCore.QRect(*initargs["menubarsize"]))
+            self.menubar.setObjectName("menubar")
+            self.setMenuBar(self.menubar)
+            
+        self.statusbar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusbar)
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        if initargs.has_key("tbiconsize"):
+            self.toolBar.setIconSize(QtCore.QSize(*initargs["tbiconsize"]))
+        
+        #---------
+        self.ebsInterInit(initargs) 
+        #---------
+        #---------
+        self.retranslateUI(initargs)
+        #---------
+        
+        HeaderUtil.nullifySaved(self.setname)
+        SplitterUtil.nullifySaved(self.splname)
+        
+        self.firsttime = True
+        self.refreshTree()
+        self.refresh_()
+        
+        try:
+            setFirstActive(self.treeWidget)
+            if not bhdr.isEmpty():
+                HeaderUtil.setBinaryHeader(self.setname, bhdr)
+                HeaderUtil.getHeader(self.setname, self.tableWidget)
+            else: self.firsttime = False
+            if not bspltr.isEmpty():
+                SplitterUtil.setBinarySplitter(self.splname, bspltr)
+                SplitterUtil.getSplitter(self.splname, self.splitter)                
+        except Exception, ex:
+            print "Error in setting first element active: ", repr(ex)
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)
+        
+        self.ebsPostInit(initargs)
+        
+    def retranslateUI(self, initargs):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", initargs["wintitle"], None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.clear()
+
+        columns = initargs["tablecolumns"]
+        makeHeaders(columns, self.tableWidget)
+    
+    def ebsRetranslateUi(self, initargs):
+        pass
+    
+    def ebsPreInit(self, initargs):
+        pass
+    
+    def ebsInterInit(self, initargs):
+        pass
+    
+    def ebsPostInit(self, initargs):
+        pass
+            
+    def refresh_(self):
+        pass
+    def refreshTree(self):
+        pass
+    def getSelectedId(self):
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
+    def getTreeId(self):
+        return self.treeWidget.currentItem().id
+    
+    #list example: [(name, title, iconpath, function)]
+    #dict example: {objname:[actname, {"separator"}]
+    def actionCreator(self, aList, objDict):
+        aDict = {}
+        for atuple in aList:
+            try:
+                setattr(self, atuple[0], QtGui.QAction(self))
+                newAct = getattr(self, atuple[0])
+                newAct.setIcon(QtGui.QIcon(atuple[2]))
+                self.connect(newAct, QtCore.SIGNAL("triggered()"), atuple[3])
+                newAct.setText(QtGui.QApplication.translate("MainWindow", atuple[1], None, QtGui.QApplication.UnicodeUTF8)) 
+                aDict[atuple[0]] = newAct
+            except Exception, ex:
+                print "ebsWindow.actionCreator create error: ", repr(ex)
+                
+        for wObj in objDict.iterkeys():
+            for actname in objDict[wObj]:
+                try:
+                    if actname == "separator":
+                        wObj.addSeparator()
+                    else:
+                        wObj.addAction(aDict[actname])
+                except Exception, ex:
+                    print "ebsWindow.actionCreator addaction error: ", repr(ex)
+    
+    def saveHeader(self, *args):
+        if self.tableWidget.rowCount():
+            HeaderUtil.saveHeader(self.setname, self.tableWidget)
+            
+    def saveSplitter(self, *args):
+        SplitterUtil.saveSplitter(self.splname, self.splitter)
+            
+    def delNodeLocalAction(self, actList):
+        if self.tableWidget.currentRow()==-1:
+            for actObj in actList:
+                actObj.setDisabled(True)
+        else:
+            for actObj in actList:
+                actObj.setDisabled(False)
+                
+    def addNodeLocalAction(self, actList):
+        if self.treeWidget.currentItem() is None:
             for actObj in actList:
                 actObj.setDisabled(True)
         else:
