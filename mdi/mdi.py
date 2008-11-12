@@ -9,22 +9,23 @@ import Pyro.core
 import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
-
+import threading
 
 
 import mdi_rc
 
 from AccountFrame import AccountsMdiChild
-from NasFrame import NasMdiChild
-from SettlementPeriodFrame import SettlementPeriodChild
+from NasFrame import NasEbs
+from SettlementPeriodFrame import SettlementPeriodEbs as SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
 from ClassFrame import ClassChild
-from MonitorFrame import MonitorFrame
-from SystemUser import SystemUserChild
+from MonitorFrame import MonitorEbs as MonitorFrame
+#from SystemUser import SystemUserChild
+from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
-from Reports import NetFlowReport, StatReport #, ReportSelectDialog
+from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChild
-from DealerFrame import DealerMdiChild
+from DealerFrame import DealerMdiEbs as DealerMdiChild
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -51,16 +52,18 @@ _reportsdict = [#['report3_total.xml', ['nfs_total_traf'], 'Общий траф�
 #разделитель для дат по умолчанию
 dateDelim = "."
 
+
+outQueue = []
+inQueue  = []
+outQLock = threading.Lock()
+inQLock  = threading.Lock()
+
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
 
         self.workspace = QtGui.QWorkspace()
         self.setCentralWidget(self.workspace)
-
-
-
-
 
         self.connect(self.workspace, QtCore.SIGNAL("windowActivated(QWidget *)"), self.updateMenus)
         self.windowMapper = QtCore.QSignalMapper(self)
@@ -92,7 +95,6 @@ class MainWindow(QtGui.QMainWindow):
 
         child =  AccountsMdiChild(connection=connection, parent=self)
         #child.setIcon( QPixmap("images/icon.ico") )
-        #child.
 
         
         for window in self.workspace.windowList():
@@ -123,7 +125,8 @@ class MainWindow(QtGui.QMainWindow):
 
     @connlogin
     def open(self):
-        child = NasMdiChild(connection=connection)
+        #child = NasMdiChild(connection=connection)
+        child = NasEbs(connection=connection)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -136,6 +139,7 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def save(self):
         child=SettlementPeriodChild(connection=connection)
+        #child = NasMdiChild(connection=connection)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -150,7 +154,7 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def saveAs(self):
 
-        child = SystemUserChild(connection=connection)
+        child = SystemEbs(connection=connection)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -494,7 +498,22 @@ class MainWindow(QtGui.QMainWindow):
             if window.currentFile() == canonicalFilePath:
                 return window
         return None
-
+    
+class Executor(Object):
+    def __init__(self):
+        pass
+    def execute(self, execcmd):
+        inQueue.append(execcmd)
+        #use locks etc
+        return outQueue.pop()
+    
+class rpcDispatcher(threading.Thread):
+    
+    def __init__(self):
+        pass
+    
+    def run(self):
+        pass
 
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
