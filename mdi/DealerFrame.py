@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from ebsWindow import ebsTabs_n_TablesWindow
 from helpers import tableFormat
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
@@ -324,7 +324,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.label_operator_return_without_discount.setText(QtGui.QApplication.translate("MainWindow", "Прибыль оператора без скидки", None, QtGui.QApplication.UnicodeUTF8))
         self.label_loss_for_discount.setText(QtGui.QApplication.translate("MainWindow", "Убыток по скидке", None, QtGui.QApplication.UnicodeUTF8))
         self.label_activated_cards.setText(QtGui.QApplication.translate("MainWindow", "Активировано на сумму", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_last_sale_date_z.setText(QtGui.QApplication.translate("MainWindow", "date", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_last_sale_date_z.setText(QtGui.QApplication.translate("MainWindow", "Продаж ещё не было", None, QtGui.QApplication.UnicodeUTF8))
         self.label_buy_cards.setText(QtGui.QApplication.translate("MainWindow", "Приобретено карт", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_billdata.setTitle(QtGui.QApplication.translate("MainWindow", "Условия оплаты", None, QtGui.QApplication.UnicodeUTF8))
         self.label_prepayment.setText(QtGui.QApplication.translate("MainWindow", "Размер предоплаты в %", None, QtGui.QApplication.UnicodeUTF8))
@@ -361,7 +361,6 @@ class AddDealerFrame(QtGui.QMainWindow):
         if self.model:
             model=self.model
         else:
-            print 'New dealer'
             model=Object()
 
         if unicode(self.lineEdit_contactperson.text())==u"" and unicode(self.lineEdit_organization.text())==u"":
@@ -380,7 +379,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         
         try:
             self.bank_model = bank_model
-            self.bank_model.id = self.connection.save(bank_model.save("billservice_bankdata"))
+            self.bank_model.id = self.connection.save(bank_model, "billservice_bankdata")
             """
             Защита от двойного обавления при создании записи
             """
@@ -409,12 +408,12 @@ class AddDealerFrame(QtGui.QMainWindow):
         model.paydeffer = unicode(self.spinBox_paydeffer.text())
 
         model.always_sell_cards = self.checkBox_always_sell_cards.checkState()==2
-        model.bank_id = bank_id
+        model.bank_id = self.bank_model.id
 
 
         try:
             self.model = model
-            self.model.id = self.connection.save(model.save(table="billservice_dealer"))
+            self.model.id = self.connection.save(model,"billservice_dealer")
             self.connection.commit()
             """
             Защита от двойного обавления при создании записи
@@ -423,7 +422,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             print e
             self.connection.rollback()
             
-        self.model.id = model_id
+        #self.model.id = model_id
         #QtGui.QDialog.accept(self)
         self.emit(QtCore.SIGNAL("refresh()"))
         #self.destroy()
@@ -438,7 +437,13 @@ class AddDealerFrame(QtGui.QMainWindow):
             
             
         for card_id in cards:
-            self.connection.delete("DELETE FROM billservice_salecard_cards WHERE card_id=%s; UPDATE billservice_card SET sold=Null WHERE id=%s;" % (card_id, card_id))
+            d = Object()
+            d.card_id = card_id
+            self.connection.delete(d, "billservice_salecard_cards")
+            d = Object()
+            d.id = card_id
+            d.sold = None
+            self.connection.save(d, "billservice_card")
             
         self.connection.commit()
         self.fixtures()
@@ -458,10 +463,26 @@ class AddDealerFrame(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
         widget.setItem(x,y,headerItem)
         
+    def get_sum_for_pay(self, dealer_id):
+        salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
+                           WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s""" % dealer_id)
+        sum = 0
+        discount = 0
+        for salecard in salecards:
+            if salecard.cardssum is None:
+                continue
+            if salecard.discount==0:
+                sum+=salecard.cardssum
+            else:
+                sum+=salecard.cardssum*(salecard.discount/100)
+                discount += salecard.cardssum*(salecard.discount/100)
+                
+        return sum, discount
+
     def fixtures(self):
 
         if self.model:
-            self.bank_model = self.connection.foselect("billservice_bankdata", self.model.bank_id)
+            self.bank_model = self.connection.get_model(self.model.bank_id, "billservice_bankdata")
             
             self.lineEdit_organization.setText(unicode(self.model.organization))
             self.lineEdit_unp.setText(unicode(self.model.unp))
@@ -489,11 +510,10 @@ class AddDealerFrame(QtGui.QMainWindow):
             (SELECT count(*)
             FROM billservice_salecard_cards 
             WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id)) as cardcount,
-            (SELECT sum(sum_for_pay) FROM billservice_salecard WHERE dealer_id=dealer.id) as for_pay,
             (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id) as pay,
             ((SELECT sum(sum_for_pay) FROM billservice_salecard WHERE dealer_id=dealer.id) - (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id)) as debet,
             (SELECT sum(discount_sum) FROM billservice_salecard WHERE dealer_id=dealer.id) as discount_sum,
-            (SELECT sum(nominal) FROM billservice_card WHERE id IN (SELECT id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as nominals_sum,
+            (SELECT sum(nominal) FROM billservice_card WHERE id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as nominals_sum,
             (SELECT sum(nominal) FROM billservice_card WHERE activated is not Null and id IN (SELECT id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as activated_nominals_sum
             FROM billservice_dealer as dealer WHERE id=%s;
             """ % self.model.id)
@@ -502,14 +522,17 @@ class AddDealerFrame(QtGui.QMainWindow):
                 self.label_last_sale_date_z.setText(unicode(data.last_sale.strftime(strftimeFormat)))
             except Exception, e:
                 print e
-                
+            s, discount=self.get_sum_for_pay(self.model.id)
             self.lineEdit_buy_cards.setText(unicode(data.cardcount or 0))
-            self.lineEdit_pay_sum.setText(unicode(data.pay or 0))
-            self.lineEdit_buy_cards_sum.setText(unicode(data.for_pay or 0))
-            self.lineEdit_debet_sum.setText(unicode(data.debet or data.for_pay))
-            self.lineEdit_dealer_return.setText(unicode(data.discount_sum  or 0))
+            self.lineEdit_pay_sum.setText(u"%s" % data.pay)
+            self.lineEdit_buy_cards_sum.setText(u"%s" % s)
+            try:
+                self.lineEdit_debet_sum.setText(unicode((-1)*(data.pay-s)))
+            except:
+                self.lineEdit_debet_sum.setText(unicode(0))
+            self.lineEdit_dealer_return.setText(u"%s" % discount)
             self.lineEdit_operator_return_without_discount.setText(unicode(data.nominals_sum or 0))
-            self.lineEdit_loss_for_discount.setText(unicode(data.discount_sum or 0))
+            self.lineEdit_loss_for_discount.setText(u"%s" % discount)
             self.lineEdit_cards_activated.setText(unicode(data.activated_nominals_sum or 0))
             
             ###END Info
@@ -552,10 +575,11 @@ class AddDealerFrame(QtGui.QMainWindow):
 
 class DealerMdiEbs(ebsTabs_n_TablesWindow):
     def __init__(self, parent, connection):
-        columns_t0=[u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка, %", u"Отсрочка, дней"]
-        columns_t1=[u"#", u"Дата", u"Количество", u"Сумма к оплате", u"Скидка, %", u"Сумма скидки", u"Отсрочка, дней", u"Оплачено"]
+        columns_t0=[u"#", u"Организация", u"Контактное лицо", u"Продано штук", u"Активировано штук", u"Продано на сумму",u"Задолженность", u"Скидка, %", u"Отсрочка, дней"]
+        columns_t1=[u"#", u"Дата", u"Количество", u"Сумма к оплате", u"Скидка, %", u"Сумма скидки", u"Оплатить до", u"Оплачено"]
+        columns_t2=[u"#", u"Сумма",u"№ накладной", u"Дата",]
         initargs  = {"setname":"dealer_frame_header", "objname":"DealerEbsMDI", "winsize":(0,0,936, 648), "wintitle":"Дилеры"}
-        tabargs   = [["tab0", columns_t0, "Дилеры",], ["tab1", columns_t1, "Закупки"]]
+        tabargs   = [["tab0", columns_t0, "Дилеры",], ["tab1", columns_t1, "Закупки"], ["tab2", columns_t2, "Платежи"]]
         self.parent = parent
         super(DealerMdiEbs, self).__init__(connection, initargs, tabargs)
         
@@ -563,6 +587,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setIconSize(QtCore.QSize(18, 18))
+        self.toolBar.setMovable(False)
         self.toolBar.setObjectName("toolBar")
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.statusBar = QtGui.QStatusBar(self)
@@ -571,10 +596,12 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         
         self.tableWidget = self.tab0_tableWidget
         self.tableWidget_sales = self.tab1_tableWidget
+        self.tableWidget_pays = self.tab2_tableWidget
         
     def ebsPostInit(self, initargs, tabargs): 
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked (QTableWidgetItem *)"), self.refreshSales)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked (QTableWidgetItem *)"), self.refreshPays)
         
         actList=[("actionAddDealer", "Добавить дилера", "images/add.png", self.addframe), ("actionPay", "Внести оплату", "images/dollar.png", self.makePay), ("actionDelDealer", "Удалить дилера", "images/del.png", self.delframe)]
         objDict = {self.toolBar:["actionAddDealer", "actionDelDealer", "actionPay"]}
@@ -602,7 +629,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         model.pay = text[0]
         model.created = datetime.datetime.now()
         try:
-            self.connection.save(model.save("billservice_dealerpay"))
+            self.connection.save(model,"billservice_dealerpay")
             self.connection.commit()
         except:
             self.connection.rollback()
@@ -627,7 +654,10 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
             if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.save("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
+                    d = Object()
+                    d.id = id
+                    d.deleted = True
+                    self.connection.save(d, "billservice_dealer")
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -639,268 +669,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
 
     def editframe(self):
         try:
-            model=self.connection.foselect("billservice_dealer", self.getSelectedId())
-        except:
-            model=None
-
-        child = AddDealerFrame(connection=self.connection, model=model)
-        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
-        #addf.show()
-        self.parent.workspace.addWindow(child)
-        #addf.show()
-        #if child.exec_()==1:
-        #    self.refresh()
-        child.show()
-        #self.refresh()
-
-    def addrow(self, widget,value, x, y):
-        if value==None:
-            value=''
-
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(unicode(value))
-
-        if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/nas.png"))
-        widget.setItem(x,y,headerItem)
-
-
-    def refresh(self):
-        self.tableWidget.clearContents()
-        
-        data = self.connection.sql("""SELECT dealer.*, 
-        (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id)) as cardscount,
-        (SELECT count(*) FROM billservice_card as c WHERE c.activated is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id))
-        ) as activated,
-        (SELECT sum(sum_for_pay) FROM billservice_salecard WHERE dealer_id=dealer.id) as forpay,
-        (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id) as pay
-        FROM billservice_dealer as dealer WHERE dealer.deleted=False ORDER BY id;""")
-        self.tableWidget.setRowCount(len(data))
-        i=0
-        [u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка", u"Отсрочка"]
-        for d in data:
-            self.addrow(self.tableWidget, d.id, i,0)
-            self.addrow(self.tableWidget, d.organization, i,1)
-            self.addrow(self.tableWidget, d.contactperson, i,2)
-            self.addrow(self.tableWidget, d.cardscount, i,3)
-            self.addrow(self.tableWidget, d.activated, i,4)
-            try:
-                self.addrow(self.tableWidget, d.pay - d.forpay, i,5)
-            except:
-                self.addrow(self.tableWidget, 0, i,5)
-            self.addrow(self.tableWidget, d.discount, i,6)
-            self.addrow(self.tableWidget, d.paydeffer, i,7)
-
-            i+=1
-        self.tableWidget.setColumnHidden(0, True)
-        HeaderUtil.getHeader(self.setname+"_tab_0", self.tableWidget)
-
-        #self.tableWidget.resizeColumnsToContents()
-        #self.tableWidget.setSortingEnabled(True)
-
-    def refreshSales(self):
-        self.tableWidget_sales.clearContents()
-        id = self.getSelectedId()
-        data = self.connection.sql("SELECT salecard.*, (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id=salecard.id) as cnt, (SELECT pay FROM billservice_dealerpay WHERE salecard_id=salecard.id) as pay FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s ORDER BY id ASC;" % id)
-        self.tableWidget_sales.setRowCount(len(data))
-        i=0
-        for d in data:
-            self.addrow(self.tableWidget_sales, d.id, i,0)
-            self.addrow(self.tableWidget_sales, d.created.strftime(strftimeFormat), i,1)
-            self.addrow(self.tableWidget_sales, d.cnt, i,2)
-            self.addrow(self.tableWidget_sales, d.sum_for_pay, i, 3)
-            self.addrow(self.tableWidget_sales, d.discount, i, 4)
-            self.addrow(self.tableWidget_sales, d.discount_sum, i, 5)
-            self.addrow(self.tableWidget_sales, d.paydeffer, i, 6)
-            self.addrow(self.tableWidget_sales, d.pay, i, 7)
-            i+=1
-       
-        self.tableWidget_sales.setColumnHidden(0, True)
-        HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_sales)
-        
-
-class DealerMdiChild(QtGui.QMainWindow):
-    sequenceNumber = 1
-
-    def __init__(self, parent, connection):
-        bhdr = HeaderUtil.getBinaryHeader("dealer_frame_header")
-        shdr = HeaderUtil.getBinaryHeader("dealer_sales_frame_header")
-        super(DealerMdiChild, self).__init__()
-        #global connection
-        self.connection=connection
-        self.parent = parent
-        self.setObjectName("DealerMDI")
-
-        self.resize(936, 648)
-        self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName("tabWidget")
-        self.tab_dealers = QtGui.QWidget()
-        self.tab_dealers.setObjectName("tab_dealers")
-        self.gridLayout_2 = QtGui.QGridLayout(self.tab_dealers)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.tableWidget = QtGui.QTableWidget(self.tab_dealers)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget = tableFormat(self.tableWidget)
-        
-        self.gridLayout_2.addWidget(self.tableWidget, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_dealers, "")
-        self.tab_sales = QtGui.QWidget()
-        self.tab_sales.setObjectName("tab_sales")
-        self.gridLayout_3 = QtGui.QGridLayout(self.tab_sales)
-        self.gridLayout_3.setObjectName("gridLayout_3")
-        self.tableWidget_sales = QtGui.QTableWidget(self.tab_sales)
-        self.tableWidget_sales.setObjectName("tableWidget_sales")
-        self.tableWidget_sales = tableFormat(self.tableWidget_sales)
-        
-        self.gridLayout_3.addWidget(self.tableWidget_sales, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_sales, "")
-        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
-        self.setCentralWidget(self.centralwidget)
-        self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.toolBar.setIconSize(QtCore.QSize(18, 18))
-        self.toolBar.setObjectName("toolBar")
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        self.statusBar = QtGui.QStatusBar(self)
-        self.statusBar.setObjectName("statusBar")
-        self.setStatusBar(self.statusBar)
-        self.actionAddDealer = QtGui.QAction(self)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionAddDealer.setIcon(icon)
-        self.actionAddDealer.setObjectName("actionAddDealer")
-        self.actionDelDealer = QtGui.QAction(self)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("images/del.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionDelDealer.setIcon(icon1)
-        self.actionDelDealer.setObjectName("actionDelDealer")
-        
-        self.actionPay = QtGui.QAction(self)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("images/dollar.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionPay.setIcon(icon2)
-        self.actionPay.setObjectName("actionPay")
-        
-        self.toolBar.addAction(self.actionAddDealer)
-        self.toolBar.addAction(self.actionDelDealer)
-        self.toolBar.addAction(self.actionPay)
-
-
-
-
-        tableHeader = self.tableWidget.horizontalHeader()
-        tableSalesHeader = self.tableWidget_sales.horizontalHeader()
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        self.connect(tableSalesHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveSalesHeader)
-        
-        self.connect(self.actionAddDealer, QtCore.SIGNAL("triggered()"), self.addframe)
-        self.connect(self.actionDelDealer, QtCore.SIGNAL("triggered()"), self.delframe)
-        self.connect(self.actionPay, QtCore.SIGNAL("triggered()"), self.makePay)
-        
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked (QTableWidgetItem *)"), self.refreshSales)
-        
-        HeaderUtil.nullifySaved("dealer_frame_header")
-        HeaderUtil.nullifySaved("dealer_sales_frame_header")
-        self.retranslateUi()
-        self.refresh()
-        self.tableWidget = tableFormat(self.tableWidget)
-        
-        if not bhdr.isEmpty():
-                HeaderUtil.setBinaryHeader("dealer_frame_header", bhdr)
-                HeaderUtil.getHeader("dealer_frame_header", self.tableWidget)
-
-        if not shdr.isEmpty():
-                HeaderUtil.setBinaryHeader("dealer_sales_frame_header", shdr)
-                HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget_sales)        
-        #self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        #self.delNodeLocalAction()
-        #self.show()
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Дилеры", None, QtGui.QApplication.UnicodeUTF8))
-
-        self.tableWidget.clear()
-        columns=[u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка, %", u"Отсрочка, дней"]
-        makeHeaders(columns, self.tableWidget)
-
-        self.tableWidget_sales.clear()
-        columns=[u"#", u"Дата", u"Количество", u"Сумма к оплате", u"Скидка, %", u"Сумма скидки", u"Отсрочка, дней", u"Оплачено"]
-        makeHeaders(columns, self.tableWidget_sales)
-        
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_dealers), QtGui.QApplication.translate("MainWindow", "Дилеры", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_sales), QtGui.QApplication.translate("MainWindow", "Закупки", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionAddDealer.setText(QtGui.QApplication.translate("MainWindow", "Добавить дилера", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionDelDealer.setText(QtGui.QApplication.translate("MainWindow", "Удалить дилера", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionPay.setText(QtGui.QApplication.translate("MainWindow", "Внести оплату", None, QtGui.QApplication.UnicodeUTF8))
-        
-
-    def makePay(self):
-        text = QtGui.QInputDialog.getDouble(self,u"Введите сумму оплаты", u"Сумма:", QtGui.QLineEdit.Normal);
-        #print text
-        if text[0]==0 and text[1]==True:
-            QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
-            return
-        elif text[1]==False:
-            return
-        
-        model = Object()
-        model.dealer_id = self.getSelectedId()
-        model.pay = text[0]
-        model.created = datetime.datetime.now()
-        try:
-            self.connection.save(model.save("billservice_dealerpay"))
-            self.connection.commit()
-        except:
-            self.connection.rollback()
-            QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Произошла неизвестная ошибка."))
-            return
-        self.refresh()
-        
-    def addframe(self):
-        
-        model=None
-        child = AddDealerFrame(connection=self.connection, model=model)
-        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
-        self.parent.workspace.addWindow(child)
-
-        child.show()
-        #self.refresh()
-
-
-
-
-    def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-
-    def delframe(self):
-        id=self.getSelectedId()
-        if id>0:
-            if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-                try:
-                    #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.save("UPDATE billservice_dealer SET deleted=True WHERE id=%s" % id)
-                    self.connection.commit()
-                    self.refresh()
-                except Exception, e:
-                    print e
-                    self.connection.rollback()
-                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
-        
-
-
-    def editframe(self):
-        try:
-            model=self.connection.foselect("billservice_dealer", self.getSelectedId())
+            model=self.connection.get_model(self.getSelectedId(), "billservice_dealer")
         except:
             model=None
 
@@ -926,6 +695,35 @@ class DealerMdiChild(QtGui.QMainWindow):
         widget.setItem(x,y,headerItem)
 
 
+    def get_sum_for_pay(self, dealer_id):
+        salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
+                           WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s""" % dealer_id)
+        sum = 0
+        for salecard in salecards:
+            if salecard.cardssum is None:
+                continue
+            if salecard.discount==0:
+                sum+=salecard.cardssum
+            else:
+                sum+=salecard.cardssum*(salecard.discount/100)
+                
+        return sum
+
+    def get_sum_for_salecard(self, salecard_id):
+        salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
+                           WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.id=%s""" % salecard_id)
+        sum = 0
+        discount=0
+        for salecard in salecards:
+            if salecard.cardssum is None:
+                continue
+            if salecard.discount==0:
+                sum+=salecard.cardssum
+            else:
+                sum+=salecard.cardssum*(salecard.discount/100)
+                discount = salecard.cardssum-salecard.cardssum*(salecard.discount/100)
+        return sum, discount
+    
     def refresh(self):
         self.tableWidget.clearContents()
         
@@ -933,26 +731,28 @@ class DealerMdiChild(QtGui.QMainWindow):
         (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id)) as cardscount,
         (SELECT count(*) FROM billservice_card as c WHERE c.activated is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id))
         ) as activated,
-        (SELECT sum(sum_for_pay) FROM billservice_salecard WHERE dealer_id=dealer.id) as forpay,
         (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id) as pay
         FROM billservice_dealer as dealer WHERE dealer.deleted=False ORDER BY id;""")
+        
         if data is None:
             data=[]
         self.tableWidget.setRowCount(len(data))
         i=0
-        [u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано", u"Задолженность", u"Скидка", u"Отсрочка"]
+        [u"#", u"Организация", u"Контактное лицо", u"Продано", u"Активировано",u"Продано на сумму", u"Задолженность", u"Скидка", u"Отсрочка"]
         for d in data:
+            s=self.get_sum_for_pay(d.id)
             self.addrow(self.tableWidget, d.id, i,0)
             self.addrow(self.tableWidget, d.organization, i,1)
             self.addrow(self.tableWidget, d.contactperson, i,2)
             self.addrow(self.tableWidget, d.cardscount, i,3)
             self.addrow(self.tableWidget, d.activated, i,4)
+            self.addrow(self.tableWidget, s, i,5)
             try:
-                self.addrow(self.tableWidget, d.pay - d.forpay, i,5)
+                self.addrow(self.tableWidget, (-1)*(d.pay - s), i,6)
             except:
-                self.addrow(self.tableWidget, 0, i,5)
-            self.addrow(self.tableWidget, d.discount, i,6)
-            self.addrow(self.tableWidget, d.paydeffer, i,7)
+                self.addrow(self.tableWidget, 0, i,6)
+            self.addrow(self.tableWidget, d.discount, i,7)
+            self.addrow(self.tableWidget, d.paydeffer, i,8)
 
             i+=1
         self.tableWidget.setColumnHidden(0, True)
@@ -969,32 +769,36 @@ class DealerMdiChild(QtGui.QMainWindow):
         self.tableWidget_sales.setRowCount(len(data))
         i=0
         for d in data:
+            sum_for_pay, discount_sum = self.get_sum_for_salecard(d.id)
             self.addrow(self.tableWidget_sales, d.id, i,0)
             self.addrow(self.tableWidget_sales, d.created.strftime(strftimeFormat), i,1)
             self.addrow(self.tableWidget_sales, d.cnt, i,2)
-            self.addrow(self.tableWidget_sales, d.sum_for_pay, i, 3)
+            self.addrow(self.tableWidget_sales, sum_for_pay, i, 3)
             self.addrow(self.tableWidget_sales, d.discount, i, 4)
-            self.addrow(self.tableWidget_sales, d.discount_sum, i, 5)
-            self.addrow(self.tableWidget_sales, d.paydeffer, i, 6)
+            self.addrow(self.tableWidget_sales, discount_sum, i, 5)
+            self.addrow(self.tableWidget_sales, (datetime.datetime.now()+datetime.timedelta(days=d.paydeffer)).strftime(strftimeFormat), i, 6)
             self.addrow(self.tableWidget_sales, d.pay, i, 7)
             i+=1
        
-        self.tableWidget_sales.setColumnHidden(0, True)
+        self.tableWidget_sales.setColumnHidden(0, False)
         HeaderUtil.getHeader("dealer_sales_frame_header", self.tableWidget_sales)
+
         
-    def saveHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader("dealer_frame_header", self.tableWidget)    
-            
-    def saveSalesHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader("dealer_sales_frame_header", self.tableWidget_sales)   
-                        
-    def delNodeLocalAction(self):
-        if self.tableWidget.currentRow()==-1:
-            self.delAction.setDisabled(True)
-            self.configureAction.setDisabled(True)
-        else:
-            self.delAction.setDisabled(False)
-            self.configureAction.setDisabled(False)
+    def refreshPays(self):
+        self.tableWidget_pays.clearContents()
+        id = self.getSelectedId()
+        data = self.connection.get_models(table="billservice_dealerpay", where={'dealer_id':id})
+        self.tableWidget_pays.setRowCount(len(data))
+        i=0
+        for d in data:
+            self.addrow(self.tableWidget_pays, d.id, i,0)
+            self.addrow(self.tableWidget_pays, d.pay, i,1)
+            self.addrow(self.tableWidget_pays, d.salecard_id, i,2)
+            self.addrow(self.tableWidget_pays, d.created.strftime(strftimeFormat), i,3)
+            i+=1
+       
+        self.tableWidget_pays.setColumnHidden(0, True)
+        HeaderUtil.getHeader("dealer_pays_frame_header", self.tableWidget_pays)
+        
+
             

@@ -96,11 +96,11 @@ class TrafficNode(models.Model):
     protocol = models.CharField(max_length=10, blank=True, default='')
 
     src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
-    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
+#    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
 
     dst_ip = models.IPAddressField(verbose_name=u'Сеть получателя', default='0.0.0.0')
-    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
+#    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
     dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', default=0)
 
     next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', default='0.0.0.0')

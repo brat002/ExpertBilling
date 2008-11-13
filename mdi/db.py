@@ -4,12 +4,11 @@ Database wrapper for mikrobill
 """
 #Post
 import psycopg2, datetime
-from types import InstanceType, StringType, UnicodeType
 import os
 
+from types import InstanceType, StringType, UnicodeType
 def format_update (x,y):
-    #print 'y', y, type(y)
-    #print x,y, type(y), y=='None'
+    print 'y', y, type(y)
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
             print True
@@ -23,7 +22,7 @@ def format_insert(y):
     if y==u'Null' or y ==u'None':
         return 'Null'
     elif type(y)==StringType or type(y)==UnicodeType:
-        #print True
+        print True
         return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
     else:
         return y
@@ -42,13 +41,13 @@ class Object(object):
 
         for key in kwargs:
             setattr(self, key, kwargs[key])  
-        
+
         #print dir(self)          
-            
-         
+
+
     def save(self, table):
-        
-        
+
+
         fields=[]
         for field in self.__dict__:
             if type(field)!=InstanceType:
@@ -58,24 +57,38 @@ class Object(object):
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
+            sql = sql.replace("'None'", 'Null')
+            sql = sql.replace("'Null'", 'Null')
         return sql
-    
+
     def get(self, table):
         return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
+
+    def delete(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
+                fields.append(field)
+        
+        sql = u"DELETE FROM %s WHERE %s" % (table, " AND ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]))
+        
+        return sql
     
     def __call__(self):
         return self.id
-    
+
     def hasattr(self, attr):
         if attr in self.__dict__:
             return True
         return False
-    
+
     def isnull(self, attr):
         if self.hasattr(attr):
-            if self.__dict__[attr]!=None:
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
                 return False
-            
+
         return True
+        return self.id
     

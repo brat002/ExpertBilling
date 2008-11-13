@@ -105,9 +105,7 @@ add chain=virus protocol=tcp dst-port=12345 action=drop comment="Drop NetBus"
 add chain=virus protocol=tcp dst-port=17300 action=drop comment="Drop Kuang2" 
 add chain=virus protocol=tcp dst-port=27374 action=drop comment="Drop SubSeven" 
 add chain=virus protocol=tcp dst-port=65506 action=drop comment="Drop PhatBot, Agobot, Gaobot"
-
 add chain=forward action=jump jump-target=virus comment="jump to the virus chain"
-
 add chain=forward action=accept protocol=tcp dst-port=80 comment="Allow HTTP" 
 add chain=forward action=accept protocol=tcp dst-port=25 comment="Allow SMTP" 
 add chain=forward protocol=tcp comment="allow TCP"
@@ -283,7 +281,7 @@ class check_vpn_access(Thread):
                 rows=self.cur.fetchall()
                 for row in rows:
                     result=None
-                    print row['balance']
+                    #print row['balance']
                     if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
                         """
                             Делаем проверку на то, изменилась ли скорость.
@@ -693,7 +691,7 @@ class TimeAccessBill(Thread):
                         """ % ps_id)'''
                     self.cur.execute("""SELECT tan.time_period_id, tan.cost
                         FROM billservice_timeaccessnode as tan
-                        WHERE (tan.time_period_id NOT NULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
+                        WHERE (tan.time_period_id is not NULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
                     periods=self.cur.fetchall()
                     for period in periods:
                         period_id=period[0]
@@ -709,7 +707,7 @@ class TimeAccessBill(Thread):
                         self.cur.execute("""SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
                             FROM billservice_timeperiodnode as tpn
                             WHERE (%s IN (SELECT tptpn.timeperiod_id from billservice_timeperiod_time_period_nodes as tptpn WHERE tpn.id=tptpn.timeperiodnode_id))""", (period_id,))
-                        period_nodes_data=cur.fetchall()
+                        period_nodes_data=self.cur.fetchall()
                         for period_node in period_nodes_data:
                             period_id=period_node[0]
                             period_name = period_node[1]
@@ -730,14 +728,14 @@ class TimeAccessBill(Thread):
                                     )
                                     #print u"Снятие денег за время %s" % query
     
-                    query="""
+
+                    self.cur.execute("""
                          UPDATE radius_session
                          SET checkouted_by_time=True
                          WHERE sessionid=%s
                          AND account_id=%s
                          AND interrim_update=%s
-                         """, (session_id, account_id, interrim_update,)
-                    self.cur.execute(query)
+                         """, (unicode(session_id), account_id, interrim_update,))
                     self.connection.commit()
     
                 gc.collect()
@@ -1225,7 +1223,7 @@ class limit_checker(Thread):
                     self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf
                          JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
-                         WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>'%s' and date_start<'%s' and nf.direction in (%s)
+                         WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>%s and date_start<%s and nf.direction in (%s)
     
                          """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,))
     
@@ -1380,7 +1378,7 @@ class settlement_period_service_dog(Thread):
     
                             self.cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=now() WHERE account_id=%s RETURNING id;", (account_id,))
                             shedulelog_id =self.cur.fetchone()
-                            print "shedulelog_id", shedulelog_id
+                            #print "shedulelog_id", shedulelog_id
     
                             if shedulelog_id==None:
                                 self.cur.execute("""
@@ -1479,7 +1477,7 @@ class settlement_period_service_dog(Thread):
                             self.cur.execute(
                                 """
                                 DELETE FROM billservice_accountprepaystime
-                                WHERE account_tarif=%s;
+                                WHERE account_tarif_id=%s;
                                 """, (accounttarif_id,))
     
                             self.cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=now() WHERE account_id=%s RETURNING id;", (account_id,))
@@ -1502,7 +1500,7 @@ class settlement_period_service_dog(Thread):
                             self.cur.execute(
                                 """
                                 INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id)
-                                VALUES(%d, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s), now(), %s);
+                                VALUES(%s, (SELECT prepaid_time FROM billservice_timeaccessservice WHERE id=%s), now(), %s);
                                 """, (accounttarif_id, time_access_service_id, time_access_service_id,))
     
     
@@ -1621,7 +1619,7 @@ class ipn_service(Thread):
                     sended=None
                     recreate_speed = False
                     period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
-                    print period
+                    #print period
                     if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_status']==True and row['account_balance_blocked']==False:
                         #print u"ВКЛЮЧАЕМ",row['account_username']
                         #шлём команду, на включение пользователя, account_ipn_status=True
@@ -1964,8 +1962,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                              JOIN nas_nas as nas ON nas.id = account.nas_id
                              JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
                              JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
-                             WHERE account.id=%d
-                             """ % account)
+                             WHERE account.id=%s
+                             """, (account,))
     
             row = cur.fetchone()
             print "actions", row
@@ -2054,7 +2052,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if r==[]:
             return None
         return Object(r[0])
-        	
+
     @authentconn
     def get_list(self, sql, cur=None, connection=None):
         #print sql
@@ -2070,16 +2068,17 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def dbaction(self, fname, *args, **kwargs):
         return dbRoutine.execRoutine(fname, *args, **kwargs)
+    
     @authentconn
-    def delete(self, sql, cur=None, connection=None):
-
+    def delete(self, model, table, cur=None, connection=None):
+        sql = model.delete(table)
         cur.execute(sql)
         #connection.commit()
         del sql
         return
 
     @authentconn
-    def iddelete(self, table, id, cur=None, connection=None):
+    def iddelete(self, id, table, cur=None, connection=None):
 
         cur.execute("DELETE FROM %s where id=%d" % (table, id))
         del table
@@ -2140,20 +2139,94 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
 
     @authentconn
-    def foselect(self, table, id=None, cur=None, connection=None):
-        cur.execute("SELECT * from %s %s;" % (table, (((id != None) and "WHERE id=%d" % id) or "ORDER BY id ASC")))
-        #connection.commit()
-
-        #print dir(connection)
-        result=[]
+    def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
+        cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))
+        
         a=time.clock()
         result = map(Object, cur.fetchall())
-        #print "Query length=", time.clock()-a
-        if id == None:
-            return result
-        else:
-            return result[0]
+        return result
 
+
+    @authentconn
+    def get_model(self, id, table='', fields = [], cur=None, connection=None):
+        cur.execute("SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id))
+        result=[]
+        result = map(Object, cur.fetchall())
+        return result[0]
+    
+    @authentconn    
+    def get_notsold_cards(self, cards, cur=None, connection=None):
+        if len(cards)>0:
+            crd = "(" + ",".join(cards) + ")"
+        else:
+            crd = "(0)" 
+        
+        cur.execute("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
+        result = map(Object, cur.fetchall())
+        return result
+    
+    @authentconn
+    def get_operator(self, cur=None, connection=None):
+        cur.execute("SELECT * FROM billservice_operator LIMIT 1;")
+        result = Object(cur.fetchone())
+        return result
+    
+    @authentconn
+    def get_operator_info(self, cur=None, connection=None):
+        cur.execute("SELECT operator.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_operator as operator JOIN billservice_bankdata as bankdata ON bankdata.id=operator.bank_id LIMIT 1")
+        result = Object(cur.fetchone())
+        return result
+
+    @authentconn
+    def get_dealer_info(self, id, cur=None, connection=None):
+        cur.execute("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s", (id, ))
+        result = Object(cur.fetchone())
+        return result
+
+
+    @authentconn      
+    def get_bank_for_operator(self, operator, cur=None, connection=None):
+        cur.execute("SELECT * FROM billservice_bankdata WHERE id=(SELECT bank_id FROM billservice_operator WHERE id=%s)", (operator,))
+        result = map(Object, cur.fetchall())
+        return result[0]
+    
+    @authentconn      
+    def get_cards_nominal(self, cur=None, connection=None):
+        cur.execute("SELECT nominal FROM billservice_card GROUP BY nominal")
+        result = map(Object, cur.fetchall())
+        return result
+    
+    @authentconn 
+    def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
+        cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+        FROM billservice_account AS acc 
+        WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        result = map(Object, cur.fetchall())
+        return result
+
+    @authentconn 
+    def get_tariffs(self, cur=None, connection=None):
+        cur.execute("SELECT id, name, active, get_tariff_type(id) AS ttype FROM billservice_tariff ORDER BY ttype, name;")
+        result = map(Object, cur.fetchall())
+        return result
+    
+    
+    @authentconn  
+    def delete_card(self, id, cur=None, connection=None):
+        cur.execute("DELETE FROM billservice_card WHERE sold is Null and id=%s", (id,))
+        return
+    
+    @authentconn  
+    def get_next_cardseries(self, cur=None, connection=None):
+        cur.execute("SELECT MAX(series) as series FROM billservice_card")
+        result = cur.fetchone()['series']
+        if result==None:
+            result=0
+        else:
+            result+=1
+        print result
+        return result
+    
     @authentconn
     def sql_as_dict(self, sql, return_response=True, cur=None, connection=None):
         #print sql
@@ -2168,30 +2241,31 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
     @authentconn
-    def save(self, sql, cur=None, connection=None):
-        #print sql
+    def transaction(self, sql, cur=None, connection=None):
         cur.execute(sql)
-
-        #print cur.fetchone()
-
         id = cur.fetchone()['id']
+        return id
 
-        #connection.commit()
-
+    @authentconn
+    def save(self, model, table, cur=None, connection=None):
+        sql = model.save(table)
+        print sql
+        cur.execute(sql)
+        id = cur.fetchone()['id']
         return id
 
 
     @authentconn
     def connection_request(self, username, password, cur=None, connection=None):
         try:
-            obj = self.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % username)
+            obj = self.get("SELECT * FROM billservice_systemuser WHERE username=%s",(username,))
         except Exception, e:
             print e
             return False
         #print "connection_____request"
         #print self.getProxy()
         if obj is not None and obj.password==password:
-            self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%d;" % obj.id)
+            self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%s;" , (obj.id,))
             #Pyro.constants.
 
             return True

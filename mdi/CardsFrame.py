@@ -1,10 +1,10 @@
 #-*-coding=utf-8-*-
-
+import Pyro
 from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from time import mktime
@@ -232,20 +232,19 @@ class SaleCards(QtGui.QDialog):
            crd = "(" + ",".join(self.cards) + ")"
         else:
            crd = "(0)" 
-        #cards = self.con
-        #templatelookup = TemplateLookup(directories=['.'])
         
-        cards = self.connection.sql_as_dict("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
+        cards = self.connection.get_notsold_cards(self.cards)
+        
         data="""
         <html>
         <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         </head>
         <body>
         """;
         
         for card in cards:
-            templ = Template(filename="templates/cards/%s" % card['template'], input_encoding='utf-8')
+            templ = Template(filename="templates/cards/%s" % card.template, input_encoding='utf-8')
             data+=templ.render_unicode(card=card)
 
         
@@ -258,16 +257,13 @@ class SaleCards(QtGui.QDialog):
         #print data
         
     def print_invoice(self):
-        if len(self.cards)>0:
-           crd = "(" + ",".join(self.cards) + ")"
-        else:
-           crd = "(0)"
+
         dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
-        
-        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
-        operator = self.connection.get("SELECT operator.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_operator as operator JOIN billservice_bankdata as bankdata ON bankdata.id=operator.bank_id LIMIT 1")
-        print dealer_id
-        dealer = self.connection.get("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s" % dealer_id)
+
+        cards = self.connection.get_notsold_cards(self.cards)
+        operator = self.connection.get_operator_info()
+
+        dealer = self.connection.get_dealer_info(dealer_id)
         
         templ = Template(filename="templates/invoice.htm", input_encoding='utf-8')
         data=templ.render_unicode(cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
@@ -299,7 +295,8 @@ class SaleCards(QtGui.QDialog):
         
     def fixtures(self):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
-        dealers = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False;")
+        #dealers = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False;")
+        dealers = self.connection.get_models(table="billservice_dealer", where={'deleted':False})
         
         i=0
         for dealer in dealers:
@@ -316,7 +313,8 @@ class SaleCards(QtGui.QDialog):
         id = self.comboBox_dealer.itemData(index).toInt()[0]
 
         #print id
-        dealer = self.connection.get("SELECT * FROM billservice_dealer WHERE id=%s and deleted=False" % id)
+        dealer = self.connection.get_models(table="billservice_dealer", where={'deleted':False, 'id':id})[0]
+
         self.model_dealer = dealer
         self.spinBox_discount.setValue(dealer.discount)
         self.spinBox_paydeffer.setValue(dealer.paydeffer)
@@ -341,7 +339,7 @@ class SaleCards(QtGui.QDialog):
             model.created = now 
             
             try:
-                salecard_id = self.connection.save(model.save("billservice_salecard"))
+                model.id = self.connection.save(model,"billservice_salecard")
                 #self.connection.commit()
             except Exception, e:
                 print e
@@ -352,22 +350,22 @@ class SaleCards(QtGui.QDialog):
                 if QtGui.QMessageBox.question(self, u"Зачислить сумму на счёт?" , u'''Произвести запись оплаты за эту партию карт?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                     pay = Object()
                     pay.dealer_id = model.dealer_id
-                    pay.salecard_id = salecard_id
+                    pay.salecard_id = model.id
                     pay.pay = unicode(self.lineEdit_pay.text() or 0)
                     pay.created = now
-                    self.connection.save(pay.save("billservice_dealerpay"))
+                    self.connection.save(pay,"billservice_dealerpay")
             #print [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]
             #self.connection.rollback()
             #return
             for card_id in [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]:
                 salecard = Object()
                 salecard.card_id = card_id
-                salecard.salecard_id = salecard_id
+                salecard.salecard_id = model.id
                 card = Object()
                 card.id = card_id
                 card.sold = now
-                self.connection.save(salecard.save("billservice_salecard_cards"))
-                self.connection.save(card.save("billservice_card"))
+                self.connection.save(salecard,"billservice_salecard_cards")
+                self.connection.save(card,"billservice_card")
     
                 
             self.connection.commit()
@@ -402,12 +400,8 @@ class SaleCards(QtGui.QDialog):
         #self.spinBox_prepay.setDisabled(True)
         
     def refresh(self):
-        print self.cards
-        if len(self.cards)>0:
-           crd = "(" + ",".join(self.cards) + ")"
-        else:
-           crd = "(0)" 
-        cards = self.connection.sql("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
+
+        cards = self.connection.get_notsold_cards(self.cards)
         
         self.tableWidget.setRowCount(len(cards))
         
@@ -593,7 +587,7 @@ class AddCards(QtGui.QDialog):
                 
                 #print model.pin
                 #print model.__dict__
-                self.connection.save(model.save("billservice_card"))
+                self.connection.save(model,"billservice_card")
             
             self.connection.commit()
         except Exception, ex:
@@ -607,18 +601,24 @@ class AddCards(QtGui.QDialog):
     def fixtures(self):
         start=datetime.datetime.now()
         #end=datetime.datetime.now()
-
+        self.last_series = self.connection.get_next_cardseries()
         self.series_spinBox.setMinimum(self.last_series)
         self.start_dateTimeEdit.setMinimumDate(start)
         self.end_dateTimeEdit.setMinimumDate(start)
+        self.count_spinBox.setValue(100)
+        self.pin_spinBox.setValue(15)
         self.updateTemplates()
+        self.numbers_checkBox.setChecked(True)
+        self.l_checkBox.setChecked(True)
         
         try:
-            self.op_model =self.connection.sql("SELECT * FROM billservice_operator;")[0]
+            self.op_model =self.connection.get_operator()
+            
         except Exception, e:
-            print e
+            print ''.join(Pyro.util.getPyroTraceback(e))
+
         try:
-            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE id=(SELECT bank_id FROM billservice_operator WHERE id=%d)" % self.op_model.id)
+            self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
         except Exception, e:
             print e
             
@@ -633,25 +633,37 @@ class AddCards(QtGui.QDialog):
             mask+=string.letters
         if self.numbers_checkBox.checkState()==2:
             mask+=string.digits
-        tdct = {}
-        tdct["pin"] = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=mask)
-        wr_files, i = write_cards(templatedir + "/" + tmplt, [tdct], strict=None, adddicts=[self.op_model.__dict__, self.bank_model.__dict__])
-        if i:
-            print wr_files
-            child = CardPreviewDialog(wr_files[0])
-            child.exec_()
-            os.remove(wr_files[0])
-        else:
-            QtGui.QMessageBox.warning(self, u"Внимание!", u"При создании шаблона для предпросмотра произошли ошибки!")
+        card = {}
+        card["pin"] = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=mask)
+        card["nominal"] = unicode(self.nominal_lineEdit.text())
+        card["start_date"] = self.start_dateTimeEdit.dateTime().toPyDateTime()
+        card["end_date"] = self.end_dateTimeEdit.dateTime().toPyDateTime()
+        card["series"] = unicode(self.series_spinBox.value())
+        operator=self.op_model.__dict__
+        bank = self.bank_model.__dict__
         
+        data="""
+        <html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        </head>
+        <body>
+        """;
+        
+
+        templ = Template(filename="templates/cards/%s" % tmplt, input_encoding='utf-8')
+        data+=templ.render_unicode(card=card, operator=operator, bank=bank)
+
+        
+        data+="</body></html>"
+        file= open('templates/cards/cards.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/cards/cards.html")
+        a.exec_()        
         
     def updateTemplates(self):
-        #print os.listdir("cards")
-        #print [unicode(os.path.basename(tmplt)) for tmplt in os.listdir(templatedir) if (tmplt.find("__printandum__" == -1))]
         self.comboBox_templates.addItems([unicode(tmplt) for tmplt in os.listdir(templatedir) if ((tmplt.find("_printandum_") == -1) and os.path.isfile(''.join((templatedir, '/',tmplt))))])
-        #templates = [unicode(os.path.basename(tmplt)) for tmplt in os.listdir(templatedir) if (tmplt.find("__printandum__" == -1))]
-        #for tstr in templates:
-            #self.comboBox_templates.addItem(unicode(tstr))
 
 class CardsChild(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -846,7 +858,6 @@ class CardsChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
 
     def saleCard(self):
-        #cards = [self.tableWidget.item(x.row(),0) for x in self.tableWidget.selected(column = 0)]
         
         items = self.tableWidget.selectedIndexes()
         cards = []
@@ -854,15 +865,13 @@ class CardsChild(QtGui.QMainWindow):
             if item.column()>0:
                 continue
             cards.append(unicode(self.tableWidget.item(item.row(), 0).text()))
-        #print a,b
-        
         
         child = SaleCards(connection=self.connection, cards = cards)
         if child.exec_()==1:
             self.refresh()
         
     def fixtures(self):
-        nominals = self.connection.sql("SELECT nominal FROM billservice_card GROUP BY nominal")
+        nominals = self.connection.get_cards_nominal()
         self.comboBox_nominal.clear()
         for nom in nominals:
             
@@ -899,9 +908,9 @@ class CardsChild(QtGui.QMainWindow):
             #print i
             try:
                 #ids.append()
-                model=self.connection.get("SELECT * FROM billservice_card WHERE id=%s" % int(i))
+                model=self.connection.get_model(int(i),"billservice_card")
                 model.disabled=False
-                self.connection.save(model.save("billservice_card"))
+                self.connection.save(model,"billservice_card")
                 self.connection.commit()
  
             except Exception, e:
@@ -920,9 +929,9 @@ class CardsChild(QtGui.QMainWindow):
             
             try:
                 #ids.append()
-                model=self.connection.get("SELECT * FROM billservice_card WHERE id=%s" % int(i))
+                model=self.connection.get_model(int(i),"billservice_card")
                 model.disabled=True
-                self.connection.save(model.save("billservice_card"))
+                self.connection.save(model,"billservice_card")
                 self.connection.commit()
 
             except Exception, e:
@@ -943,7 +952,7 @@ class CardsChild(QtGui.QMainWindow):
             
             try:
                 #ids.append()
-                self.connection.delete("DELETE FROM billservice_card WHERE sold is Null and id=%s" % i)
+                self.connection.delete_card(i)
             except Exception, e:
                 pass  
             
@@ -954,11 +963,7 @@ class CardsChild(QtGui.QMainWindow):
 
         #print model.id
         
-        last_series = self.connection.get("SELECT MAX(series) as series FROM billservice_card").series
-        if last_series==None:
-            last_series=0
-        else:
-            last_series+=1
+        last_series = self.connection.get_next_cardseries()
         child=AddCards(connection=self.connection, last_series=last_series)
         if child.exec_()==1:
             self.refresh()

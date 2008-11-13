@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 
 from helpers import tableFormat
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 
@@ -425,26 +425,27 @@ class AddNasFrame(QtGui.QDialog):
         if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
         else:
-            QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Ok"))
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Тестирование прошло успешно"))
          
     def refillActions(self):
-        self.maintabWidget.setCurrentIndex(1)
-        nas_type = unicode(self.nas_comboBox.currentText())
-
-        
-        self.create_user_textEdit.setText(actions[nas_type]['create'])
-        self.remove_user_textEdit.setText(actions[nas_type]['remove'])
-        
-        self.enable_user_textEdit.setText(actions[nas_type]['enable'])
-        self.disable_user_textEdit.setText(actions[nas_type]['disable'])
-        
-        self.set_vpn_speed_textEdit.setText(actions[nas_type]['vpn_speed'])
-        self.set_ipn_speed_lineEdit.setText(actions[nas_type]['ipn_speed'])
-        self.pod_textEdit.setText(actions[nas_type]['pod'])
-        if nas_type=='---':
-            self.buttonBox.setDisabled(True)
-        else:
-            self.buttonBox.setDisabled(False)
+        if (QtGui.QMessageBox.question(self, u"Внимание?" , u"Перезаписать действия сервера доступа на действия по умолчанию для этого типа серверов доступа?.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
+            self.maintabWidget.setCurrentIndex(1)
+            nas_type = unicode(self.nas_comboBox.currentText())
+    
+            
+            self.create_user_textEdit.setText(actions[nas_type]['create'])
+            self.remove_user_textEdit.setText(actions[nas_type]['remove'])
+            
+            self.enable_user_textEdit.setText(actions[nas_type]['enable'])
+            self.disable_user_textEdit.setText(actions[nas_type]['disable'])
+            
+            self.set_vpn_speed_textEdit.setText(actions[nas_type]['vpn_speed'])
+            self.set_ipn_speed_lineEdit.setText(actions[nas_type]['ipn_speed'])
+            self.pod_textEdit.setText(actions[nas_type]['pod'])
+            if nas_type=='---':
+                self.buttonBox.setDisabled(True)
+            else:
+                self.buttonBox.setDisabled(False)
     
     def accept(self):
         """
@@ -511,7 +512,7 @@ class AddNasFrame(QtGui.QDialog):
         
 
         try:
-            self.connection.save(model.save(table="nas_nas"))
+            self.connection.save(model,"nas_nas")
             self.connection.commit()
         except Exception, e:
             print e
@@ -588,17 +589,20 @@ class NasEbs(ebsTableWindow):
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
+        self.tableWidget = tableFormat(self.tableWidget)
         
     def retranslateUI(self, initargs):
         super(NasEbs, self).retranslateUI(initargs)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
 
+        
+
     
     def addframe(self):
         model=None
         addf = AddNasFrame(connection=self.connection, model=model)
-        addf.exec_()
-        self.refresh()
+        if addf.exec_()==1:
+            self.refresh()
 
     def configure(self):
         id=self.getSelectedId()
@@ -631,15 +635,14 @@ class NasEbs(ebsTableWindow):
             
             
             if self.connection.configureNAS(id,pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic):
-                QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
+                QtGui.QMessageBox.information(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
             else:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
 
     def delete(self):
         id=self.getSelectedId()
         if id>0:
-            if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
-                print "accounts on NAS", self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id)
+            if self.connection.get_models("billservice_account", where={"nas_id":id}):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
                 return
             elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
@@ -655,7 +658,7 @@ class NasEbs(ebsTableWindow):
         
     def editframe(self):
         try:
-            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
+            model=self.connection.get_model(self.getSelectedId(), "nas_nas")
         except:
             model=None
 
@@ -673,7 +676,7 @@ class NasEbs(ebsTableWindow):
 
     def refresh(self):
         #self.tableWidget.setSortingEnabled(False)
-        nasses = self.connection.foselect("nas_nas")
+        nasses = self.connection.get_models(table="nas_nas")
         self.tableWidget.setRowCount(len(nasses))
         i=0
         for nas in nasses:
@@ -693,217 +696,3 @@ class NasEbs(ebsTableWindow):
     def delNodeLocalAction(self):
         super(NasEbs, self).delNodeLocalAction([self.delAction, self.configureAction])
         
-class NasMdiChild(QtGui.QMainWindow):
-    sequenceNumber = 1
-
-    def __init__(self, connection):
-        bhdr = HeaderUtil.getBinaryHeader("nas_frame_header")
-        super(NasMdiChild, self).__init__()
-        #global connection
-        self.connection=connection
-        self.setObjectName("NasMDI")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,400,400).size()).expandedTo(self.minimumSizeHint()))
-        self.tableWidget = QtGui.QTableWidget(self)
-        self.setCentralWidget(self.tableWidget)
-
-        self.statusbar = QtGui.QStatusBar(self)
-        self.setStatusBar(self.statusbar)
-
-        self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setMovable(False)
-        self.toolBar.setFloatable(False)
-        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        self.toolBar.setIconSize(QtCore.QSize(18,18))
-
-        self.addAction = QtGui.QAction(self)
-        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
-
-        self.delAction = QtGui.QAction(self)
-        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
-        
-        self.editAction = QtGui.QAction(self)
-        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
-
-        self.configureAction = QtGui.QAction(self)
-        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
-        self.configureAction.setMenuRole(QtGui.QAction.NoRole)
-        
-        self.editAction = QtGui.QAction(self)
-        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
-        
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tableWidget.addAction(self.editAction)
-        self.tableWidget.addAction(self.addAction)
-        self.tableWidget.addAction(self.delAction)
-        self.tableWidget.addAction(self.configureAction)
-        
-        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.toolBar.addAction(self.addAction)
-        self.toolBar.addAction(self.delAction)
-        self.toolBar.addAction(self.configureAction)
-        
-
-        #===============================================================================
-        #        length_edit = QtGui.QComboBox()
-        #        self.toolBar.addWidget(length_edit)
-        #===============================================================================
-        tableHeader = self.tableWidget.horizontalHeader()
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        HeaderUtil.nullifySaved("nas_frame_header")
-        self.retranslateUi()
-        self.refresh()
-        self.tableWidget = tableFormat(self.tableWidget)
-        if not bhdr.isEmpty():
-                HeaderUtil.setBinaryHeader("nas_frame_header", bhdr)
-                HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
-        
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-
-        self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.editframe)
-        self.connect(self.addAction, QtCore.SIGNAL("triggered()"), self.addframe)
-        self.connect(self.delAction, QtCore.SIGNAL("triggered()"), self.delete)
-        self.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
-        
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.delNodeLocalAction()
-
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Серверы доступа", None, QtGui.QApplication.UnicodeUTF8))
-
-        self.tableWidget.clear()
-        columns=[u"id", u"Имя", u"Тип", u"IP"]
-        makeHeaders(columns, self.tableWidget)
-
-
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-
-        self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
-        
-
-        self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-
-        self.configureAction.setText(QtGui.QApplication.translate("MainWindow", "Конфигурировать", None, QtGui.QApplication.UnicodeUTF8))
-        
-
-
-    def addframe(self):
-        model=None
-        addf = AddNasFrame(connection=self.connection, model=model)
-        addf.exec_()
-        self.refresh()
-
-    def configure(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-        child = ConfigureDialog()
-        if child.exec_()==1:
-            pptp_enable = child.groupBox_pptp.isChecked() == True
-            auth_types_pap=False
-            auth_types_chap = False
-            auth_types_mschap2 = False
-            pptp_ip='0.0.0.0'
-            if pptp_enable:
-                auth_types_pap = child.checkBox_pptp_pap.checkState()==2
-                auth_types_chap = child.checkBox_pptp_chap.checkState()==2
-                auth_types_mschap2 = child.checkBox_pptp_mschap2.checkState()==2
-                pptp_ip = unicode(child.lineEdit_pptp_ip.text())
-
-            radius_enable = child.groupBox_radius.isChecked()
-            radius_server_ip='0.0.0.0'
-            interim_update='00:00:00'
-            if radius_enable:
-                radius_server_ip = unicode(child.lineEdit_radius_server_ip.text())
-                interim_update = unicode(child.timeEdit_interim_update.text())
-                
-            configure_smtp = child.checkBox_smtp_spamers.checkState()==2
-            configure_gateway = child.checkBox_configure_gateway.checkState()==2
-            protect_malicious_trafic = child.checkBox_malicious_trafic.checkState()==2
-            
-            
-            
-            if self.connection.configureNAS(id,pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic):
-                QtGui.QMessageBox.warning(self, u"Ok", unicode(u"Настройка сервера доступа прошла удачно."))
-            else:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка во время конфигурирования."))
-
-
-
-    def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-
-    def delete(self):
-        id=self.getSelectedId()
-        if id>0:
-            if self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id):
-                print self.connection.sql("""SELECT id FROM billservice_account WHERE (nas_id=%d)""" % id)
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
-                return
-            elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-                try:
-                    #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete("nas_nas", id)
-                    self.connection.commit()
-                    self.refresh()
-                except Exception, e:
-                    print e
-                    self.connection.rollback()
-                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
-        
-
-
-    def editframe(self):
-        try:
-            model=self.connection.get("SELECT * FROM nas_nas WHERE id=%d" % self.getSelectedId())
-        except:
-            model=None
-
-        addf = AddNasFrame(connection=self.connection, model=model)
-        #addf.show()
-        addf.exec_()
-        self.refresh()
-
-    def addrow(self, value, x, y):
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(unicode(value))
-        if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/nas.png"))
-        self.tableWidget.setItem(x,y,headerItem)
-
-
-    def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
-        nasses = self.connection.foselect("nas_nas")
-        self.tableWidget.setRowCount(len(nasses))
-        i=0
-        for nas in nasses:
-            self.addrow(nas.id, i,0)
-            self.addrow(nas.name, i,1)
-            self.addrow(nas.type, i,2)
-            self.addrow(nas.ipaddress, i,3)
-            self.tableWidget.setRowHeight(i, 14)
-            i+=1
-        #self.tableWidget.setColumnHidden(0, True)
-
-        HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
-        #self.tableWidget.resizeColumnsToContents()
-        self.tableWidget.setSortingEnabled(True)
-
-    def saveHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader("nas_frame_header", self.tableWidget)    
-            
-            
-    def delNodeLocalAction(self):
-        if self.tableWidget.currentRow()==-1:
-            self.delAction.setDisabled(True)
-            self.configureAction.setDisabled(True)
-        else:
-            self.delAction.setDisabled(False)
-            self.configureAction.setDisabled(False)
-            
-            
-

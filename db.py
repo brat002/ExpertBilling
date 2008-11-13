@@ -4,14 +4,15 @@ Database wrapper for mikrobill
 """
 #Post
 import psycopg2, datetime
-from types import InstanceType, StringType, UnicodeType
+
 import os
+from types import InstanceType, StringType, UnicodeType
 
 def format_update (x,y):
-    print 'y', y, type(y)
+    #print 'y', y, type(y)
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
-            print True
+            #print True
             y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
             #print 'y', y
         return "%s='%s'" % (x,y)
@@ -57,12 +58,24 @@ class Object(object):
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ]).replace("'None'", 'Null')))
-
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
+            sql = sql.replace("'None'", 'Null')
+            sql = sql.replace("'Null'", 'Null')
         return sql
-
-    def get(self, table):
-        return "SELECT * FROM %s WHERE id=%d" % (table, int(self.id))
+    
+    def delete(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
+                fields.append(field)
+        
+        sql = u"DELETE FROM %s WHERE %s" % (table, " AND ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]))
+        
+        return sql
+        
+    def get(self, fields, table):
+        return "SELECT %s FROM %s WHERE id=%d" % (",".join([fields]), table, int(self.id))
 
     def __call__(self):
         return self.id
@@ -79,7 +92,7 @@ class Object(object):
 
         return True
         return self.id
-
+    
 class dbRoutine(object):
 
     @staticmethod
@@ -87,7 +100,7 @@ class dbRoutine(object):
         '''@args[0] - method identifier'''
         #add an opportunity to pass method name as a kwargs value
         methodName = args[0]
-        print methodName
+        #print methodName
         method = getattr(self, "db_" + methodName, None)
         if callable(method):
             try:
@@ -237,7 +250,7 @@ def transaction(cursor, account, approved, type, summ, description, created=None
                     """ , (summ, account, bill, account, approved, type, tarif , summ, description, created,))
 
     tr_id=cursor.fetchone()[0]
-    print tr_id
+    #print tr_id
 
     #cursor.execute("""""" % ())
 
