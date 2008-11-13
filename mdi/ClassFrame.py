@@ -3,7 +3,7 @@
 
 from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import setFirstActive
 from helpers import HeaderUtil, SplitterUtil
@@ -106,6 +106,10 @@ class ClassEdit(QtGui.QDialog):
             #self.store_editself.pptp_edit.checkState()==2
         
     def accept(self):
+        if unicode(self.name_edit.text())=="":
+            QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"Не указано название класса"))
+            return
+            
         if self.model:
             model=self.model
         else:
@@ -125,7 +129,7 @@ class ClassEdit(QtGui.QDialog):
         model.passthrough = self.passthrough_checkBox.checkState()==2
         #model.save()
         try:
-            self.connection.save(model.save("nas_trafficclass"))
+            self.connection.save(model,"nas_trafficclass")
             self.connection.commit()
         except Exception, e:
             print e
@@ -315,7 +319,7 @@ class ClassNodeFrame(QtGui.QDialog):
             #self.src_mask_edit.setText(default)            
             self.dst_ip_edit.setText(default)
             #self.dst_mask_edit.setText(default)
-            self.next_hop_edit.setText(default)                                       
+            self.next_hop_edit.setText('0.0.0.0')                                       
 
 
     def accept(self):
@@ -591,7 +595,7 @@ class ClassChild(QtGui.QMainWindow):
     def editClass(self, *args, **kwargs):
         
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.treeWidget.currentItem().id)
+            model=self.connection.get_model(self.treeWidget.currentItem().id, "nas_trafficclass")
         except Exception, e:
             print e
         
@@ -602,13 +606,13 @@ class ClassChild(QtGui.QMainWindow):
             
     def delClass(self):
         
-        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.getClassId())
+        model = self.connection.get_model(self.getClassId(), "nas_trafficclass")
         
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 
                 #self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
-                self.connection.delete("DELETE FROM nas_trafficclass WHERE id=%d" % model.id)
+                self.connection.iddelete(model.id, "nas_trafficclass")
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -634,8 +638,8 @@ class ClassChild(QtGui.QMainWindow):
             
         #print "item_swap_id=", item_swap_id
         
-        model1 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_changed_id)
-        model2 = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % item_swap_id)
+        model1 = self.connection.get_model(item_changed_id, "nas_trafficclass")
+        model2 = self.connection.get_model(item_swap_id, "nas_trafficclass")
         #print model1.name, model2.name
         a=model1.weight+0
         b=model2.weight+0
@@ -643,14 +647,14 @@ class ClassChild(QtGui.QMainWindow):
         model1.weight=1000001
         try:
             
-            self.connection.save(model1.save("nas_trafficclass"))
+            self.connection.save(model1,"nas_trafficclass")
             
             model2.weight=a
             model1.weight=b
             
-            self.connection.save(model2.save("nas_trafficclass"))
+            self.connection.save(model2,"nas_trafficclass")
             
-            self.connection.save(model1.save("nas_trafficclass"))
+            self.connection.save(model1,"nas_trafficclass")
             
             #self.connection.create(model2.save("nas_trafficclass"))
             self.connection.commit()
@@ -710,7 +714,7 @@ class ClassChild(QtGui.QMainWindow):
     def addNode(self):
 
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % self.getClassId())
+            model=self.connection.get_model(self.getClassId(), "nas_trafficclass")
         except Exception, e:
             print e
 
@@ -718,7 +722,7 @@ class ClassChild(QtGui.QMainWindow):
         if child.exec_()==1:
             child.model.traffic_class_id=model.id
             try:
-                self.connection.save(child.model.save("nas_trafficnode"))
+                self.connection.save(child.model,"nas_trafficnode")
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -729,7 +733,7 @@ class ClassChild(QtGui.QMainWindow):
     def delNode(self):
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
-                self.connection.delete("DELETE FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
+                self.connection.iddelete(self.getSelectedId(), "nas_trafficnode")
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -738,7 +742,7 @@ class ClassChild(QtGui.QMainWindow):
         
     def editNode(self):
         try:
-            model=self.connection.get("SELECT * FROM nas_trafficnode WHERE id=%d" % self.getSelectedId())
+            model=self.connection.get_model(self.getSelectedId(), "nas_trafficnode")
         except Exception, e:
             print e
             #return
@@ -747,7 +751,7 @@ class ClassChild(QtGui.QMainWindow):
         child=ClassNodeFrame(connection=self.connection, model=model)
         if child.exec_()==1:
             try:
-                self.connection.save(child.model.save("nas_trafficnode"))
+                self.connection.save(child.model,"nas_trafficnode")
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -763,8 +767,8 @@ class ClassChild(QtGui.QMainWindow):
         self.tableWidget.clearContents()
         self.tableWidget.setColumnHidden(0, True)
         #print text
-        model = self.connection.get("SELECT * FROM nas_trafficclass WHERE id=%d" % class_id)
-        nodes = self.connection.sql("SELECT * FROM nas_trafficnode WHERE traffic_class_id=%d ORDER BY id" % model.id)
+        model = self.connection.get_model(class_id, "nas_trafficclass")
+        nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':model.id})
 
         self.tableWidget.setRowCount(len(nodes))
         

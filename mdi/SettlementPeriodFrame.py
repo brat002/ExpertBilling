@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -158,7 +158,7 @@ class AddSettlementPeriod(QtGui.QDialog):
             model=Object()
 
         if unicode(self.name_edit.text())==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано название"))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано название"))
             return
         else:
             model.name=unicode(self.name_edit.text())
@@ -178,7 +178,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         model.time_start=self.datetime_edit.dateTime().toPyDateTime()
 
         try:
-            self.connection.save(model.save("billservice_settlementperiod"))
+            self.connection.save(model,"billservice_settlementperiod")
             self.connection.commit()
         except Exception, e:
             print e
@@ -270,7 +270,7 @@ class SettlementPeriodEbs(ebsTableWindow):
         self.refresh()'''
         id=self.getSelectedId()
         if id>0:
-            if self.connection.sql("""SELECT id FROM billservice_tariff WHERE (settlement_period_id=%d)""" % id):
+            if self.connection.get_models("billservice_tariff", where={"settlement_period_id":id}):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
                 return
             elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
@@ -288,7 +288,7 @@ class SettlementPeriodEbs(ebsTableWindow):
     def edit_period(self):
         id=self.getSelectedId()
         try:
-            model=self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" %id)
+            model=self.connection.get_model(id, "billservice_settlementperiod")
         except:
             return
 
@@ -308,7 +308,7 @@ class SettlementPeriodEbs(ebsTableWindow):
 
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
-        periods = self.connection.foselect("billservice_settlementperiod")
+        periods = self.connection.get_models("billservice_settlementperiod")
         self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
@@ -329,177 +329,4 @@ class SettlementPeriodEbs(ebsTableWindow):
             
     def delNodeLocalAction(self):
         super(SettlementPeriodEbs, self).delNodeLocalAction([self.delAction])
-
-class SettlementPeriodChild(QtGui.QMainWindow):
-    sequenceNumber = 1
-
-    def __init__(self, connection):
-        self.setname = "setper_frame_period"
-        bhdr = HeaderUtil.getBinaryHeader(self.setname)
-        super(SettlementPeriodChild, self).__init__()
-        self.connection=connection
-        self.setObjectName("SettlementPeriodMDI")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,827,476).size()).expandedTo(self.minimumSizeHint()))
-        
-        self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-
-        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(0,0,821,401))
-
-        self.tableWidget = tableFormat(self.tableWidget)
-        
-        self.setCentralWidget(self.tableWidget)
-        
-        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-
-        self.menubar = QtGui.QMenuBar(self)
-        self.menubar.setGeometry(QtCore.QRect(0,0,827,21))
-        self.menubar.setObjectName("menubar")
-        self.setMenuBar(self.menubar)
-
-        self.statusbar = QtGui.QStatusBar(self)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
-
-        self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setObjectName("toolBar")
-        self.toolBar.setMovable(False)
-        self.toolBar.setFloatable(False)
-        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.toolBar.setIconSize(QtCore.QSize(18,18))
-
-        self.addAction = QtGui.QAction(self)
-        self.addAction.setIcon(QtGui.QIcon("images/add.png"))
-        self.addAction.setObjectName("addAction")
-
-        self.delAction = QtGui.QAction(self)
-        self.delAction.setIcon(QtGui.QIcon("images/del.png"))
-        self.delAction.setObjectName("delAction")
-        self.toolBar.addAction(self.addAction)
-        self.toolBar.addAction(self.delAction)
-        
-        self.editAction = QtGui.QAction(self)
-        self.editAction.setIcon(QtGui.QIcon("images/open.png"))
-        
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tableWidget.addAction(self.editAction)
-        self.tableWidget.addAction(self.addAction)
-        self.tableWidget.addAction(self.delAction)
-
-
-
-        self.retranslateUi()
-        HeaderUtil.nullifySaved(self.setname)
-        self.refresh()
-        if not bhdr.isEmpty():
-                HeaderUtil.setBinaryHeader(self.setname, bhdr)
-                HeaderUtil.getHeader(self.setname, self.tableWidget)
-        tableHeader = self.tableWidget.horizontalHeader()
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-
-        self.connect(self.addAction,  QtCore.SIGNAL("triggered()"), self.add_period)
-        self.connect(self.delAction,  QtCore.SIGNAL("triggered()"), self.del_period)
-        self.connect(self.editAction, QtCore.SIGNAL("triggered()"), self.edit_period)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_period)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-        self.delNodeLocalAction()
-        
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Расчётные периоды", None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
-        
-        columns=['Id', u'Название', u'Начинается при активации', u'Начало', u'Продолжительность в периодах', u'Продолжительность в секундах']
-        makeHeaders(columns, self.tableWidget)
-        
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.addAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
-        self.delAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        self.editAction.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        
-    def add_period(self):
-        child=AddSettlementPeriod(connection=self.connection)
-        child.exec_()
-        self.refresh()
-
-    def del_period(self):
-        '''id=self.getSelectedId()
-
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM billservice_settlementperiod WHERE id=%d" % id)
-
-        self.refresh()'''
-        id=self.getSelectedId()
-        if id>0:
-            if self.connection.sql("""SELECT id FROM billservice_tariff WHERE (settlement_period_id=%d)""" % id):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
-                return
-            elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-                try:
-                    #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete("billservice_settlementperiod", id)
-                    self.connection.commit()
-                    self.refresh()
-                except Exception, e:
-                    print e
-                    self.connection.rollback()
-                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
-
-
-    def edit_period(self):
-        id=self.getSelectedId()
-        try:
-            model=self.connection.get("SELECT * FROM billservice_settlementperiod WHERE id=%d" %id)
-        except:
-            return
-
-
-        child=AddSettlementPeriod(connection=self.connection, model=model)
-        child.exec_()
-
-        self.refresh()
-
-
-    def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-
-
-    def addrow(self, value, x, y):
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(unicode(value))
-        if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/sp.png"))
-        self.tableWidget.setItem(x,y,headerItem)
-
-    def saveHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader(self.setname, self.tableWidget)
-            
-    def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
-        periods = self.connection.foselect("billservice_settlementperiod")
-        self.tableWidget.setRowCount(len(periods))
-        #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
-        i=0
-        for period in periods:
-            self.addrow(period.id, i,0)
-            self.addrow(period.name, i,1)
-            self.addrow(period.autostart, i,2)
-            self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
-            self.addrow(period.length_in, i,4)            
-            self.addrow(period.length, i,5)
-            #self.tableWidget.setRowHeight(i, 17)
-            self.tableWidget.setColumnHidden(0, True)
-            #self.tableWidget.setRowHeight(i, 14)
-            i+=1
-        #self.tableWidget.resizeColumnsToContents()
-        HeaderUtil.getHeader(self.setname, self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
-            
-    def delNodeLocalAction(self):
-        if self.tableWidget.currentRow()==-1:
-            self.delAction.setDisabled(True)
-        else:
-            self.delAction.setDisabled(False)
 

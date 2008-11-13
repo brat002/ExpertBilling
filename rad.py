@@ -10,8 +10,7 @@ except:
     print 'cannot import mx'
 import os,datetime
 
-#from SocketServer import ThreadingUDPServer
-#from SocketServer import DatagramRequestHandler
+
 
 import socket
 import asyncore
@@ -39,7 +38,7 @@ except:
 
 import ConfigParser
 
-daemonize("/dev/null", "log.txt", "log.txt")
+
 
 
 global numauth, numacct

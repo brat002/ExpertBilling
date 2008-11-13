@@ -7,7 +7,7 @@ from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName
-from helpers import Object
+from db import Object as Object
 from helpers import dateDelim
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -781,12 +781,12 @@ class OperatorDialog(QtGui.QDialog):
 
     def fixtures(self):
         try:
-            self.op_model =self.connection.get("SELECT * FROM billservice_operator LIMIT 1;")
+            self.op_model =self.connection.get_operator()
         except Exception, e:
             print e
             return
         try:
-            self.bank_model=self.connection.get("SELECT * FROM billservice_bankdata WHERE id=%d" % self.op_model.bank_id)
+            self.bank_model=self.connection.get_bank_for_operator(self.op_model)
         except Exception, e:
             print e
             return
@@ -824,7 +824,7 @@ class OperatorDialog(QtGui.QDialog):
         bank_model.currency = unicode(self.lineEdit_currency.text())
 
         try:
-            self.bank_model.id = self.connection.save(bank_model.save("billservice_bankdata"))
+            self.bank_model.id = self.connection.save(bank_model,"billservice_bankdata")
         except Exception, e:
             print e
             self.connection.rollback()
@@ -849,7 +849,7 @@ class OperatorDialog(QtGui.QDialog):
 
 
         try:
-            self.connection.create(op_model.save("billservice_operator"))
+            self.connection.save(op_model,"billservice_operator")
             self.connection.commit()
         except Exception, e:
             print e

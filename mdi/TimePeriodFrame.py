@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import setFirstActive
@@ -119,11 +119,11 @@ class AddTimePeriod(QtGui.QDialog):
     
             if model.hasattr('id'):
                 #Update
-                self.connection.save(model.save("billservice_timeperiodnode"))
+                self.connection.save(model,"billservice_timeperiodnode")
             else:
                 #Insert
                 self.nodemodel=model
-                self.nodemodel.id = self.connection.save(model.save("billservice_timeperiodnode"))
+                self.nodemodel.id = self.connection.save(model, "billservice_timeperiodnode")
                 #print self.nodemodel.id
             self.connection.commit()
         except Exception, e:
@@ -329,7 +329,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         
         try:      
             self.connection.commit()
-            if not self.connection.save(model.save(table="billservice_timeperiod")):
+            if not self.connection.save(model, "billservice_timeperiod"):
                 QtGui.QMessageBox.warning(self, u"Ошибка",
                             u"Вероятно, такое название уже есть в списке.")
             self.connection.commit()
@@ -374,7 +374,7 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
     def editPeriod(self):
-        model = self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d;" % self.getTimeperiodId())
+        model = self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod;")
         text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,model.name);
 
         if text[0].isEmpty()==True and text[2]:
@@ -384,7 +384,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         try:
             model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % model.id)
             model.name=unicode(text[0])
-            self.connection.save(model.save('billservice_timeperiod'))    
+            self.connection.save(model, 'billservice_timeperiod')    
             self.conection.commit()            
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
@@ -507,7 +507,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         except Exception, ex:
             print ex
         self.treeWidget.clear()
-        periods=self.connection.sql("SELECT * FROM billservice_timeperiod ORDER BY id ASC")
+        periods=self.connection.get_models("billservice_timeperiod")
         for period in periods:
             #item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item = QtGui.QTreeWidgetItem(self.treeWidget)

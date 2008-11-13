@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 #restrict by ip adresses
 
 from helpers import tableFormat
-from helpers import Object as Object
+from db import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
@@ -186,7 +186,7 @@ class SystemUserFrame(QtGui.QDialog):
             model.description = unicode(self.comment_edit.text())
             model.status = self.status_checkBox.checkState()==2
             try:
-                self.connection.save(model.save(table="billservice_systemuser"))
+                self.connection.save(model, "billservice_systemuser")
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -265,7 +265,7 @@ class SystemEbs(ebsTableWindow):
 
     def editframe(self):
         try:
-            model=self.connection.get("SELECT * FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
+            model=self.connection.get_model(self.getSelectedId(), "billservice_systemuser")
         except:
             return
             
@@ -287,7 +287,7 @@ class SystemEbs(ebsTableWindow):
 
     def refresh(self):
         #self.tableWidget.setSortingEnabled(False)
-        users = self.connection.foselect("billservice_systemuser")
+        users = self.connection.get_models("billservice_systemuser")
         self.tableWidget.setRowCount(len(users))
         i=0
         for user in users:
@@ -310,161 +310,3 @@ class SystemEbs(ebsTableWindow):
         #self.tableWidget.setSortingEnabled(True)
     
         
-class SystemUserChild(QtGui.QMainWindow):
-    sequenceNumber = 1
-
-    def __init__(self, connection):
-        self.setname = "users_frame_header"
-        bhdr = HeaderUtil.getBinaryHeader(self.setname)
-        super(SystemUserChild, self).__init__()
-        self.connection = connection
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,634,365).size()).expandedTo(self.minimumSizeHint()))
-        self.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
-        self.setDockNestingEnabled(False)
-        self.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks|QtGui.QMainWindow.AnimatedDocks)
-        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-        self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget.setGeometry(QtCore.QRect(0,0,631,311))
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget = tableFormat(self.tableWidget)
-        self.setCentralWidget(self.tableWidget)
-
-        self.statusbar = QtGui.QStatusBar(self)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
-
-        self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setObjectName("toolBar")
-        self.toolBar.setMovable(False)
-        self.toolBar.setFloatable(False)
-        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        self.toolBar.setIconSize(QtCore.QSize(18,18))
-        
-        self.editUserAction = QtGui.QAction(self)
-        self.editUserAction.setIcon(QtGui.QIcon("images/open.png"))
-        self.editUserAction.setObjectName("openUserAction")
-
-        self.addUserAction = QtGui.QAction(self)
-        self.addUserAction.setIcon(QtGui.QIcon("images/add.png"))
-        self.addUserAction.setObjectName("addUserAction")
-
-        self.delUserAction = QtGui.QAction(self)
-        self.delUserAction.setIcon(QtGui.QIcon("images/del.png"))
-        self.delUserAction.setObjectName("delUserAction")
-        self.toolBar.addAction(self.addUserAction)
-        self.toolBar.addAction(self.delUserAction)
-        
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tableWidget.addAction(self.editUserAction)
-        self.tableWidget.addAction(self.addUserAction)
-        self.tableWidget.addAction(self.delUserAction)
-
-        self.connect(self.addUserAction, QtCore.SIGNAL("triggered()"), self.addframe)
-        self.connect(self.delUserAction, QtCore.SIGNAL("triggered()"), self.delete)
-        self.connect(self.editUserAction, QtCore.SIGNAL("triggered()"), self.editframe)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        self.retranslateUi()
-        HeaderUtil.nullifySaved(self.setname)
-        self.refresh()
-        if not bhdr.isEmpty():
-                HeaderUtil.setBinaryHeader(self.setname, bhdr)
-                HeaderUtil.getHeader(self.setname, self.tableWidget)
-        tableHeader = self.tableWidget.horizontalHeader()
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
-        
-        self.tableWidget.clear()
-        columns=[u"id", u"Имя", u"Статус", u"Создан", u'Последний вход', u'Последний IP', u'Разрешённые адреса']
-        makeHeaders(columns, self.tableWidget)
-
-
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Системные пользователи", None, QtGui.QApplication.UnicodeUTF8))
-        self.addUserAction.setText(QtGui.QApplication.translate("MainWindow", "addUser", None, QtGui.QApplication.UnicodeUTF8))
-        self.delUserAction.setText(QtGui.QApplication.translate("MainWindow", "delUserAction", None, QtGui.QApplication.UnicodeUTF8))
-        self.editUserAction.setText(QtGui.QApplication.translate("MainWindow", "Редактировать", None, QtGui.QApplication.UnicodeUTF8))
-
-    def addframe(self):
-        addf = SystemUserFrame(connection=self.connection)
-        #addf.show()
-        if addf.exec_()==1:
-            self.refresh()
-
-
-    def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-
-    def delete(self):
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            try:
-                #self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
-                self.connection.iddelete("billservice_systemuser", self.getSelectedId())
-                self.connection.commit()
-            except Exception, e:
-                print e
-                self.connection.rollback()
-        self.refresh()
-
-
-    def editframe(self):
-        try:
-            model=self.connection.get("SELECT * FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
-        except:
-            return
-            
-
-        addf = SystemUserFrame(connection=self.connection, model=model)
-        
-        if addf.exec_()==1:
-            self.refresh()
-
-    def addrow(self, value, x, y):
-        headerItem = QtGui.QTableWidgetItem()
-        if value == None:
-            value = ''
-        if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/user.png"))
-        headerItem.setText(unicode(value))
-        self.tableWidget.setItem(x,y,headerItem)
-
-
-    def refresh(self):
-        self.tableWidget.setSortingEnabled(False)
-        #nasses=Nas.objects.all().order_by('id')
-        #users=self.connection.sql("SELECT * FROM billservice_systemuser ORDER BY id")
-        users = self.connection.foselect("billservice_systemuser")
-        #self.tableWidget.setRowCount(nasses.count())
-        self.tableWidget.setRowCount(len(users))
-        i=0
-        for user in users:
-            self.addrow(user.id, i,0)
-            self.addrow(user.username, i,1)
-            self.addrow(user.status, i,2)
-            self.addrow(user.created, i,3)
-            try:
-                self.addrow(user.last_login.strftime(self.strftimeFormat), i,4)
-            except:
-                pass
-            self.addrow(user.last_ip, i,5)
-            self.addrow(user.host, i,6)
-            self.tableWidget.setRowHeight(i, 14)
-            i+=1
-        self.tableWidget.setColumnHidden(0, True)
-
-            
-        #self.tableWidget.resizeColumnsToContents()
-        HeaderUtil.getHeader(self.setname, self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
-    def saveHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader(self.setname, self.tableWidget)
-    def delNodeLocalAction(self):
-        if self.tableWidget.currentRow()==-1:
-            self.delAction.setDisabled(True)
-            self.configureAction.setDisabled(True)
-        else:
-            self.delAction.setDisabled(False)
-            self.configureAction.setDisabled(False)
-            
