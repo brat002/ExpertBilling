@@ -2712,7 +2712,7 @@ class AddAccountFrame(QtGui.QDialog):
             
             if self.model:
                 model=self.model
-                model = self.connection.get_model(self.model.id, "billservice_account")
+                #model = self.connection.get_model(self.model.id, "billservice_account")
                 
                 
             else:
@@ -2759,8 +2759,8 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IPN IP до конца."))
                     return
                 try:
-                    ipn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text())).id
-                    if ipn_address_account_id != model.id:
+                    ipn_address_account_id = self.connection.get("SELECT count(id) as count FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text())).count
+                    if ipn_address_account_id>0:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return  
@@ -2780,8 +2780,9 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите VPN IP до конца."))
                     return
                 try:
-                    vpn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text())).id
-                    if vpn_address_account_id != model.id:
+                    vpn_address_account_id = self.connection.get("SELECT count(id) as count FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text())).count
+                    print "vpn_address_account_id", vpn_address_account_id
+                    if vpn_address_account_id>0:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return    
@@ -3335,7 +3336,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         if child.exec_()==1 and id is not None:
             #time.sleep(5)
-            #self.connection.flush()
+            self.connection.flush()
             self.refresh()
 
     def makeTransation(self):

@@ -378,16 +378,15 @@ class periodical_service_bill(Thread):
 
     """
     def __init__ (self):
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        #self.connection._con._con.set_isolation_level(0)
-        self.cur = self.connection.cursor()
         Thread.__init__(self)
 
 
     def run(self):
 
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor()
             try:
                 # Количество снятий в сутки
                 transaction_number=24
@@ -608,7 +607,9 @@ class periodical_service_bill(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
                 time.sleep(180)
-
+            self.cur.close()
+            self.connection.close()
+            
 class TimeAccessBill(Thread):
     """
     Услуга применима только для VPN доступа, когда точно известна дата авторизации
@@ -616,9 +617,7 @@ class TimeAccessBill(Thread):
     """
     def __init__(self):
         Thread.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
+
 
     def run(self):
         """
@@ -626,6 +625,9 @@ class TimeAccessBill(Thread):
         """
 
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor()
             try:
                 '''self.cur.execute("""
                                  SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
@@ -747,7 +749,8 @@ class TimeAccessBill(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
                 time.sleep(50)
-
+            self.cur.close()
+            self.connection.close()
 
 class NetFlowAggregate(Thread):
     """
@@ -776,10 +779,10 @@ class NetFlowAggregate(Thread):
         return False
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
         while True:
+            connection = pool.connection()
+            connection._con._con.set_client_encoding('UTF8')
+            cur = connection.cursor()
             #print 'next aggregation cycle'
             try:
                 ts_pool={}
@@ -820,6 +823,7 @@ class NetFlowAggregate(Thread):
                             DELETE FROM billservice_rawnetflowstream WHERE id=%s;
                             """, (nf_id,))
                         continue
+                    connection.commit()
                     tarif_mode=False
                     #print nf_id
                     #Если у тарифа нет услуги доступа по трафику, значит метим статистику
@@ -859,7 +863,7 @@ class NetFlowAggregate(Thread):
                         )
     
     
-    
+                    connection.commit()
                     if store==True:
                         cur.execute(
                             """
@@ -875,8 +879,9 @@ class NetFlowAggregate(Thread):
                 del raw_streams  
                 
                 gc.collect()
-                time.sleep(60)
-
+                
+                cur.close()
+                connection.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -884,8 +889,8 @@ class NetFlowAggregate(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
                 time.sleep(60)
-        cur.close()
-        connection.close()
+            time.sleep(60)
+
 
 
 class NetFlowBill(Thread):
@@ -912,9 +917,6 @@ class NetFlowBill(Thread):
 
 
     def __init__(self):
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
         #self.connection = pool.getconn()
         #self.connection = psycopg2.connect(dsn)
         #self.connection.set_client_encoding('UTF8')
@@ -979,6 +981,9 @@ class NetFlowBill(Thread):
 
     def run(self):
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor()
             try:
                 a=time.clock()
 
@@ -1126,7 +1131,8 @@ class NetFlowBill(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 #gc.collect()
                 time.sleep(40)
-
+            self.cur.close()
+            self.connection.close()
         #connection.close()
 
 
@@ -1136,14 +1142,15 @@ class limit_checker(Thread):
     """
     def __init__ (self):
         Thread.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
+
 
 
     def run(self):
 
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor()
             try:
                 """
                 Выбираем тарифные планы, у которых есть лимиты
@@ -1261,7 +1268,8 @@ class limit_checker(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
                 time.sleep(110)
-
+            self.cur.close()
+            self.connection.close()
                 
 
 
@@ -1281,9 +1289,9 @@ class settlement_period_service_dog(Thread):
     3. Если сумма меньше цены тарифного плана-делаем транзакцию, в которой снимаем деньги.
     """
     def __init__ (self):
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor()
         Thread.__init__(self)
 
 
@@ -1297,9 +1305,13 @@ class settlement_period_service_dog(Thread):
         """
         Сделать привязку к пользователю через billservice_accounttarif
         """
-
+        
+        
 
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor()
             try:
                 self.cur.execute(
                     """
@@ -1387,7 +1399,7 @@ class settlement_period_service_dog(Thread):
     
     
                         #Если балланса не хватает - отключить пользователя
-                        self.connection.commit()
+                    self.connection.commit()
                     
                     if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
                         #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
@@ -1417,7 +1429,7 @@ class settlement_period_service_dog(Thread):
                             UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
                             """, (account_id,))                            
     
-                        self.connection.commit()
+                    self.connection.commit()
                     if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
                     if (prepaid_traffic_reset<period_start and reset_traffic==True) or traffic_transmit_service_id is None or accounttarif_id!=accounttarif_id_shedulelog:
                         """
@@ -1433,7 +1445,7 @@ class settlement_period_service_dog(Thread):
                             self.cur.execute("""
                                              INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, now()) ;
                                              """, (account_id, accounttarif_id,))    
-                        self.connection.commit()
+                    self.connection.commit()
     
                     if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
                         #Начислить новый предоплаченный трафик
@@ -1468,7 +1480,7 @@ class settlement_period_service_dog(Thread):
                                 self.cur.execute("""
                                                  INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, now()) ;
                                                  """, (account_id, accounttarif_id,))  
-                        self.connection.commit() 
+                    self.connection.commit() 
     
                     if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id  or accounttarif_id!=accounttarif_id_shedulelog:
     
@@ -1510,7 +1522,7 @@ class settlement_period_service_dog(Thread):
                             cur.execute("""
                                         INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, now()) ;
                                         """, (account_id, accounttarif_id,))
-                    self.connection.commit()
+                self.connection.commit()
                     
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 self.cur.execute("""
@@ -1540,6 +1552,8 @@ class settlement_period_service_dog(Thread):
     
                     self.connection.commit()
                 gc.collect()
+                self.cur.close()
+                self.connection.close()
                 time.sleep(120)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -1548,6 +1562,8 @@ class settlement_period_service_dog(Thread):
                     print self.getName() + ": exception: " + str(ex)
                 gc.collect()
                 time.sleep(120)
+            self.cur.close()
+            self.connection.close()
 
 class ipn_service(Thread):
     """
@@ -1558,9 +1574,6 @@ class ipn_service(Thread):
     """
     def __init__ (self):
         Thread.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
 
     def check_period(self, rows):
         for row in rows:
@@ -1582,6 +1595,9 @@ class ipn_service(Thread):
 
     def run(self):
         while True:
+            self.connection = pool.connection()
+            self.connection._con._con.set_client_encoding('UTF8')
+            self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
             try:
                 self.cur.execute("""SELECT account.id as account_id,
                     account.username as account_username, 
@@ -1640,7 +1656,7 @@ class ipn_service(Thread):
                                           account_mac_address=row['account_ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                                           nas_password=row['nas_password'], format_string=row['nas_user_enable'])
                             recreate_speed = True
-    
+                    
                             if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, row['account_id']))
                     elif (row['account_disabled_by_limit']==True or row['ballance']<=0 or period==False or row['account_balance_blocked']==True or row['account_status']==False) and row['account_ipn_status']==True:
     
@@ -1655,7 +1671,7 @@ class ipn_service(Thread):
                         if sended == True: self.cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, row['account_id'],))
     
     
-    
+                    self.connection.commit()
                     #print account_ipn_speed
                     if row['account_ipn_speed']=='' or row['account_ipn_speed']==None:
     
@@ -1697,7 +1713,7 @@ class ipn_service(Thread):
                         if id==None:
                             self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s , now());", (row['account_id'], unicode(newspeed), sended_speed,))
     
-                    self.connection.commit()
+                self.connection.commit()
                 gc.collect()
                 time.sleep(70)
             except Exception, ex:
@@ -1710,7 +1726,8 @@ class ipn_service(Thread):
 
                 gc.collect()
                 time.sleep(60)
-
+            self.cur.close()
+            self.connection.close()
 
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
@@ -1825,9 +1842,17 @@ def authentconn(func):
                         caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                     #print args
                     #print kwargs
+                    
                     kwargs['connection'] = caller.db_connection
                     kwargs['cur'] = caller.cur
-                    return func(*args, **kwargs)
+                    res =  func(*args, **kwargs)
+                    if func.__name__ == "commit":
+                        caller.cur.close()
+                        caller.db_connection.close()
+                        caller.db_connection = pool.connection()
+                        caller.db_connection._con._con.set_client_encoding('UTF8')
+                        caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                    return res
                 else:
                     return None
             else:
@@ -1837,6 +1862,7 @@ def authentconn(func):
                 print args[0].getName() + ": (RPC Server) database connection is down: " + str(ex)
             else:
                 print args[0].getName() + ": exception: " + str(ex)
+
     return relogfunc
 
 class RPCServer(Thread, Pyro.core.ObjBase):
