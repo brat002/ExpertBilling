@@ -1527,7 +1527,7 @@ class settlement_period_service_dog(Thread):
                 #print "onetime", rows
                 for row in rows:
                     account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
-                    transaction(
+                    transaction_id = transaction(
                         cursor=self.cur,
                         type='ONETIME_SERVICE',
                         account=account_id,
@@ -1536,7 +1536,7 @@ class settlement_period_service_dog(Thread):
                         summ=cost,
                         description=u"Снятие денег по разовой услуге %s" % service_name
                     )
-                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id,datetime) VALUES(%s, %s, now());", (accounttarif_id, service_id,))
+                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, now());", (accounttarif_id, transaction_id, service_id,))
     
                     self.connection.commit()
                 gc.collect()
