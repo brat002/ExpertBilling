@@ -1,7 +1,0 @@
-PY_FILE = '../../core.py'
-PROTECTION_MODULE = 'protection/windows.py'
-PROTECTION_KEY = '123'
-FREEZE_LOCAL = True
-ADDITIONAL_MODULES = { 'utilites' : '../../utilites.py' }
-COMPILE = True
-DEV_CPP_DIR = 'C:\Dev-Cpp'
