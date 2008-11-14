@@ -1,0 +1,30 @@
+import sys
+_PREFIX = 'C:/Python25/Lib/site-packages/' if sys.platform == 'win32' else '/usr/lib/python2.5/site-packages/'
+_EXT = '.pyd' if sys.platform == 'win32' else '.so'
+del sys
+PY_FILE = 'nf.py'
+FREEZE_LOCAL = True
+ADDITIONAL_MODULES = {
+	'DBUtils':
+		None, #_PREFIX + 'DBUtils/__init__.py',
+	'DBUtils.PooledDB':
+		None, #_PREFIX + 'DBUtils/PooledDB.py',
+	'mx':
+		_PREFIX + 'mx/__init__.py',
+	'mx.DateTime':
+		_PREFIX + 'mx/DateTime/__init__.py',
+	'mx.DateTime.DateTime':
+		_PREFIX + 'mx/DateTime/DateTime.py',
+	'mx.DateTime.mxDateTime':
+		_PREFIX + 'mx/DateTime/mxDateTime/__init__.py',
+	'mx.DateTime.mxDateTime.mxDateTime':
+		_PREFIX + 'mx/DateTime/mxDateTime/mxDateTime' + _EXT,
+	'mx.Misc':
+		_PREFIX + 'mx/Misc/__init__.py',
+	'mx.Misc.LazyModule':
+		_PREFIX + 'mx/Misc/LazyModule.py',
+}
+C_FILE = '../OUTPUT/nf.c'
+STAND_ALONE = True
+IGNORE_MISSING = True
+
