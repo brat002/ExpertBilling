@@ -46,13 +46,25 @@ global numauth, numacct
 numauth=0
 numacct=0
 gigaword = 4294967296
+account_timeaccess_cache={}
+account_timeaccess_cache_count=0
 
+def log(message):
+    global debug_mode
+    if debug_mode>0:
+        print message
+        
+def show_packet(packetobject):
+    b=''
+    for key,value in packetobject.items():
+        b+=str(packetobject._DecodeKey(key))+str(packetobject[packetobject._DecodeKey(key)][0])+"\n"
+    return b
+        
 class AsyncUDPServer(asyncore.dispatcher):
     ac_out_buffer_size = 8096*10
     ac_in_buffer_size = 8096*10
     
     def __init__(self, host, port):
-#        self.buffer=''
         self.outbuf = []
 
         asyncore.dispatcher.__init__(self)
@@ -103,7 +115,7 @@ class AsyncUDPServer(asyncore.dispatcher):
     def handle_error (self, *info):
         import traceback
         traceback.print_exc()
-        print 'uncaptured python exception, closing channel %s' % `self`
+        log('uncaptured python exception, closing channel %s' % `self`)
         self.close()
     
     def handle_close(self):
@@ -173,8 +185,7 @@ class HandleAuth(HandleBase):
         self.access_type=access_type
         self.secret = ''
 
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
+        log(show_packet(packetobject))
         
 
         self.cur = dbCur
@@ -234,42 +245,33 @@ class HandleAuth(HandleBase):
 
     def handle(self):
         row=self.get_nas_info()
-        #print row
         if row==None:
             self.cur.close()
-            #----
-            #self.connection.close()
-            #----
             return '',None
-        #print 1
         self.nas_id=str(row[0])
         self.nas_type=row[2]
         self.multilink = row[3]
         self.secret = str(row[1])
-        #print str(row[1])
         self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
-        #print 2
+
         try:
             station_id=self.packetobject['Calling-Station-Id'][0]
         except:
             station_id = ''
-        #print self.replypacket.secret
+
         row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
-        #print 1, row
-        #print 3
+
         if row==None:
             self.cur.close()
-            #----
-            #self.connection.close()
-            #----
-            #print "Unknown User", self.packetobject['User-Name'][0]
+
+            log("Unknown User", self.packetobject['User-Name'][0])
             return self.auth_NA()
 
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
             self.cur.close()
-            #print "Unallowed NAS for user ", self.packetobject['User-Name'][0]
+            log("Unallowed NAS for user ", self.packetobject['User-Name'][0])
             return self.auth_NA()
 
 
@@ -281,7 +283,7 @@ class HandleAuth(HandleBase):
                 allow_dial=True
                 break
 
-        #print "Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status)
+        log("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
         if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
             self.replypacket.code=2
             self.replypacket.username=str(username) #Нельзя юникод
@@ -292,7 +294,6 @@ class HandleAuth(HandleBase):
             self.create_speed(tarif_id, speed=speed)
             #print "Setting Speed For User" , self.speed
             self.cur.close()
-
         else:
             self.cur.close()
 
@@ -307,15 +308,7 @@ class HandleDHCP(HandleBase):
         self.packetobject = packetobject
         self.secret = ""
 
-        #for key,value in packetobject.items():
-        #    print packetobject._DecodeKey(key),packetobject[packetobject._DecodeKey(key)][0]
-
-        '''
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
-        '''
+        log(show_packet(packetobject))
 
         self.cur = dbCur
 
@@ -375,14 +368,6 @@ class HandleAcct(HandleBase):
         self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
         self.access_type=get_accesstype(self.packetobject)
-        #----
-        ''''
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
-        '''
-        #----
         self.cur = dbCur
 
     def get_bytes(self):
@@ -415,23 +400,30 @@ class HandleAcct(HandleBase):
             return None
         
         self.replypacket.secret=str(row[0])
-        self.cur.execute(
-        """
-        SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
-        JOIN billservice_tariff as tariff ON tariff.id=(SELECT tarif_id FROM billservice_accounttarif where account_id=account.id and datetime<now() ORDER BY id DESC LIMIT 1)
-        WHERE account.username=%s;
-        """, (self.packetobject['User-Name'][0],)
-        )
-        row=self.cur.fetchone()
-        if row==None:
-            self.cur.close()
-            #----
-            #self.connection.close()
-            #----
-            return self.acct_NA()
-
-        account_id, time_access=row
-
+        global account_timeaccess_cache_count
+        if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
+            """
+            Раз в десять запросов обновлять информацию о аккаунте
+            """
+            log("Update Timeaccess Cache for %s" % self.packetobject['User-Name'][0])
+            self.cur.execute(
+            """
+            SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
+            JOIN billservice_tariff as tariff ON tariff.id=(SELECT tarif_id FROM billservice_accounttarif where account_id=account.id and datetime<now() ORDER BY id DESC LIMIT 1)
+            WHERE account.username=%s;
+            """, (self.packetobject['User-Name'][0],)
+            )
+            row=self.cur.fetchone()
+            if row==None:
+                self.cur.close()
+                log("Unkown User or user tarif", self.packetobject['User-Name'][0])
+                return self.acct_NA()
+            account_id, time_access=row
+            account_timeaccess_cache[self.packetobject['User-Name'][0]]=[account_id, time_access,0]
+        
+        account_id, time_access = account_timeaccess_cache[self.packetobject['User-Name'][0]][0:2]
+        account_timeaccess_cache[self.packetobject['User-Name'][0]][2] +=1
+        #account_timeaccess_cache_count+=1
 
         self.replypacket.code=5
         now=datetime.datetime.now()
@@ -529,6 +521,7 @@ class HandleAcct(HandleBase):
                WHERE sessionid=%s and nas_id=%s;
                """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],)
                )
+            del account_timeaccess_cache[self.packetobject['User-Name'][0]]
 
         self.cur.connection.commit()
 
@@ -548,7 +541,7 @@ class AsyncAuth(AsyncUDPServer):
     def handle_readfrom(self,data, address):
         global numauth
         if numauth>=180:
-            print "PREVENTING DoS"
+            log("PREVENTING DoS")
             return
         t = clock()
         returndata=''
@@ -560,14 +553,14 @@ class AsyncAuth(AsyncUDPServer):
         access_type = get_accesstype(packetobject)
         numauth+=1
         if access_type in ['PPTP', 'PPPOE']:
-            print "Auth Type %s" % access_type
+            log("Auth Type %s" % access_type)
 
             coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
             secret, packetfromcore=coreconnect.handle()
-            if packetfromcore is None: numauth-=1; print "Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]);return
+            if packetfromcore is None: numauth-=1; log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
 
             authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-            print "Password check:", authobject.AccessAccept
+            log("Password check: %s" % authobject.AccessAccept)
             returndata=authobject.ReturnPacket()
             del coreconnect
             del packetfromcore
@@ -589,7 +582,7 @@ class AsyncAuth(AsyncUDPServer):
             returndata=authNA(returnpacket)
              
         numauth-=1 
-        print "AUTH time:%.8f" % (clock()-t)
+        log("AUTH time:%.8f" % (clock()-t))
         if returndata!="":
             self.sendto(returndata,address)
             del data
@@ -607,7 +600,8 @@ class AsyncAcc(AsyncUDPServer):
     def handle_readfrom(self,data, address):
         global numacct
         if numacct>=100:
-            return "PREVENTING ACCT DoS"
+            log("PREVENTING ACCT DoS")
+            return 
         numacct+=1
         t = clock()
         assert len(data)<=4096
@@ -620,7 +614,7 @@ class AsyncAcc(AsyncUDPServer):
             returndat=packetfromcore.ReplyPacket()
             self.socket.sendto(returndat,addrport)
             del returndat
-        print "ACC:%.20f" % (clock()-t)
+        log("ACC:%.20f" % (clock()-t))
         numacct-=1
         del packetfromcore
         del coreconnect
@@ -702,7 +696,12 @@ if __name__ == "__main__":
         common_vpn = config.get("radius", "common_vpn")
     except Exception, e:
         common_vpn=False
-    
+
+    try:
+        debug_mode = int(config.get("radius", "debug_mode"))
+    except Exception, e:
+        debug_mode=0
+
     try:
         session_timeout = int(config.get("dhcp", "session_timeout"))
     except Exception, e:
