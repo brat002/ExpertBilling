@@ -24,7 +24,7 @@ ADDITIONAL_MODULES = {
 	'mx.Misc.LazyModule':
 		_PREFIX + 'mx/Misc/LazyModule.py',
 }
-C_FILE = '../OUTPUT/nf.c'
+C_FILE = 'OUTPUT/nf.c'
 STAND_ALONE = True
 IGNORE_MISSING = True
 
