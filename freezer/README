@@ -1,0 +1,60 @@
+
+General:
+--------
+This module provides a functionality that allows you
+to freeze one or several dependent Python modules in
+a single binary executable file which is linked with
+Python library, so it can be successfully ran later.
+
+Technique of protection:
+------------------------
+All given units pass through three steps of freezing
+process: marshaling, compressing and encryption with
+specified key. After that their code can not be explored
+by anyone. But at a startup the last step must be
+reversed to allow program run. For this purpose one
+additional module also froze into binary code. It is a
+simple Python module that implements a function 'getKey'.
+This can check whether it's a legal copy of software or
+not by using high-level libraries (like WMI) and return
+right (or not) string key for decryption.
+
+Dependencies:
+-------------
+To compile a final file across different platforms the
+freezer uses GCC (Dev-C++ under Windows). And it links
+program with Python library and zlib. So be sure that
+all these are installed in your system.
+
+Usage:
+------
+Your can use it in three ways:
+- invoke from a command line and specify arguments by hand (0)
+- write 'Freezefile' and run (just like 'make') from
+  a directory where the last is located (1)
+- import as a usual Python module and call a function 'freeze' (2)
+
+
+(0)
+python freezer.py -l --pkey="qwerty" --pmod=prot.py --amods="alg:alg/__init__.py,alg.sort:alg/sort.py,some:" -d "D:\\Dev-Cpp\\" prg.py
+
+(1)
+# Freezefile
+PY_FILE = '../program.py'
+PROTECTION_MODULE = 'code/protection.py'
+PROTECTION_KEY = '123'
+FREEZE_LOCAL = True
+ADDITIONAL_MODULES = {
+	'pi' : '../pi.py',
+	'some': None # find automatically
+}
+COMPILE = False
+# Command line
+python freeze.py
+
+(2)
+import freezer
+freezer.freeze(
+	py_file = '/home/john/work/someproject/main.py',
+	c_file = '/tmp/someproject.c'
+)
