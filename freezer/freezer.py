@@ -241,6 +241,7 @@ def _resetFlags():
 		'FREEZE_LOCAL': False,        # freeze local modules used by main
 		'SEARCH_PATH': None,          # path to search local modules
 		'ADDITIONAL_MODULES': {},     # additional modules that will be freezed
+		'NONLOCAL': [],               # treat listed modules/packages as non-local, even if they are in the (sub)directory of a main unit
 		'LOCATION': os.getcwd() + os.sep, # current working directory
 		'COMPILE': True,                  # compile result
 		'DEV_CPP_DIR': 'C:\\Dev-Cpp\\',   # path to Dev-C++ (Windows only)
@@ -281,6 +282,8 @@ Freezefile variables:
   PROTECTION_MODULE  - name of a protection module (str)
   IGNORE_MISSING     - ignore missing modules (bool)
   FREEZE_LOCAL       - include local modules to the freezing (bool)
+  NONLOCAL           - treat listed modules/packages as non-local even
+                       if they are in the (sub)directory of a main unit
   ADDITIONAL_MODULES - modules that also must be froze (dict)
   COMPILE            - compile program at last or not (bool)
   STAND_ALONE        - copy shared modules into local directory
@@ -469,7 +472,7 @@ def _getModules():
 	if _flags[ 'FREEZE_LOCAL' ]:
 		for m in mf.modules.itervalues():
 			if ( not m.__file__ or m.__name__ == '__main__' ): continue
-			if m.__file__.startswith( _flags[ 'SEARCH_PATH' ] ):
+			if m.__file__.startswith( _flags[ 'SEARCH_PATH' ] ) and m.__name__.split( '.' )[ 0 ] not in _flags[ 'NONLOCAL' ]:
 				if not m.__code__: raise FreezerError( "can not freeze binary module '%s' in '%s'" % ( m.__name__, m.__file__ ) )
 				result.append( m )
 	print( '==================================================' )
@@ -619,11 +622,7 @@ def _copyModules():
 		# excluding main and built-in modules
 		if ( mod.__name__ == '__main__' or ( not mod.__code__ and not mod.__file__ ) ): continue
 		if mod.__file__.startswith( _flags[ 'SEARCH_PATH' ] ): # local module
-			if (
-				mod.__file__.endswith( '.so' )
-				or mod.__file__.endswith( '.pyd' )
-				or not _flags[ 'FREEZE_LOCAL' ]
-			): name_pairs.append( getFilesNames( mod ) )
+			if ( not _flags[ 'FREEZE_LOCAL' ] or mod.__name__.split( '.' )[ 0 ] in _flags[ 'NONLOCAL' ] ): name_pairs.append( getFilesNames( mod ) )
 			continue
 		loc = ''
 		for d in py_dirs:
@@ -799,6 +798,8 @@ def _parseVariables():
 		_flags[ 'FREEZE_LOCAL' ] = _flags[ 'FREEZEFILE_VARS' ][ 'FREEZE_LOCAL' ]
 	if 'ADDITIONAL_MODULES' in vars:
 		_flags[ 'ADDITIONAL_MODULES' ] = _flags[ 'FREEZEFILE_VARS' ][ 'ADDITIONAL_MODULES' ]
+	if 'NONLOCAL' in vars:
+		_flags[ 'NONLOCAL' ] = _flags[ 'FREEZEFILE_VARS' ][ 'NONLOCAL' ]
 	if 'COMPILE' in vars:
 		_flags[ 'COMPILE' ] = _flags[ 'FREEZEFILE_VARS' ][ 'COMPILE' ]
 	if 'STAND_ALONE' in vars:

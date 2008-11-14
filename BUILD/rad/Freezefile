@@ -24,7 +24,7 @@ FREEZE_LOCAL = True
 	'mx.Misc.LazyModule':
 		_PREFIX + 'mx/Misc/LazyModule.py',
 }'''
-C_FILE = '../OUTPUT/rad.c'
+C_FILE = 'OUTPUT/rad.c'
 STAND_ALONE = True
 IGNORE_MISSING = True
 
