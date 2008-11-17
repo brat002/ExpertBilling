@@ -50,6 +50,7 @@ class ebsTableWindow(QtGui.QMainWindow):
 
         columns = initargs["tablecolumns"]
         makeHeaders(columns, self.tableWidget)
+        self.restoreWindow()
     
     def ebsRetranslateUi(self, initargs):
         pass
@@ -104,7 +105,15 @@ class ebsTableWindow(QtGui.QMainWindow):
             for actObj in actList:
                 actObj.setDisabled(False)
     
-
+    def restoreWindow(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        self.restoreGeometry(val)
+        
+    def closeEvent(self, event):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        event.accept()
                 
 class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -179,6 +188,7 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
             columns = tabargs[i][1]
             self.tables[i].clear()
             makeHeaders(columns, self.tables[i])
+            self.restoreWindow()
     
     def ebsRetranslateUi(self, initargs, tabargs):
         pass
@@ -236,7 +246,16 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
             for actObj in actList:
                 actObj.setDisabled(False)
     
-
+    def restoreWindow(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        self.restoreGeometry(val)
+        
+    def closeEvent(self, event):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        event.accept()
+        
                 
 class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -336,6 +355,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
 
         columns = initargs["tablecolumns"]
         makeHeaders(columns, self.tableWidget)
+        self.restoreWindow()
     
     def ebsRetranslateUi(self, initargs):
         pass
@@ -406,3 +426,13 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             for actObj in actList:
                 actObj.setDisabled(False)
     
+    def restoreWindow(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        self.restoreGeometry(val)
+        
+    def closeEvent(self, event):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        event.accept()
+        
