@@ -139,6 +139,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
     def refresh(self):
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        self.connection.commit()
         for account in accounts:
             self.user_edit.addItem(account.username)
         
@@ -173,7 +174,7 @@ class TransactionsReportEbs(ebsTableWindow):
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
             WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
-
+        self.connection.commit()
         self.tableWidget.setRowCount(len(transactions))
         i=0
         ballance = 0
@@ -223,6 +224,7 @@ class TransactionsReport(QtGui.QMainWindow):
         self.setObjectName("TransactionReportMDI")
         self.account = account
         self.connection = connection
+        self.connection.commit()
         self.resize(QtCore.QSize(QtCore.QRect(0,0,903,483).size()).expandedTo(self.minimumSizeHint()))
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -340,6 +342,7 @@ class TransactionsReport(QtGui.QMainWindow):
         
     def fixtures(self):
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        self.connection.commit()
         for account in accounts:
             self.user_edit.addItem(account.username)
         
@@ -374,7 +377,7 @@ class TransactionsReport(QtGui.QMainWindow):
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
             WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
-
+        self.connection.commit()
         self.tableWidget.setRowCount(len(transactions))
         i=0
         ballance = 0
@@ -421,7 +424,7 @@ class TransactionsReport(QtGui.QMainWindow):
                 print "can not convert transaction id to int"      
         
         self.connection.transaction_delete(ids)      
-            
+        self.connection.commit()
         self.refresh_table()
         
 class ReportPropertiesDialog(QtGui.QDialog):
@@ -592,7 +595,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
     def fixtures(self):
         users = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
-        
+        self.connection.commit()
         for user in users:
             item = QtGui.QListWidgetItem()
             item.setText(user.username)
@@ -601,7 +604,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
             
         
         classes = self.connection.sql("SELECT * FROM nas_trafficclass ORDER BY name ASC")
-        
+        self.connection.commit()
         for clas in classes:
             item = QtGui.QListWidgetItem()
             item.setText(clas.name)
@@ -609,7 +612,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
             self.all_classes_listWidget.addItem(item)
             
         nasses = self.connection.sql("SELECT * FROM nas_nas")
-        
+        self.connection.commit()
         self.nas_comboBox.addItem('')
         for nas in nasses:
             self.nas_comboBox.addItem(nas.name)
@@ -660,7 +663,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
             
         if self.nas_comboBox.currentText()!='':
             self.nas = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % unicode(self.nas_comboBox.currentText()))
-        print self.users
+            self.connection.commit()
         self.start_date = self.from_dateTimeEdit.dateTime().toPyDateTime()
         self.end_date = self.to_dateTimeEdit.dateTime().toPyDateTime()
         QtGui.QDialog.accept(self)
@@ -828,6 +831,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         
         #print sql
         data = self.connection.sql(sql)
+        self.connection.commit()
         i=0
         self.tableWidget_summary.clearContents()
         classes_count = len(data)+1
@@ -863,7 +867,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
                         
             sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id,class.name"
             
-            print sql
+            #print sql
             data = self.connection.sql(sql)
             #i=0
             self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
@@ -884,7 +888,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
                 self.addRowSummary(u'', i, 4, color=flow.color)
                 oldusername=flow.username
                 i+=1 
-        
+        self.connection.commit()
         HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_summary)
 
                     
@@ -938,6 +942,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         else:            
             sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
         flows = self.connection.sql(sql)
+        self.connection.commit()
         i=0
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))

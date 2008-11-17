@@ -627,6 +627,7 @@ class OperatorDialog(QtGui.QDialog):
     def __init__(self, connection):
         super(OperatorDialog, self).__init__()
         self.connection = connection
+        self.connection.commit()
         self.op_model = None
         self.bank_model = None
         self.setObjectName("Operator")
@@ -790,7 +791,7 @@ class OperatorDialog(QtGui.QDialog):
         except Exception, e:
             print e
             return
-            
+        self.connection.commit()
         self.lineEdit_organization.setText(self.op_model.organization)
         self.lineEdit_okpo.setText(self.op_model.okpo)
         self.lineEdit_unp.setText(self.op_model.unp)

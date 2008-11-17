@@ -5,9 +5,15 @@ del sys
 PY_FILE = '../../core.py'
 FREEZE_LOCAL = True
 NONLOCAL = [ 'chartprovider' ]
-ADDITIONAL_MODULES = {
+ADDITIONAL_MODULES = {'encodings':None,
+'idna':None,
+'encodings.ascii':None,
+'encodings.utf_8':None,
+'psycopg2.tz':None,
 }
 C_FILE = 'OUTPUT/core.c'
 STAND_ALONE = True
 IGNORE_MISSING = True
+PROTECTION_MODULE = '../mikrobill/BUILD/core/protection.py'
+PROTECTION_KEY = '4'
 

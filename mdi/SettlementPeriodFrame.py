@@ -292,7 +292,7 @@ class SettlementPeriodEbs(ebsTableWindow):
         except:
             return
 
-
+        self.connection.commit()
         child=AddSettlementPeriod(connection=self.connection, model=model)
         child.exec_()
 
@@ -309,6 +309,7 @@ class SettlementPeriodEbs(ebsTableWindow):
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
         periods = self.connection.get_models("billservice_settlementperiod")
+        self.connection.commit()
         self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0

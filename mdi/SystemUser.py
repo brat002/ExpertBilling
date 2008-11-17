@@ -288,6 +288,7 @@ class SystemEbs(ebsTableWindow):
     def refresh(self):
         #self.tableWidget.setSortingEnabled(False)
         users = self.connection.get_models("billservice_systemuser")
+        self.connection.commit()
         self.tableWidget.setRowCount(len(users))
         i=0
         for user in users:
