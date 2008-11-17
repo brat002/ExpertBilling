@@ -152,6 +152,7 @@ class MonitorEbs(ebsTableWindow):
             sql+=" AND billservice_account.username='%s'" % unicode(user)
           
         sessions = self.connection.sql(sql)  
+        self.connection.commit()
         i=0        
         self.tableWidget.setRowCount(len(sessions))        
         for session in sessions:
@@ -182,6 +183,7 @@ class MonitorEbs(ebsTableWindow):
         if self.selected_user is None:
             self.userCombobox.addItem('---')
             users = self.connection.get_models("billservice_account")
+            self.connection.commit()
             if users==None:
                 users=[]
             for user in users:

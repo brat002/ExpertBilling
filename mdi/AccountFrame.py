@@ -201,7 +201,6 @@ class AddAccountTarif(QtGui.QDialog):
         except Exception, e:
             print e
             self.conection.rollback()
-
         QtGui.QDialog.accept(self)
 
 
@@ -217,6 +216,7 @@ class AddAccountTarif(QtGui.QDialog):
 
     def fixtures(self):
         tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (active=TRUE) AND (get_tariff_type(id)='%s');" % self.ttype)
+        self.connection.commit()
         for tarif in tarifs:
             self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
         now=datetime.datetime.now()
@@ -229,6 +229,10 @@ class AddAccountTarif(QtGui.QDialog):
             now.setTime_t((mktime(self.model.datetime.timetuple())))
         self.date_edit.setDateTime(now)
 
+    def reject(self):
+        self.connection.rollback()
+        QtGui.QDialog.reject(self)
+        
 class TarifFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(TarifFrame, self).__init__()
@@ -1737,6 +1741,7 @@ class TarifFrame(QtGui.QDialog):
         self.limitTabActivityActions()
         self.trafficcost_tableWidget.resizeRowsToContents()
         self.trafficcost_tableWidget.resizeColumnsToContents()
+        self.connection.commit()
         
         #self.trafficcost_tableWidget.resizeRowsToContents()
 
@@ -2277,13 +2282,16 @@ class TarifFrame(QtGui.QDialog):
     def accountActions(self, prev, now):
 
         accounts = self.connection.sql("SELECT id FROM billservice_account WHERE get_tarif(id)=%s" % self.model.id)
+        self.connection.commit()
         x = [d.id for d in accounts]
         if prev==False and now==True:
             return self.connection.accountActions(x, "create")
         elif prev==True and now==False:
             return self.connection.accountActions(x, "delete")
             
-                
+    def reject(self):
+        self.connection.rollback()
+        QtGui.QDialog.reject(self)        
             
             
 class AddAccountFrame(QtGui.QDialog):
@@ -2759,8 +2767,8 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите IPN IP до конца."))
                     return
                 try:
-                    ipn_address_account_id = self.connection.get("SELECT count(id) as count FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text())).count
-                    if ipn_address_account_id>0:
+                    ipn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.ipn_ip_address_edit.text())).id
+                    if ipn_address_account_id!=model.id:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return  
@@ -2780,9 +2788,9 @@ class AddAccountFrame(QtGui.QDialog):
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите VPN IP до конца."))
                     return
                 try:
-                    vpn_address_account_id = self.connection.get("SELECT count(id) as count FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text())).count
+                    vpn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.vpn_ip_address_edit.text())).id
                     print "vpn_address_account_id", vpn_address_account_id
-                    if vpn_address_account_id>0:
+                    if vpn_address_account_id!=model.id:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
                         self.connection.rollback()
                         return    
@@ -2879,7 +2887,9 @@ class AddAccountFrame(QtGui.QDialog):
             return 
         QtGui.QDialog.accept(self)
 
-
+    def reject(self):
+        self.connection.rollback()
+        QtGui.QDialog.reject(self)
 
     def fixtures(self):
 
@@ -2887,6 +2897,7 @@ class AddAccountFrame(QtGui.QDialog):
         pools = []
 
         nasses = self.connection.get_models("nas_nas")
+        self.connection.commit()
         i=0
         for nas in nasses:
             self.nas_comboBox.addItem(nas.name)
@@ -2969,6 +2980,7 @@ class AddAccountFrame(QtGui.QDialog):
                 self.accounttarif_table.setColumnHidden(0, True)
                 i+=1
             #self.tabWidget.resizeColumnsToContents()
+            self.connection.commit()
 
 
 
@@ -3221,7 +3233,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             SplitterUtil.getSplitter(self.splname, self.splitter)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
-        self.thread.go(interval=60)
+        
+        #self.thread.go(interval=60) #Нельзя,т.к. будут происходить коммиты когда редактируется тарифный план
         
     def connectTree(self):
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
@@ -3336,7 +3349,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         if child.exec_()==1 and id is not None:
             #time.sleep(5)
-            self.connection.flush()
+            self.connection.commit()
             self.refresh()
 
     def makeTransation(self):
@@ -3401,8 +3414,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         #addf.show()
         if addf.exec_()==1:
-            self.connection.commit()
             self.connection.iddelete(id, "billservice_accountipnspeed")
+            self.connection.commit()
             self.refresh()
 
     def addrow(self, value, x, y, color=None, enabled=True):
@@ -3437,7 +3450,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         #tariffs = self.connection.foselect("billservice_tariff")
         tariffs = self.connection.get_tariffs()
-
+        self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
@@ -3474,6 +3487,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
         
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+        self.connection.commit()
         #self.connection.commit()
         #print accounts
 
@@ -3521,6 +3535,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт включён на сервере доступа."))
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+
 
     def accountAdd(self):
         id=self.getSelectedId()

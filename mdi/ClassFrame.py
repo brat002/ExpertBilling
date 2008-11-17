@@ -319,7 +319,8 @@ class ClassNodeFrame(QtGui.QDialog):
             #self.src_mask_edit.setText(default)            
             self.dst_ip_edit.setText(default)
             #self.dst_mask_edit.setText(default)
-            self.next_hop_edit.setText('0.0.0.0')                                       
+            self.next_hop_edit.setText('0.0.0.0')  
+        self.connection.commit()                                     
 
 
     def accept(self):
@@ -697,7 +698,7 @@ class ClassChild(QtGui.QMainWindow):
             print ex
         self.treeWidget.clear()
         classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC;")
-        
+        self.connection.commit()
         for clas in classes:
             item = QtGui.QTreeWidgetItem(self.treeWidget)
             item.id = clas.id
@@ -709,6 +710,7 @@ class ClassChild(QtGui.QMainWindow):
             
         if curItem != -1:
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
+        
 
 
     def addNode(self):
@@ -769,7 +771,7 @@ class ClassChild(QtGui.QMainWindow):
         #print text
         model = self.connection.get_model(class_id, "nas_trafficclass")
         nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':model.id})
-
+        self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
         
         i=0        

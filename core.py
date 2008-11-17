@@ -1,6 +1,7 @@
 #-*-coding=utf-8-*-
 
 from daemonize import daemonize
+from encodings import idna, ascii
 import time, datetime, os, sys, gc, traceback
 
 from utilites import parse_custom_speed, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
@@ -351,14 +352,13 @@ class check_vpn_access(Thread):
                 self.connection.commit()
                 #self.cur.close()
     
-                time.sleep(60)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
                 #gc.collect()
-                time.sleep(60)
+            time.sleep(60)
 
     def run(self):
         #self.remove_sessions()
@@ -598,17 +598,16 @@ class periodical_service_bill(Thread):
                                         ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
                                         #self.connection.commit()
                         self.connection.commit()
-                gc.collect()
-                time.sleep(180)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                gc.collect()
-                time.sleep(180)
+            gc.collect()
+            
             self.cur.close()
             self.connection.close()
+            time.sleep(180)
             
 class TimeAccessBill(Thread):
     """
@@ -739,18 +738,18 @@ class TimeAccessBill(Thread):
                          AND interrim_update=%s
                          """, (unicode(session_id), account_id, interrim_update,))
                     self.connection.commit()
-    
-                gc.collect()
-                time.sleep(30)
+
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                gc.collect()
-                time.sleep(50)
+
             self.cur.close()
             self.connection.close()
+            gc.collect()
+            time.sleep(30)
 
 class NetFlowAggregate(Thread):
     """
@@ -880,15 +879,16 @@ class NetFlowAggregate(Thread):
                 
                 gc.collect()
                 
-                cur.close()
-                connection.close()
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                gc.collect()
-                time.sleep(60)
+
+            cur.close()
+            connection.close()
+            gc.collect()
             time.sleep(60)
 
 
@@ -1122,17 +1122,18 @@ class NetFlowBill(Thread):
                     )
                     self.connection.commit()
                 self.connection.commit()
-                gc.collect()
-                time.sleep(45)
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                #gc.collect()
-                time.sleep(40)
+                
+
             self.cur.close()
             self.connection.close()
+            gc.collect()
+            time.sleep(45)
         #connection.close()
 
 
@@ -1259,17 +1260,17 @@ class limit_checker(Thread):
     
                 self.connection.commit()
                 #print self.getName() + " threadend"
-                gc.collect()
-                time.sleep(110)
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                gc.collect()
-                time.sleep(110)
+
             self.cur.close()
             self.connection.close()
+            gc.collect()
+            time.sleep(110)
                 
 
 
@@ -1551,19 +1552,17 @@ class settlement_period_service_dog(Thread):
                     self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, now());", (accounttarif_id, transaction_id, service_id,))
     
                     self.connection.commit()
-                gc.collect()
-                self.cur.close()
-                self.connection.close()
-                time.sleep(120)
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
-                gc.collect()
-                time.sleep(120)
+
             self.cur.close()
             self.connection.close()
+            gc.collect()
+            time.sleep(120)
 
 class ipn_service(Thread):
     """
@@ -1714,8 +1713,7 @@ class ipn_service(Thread):
                             self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s , now());", (row['account_id'], unicode(newspeed), sended_speed,))
     
                 self.connection.commit()
-                gc.collect()
-                time.sleep(70)
+
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -1723,11 +1721,10 @@ class ipn_service(Thread):
                     print self.getName() + ": exception: " + str(ex)
                     traceback.print_exc(file=sys.stdout)
 
-
-                gc.collect()
-                time.sleep(60)
             self.cur.close()
             self.connection.close()
+            gc.collect()
+            time.sleep(60)
 
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
@@ -2031,6 +2028,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 
             if action=='enable' and sended==True:
                 cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (True, row['account_id'],))
+        
         connection.commit()
 
 #            if sended==False:
@@ -2275,7 +2273,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def save(self, model, table, cur=None, connection=None):
         sql = model.save(table)
-        print sql
+        #print sql
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id
@@ -2285,6 +2283,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def connection_request(self, username, password, cur=None, connection=None):
         try:
             obj = self.get("SELECT * FROM billservice_systemuser WHERE username=%s",(username,))
+            connection.commit()
         except Exception, e:
             print e
             return False
@@ -2292,6 +2291,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #print self.getProxy()
         if obj is not None and obj.password==password:
             self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%s;" , (obj.id,))
+            connection.commit()
             #Pyro.constants.
 
             return True
@@ -2316,6 +2316,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                     """ % session)
 
         row = cur.fetchone()
+        connection.commit()
         return PoD(dict=dict,
             account_id=row['account_id'], 
             account_name=str(row['account_name']), 

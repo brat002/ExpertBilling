@@ -26,6 +26,7 @@ class SaleCards(QtGui.QDialog):
         bhdr = HeaderUtil.getBinaryHeader("sale_cards_frame_header")
         super(SaleCards, self).__init__()
         self.connection = connection
+        self.connection.commit()
         self.cards = cards # list of cards id
         self.model = model
         self.connection.commit()
@@ -234,6 +235,7 @@ class SaleCards(QtGui.QDialog):
            crd = "(0)" 
         
         cards = self.connection.get_notsold_cards(self.cards)
+        self.connection.commit()
         
         data="""
         <html>
@@ -262,9 +264,9 @@ class SaleCards(QtGui.QDialog):
 
         cards = self.connection.get_notsold_cards(self.cards)
         operator = self.connection.get_operator_info()
-
-        dealer = self.connection.get_dealer_info(dealer_id)
         
+        dealer = self.connection.get_dealer_info(dealer_id)
+        self.connection.commit()
         templ = Template(filename="templates/invoice.htm", input_encoding='utf-8')
         data=templ.render_unicode(cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
                                   cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
@@ -297,7 +299,7 @@ class SaleCards(QtGui.QDialog):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
         #dealers = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False;")
         dealers = self.connection.get_models(table="billservice_dealer", where={'deleted':False})
-        
+        self.connection.commit()
         i=0
         for dealer in dealers:
             self.comboBox_dealer.addItem(unicode(u"%s, %s" % (dealer.organization, dealer.contactperson)))
@@ -314,7 +316,7 @@ class SaleCards(QtGui.QDialog):
 
         #print id
         dealer = self.connection.get_models(table="billservice_dealer", where={'deleted':False, 'id':id})[0]
-
+        self.connection.commit()
         self.model_dealer = dealer
         self.spinBox_discount.setValue(dealer.discount)
         self.spinBox_paydeffer.setValue(dealer.paydeffer)
@@ -402,7 +404,7 @@ class SaleCards(QtGui.QDialog):
     def refresh(self):
 
         cards = self.connection.get_notsold_cards(self.cards)
-        
+        self.connection.commit()
         self.tableWidget.setRowCount(len(cards))
         
         nominal = 0
@@ -872,6 +874,7 @@ class CardsChild(QtGui.QMainWindow):
         
     def fixtures(self):
         nominals = self.connection.get_cards_nominal()
+        self.connection.commit()
         self.comboBox_nominal.clear()
         for nom in nominals:
             
@@ -997,6 +1000,7 @@ class CardsChild(QtGui.QMainWindow):
         self.tableWidget.clearContents()
 
         nodes = self.connection.sql(sql)
+        self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
         sql+=" ORDER BY id ASC"
         i=0        

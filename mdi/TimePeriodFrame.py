@@ -438,7 +438,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % self.getTimeperiodId())
         if not model:
             return
-        
+        self.connection.commit()
         child=AddTimePeriod(connection=self.connection, nodemodel=nodemodel)
         if child.exec_()==1:
             
@@ -454,13 +454,14 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.clearContents()
 
 
-        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % period_id)
+        #model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % period_id)
 
         
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
         JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
         WHERE tpn.timeperiod_id=%d
-        """ % model.id)
+        """ % period_id)
+        self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
         i=0        
         for node in nodes:
@@ -508,6 +509,7 @@ class TimePeriodChild(QtGui.QMainWindow):
             print ex
         self.treeWidget.clear()
         periods=self.connection.get_models("billservice_timeperiod")
+        self.connection.commit()
         for period in periods:
             #item = QtGui.QListWidgetItem(self.timeperiod_list_edit)
             item = QtGui.QTreeWidgetItem(self.treeWidget)

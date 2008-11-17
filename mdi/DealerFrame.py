@@ -466,6 +466,7 @@ class AddDealerFrame(QtGui.QMainWindow):
     def get_sum_for_pay(self, dealer_id):
         salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
                            WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s""" % dealer_id)
+        self.connection.commit()
         sum = 0
         discount = 0
         for salecard in salecards:
@@ -517,7 +518,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             (SELECT sum(nominal) FROM billservice_card WHERE activated is not Null and id IN (SELECT id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as activated_nominals_sum
             FROM billservice_dealer as dealer WHERE id=%s;
             """ % self.model.id)
-            
+            self.connection.commit()
             try:
                 self.label_last_sale_date_z.setText(unicode(data.last_sale.strftime(strftimeFormat)))
             except Exception, e:
@@ -537,6 +538,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             
             ###END Info
             not_activated = self.connection.sql("SELECT * FROM billservice_card WHERE activated is Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+            self.connection.commit()
             self.tableWidget_not_activated.setRowCount(len(not_activated))
             i=0
             for d in not_activated:
@@ -549,6 +551,7 @@ class AddDealerFrame(QtGui.QMainWindow):
                 i+=1
 
             activated = self.connection.sql("SELECT id, series, pin, nominal, start_date, end_date, activated FROM billservice_card WHERE activated is not Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+            self.connection.commit()
             self.tableWidget_activated.setRowCount(len(activated))
             i=0
             for d in activated:
@@ -670,6 +673,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
     def editframe(self):
         try:
             model=self.connection.get_model(self.getSelectedId(), "billservice_dealer")
+            self.connection.commit()
         except:
             model=None
 
@@ -698,6 +702,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
     def get_sum_for_pay(self, dealer_id):
         salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
                            WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s""" % dealer_id)
+        self.connection.commit()
         sum = 0
         for salecard in salecards:
             if salecard.cardssum is None:
@@ -712,6 +717,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
     def get_sum_for_salecard(self, salecard_id):
         salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
                            WHERE card.id in (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id= salecard.id)) as cardssum FROM billservice_salecard as salecard WHERE salecard.id=%s""" % salecard_id)
+        self.connection.commit()
         sum = 0
         discount=0
         for salecard in salecards:
@@ -733,7 +739,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         ) as activated,
         (SELECT sum(pay) FROM billservice_dealerpay WHERE dealer_id=dealer.id) as pay
         FROM billservice_dealer as dealer WHERE dealer.deleted=False ORDER BY id;""")
-        
+        self.connection.commit()
         if data is None:
             data=[]
         self.tableWidget.setRowCount(len(data))
@@ -766,6 +772,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         self.tableWidget_sales.clearContents()
         id = self.getSelectedId()
         data = self.connection.sql("SELECT salecard.*, (SELECT count(*) FROM billservice_salecard_cards WHERE salecard_id=salecard.id) as cnt, (SELECT pay FROM billservice_dealerpay WHERE salecard_id=salecard.id) as pay FROM billservice_salecard as salecard WHERE salecard.dealer_id=%s ORDER BY id ASC;" % id)
+        self.connection.commit()
         self.tableWidget_sales.setRowCount(len(data))
         i=0
         for d in data:
@@ -788,6 +795,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         self.tableWidget_pays.clearContents()
         id = self.getSelectedId()
         data = self.connection.get_models(table="billservice_dealerpay", where={'dealer_id':id})
+        self.connection.commit()
         self.tableWidget_pays.setRowCount(len(data))
         i=0
         for d in data:

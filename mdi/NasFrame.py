@@ -677,6 +677,7 @@ class NasEbs(ebsTableWindow):
     def refresh(self):
         #self.tableWidget.setSortingEnabled(False)
         nasses = self.connection.get_models(table="nas_nas")
+        self.connection.commit()
         self.tableWidget.setRowCount(len(nasses))
         i=0
         for nas in nasses:
