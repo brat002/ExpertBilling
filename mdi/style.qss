@@ -6,12 +6,11 @@ QWidget {
 }
 
 
-     QToolTip {
-         border: 2px solid darkkhaki;
-         padding: 5px;
-         border-radius: 3px;
-         
-     }
+QToolTip {
+    border: 2px solid darkkhaki;
+    padding: 5px;
+    border-radius: 3px;
+}
      
  QMenu {
      background-color: white;
@@ -49,8 +48,8 @@ QWidget {
      width: 13px;
      height: 13px;
  }
-     
- QHeaderView::section {
+/*
+QHeaderView::section {
      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                                        stop:0 #616161, stop: 0.5 #505050,
                                        stop: 0.6 #434343, stop:1 #656565);
@@ -59,7 +58,7 @@ QWidget {
      border: 1px solid #6c6c6c;
  }
 
- /* style the sort indicator */
+
  QHeaderView::down-arrow {
      image: url(down_arrow.png);
  }
@@ -67,10 +66,10 @@ QWidget {
  QHeaderView::up-arrow {
      image: url(up_arrow.png);
  }
- 
+*/
  
 QTreeView::item {
-    border: 1px solid #d9d9d9;
+    border: 0px solid #d9d9d9;
     border-top-color: transparent;
     border-bottom-color: transparent;
 }
@@ -92,8 +91,11 @@ QTreeView::item:selected:!active {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
 }
 
+
+/*
+
 QTableView::item {
-    border: 1px solid #d9d9d9;
+    border: 0px solid #d9d9d9;
     border-top-color: transparent;
     border-bottom-color: transparent;
 }
@@ -107,13 +109,19 @@ QTableView::item:selected {
     border: 1px solid #567dbc;
 }
 
+QTableView::item:selected:!active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
+}
+
 QTableView::item:selected:active{
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6ea1f1, stop: 1 #567dbc);
 }
 
-QTableView::item:selected:!active {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6b9be8, stop: 1 #577fbf);
-}
+*/
+
+
+
+
 
 QMenuBar {
      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,

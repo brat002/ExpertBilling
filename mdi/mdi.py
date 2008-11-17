@@ -63,6 +63,7 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
 
         self.workspace = QtGui.QWorkspace()
+
         self.setCentralWidget(self.workspace)
 
         self.connect(self.workspace, QtCore.SIGNAL("windowActivated(QWidget *)"), self.updateMenus)
@@ -102,6 +103,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.workspace.setActiveWindow(window)
                 return
         self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
         
         child.show()
     
@@ -264,7 +266,7 @@ class MainWindow(QtGui.QMainWindow):
 
             i += 1
 
-            action = self.windowMenu.addAction(text)
+            action = self.windowMenu.addAction(child.windowTitle())
             action.setCheckable(True)
             action.setChecked(child == self.activeMdiChild())
             self.connect(action, QtCore.SIGNAL("triggered()"),

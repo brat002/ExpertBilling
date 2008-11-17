@@ -3022,7 +3022,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \
                  ("actionAddAccount", "Добавить на сервер доступа", "images/add.png", self.accountAdd), \
                  ("actionDeleteAccount", "Удалить с сервера доступа", "images/del.png", self.accountDelete), \
-                 ("editTarifAction", "Редактировать", "images/open.png", self.editTarif)\
+                 ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif)\
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe)\
                 ]
         
@@ -3091,7 +3091,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-  
+        #self.tableWidget.horizontalScrollBar().hide()
         columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Статус', u"Дата подключения"]
         #self.tableWidget.setColumnCount(len(columns))
         
@@ -3156,11 +3156,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.actionDeleteAccount.setIcon(QtGui.QIcon("images/del.png"))
         
         self.editTarifAction = QtGui.QAction(u"Редактировать",self)
-        self.editTarifAction.setIcon(QtGui.QIcon("images/open.png"))
+        self.editTarifAction.setIcon(QtGui.QIcon("images/edit.png"))
         self.editTarifAction.setObjectName("editTarifAction")
         
         self.editAccountAction = QtGui.QAction(u"Редактировать",self)
-        self.editAccountAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.editAccountAction.setIcon(QtGui.QIcon("images/edit.png"))
         self.editAccountAction.setObjectName("editAccountAction")
                 
         self.tarif_treeWidget.addAction(self.editTarifAction)
@@ -3170,6 +3170,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.editAccountAction)
         self.tableWidget.addAction(self.addAction)
         self.tableWidget.addAction(self.delAction)
+        
         self.tableWidget.addAction(self.transactionAction)
         self.tableWidget.addAction(self.actionEnableSession)
         self.tableWidget.addAction(self.actionDisableSession)
@@ -3188,7 +3189,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.toolBar.addAction(self.transactionReportAction)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.resize(1100,600)
+        #self.resize(1100,600)
 
 
         tableHeader = self.tableWidget.horizontalHeader()
@@ -3214,6 +3215,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
         self.connect(self.editTarifAction, QtCore.SIGNAL("triggered()"), self.editTarif)
         self.connect(self.editAccountAction, QtCore.SIGNAL("triggered()"), self.editframe)
         
+        #self.connect(self, QtCore.SIGNAL("closed()"), self.saveGeometry)
+        
         self.connectTree()
         
         
@@ -3233,8 +3236,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
             SplitterUtil.getSplitter(self.splname, self.splitter)
         self.delNodeLocalAction()
         self.addNodeLocalAction()
-        
+        self.restoreWindow()
         #self.thread.go(interval=60) #Нельзя,т.к. будут происходить коммиты когда редактируется тарифный план
+        
+        
+
         
     def connectTree(self):
         self.connect(self.tarif_treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
@@ -3432,7 +3438,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
         
             
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            if enabled==True:
+                headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            else:
+                headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
             
 
         headerItem.setText(unicode(value))
@@ -3510,7 +3519,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
             #self.addrow(a.suspended, i,10, enabled=a.status)
             #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-            self.tableWidget.setCellWidget(i,10,tableImageWidget(nops=True, balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+            self.tableWidget.setCellWidget(i,10,tableImageWidget(nops= not a.suspended, balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
             #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
             
@@ -3597,11 +3606,17 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addAction.setDisabled(False)
             self.delTarifAction.setDisabled(False)
             
-
+    def restoreWindow(self):
+        #print 'restore geometry'
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        #print val
+        self.restoreGeometry(val)
+        
     def closeEvent(self, event):
-        """
-        Terminate thread
-        """
-        self.thread.terminate()
+        #self.thread.terminate()
+        #print "Close Window"
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()
     #---------------------------
