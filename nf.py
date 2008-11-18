@@ -1,5 +1,4 @@
 #-*-coding=utf-8-*-
-from __future__ import with_statement
 import os, sys
 from daemonize import daemonize
 import socket, select, struct, datetime, time
@@ -17,12 +16,12 @@ from DBUtils.PooledDB import PooledDB
 import ConfigParser
 config = ConfigParser.ConfigParser()
 
-from SocketServer import ThreadingUDPServer
-from SocketServer import DatagramRequestHandler
+#from SocketServer import ThreadingUDPServer
+#from SocketServer import DatagramRequestHandler
 import threading
 from threading import Thread
 import marshal
-import cPickle
+#import cPickle
 import gc
 
 #from logger import redirect_std
@@ -40,11 +39,10 @@ vpncache = {}
 dcacheLock = threading.Lock()
 fqueueLock = threading.Lock()
 dbLock = threading.Lock()
-#nascache = []
-#tdMinute = datetime.timedelta(seconds=60)
+
 nfFlowCache = None
 packetCount = None
-#flowLENGTH = struct.calcsize("!4s4s4sHHIIIIHHBBBBHHBBH")
+
 flowLENGTH = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
 headerLENGTH = struct.calcsize("!HHIIIIBBH")
 
@@ -73,121 +71,7 @@ class reception_server(asyncore.dispatcher):
         
     def writable(self):
         return (0)
-    
-class Starter(Thread):
-        def __init__ (self, host, port, handler):
-            self.host=host
-            self.port=port
-            self.handler=handler
-            Thread.__init__(self)
 
-        def run(self):
-
-            reception_server(self.host, self.port)
-            
-            while 1: 
-                asyncore.poll(0.010)
-
-            
-class BaseHandle(DatagramRequestHandler):
-    def handle(self):
-        pass
-    
-class NetFlowCollectHandle(BaseHandle):
-    def handle(self):
-        #global packetCount
-        global nfFlowCache
-        #print self.server.conn
-        data=self.request[0] # or recv(bufsize, flags)
-        assert len(data)<=8192
-        addrport=self.client_address
-        #print repr(addrport[0])
-        #print "gotpacket: ", addrport
-        #if (packetCount % 50) == 0:
-            #cur.connection.commit()
-        try:
-            #========
-            #NetFlowPacket(data, addrport, nfFlowCache, self.server.conn.cursor())
-            NetFlowPacket(data, addrport, nfFlowCache, None)
-        except Exception, ex:
-            print "NFP exception: %s" % (repr(ex),)
-        #packetCount += 1
-        #del data
-        #del addrport
-        
-class Flow(object):
-    # Virtual base class
-    LENGTH = 0
-    def __init__(self, data):
-        if len(data) != self.LENGTH:
-            raise ValueError, "Short flow"
-
-    def _int_to_ipv4(self, addr):
-        return ".".join(map(str, struct.unpack("BBBB", addr)))
-        #return "%d.%d.%d.%d" % (addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff)
-
-class Header(object):
-    # Virtual base class
-    LENGTH = 0
-    def __init__(self, data):
-        if len(data) != self.LENGTH:
-            raise ValueError, "Short flow header"
-
-class Header5(Header):
-    LENGTH = struct.calcsize("!HHIIIIBBH")
-    def __init__(self, data):
-        if len(data) != self.LENGTH:
-            raise ValueError, "Short flow header"
-
-        _nh = struct.unpack("!HHIIIIBBH", data)
-        self.version = _nh[0]
-        self.num_flows = _nh[1]
-        self.sys_uptime = _nh[2]
-        self.time_secs = _nh[3]
-        self.time_nsecs = _nh[4]
-
-    def __str__(self):
-        ret  = "NetFlow Header v.%d containing %d flows\n" % \
-             (self.version, self.num_flows)
-        ret += "    Router uptime: %d\n" % self.sys_uptime
-        ret += "    Current time:  %d.%09d\n" % \
-            (self.time_secs, self.time_nsecs)
-
-        return ret
-
-class Flow5(Flow):
-
-
-    LENGTH = struct.calcsize("!4s4s4sHHIIIIHHBBBBHHBBH")
-    #print LENGTH
-    def __init__(self, data):
-        if len(data) != self.LENGTH:
-            raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), self.LENGTH)
-
-        _ff = struct.unpack("!4s4s4sHHIIIIHHBBBBHHBBH", data)
-        #print _ff
-        self.src_addr = self._int_to_ipv4(_ff[0])
-        self.dst_addr = self._int_to_ipv4(_ff[1])
-        self.next_hop = self._int_to_ipv4(_ff[2])
-        self.in_index = _ff[3]
-        self.out_index = _ff[4]
-        self.packets = _ff[5]
-        self.octets = _ff[6]
-        self.start = _ff[7]
-        self.finish = _ff[8]
-        self.src_port = _ff[9]
-        self.dst_port = _ff[10]
-        # pad
-        self.tcp_flags = _ff[12]
-        self.protocol = _ff[13]
-        self.tos = _ff[14]
-        self.source_as = _ff[15]
-        self.dst_as = _ff[16]
-        self.src_netmask_length = _ff[17]
-        self.dst_netmask_length = _ff[18]
-        
-        #added_later
-        #[19] - account_id
 """
 data legend:
         self.src_addr = self._int_to_ipv4(_ff[0])
@@ -283,54 +167,6 @@ def nfPacketHandle(data, addrport, flowCache):
                     if not passthr:
                         break
                
-class NetFlowPacket:
-    FLOW_TYPES = {
-        5 : (header5, flow5),
-    }
-    def __init__(self, data, addrport, flowCache, sCur):
-        
-        if len(data) < 16:
-            raise ValueError, "Short packet"
-        
-        #print nascache
-        nas_id = nascache.get(addrport[0])
-        if not nas_id:
-            #======
-            print "Nas_id not found: ", addrport[0]
-            return
-            #======            
-        flows=[]
-        if nas_id!=None:	    
-            _nf = struct.unpack("!H", data[:2])
-            self.version = _nf[0]
-            if not self.version in self.FLOW_TYPES.keys():
-                raise RuntimeWarning, \
-                      "NetFlow version %d is not yet implemented" % \
-                      self.version
-            hdr_class = self.FLOW_TYPES[self.version][0]
-            flow_class = self.FLOW_TYPES[self.version][1]
-            self.hdr = hdr_class(data[:hdr_class.LENGTH])
-            #======
-            for n in range(self.hdr.num_flows):
-                #offset = self.hdr.LENGTH + (flow_class.LENGTH * n)
-                #flow_data = data[offset:offset + flow_class.LENGTH]
-                offset = self.hdr.LENGTH + (flowLENGTH * n)
-                flow_data = data[offset:offset + flowLENGTH]
-                flow=flow_class(flow_data)
-                flow[11] = nas_id
-                acc_id = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
-                if acc_id:
-                    flow.append(acc_id)
-                    flowCache.addflow5(flow)
-                '''if vpncache.has_key(flow[0]) or vpncache.has_key(flow[1]) or ipncache.has_key(flow[0]) or ipncache.has_key(flow[1]):
-                    flowCache.addflow5(flow)
-                    #print "added"'''
-                '''flow.nas_id = nas_id
-                #if flow.src_addr in accounts_ipn or flow.src_addr in accounts_vpn or flow.dst_addr in accounts_ipn or flow.dst_addr in accounts_vpn:
-                if vpncache.has_key(flow.src_addr) or vpncache.has_key(flow.dst_addr) or ipncache.has_key(flow.src_addr) or ipncache.has_key(flow.dst_addr):
-                    #self.fc.addflow5(flow)
-                    flowCache.addflow5(flow)'''
-
 
 
 
@@ -405,7 +241,7 @@ class nfDequeThread(Thread):
             try:
                 data, addrport = nfQueue.popleft()
             except Exception, ex:
-                print "empty nfdq queue"
+                #print "empty nfdq queue"
                 time.sleep(3)
                 continue
             try:
@@ -416,7 +252,6 @@ class nfDequeThread(Thread):
 class FlowDequeThread(Thread):
     def __init__(self):
         Thread.__init__(self)
-
         
     def run(self):
         j = 0
@@ -427,18 +262,18 @@ class FlowDequeThread(Thread):
                 fqueueLock.release()
             except Exception, ex:
                 fqueueLock.release()
-                print "empty flow queue"
-                print "len nfqueue: ", len(nfQueue)
+                #print "empty flow queue"
+                #print "len nfqueue: ", len(nfQueue)
                 time.sleep(5)
                 continue
             
-            print "len keylist ", len(keylist)
-            print "len queue ", len(flowQueue)
-            print "len dbQueue: ", len(databaseQueue)
-            print "len fnameQueue: ", len(fnameQueue)
-            print "len nfqueue: ", len(nfQueue)
+            #print "len keylist ", len(keylist)
+            #print "len queue ", len(flowQueue)
+            #print "len dbQueue: ", len(databaseQueue)
+            #print "len fnameQueue: ", len(fnameQueue)
+            #print "len nfqueue: ", len(nfQueue)
             wtime = time.time() - aggrTime - stime
-            print wtime
+            #print wtime
             if wtime < 0:
                 time.sleep(abs(wtime))
             
@@ -528,8 +363,7 @@ class NfUDPSenderThread(Thread):
                         print "NFUDPSenderThread file creation exception: ", repr(ex)
                         continue
                     
-                try:
-                    #fname = ''.join((self.hpath, str(time.clock()), '.dmp'))                    
+                try:                  
                     dfile.write(flst)
                     dfile.write('\n')
                     #dfile.close()
@@ -557,7 +391,7 @@ class NfFileReadThread(Thread):
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         dfile = None
         while True:
-            print "nfilereadthread"
+            #print "nfilereadthread"
             fnameLock.acquire()
             try:
                 fname = fnameQueue.popleft()
@@ -565,7 +399,7 @@ class NfFileReadThread(Thread):
             except Exception, ex:
                 fnameLock.release()
                 return
-            print fname
+            #print fname
             try:
                 dfile = open(fname, 'rb')
                 flows = dfile.readlines()
@@ -717,13 +551,7 @@ class ServiceThread(Thread):
                 del ndTmp
             except Exception, ex:
                 print "Servicethread trafficnodes exception: ", repr(ex)
-                
-            """try: 
-                if len(databaseQueue) > 1000000:
-                    databaseQueue = databaseQueue[10000:]
-            except Exception, ex:
-                print "Servicethread dbQueue exception: ", repr(ex)"""
-                
+                               
             try:
                 self.cur.close()
                 self.cur = self.connection.cursor()
@@ -743,43 +571,19 @@ def main ():
     #-----
     svcThread = ServiceThread()
     svcThread.start()
-    #dbThread = DatabaseThread()
-    #dbThread.start()
     usThread = NfUDPSenderThread()
     usThread.start()
-    #~~~~~~
-    #dbThread2 = DatabaseThread()
-    #dbThread2.start()
-    #dbThread3 = DatabaseThread()
-    #dbThread3.start()
-    #dbThread4 = DatabaseThread()
-    #dbThread4.start()
     #~~~~~~
     fdqThread = FlowDequeThread()
     fdqThread.start()
     #-----
     nfdqThread = nfDequeThread()
     nfdqThread.start()
-    
-    #server_nf = Starter(config.get("nf", "host"), int(config.get("nf", "port")), NetFlowCollectHandle)
-    #server_nf.start()
+
     reception_server(config.get("nf", "host"), int(config.get("nf", "port")))            
     while 1: 
         asyncore.poll(0.010)
-    #cur.connection.commit()
-    """'''addrs = socket.getaddrinfo(config.get("nf", "host"), config.get("nf", "port"), socket.AF_UNSPEC,
-                               socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
-    socks = []
-    for addr in addrs:
-        sock = socket.socket(addr[0], addr[1])
-        sock.bind(addr[4])
-        socks.append(sock)
-        print "listening on [%s]:%d" % (addr[4][0], addr[4][1])'''
-
-        (rlist, wlist, xlist) = select.select(socks, [], socks)
-        for sock in rlist:
-            (data, addrport) = sock.recvfrom(8192)            
-    """
+        
     return
 
 
@@ -827,10 +631,7 @@ if __name__=='__main__':
         os.remove(tfname)
     except Exception, ex:
         raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: operations with filename like '" +tfname+ "' were not executed properly!")
-    #db_connection = pool.connection() 
-    #cur = db_connection.cursor()
-    #flowQueue = []
-    #databaseQueue = []
+
     flowQueue = deque()
     databaseQueue = deque()
     fnameQueue = deque()
