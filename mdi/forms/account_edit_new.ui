@@ -500,7 +500,7 @@
           </layout>
          </widget>
         </item>
-        <item rowspan="2" row="3" column="0" >
+        <item rowspan="3" row="3" column="0" >
          <widget class="QGroupBox" name="groupBox_address" >
           <property name="minimumSize" >
            <size>
@@ -777,6 +777,39 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item row="5" column="1" >
+         <widget class="QGroupBox" name="groupBox_status" >
+          <property name="title" >
+           <string>Статус аккаунта</string>
+          </property>
+          <widget class="QCheckBox" name="checkBox_active" >
+           <property name="geometry" >
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>71</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="text" >
+            <string>Активен</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBox_suspended" >
+           <property name="geometry" >
+            <rect>
+             <x>100</x>
+             <y>20</y>
+             <width>131</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="text" >
+            <string>Отключить ПУ</string>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
