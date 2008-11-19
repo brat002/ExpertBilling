@@ -455,7 +455,6 @@ class Tariff(models.Model):
         verbose_name = u"Тариф"
         verbose_name_plural = u"Тарифы"
 
-
 class Account(models.Model):
     """
     Если стоят галочки assign_vpn_ip_from_dhcp или assign_ipn_ip_from_dhcp,
@@ -463,11 +462,27 @@ class Account(models.Model):
     Если аренды нет или она истекла, то создаётся новая и пользователю назначается новый IP адрес.
     """
     #user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
+    #agreement = models.ForeignKey('Document', blank=True, null=True)
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
     password = models.CharField(verbose_name=u'Пароль',max_length=200, blank=True, default='')
     fullname = models.CharField(verbose_name=u'Имя', blank=True, default='', max_length=200)
     email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
-    address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
+    phone = models.CharField(max_length=255)
+    cellphone = models.CharField(max_length=255)
+    passport_n = models.CharField(max_length=255)
+    passport_give = models.CharField(max_length=255)
+    passport_date = models.DateField()
+    
+    #address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
+    city = models.CharField(max_length=255)
+    postcode = models.IntegerField()
+    region = models.CharField(max_length=255)
+    street = models.CharField(max_length=255)
+    house = models.CharField(max_length=255)
+    house_bulk = models.CharField(max_length=255)
+    entrance = models.CharField(max_length=255)
+    room = models.CharField(max_length=255)
+    
     #assign_vpn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
     nas = models.ForeignKey(to=Nas, blank=True, verbose_name=u'Сервер доступа')
     #vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
@@ -488,6 +503,14 @@ class Account(models.Model):
     ipn_speed = models.CharField(max_length=96, blank=True, default="")
     vpn_speed = models.CharField(max_length=96, blank=True, default="")
     netmask = models.IPAddressField(blank=True, default='0.0.0.0')
+    vlan = models.IntegerField()
+    allow_webcab = models.BooleanField()
+    allow_expresscards = models.BooleanField()
+    assign_dhcp_null = models.BooleanField()
+    assign_dhcp_block = models.BooleanField()
+    allow_vpn_null = models.BooleanField()
+    allow_vpn_block = models.BooleanField()
+    
 
 
 
@@ -532,6 +555,18 @@ class Account(models.Model):
             transaction.summ = cost
             transaction.description = u'Снятие за первоначальную услугу'
             transaction.save()
+
+
+class Organization(models.Model):
+    account = models.ForeignKey(Account)
+    name = models.CharField(max_length=255)
+    #rs = models.CharField(max_length=255)
+    uraddress = models.CharField(max_length=255)
+    okpo = models.CharField(max_length=255)
+    unp = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    fax = models.CharField(max_length=255)
+    bank = models.ForeignKey("BankData")
 
 
 class TransactionType(models.Model):
@@ -802,4 +837,20 @@ class DealerPay(models.Model):
     pay = models.FloatField()
     salecard = models.ForeignKey(SaleCard, blank=True, null=True)
     created = models.DateTimeField()
+
+"""
+class DocumentType(models.Model):
+    name = models.CharField(max_length=255)
     
+class Template(models.Model):
+    name = models.CharField(max_length=255)
+    type = models.ForeignKey(DocumentType)
+    body = models.TextField()
+    
+class Document(models.Model):
+    account = models.ForeignKey(Account, blank=True, null=True)
+    type = models.ForeignKey(DocumentType)
+    
+    body = models.TextField()
+"""
+ 
