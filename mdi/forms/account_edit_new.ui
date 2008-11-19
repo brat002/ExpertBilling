@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>831</width>
+    <width>848</width>
     <height>665</height>
    </rect>
   </property>
@@ -19,13 +19,13 @@
       <property name="currentIndex" >
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab" >
+      <widget class="QWidget" name="tab_general" >
        <attribute name="title" >
         <string>Общее</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_14" >
         <item row="0" column="0" >
-         <widget class="QGroupBox" name="account_data_groupBox" >
+         <widget class="QGroupBox" name="groupBox_account_data" >
           <property name="minimumSize" >
            <size>
             <width>381</width>
@@ -35,7 +35,7 @@
           <property name="maximumSize" >
            <size>
             <width>381</width>
-            <height>82</height>
+            <height>86</height>
            </size>
           </property>
           <property name="title" >
@@ -43,17 +43,30 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_3" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="username_label" >
+            <widget class="QLabel" name="label_username" >
+             <property name="minimumSize" >
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="text" >
               <string>Логин</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1" >
-            <widget class="QLineEdit" name="username_edit" />
+            <widget class="QLineEdit" name="lineEdit_username" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="0" column="2" >
-            <widget class="QToolButton" name="generate_login_toolButton" >
+            <widget class="QToolButton" name="toolButton_generate_login" >
              <property name="enabled" >
               <bool>true</bool>
              </property>
@@ -63,17 +76,24 @@
             </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="password_label" >
+            <widget class="QLabel" name="label_password" >
              <property name="text" >
               <string>Пароль</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1" >
-            <widget class="QLineEdit" name="password_edit" />
+            <widget class="QLineEdit" name="lineEdit_password" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="1" column="2" >
-            <widget class="QToolButton" name="generate_password_toolButton" >
+            <widget class="QToolButton" name="toolButton_generate_password" >
              <property name="text" >
               <string>#</string>
              </property>
@@ -83,16 +103,16 @@
          </widget>
         </item>
         <item row="0" column="1" >
-         <widget class="QGroupBox" name="groupBox_2" >
+         <widget class="QGroupBox" name="groupBox_agreement" >
           <property name="minimumSize" >
            <size>
             <width>391</width>
-            <height>84</height>
+            <height>86</height>
            </size>
           </property>
           <property name="maximumSize" >
            <size>
-            <width>391</width>
+            <width>3910</width>
             <height>84</height>
            </size>
           </property>
@@ -101,35 +121,47 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_4" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="label_2" >
+            <widget class="QLabel" name="label_agreement_date" >
              <property name="text" >
               <string>Дата подключения</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1" >
-            <widget class="QLineEdit" name="lineEdit" >
+            <widget class="QLineEdit" name="lineEdit_agreement_date" >
              <property name="enabled" >
               <bool>false</bool>
+             </property>
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
              </property>
             </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="label_4" >
+            <widget class="QLabel" name="label_agreement_num" >
              <property name="text" >
               <string>Номер договора</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1" >
-            <widget class="QLineEdit" name="lineEdit_2" >
+            <widget class="QLineEdit" name="lineEdit_agreement_num" >
              <property name="enabled" >
               <bool>false</bool>
+             </property>
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
              </property>
             </widget>
            </item>
            <item row="1" column="2" >
-            <widget class="QToolButton" name="toolButton" >
+            <widget class="QToolButton" name="toolButton_agreement_print" >
              <property name="text" >
               <string/>
              </property>
@@ -142,8 +174,8 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" >
-         <widget class="QGroupBox" name="account_info_groupBox" >
+        <item rowspan="2" row="1" column="0" >
+         <widget class="QGroupBox" name="groupBox_account_info" >
           <property name="minimumSize" >
            <size>
             <width>381</width>
@@ -153,7 +185,7 @@
           <property name="maximumSize" >
            <size>
             <width>381</width>
-            <height>211</height>
+            <height>16381</height>
            </size>
           </property>
           <property name="title" >
@@ -161,73 +193,132 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_8" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="firstname_label" >
+            <widget class="QLabel" name="label_name" >
              <property name="text" >
               <string>ФИО</string>
              </property>
              <property name="buddy" >
-              <cstring>firstname_lineEdit</cstring>
+              <cstring>lineEdit_name</cstring>
              </property>
             </widget>
            </item>
            <item row="0" column="1" >
-            <widget class="QLineEdit" name="firstname_lineEdit" />
+            <widget class="QLineEdit" name="lineEdit_name" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="address_label" >
+            <widget class="QLabel" name="label_address" >
              <property name="text" >
               <string>Email</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1" >
-            <widget class="QLineEdit" name="email_lineEdit" />
+            <widget class="QLineEdit" name="lineEdit_email" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0" >
-            <widget class="QLabel" name="label_10" >
+            <widget class="QLabel" name="label_phone_h" >
              <property name="text" >
-              <string>Телефон</string>
+              <string>Телефон дом.</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1" >
-            <widget class="QLineEdit" name="lineEdit_3" />
+            <widget class="QLineEdit" name="lineEdit_phone_h" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="3" column="0" >
-            <widget class="QLabel" name="label_3" >
+           <item row="4" column="0" >
+            <widget class="QLabel" name="label_passport_n" >
              <property name="text" >
               <string>Паспорт №</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1" >
-            <widget class="QLineEdit" name="lineEdit_5" />
+           <item row="4" column="1" >
+            <widget class="QLineEdit" name="lineEdit_passport_n" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="4" column="0" >
-            <widget class="QLabel" name="label_12" >
+           <item row="5" column="0" >
+            <widget class="QLabel" name="label_passport_give" >
              <property name="text" >
               <string>Кем выдан</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1" >
-            <widget class="QLineEdit" name="lineEdit_4" />
+           <item row="5" column="1" >
+            <widget class="QLineEdit" name="lineEdit_passport_give" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="5" column="0" >
-            <widget class="QLabel" name="label_19" >
+           <item row="6" column="0" >
+            <widget class="QLabel" name="label_passport_date" >
              <property name="text" >
               <string>Когда выдан</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="1" >
-            <widget class="QDateEdit" name="dateEdit" />
+           <item row="6" column="1" >
+            <widget class="QDateEdit" name="dateEdit_passport_date" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1" >
+            <widget class="QLineEdit" name="lineEdit_phone_m" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" >
+            <widget class="QLabel" name="label_phone_m" >
+             <property name="text" >
+              <string>Телефон моб.</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
         </item>
         <item rowspan="2" row="1" column="1" >
-         <widget class="QGroupBox" name="groupBox" >
+         <widget class="QGroupBox" name="groupBox_urdata" >
           <property name="minimumSize" >
            <size>
             <width>391</width>
@@ -236,8 +327,8 @@
           </property>
           <property name="maximumSize" >
            <size>
-            <width>391</width>
-            <height>241</height>
+            <width>16381</width>
+            <height>16381</height>
            </size>
           </property>
           <property name="title" >
@@ -248,80 +339,169 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_7" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="label" >
+            <widget class="QLabel" name="label_organization" >
              <property name="text" >
               <string>Организация</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="1" >
-            <widget class="QLineEdit" name="lineEdit_12" />
+           <item row="0" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_organization" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="1" column="0" >
-            <widget class="QLabel" name="label_5" >
+           <item row="4" column="0" >
+            <widget class="QLabel" name="label_rs" >
              <property name="text" >
               <string>Расчётный счёт</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1" >
-            <widget class="QLineEdit" name="lineEdit_13" />
+           <item row="4" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_rs" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="2" column="0" >
-            <widget class="QLabel" name="label_6" >
+           <item row="6" column="0" >
+            <widget class="QLabel" name="label_okpo" >
              <property name="text" >
               <string>ОКПО</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1" >
-            <widget class="QLineEdit" name="lineEdit_14" />
+           <item row="6" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_okpo" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="3" column="0" >
-            <widget class="QLabel" name="label_7" >
+           <item row="7" column="0" >
+            <widget class="QLabel" name="label_unp" >
              <property name="text" >
               <string>УНП</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1" >
-            <widget class="QLineEdit" name="lineEdit_15" />
+           <item row="7" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_unp" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="4" column="0" >
-            <widget class="QLabel" name="label_8" >
+           <item row="8" column="0" >
+            <widget class="QLabel" name="label_bank" >
              <property name="text" >
               <string>Банк, код банка</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1" >
-            <widget class="QLineEdit" name="lineEdit_16" />
+           <item row="8" column="1" >
+            <widget class="QLineEdit" name="lineEdit_bank" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="5" column="0" >
-            <widget class="QLabel" name="label_9" >
+           <item row="1" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_uraddress" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" >
+            <widget class="QLabel" name="label_uraddress" >
              <property name="text" >
               <string>Юридический адрес</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="1" >
-            <widget class="QLineEdit" name="lineEdit_17" />
+           <item row="2" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_urphone" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="6" column="0" >
-            <widget class="QLabel" name="label_11" >
+           <item row="2" column="0" >
+            <widget class="QLabel" name="label_urphone" >
+             <property name="text" >
+              <string>Телефон</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1" colspan="4" >
+            <widget class="QLineEdit" name="lineEdit_fax" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" >
+            <widget class="QLabel" name="label_fax" >
              <property name="text" >
               <string>Факс</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="1" >
-            <widget class="QLineEdit" name="lineEdit_18" />
+           <item row="8" column="3" >
+            <widget class="QLabel" name="label_bank_code" >
+             <property name="text" >
+              <string>Код</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="4" >
+            <widget class="QLineEdit" name="lineEdit_bank_code" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+             <property name="maximumSize" >
+              <size>
+               <width>60</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item rowspan="3" row="2" column="0" >
-         <widget class="QGroupBox" name="groupBox_3" >
+        <item rowspan="2" row="3" column="0" >
+         <widget class="QGroupBox" name="groupBox_address" >
           <property name="minimumSize" >
            <size>
             <width>381</width>
@@ -331,7 +511,7 @@
           <property name="maximumSize" >
            <size>
             <width>381</width>
-            <height>181</height>
+            <height>16381</height>
            </size>
           </property>
           <property name="title" >
@@ -339,68 +519,109 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_2" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="label_13" >
+            <widget class="QLabel" name="label_city" >
              <property name="text" >
               <string>Город</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1" >
-            <widget class="QLineEdit" name="lineEdit_6" >
+            <widget class="QLineEdit" name="lineEdit_city" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="text" >
               <string/>
              </property>
             </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="label_14" >
+            <widget class="QLabel" name="label_region" >
              <property name="text" >
               <string>Район</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1" colspan="3" >
-            <widget class="QLineEdit" name="lineEdit_7" />
+            <widget class="QLineEdit" name="lineEdit_region" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0" >
-            <widget class="QLabel" name="label_15" >
+            <widget class="QLabel" name="label_street" >
              <property name="text" >
               <string>Улица</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1" colspan="3" >
-            <widget class="QLineEdit" name="lineEdit_8" />
+            <widget class="QLineEdit" name="lineEdit_street" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="3" column="0" >
-            <widget class="QLabel" name="label_16" >
+            <widget class="QLabel" name="label_house" >
              <property name="text" >
               <string>Дом</string>
              </property>
             </widget>
            </item>
            <item row="3" column="1" >
-            <widget class="QLineEdit" name="lineEdit_9" />
+            <widget class="QLineEdit" name="lineEdit_house" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="3" column="2" >
-            <widget class="QLabel" name="label_17" >
+            <widget class="QLabel" name="label_house_bulk" >
              <property name="text" >
               <string>Корпус</string>
              </property>
             </widget>
            </item>
            <item row="3" column="3" >
-            <widget class="QLineEdit" name="lineEdit_10" />
+            <widget class="QLineEdit" name="lineEdit_house_bulk" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
-           <item row="4" column="0" >
-            <widget class="QLabel" name="label_18" >
+           <item row="5" column="0" >
+            <widget class="QLabel" name="label_room" >
              <property name="text" >
               <string>Квартира</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1" colspan="3" >
-            <widget class="QLineEdit" name="lineEdit_11" />
+           <item row="5" column="1" colspan="3" >
+            <widget class="QLineEdit" name="lineEdit_room" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="0" column="2" >
             <widget class="QLabel" name="label_20" >
@@ -410,13 +631,40 @@
             </widget>
            </item>
            <item row="0" column="3" >
-            <widget class="QLineEdit" name="lineEdit_19" />
+            <widget class="QLineEdit" name="lineEdit_postcode" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1" >
+            <widget class="QLineEdit" name="lineEdit_entrance" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" >
+            <widget class="QLabel" name="label_entrance" >
+             <property name="text" >
+              <string>Подъезд</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
         </item>
         <item row="3" column="1" >
-         <widget class="QGroupBox" name="groupBox_8" >
+         <widget class="QGroupBox" name="groupBox_manager" >
+          <property name="enabled" >
+           <bool>false</bool>
+          </property>
           <property name="minimumSize" >
            <size>
             <width>391</width>
@@ -425,19 +673,22 @@
           </property>
           <property name="maximumSize" >
            <size>
-            <width>391</width>
+            <width>3910</width>
             <height>51</height>
            </size>
           </property>
           <property name="title" >
            <string>Работа с клиентом</string>
           </property>
-          <widget class="QLabel" name="label_23" >
+          <widget class="QLabel" name="label_manager" >
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
            <property name="geometry" >
             <rect>
              <x>10</x>
              <y>20</y>
-             <width>111</width>
+             <width>101</width>
              <height>16</height>
             </rect>
            </property>
@@ -445,7 +696,7 @@
             <string>Менеджер</string>
            </property>
           </widget>
-          <widget class="QComboBox" name="comboBox_3" >
+          <widget class="QComboBox" name="comboBox_manager" >
            <property name="geometry" >
             <rect>
              <x>130</x>
@@ -458,7 +709,7 @@
          </widget>
         </item>
         <item row="4" column="1" >
-         <widget class="QGroupBox" name="ballance_info_groupBox" >
+         <widget class="QGroupBox" name="groupBox_balance_info" >
           <property name="minimumSize" >
            <size>
             <width>391</width>
@@ -467,7 +718,7 @@
           </property>
           <property name="maximumSize" >
            <size>
-            <width>391</width>
+            <width>3910</width>
             <height>1656465</height>
            </size>
           </property>
@@ -476,33 +727,50 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_9" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="ballance_label" >
+            <widget class="QLabel" name="label_balance" >
              <property name="text" >
               <string>Текущий баланс</string>
              </property>
              <property name="buddy" >
-              <cstring>balance_edit</cstring>
+              <cstring>lineEdit_balance</cstring>
              </property>
             </widget>
            </item>
            <item row="0" column="1" >
-            <widget class="QLineEdit" name="balance_edit" />
+            <widget class="QLineEdit" name="lineEdit_balance" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="credit_label" >
+            <widget class="QLabel" name="label_credit" >
              <property name="text" >
               <string>Максимальный кредит</string>
              </property>
              <property name="buddy" >
-              <cstring>credit_edit</cstring>
+              <cstring>lineEdit_credit</cstring>
              </property>
             </widget>
            </item>
            <item row="1" column="1" >
-            <widget class="QLineEdit" name="credit_edit" />
+            <widget class="QLineEdit" name="lineEdit_credit" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0" colspan="2" >
-            <widget class="QCheckBox" name="checkBox_9" >
+            <widget class="QCheckBox" name="checkBox_credit" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
              <property name="text" >
               <string>Работать в кредит</string>
              </property>
@@ -511,57 +779,15 @@
           </layout>
          </widget>
         </item>
-        <item row="5" column="0" colspan="2" >
-         <widget class="QGroupBox" name="groupBox_4" >
-          <property name="minimumSize" >
-           <size>
-            <width>781</width>
-            <height>51</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>781</width>
-            <height>51</height>
-           </size>
-          </property>
-          <property name="title" >
-           <string>Статус</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout" >
-           <item>
-            <widget class="QCheckBox" name="status_edit" >
-             <property name="text" >
-              <string>Активен в системе</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_5" >
-             <property name="text" >
-              <string>Включен на сервере доступа</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox_6" >
-             <property name="text" >
-              <string>Добавлен на сервер доступа</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2" >
+      <widget class="QWidget" name="tab_network_settings" >
        <attribute name="title" >
         <string>Сетевые настройки</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_17" >
         <item row="0" column="0" colspan="2" >
-         <widget class="QGroupBox" name="groupBox_10" >
+         <widget class="QGroupBox" name="groupBox_nas" >
           <property name="minimumSize" >
            <size>
             <width>791</width>
@@ -577,23 +803,23 @@
           <property name="title" >
            <string>Сервер доступа</string>
           </property>
-          <widget class="QComboBox" name="nas_comboBox" >
+          <widget class="QComboBox" name="comboBox_nas" >
            <property name="geometry" >
             <rect>
              <x>190</x>
              <y>20</y>
              <width>421</width>
-             <height>20</height>
+             <height>22</height>
             </rect>
            </property>
           </widget>
-          <widget class="QLabel" name="label_24" >
+          <widget class="QLabel" name="label_nas" >
            <property name="geometry" >
             <rect>
              <x>10</x>
              <y>20</y>
              <width>171</width>
-             <height>16</height>
+             <height>21</height>
             </rect>
            </property>
            <property name="text" >
@@ -603,7 +829,7 @@
          </widget>
         </item>
         <item row="1" column="0" >
-         <widget class="QGroupBox" name="ip_settings_groupBox" >
+         <widget class="QGroupBox" name="groupBox_ipn" >
           <property name="minimumSize" >
            <size>
             <width>591</width>
@@ -612,7 +838,7 @@
           </property>
           <property name="maximumSize" >
            <size>
-            <width>597</width>
+            <width>597000</width>
             <height>151</height>
            </size>
           </property>
@@ -621,7 +847,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_15" >
            <item row="0" column="0" >
-            <widget class="QLabel" name="ipn_ip_address_label" >
+            <widget class="QLabel" name="label_ipn_ip_address" >
              <property name="text" >
               <string>Текущий IP адрес</string>
              </property>
@@ -632,23 +858,42 @@
            </item>
            <item row="0" column="1" >
             <widget class="QLineEdit" name="ipn_ip_address_edit" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="inputMask" >
               <string>000.000.000.000; </string>
              </property>
             </widget>
            </item>
            <item row="0" column="2" >
-            <widget class="QToolButton" name="toolButton_2" >
+            <widget class="QToolButton" name="toolButton_get_ipn_from_pool" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
              <property name="text" >
               <string>Выдать из пула</string>
              </property>
             </widget>
            </item>
            <item row="0" column="3" >
-            <widget class="QComboBox" name="comboBox" />
+            <widget class="QComboBox" name="comboBox_ipn_pool" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize" >
+              <size>
+               <width>250</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QLabel" name="ipn_ip_address_label_2" >
+            <widget class="QLabel" name="label_ipn_ip_mask" >
              <property name="text" >
               <string>Маска подсети</string>
              </property>
@@ -658,31 +903,43 @@
             </widget>
            </item>
            <item row="1" column="1" >
-            <widget class="QLineEdit" name="netmask_edit" >
+            <widget class="QLineEdit" name="lineEdit_ipn_ip_mask" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="inputMask" >
               <string>000.000.000.000; </string>
              </property>
             </widget>
            </item>
            <item row="2" column="0" >
-            <widget class="QLabel" name="ipn_mac_address_label" >
+            <widget class="QLabel" name="label_ipn_mac_address" >
              <property name="text" >
               <string>Аппаратный адрес</string>
              </property>
              <property name="buddy" >
-              <cstring>ipn_mac_address_edit</cstring>
+              <cstring>lineEdit_ipn_mac_address</cstring>
              </property>
             </widget>
            </item>
            <item row="2" column="1" >
-            <widget class="QLineEdit" name="ipn_mac_address_edit" >
+            <widget class="QLineEdit" name="lineEdit_ipn_mac_address" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
              <property name="inputMask" >
               <string>00:00:00:00:00:00;0</string>
              </property>
             </widget>
            </item>
            <item row="2" column="2" >
-            <widget class="QLabel" name="label_25" >
+            <widget class="QLabel" name="label_vlan" >
              <property name="layoutDirection" >
               <enum>Qt::RightToLeft</enum>
              </property>
@@ -692,10 +949,17 @@
             </widget>
            </item>
            <item row="2" column="3" >
-            <widget class="QLineEdit" name="lineEdit_20" />
+            <widget class="QLineEdit" name="lineEdit_vlan" >
+             <property name="minimumSize" >
+              <size>
+               <width>0</width>
+               <height>22</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="3" column="0" colspan="2" >
-            <widget class="QCheckBox" name="assign_ipn_ip_from_dhcp_edit" >
+            <widget class="QCheckBox" name="lineEdit_assign_ipn_ip_from_dhcp" >
              <property name="text" >
               <string>Выдавать IP адрес с помощью DHCP</string>
              </property>
@@ -705,7 +969,10 @@
          </widget>
         </item>
         <item rowspan="5" row="1" column="1" >
-         <widget class="QGroupBox" name="groupBox_9" >
+         <widget class="QGroupBox" name="groupBox_dublicate_actions" >
+          <property name="enabled" >
+           <bool>false</bool>
+          </property>
           <property name="minimumSize" >
            <size>
             <width>191</width>
@@ -723,29 +990,17 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_12" >
            <item row="0" column="0" >
-            <widget class="QListWidget" name="listWidget" >
-             <item>
-              <property name="text" >
-               <string>Mikrotik1</string>
-              </property>
-             </item>
-             <item>
-              <property name="text" >
-               <string>Mikrotik2</string>
-              </property>
-             </item>
-             <item>
-              <property name="text" >
-               <string>Mikrotik3</string>
-              </property>
-             </item>
+            <widget class="QListWidget" name="listWidget_nasses" >
+             <property name="enabled" >
+              <bool>false</bool>
+             </property>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
         <item row="2" column="0" >
-         <widget class="QGroupBox" name="groupBox_5" >
+         <widget class="QGroupBox" name="groupBox_vpn" >
           <property name="minimumSize" >
            <size>
             <width>0</width>
@@ -761,24 +1016,39 @@
           <property name="title" >
            <string>VPN IP Адрес</string>
           </property>
-          <widget class="QComboBox" name="comboBox_2" >
+          <widget class="QComboBox" name="comboBox_vpn_pool" >
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
            <property name="geometry" >
             <rect>
              <x>350</x>
              <y>20</y>
-             <width>201</width>
+             <width>250</width>
              <height>22</height>
             </rect>
            </property>
+           <property name="minimumSize" >
+            <size>
+             <width>250</width>
+             <height>22</height>
+            </size>
+           </property>
           </widget>
-          <widget class="QLineEdit" name="vpn_ip_address_edit" >
+          <widget class="QLineEdit" name="lineEdit_vpn_ip_address" >
            <property name="geometry" >
             <rect>
-             <x>130</x>
+             <x>110</x>
              <y>20</y>
-             <width>111</width>
-             <height>21</height>
+             <width>131</width>
+             <height>22</height>
             </rect>
+           </property>
+           <property name="minimumSize" >
+            <size>
+             <width>0</width>
+             <height>22</height>
+            </size>
            </property>
            <property name="inputMask" >
             <string>000.000.000.000; </string>
@@ -793,23 +1063,26 @@
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
           </widget>
-          <widget class="QLabel" name="vpn_ip_address_label" >
+          <widget class="QLabel" name="label_vpn_ip_address" >
            <property name="geometry" >
             <rect>
              <x>10</x>
              <y>20</y>
-             <width>114</width>
+             <width>71</width>
              <height>20</height>
             </rect>
            </property>
            <property name="text" >
-            <string>Виртуальный IP адрес</string>
+            <string>VPN IP адрес</string>
            </property>
            <property name="buddy" >
-            <cstring>vpn_ip_address_edit</cstring>
+            <cstring>lineEdit_vpn_ip_address</cstring>
            </property>
           </widget>
-          <widget class="QToolButton" name="toolButton_3" >
+          <widget class="QToolButton" name="toolButton_get_vpn_from_pool" >
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
            <property name="geometry" >
             <rect>
              <x>250</x>
@@ -825,50 +1098,50 @@
          </widget>
         </item>
         <item row="3" column="0" >
-         <widget class="QGroupBox" name="groupBox_7" >
+         <widget class="QGroupBox" name="groupBox_accessparameters" >
           <property name="title" >
            <string>Параметры доступа</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_16" >
            <item row="0" column="0" >
-            <widget class="QCheckBox" name="checkBox" >
+            <widget class="QCheckBox" name="checkBox_allow_webcab" >
              <property name="text" >
               <string>Разрешить пользоваться веб-кабинетом</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0" >
-            <widget class="QCheckBox" name="checkBox_2" >
+            <widget class="QCheckBox" name="checkBox_allow_expresscards" >
              <property name="text" >
               <string>Разрешить активировать карты экспресс-оплаты</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0" >
-            <widget class="QCheckBox" name="checkBox_3" >
+            <widget class="QCheckBox" name="checkBox_assign_dhcp_null" >
              <property name="text" >
               <string>Выдавать адрес по DHCP при отрицательном балансе</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0" >
-            <widget class="QCheckBox" name="checkBox_7" >
+            <widget class="QCheckBox" name="checkBox_assign_dhcp_block" >
              <property name="text" >
-              <string>Выдавать адрес по DHCP, если клиент неактивен или заблокирован</string>
+              <string>Выдавать адрес по DHCP, если клиент неактивен, заблокирован или находится в режиме простоя</string>
              </property>
             </widget>
            </item>
            <item row="4" column="0" >
-            <widget class="QCheckBox" name="checkBox_4" >
+            <widget class="QCheckBox" name="checkBox_allow_vpn_null" >
              <property name="text" >
               <string>Разрешить PPTP/PPPOE авторизацию при отрицательном балансе</string>
              </property>
             </widget>
            </item>
            <item row="5" column="0" >
-            <widget class="QCheckBox" name="checkBox_8" >
+            <widget class="QCheckBox" name="checkBox_allow_vpn_block" >
              <property name="text" >
-              <string>Разрешить PPTP/PPPOE авторизацию, если клиент неактивен или заблокирован</string>
+              <string>Разрешить PPTP/PPPOE авторизацию, если клиент неактивен, заблокирован или находится в режиме простоя</string>
              </property>
             </widget>
            </item>
@@ -876,7 +1149,7 @@
          </widget>
         </item>
         <item row="4" column="0" >
-         <widget class="QGroupBox" name="vpn_speed_groupBox" >
+         <widget class="QGroupBox" name="groupBox_vpn_speed" >
           <property name="minimumSize" >
            <size>
             <width>0</width>
@@ -919,7 +1192,7 @@
          </widget>
         </item>
         <item row="5" column="0" >
-         <widget class="QGroupBox" name="ipn_speed_groupBox" >
+         <widget class="QGroupBox" name="groupBox_ipn_speed" >
           <property name="minimumSize" >
            <size>
             <width>0</width>
@@ -963,13 +1236,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_4" >
+      <widget class="QWidget" name="tab_suspended" >
        <attribute name="title" >
         <string>Не списывать ПУ</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5" >
         <item row="0" column="0" >
-         <widget class="QTableWidget" name="tableWidget" >
+         <widget class="QTableWidget" name="tableWidget_suspended" >
           <column>
            <property name="text" >
             <string>#</string>
@@ -989,23 +1262,44 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_5" >
+      <widget class="QWidget" name="tab_downtime" >
        <attribute name="title" >
         <string>Периоды простоя</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_13" >
         <item row="0" column="0" >
-         <widget class="QTableWidget" name="tableWidget_2" />
+         <widget class="QTableWidget" name="tableWidget_downtime" >
+          <column>
+           <property name="text" >
+            <string>#</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>С</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>По</string>
+           </property>
+          </column>
+          <column>
+           <property name="text" >
+            <string>Списано</string>
+           </property>
+          </column>
+         </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3" >
+      <widget class="QWidget" name="tab_tarifs" >
        <attribute name="title" >
         <string>Тарифные планы</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6" >
         <item row="0" column="0" >
-         <widget class="QTableWidget" name="accounttarif_table" >
+         <widget class="QTableWidget" name="tableWidget_accounttarif" >
           <column>
            <property name="text" >
             <string>#</string>
@@ -1025,13 +1319,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_6" >
+      <widget class="QWidget" name="tab_documents" >
        <attribute name="title" >
         <string>Документы</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_18" >
         <item row="0" column="0" >
-         <widget class="QTableWidget" name="tableWidget_3" >
+         <widget class="QTableWidget" name="tableWidget_documents" >
           <column>
            <property name="text" >
             <string>#</string>
@@ -1119,6 +1413,67 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_username</tabstop>
+  <tabstop>toolButton_generate_login</tabstop>
+  <tabstop>lineEdit_password</tabstop>
+  <tabstop>toolButton_generate_password</tabstop>
+  <tabstop>lineEdit_name</tabstop>
+  <tabstop>lineEdit_email</tabstop>
+  <tabstop>lineEdit_phone_h</tabstop>
+  <tabstop>lineEdit_phone_m</tabstop>
+  <tabstop>lineEdit_passport_n</tabstop>
+  <tabstop>lineEdit_passport_give</tabstop>
+  <tabstop>dateEdit_passport_date</tabstop>
+  <tabstop>lineEdit_city</tabstop>
+  <tabstop>lineEdit_postcode</tabstop>
+  <tabstop>lineEdit_region</tabstop>
+  <tabstop>lineEdit_street</tabstop>
+  <tabstop>lineEdit_house</tabstop>
+  <tabstop>lineEdit_entrance</tabstop>
+  <tabstop>lineEdit_house_bulk</tabstop>
+  <tabstop>lineEdit_room</tabstop>
+  <tabstop>lineEdit_agreement_date</tabstop>
+  <tabstop>lineEdit_agreement_num</tabstop>
+  <tabstop>toolButton_agreement_print</tabstop>
+  <tabstop>groupBox_urdata</tabstop>
+  <tabstop>lineEdit_organization</tabstop>
+  <tabstop>lineEdit_rs</tabstop>
+  <tabstop>lineEdit_okpo</tabstop>
+  <tabstop>lineEdit_unp</tabstop>
+  <tabstop>lineEdit_bank</tabstop>
+  <tabstop>comboBox_manager</tabstop>
+  <tabstop>lineEdit_balance</tabstop>
+  <tabstop>lineEdit_credit</tabstop>
+  <tabstop>checkBox_credit</tabstop>
+  <tabstop>toolButton_get_ipn_from_pool</tabstop>
+  <tabstop>comboBox_ipn_pool</tabstop>
+  <tabstop>lineEdit_ipn_ip_mask</tabstop>
+  <tabstop>lineEdit_ipn_mac_address</tabstop>
+  <tabstop>lineEdit_vlan</tabstop>
+  <tabstop>lineEdit_assign_ipn_ip_from_dhcp</tabstop>
+  <tabstop>listWidget_nasses</tabstop>
+  <tabstop>comboBox_vpn_pool</tabstop>
+  <tabstop>lineEdit_vpn_ip_address</tabstop>
+  <tabstop>toolButton_get_vpn_from_pool</tabstop>
+  <tabstop>checkBox_allow_webcab</tabstop>
+  <tabstop>checkBox_allow_expresscards</tabstop>
+  <tabstop>checkBox_assign_dhcp_null</tabstop>
+  <tabstop>checkBox_assign_dhcp_block</tabstop>
+  <tabstop>checkBox_allow_vpn_null</tabstop>
+  <tabstop>checkBox_allow_vpn_block</tabstop>
+  <tabstop>groupBox_vpn_speed</tabstop>
+  <tabstop>vpn_speed_lineEdit</tabstop>
+  <tabstop>groupBox_ipn_speed</tabstop>
+  <tabstop>ipn_speed_lineEdit</tabstop>
+  <tabstop>tableWidget_suspended</tabstop>
+  <tabstop>tableWidget_downtime</tabstop>
+  <tabstop>tableWidget_accounttarif</tabstop>
+  <tabstop>tableWidget_documents</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>comboBox_nas</tabstop>
+  <tabstop>ipn_ip_address_edit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

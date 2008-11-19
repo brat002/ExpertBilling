@@ -1474,7 +1474,7 @@ class settlement_period_service_dog(Thread):
                                     """
                                     INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime)
                                     VALUES(%s, %s, %f*1024000, now());
-                                    """, (accounttarif_id, prepaid_traffic_id, size,))                            
+                                    """ % (accounttarif_id, prepaid_traffic_id, size,))                            
                         if u==True:
                             self.cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=now() WHERE account_id=%s RETURNING id;", (account_id,))
                             if self.cur.fetchone()==None:

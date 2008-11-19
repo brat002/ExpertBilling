@@ -13,7 +13,8 @@ selstrdict = {\
     'nas'           : "SELECT name, id FROM nas_nas WHERE (id %s) ORDER BY name;", \
     'usernames'     : "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
     'classes'       : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;",\
-    'rvclasses'     : "SELECT id, name FROM nas_trafficclass WHERE (id %s) ORDER BY name;"}
+    'rvclasses'     : "SELECT id, name FROM nas_trafficclass WHERE (id %s) ORDER BY name;",\
+    'prepaidtraffic': "SELECT accountprepaystrafic.* FROM billservice_accountprepaystrafic as accountprepaystrafic JOIN billservice_accounttarif as accounttarif ON accounttarif.id=accountprepaystrafic.account_tarif_id WHERE accounttarif.account_id=%s;"}
 
 class bpbl(object):
     #get data methods
