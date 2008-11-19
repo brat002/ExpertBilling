@@ -1749,7 +1749,8 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
             user, mdpass = hash.split(':', 1)
             try:
-                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s'" % user)
+                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s';" % user)
+                val[0].connection.commit()
             except Exception, ex:
                 print "acceptIdentification error: ", ex
                 conn.utoken = ''
@@ -1843,12 +1844,12 @@ def authentconn(func):
                     kwargs['connection'] = caller.db_connection
                     kwargs['cur'] = caller.cur
                     res =  func(*args, **kwargs)
-                    if func.__name__ == "commit":
-                        caller.cur.close()
-                        caller.db_connection.close()
-                        caller.db_connection = pool.connection()
-                        caller.db_connection._con._con.set_client_encoding('UTF8')
-                        caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                    #if func.__name__ == "commit":
+                    #    caller.cur.close()
+                    #    caller.db_connection.close()
+                    #    caller.db_connection = pool.connection()
+                    #    caller.db_connection._con._con.set_client_encoding('UTF8')
+                    #    caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                     return res
                 else:
                     return None
@@ -1858,7 +1859,8 @@ def authentconn(func):
             if isinstance(ex, psycopg2.OperationalError):
                 print args[0].getName() + ": (RPC Server) database connection is down: " + str(ex)
             else:
-                print args[0].getName() + ": exception: " + str(ex)
+                #print args[0].getName() + ": exception: " + str(ex)
+                raise ex
 
     return relogfunc
 
@@ -2283,7 +2285,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def connection_request(self, username, password, cur=None, connection=None):
         try:
             obj = self.get("SELECT * FROM billservice_systemuser WHERE username=%s",(username,))
-            connection.commit()
+            self.commit()
         except Exception, e:
             print e
             return False
@@ -2291,7 +2293,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #print self.getProxy()
         if obj is not None and obj.password==password:
             self.create("UPDATE billservice_systemuser SET last_login=now() WHERE id=%s;" , (obj.id,))
-            connection.commit()
+            self.commit()
             #Pyro.constants.
 
             return True

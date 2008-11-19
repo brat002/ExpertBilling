@@ -2902,8 +2902,6 @@ class AddAccountFrame(QtGui.QDialog):
         QtGui.QDialog.reject(self)
 
     def fixtures(self):
-
-
         pools = []
 
         nasses = self.connection.get_models("nas_nas")
@@ -3002,6 +3000,8 @@ class AddAccountFrame(QtGui.QDialog):
         self.accounttarif_table.setItem(x,y,headerItem)
 
 
+        
+
 class AccountWindow(QtGui.QMainWindow):
     def __init__(self, connection, tarif_id, ttype, model=None, ipn_for_vpn=False):
         super(AccountWindow, self).__init__()
@@ -3010,9 +3010,10 @@ class AccountWindow(QtGui.QMainWindow):
         self.connection = connection
         self.ipn_for_vpn = ipn_for_vpn
         self.tarif_id = tarif_id
+        self.organization = None
         
         self.setObjectName("AccountWindow")
-        self.resize(848, 665)
+        self.resize(848, 675)
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -3141,6 +3142,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_urdata.setMinimumSize(QtCore.QSize(391, 241))
         self.groupBox_urdata.setMaximumSize(QtCore.QSize(16381, 16381))
         self.groupBox_urdata.setCheckable(True)
+        self.groupBox_urdata.setChecked(False)
         self.groupBox_urdata.setObjectName("groupBox_urdata")
         self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_urdata)
         self.gridLayout_7.setObjectName("gridLayout_7")
@@ -3271,7 +3273,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_entrance = QtGui.QLabel(self.groupBox_address)
         self.label_entrance.setObjectName("label_entrance")
         self.gridLayout_2.addWidget(self.label_entrance, 4, 0, 1, 1)
-        self.gridLayout_14.addWidget(self.groupBox_address, 3, 0, 2, 1)
+        self.gridLayout_14.addWidget(self.groupBox_address, 3, 0, 3, 1)
         self.groupBox_manager = QtGui.QGroupBox(self.tab_general)
         self.groupBox_manager.setEnabled(False)
         self.groupBox_manager.setMinimumSize(QtCore.QSize(391, 51))
@@ -3310,6 +3312,15 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_credit.setObjectName("checkBox_credit")
         self.gridLayout_9.addWidget(self.checkBox_credit, 2, 0, 1, 2)
         self.gridLayout_14.addWidget(self.groupBox_balance_info, 4, 1, 1, 1)
+        self.groupBox_status = QtGui.QGroupBox(self.tab_general)
+        self.groupBox_status.setObjectName("groupBox_status")
+        self.checkBox_active = QtGui.QCheckBox(self.groupBox_status)
+        self.checkBox_active.setGeometry(QtCore.QRect(10, 20, 71, 19))
+        self.checkBox_active.setObjectName("checkBox_active")
+        self.checkBox_suspended = QtGui.QCheckBox(self.groupBox_status)
+        self.checkBox_suspended.setGeometry(QtCore.QRect(100, 20, 131, 19))
+        self.checkBox_suspended.setObjectName("checkBox_suspended")
+        self.gridLayout_14.addWidget(self.groupBox_status, 5, 1, 1, 1)
         self.tabWidget.addTab(self.tab_general, "")
         self.tab_network_settings = QtGui.QWidget()
         self.tab_network_settings.setObjectName("tab_network_settings")
@@ -3503,6 +3514,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolBar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
         self.toolBar.setIconSize(QtCore.QSize(18, 18))
         self.toolBar.setObjectName("toolBar")
+        
+
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionSave = QtGui.QAction(self)
         icon1 = QtGui.QIcon()
@@ -3594,6 +3607,7 @@ class AccountWindow(QtGui.QMainWindow):
         
         self.connect(self.toolButton_generate_login,QtCore.SIGNAL("clicked()"),self.generate_login)
         self.connect(self.toolButton_generate_password,QtCore.SIGNAL("clicked()"),self.generate_password)
+        self.connect(self.actionSave, QtCore.SIGNAL("triggered()"),  self.accept)
         self.fixtures()
         
     def retranslateUi(self):
@@ -3655,7 +3669,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_dublicate_actions.setTitle(QtGui.QApplication.translate("MainWindow", "Дублировать IPN действия на", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_vpn.setTitle(QtGui.QApplication.translate("MainWindow", "VPN IP Адрес", None, QtGui.QApplication.UnicodeUTF8))
 
-        self.lineEdit_vpn_ip_address.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_vpn_ip_address.setText(QtGui.QApplication.translate("MainWindow", "VPN IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_get_vpn_from_pool.setText(QtGui.QApplication.translate("MainWindow", "Выдать из пула", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_accessparameters.setTitle(QtGui.QApplication.translate("MainWindow", "Параметры доступа", None, QtGui.QApplication.UnicodeUTF8))
@@ -3709,7 +3722,10 @@ class AccountWindow(QtGui.QMainWindow):
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAdd.setText(QtGui.QApplication.translate("MainWindow", "add", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDel.setText(QtGui.QApplication.translate("MainWindow", "del", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.groupBox_status.setTitle(QtGui.QApplication.translate("MainWindow", "Статус аккаунта", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_active.setText(QtGui.QApplication.translate("MainWindow", "Активен", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_suspended.setText(QtGui.QApplication.translate("MainWindow", "Отключить ПУ", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)
@@ -3768,6 +3784,9 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_credit.setText(u"0")
 
         if self.model:
+            self.checkBox_suspended.setChecked(self.model.suspended or False)
+            self.checkBox_active.setChecked(self.model.status or True)
+
             self.lineEdit_username.setText(unicode(self.model.username))
             self.lineEdit_password.setText(unicode(self.model.password))
             
@@ -3818,39 +3837,259 @@ class AccountWindow(QtGui.QMainWindow):
                 self.ipn_speed_lineEdit.setText(self.model.ipn_speed)
             else:
                 self.groupBox_ipn_speed.setChecked(False)
-"""
-            self.check
-            allow_webcab
-            allow_expresscards
-            assign_dhcp_null
-            assign_dhcp_block
-            allow_vpn_null
-            allow_vpn_block
-"""
             
+            self.checkBox_allow_webcab.setChecked(self.model.allow_webcab or False)
+            self.checkBox_allow_expresscards.setChecked(self.model.allow_expresscards or False)
+            self.checkBox_assign_dhcp_null.setChecked(self.model.assign_dhcp_null or False)
+            self.checkBox_assign_dhcp_block.setChecked(self.model.assign_dhcp_block or False)
+            self.checkBox_allow_vpn_null.setChecked(self.model.allow_vpn_null or False)
+            self.checkBox_allow_vpn_block.setChecked(self.model.allow_vpn_block or False)
+
             organization = self.connection.get_models("billservice_organization", where={'account_id':self.model.id})
             self.connection.commit()
             if organization!=[]:
+                
                 org = organization[0]
+                self.organization = org
                 self.groupBox_urdata.setChecked(True)
                 self.lineEdit_organization.setText(unicode(org.name))
                 self.lineEdit_uraddress.setText(unicode(org.uraddress))
                 self.lineEdit_urphone.setText(unicode(org.phone))
                 self.lineEdit_fax.setText(unicode(org.fax))
-                #self.lineEdit_rs.setText(unicode(org.rs))
                 self.lineEdit_okpo.setText(unicode(org.okpo))
                 self.lineEdit_unp.setText(unicode(org.unp))
                 
-                bank = self.connection.get_model(org.bank_id, "bilslervice_bankdata")
+                #print "bank_id",org.bank_id
+                bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
                 self.connection.commit()
                 if bank:
                     self.lineEdit_bank.setText(unicode(bank.bank))
-                    self.lineEdit_bank_code.setText(unicode(bank.code))
+                    self.lineEdit_bank_code.setText(unicode(bank.bankcode))
                     self.lineEdit_rs.setText(unicode(bank.rs))
             
-
+            else:
+                self.groupBox_urdata.setChecked(False)
             self.accountTarifRefresh()
 
+    def accept(self):
+        """
+        понаставить проверок
+        """
+        import Pyro
+        try:
+            
+            if self.model:
+                model=self.model
+            else:
+                print 'New account'
+                if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.lineEdit_username.text())).count > 0:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
+                    self.connection.rollback()
+                    return
+
+                model=Object()
+                model.created = datetime.datetime.now()
+                #model.user_id=1
+                model.ipn_status = False
+                model.ipn_added = False
+                model.disabled_by_limit = False
+                
+            model.username = unicode(self.lineEdit_username.text())
+            #print 1
+            model.password = unicode(self.lineEdit_password.text())
+            model.fullname = unicode(self.lineEdit_name.text())
+            model.email = unicode(self.lineEdit_email.text())
+            
+            model.fullname = unicode(self.lineEdit_name.text())
+            
+            
+            model.email = self.lineEdit_email.text()
+            
+            model.city = unicode(self.lineEdit_city.text())
+            model.postcode = unicode(self.lineEdit_postcode.text())
+            
+            model.region = unicode(self.lineEdit_region.text())
+            model.street = unicode(self.lineEdit_street.text())
+            model.house = unicode(self.lineEdit_house.text())
+            model.house_bulk = unicode(self.lineEdit_house_bulk.text())
+            model.entrance = unicode(self.lineEdit_entrance.text())
+            model.room = unicode(self.lineEdit_room.text())
+            
+            
+            if self.groupBox_vpn_speed.isChecked()==True and self.vpn_speed_lineEdit.text()!="":
+                model.vpn_speed = unicode(self.vpn_speed_lineEdit.text())
+            else:
+                model.vpn_speed = ""
+
+            if self.groupBox_ipn_speed.isChecked()==True and self.ipn_speed_lineEdit.text()!="":
+                model.ipn_speed = unicode(self.ipn_speed_lineEdit.text())
+            else:
+                model.ipn_speed = ""
+
+            if self.lineEdit_ipn_ip_address.text():
+                if self.ipValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка в IPN IP."))
+                    return
+                try:
+                    ipn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_ip_address='%s'" % unicode(self.lineEdit_ipn_ip_address.text())).id
+                    if ipn_address_account_id!=model.id:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        self.connection.rollback()
+                        return  
+                                          
+                except Exception, ex:
+                    print ex
+                    print ''.join(Pyro.util.getPyroTraceback(ex))
+
+                model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text())
+                
+            elif self.ttype == 'IPN':
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на IPN тарифном плане. \n IPN IP должен быть введён до конца."))
+                return
+            else:
+                model.ipn_ip_address = '0.0.0.0'
+                
+
+            if self.lineEdit_vpn_ip_address.text():
+                if self.ipValidator.validate(self.lineEdit_vpn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка в VPN IP."))
+                    return
+                try:
+                    vpn_address_account_id = self.connection.get("SELECT id FROM billservice_account WHERE vpn_ip_address='%s'" % unicode(self.lineEdit_vpn_ip_address.text())).id
+                    #print "vpn_address_account_id", vpn_address_account_id
+                    if vpn_address_account_id!=model.id:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой IP."))
+                        self.connection.rollback()
+                        return    
+                          
+                except Exception, ex:
+                    print ex
+                    print ''.join(Pyro.util.getPyroTraceback(ex))
+                
+                model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text())
+            elif self.ttype == 'VPN':
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на VPN тарифном плане. \n VPN IP должен быть введён до конца."))
+                return
+            else:
+                model.vpn_ip_address = '0.0.0.0'
+              
+            model.netmask = '0.0.0.0'
+            if self.lineEdit_ipn_ip_mask.isEnabled():
+                if self.lineEdit_ipn_ip_mask.text():
+                    if self.ipValidator.validate(self.lineEdit_ipn_ip_mask.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Маска указана неверно."))
+                        self.connection.rollback()
+                        return
+                    model.netmask = unicode(self.lineEdit_ipn_ip_mask.text())
+                
+                
+            #model.netmask = unicode(self.netmask_edit.text())
+            if ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
+                self.connection.rollback()
+                return
+    
+            if self.lineEdit_ipn_mac_address.text().isEmpty()==False:
+                if self.macValidator.validate(self.ipn_mac_address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable:
+                    cnt = self.connection.get("SELECT count(*) as cnt FROM billservice_account WHERE ipn_mac_address='%s' and id<>%s" % (unicode(self.lineEdit_ipn_mac_address.text()).upper(), model.id)).cnt
+                    if cnt>0 :
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+                        self.connection.rollback()
+                        return
+                    model.ipn_mac_address = unicode(self.lineEdit_ipn_mac_address.text()).upper()
+                else:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте MAC адрес."))
+                    self.connection.rollback()
+                    return
+            else:
+                model.ipn_mac_address=""
+                
+            model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            model.vlan = unicode(self.lineEdit_vlan.text()) or 0
+            
+            model.ballance = unicode(self.lineEdit_balance.text()) or 0
+            model.credit = unicode(self.lineEdit_credit.text()) or 0
+    
+            model.assign_ipn_ip_from_dhcp = self.checkBox_assign_ipn_ip_from_dhcp.isChecked()
+            model.suspended = self.checkBox_suspended.isChecked()
+            model.status = self.checkBox_active.isChecked()
+            
+            if model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
+                self.connection.rollback()
+                return
+                
+            
+            
+            model.allow_webcab = self.checkBox_allow_webcab.checkState() == QtCore.Qt.Checked
+            model.allow_expresscards = self.checkBox_allow_expresscards.checkState() == QtCore.Qt.Checked
+            model.assign_dhcp_null = self.checkBox_assign_dhcp_null.checkState() == QtCore.Qt.Checked
+            model.assign_dhcp_block = self.checkBox_assign_dhcp_block.checkState() == QtCore.Qt.Checked
+            model.allow_vpn_null = self.checkBox_allow_vpn_null.checkState() == QtCore.Qt.Checked
+            model.allow_vpn_block = self.checkBox_allow_vpn_block.checkState() == QtCore.Qt.Checked
+            
+            if self.model:
+                if model.ipn_ip_address!=self.model.ipn_ip_address:
+                    """
+                    Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
+                    """
+                    model.ipn_status=False
+                model.id = self.connection.save(model, "billservice_account")
+            else:
+                #print 123
+                model.id=self.connection.save(model, "billservice_account")
+                accounttarif = Object()
+                accounttarif.account_id=model.id
+                accounttarif.tarif_id=self.tarif_id
+                accounttarif.datetime = datetime.datetime.now()
+                self.connection.save(accounttarif,"billservice_accounttarif")
+
+            if self.groupBox_urdata.isChecked():
+                if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица."))
+                    return
+                if self.organization:
+                    org = self.organization
+                    bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
+                else:
+                    org = Object()
+                    bank = Object()
+                
+                bank.bank = unicode(self.lineEdit_bank.text())
+                bank.bankcode = unicode(self.lineEdit_bank_code.text())
+                bank.rs = self.lineEdit_rs.text()
+                bank.currency = ''
+                bank.id = self.connection.save(bank, "billservice_bankdata")
+                
+                org.name = unicode(self.lineEdit_organization.text())
+                org.uraddress = unicode(self.lineEdit_uraddress.text())
+                org.phone = unicode(self.lineEdit_urphone.text())
+                org.fax = unicode(self.lineEdit_fax.text())
+                org.okpo = unicode(self.lineEdit_okpo.text())
+                org.unp = unicode(self.lineEdit_unp.text())
+                org.account_id = model.id
+                org.bank_id = bank.id
+                self.connection.save(org, "billservice_organization")
+                print "save org.data"
+            else:
+                if self.organization:
+                    self.connection.iddelete(self.organization.id, "billservice_organization")    
+            
+            
+            self.connection.commit()
+            
+            self.model = model
+            self.emit(QtCore.SIGNAL("refresh()"))
+        except Exception, e:
+            import Pyro
+            print ''.join(Pyro.util.getPyroTraceback(e))
+            import sys, traceback
+            traceback.print_exc()
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
+            self.connection.rollback()
+            return 
+        #QtGui.QDialog.accept(self)
+        
         
     def accountTarifRefresh(self):
         if self.model:
@@ -4274,9 +4513,11 @@ class AccountsMdiChild(QtGui.QMainWindow):
         ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
         JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
         WHERE tarif.id=%s""" % id).ipn_for_vpn
+        self.connection.commit()
         #child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         self.parent.workspace.addWindow(child)
+        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
         child.show()
         return
         #self.connection.commit()
@@ -4352,6 +4593,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         
         self.parent.workspace.addWindow(child)
+        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
         child.show()
         return
         
@@ -4431,7 +4673,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         #self.connection.commit()
         #tarif = self.connection.foselect("billservice_tariff", id)
         
-        
+        #self.connection.commit()
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
         self.connection.commit()
         #self.connection.commit()
