@@ -1611,12 +1611,12 @@ class StatReport(QtGui.QMainWindow):
         if self.child.ports:
             kwargs['ports']   = self.child.ports
         
-        print kwargs
+        #print kwargs
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
-        print editor.physicalDpiX()
-        print editor.logicalDpiX()
+        #print editor.physicalDpiX()
+        #print editor.logicalDpiX()
         fname = reppath + "/" +self.chartinfo[1][0] + str(time.time()) + ".html"
         f = open(fname, "wb")
         f.write(editor.document().toHtml("utf-8").toUtf8())
@@ -1632,8 +1632,8 @@ class StatReport(QtGui.QMainWindow):
         webv.load(lfurl)
         #self.setCentralWidget(editor)
         self.setCentralWidget(webv)
-        print editor.physicalDpiX()
-        print editor.logicalDpiX()
+        #print editor.physicalDpiX()
+        #print editor.logicalDpiX()
         #ec = self.centralWidget().cursor()
         #ec.setShape(QtCore.Qt.ArrowCursor)
         #self.centralWidget().setCursor(ec)
