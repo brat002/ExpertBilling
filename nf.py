@@ -15,13 +15,9 @@ import psycopg2
 from DBUtils.PooledDB import PooledDB
 import ConfigParser
 config = ConfigParser.ConfigParser()
-
-#from SocketServer import ThreadingUDPServer
-#from SocketServer import DatagramRequestHandler
 import threading
 from threading import Thread
 import marshal
-#import cPickle
 import gc
 
 #from logger import redirect_std
@@ -30,12 +26,14 @@ import gc
 
 
 
-trafficclasses_pool = []
+#aggregation cache
 dcache   = {}
+#caches for Nas data, account IPN, VPN address indexes
 global ipncache, vpncache
 nascache = {}
 ipncache = {}
 vpncache = {}
+#locks
 dcacheLock = threading.Lock()
 fqueueLock = threading.Lock()
 dbLock = threading.Lock()
@@ -43,10 +41,15 @@ dbLock = threading.Lock()
 nfFlowCache = None
 packetCount = None
 
+#binary strings lengthes
 flowLENGTH = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
 headerLENGTH = struct.calcsize("!HHIIIIBBH")
 
 class reception_server(asyncore.dispatcher):
+    '''
+    Asynchronous server that recieves datagrams with NetFlow packets
+    and appends them to 'nfQueue' queue.
+    '''
     def __init__(self, host, port):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -57,23 +60,25 @@ class reception_server(asyncore.dispatcher):
         pass
     
     
-    def handle_read(self):
-        
-        data, addrport = self.recvfrom(8192)
-        
+    def handle_read(self):        
+        data, addrport = self.recvfrom(8192)        
         try:
             assert len(data)<=8192
             #NetFlowPacket(data, addrport, nfFlowCache, None)
             #nfPacketHandle(data, addrport, nfFlowCache)
             nfQueue.append((data, addrport))
         except Exception, ex:
-            print "NFP exception: %s" % (repr(ex),)
+            print "NF server exception: %s" % (repr(ex),)
         
     def writable(self):
         return (0)
 
-"""
-data legend:
+
+def flow5(data):
+    """
+    Function that unpacks Flow binary string into a list.
+    data legend:
+        _ff= struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data)
         self.src_addr = self._int_to_ipv4(_ff[0])
         self.dst_addr = self._int_to_ipv4(_ff[1])
         self.next_hop = self._int_to_ipv4(_ff[2])
@@ -101,27 +106,34 @@ data legend:
         [22] - nas_trafficnode.direction
         [23] - nas_trafficclass.store
         [24] - nas.trafficclass.passthrough
-"""
-def flow5(data):
+    """
     if len(data) != flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
+    #must turn tuples into lists because they are to be modified
     return list(struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data))
 
-"""
-data legend:
+
+def header5(data):
+    """
+    Function that unpacks Netflow packet header binary string into a tuple.
+    data legend:
         _nh = struct.unpack("!HHIIIIBBH", data)
         self.version = _nh[0]
         self.num_flows = _nh[1]
         self.sys_uptime = _nh[2]
         self.time_secs = _nh[3]
         self.time_nsecs = _nh[4]
-"""
-def header5(data):
+    """
     if len(data) != headerLENGTH:
         raise ValueError, "Short flow header"
     return struct.unpack("!HHIIIIBBH", data)
 
 def nfPacketHandle(data, addrport, flowCache):
+    '''
+    Function receiving a binary Netflow packet, sender addrport and FlowCache reference.
+    Gets, unpacks and checks flows from packets.
+    Approved packets are added to FlowCache.
+    '''
     if len(data) < 16:
         raise ValueError, "Short packet"
 
@@ -141,15 +153,18 @@ def nfPacketHandle(data, addrport, flowCache):
         flow_class = nfFLOW_TYPES[pVersion][1]
         hdr = hdr_class(data[:headerLENGTH])
         #======
+        #runs through flows
         for n in range(hdr[1]):
             offset = headerLENGTH + (flowLENGTH * n)
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
+            #checks for account
             acc_id = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
             if acc_id:
                 flow[11] = nas_id
                 flow.append(acc_id)
                 passthr = True
+                #checks classes
                 for nclass, nnodes in nodesCache:                    
                     for nnode in nnodes:
                         if (((flow[0] & nnode[1]) == nnode[0]) and ((flow[2] & nnode[3]) == nnode[2]) and ((flow[3] == nnode[4]) or (not nnode[4])) and ((flow[9] == nnode[5]) or (not nnode[5])) and ((flow[10] == nnode[6]) or (not nnode[6])) and ((flow[13] == nnode[7]) or (not nnode[7]))):
@@ -171,10 +186,13 @@ def nfPacketHandle(data, addrport, flowCache):
 
 
 class FlowCache:
-
+    '''
+    Aggregates flows.
+    '''
     def __init__(self):
         dcache = {}
-        nascache = {}
+        #nascache = {}
+        #list for keeping keys
         self.keylist = []
         self.stime = time.time()
 
@@ -185,23 +203,30 @@ class FlowCache:
     def addflow5(self, flow):
         global ipncache, vpncache, nascache
         #key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
+        #constructs a key
         key = (flow[0], flow[1], flow[2], flow[9], flow[10], flow[13])
         val = dcache.get(key)
+        #no such value, must add
         if not val:
             dcacheLock.acquire()
             i = 1
             j = 0
             try:
+                #adds
                 dcache[key] = flow
                 i=0
                 dcacheLock.release()
+                #stores key in a list
                 self.keylist.append(key)
+                #time to start over?
                 if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
                     #-----------------
+                    #appends keylist to flowQueue
                     fqueueLock.acquire()
                     flowQueue.append((self.keylist, time.time()))
                     fqueueLock.release()
-                    #-----------------                    
+                    #-----------------
+                    #nullifies keylist
                     self.keylist = []
                     self.stime = time.time()
                     #=====
@@ -216,6 +241,7 @@ class FlowCache:
             dcacheLock.acquire()
             i = 1
             try:
+                #appends flows
                 dflow= dcache[key]
                 '''dflow.octets  += flow.octets
                 dflow.packets += flow.packets
@@ -231,6 +257,10 @@ class FlowCache:
 
 
 class nfDequeThread(Thread):
+    '''
+    Thread that gets packets recieved by the server from nfQueue queue and puts them onto the conveyour
+    that gets flows and caches them.
+    '''
     def __init__(self):
         Thread.__init__(self)
         
@@ -250,6 +280,10 @@ class nfDequeThread(Thread):
                 print "NFP exception: %s" % (repr(ex),)
                 
 class FlowDequeThread(Thread):
+    '''
+    Gets a keylist with keys to flows that are to be aggregated, waits for aggregation time, pops them from aggregation cache,
+    constructs small lists of flows and appends them to 'databaseQueue'.
+    '''
     def __init__(self):
         Thread.__init__(self)
         
@@ -258,6 +292,7 @@ class FlowDequeThread(Thread):
         while True:
             fqueueLock.acquire()
             try:
+                #get keylist and time
                 keylist, stime = flowQueue.popleft()
                 fqueueLock.release()
             except Exception, ex:
@@ -272,14 +307,16 @@ class FlowDequeThread(Thread):
             #print "len dbQueue: ", len(databaseQueue)
             #print "len fnameQueue: ", len(fnameQueue)
             #print "len nfqueue: ", len(nfQueue)
+            
+            #if aggregation time was still not reached -> sleep
             wtime = time.time() - aggrTime - stime
-            #print wtime
             if wtime < 0:
                 time.sleep(abs(wtime))
             
             #TO-DO: переделать на execute_many
             fcnt = 0
             flst = []
+            #ftime = time.time()
             for key in keylist:
                 dcacheLock.acquire()
                 i = 1
@@ -287,14 +324,19 @@ class FlowDequeThread(Thread):
                     flow = dcache.pop(key)
                     dcacheLock.release()
                     i = 0
+                    #construct a list
                     flst.append(tuple(flow))
                     fcnt += 1
+                    
+                    ##TODO: add time check!!!
+                    #append to databaseQueue
                     if fcnt == 37:
                         dbLock.acquire()
                         databaseQueue.append(flst)
                         dbLock.release()
                         flst = []
                         fcnt = 0
+                        #ftime = time.time()
                 except Exception, ex:
                     print "fdqThread exception: ", repr(ex)
                     #del flow
@@ -312,6 +354,10 @@ class FlowDequeThread(Thread):
 
                 
 class NfUDPSenderThread(Thread):
+    '''
+    Thread that gets packet lists from databaseQueue, marshals them and sends to Core module
+    If there are errors, flow data are written to a file. When connection is established again, NfFileReadThread to clean up that files and resend data is started.
+    '''
     def __init__(self):        
         #self.sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.outbuf = []
@@ -337,37 +383,46 @@ class NfUDPSenderThread(Thread):
                 #print "empty dbqueue"
                 time.sleep(1)
                 continue
+            #send data
             nfsock.sendto(flst,addrport)            
             try:
+                #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
+                #if wrong length (probably zero reply) - raise exception
                 if len(flst) != int(dtrc):
                     raise Exception("Unequal sizes!")
-                #TODO: run a thread to clean up files!
+                
+                #if the connection is OK but there were errors earlier
                 if errflag:
                     print "errflag detected"
                     dfile.close()
-                    #use locks is deadlockind arise
+                    #use locks is deadlocking  arise
                     fnameQueue.append(fname)
                     
                     errflag = 0
+                    #run a cleanup thread
                     nfFileThread = NfFileReadThread()
                     nfFileThread.start()                  
                 
             except Exception, ex:
+                #if no errors were detected earlier
                 if not errflag:
                     try:
                         errflag = 1
+                        #open a new file
                         fname = ''.join((self.hpath, str(time.clock()), '.dmp'))
                         dfile = open(fname, 'ab')
                     except Exception, ex:
                         print "NFUDPSenderThread file creation exception: ", repr(ex)
                         continue
                     
-                try:                  
+                try:   
+                    #append data
                     dfile.write(flst)
                     dfile.write('\n')
                     #dfile.close()
                     flnumpack += 1
+                    #if got enough packets - open a new file
                     if flnumpack == 300:
                         flnumpack = 0
                         dfile.close()
@@ -381,6 +436,9 @@ class NfUDPSenderThread(Thread):
             del flst
             
 class NfFileReadThread(Thread):
+    '''
+    Thread that reads previously written data dumps and resends data.
+    '''
     def __init__(self):
         Thread.__init__(self)
         self.hpath = ''.join((dumpDir,'/','nf_'))
@@ -391,7 +449,7 @@ class NfFileReadThread(Thread):
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         dfile = None
         while True:
-            #print "nfilereadthread"
+            #get a file name
             fnameLock.acquire()
             try:
                 fname = fnameQueue.popleft()
@@ -399,12 +457,13 @@ class NfFileReadThread(Thread):
             except Exception, ex:
                 fnameLock.release()
                 return
-            #print fname
+            #open file and read data
             try:
                 dfile = open(fname, 'rb')
                 flows = dfile.readlines()
                 dfile.close()
                 fcnt = 0
+                #send data
                 try:
                     for flow in flows:
                         nfsock.sendto(flow[:-1],addrport)                    
@@ -414,6 +473,7 @@ class NfFileReadThread(Thread):
                         fcnt += 1
                         time.sleep(0.01)
                 except Exception, ex:
+                    #if errors - write data to another file
                     print "NfFileReadThread flowsend exception: ", repr(ex)
                     flows = flows[fcnt:]
                     newfname = ''.join((self.hpath, str(time.clock()), '.dmp'))
@@ -421,20 +481,39 @@ class NfFileReadThread(Thread):
                     for flow in flows:
                         dfile.write(flow)
                     dfile.close()
-                    #use locks is deadlockind arise
+                    #use locks is deadlocking issues arise
                     fnameQueue.appendleft(newfname)
                     os.remove(fname)
                     return
                 
             except Exception, ex:
                 print "NfFileReadThread fileread exception: ", repr(ex)
-                #use locks is deadlockind arise
+                #use locks is deadlocking issues arise
                 fnameQueue.append(fname)
                         
             os.remove(fname)                      
                            
                     
 class ServiceThread(Thread):
+    '''
+    Thread that forms and renews caches.
+
+    nnode final structure:
+    [0]  - src_ip
+    [1]  - src_mask
+    [2]  - dst_ip
+    [3]  - dst_mask
+    [4]  - next_hop
+    [5]  - src_port
+    [6]  - dst_port
+    [7]  - protocol
+    [8]  - passthrough
+    [9]  - direction
+    [10] - store
+    [11] - traffic_class_id
+    [12] - weight
+        
+    '''
     def __init__(self):
         
         self.connection = pool.connection()
@@ -448,7 +527,7 @@ class ServiceThread(Thread):
         global nascache
         global ipncache
         global vpncache
-        global databaseQueue
+        #global databaseQueue
         global nodesCache
         while True:
             #print "Servicethread"
@@ -458,7 +537,6 @@ class ServiceThread(Thread):
                 self.cur.close()
                 self.cur = self.connection.cursor()
                 nascache = dict(nasvals)
-                #print nascache
                 del nasvals
             except Exception, ex:
                 print "Servicethread nascache exception: ", repr(ex)
@@ -482,6 +560,7 @@ class ServiceThread(Thread):
                 self.cur = self.connection.cursor()
                 icTmp = {}
                 #ipncache = icTmp.fromkeys([parseAddress(x[0])[0] for x in self.cur.fetchall()], 1)
+                #turn IP strings into long integers
                 for ipn in ipns:
                     icTmp[parseAddress(ipn[1])[0]] = ipn[0]
                 if icTmp:
@@ -496,6 +575,7 @@ class ServiceThread(Thread):
                 self.cur.close()
                 self.cur = self.connection.cursor()
                 vcTmp = {}
+                #turn IP strings into long integers
                 for vpn in vpns:
                     vcTmp[parseAddress(vpn[1])[0]] = vpn[0]
                 if vcTmp:
@@ -505,22 +585,7 @@ class ServiceThread(Thread):
             except Exception, ex:
                 print "Servicethread vpncache exception: ", repr(ex)
              
-            '''
-            nnode final structure:
-            [0]  - src_ip
-            [1]  - src_mask
-            [2]  - dst_ip
-            [3]  - dst_mask
-            [4]  - next_hop
-            [5]  - src_port
-            [6]  - dst_port
-            [7]  - protocol
-            [8]  - passthrough
-            [9]  - direction
-            [10] - store
-            [11] - traffic_class_id
-            [12] - weight
-            '''
+            #forms a class-nodes structure
             try:
                 self.cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
                 nnodes = self.cur.fetchall()
@@ -547,7 +612,7 @@ class ServiceThread(Thread):
                     nclTmp[1].append(tuple(nlist))
                 if ndTmp[0][0]:
                     nodesCache = ndTmp
-                    print ndTmp
+                    #print ndTmp
                 del ndTmp
             except Exception, ex:
                 print "Servicethread trafficnodes exception: ", repr(ex)
@@ -610,7 +675,7 @@ if __name__=='__main__':
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
-
+    #get socket parameters. AF_UNIX support
     if config.get("core_nf", "usock") == '0':
         coreHost = config.get("core_nf_inet", "host")
         corePort = int(config.get("core_nf_inet", "port"))
@@ -622,6 +687,7 @@ if __name__=='__main__':
     else:
         raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
     
+    #get a dump' directrory string and check whethet it's writable
     dumpDir = config.get("core_nf", "dump_dir")
     try:
         tfname = ''.join((dumpDir,'/','nf_', str(time.clock()), '.dmp'))
@@ -632,6 +698,7 @@ if __name__=='__main__':
     except Exception, ex:
         raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: operations with filename like '" +tfname+ "' were not executed properly!")
 
+    #queues
     flowQueue = deque()
     databaseQueue = deque()
     fnameQueue = deque()
@@ -642,6 +709,8 @@ if __name__=='__main__':
     nfFLOW_TYPES = {
         5 : (header5, flow5),
       }
+    
+    #numeric values
     sleepTime = 291.0
     aggrTime = 120.0
     #aggrTime = 60.0
