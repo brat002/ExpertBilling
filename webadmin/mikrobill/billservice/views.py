@@ -22,6 +22,13 @@ def login(request):
         if form.is_valid():
             try:
                 user = Account.objects.get(username=form.cleaned_data['username'])
+                if not user.allow_webcab:
+                    form = LoginForm()
+                    error_message = u'У данного пользователя нет прав пользоваться WEB Кабинетом!!!'
+                    return {
+                            'error_message':error_message,
+                            'form':form,
+                            }
                 if user.password == form.cleaned_data['password']:
                     request.session['user'] = user
                     if not cache.get(user.id):
@@ -175,6 +182,10 @@ def card_acvation(request):
     if not request.session.has_key('express_pay'):
         return HttpResponseRedirect('/index/')
     user = request.session['user']
+    if not user.allow_expresscards:
+        return {
+                'error_message': u"Вам не доступна услуга активации карт экспресс оплаты!",
+                }
     if not cache.get(user.id):
         return HttpResponseRedirect('/account/login/')
     cache_user = cache.get(user.id)
