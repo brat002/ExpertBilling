@@ -207,7 +207,11 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
     JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
     JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
-    WHERE %s bsat.datetime<now() and account.username='%s' %s ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)
+    WHERE %s bsat.datetime<now() and account.username='%s' %s AND 
+    (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
+    OR 
+    ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
+    ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)
     #print sql
     cursor.execute(sql)
 
@@ -221,7 +225,11 @@ def get_account_data_by_username_dhcp(cursor, username):
     cursor.execute("""SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
         account.ipn_speed
         FROM billservice_account as account
-        WHERE account.ipn_mac_address=%s LIMIT 1""" , (str(username),))
+        WHERE 
+        (((account.allow_dhcp_null=False and account.ballance+account.credit>=0) or (account.allow_dhcp_null=True)) 
+        OR 
+        ((account.allow_dhcp_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_dhcp_null=True)))=True 
+        AND account.ipn_mac_address=%s LIMIT 1""" , (str(username),))
 
 
     return cursor.fetchone()

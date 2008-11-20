@@ -273,7 +273,10 @@ class check_vpn_access(Thread):
                                  account.vpn_ip_address AS vpn_ip_address,  
                                  account.ipn_ip_address AS ipn_ip_address, 
                                  account.ipn_mac_address AS ipn_mac_address,
-                                 (SELECT tarif.active FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id)) AS tarif_status
+                                 (SELECT tarif.active FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id)) AS tarif_status,
+                                (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
+                                OR 
+                                ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True))) as status
                                  FROM radius_activesession AS rs
                                  JOIN nas_nas AS nas ON nas.ipaddress=rs.nas_id
                                  JOIN billservice_account AS account ON account.id=rs.account_id
@@ -283,7 +286,15 @@ class check_vpn_access(Thread):
                 for row in rows:
                     result=None
                     #print row['balance']
-                    if row['balance']>0 or self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==False or row['disabled_by_limit']==True and row['account_status']==True and row['tarif_status']==True:
+                    """
+                    allow_vpn_bull
+                    allow_vpn_block
+                    
+                    (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
+                    OR 
+                    ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
+                    """
+                    if row['status']==True and self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))==True and row['tarif_status']==True:
                         """
                             Делаем проверку на то, изменилась ли скорость.
                             """
@@ -1549,7 +1560,7 @@ class settlement_period_service_dog(Thread):
                         summ=cost,
                         description=u"Снятие денег по разовой услуге %s" % service_name
                     )
-                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, now());", (accounttarif_id, transaction_id, service_id,))
+                    self.cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, now());", (accounttarif_id, service_id, transaction_id,))
     
                     self.connection.commit()
 

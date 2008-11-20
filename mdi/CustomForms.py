@@ -906,7 +906,7 @@ class CardPreviewDialog(QtGui.QDialog):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
         self.webView.setSizePolicy(sizePolicy)
-        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(self.url)))
         self.webView.setObjectName("webView")
         self.verticalLayout.addWidget(self.webView)
         self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
@@ -920,7 +920,7 @@ class CardPreviewDialog(QtGui.QDialog):
         QtCore.QObject.connect(self.commandLinkButton_print, QtCore.SIGNAL("clicked()"), self.printCard)
 
         self.retranslateUi()
-        self.fixtures()
+        #self.fixtures()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
@@ -948,4 +948,100 @@ class CardPreviewDialog(QtGui.QDialog):
         #printer.setOutputFileName("lol.pdf")
         #print printer.resolution()
         self.webView.print_(printer)
+
+class tableImageWidget(QtGui.QWidget):
+    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False, ipn_status=False, ipn_added=False):
+        super(tableImageWidget,self).__init__()
+        
+        #self.resize(78, 20)
+        self.horizontalLayout = QtGui.QHBoxLayout(self)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+        self.horizontalLayout.setMargin(0)
+
+        self.toolButton_active = QtGui.QToolButton(self)
+        self.toolButton_active.resize(17,17)
+        self.toolButton_active.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_active.setMaximumSize(QtCore.QSize(17, 17))
+        
+        
+        self.horizontalLayout.addWidget(self.toolButton_active)
+        self.toolButton_balance_blocked = QtGui.QToolButton(self)
+        self.toolButton_balance_blocked.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_balance_blocked.setMaximumSize(QtCore.QSize(17, 17))
+        
+
+        self.toolButton_balance_blocked.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_balance_blocked)
+        
+        self.toolButton_trafic_limit = QtGui.QToolButton(self)
+        self.toolButton_trafic_limit.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_trafic_limit.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_trafic_limit.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_trafic_limit)
+
+        self.toolButton_ipn_status = QtGui.QToolButton(self)
+        self.toolButton_ipn_status.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_status)
+        
+        self.toolButton_ipn_added = QtGui.QToolButton(self)
+        self.toolButton_ipn_added.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_added)
+        
+        if nops==False:
+            self.toolButton_active.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_active.setToolTip(u"Периодические услуги не списывают деньги")
+        else:
+            self.toolButton_active.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_active.setToolTip(u"Периодические услуги действуют")
+    
+        if balance_blocked==True:
+            self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_false.png"))
+            self.toolButton_balance_blocked.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
+        else:
+            self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_true.png"))
+            self.toolButton_balance_blocked.setToolTip(u"На счету достаточно средств")
+        
+        if trafic_limit==True: 
+            self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_trafic_limit.setToolTip(u"Пользователь исчерпал лимит трафика")
+        else:
+            self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_trafic_limit.setToolTip(u"Пользователь не исчерпал лимит трафика")
+
+        if ipn_status==True: 
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь активен в ACL на NAS")
+        else:
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь не активен в ACL на NAS")
+            
+
+        if ipn_added==True: 
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь добавлен в ACL на NAS")
+        else:
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
+            
                             
+class CustomWidget(QtGui.QTableWidgetItem):
+    def __init__(self, parent, models, *args, **kwargs):
+        super(CustomWidget, self).__init__()
+        self.models=models
+        label=""
+        for model in models:
+            if "passthrough" in model.__dict__:
+                if  model.passthrough==True:
+                    label += "%s(passthrough)\n" % model.name
+                else:
+                    label += "%s \n" % model.name
+            else:
+                label += "%s \n" % model.name
+        
+        self.setText(label)
+        

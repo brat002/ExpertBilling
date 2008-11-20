@@ -264,7 +264,7 @@ class HandleAuth(HandleBase):
         if row==None:
             self.cur.close()
 
-            log("Unknown User", self.packetobject['User-Name'][0])
+            log("Unknown User %s" % self.packetobject['User-Name'][0])
             return self.auth_NA()
 
         username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
@@ -284,7 +284,7 @@ class HandleAuth(HandleBase):
                 break
 
         log("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
-        if self.packetobject['User-Name'][0]==username and allow_dial and status and  ballance>0 and not disabled_by_limit and not balance_blocked and tarif_status==True:
+        if self.packetobject['User-Name'][0]==username and allow_dial and tarif_status==True:
             self.replypacket.code=2
             self.replypacket.username=str(username) #Нельзя юникод
             self.replypacket.password=str(password) #Нельзя юникод
