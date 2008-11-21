@@ -1,8 +1,40 @@
 ﻿{% extends 'base.html' %}
 {% load custom_filters %}
+{% load billservice_tags %}
 
 {% block content %}
   {% if account %}
+  <!-- остаток предоплаченного трафика -->
+{% if prepaidtraffic %}
+	<div class="prepaid_table">
+		<div style="height:38px;">
+			<div class="prepaid_table_top_left"></div>
+			<div class="prepaid_table_top_right"></div>
+			<div style="clear:both; margin-bottom:5px;"></div>
+			Остаток предоплаченного трафика
+		</div>
+	<table cellspacing="0">
+		<tr>
+			<th>Тип трафика</th>
+			<th>Исходящий</th>
+			<th>Входящий</th>
+			<th>Количество</th>
+		</tr>
+	{% for traffic in prepaidtraffic %}
+		{% for class in traffic.traffic_class.all %}
+			<tr>
+				<td class="border_right" {% if forloop.last %}style="padding:24px 24px 0 0;"{% endif %}>{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
+				<td class="border_right prepaid_table_td_padding">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
+				<td class="border_right prepaid_table_td_padding">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
+				<td {% if forloop.last %}style="padding:24px 0 0 0;"{% endif %}>{% traffic_size traffic account_tarif %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
+			</tr>
+		{% endfor %}
+	</table>
+	{% endfor %}
+	</div>
+{% endif %}
+<!-- end -->
+	<div style="float:left">
     {% if account.balance_blocked %}
 	   Ваш баланс превышен 
 	{% endif %}
@@ -30,6 +62,7 @@
 		   {% endfor %}
 	   </div>
 	</div>
+  </div>
   {% else %}
     <h1>Вход не удался</h1>
   {% endif %}
@@ -38,6 +71,7 @@
 {% block menu_option %}
             <ul style="list-style-type: none">
               <li><a href="/index/">Главная</a></li>
+			  <li><a href="/prepaid/">Остаток предоплаченного трафика</a></li>
               <li><a href="/transaction/">Биллинговая информация</a></li>
               <li><a href="/card/activation/">Активация карточек</a></li>
               <li><a href="/traffic/info/">Статистика по трафику</a></li>

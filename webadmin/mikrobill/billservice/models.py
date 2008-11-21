@@ -381,7 +381,7 @@ class AccountPrepaysTrafic(models.Model):
     datetime = models.DateTimeField(auto_now_add=True, default='')
 
     def __unicode__(self):
-        return u"%s-%s" % (self.account, self.prepaid_traffic)
+        return u"%s" % (self.prepaid_traffic)
 
     class Admin:
         pass
