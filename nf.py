@@ -98,14 +98,14 @@ def flow5(data):
         self.dst_as = _ff[16]
         self.src_netmask_length = _ff[17]
         self.dst_netmask_length = _ff[18]
-        
+        [19]- 
         #added_later
-        [19] - account_id
-        [20] - CURRENT_TIMESTAMP
-        [21] - nas_traficclass_id
-        [22] - nas_trafficnode.direction
-        [23] - nas_trafficclass.store
-        [24] - nas.trafficclass.passthrough
+        [20] - account_id
+        [21] - CURRENT_TIMESTAMP
+        [22] - nas_traficclass_id
+        [23] - nas_trafficnode.direction
+        [24] - nas_trafficclass.store
+        [25] - nas.trafficclass.passthrough
     """
     if len(data) != flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
@@ -165,10 +165,15 @@ def nfPacketHandle(data, addrport, flowCache):
                 flow.append(acc_id)
                 passthr = True
                 #checks classes
+                #classLst = {'INPUT':[], 'OUTPUT':[]}
+                direction=None
+                fnode=None
+                classLst = []
+                #Направление берёт из первого пройденного нода
                 for nclass, nnodes in nodesCache:                    
                     for nnode in nnodes:
                         if (((flow[0] & nnode[1]) == nnode[0]) and ((flow[2] & nnode[3]) == nnode[2]) and ((flow[3] == nnode[4]) or (not nnode[4])) and ((flow[9] == nnode[5]) or (not nnode[5])) and ((flow[10] == nnode[6]) or (not nnode[6])) and ((flow[13] == nnode[7]) or (not nnode[7]))):
-                            wrflow = flow[:]
+                            '''wrflow = flow[:]
                             wrflow.append(time.time())
                             wrflow.append(nclass)
                             wrflow.append(nnode[9])
@@ -176,13 +181,35 @@ def nfPacketHandle(data, addrport, flowCache):
                             wrflow.append(nnode[8])
                             if not wrflow[-1]:
                                 passthr = False
-                            flowCache.addflow5(wrflow)
+                            flowCache.addflow5(wrflow)'''
+                            if not classLst:
+                                direction = nnode[9]
+                                fnode = nnode
+                            classLst.append(nclass)
+                            if not nnode[8]:
+                                passthr = False
                             break
                     
                     if not passthr:
+
+                        wrflow = flow[:]
+                        wrflow.append(time.time())
+                        wrflow.append(tuple(classLst))
+                        wrflow.append(nnode[9])
+                        wrflow.append(nnode[10])
+                        wrflow.append(nnode[8])
+                        flowCache.addflow5(wrflow)
                         break
                
-
+                else:
+                    if classLst:
+                        wrflow = flow[:]
+                        wrflow.append(time.time())
+                        wrflow.append(tuple(classLst))
+                        wrflow.append(nnode[9])
+                        wrflow.append(nnode[10])
+                        wrflow.append(nnode[8])
+                        flowCache.addflow5(wrflow)
 
 
 class FlowCache:
@@ -384,10 +411,12 @@ class NfUDPSenderThread(Thread):
                 time.sleep(1)
                 continue
             #send data
-            nfsock.sendto(flst,addrport)            
+            nfsock.sendto(flst,addrport)
+            #print addrport
             try:
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
+                #print addr
                 #if wrong length (probably zero reply) - raise exception
                 if len(flst) != int(dtrc):
                     raise Exception("Unequal sizes!")
@@ -409,6 +438,7 @@ class NfUDPSenderThread(Thread):
                 if not errflag:
                     try:
                         errflag = 1
+                        print "open a new file"
                         #open a new file
                         fname = ''.join((self.hpath, str(time.clock()), '.dmp'))
                         dfile = open(fname, 'ab')
@@ -490,6 +520,7 @@ class NfFileReadThread(Thread):
                 print "NfFileReadThread fileread exception: ", repr(ex)
                 #use locks is deadlocking issues arise
                 fnameQueue.append(fname)
+                return
                         
             os.remove(fname)                      
                            

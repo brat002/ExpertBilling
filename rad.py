@@ -25,6 +25,7 @@ from db import get_account_data_by_username_dhcp,get_default_speed_parameters, g
 #import settings
 import psycopg2
 import psycopg2.extras
+import traceback
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 from DBUtils.PooledDB import PooledDB
@@ -80,12 +81,10 @@ class AsyncUDPServer(asyncore.dispatcher):
     def handle_read_event (self):
         try:
             data, addr = self.socket.recvfrom(4096)
-        except:
-            import traceback
+        except:            
             traceback.print_exc()
             return
         self.handle_readfrom(data, addr)
-
 
     def handle_readfrom(self,data, address):
         pass
@@ -113,7 +112,6 @@ class AsyncUDPServer(asyncore.dispatcher):
                     raise socket.error, why
 
     def handle_error (self, *info):
-        import traceback
         traceback.print_exc()
         log('uncaptured python exception, closing channel %s' % `self`)
         self.close()

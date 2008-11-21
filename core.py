@@ -23,15 +23,22 @@ import hashlib
 import zlib
 from hashlib import md5
 import psycopg2
-from psycopg2.pool import ThreadedConnectionPool
-
-
 import psycopg2.extras
-
+from marshal import dumps, loads
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-
 import psycopg2
 import IPy
+from IPy import intToIp
+import asyncore
+from collections import deque
+from collections import defaultdict
+from threading import Lock
+from threading import Semaphore
+from copy import deepcopy
+from copy import copy
+#import SocketServer
+#from SocketServer import ThreadingTCPServer
+#from SocketServer import StreamRequestHandler
 
 from chartprovider.bpplotadapter import bpplotAdapter
 from chartprovider.bpcdplot import cdDrawer
@@ -135,9 +142,8 @@ class check_vpn_access(Thread):
     def __init__ (self):
         #self.dict=dict
         #self.timeout=timeout
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        
+          
         Thread.__init__(self)
 
     def check_period(self, rows):
@@ -167,7 +173,6 @@ class check_vpn_access(Thread):
             sessions = get_active_sessions(nas)
             #print sessions
             for session in sessions:
-                #print 'session', session
                 self.cur.execute("""
                                  SELECT account.id, account.vpn_ip_address, account.ipn_ip_address, account.ipn_mac_address, radius.sessionid as  sessionid
                                  FROM radius_activesession as radius 
@@ -213,10 +218,11 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
             """
-
-        while True:
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
+        while True:            
             try:
-            
+                self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 #Закрываем подвисшие сессии
                 self.cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;")
                 self.connection.commit()
@@ -283,6 +289,8 @@ class check_vpn_access(Thread):
                                  WHERE rs.date_end IS NULL;''')
     
                 rows=self.cur.fetchall()
+                self.cur.close()
+                self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 for row in rows:
                     result=None
                     #print row['balance']
@@ -361,7 +369,7 @@ class check_vpn_access(Thread):
                             """, (disconnect_result, row['session'],))
     
                 self.connection.commit()
-                #self.cur.close()
+                self.cur.close()
     
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -391,15 +399,15 @@ class periodical_service_bill(Thread):
     def __init__ (self):
         Thread.__init__(self)
 
-
     def run(self):
-
-        while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor()
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
+        while True:      
+            
             try:
+                self.cur = self.connection.cursor()
                 # Количество снятий в сутки
+                #TODO: toconfig!
                 transaction_number=24
                 n=(86400)/transaction_number
     
@@ -419,7 +427,8 @@ class periodical_service_bill(Thread):
                     '''self.cur.execute("""
                                      SELECT a.account_id, a.datetime::timestamp without time zone, (b.ballance+b.credit) as ballance
                                      FROM billservice_account as b
-                                     JOIN billservice_accounttarif as a ON a.id=(SELECT id FROM billservice_accounttarif WHERE account_id=b.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                                     JOIN billservice_accounttarif as a ON a.id=
+                                     (SELECT id FROM billservice_accounttarif WHERE account_id=b.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
                                      WHERE a.tarif_id=%d and b.suspended=False
                                      """ % tariff_id)'''
                     '''SELECT a.account_id, max(a.datetime), max((b.ballance+b.credit)) as ballance
@@ -445,6 +454,8 @@ class periodical_service_bill(Thread):
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                                      WHERE b.tarif_id=%s;""" , (tariff_id,))
                     rows_ps=self.cur.fetchall()
+                    self.cur.close()
+                    self.cur = self.connection.cursor()
                     # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
@@ -462,7 +473,7 @@ class periodical_service_bill(Thread):
                                     time_start_ps=account_datetime
                                 # Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
-                                self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;", (ps_id, tariff_id, account_id,))
+                                #self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;", (ps_id, tariff_id, account_id,))
                                 now=datetime.datetime.now()
                                 if ps_cash_method=="GRADUAL":
                                     """
@@ -497,14 +508,9 @@ class periodical_service_bill(Thread):
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             cash_summ=cash_summ*nums
-                                        #print "delta", delta
                                         # Делаем проводку со статусом Approved
-                                        #print "cash_summ", cash_summ
                                         transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
-                                        #print "tr_id", transaction_id
-                                        #self.connection.commit()
                                         ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
-                                        #self.connection.commit()
     
                                 if ps_cash_method=="AT_START":
                                     """
@@ -543,7 +549,7 @@ class periodical_service_bill(Thread):
                                             summ=ps_cost*nums
                                         
                                              
-    
+                                        #TODO: MAKE ACID!!!   
                                         transaction_id = transaction(cursor=self.cur,
                                                                      account=account_id,
                                                                      approved=True,
@@ -573,7 +579,7 @@ class periodical_service_bill(Thread):
     
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
-                                    # для всех сотальных False
+                                    # для всех остальных False
                                     now=datetime.datetime.now()
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
     
@@ -593,11 +599,12 @@ class periodical_service_bill(Thread):
                                                 summ=ps_cost*nums
                                             if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                                 summ=ps_cost
-                                            descr=u"Проводка по периодической услуге со нятием суммы в конце периода"
+                                            descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
                                         else:
                                             summ=0
-                                            descr=u"Фикстивная проводка по периодической услуге со нятием суммы в конце периода"                                        
-    
+                                            descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
+                                            
+                                        #TODO: MAKE ACID!!!
                                         transaction_id = transaction(cursor=self.cur,
                                                                      account=account_id,
                                                                      approved=True,
@@ -609,6 +616,7 @@ class periodical_service_bill(Thread):
                                         ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
                                         #self.connection.commit()
                         self.connection.commit()
+                        self.cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -616,8 +624,8 @@ class periodical_service_bill(Thread):
                     print self.getName() + ": exception: " + str(ex)
             gc.collect()
             
-            self.cur.close()
-            self.connection.close()
+            
+            #self.connection.close()
             time.sleep(180)
             
 class TimeAccessBill(Thread):
@@ -633,12 +641,13 @@ class TimeAccessBill(Thread):
         """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
         """
-
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor()
+
+            
             try:
+                self.cur = self.connection.cursor()
                 '''self.cur.execute("""
                                  SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
                                  FROM radius_session as rs
@@ -750,15 +759,15 @@ class TimeAccessBill(Thread):
                          """, (unicode(session_id), account_id, interrim_update,))
                     self.connection.commit()
 
-
+                    self.cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
 
-            self.cur.close()
-            self.connection.close()
+            
+            #self.connection.close()
             gc.collect()
             time.sleep(30)
 
@@ -772,7 +781,7 @@ class NetFlowAggregate(Thread):
     2. Смотрим есть ли похожая строка в netflowstream за последнюю минуту-полторы и не производилось ли по ней списание.
     2.1 Если есть и списание не производилось-суммируем количество байт
     2.2 Если есть и списание производилось или если нет -пишем новую строку
-    3. УДаляем из netflowstream_raw строку или помечаем, что он адолжна быть удалена.
+    3. УДаляем из netflowstream_raw строку или помечаем, что она должна быть удалена.
 
     WHILE TRUE
     timeout(120 seconds)
@@ -789,12 +798,11 @@ class NetFlowAggregate(Thread):
         return False
 
     def run(self):
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
         while True:
-            connection = pool.connection()
-            connection._con._con.set_client_encoding('UTF8')
-            cur = connection.cursor()
-            #print 'next aggregation cycle'
             try:
+                cur = connection.cursor()
                 ts_pool={}
                 
                 '''cur.execute(
@@ -890,20 +898,278 @@ class NetFlowAggregate(Thread):
                 
                 gc.collect()
                 
-
+                cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
 
-            cur.close()
-            connection.close()
+            
+            #connection.close()
             gc.collect()
             time.sleep(60)
 
 
 
+class Picker(object):
+    def __init__(self):
+        self.data={}
+
+
+    def add_summ(self, account, tarif, summ):
+        if self.data.has_key(account):
+            self.data[account]['summ']+=summ
+        else:
+            self.data[account]={'tarif':tarif, 'summ':summ}
+
+    def get_list(self):
+        for key in self.data:
+            yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
+
+#maybe save if database errors???
+class DepickerThread(Thread):
+    def __init__ (self, picker):
+        self.picker = picker
+        Thread.__init__(self)
+        
+    def run(self):
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        cur = connection.cursor()
+        for l in self.picker.get_list():
+            #Производим списывание денег
+            transaction(
+                cursor=cur,
+                type='NETFLOW_BILL',
+                account=l['account'],
+                approved=True,
+                tarif=l['tarif'],
+                summ=l['summ'],
+                description=u"",
+            )
+            connection.commit()
+        connection.commit()
+        cur.close()
+        
+class NetFlowRoutine(Thread):
+    def __init__ (self):
+        Thread.__init__(self)
+        
+
+    def get_actual_cost(self, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date):
+        """
+        Метод возвращает актуальную цену для направления трафика для пользователя:
+        """
+
+        if direction=="INPUT":
+            #d = "in_direction=True"
+            d = 10
+        elif direction=="OUTPUT":
+            #d = "out_direction=True"
+            d = 11
+        else:
+            return 0
+        #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
+        #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
+        #trafic_transmit_nodes=self.cur.fetchall()
+        trafic_transmit_nodes = TRTRNodesCache((trafic_transmit_service_id, traffic_class_id))
+        cost=0
+        min_from_start=0
+        for node in trafic_transmit_nodes:
+            if node[d]:
+                trafic_transmit_node_id=node[0]
+                trafic_cost=node[1]
+                trafic_edge_start=node[2]
+                trafic_edge_end=node[3]
+    
+                period_start=node[4]
+                period_length=node[5]
+                repeat_after=node[6]
+                tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+                if result:
+                    """
+                    Зачем здесь было это делать:
+                    Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
+                    но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
+                    который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
+                    значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
+                    у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
+                    """
+                    if from_start<min_from_start or min_from_start==0:
+                        min_from_start=from_start
+                        cost=trafic_cost
+        del trafic_transmit_nodes
+        return cost
+
+
+
+
+    
+    def run(self):
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        global curATCache
+        global curAT_acIdx
+        global curAT_date
+        global curAT_lock
+        global nfIncomingQueue
+        global tpnInPeriod
+        global prepaysCache
+        cacheAT = None
+        dateAT = datetime.datetime(2000, 1, 1)
+        sumPick = Picker()
+        pstartD = time.time()
+        while True:
+            try:
+                try:
+                    if curAT_date > dateAT:
+                        curAT_lock.acquire()
+                        #cacheAT = deepcopy(curATCache)
+                        cacheAT = deepcopy(curAT_acIdx)
+                        cacheSP  = deepcopy(curSPCache)
+                        cacheTTS = deepcopy(curTTSCache)
+                        dateAT = deepcopy(curAT_date)
+                        curAT_lock.release()
+                except:
+                    sleep(1)
+                    continue
+                
+                #if deadlocks arise add locks
+                if time.time() > pstartD + 60.0:
+                    #start thread that cleans Picker
+                    depickThr = DepickerThread(sumPick)
+                    depickThr.start()
+                    sumPick = Picker()
+                    pstartD = time.time()
+                    
+                try:
+                    flows = loads(nfIncomingQueue.popleft())
+                except Exception, ex:
+                    time.sleep(2)
+                    continue
+                
+                for flow in flows:
+                    acct = cacheAT.get(flow[20])
+                    stream_date = datetime.datetime.fromtimestamp(flow[21])
+                    if (not acct) or (not acct[3] <= stream_date):
+                        cur = connection.cursor()
+                        cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.suspended, ba.created, ba.disabled_by_limit, ba.balance_blocked
+                        FROM billservice_account as ba
+                        LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
+                        LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.id=%s;""", (stream_date, flow[19],))
+                        acct = cur.fetchone()
+                        cur.close()
+                    if acct[4] == None:
+                        continue
+                    
+                    tarif_mode = False
+                    if acct[7]:
+                        tarif_mode = tpnInPeriod[acct[7]]
+                    '''self.src_addr = self._int_to_ipv4(_ff[0])
+                    self.dst_addr = self._int_to_ipv4(_ff[1])
+                    self.next_hop = self._int_to_ipv4(_ff[2])
+                    self.in_index = _ff[3]
+                    self.out_index = _ff[4]
+                    self.packets = _ff[5]
+                    self.octets = _ff[6]
+                    self.start = _ff[7]
+                    self.finish = _ff[8]
+                    self.src_port = _ff[9]
+                    self.dst_port = _ff[10]
+                    [11] - nas_id
+                    self.tcp_flags = _ff[12]
+                    self.protocol = _ff[13]
+                    self.tos = _ff[14]
+                    self.source_as = _ff[15]
+                    self.dst_as = _ff[16]
+                    self.src_netmask_length = _ff[17]
+                    self.dst_netmask_length = _ff[18]
+                    
+                    #added_later
+                    [19] - account_id
+                    [20] - CURRENT_TIMESTAMP
+                    [21] - nas_traficclass_id
+                    [22] - nas_trafficnode.direction
+                    [23] - nas_trafficclass.store
+                    [24] - nas.trafficclass.passthrough'''
+                    if (not tarif_mode) or (not acct[10]):
+                        cur = connection.cursor()
+                        cur.execute(
+                        """
+                        INSERT INTO billservice_netflowstream(
+                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s);
+                        """, (flow[11], flow[20], acct[4], flow[23], stream_date,intToIp(flow[0],4), "{"+','.join([str(cls) for cls in flow[22]])+"}", intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,)
+                        )
+                        connection.commit()
+                        cur.close()
+                        continue
+                    
+                    s = false
+                    if acct[7]:
+                        if acct[9]:
+                            spInf = cacheSP[acct[9]]
+                            if spInf[4]:
+                                sp_time_start=acct[3]
+                                #id, time_start, length, length_in, autostart
+                            #stream_date = datetime.datetime.fromtimestamp(flow[20])
+                            settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=spInf[1], repeat_after=spInf[3], repeat_after_seconds=spInf[2], now=stream_date)
+                            octets_summ=0
+                            for tclass in flow[22]:
+                                trafic_cost=self.get_actual_cost(acct[7], tclass, flow[23], octets_summ, stream_date)
+                                if direction=="INPUT":
+                                    d = 5
+                                elif direction=="OUTPUT":
+                                    d = 6
+                                else:
+                                    d = 7
+            
+                                prepInf =  prepaysCache.get((acct[7], acct[11],tclass))
+                                octets = flow[6]
+                                if prepInf:
+                                    if prepInf[d]:
+                                        prepaid_id = prepInf[0]
+                                        prepaid  = prepInf[1]
+                                        if prepaid>0:                            
+                                            if prepaid>=octets:
+                                                prepaid=prepaid-octets
+                                                octets=0
+                                            elif octets>=prepaid:
+                                                octets=octets-prepaid
+                                                prepaid=abs(prepaid-octets)
+            
+                                            cur = connection.cursor()
+                                            cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
+                                            connection.commit()
+                                            cur.close()
+                                            prepInf[1] = prepInf[1] - prepaid
+            
+                                summ=(trafic_cost*octets)/(1024000)
+            
+                                if summ>0:
+                                    pays.add_summ(flow[20], acct[4], summ)
+                                cur = connection.cursor()
+                                cur.execute(
+                                """
+                                INSERT INTO billservice_netflowstream(
+                                nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                                dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s,
+                                %s, %s, %s, %s, %s, %s, %s);
+                                """, (flow[11], flow[20], acct[4], flow[23], stream_date,intToIp(flow[0],4), "{"+','.join([str(cls) for cls in flow[22]])+"}", intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,)
+                                )
+                                connection.commit()
+                                cur.close()
+                                
+            except Exception, ex:
+                if isinstance(ex, psycopg2.OperationalError):
+                    print self.getName() + ": database connection is down: " + repr(ex)
+                else:
+                    print self.getName() + ": exception: " + repr(ex)
+                    
 class NetFlowBill(Thread):
     """
     WHILE TRUE
@@ -946,9 +1212,9 @@ class NetFlowBill(Thread):
             d = "out_direction=True"
         else:
             return 0
-
+        #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
         #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
-        self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
+        """self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
             FROM billservice_traffictransmitnodes as ttsn
             JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
             (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
@@ -956,9 +1222,16 @@ class NetFlowBill(Thread):
             WHERE ((ttsn.edge_start>='%s' AND ttsn.edge_end<='%s') OR (ttsn.edge_start>='%s' AND ttsn.edge_end='0' ))
             AND (ttsn.traffic_transmit_service_id='%s') 
             AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
-            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d,))
+            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d,))"""
 
-        
+        self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
+            FROM billservice_traffictransmitnodes as ttsn
+            JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
+            (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
+            (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id))
+            WHERE (ttsn.traffic_transmit_service_id='%s') 
+            AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
+            AND ttsn.%s;''' % (trafic_transmit_service_id, traffic_class_id, d,))
         trafic_transmit_nodes=self.cur.fetchall()
         cost=0
         min_from_start=0
@@ -991,11 +1264,11 @@ class NetFlowBill(Thread):
 
 
     def run(self):
-        while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor()
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
+        while True:            
             try:
+                self.cur = self.connection.cursor()
                 a=time.clock()
 
                 self.cur.execute(
@@ -1054,16 +1327,19 @@ class NetFlowBill(Thread):
                             settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length, now=stream_date)
     
                             #Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-                            self.cur.execute(
+                            
+                            '''self.cur.execute(
                                 """
                                 SELECT sum(octets)
                                 FROM billservice_netflowstream
                                 WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between %s and %s
-                                """ , ( tarif_id, account_id, settlement_period_start, settlement_period_end,))
+                                """ , ( tarif_id, account_id, settlement_period_start, settlement_period_end,))'''
     
-                            octets_summ=self.cur.fetchone()[0] or 0
+                            #octets_summ=self.cur.fetchone()[0] or 0
+                            octets_summ=0
                         else:
                             octets_summ=0
+                        #LOOP for every class
                         trafic_cost=self.get_actual_cost(trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
     
                         """
@@ -1083,7 +1359,8 @@ class NetFlowBill(Thread):
                         
     
                         query="""
-                             SELECT prepais.id, prepais.size FROM billservice_accountprepaystrafic as prepais
+                             SELECT prepais.id, prepais.size 
+                             FROM billservice_accountprepaystrafic as prepais
                              JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
                              JOIN billservice_prepaidtraffic_traffic_class ON billservice_prepaidtraffic_traffic_class.prepaidtraffic_id=prepaidtraffic.id
                              WHERE prepais.size>0 and prepais.account_tarif_id=%s and billservice_prepaidtraffic_traffic_class.trafficclass_id=%s and prepaidtraffic.traffic_transmit_service_id=%s and prepaidtraffic.%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
@@ -1110,7 +1387,7 @@ class NetFlowBill(Thread):
                         if summ>0:
                             pays.add_summ(account_id, tarif_id, summ)
     
-    
+                    #till here
                     self.cur.execute(
                         """
                         UPDATE billservice_netflowstream
@@ -1140,9 +1417,9 @@ class NetFlowBill(Thread):
                 else:
                     print self.getName() + ": exception: " + str(ex)
                 
-
+            
             self.cur.close()
-            self.connection.close()
+            #self.connection.close()
             gc.collect()
             time.sleep(45)
         #connection.close()
@@ -1155,15 +1432,13 @@ class limit_checker(Thread):
     def __init__ (self):
         Thread.__init__(self)
 
-
-
     def run(self):
-
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor()
+            
             try:
+                self.cur = self.connection.cursor()
                 """
                 Выбираем тарифные планы, у которых есть лимиты
                 """
@@ -1173,13 +1448,17 @@ class limit_checker(Thread):
                     tlimit.id, tlimit.size, tlimit.mode, tlimit.in_direction, tlimit.out_direction,
                     sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
                     FROM billservice_tariff as tarif
-                    JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id and acctt.datetime=(SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+                    JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id 
+                    AND acctt.datetime=
+                    (SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
                     JOIN billservice_account as account ON account.id=acctt.account_id
                     LEFT JOIN billservice_trafficlimit as tlimit ON tlimit.tarif_id = tarif.id
                     LEFT JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period_id
                     ORDER BY account.id ASC;
                     """)
                 account_tarifs=self.cur.fetchall()
+                self.cur.close()
+                self.cur = self.connection.cursor()
                 oldid=-1
                 for row in account_tarifs:
                     account_id, \
@@ -1238,7 +1517,7 @@ class limit_checker(Thread):
                             d+=","
                         d+="'OUTPUT'"
     
-
+                    self.connection.commit()
                     self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf
                          JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
@@ -1248,7 +1527,8 @@ class limit_checker(Thread):
     
                     tsize=0
                     sizes=self.cur.fetchall()
-    
+                    self.cur.close()
+                    self.cur = self.connection.cursor()
                     for size in sizes:
                         if size[0]!=None:
                             tsize+=size[0]
@@ -1271,15 +1551,15 @@ class limit_checker(Thread):
     
                 self.connection.commit()
                 #print self.getName() + " threadend"
-
+                self.cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
 
-            self.cur.close()
-            self.connection.close()
+            
+            #self.connection.close()
             gc.collect()
             time.sleep(110)
                 
@@ -1319,12 +1599,12 @@ class settlement_period_service_dog(Thread):
         """
         
         
-
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor()
+            
             try:
+                self.cur = self.connection.cursor()
                 self.cur.execute(
                     """
                     SELECT shedulelog.id, shedulelog.accounttarif_id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, 
@@ -1351,6 +1631,8 @@ class settlement_period_service_dog(Thread):
                     """)
     
                 rows=self.cur.fetchall()
+                self.cur.close()
+                self.cur = self.connection.cursor()
                 for row in rows:
                     (shedulelog_id, accounttarif_id_shedulelog, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
                      time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
@@ -1493,7 +1775,8 @@ class settlement_period_service_dog(Thread):
                                                  INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, now()) ;
                                                  """, (account_id, accounttarif_id,))  
                     self.connection.commit() 
-    
+                    self.cur.close()
+                    self.cur = self.connection.cursor()
                     if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id  or accounttarif_id!=accounttarif_id_shedulelog:
     
                         if reset_time:
@@ -1571,7 +1854,7 @@ class settlement_period_service_dog(Thread):
                     print self.getName() + ": exception: " + str(ex)
 
             self.cur.close()
-            self.connection.close()
+            #self.connection.close()
             gc.collect()
             time.sleep(120)
 
@@ -1604,11 +1887,11 @@ class ipn_service(Thread):
 
 
     def run(self):
-        while True:
-            self.connection = pool.connection()
-            self.connection._con._con.set_client_encoding('UTF8')
-            self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
+        while True:             
             try:
+                self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
                 self.cur.execute("""SELECT account.id as account_id,
                     account.username as account_username, 
                     account.ipn_ip_address as account_ipn_ip_address, 
@@ -1724,7 +2007,7 @@ class ipn_service(Thread):
                             self.cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s , now());", (row['account_id'], unicode(newspeed), sended_speed,))
     
                 self.connection.commit()
-
+                self.cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
@@ -1732,11 +2015,268 @@ class ipn_service(Thread):
                     print self.getName() + ": exception: " + str(ex)
                     traceback.print_exc(file=sys.stdout)
 
-            self.cur.close()
-            self.connection.close()
+            
+            #self.connection.close()
             gc.collect()
             time.sleep(60)
 
+
+class CacheServiceThread(Thread):
+    def __init__ (self):
+        Thread.__init__(self)
+    def check_period(self, rows):
+        for row in rows:
+            if in_period(row[0],row[1],row[2])==True:
+                return True
+        return False
+    
+    def run(self):
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        global tpnInPeriod
+        global prepaysCache
+        global TRTRNodesCache
+        while True:             
+            try:
+                cur = connection.cursor()
+                cur.execute("""SELECT tpn.time_start, tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
+                            FROM billservice_timeperiodnode AS tpn
+                            JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
+                            JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
+                            JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""")
+                tpns = cur.fetchall()
+                cur.close()
+                tmpPerTP = defaultdict(lambda: False)
+                for tpn in tpns:
+                    tmpPerTP[tpn[3]] = tmpPerTP[tpn[3]] or in_period(tpn[0], tpn[1], tpn[2])
+                tpnInPeriod = tmpPerTP
+                
+                cur = connection.cursor()
+                cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prept_tc.trafficclass_id, prepaidtraffic.traffic_transmit_service_id, prepaidtraffic.in_direction, prepaidtraffic.out_direction
+                             FROM billservice_accountprepaystrafic as prepais
+                             JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                             JOIN billservice_prepaidtraffic_traffic_class AS prept_tc ON prept_tc.prepaidtraffic_id=prepaidtraffic.id
+                             WHERE prepais.size>0""")
+                prepTp = cur.fetchall()
+                cur.close()
+                if prepTp:
+                    #prepaisTmp = defaultdict(lambda: defaultdict(defaultdict(list)))
+                    prepaysTmp = defaultdict(list)
+                    for prep in prepTp:
+                        #prepaisTmp[prep[4]][prep[2]][prep[3]].append([prep[0], prep[1], prep[5], prep[6]])
+                        prepaysTmp((prep[4],prep[2],prep[3])).append([prep[0], prep[1], prep[5], prep[6]])
+                    #print prepaisTmp
+                    prepaysCache = prepaisTmp
+                    
+                cur = connection.cursor()
+                cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
+                ARRAY(SELECT trafficclass_id FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=ttsn.id) as classes, ttsn.traffic_transmit_service_id, ttsn.in_direction, ttsn.out_direction
+                FROM billservice_traffictransmitnodes as ttsn
+                JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
+                (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
+                (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));""")
+                trtrnodsTp = cur.fetchall()
+                cur.close()
+                #trafnodesTmp = defaultdict(lambda: defaultdict(list))
+                trafnodesTmp = defaultdict(list)
+                for trnode in trtrnodsTp:
+                    for classnd in trnode[8]:
+                        #trafnodesTmp[trnode[9]][classnd].append(trnode)
+                        trafnodesTmp[(trnode[9],classnd)].append(trnode)
+                TRTRNodesCache = trafnodesTmp
+            except Exception, ex: 
+                if isinstance(ex, psycopg2.OperationalError):
+                    print self.getName() + ": database connection is down: " + repr(ex)
+                else:
+                    print self.getName() + ": exception: " + repr(ex)
+            
+            gc.collect()
+            time.sleep(300)
+
+
+'''
+acct structure
+[0]  - ba.id, 
+[1]  - ba.ballance, 
+[2]  - ba.credit, 
+[3]  - act.datetime, 
+[4]  - bt.id, 
+[5]  - bt.access_parameters_id, 
+[6]  - bt.time_access_service_id, 
+[7]  - bt.traffic_transmit_service_id, 
+[8]  - bt.cost,bt.reset_tarif_cost, 
+[9]  - bt.settlement_period_id, 
+[10] - bt.active, 
+[11] - act.id, 
+[12] - ba.suspended, 
+[13] - ba.created, 
+[14] - ba.disabled_by_limit, 
+[15] - ba.balance_blocked, 
+[16] - ba.nas_id, 
+[17] - ba.vpn_ip_address, 
+[18] - ba.ipn_ip_address,
+[19] - ba.ipn_mac_address, 
+[20] - ba.assign_ipn_ip_from_dhcp, 
+[21] - ba.ipn_status, 
+[22] - ba.ipn_speed, 
+[23] - ba.vpn_speed, 
+[24] - ba.ipn_added, 
+[25] - bt.ps_null_ballance_checkout, 
+[26] - bt.deleted, 
+[27] - bt.allow_express_pay,
+[28] - ba.status, 
+'''
+class AccountServiceThread(Thread):
+    def __init__ (self):
+        Thread.__init__(self)
+    def run(self):
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        global curATCache
+        global curAT_acIdx
+        global curAT_tfIdx
+        global curAT_date
+        global curAT_lock
+        global curSPCache
+        #global curTCCache
+        global curTTSCache
+        global curTCTTSSP_lock
+        while True:             
+            try:
+                cur = connection.cursor()
+                tmpDate = datetime.datetime.now()
+                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.suspended, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status 
+                    FROM billservice_account as ba
+                    LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
+                    LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
+
+                accts = cur.fetchall()
+                cur.close()
+                tmpacIdx = {}
+                tmptfIdx = defaultdict(list)
+                i = 0
+                for acct in accts:
+                    #tmpacIdx[acct[0]] = i
+                    tmpacIdx[acct[0]]  = acct
+                    if acct[4]:
+                        tmptfIdx[acct[4]].append(acct)
+                        #tmptfIdx[acct[4]].append(i)
+                    #i += 1
+                '''curAT_lock.acquire()
+                curATCache  = accts
+                curAT_acIdx = tmpacIdx
+                curAT_tfIdx = tmptfIdx
+                #maybe use binary date?
+                curAT_date  = tmpDate
+                curAT_lock.release()'''
+                
+                cur = connection.cursor()
+                cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
+                ttssTp = cur.fetchall()
+                cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
+                spsTp = cur.fetchall()
+                tmpttsC = {}
+                tmpsC = {}
+                for tts in ttssTp:
+                    tmpttsC[tts[0]] = tts
+                for sps in spsTp:
+                    tmpsC[sps[0]] = sps
+                    
+                curAT_lock.acquire()
+                curATCache  = accts
+                curAT_acIdx = tmpacIdx
+                curAT_tfIdx = tmptfIdx
+                curSPCache = tmpsC
+                curTTSCache = tmpttsC
+                curAT_date  = tmpDate
+                curAT_lock.release()
+            except Exception, ex:
+                if isinstance(ex, psycopg2.OperationalError):
+                    print self.getName() + ": database connection is down: " + repr(ex)
+                else:
+                    print self.getName() + ": exception: " + repr(ex)
+            
+            gc.collect()
+            time.sleep(180)
+            
+class NfAServStarter(Thread):
+        def __init__ (self, addr_):
+            self.addr_ = addr_
+            Thread.__init__(self)
+
+        def run(self):
+            #server = ThreadingUDPServer(self.address, self.handler)
+            #server.serve_forever()
+            
+            NfAsyncUDPServer(self.addr_)            
+            while 1: 
+                asyncore.poll(0.010)
+                
+class NfAsyncUDPServer(asyncore.dispatcher):
+    ac_out_buffer_size = 8096*10
+    ac_in_buffer_size = 8096*10
+    
+    def __init__(self, addr_):
+        self.outbuf = []
+        asyncore.dispatcher.__init__(self)
+
+        self.host = addr_[0]
+        self.port = addr_[1]
+        self.dbconn = None
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind(addr_)
+        self.set_reuse_addr()
+
+    def handle_connect(self):
+        #print 'New packet'
+        pass    
+    #TODO: add login of sending '0' when queue is too long
+    def handle_read_event (self):
+        try:
+            data, addr = self.socket.recvfrom(8192)
+            self.socket.sendto(str(len(data)), addr)
+            nfIncomingQueue.append(data)
+            print len(nfIncomingQueue)
+        except:            
+            traceback.print_exc()
+            return
+        #self.handle_readfrom(data, addr)
+
+
+    def handle_readfrom(self,data, address):
+        pass
+    def writable(self):
+        return (0)
+    """def writable (self):
+        return len(self.outbuf)
+
+    def sendto (self, data, addr):
+        self.outbuf.append((data, addr))
+        self.initiate_send()
+
+    def initiate_send(self):
+        b = self.outbuf
+        while len(b):
+            data, addr = b[0]
+            del b[0]
+            try:
+                result = self.socket.sendto (data, addr)
+                if result != len(data):
+                    self.log('Sent packet truncated to %d bytes' % result)
+            except socket.error, why:
+                if why[0] == EWOULDBLOCK:
+                    return
+                else:
+                    raise socket.error, why"""
+
+    def handle_error (self, *info):
+        traceback.print_exc()
+        print 'uncaptured python exception, closing channel %s' % `self`
+        self.close()
+    
+    def handle_close(self):
+        self.close()
+        
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -1837,6 +2377,7 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
         # we don't like to store plaintext passwords so store the md5 hash instead.
         return ident
     
+
 def authentconn(func):
     def relogfunc(*args, **kwargs):
         try:
@@ -2354,23 +2895,42 @@ def main():
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
+    if config.get("core_nf", "usock") == '0':
+        coreHost = config.get("core_nf_inet", "host")
+        corePort = int(config.get("core_nf_inet", "port"))
+        coreAddr = (coreHost, corePort)
+    elif config.get("core_nf", "usock") == '1':
+        coreHost = config.get("core_nf_unix", "host")
+        corePort = 0
+        coreAddr = (coreHost,)
+    else:
+        raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
+    
+
     threads=[]
+    #threads.append(NfAServStarter(coreAddr))
+    threads.append(AccountServiceThread())
+    threads.append(CacheServiceThread())
     threads.append(RPCServer())
     threads.append(check_vpn_access())
-    threads.append(periodical_service_bill())
+    #threads.append(periodical_service_bill())
     threads.append(TimeAccessBill())
-    threads.append(NetFlowAggregate())
-    threads.append(NetFlowBill())
-    threads.append(limit_checker())
+    #threads.append(NetFlowAggregate())
+    #threads.append(NetFlowBill())
+    threads.append(NetFlowRoutine())
+    #threads.append(limit_checker())
     threads.append(ipn_service())
-    threads.append(settlement_period_service_dog())
+    #threads.append(settlement_period_service_dog())
     
     i= range(len(threads))
     for th in threads:	
         th.start()
         time.sleep(1)
-
-    while True:
+        
+    NfAsyncUDPServer(coreAddr)            
+    while 1: 
+        asyncore.poll(0.010)
+    """while True:
         #print pool
         #print pool._connections
         for t in threads:
@@ -2382,7 +2942,7 @@ def main():
                 #t.__init__()
                 #t.start()
                 print 'thread status', t.getName(), t.isAlive()
-        time.sleep(15)
+        time.sleep(15)"""
 
 
 #===============================================================================
@@ -2397,7 +2957,7 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
 
     pool = PooledDB(
-        mincached=10,
+        mincached=13,
         maxcached=30,
         blocking=True,
         #maxusage=20, 
@@ -2407,13 +2967,27 @@ if __name__ == "__main__":
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
        )
-    
-    '''dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password"))
-    '''                                                           
-    #pool = ThreadedConnectionPool(15, 60, dsn)
 
+    #--------------------------------------------------------
+    nfIncomingQueue = deque()
+    nfQueueLock = Lock()
+    curATCache  = {}
+    curAT_acIdx = {}
+    curAT_tfIdx = {}
+    curAT_acctIdx = {}
+    curAT_date  = None
+    curAT_lock  = Lock()
+    tpnInPeriod = None
+    #curTCCache = {}
+    curTTSCache = {}
+    curSPCache = {}
+    #curTCTTSSP_date = None
+    curTCTTSSP_lock = Lock()
+    prepaysCache = {}
+    prepays_lock = Lock()
+    TRTRNodesCache = {}
+    
+    
+    
     main()
 
