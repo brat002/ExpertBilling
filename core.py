@@ -964,10 +964,10 @@ class NetFlowRoutine(Thread):
 
         if direction=="INPUT":
             #d = "in_direction=True"
-            d = 10
+            d = 9
         elif direction=="OUTPUT":
             #d = "out_direction=True"
-            d = 11
+            d = 10
         else:
             return 0
         #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
@@ -1125,7 +1125,7 @@ class NetFlowRoutine(Thread):
                                 elif direction=="OUTPUT":
                                     d = 6
                                 else:
-                                    d = 7
+                                    d = 6
             
                                 prepInf =  prepaysCache.get((acct[7], acct[11],tclass))
                                 octets = flow[6]
@@ -2064,9 +2064,9 @@ class CacheServiceThread(Thread):
                     prepaysTmp = defaultdict(list)
                     for prep in prepTp:
                         #prepaisTmp[prep[4]][prep[2]][prep[3]].append([prep[0], prep[1], prep[5], prep[6]])
-                        prepaysTmp((prep[4],prep[2],prep[3])).append([prep[0], prep[1], prep[5], prep[6]])
+                        prepaysTmp[(prep[4],prep[2],prep[3])].append([prep[0], prep[1], prep[5], prep[6]])
                     #print prepaisTmp
-                    prepaysCache = prepaisTmp
+                    prepaysCache = prepaysTmp
                     
                 cur = connection.cursor()
                 cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
@@ -2080,9 +2080,9 @@ class CacheServiceThread(Thread):
                 #trafnodesTmp = defaultdict(lambda: defaultdict(list))
                 trafnodesTmp = defaultdict(list)
                 for trnode in trtrnodsTp:
-                    for classnd in trnode[8]:
+                    for classnd in trnode[7]:
                         #trafnodesTmp[trnode[9]][classnd].append(trnode)
-                        trafnodesTmp[(trnode[9],classnd)].append(trnode)
+                        trafnodesTmp[(trnode[8],classnd)].append(trnode)
                 TRTRNodesCache = trafnodesTmp
             except Exception, ex: 
                 if isinstance(ex, psycopg2.OperationalError):
