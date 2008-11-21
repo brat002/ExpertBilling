@@ -471,7 +471,6 @@ class TimePeriodChild(QtGui.QMainWindow):
             self.addrow(node.time_start.strftime(self.strftimeFormat), i,2)
             self.addrow((node.time_start+datetime.timedelta(seconds=node.length)).strftime(self.strftimeFormat), i,3)
             self.addrow(node.repeat_after, i,4)
-            self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.resizeColumnsToContents()

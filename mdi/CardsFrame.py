@@ -994,7 +994,7 @@ class CardsChild(QtGui.QMainWindow):
         else:
             sql+=" WHERE sold is Null"
             
-        #self.tableWidget.setSortingEnabled(False)
+        self.tableWidget.setSortingEnabled(False)
 
             
         self.tableWidget.clearContents()

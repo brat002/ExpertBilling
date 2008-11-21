@@ -21,6 +21,8 @@ class ebsTableWindow(QtGui.QMainWindow):
         self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
         self.tableWidget = QtGui.QTableWidget()
         self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         if initargs.has_key("tablesize"):
             self.tableWidget.setGeometry(QtCore.QRect(*initargs["tablesize"]))
         self.setCentralWidget(self.tableWidget)
@@ -175,6 +177,8 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
                 
             tableHeader = self.tables[tabnum].horizontalHeader()
             self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+            self.tables[tabnum].setTextElideMode(QtCore.Qt.ElideNone)
+            self.tables[tabnum].setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
             
         
         self.ebsPostInit(initargs, tabargs)
@@ -285,6 +289,10 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         
         self.tableWidget = QtGui.QTableWidget(self.splitter)
         self.tableWidget.setObjectName("tableWidget")
+        
+        self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            
         if initargs.has_key("tablesize"):
             self.tableWidget.setGeometry(QtCore.QRect(*initargs["tablesize"]))
         self.setCentralWidget(self.tableWidget)

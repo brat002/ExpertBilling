@@ -49,7 +49,8 @@ class ClassEdit(QtGui.QDialog):
         self.store_edit = QtGui.QCheckBox(self.params_groupBox)
         self.store_edit.setGeometry(QtCore.QRect(60,80,271,18))
         self.store_edit.setObjectName("store_edit")
-
+        self.store_edit.setDisabled(True)
+        
         self.passthrough_checkBox = QtGui.QCheckBox(self.params_groupBox)
         self.passthrough_checkBox.setGeometry(QtCore.QRect(60,100,271,19))
         self.passthrough_checkBox.setObjectName("passthrough_checkBox")
