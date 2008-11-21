@@ -101,6 +101,8 @@ def index(request):
             cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tarifs = AccountTarif.objects.filter(account=user, datetime__lt=date)
+    #find prepare trafick
+       
     return {
             'account':user,
             'tarif':tarif,
@@ -241,3 +243,24 @@ def card_acvation(request):
         return {
                 'form':form,
                 }
+
+@render_to('accounts/account_prepays_traffic.html')
+def account_prepays_traffic(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    user = request.session['user']
+    #try:
+    from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
+    account_tarif = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())
+    print account_tarif  
+    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tarif)
+    print account_prepays_trafic
+    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    print prepaidtraffic 
+    #except:
+    #    prepaidtraffic = None
+    #    account_tarif = None  
+    return {
+            'prepaidtraffic':prepaidtraffic,
+            'account_tarif':account_tarif,
+            }
