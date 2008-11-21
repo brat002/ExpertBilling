@@ -56,7 +56,7 @@ class bpbl(object):
         if (((tmdall.days*86400 + tmdall.seconds) % sec) != 0) or (not iters):
             iters +=1
         tnum = 0
-        #one-time iterate through the data values and aggregate traffic values of diffeent classes by time periods
+        #one-time iteration through the data values and aggregate traffic values of diffeent classes by time periods
         for i in range(iters):
             ins, outs, trs = 0, 0, 0
             tm = tm + tmd

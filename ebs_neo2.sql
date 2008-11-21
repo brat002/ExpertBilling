@@ -223,7 +223,8 @@ CREATE TABLE billservice_netflowstream (
     dst_port integer NOT NULL,
     protocol integer NOT NULL,
     checkouted boolean DEFAULT false,
-    for_checkout boolean DEFAULT false
+    for_checkout boolean DEFAULT false,
+    passthrough boolean DEFAULT false
 );
 
 
@@ -244,7 +245,8 @@ CREATE TABLE billservice_onetimeservicehistory (
     id integer NOT NULL,
     accounttarif_id integer NOT NULL,
     onetimeservice_id integer NOT NULL,
-    datetime timestamp without time zone NOT NULL
+    datetime timestamp without time zone NOT NULL,
+    transaction_id integer  NOT NULL
 );
 
 
@@ -821,7 +823,7 @@ CREATE TABLE radius_session (
     account_id integer NOT NULL,
     sessionid character varying(32) DEFAULT ''::character varying,
     interrim_update timestamp without time zone DEFAULT now(),
-    date_start timestamp without time zone NOT NULL,
+    date_start timestamp without time zone,
     date_end timestamp without time zone,
     caller_id character varying(255) DEFAULT ''::character varying,
     called_id character varying(255) DEFAULT ''::character varying,
@@ -8861,6 +8863,8 @@ CREATE INDEX billservice_onetimeservicehistory_accounttarif_id ON billservice_on
 
 CREATE INDEX billservice_onetimeservicehistory_onetimeservice_id ON billservice_onetimeservicehistory USING btree (onetimeservice_id);
 
+CREATE INDEX fki_billservice_onetimeservicehistory_transaction_id_fkey ON billservice_onetimeservicehistory USING btree (transaction_id);
+
 CREATE INDEX billservice_periodicalservice_settlement_period_id ON billservice_periodicalservice USING btree (settlement_period_id);
 
 CREATE INDEX billservice_periodicalservicehistory_service_id ON billservice_periodicalservicehistory USING btree (service_id);
@@ -8989,7 +8993,11 @@ ALTER TABLE ONLY billservice_onetimeservicehistory
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE CASCADE DEFERRABLE;
 
-
+ALTER TABLE billservice_onetimeservicehistory
+  ADD CONSTRAINT billservice_onetimeservicehistory_transaction_id_fkey FOREIGN KEY (transaction_id)
+      REFERENCES billservice_transaction (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+      
 ALTER TABLE billservice_dealer
   ADD CONSTRAINT billservice_dealer_bank_id_fkey FOREIGN KEY (bank_id)
       REFERENCES billservice_bankdata (id) MATCH SIMPLE

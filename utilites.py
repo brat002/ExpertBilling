@@ -770,26 +770,28 @@ def formatator(x,y):
     elif x!=-1 and y!=-1:
         return "%s/%s" % (x,y)
 
-    
+
+rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
+compile_obj = re.compile(rawstr)    
 def parse_custom_speed(speed_string):
     # common variables
     #print speed_string
-    rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
-    embedded_rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
+    #rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
+    #embedded_rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
     #matchstr = """128k/128k   200k/200k     100k/100k     5/5 1  40k/40k"""
     
     # method 1: using a compile object
-    compile_obj = re.compile(rawstr)
+    #compile_obj = re.compile(rawstr)
     match_obj = compile_obj.search(speed_string)
     
     # method 2: using search function (w/ external flags)
-    match_obj = re.search(rawstr, speed_string)
+    #match_obj = re.search(rawstr, speed_string)
     
     # method 3: using search function (w/ embedded flags)
-    match_obj = re.search(embedded_rawstr, speed_string)
+    #match_obj = re.search(embedded_rawstr, speed_string)
     
     # Retrieve group(s) from match_obj
-    all_groups = match_obj.groups()
+    #all_groups = match_obj.groups()
     
     # Retrieve group(s) by index
     group_1 = match_obj.group(1)
