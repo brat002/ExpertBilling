@@ -42,14 +42,14 @@
        Ваш лимит превышен 
     {% endif %}
     <h1>{% if account.fullname %}{{account.fullname}}{% else %}{{account.username}}{% endif %} {% if not status %}<img src="{{ MEDIA_URL }}img/design/enable.png" />{% else %}<img src="{{ MEDIA_URL }}img/design/disable.png" />{% endif %}</h1>
-	<div><span class="label">Адрес</span> - <span>{{ account.address }}</span></div>
-	<div><span class="label">E-mail</span> - <span>{{ account.email }}</span></div>
-	<div><span class="label">Cетевой IP адрес</span> - <span>{{ account.ipn_ip_address }}</span></div>
-	<div><span class="label">VPN IP адрес</span> - <span>{{ account.vpn_ip_address }}</span></div>
-	<div><span class="label">Тарифный план</span> - <span>{{ tarif }}</span></div>
-	<div><span class="label">Баланс</span><span> - </span>{{ account.ballance }}</div>
-	<div><span class="label">Размер кредита</span> - <span>{{ account.credit }}</span></div>
-	<div><span class="label">Дата подключения</span> - <span>{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
+	<div><span class="label">Адрес</span> : <span>{{ account.address }}</span></div>
+	<div><span class="label">E-mail</span> : <span>{{ account.email }}</span></div>
+	<div><span class="label">Cетевой IP адрес</span> : <span>{{ account.ipn_ip_address }}</span></div>
+	<div><span class="label">VPN IP адрес</span> : <span>{{ account.vpn_ip_address }}</span></div>
+	<div><span class="label">Тарифный план</span> : <span>{{ tarif }}</span></div>
+	<div><span class="label">Баланс</span><span> : </span>{{ account.ballance }}</div>
+	<div><span class="label">Размер кредита</span> : <span>{{ account.credit }}</span></div>
+	<div><span class="label">Дата подключения</span> : <span>{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
 	<div style="padding-top:30px;">
 	   <span class="label">Предыдущие тарифы пользователя :</span><br>
 	   <div>
