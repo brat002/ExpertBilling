@@ -82,7 +82,7 @@ class MonitorEbs(ebsTableWindow):
         if self.checkBoxAutoRefresh.checkState()==2:
             self.thread.go(interval=25)
         else:
-            self.thread.quit()
+            self.thread.terminate()
             
     def closeEvent(self, event):
         """

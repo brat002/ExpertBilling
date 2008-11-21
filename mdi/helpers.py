@@ -457,11 +457,17 @@ class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
         self.exiting = False
-    
+   
     def __del__(self):
     
         self.exiting = True
         self.wait()
+
+    def stop(self):
+    
+        self.exiting = True
+        self.wait()
+
 
     def go(self, interval=60):
         self.interval=interval
@@ -469,7 +475,7 @@ class Worker(QtCore.QThread):
 
     def run(self):
         
-        while True:
+        while not self.exiting:
             
             
             
