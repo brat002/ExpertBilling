@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from django import template
 from django.db import connection
-from billservice.models import Transaction, TransactionType
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic
 register = template.Library()
 
 @register.inclusion_tag('accounts/tags/writen_off_time.html')
@@ -45,3 +45,13 @@ def trafic_format(value):
                     } 
     except Exception, e:
         print e
+        
+@register.inclusion_tag('accounts/tags/traffic_size.html')
+def traffic_size(traffic, account_tarif):
+    try:
+        size = AccountPrepaysTrafic.objects.get(prepaid_traffic=traffic, account_tarif=account_tarif)
+    except:
+        size = None
+    return {
+            'size':size,
+            }

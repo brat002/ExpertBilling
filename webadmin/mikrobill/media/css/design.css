@@ -36,7 +36,7 @@ td {
     background: url('../img/design/marker.gif') 12px 12px;
     background-repeat: no-repeat;
     border: 1px solid #0A688C;
-	width:201px;
+	width:250px;
 	height:25px;
 	text-align:right;
 	font-size:12px;
@@ -135,4 +135,79 @@ td.first_row  {
 
 .table_border, .enter_table {
     margin-top:20px;
+}
+
+
+
+.prepaid_table {
+	margin-top:30px;
+	*margin-top:0;
+	width:500px;	
+}
+
+.prepaid_table div {
+	background-color:#246c9c;
+	text-align:center;
+	color:#ffffff;
+	font-weight:bold;
+	font-size:13px;
+}
+
+.prepaid_table_top_left {
+	background: url('../img/design/top-left.gif');
+	float:left;
+}
+
+.prepaid_table_top_right {
+	background: url('../img/design/top-right.gif');
+	float:right;
+}
+
+.prepaid_table_bottom_left {
+	background: url('../img/design/bottom-left.gif');
+	float:left;
+	margin:24px 0 -4px 0;
+	*margin:24px 0 -6px 0;
+}
+
+.prepaid_table_bottom_right {
+	background: url('../img/design/bottom-right.gif');
+	float:right;
+	margin:24px 0 -4px 24px;
+	*margin:24px 0 -6px 24px;
+	
+}  
+
+.prepaid_table_top_left, .prepaid_table_top_right, .prepaid_table_bottom_left, .prepaid_table_bottom_right {
+	width:7px;
+	height:6px;
+}  
+
+.prepaid_table_bottom_right, .prepaid_table_bottom_left {
+	background-position:bottom;
+}
+
+.prepaid_table table {
+	width:100%;
+}
+
+.prepaid_table th {
+	background-color:#A6A6A6;
+	padding:10px;
+	text-align:center;
+} 
+
+.prepaid_table td {
+	background-color:#d2d2d2;
+	border-top: 1px solid #a4a4a4;
+	text-align:center;
+} 
+
+.prepaid_table_td_padding {
+	padding:24px;
+} 
+
+
+.border_right {
+	border-right:1px solid #a4a4a4;
 }
