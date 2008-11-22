@@ -651,8 +651,6 @@ def setpriority(pid=None,priority=1):
 
 def main():
 
-    if "-D" not in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
 
     
     server_auth = Starter("0.0.0.0", 1812, AsyncAuth)
@@ -672,6 +670,8 @@ if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kail','billing
     sys.exit(1)
 
 if __name__ == "__main__":
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
     config = ConfigParser.ConfigParser()
     if os.name=='nt' and w32Import:
         setpriority(priority=4)
