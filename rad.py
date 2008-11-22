@@ -269,7 +269,7 @@ class HandleAuth(HandleBase):
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
             self.cur.close()
-            log("Unallowed NAS for user ", self.packetobject['User-Name'][0])
+            log("Unallowed NAS for user %s" % self.packetobject['User-Name'][0])
             return self.auth_NA()
 
 
@@ -414,7 +414,7 @@ class HandleAcct(HandleBase):
             row=self.cur.fetchone()
             if row==None:
                 self.cur.close()
-                log("Unkown User or user tarif", self.packetobject['User-Name'][0])
+                log("Unkown User or user tarif %s" % self.packetobject['User-Name'][0])
                 return self.acct_NA()
             account_id, time_access=row
             account_timeaccess_cache[self.packetobject['User-Name'][0]]=[account_id, time_access,0]
