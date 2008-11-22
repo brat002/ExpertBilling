@@ -694,7 +694,7 @@ if __name__=='__main__':
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
     
-    config.read("ebs_config.ini")
+    config.read("/opt/ebs/data/ebs_config.ini")
 
     pool = PooledDB(
         mincached=2,
