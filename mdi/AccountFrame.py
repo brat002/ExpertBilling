@@ -3776,9 +3776,9 @@ class AccountWindow(QtGui.QMainWindow):
             model.room = unicode(self.lineEdit_room.text())
             
             #passport
-            self.model.passport = unicode(self.lineEdit_passport_n.text())
-            self.model.passport_given = unicode(self.lineEdit_passport_given.text())
-            self.model.passport_date = self.dateEdit_passport_date.date().toPyDate()
+            passport = unicode(self.lineEdit_passport_n.text())
+            passport_given = unicode(self.lineEdit_passport_given.text())
+            passport_date = self.dateEdit_passport_date.date().toPyDate()
             #print "passport_date", self.model.passport_date
             #dateTime().toPyDateTime()
             
