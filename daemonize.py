@@ -2,8 +2,8 @@ import os, sys
 from platform import uname
 workdir = os.path.split(sys.argv[0])[0]
 
-if workdir=="":
-    workdir = os.getcwd()
+#if workdir=="":
+#    workdir = os.getcwd()
 
 def daemonize (stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
     if uname()[0]!="Windows":
