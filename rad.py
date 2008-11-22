@@ -675,7 +675,7 @@ if __name__ == "__main__":
     config = ConfigParser.ConfigParser()
     if os.name=='nt' and w32Import:
         setpriority(priority=4)
-    config.read("/opt/ebs/data/ebs_config.ini")        
+    config.read("ebs_config.ini")        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
     pool = PooledDB(
