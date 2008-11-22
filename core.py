@@ -2954,7 +2954,7 @@ if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha'
     
 if __name__ == "__main__":
 
-    config.read("ebs_config.ini")
+    config.read("/opt/ebs/data/ebs_config.ini")
 
     pool = PooledDB(
         mincached=13,
