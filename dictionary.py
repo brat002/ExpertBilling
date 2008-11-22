@@ -227,36 +227,37 @@ class Dictionary:
 		@param file: Name of dictionary file to parse or a file-like object
 		@type file:  string or file-like object
 		"""
-
-		mustclose=False
-		if isinstance(file, (str, unicode)):
-			mustclose=True
-			fd=open(file, "rt")
-		else:
-			fd=file
-		state={}
-		state["vendor"]=""
-                state["line"]=0
-
-		for line in fd.readlines():
-			state["line"]+=1
-			line=line.split("#", 1)[0].strip()
-
-			tokens=line.split()
-			if not tokens:
-				continue
-
-			if tokens[0]=="ATTRIBUTE":
-				self.__ParseAttribute(state, tokens)
-			elif tokens[0]=="VALUE":
-				self.__ParseValue(state, tokens)
-			elif tokens[0]=="VENDOR":
-				self.__ParseVendor(state, tokens)
-			elif tokens[0]=="BEGIN-VENDOR":
-				self.__ParseBeginVendor(state, tokens)
-			elif tokens[0]=="END-VENDOR":
-				self.__ParseEndVendor(state, tokens)
-
-		if mustclose:
-			fd.close()
+        import os
+        print os.getcwd()
+        mustclose=False
+        if isinstance(file, (str, unicode)):
+        	mustclose=True
+        	fd=open(file, "rt")
+        else:
+        	fd=file
+        state={}
+        state["vendor"]=""
+        state["line"]=0
+        
+        for line in fd.readlines():
+        	state["line"]+=1
+        	line=line.split("#", 1)[0].strip()
+        
+        	tokens=line.split()
+        	if not tokens:
+        		continue
+        
+        	if tokens[0]=="ATTRIBUTE":
+        		self.__ParseAttribute(state, tokens)
+        	elif tokens[0]=="VALUE":
+        		self.__ParseValue(state, tokens)
+        	elif tokens[0]=="VENDOR":
+        		self.__ParseVendor(state, tokens)
+        	elif tokens[0]=="BEGIN-VENDOR":
+        		self.__ParseBeginVendor(state, tokens)
+        	elif tokens[0]=="END-VENDOR":
+        		self.__ParseEndVendor(state, tokens)
+        
+        if mustclose:
+        	fd.close()
 
