@@ -4,6 +4,7 @@ workdir = os.path.split(sys.argv[0])[0]
 
 #if workdir=="":
 #    workdir = os.getcwd()
+workdir = "/opt/ebs/data/"
 
 def daemonize (stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
     if uname()[0]!="Windows":
