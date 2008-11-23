@@ -2915,16 +2915,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 def main():
 
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-    if config.get("core_nf", "usock") == '0':
-        coreHost = config.get("core_nf_inet", "host")
-        corePort = int(config.get("core_nf_inet", "port"))
-        coreAddr = (coreHost, corePort)
-    elif config.get("core_nf", "usock") == '1':
-        coreHost = config.get("core_nf_unix", "host")
-        corePort = 0
-        coreAddr = (coreHost,)
-    else:
-        raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
     
 
     threads=[]
@@ -2976,6 +2966,17 @@ if __name__ == "__main__":
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
     config.read("/opt/ebs/data/ebs_config.ini")
+    if config.get("core_nf", "usock") == '0':
+        coreHost = config.get("core_nf_inet", "host")
+        corePort = int(config.get("core_nf_inet", "port"))
+        coreAddr = (coreHost, corePort)
+    elif config.get("core_nf", "usock") == '1':
+        coreHost = config.get("core_nf_unix", "host")
+        corePort = 0
+        coreAddr = (coreHost,)
+    else:
+        raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
+
 
     pool = PooledDB(
         mincached=13,
