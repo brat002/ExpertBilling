@@ -641,12 +641,13 @@ class TimeAccessBill(Thread):
         """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
         """
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
+
         while True:
 
             
             try:
+                self.connection = pool.connection()
+                self.connection._con._con.set_client_encoding('UTF8')
                 self.cur = self.connection.cursor()
                 '''self.cur.execute("""
                                  SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
@@ -759,15 +760,15 @@ class TimeAccessBill(Thread):
                          """, (unicode(session_id), account_id, interrim_update,))
                     self.connection.commit()
 
-                    self.cur.close()
+                    
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
 
-            
-            #self.connection.close()
+            self.cur.close()
+            self.connection.close()
             gc.collect()
             time.sleep(30)
 
@@ -798,10 +799,10 @@ class NetFlowAggregate(Thread):
         return False
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
         while True:
             try:
+                connection = pool.connection()
+                connection._con._con.set_client_encoding('UTF8')
                 cur = connection.cursor()
                 ts_pool={}
                 
@@ -895,18 +896,14 @@ class NetFlowAggregate(Thread):
     
                     connection.commit()
                 del raw_streams  
-                
-                gc.collect()
-                
-                cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
                 else:
                     print self.getName() + ": exception: " + str(ex)
 
-            
-            #connection.close()
+            cur.close()
+            connection.close()
             gc.collect()
             time.sleep(60)
 
@@ -1032,7 +1029,7 @@ class NetFlowRoutine(Thread):
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
                 except:
-                    sleep(1)
+                    time.sleep(1)
                     continue
                 
                 #if deadlocks arise add locks
