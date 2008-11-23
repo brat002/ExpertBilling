@@ -926,6 +926,7 @@ class Picker(object):
 
 #maybe save if database errors???
 class DepickerThread(Thread):
+    '''Thread that takes a Picker object and executes transactions'''
     def __init__ (self, picker):
         self.picker = picker
         Thread.__init__(self)
@@ -950,6 +951,7 @@ class DepickerThread(Thread):
         cur.close()
         
 class NetFlowRoutine(Thread):
+    '''Thread that handles NetFlow statistic packets and bills according to them'''
     def __init__ (self):
         Thread.__init__(self)
         
@@ -973,7 +975,9 @@ class NetFlowRoutine(Thread):
         trafic_transmit_nodes = TRTRNodesCache((trafic_transmit_service_id, traffic_class_id))
         cost=0
         min_from_start=0
+        # [0] - ttsn.id, [1] - ttsn.cost, [2] - ttsn.edge_start, [3] - ttsn.edge_end, [4] - tpn.time_start, [5] - tpn.length, [6] - tpn.repeat_after
         for node in trafic_transmit_nodes:
+            #'d': '9' - in_direction, '10' - out_direction
             if node[d]:
                 trafic_transmit_node_id=node[0]
                 trafic_cost=node[1]
@@ -1020,12 +1024,17 @@ class NetFlowRoutine(Thread):
         while True:
             try:
                 try:
+                    #if caches were renewed, renew local copies
                     if curAT_date > dateAT:
                         curAT_lock.acquire()
                         #cacheAT = deepcopy(curATCache)
+                        #account-tarif cach indexed by account_id
                         cacheAT = deepcopy(curAT_acIdx)
+                        #settlement_period cache
                         cacheSP  = deepcopy(curSPCache)
+                        #traffic_transmit_service
                         cacheTTS = deepcopy(curTTSCache)
+                        #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
                 except:
@@ -1033,22 +1042,30 @@ class NetFlowRoutine(Thread):
                     continue
                 
                 #if deadlocks arise add locks
-                if time.time() > pstartD + 60.0:
+                #time to pick
+                if sumPick.data and (time.time() > pstartD + 60.0):
                     #start thread that cleans Picker
                     depickThr = DepickerThread(sumPick)
                     depickThr.start()
                     sumPick = Picker()
                     pstartD = time.time()
                     
+                #if deadlocks arise add locks
+                #pop flows
                 try:
                     flows = loads(nfIncomingQueue.popleft())
                 except Exception, ex:
                     time.sleep(2)
                     continue
                 
+                #iterate through them
                 for flow in flows:
+                    #get account id and get a record from cache based on it
                     acct = cacheAT.get(flow[20])
+                    #get collection date
                     stream_date = datetime.datetime.fromtimestamp(flow[21])
+                    #if no line in cache, or the collection date is younger then accounttarif creation date
+                    #get an acct record from teh database
                     if (not acct) or (not acct[3] <= stream_date):
                         cur = connection.cursor()
                         cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.suspended, ba.created, ba.disabled_by_limit, ba.balance_blocked
@@ -1057,39 +1074,18 @@ class NetFlowRoutine(Thread):
                         LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.id=%s;""", (stream_date, flow[19],))
                         acct = cur.fetchone()
                         cur.close()
+                        
+                    #if no tarif_id    
                     if acct[4] == None:
                         continue
                     
                     tarif_mode = False
+                    #if traffic_transmit_service_id is OK
                     if acct[7]:
                         tarif_mode = tpnInPeriod[acct[7]]
-                    '''self.src_addr = self._int_to_ipv4(_ff[0])
-                    self.dst_addr = self._int_to_ipv4(_ff[1])
-                    self.next_hop = self._int_to_ipv4(_ff[2])
-                    self.in_index = _ff[3]
-                    self.out_index = _ff[4]
-                    self.packets = _ff[5]
-                    self.octets = _ff[6]
-                    self.start = _ff[7]
-                    self.finish = _ff[8]
-                    self.src_port = _ff[9]
-                    self.dst_port = _ff[10]
-                    [11] - nas_id
-                    self.tcp_flags = _ff[12]
-                    self.protocol = _ff[13]
-                    self.tos = _ff[14]
-                    self.source_as = _ff[15]
-                    self.dst_as = _ff[16]
-                    self.src_netmask_length = _ff[17]
-                    self.dst_netmask_length = _ff[18]
-                    
-                    #added_later
-                    [19] - account_id
-                    [20] - CURRENT_TIMESTAMP
-                    [21] - nas_traficclass_id
-                    [22] - nas_trafficnode.direction
-                    [23] - nas_trafficclass.store
-                    [24] - nas.trafficclass.passthrough'''
+                        
+                    #if tarif_mode is False or tarif.active = False
+                    #write statistics without billing it
                     if (not tarif_mode) or (not acct[10]):
                         cur = connection.cursor()
                         cur.execute(
@@ -1106,16 +1102,25 @@ class NetFlowRoutine(Thread):
                         continue
                     
                     s = false
+                    #if traffic_transmit_service_id is OK
                     if acct[7]:
+                        #if settlement_period_id is OK
                         if acct[9]:
+                            #get a line from Settlement Period cache                            
+                            #[0] - id, [1] - time_start, [2] - length, [3] - length_in, [4] - autostart
                             spInf = cacheSP[acct[9]]
+                            #if 'autostart'
                             if spInf[4]:
+                                #start = accounttarif.datetime
                                 sp_time_start=acct[3]
-                                #id, time_start, length, length_in, autostart
+                                
                             #stream_date = datetime.datetime.fromtimestamp(flow[20])
                             settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=spInf[1], repeat_after=spInf[3], repeat_after_seconds=spInf[2], now=stream_date)
                             octets_summ=0
+                            #loop throungh classes in 'classes' tuple
                             for tclass in flow[22]:
+                                #acct[7] - traffic_transmit_service_id
+                                #flow[23] - direction
                                 trafic_cost=self.get_actual_cost(acct[7], tclass, flow[23], octets_summ, stream_date)
                                 if direction=="INPUT":
                                     d = 5
@@ -1123,13 +1128,18 @@ class NetFlowRoutine(Thread):
                                     d = 6
                                 else:
                                     d = 6
-            
+                                #get a record from prepays cache
+                                #keys: traffic_transmit_service_id, accounttarif.id, trafficclass
                                 prepInf =  prepaysCache.get((acct[7], acct[11],tclass))
+                                
                                 octets = flow[6]
                                 if prepInf:
+                                    #d = 5: chacs whether in_direction is True; d = 6: whether out_direction
                                     if prepInf[d]:
+                                        #[0] - prepais.id, [1] - prepais.size
                                         prepaid_id = prepInf[0]
                                         prepaid  = prepInf[1]
+                                        prepHnd = prepaid
                                         if prepaid>0:                            
                                             if prepaid>=octets:
                                                 prepaid=prepaid-octets
@@ -1142,12 +1152,17 @@ class NetFlowRoutine(Thread):
                                             cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
                                             connection.commit()
                                             cur.close()
-                                            prepInf[1] = prepInf[1] - prepaid
+                                            #if the cache didn't change in meantime, save changes in cache
+                                            if prepHnd == prepInf[1]:
+                                                prepInf[1] = prepInf[1] - prepaid
             
                                 summ=(trafic_cost*octets)/(1024000)
             
                                 if summ>0:
+                                    #account_id, tariff_id, summ
                                     pays.add_summ(flow[20], acct[4], summ)
+                                    
+                                #insert statistics
                                 cur = connection.cursor()
                                 cur.execute(
                                 """
@@ -2019,6 +2034,7 @@ class ipn_service(Thread):
 
 
 class CacheServiceThread(Thread):
+    '''Handles various non-simultaneous caches'''
     def __init__ (self):
         Thread.__init__(self)
     def check_period(self, rows):
@@ -2044,6 +2060,7 @@ class CacheServiceThread(Thread):
                 tpns = cur.fetchall()
                 cur.close()
                 tmpPerTP = defaultdict(lambda: False)
+                #calculates whether traffic_transmit_service fits in any oh the periods
                 for tpn in tpns:
                     tmpPerTP[tpn[3]] = tmpPerTP[tpn[3]] or in_period(tpn[0], tpn[1], tpn[2])
                 tpnInPeriod = tmpPerTP
@@ -2059,6 +2076,7 @@ class CacheServiceThread(Thread):
                 if prepTp:
                     #prepaisTmp = defaultdict(lambda: defaultdict(defaultdict(list)))
                     prepaysTmp = defaultdict(list)
+                    #keys: traffic_transmit_service_id, accounttarif.id, trafficclass
                     for prep in prepTp:
                         #prepaisTmp[prep[4]][prep[2]][prep[3]].append([prep[0], prep[1], prep[5], prep[6]])
                         prepaysTmp[(prep[4],prep[2],prep[3])].append([prep[0], prep[1], prep[5], prep[6]])
@@ -2076,6 +2094,7 @@ class CacheServiceThread(Thread):
                 cur.close()
                 #trafnodesTmp = defaultdict(lambda: defaultdict(list))
                 trafnodesTmp = defaultdict(list)
+                #keys: traffictransmitservice, trafficclass
                 for trnode in trtrnodsTp:
                     for classnd in trnode[7]:
                         #trafnodesTmp[trnode[9]][classnd].append(trnode)
@@ -2124,6 +2143,7 @@ acct structure
 [28] - ba.status, 
 '''
 class AccountServiceThread(Thread):
+    '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
         Thread.__init__(self)
     def run(self):
@@ -2146,14 +2166,15 @@ class AccountServiceThread(Thread):
                     FROM billservice_account as ba
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
-
+                #list cache
                 accts = cur.fetchall()
                 cur.close()
+                #index on account_id, directly links to tuples
                 tmpacIdx = {}
+                #index on tariff_id
                 tmptfIdx = defaultdict(list)
                 i = 0
                 for acct in accts:
-                    #tmpacIdx[acct[0]] = i
                     tmpacIdx[acct[0]]  = acct
                     if acct[4]:
                         tmptfIdx[acct[4]].append(acct)
@@ -2172,13 +2193,16 @@ class AccountServiceThread(Thread):
                 ttssTp = cur.fetchall()
                 cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
                 spsTp = cur.fetchall()
+                #traffic_transmit_service cache, indexed by id
                 tmpttsC = {}
+                #settlement period cache, indexed by id
                 tmpsC = {}
                 for tts in ttssTp:
                     tmpttsC[tts[0]] = tts
                 for sps in spsTp:
                     tmpsC[sps[0]] = sps
-                    
+                
+                #renew global cache links
                 curAT_lock.acquire()
                 curATCache  = accts
                 curAT_acIdx = tmpacIdx
