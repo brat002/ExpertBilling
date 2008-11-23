@@ -3668,7 +3668,10 @@ class AccountWindow(QtGui.QMainWindow):
             #passport
             self.lineEdit_passport_n.setText(u"%s" % self.model.passport)
             self.lineEdit_passport_given.setText(u"%s" % self.model.passport_given)
-            self.dateEdit_passport_date.setDate(QtCore.QDate(self.model.passport_date.year,self.model.passport_date.month, self.model.passport_date.day))
+            try:
+                self.dateEdit_passport_date.setDate(QtCore.QDate(self.model.passport_date.year,self.model.passport_date.month, self.model.passport_date.day))
+            except:
+                print "passport date error"
             
             self.lineEdit_ipn_ip_mask.setText(unicode(self.model.netmask))
             self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
