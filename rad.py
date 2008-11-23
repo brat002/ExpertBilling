@@ -134,7 +134,7 @@ def get_accesstype(packetobject):
         elif packetobject['NAS-Port-Type'][0]=='Ethernet' and not packetobject.has_key('Service-Type'):
             return 'DHCP'
     except:
-        pass
+        print show_packet(packetobject)
     return
     
 class HandleBase(object):
