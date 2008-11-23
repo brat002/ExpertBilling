@@ -126,12 +126,15 @@ def get_accesstype(packetobject):
     """
     Returns access type name by which a user connects to the NAS
     """
-    if packetobject['NAS-Port-Type'][0]=='Virtual':
-        return 'PPTP'
-    elif packetobject['NAS-Port-Type'][0]=='Ethernet' and packetobject.has_key('Service-Type'):
-        return 'PPPOE'
-    elif packetobject['NAS-Port-Type'][0]=='Ethernet' and not packetobject.has_key('Service-Type'):
-        return 'DHCP'
+    try:
+        if packetobject['NAS-Port-Type'][0]=='Virtual':
+            return 'PPTP'
+        elif packetobject['NAS-Port-Type'][0]=='Ethernet' and packetobject.has_key('Service-Type'):
+            return 'PPPOE'
+        elif packetobject['NAS-Port-Type'][0]=='Ethernet' and not packetobject.has_key('Service-Type'):
+            return 'DHCP'
+    except:
+        pass
     return
     
 class HandleBase(object):
@@ -537,57 +540,60 @@ class AsyncAuth(AsyncUDPServer):
         
 
     def handle_readfrom(self,data, address):
-        global numauth
-        if numauth>=180:
-            log("PREVENTING DoS")
-            return
-        t = clock()
-        returndata=''
-        #data=self.request[0] # or recv(bufsize, flags)
-        assert len(data)<=4096
-        addrport=address
-        #print "BEFORE AUTH:%.20f" % (clock()-t)
-        packetobject=packet.Packet(dict=dict,packet=data)
-        access_type = get_accesstype(packetobject)
-        numauth+=1
-        if access_type in ['PPTP', 'PPPOE']:
-            log("Auth Type %s" % access_type)
-
-            coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
-            secret, packetfromcore=coreconnect.handle()
-            if packetfromcore is None: numauth-=1; log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
-
-            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-            log("Password check: %s" % authobject.AccessAccept)
-            returndata=authobject.ReturnPacket()
-            del coreconnect
-            del packetfromcore
-            del authobject
-        elif access_type in ['DHCP'] :
-            #-----
-            coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
-            secret, packetfromcore=coreconnect.handle()
-            if packetfromcore is None: numauth-=1; return
-            authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
-            returndata=authobject.ReturnPacket()
-            del coreconnect
-            del packetfromcore
-            del authobject
-        else:
-            #-----
-            returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
-            if returnpacket is None:numauth-=1; return
-            returndata=authNA(returnpacket)
-             
-        numauth-=1 
-        log("AUTH time:%.8f" % (clock()-t))
-        if returndata!="":
-            self.sendto(returndata,address)
-            del data
-            del addrport
-            del packetobject
-            del access_type
-            del returndata
+        try:
+            global numauth
+            if numauth>=180:
+                log("PREVENTING DoS")
+                return
+            t = clock()
+            returndata=''
+            #data=self.request[0] # or recv(bufsize, flags)
+            assert len(data)<=4096
+            addrport=address
+            #print "BEFORE AUTH:%.20f" % (clock()-t)
+            packetobject=packet.Packet(dict=dict,packet=data)
+            access_type = get_accesstype(packetobject)
+            numauth+=1
+            if access_type in ['PPTP', 'PPPOE']:
+                log("Auth Type %s" % access_type)
+    
+                coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
+                secret, packetfromcore=coreconnect.handle()
+                if packetfromcore is None: numauth-=1; log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
+    
+                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
+                log("Password check: %s" % authobject.AccessAccept)
+                returndata=authobject.ReturnPacket()
+                del coreconnect
+                del packetfromcore
+                del authobject
+            elif access_type in ['DHCP'] :
+                #-----
+                coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
+                secret, packetfromcore=coreconnect.handle()
+                if packetfromcore is None: numauth-=1; return
+                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
+                returndata=authobject.ReturnPacket()
+                del coreconnect
+                del packetfromcore
+                del authobject
+            else:
+                #-----
+                returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
+                if returnpacket is None:numauth-=1; return
+                returndata=authNA(returnpacket)
+                 
+            numauth-=1 
+            log("AUTH time:%.8f" % (clock()-t))
+            if returndata!="":
+                self.sendto(returndata,address)
+                del data
+                del addrport
+                del packetobject
+                del access_type
+                del returndata
+        except:
+            print "bad packet"
 
 class AsyncAcc(AsyncUDPServer):
     def __init__(self, host, port, dbconn):
@@ -596,26 +602,30 @@ class AsyncAcc(AsyncUDPServer):
         self.dbconn = dbconn
 
     def handle_readfrom(self,data, address):
-        global numacct
-        if numacct>=100:
-            log("PREVENTING ACCT DoS")
-            return 
-        numacct+=1
-        t = clock()
-        assert len(data)<=4096
-        addrport=address
-        packetobject=packet.AcctPacket(dict=dict,packet=data)
-
-        coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=self.dbconn.cursor())
-        packetfromcore = coreconnect.handle()
-        if packetfromcore is not None: 
-            returndat=packetfromcore.ReplyPacket()
-            self.socket.sendto(returndat,addrport)
-            del returndat
-        log("ACC:%.20f" % (clock()-t))
-        numacct-=1
-        del packetfromcore
-        del coreconnect
+        try:
+            global numacct
+            if numacct>=100:
+                log("PREVENTING ACCT DoS")
+                return 
+            numacct+=1
+            t = clock()
+            assert len(data)<=4096
+            addrport=address
+            packetobject=packet.AcctPacket(dict=dict,packet=data)
+    
+            coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=self.dbconn.cursor())
+            packetfromcore = coreconnect.handle()
+            if packetfromcore is not None: 
+                returndat=packetfromcore.ReplyPacket()
+                self.socket.sendto(returndat,addrport)
+                del returndat
+            log("ACC:%.20f" % (clock()-t))
+            numacct-=1
+            del packetfromcore
+            del coreconnect
+        except:
+            print "bad acct packet"
+                
 
 class Starter(Thread):
         def __init__ (self, address, port, handler):
