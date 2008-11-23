@@ -2913,8 +2913,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 def main():
-    if "-D" not in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
+
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
     if config.get("core_nf", "usock") == '0':
         coreHost = config.get("core_nf_inet", "host")
@@ -2974,7 +2973,8 @@ if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha'
     sys.exit(1)
     
 if __name__ == "__main__":
-
+    if "-D" not in sys.argv:
+        daemonize("/dev/null", "log.txt", "log.txt")
     config.read("/opt/ebs/data/ebs_config.ini")
 
     pool = PooledDB(
