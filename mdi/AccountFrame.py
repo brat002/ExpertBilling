@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
@@ -3858,7 +3858,7 @@ class AccountWindow(QtGui.QMainWindow):
                 return
     
             if self.lineEdit_ipn_mac_address.text().isEmpty()==False:
-                if self.macValidator.validate(self.ipn_mac_address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable:
+                if self.macValidator.validate(self.lineEdit_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
                     cnt = self.connection.get("SELECT count(*) as cnt FROM billservice_account WHERE ipn_mac_address='%s' and id<>%s" % (unicode(self.lineEdit_ipn_mac_address.text()).upper(), model.id)).cnt
                     if cnt>0 :
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
