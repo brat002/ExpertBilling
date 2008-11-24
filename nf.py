@@ -410,10 +410,11 @@ class NfUDPSenderThread(Thread):
                 #print "empty dbqueue"
                 time.sleep(1)
                 continue
-            #send data
-            nfsock.sendto(flst,addrport)
-            #print addrport
+            
             try:
+                #send data
+                nfsock.sendto(flst,addrport)
+                #print addrport
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
                 print dtrc, addr
