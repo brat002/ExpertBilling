@@ -441,6 +441,7 @@ class ClassChild(QtGui.QMainWindow):
         hght = self.tableWidget.horizontalHeader().maximumHeight()
         sz = QtCore.QSize()
         sz.setHeight(hght)
+
         tree_header.setSizeHint(0,sz)
         #tree_header.setSizeHint(1,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", "Классы", None, QtGui.QApplication.UnicodeUTF8))

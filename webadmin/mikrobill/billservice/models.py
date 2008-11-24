@@ -839,7 +839,7 @@ class DealerPay(models.Model):
     salecard = models.ForeignKey(SaleCard, blank=True, null=True)
     created = models.DateTimeField()
 
-"""
+
 class DocumentType(models.Model):
     name = models.CharField(max_length=255)
     
@@ -851,7 +851,6 @@ class Template(models.Model):
 class Document(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
     type = models.ForeignKey(DocumentType)
-    
     body = models.TextField()
-"""
+
  
