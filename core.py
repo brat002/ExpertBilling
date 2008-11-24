@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 
 from daemonize import daemonize
 from encodings import idna, ascii
@@ -458,8 +458,8 @@ class periodical_service_bill(Thread):
                                      WHERE b.tarif_id=%s;""" , (tariff_id,))
                     self.connection.commit()
                     rows_ps=self.cur.fetchall()
-                    self.cur.close()
-                    self.cur = self.connection.cursor()
+                    #self.cur.close()
+                    3self.cur = self.connection.cursor()
                     # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
