@@ -459,7 +459,7 @@ class periodical_service_bill(Thread):
                     self.connection.commit()
                     rows_ps=self.cur.fetchall()
                     #self.cur.close()
-                    3self.cur = self.connection.cursor()
+                    #self.cur = self.connection.cursor()
                     # По каждой периодической услуге из тарифного плана делаем списания для каждого аккаунта
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp=row_ps
@@ -619,8 +619,8 @@ class periodical_service_bill(Thread):
                                                                      created = now)
                                         ps_history(cursor=self.cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                         self.connection.commit()
-                        self.connection.commit()
-                        self.cur.close()
+                self.connection.commit()
+                self.cur.close()
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + str(ex)
