@@ -396,6 +396,7 @@ class NfUDPSenderThread(Thread):
     def run(self):
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        nfsock.settimeout(0.01)
         errflag = 0
         flnumpack = 0
         dfile = None
