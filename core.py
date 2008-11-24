@@ -2174,8 +2174,10 @@ class AccountServiceThread(Thread):
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
                 #list cache
-                connection.commit()
+                
                 accts = cur.fetchall()
+                connection.commit()
+                cur.close()
                 #index on account_id, directly links to tuples
                 tmpacIdx = {}
                 #index on tariff_id
@@ -2190,11 +2192,13 @@ class AccountServiceThread(Thread):
                 
                 cur = connection.cursor()
                 cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
-                connection.commit()
+                
                 ttssTp = cur.fetchall()
-                cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
                 connection.commit()
+                cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
+                
                 spsTp = cur.fetchall()
+                connection.commit()
                 cur.close()
                 #traffic_transmit_service cache, indexed by id
                 tmpttsC = {}
@@ -2219,7 +2223,7 @@ class AccountServiceThread(Thread):
                     print self.getName() + ": database connection is down: " + repr(ex)
                 else:
                     print self.getName() + ": exception: " + repr(ex)
-            cur.close()
+            
             gc.collect()
             time.sleep(180)
             
@@ -2260,7 +2264,7 @@ class NfAsyncUDPServer(asyncore.dispatcher):
             data, addr = self.socket.recvfrom(8192)
             self.socket.sendto(str(len(data)), addr)
             nfIncomingQueue.append(data)
-            print len(nfIncomingQueue)
+            #print len(nfIncomingQueue)
         except:            
             traceback.print_exc()
             return
