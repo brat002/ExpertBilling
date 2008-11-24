@@ -7,7 +7,7 @@ selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
     'nfs_port_speed': "SELECT date_start, octets, direction, src_port, dst_port FROM billservice_netflowstream WHERE ((src_port IN (%s)) OR (dst_port IN (%s))) AND (date_start BETWEEN '%s' AND '%s') ORDER BY date_start;", \
     'userstrafpie'  : "SELECT bac.username, SUM(octets) FROM billservice_netflowstream AS bnf, billservice_account AS bac WHERE (bnf.account_id = bac.id) AND (bnf.date_start BETWEEN '%s' AND '%s') %s GROUP BY bnf.account_id, bac.username HAVING bnf.account_id IN (%s);", \
-    'nfs_mcl_speed' : "SELECT date_start, octets, direction, traffic_class_id FROM billservice_netflowstream WHERE (traffic_class_id IN (%s)) AND (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
+    'nfs_mcl_speed' : "SELECT date_start, octets, direction, traffic_class_id FROM billservice_netflowstream WHERE (traffic_class_id && ARRAY[%s]) AND (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
     'sessions'      : "SELECT sessionid, date_start, date_end, username, framed_protocol FROM radius_activesession AS ras JOIN billservice_account AS bas ON (ras.account_id = bas.id) WHERE ((account_id IN (%s)) AND ((date_start BETWEEN '%s' AND '%s') OR (date_end BETWEEN '%s' AND '%s'))) ORDER BY date_start;", \
     'trans'         : "SELECT created, summ FROM billservice_transaction WHERE ((summ %s) AND (created BETWEEN '%s' AND '%s')) ORDER BY created;",\
     'nas'           : "SELECT name, id FROM nas_nas WHERE (id %s) ORDER BY name;", \
@@ -417,7 +417,7 @@ class bpbl(object):
         return (times, y_ps, bstr, sec)"""
     
     @staticmethod
-    def get_multi_speed(selstr, objs, counts, sec=0):
+    def get_multi_speed(selstr, objs, counts, sec=0, arr=0):
         '''Get speed with traffic classes combined for a certain ports
 	@selstr - query string
 	@sec - seconds for aggregation
@@ -456,12 +456,20 @@ class bpbl(object):
             try:
                 while data[tnum][0] < tm:
                     for cts in range(counts):
-                        if data[tnum][3+cts] in objs:
-                            try:
-                                y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
-                            except:
-                                y_ps[str(data[tnum][3+cts])] = copy.deepcopy(zeros)
-                                y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
+                        if not arr:
+                            if data[tnum][3+cts] in objs:
+                                try:
+                                    y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
+                                except:
+                                    y_ps[str(data[tnum][3+cts])] = copy.deepcopy(zeros)
+                                    y_ps[str(data[tnum][3+cts])][0][data[tnum][2].lower()][-1] += data[tnum][1]
+                        else:
+                            for ctval in data[tnum][3+cts]:
+                                try:
+                                    y_ps[str(ctval)][0][data[tnum][2].lower()][-1] += data[tnum][1]
+                                except:
+                                    y_ps[str(ctval)] = copy.deepcopy(zeros)
+                                    y_ps[str(ctval)][0][data[tnum][2].lower()][-1] += data[tnum][1]
 
                     tnum +=1
 

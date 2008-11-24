@@ -709,7 +709,7 @@ class getData(object):
             return data
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -742,7 +742,7 @@ class getData(object):
             return data
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -771,7 +771,7 @@ class getData(object):
     def getdata_nfs_total_traf(self,  queryname, *args, **kwargs):
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -790,7 +790,7 @@ class getData(object):
     def getdata_nfs_total_speed(self, queryname, *args, **kwargs):
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -809,7 +809,7 @@ class getData(object):
     def getdata_nfs_total_traf_bydir(self,  queryname, *args, **kwargs):
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -820,7 +820,7 @@ class getData(object):
     def getdata_nfs_total_speed_bydir(self, queryname, *args, **kwargs):
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -915,7 +915,7 @@ class getData(object):
     def getdata_nfs_total_nass_traf(self, queryname, *args, **kwargs):
         if queryname == 'get_nas':
             try:
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['servers']])
+                selstr = dssdict[queryname] % ', '.join([str(cint) for cint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
@@ -927,7 +927,7 @@ class getData(object):
         if queryname == 'get_classes':
             try:
                 print "^^^^^^^^^^^^^^^^^^^^^^^^"
-                selstr = dssdict[queryname] % ', '.join([str(int) for int in kwargs['classes']])
+                selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
                 print "^^^^^^^^^^^^^^^^^^^^^^^^"
                 print selstr
                 data   = self.connection.get_list(selstr)

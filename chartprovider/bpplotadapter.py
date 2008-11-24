@@ -26,6 +26,9 @@ class bpplotAdapter(object):
             raise perr 
             #print perr
             #return None
-        
-        return curs.fetchall()
+        retval = curs.fetchall()
+        curs.connection.commit()
+        curs.close()
+        bpplotAdapter.rCursor = bpplotAdapter.rCursor.connection.cursor()
+        return retval
     
