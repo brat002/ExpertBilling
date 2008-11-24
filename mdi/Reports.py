@@ -759,7 +759,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         if color:
             headerItem.setBackgroundColor(QtGui.QColor(color))
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/account.png"))
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
  
@@ -798,7 +798,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             headerItem.setBackgroundColor(QtGui.QColor(color))
 
         if user==True:
-            headerItem.setIcon(QtGui.QIcon("images/account.png"))
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
 
         headerItem.setText(unicode(value))
         self.tableWidget_summary.setItem(x,y,headerItem)
@@ -817,8 +817,8 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             
         sql="""
         SELECT class.name, class.color, 
-        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
-        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id=class.id %s and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id @> ARRAY[class.id] %s and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id @> ARRAY[class.id] %s and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
         FROM nas_trafficnode as node
         JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
         """ % (sql_acc, self.child.start_date, self.child.end_date, sql_acc, self.child.start_date, self.child.end_date)
@@ -854,8 +854,8 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
 
             sql="""
             SELECT account.username, class.name, class.color, 
-            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
-            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id=class.id and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id @> ARRAY[class.id] and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
+            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id @> ARRAY[class.id] and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
             FROM nas_trafficnode as node
             JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
             JOIN billservice_account as account ON account.id IN %s
@@ -904,14 +904,14 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             LEFT JOIN billservice_ports as ports ON ports.protocol = netflowstream.protocol and netflowstream.src_port = ports.port
             LEFT JOIN billservice_ports as ports1 ON ports1.protocol = netflowstream.protocol and netflowstream.dst_port = ports1.port
             JOIN billservice_account as account ON account.id = netflowstream.account_id
-            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id             
+            JOIN nas_trafficclass as class ON ARRAY[class.id] <@ netflowstream.traffic_class_id
             WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date) 
-            print 1
+
         elif self.child.with_grouping_checkBox.checkState()==2:
             sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
             FROM billservice_netflowstream as netflowstream
             JOIN billservice_account as account ON account.id = netflowstream.account_id
-            JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id            
+            JOIN nas_trafficclass as class ON ARRAY[class.id] <@ netflowstream.traffic_class_id
             WHERE date_start between '%s' and '%s'
             
             """ % (self.child.start_date, self.child.end_date)
@@ -927,7 +927,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             sql+=""" and """
         
         if len(self.child.classes)>0:
-            sql+=""" netflowstream.traffic_class_id in (%s)"""  % ','.join(map(str, self.child.classes))
+            sql+=""" netflowstream.traffic_class_id && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
             
         if self.child.with_grouping_checkBox.checkState()==2:
             sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
