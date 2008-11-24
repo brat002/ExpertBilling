@@ -416,9 +416,9 @@ class NfUDPSenderThread(Thread):
             try:
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
-                #print addr
+                print dtrc, addr
                 #if wrong length (probably zero reply) - raise exception
-                if len(flst) != int(dtrc):
+                if (dtrc == None) or (len(flst) != int(dtrc)):
                     raise Exception("Unequal sizes!")
                 
                 #if the connection is OK but there were errors earlier
