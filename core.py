@@ -2173,7 +2173,6 @@ class AccountServiceThread(Thread):
                 #list cache
                 connection.commit()
                 accts = cur.fetchall()
-                cur.close()
                 #index on account_id, directly links to tuples
                 tmpacIdx = {}
                 #index on tariff_id
@@ -2223,7 +2222,7 @@ class AccountServiceThread(Thread):
                     print self.getName() + ": database connection is down: " + repr(ex)
                 else:
                     print self.getName() + ": exception: " + repr(ex)
-            
+            cur.close()
             gc.collect()
             time.sleep(180)
             
@@ -2930,7 +2929,7 @@ def main():
     threads.append(CacheServiceThread())
     threads.append(RPCServer())
     threads.append(check_vpn_access())
-    #threads.append(periodical_service_bill())
+    threads.append(periodical_service_bill())
     threads.append(TimeAccessBill())
     #threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
