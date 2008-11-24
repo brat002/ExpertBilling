@@ -278,19 +278,18 @@ def delete_transaction(cursor, id):
                    SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))
 
 
-def ps_history(cursor, ps_id, transaction, created=None):
+def ps_history(cursor, ps_id, transaction, accounttarif, created=None):
     if not created:
         created=datetime.datetime.now()
     cursor.execute("""
-                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, datetime) VALUES (%s, %s, %s);
-                   """, (ps_id, transaction, created,))
+                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, accounttarif_id,  datetime) VALUES (%s, %s, %s, %s);
+                   """, (ps_id, transaction, accounttarif, created,))
 
-def get_last_checkout(cursor, ps_id, tarif, account):
+def get_last_checkout(cursor, ps_id, accounttarif):
     cursor.execute("""
-                   SELECT psh.datetime::timestamp without time zone FROM billservice_periodicalservicehistory as psh
-                    JOIN billservice_transaction as t ON t.id=psh.transaction_id
-                    WHERE psh.service_id='%s' AND t.tarif_id='%s' AND t.account_id='%s' ORDER BY datetime DESC LIMIT 1
-                    """ , (ps_id, tarif, account,))
+                   SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory
+                    WHERE service_id=%s AND accounttarif_id=%s ORDER BY datetime DESC LIMIT 1
+                    """ , (ps_id, accounttarif,))
     try:
         return cursor.fetchone()[0]
     except:
