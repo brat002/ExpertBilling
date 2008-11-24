@@ -453,6 +453,7 @@ class periodical_service_bill(Thread):
                                      FROM billservice_periodicalservice as b 
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                                      WHERE b.tarif_id=%s;""" , (tariff_id,))
+                    self.connection.commit()
                     rows_ps=self.cur.fetchall()
                     self.cur.close()
                     self.cur = self.connection.cursor()
@@ -511,7 +512,7 @@ class periodical_service_bill(Thread):
                                         # Делаем проводку со статусом Approved
                                         transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
                                         ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
-    
+                                        self.connection.commit()
                                 if ps_cash_method=="AT_START":
                                     """
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
@@ -559,7 +560,7 @@ class periodical_service_bill(Thread):
                                                                      description=u"Проводка по периодической услуге со нятием суммы в начале периода",
                                                                      created = now)
                                         ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-                                        #self.connection.commit()
+                                        self.connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
                                    Смотрим завершился ли хотя бы один расчётный период.
@@ -614,7 +615,7 @@ class periodical_service_bill(Thread):
                                                                      description=descr,
                                                                      created = now)
                                         ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
-                                        #self.connection.commit()
+                                        self.connection.commit()
                         self.connection.commit()
                         self.cur.close()
             except Exception, ex:
@@ -947,7 +948,6 @@ class DepickerThread(Thread):
                 description=u"",
             )
             connection.commit()
-        connection.commit()
         cur.close()
         
 class NetFlowRoutine(Thread):
@@ -1073,6 +1073,7 @@ class NetFlowRoutine(Thread):
                         LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                         LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.id=%s;""", (stream_date, flow[19],))
                         acct = cur.fetchone()
+                        connection.commit()
                         cur.close()
                         
                     #if no tarif_id    
@@ -2057,6 +2058,7 @@ class CacheServiceThread(Thread):
                             JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
                             JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
                             JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""")
+                connection.commit()
                 tpns = cur.fetchall()
                 cur.close()
                 tmpPerTP = defaultdict(lambda: False)
@@ -2071,6 +2073,7 @@ class CacheServiceThread(Thread):
                              JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
                              JOIN billservice_prepaidtraffic_traffic_class AS prept_tc ON prept_tc.prepaidtraffic_id=prepaidtraffic.id
                              WHERE prepais.size>0""")
+                connection.commit()
                 prepTp = cur.fetchall()
                 cur.close()
                 if prepTp:
@@ -2090,6 +2093,7 @@ class CacheServiceThread(Thread):
                 JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
                 (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
                 (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));""")
+                connection.commit()
                 trtrnodsTp = cur.fetchall()
                 cur.close()
                 #trafnodesTmp = defaultdict(lambda: defaultdict(list))
@@ -2167,6 +2171,7 @@ class AccountServiceThread(Thread):
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
                 #list cache
+                connection.commit()
                 accts = cur.fetchall()
                 cur.close()
                 #index on account_id, directly links to tuples
@@ -2190,8 +2195,10 @@ class AccountServiceThread(Thread):
                 
                 cur = connection.cursor()
                 cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
+                connection.commit()
                 ttssTp = cur.fetchall()
                 cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
+                connection.commit()
                 spsTp = cur.fetchall()
                 #traffic_transmit_service cache, indexed by id
                 tmpttsC = {}

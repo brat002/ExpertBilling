@@ -564,6 +564,7 @@ class ServiceThread(Thread):
             #print "Servicethread"
             try:
                 self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
+                self.connection.commit()
                 nasvals = self.cur.fetchall()
                 self.cur.close()
                 self.cur = self.connection.cursor()
@@ -586,6 +587,7 @@ class ServiceThread(Thread):
                 
             try:
                 self.cur.execute("SELECT id,ipn_ip_address FROM billservice_account WHERE ipn_ip_address <> inet '0.0.0.0';")
+                self.connection.commit()
                 ipns = self.cur.fetchall()
                 self.cur.close()
                 self.cur = self.connection.cursor()
@@ -602,6 +604,7 @@ class ServiceThread(Thread):
                 
             try:
                 self.cur.execute("SELECT id,vpn_ip_address FROM billservice_account WHERE vpn_ip_address <> inet '0.0.0.0';")
+                self.connection.commit()
                 vpns = self.cur.fetchall()
                 self.cur.close()
                 self.cur = self.connection.cursor()
@@ -619,6 +622,7 @@ class ServiceThread(Thread):
             #forms a class-nodes structure
             try:
                 self.cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
+                self.connection.commit()
                 nnodes = self.cur.fetchall()
                 self.cur.close()
                 self.cur = self.connection.cursor()
