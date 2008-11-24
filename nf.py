@@ -329,11 +329,11 @@ class FlowDequeThread(Thread):
                 time.sleep(5)
                 continue
             
-            print "len keylist ", len(keylist)
-            print "len queue ", len(flowQueue)
-            print "len dbQueue: ", len(databaseQueue)
-            print "len fnameQueue: ", len(fnameQueue)
-            print "len nfqueue: ", len(nfQueue)
+            #print "len keylist ", len(keylist)
+            #print "len queue ", len(flowQueue)
+            #print "len dbQueue: ", len(databaseQueue)
+            #print "len fnameQueue: ", len(fnameQueue)
+            #print "len nfqueue: ", len(nfQueue)
             
             #if aggregation time was still not reached -> sleep
             wtime = time.time() - aggrTime - stime
@@ -418,7 +418,7 @@ class NfUDPSenderThread(Thread):
                 #print addrport
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
-                print dtrc, addr
+                #print dtrc, addr
                 #if wrong length (probably zero reply) - raise exception
                 if (dtrc == None) or (len(flst) != int(dtrc)):
                     raise Exception("Unequal sizes!")
