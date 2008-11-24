@@ -218,15 +218,19 @@ class cdDrawer(object):
             return res
         else:
             raise Exception("Plotting method #" + args[0] + "# does not exist!" )
-
-
+        
+    def ret_nas_str(self, kwargs):
+        return (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' '))
+    def ret_nasclass_str(self, kwargs):
+        return (((kwargs.has_key('classes')) and (" AND (traffic_class_id && ARRAY[%s])" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))
+        
     def cddraw_nfs_user_traf(self, *args, **kwargs):
         try:
 
             #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % kwargs['users'][0], args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
             print selstr
         except Exception, ex:
             raise ex
@@ -294,8 +298,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % kwargs['users'][0], args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -357,8 +361,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', direction', '',  args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -414,8 +418,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', direction', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -477,8 +481,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(vlint) for vlint in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             print "Query exception!"
             print ex
@@ -559,8 +563,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(vlint) for vlint in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -637,9 +641,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % ('', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))\
-                                      )
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_total_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -690,9 +693,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % ('', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))\
-                                      )
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_total_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -897,7 +899,7 @@ class cdDrawer(object):
         except Exception, ex:
             raise ex
         print selstr
-        data = bpbl.get_multi_speed(selstr, kwargs['classes'], 1, kwargs.has_key('sec') and kwargs['sec'])
+        data = bpbl.get_multi_speed(selstr, kwargs['classes'], 1, kwargs.has_key('sec') and kwargs['sec'], arr=1)
         if not data: print "Dataset is empty"; data = ([], {'0':[{'input': [], 'output': [], 'transit': []}]}, '', 1)
         (times, y_ps, bstr, sec) = data
         kwargs['return']['sec'] = sec
@@ -1107,8 +1109,8 @@ class cdDrawer(object):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['nfs'] % (', traffic_class_id', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')) + \
-                                          (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')))
+                                          self.ret_nas_str(kwargs) + \
+                                          self.ret_nasclass_str(kwargs))
         except Exception, ex:
             raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
@@ -1176,7 +1178,7 @@ class cdDrawer(object):
 	@args[0:2] - with values bounded by dates @date_start, @date_end for users @(users)
 	###@args[3:4] return data values###'''
         try:
-            selstr = selstrdict['userstrafpie'] % (args[0].isoformat(' '), args[1].isoformat(' '), (((kwargs.has_key('classes')) and (" AND (traffic_class_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' ')), ', '.join([str(vlint) for vlint in kwargs['users']]))	
+            selstr = selstrdict['userstrafpie'] % (args[0].isoformat(' '), args[1].isoformat(' '), self.ret_nasclass_str(kwargs), ', '.join([str(vlint) for vlint in kwargs['users']]))	
         except Exception, ex:
             raise ex
         print 'selstr', selstr
