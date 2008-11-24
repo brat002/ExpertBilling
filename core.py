@@ -2184,13 +2184,6 @@ class AccountServiceThread(Thread):
                         tmptfIdx[acct[4]].append(acct)
                         #tmptfIdx[acct[4]].append(i)
                     #i += 1
-                '''curAT_lock.acquire()
-                curATCache  = accts
-                curAT_acIdx = tmpacIdx
-                curAT_tfIdx = tmptfIdx
-                #maybe use binary date?
-                curAT_date  = tmpDate
-                curAT_lock.release()'''
                 
                 cur = connection.cursor()
                 cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
@@ -2199,6 +2192,7 @@ class AccountServiceThread(Thread):
                 cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
                 connection.commit()
                 spsTp = cur.fetchall()
+                cur.close()
                 #traffic_transmit_service cache, indexed by id
                 tmpttsC = {}
                 #settlement period cache, indexed by id
@@ -2997,22 +2991,35 @@ if __name__ == "__main__":
        )
 
     #--------------------------------------------------------
+    #quequ for Incoming packet lists
     nfIncomingQueue = deque()
+    #lock for nfIncomingQueue operations
     nfQueueLock = Lock()
-    curATCache  = {}
+    #cache with records from account-tarif table sequence with LAST tarif
+    curATCache  = []
+    #records from account-tarif sequence indexed by account.id
     curAT_acIdx = {}
+    #records from account-tarif sequence indexed by tarif.id
     curAT_tfIdx = {}
+    #records from account-tarif sequence indexed by accounttarif.id
     curAT_acctIdx = {}
+    #last cache renewal date
     curAT_date  = None
+    #lock for cache operations
     curAT_lock  = Lock()
+    #cache to chech whether traffic transmit service fits in any of time period nodes
     tpnInPeriod = None
-    #curTCCache = {}
+    #traffic transmit service information
     curTTSCache = {}
+    #settlement period information
     curSPCache = {}
-    #curTCTTSSP_date = None
-    curTCTTSSP_lock = Lock()
+    
+    #curTCTTSSP_lock = Lock()
+    #cache with prepays information
     prepaysCache = {}
+    #lock for operations with prepays cache
     prepays_lock = Lock()
+    #cache with traffictransmitnodes information
     TRTRNodesCache = {}
     
     
