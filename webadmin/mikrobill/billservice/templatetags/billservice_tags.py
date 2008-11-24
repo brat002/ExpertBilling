@@ -7,7 +7,10 @@ register = template.Library()
 @register.inclusion_tag('accounts/tags/writen_off_time.html')
 def writen_off_time(session, user):
     type = TransactionType.objects.get(internal_name='TIME_ACCESS')
-    transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
+    if session.date_end:
+        transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
+    else:
+        transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, type=type.internal_name)
     sum=0
     for transaction in transactions:
         sum += transaction.summ
@@ -16,7 +19,10 @@ def writen_off_time(session, user):
 @register.inclusion_tag('accounts/tags/writen_off_trafic.html')
 def writen_off_trafic(session, user):
     type = TransactionType.objects.get(internal_name='NETFLOW_BILL')
-    transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
+    if session.date_end:
+        transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
+    else:
+        transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, type=type.internal_name)
     sum=0
     for transaction in transactions:
         sum += transaction.summ
