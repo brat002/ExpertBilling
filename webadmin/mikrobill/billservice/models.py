@@ -177,6 +177,7 @@ class PeriodicalService(models.Model):
 class PeriodicalServiceHistory(models.Model):
     service = models.ForeignKey(to=PeriodicalService)
     transaction = models.ForeignKey(to='Transaction')
+    accounttarif = models.ForeignKey(to='AccountTarif')
     datetime  = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):

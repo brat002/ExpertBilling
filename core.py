@@ -436,9 +436,12 @@ class periodical_service_bill(Thread):
                                      JOIN billservice_accounttarif as a ON 
                                      a.account_id=b.id
                                      WHERE a.tarif_id=%d and b.suspended=False AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id'''
-                    self.cur.execute("""SELECT a.account_id,  max(a.datetime), max((SELECT max((b.ballance+b.credit)) AS ballance FROM billservice_account as b WHERE a.account_id=b.id AND b.suspended=False)) as ballance
-                                     FROM  billservice_accounttarif as a 
-                                     WHERE a.tarif_id=%s  AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id""",  (tariff_id,))
+                    self.cur.execute("""SELECT a.id, a.account_id,  max(a.datetime), (SELECT (b.ballance+b.credit) AS ballance 
+                                        FROM billservice_account as b 
+                                        WHERE a.account_id=b.id AND b.suspended=False) as ballance
+                                        FROM  billservice_accounttarif as a 
+                                        WHERE a.tarif_id=%s  AND a.datetime < now() 
+                                        GROUP BY a.id, a.account_id ORDER BY a.account_id""",  (tariff_id,))
                     accounts=self.cur.fetchall()
                     # Получаем параметры каждой перодической услуги в выбранном ТП
                     '''self.cur.execute("""
@@ -463,10 +466,10 @@ class periodical_service_bill(Thread):
                         #print "new ps"
                         for account in accounts:
                             #self.connection.commit()
-                            account_id = account[0]
-                            #print "account_id for ps", ps_id, account_id
-                            account_datetime = account[1]
-                            account_ballance = account[2]
+                            accounttarif_id = account[0]
+                            account_id = account[1]
+                            account_datetime = account[2]
+                            account_ballance = account[3]
                             # Если балланс>0 или разрешено снятие денег при отрицательном баллансе
                             if account_ballance>0 or null_ballance_checkout==True:
                                 #Получаем данные из расчётного периода
@@ -483,7 +486,7 @@ class periodical_service_bill(Thread):
                                     # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
-                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, accounttarif = accounttarif_id)
     
                                     if last_checkout==None:
                                         last_checkout=account_datetime
@@ -511,14 +514,14 @@ class periodical_service_bill(Thread):
                                             cash_summ=cash_summ*nums
                                         # Делаем проводку со статусом Approved
                                         transaction_id = transaction(cursor=self.cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
-                                        ps_history(cursor=self.cur, ps_id=ps_id, transaction=transaction_id, created=now)
+                                        ps_history(cursor=self.cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                         self.connection.commit()
                                 if ps_cash_method=="AT_START":
                                     """
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                     не платили-производим снятие.
                                     """
-                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, accounttarif = accounttarif_id)
                                     # Здесь нужно проверить сколько раз прошёл расчётный период
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -559,7 +562,7 @@ class periodical_service_bill(Thread):
                                                                      summ = summ,
                                                                      description=u"Проводка по периодической услуге со нятием суммы в начале периода",
                                                                      created = now)
-                                        ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
+                                        ps_history(cursor=self.cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                         self.connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
@@ -568,7 +571,7 @@ class periodical_service_bill(Thread):
     
                                    для остальных со статусом False
                                    """
-                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, tarif = tariff_id, account = account_id)
+                                    last_checkout=get_last_checkout(cursor=self.cur, ps_id = ps_id, accounttarif = accounttarif_id)
     
                                     if last_checkout is None:
                                         first_time=True
@@ -614,7 +617,7 @@ class periodical_service_bill(Thread):
                                                                      summ=summ,
                                                                      description=descr,
                                                                      created = now)
-                                        ps_history(self.cur, ps_id, transaction=transaction_id, created=now)
+                                        ps_history(cursor=self.cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                         self.connection.commit()
                         self.connection.commit()
                         self.cur.close()
@@ -2965,7 +2968,7 @@ if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha'
 if __name__ == "__main__":
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
-    config.read("/opt/ebs/data/ebs_config.ini")
+    config.read("ebs_config.ini")
     if config.get("core_nf", "usock") == '0':
         coreHost = config.get("core_nf_inet", "host")
         corePort = int(config.get("core_nf_inet", "port"))
