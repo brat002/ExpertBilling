@@ -26,6 +26,7 @@ from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
+from CustomForms import TemplatesWindow
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -107,6 +108,25 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
     
+
+    @connlogin
+    def templates(self):
+        self.workspace.windowList()
+        
+
+        child =  TemplatesWindow(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )
+
+        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()
+        
     @connlogin
     def dealers(self):
         self.workspace.windowList()
@@ -349,6 +369,10 @@ class MainWindow(QtGui.QMainWindow):
         self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.reloginAct, QtCore.SIGNAL("triggered()"), self.relogin)
 
+        self.templatesAct = QtGui.QAction(u"Шаблоны документов", self)
+        #self.reloginAct.setStatusTip(self.tr("Reconnect"))
+        self.connect(self.templatesAct, QtCore.SIGNAL("triggered()"), self.templates)
+
         self.reportActs = []
         i = 0
         
@@ -429,6 +453,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addAction(self.dealerAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.templatesAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.reloginAct)
         self.fileMenu.addSeparator()
