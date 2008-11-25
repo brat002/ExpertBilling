@@ -19,6 +19,7 @@ import threading
 from threading import Thread
 import marshal
 import gc
+import glob
 
 #from logger import redirect_std
 
@@ -135,7 +136,8 @@ def nfPacketHandle(data, addrport, flowCache):
     Approved packets are added to FlowCache.
     '''
     if len(data) < 16:
-        raise ValueError, "Short packet"
+        #raise ValueError, "Short packet"
+        return
 
     nas_id = nascache.get(addrport[0])
     if not nas_id:
@@ -337,6 +339,7 @@ class FlowDequeThread(Thread):
             
             #if aggregation time was still not reached -> sleep
             wtime = time.time() - aggrTime - stime
+            print wtime
             if wtime < 0:
                 time.sleep(abs(wtime))
             
@@ -396,7 +399,7 @@ class NfUDPSenderThread(Thread):
     def run(self):
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        nfsock.settimeout(0.01)
+        nfsock.settimeout(sockTimeout)
         errflag = 0
         flnumpack = 0
         dfile = None
@@ -418,7 +421,7 @@ class NfUDPSenderThread(Thread):
                 #print addrport
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
-                #print dtrc, addr
+                print dtrc, addr
                 #if wrong length (probably zero reply) - raise exception
                 if (dtrc == None) or (len(flst) != int(dtrc)):
                     raise Exception("Unequal sizes!")
@@ -451,7 +454,7 @@ class NfUDPSenderThread(Thread):
                 try:   
                     #append data
                     dfile.write(flst)
-                    dfile.write('\n')
+                    dfile.write('!FLW')
                     #dfile.close()
                     flnumpack += 1
                     #if got enough packets - open a new file
@@ -479,6 +482,7 @@ class NfFileReadThread(Thread):
         fname = None
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        nfsock.settimeout(sockTimeout)
         dfile = None
         while True:
             #get a file name
@@ -490,17 +494,22 @@ class NfFileReadThread(Thread):
                 fnameLock.release()
                 return
             #open file and read data
+            print fname
             try:
                 dfile = open(fname, 'rb')
-                flows = dfile.readlines()
+                flows = dfile.read()
                 dfile.close()
+                fnewname  = fname + 'a'
+                os.rename(fname, fnewname)
+                fname = fnewname
+                flows  = flows.split('!FLW')[:-1]
                 fcnt = 0
                 #send data
                 try:
                     for flow in flows:
-                        nfsock.sendto(flow[:-1],addrport)                    
+                        nfsock.sendto(flow,addrport)                    
                         dtrc, addr = nfsock.recvfrom(128)
-                        if len(flow) - 1 != int(dtrc):
+                        if len(flow)!= int(dtrc):
                             raise Exception("Unequal sizes!")
                         fcnt += 1
                         time.sleep(0.01)
@@ -509,9 +518,10 @@ class NfFileReadThread(Thread):
                     print "NfFileReadThread flowsend exception: ", repr(ex)
                     flows = flows[fcnt:]
                     newfname = ''.join((self.hpath, str(time.clock()), '.dmp'))
-                    dfile = open(fname, 'ab')
+                    dfile = open(newfname, 'ab')
                     for flow in flows:
                         dfile.write(flow)
+                        dfile.write('!FLW')
                     dfile.close()
                     #use locks is deadlocking issues arise
                     fnameQueue.appendleft(newfname)
@@ -664,12 +674,34 @@ class ServiceThread(Thread):
                
             
         
+
+class RecoveryThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+    def run(self):
+        global recoverAtt
+        global dumpDir
+        global fnameQueue
+        if recoverAtt:
+            fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp*')))
+        else:
+            fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp')))
+        if fllist:
+            for fl in fllist:
+                fnameQueue.appendleft(fl)
+                
+            nfFileThread = NfFileReadThread()
+            nfFileThread.start()
+            
 def main ():        
     global packetCount
     global nfFlowCache
+    global recover
     packetCount = 0
     nfFlowCache = FlowCache()
-    
+    if recover:
+        recThr = RecoveryThread()
+        recThr.start()
     #-----
     svcThread = ServiceThread()
     svcThread.start()
@@ -724,6 +756,9 @@ if __name__=='__main__':
     else:
         raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
     
+    sockTimeout = float(config.get("core_nf", "sock_timeout"))
+    recover    = (config.get("core_nf", "recover") == '1')
+    recoverAtt = (config.get("core_nf", "recoverAttempted") == '1')
     #get a dump' directrory string and check whethet it's writable
     dumpDir = config.get("core_nf", "dump_dir")
     try:
