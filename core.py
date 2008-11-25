@@ -1067,6 +1067,7 @@ class NetFlowRoutine(Thread):
                     acct = cacheAT.get(flow[20])
                     #get collection date
                     stream_date = datetime.datetime.fromtimestamp(flow[21])
+                    print stream_date
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
                     if (not acct) or (not acct[3] <= stream_date):
