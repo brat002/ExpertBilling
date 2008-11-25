@@ -116,7 +116,11 @@ class ebsTableWindow(QtGui.QMainWindow):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()
-                
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()    
+                     
 class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
     sequenceNumber = 1
     def __init__(self, connection, initargs, tabargs):
@@ -259,7 +263,11 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()
-        
+ 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
+                   
                 
 class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -443,4 +451,9 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
+            
         

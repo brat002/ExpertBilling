@@ -2936,9 +2936,9 @@ def main():
     #threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
     threads.append(NetFlowRoutine())
-    #threads.append(limit_checker())
+    threads.append(limit_checker())
     threads.append(ipn_service())
-    #threads.append(settlement_period_service_dog())
+    threads.append(settlement_period_service_dog())
     
     i= range(len(threads))
     for th in threads:	
