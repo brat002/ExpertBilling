@@ -1537,7 +1537,7 @@ class limit_checker(Thread):
                     self.connection.commit()
                     self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf
-                         JOIN billservice_trafficlimit_traffic_class as tltc ON tltc.trafficclass_id=nf.traffic_class_id
+                         JOIN billservice_trafficlimit_traffic_class as tltc ON ARRAY[tltc.trafficclass_id] <@ nf.traffic_class_id
                          WHERE nf.account_id=%s and tltc.trafficlimit_id=%s and date_start>%s and date_start<%s and nf.direction in (%s)
     
                          """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,))
