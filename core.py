@@ -2673,6 +2673,28 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return retres
 
     @authentconn
+    def pay(self, account, sum, document, cur=None, connection=None):
+        
+        o = Object()
+        o.account_id = account
+        o.type_id = "MANUAL_TRANSACTION"
+        o.approved = True
+        o.description = ""
+        o.summ = sum
+        o.bill = document
+        o.created = datetime.datetime.now()
+        try:
+            sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
+            sql += o.save("billservice_transaction")
+            
+            cur.execute(sql)
+            connection.commit()
+            return True
+        except Exception, e:
+            print e
+            return False
+    
+    @authentconn
     def dbaction(self, fname, *args, **kwargs):
         return dbRoutine.execRoutine(fname, *args, **kwargs)
     
