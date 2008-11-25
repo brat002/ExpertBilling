@@ -794,7 +794,7 @@ def parse_custom_speed(speed_string):
     #all_groups = match_obj.groups()
     
     # Retrieve group(s) by index
-    group_1 = match_obj.group(1)
+    '''group_1 = match_obj.group(1)
     group_2 = match_obj.group(2)
     group_3 = match_obj.group(3)
     group_4 = match_obj.group(4)
@@ -804,7 +804,7 @@ def parse_custom_speed(speed_string):
     group_8 = match_obj.group(8)
     group_9 = match_obj.group(9)
     group_10 = match_obj.group(10)
-    group_11 = match_obj.group(11)
+    group_11 = match_obj.group(11)'''
     
     # Retrieve group(s) by name
     rxrate = match_obj.group('rxrate') or -1
