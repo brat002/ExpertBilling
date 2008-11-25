@@ -11,6 +11,7 @@ from db import Object as Object
 from helpers import dateDelim
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
+import datetime
 
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
@@ -307,22 +308,22 @@ class TransactionForm(QtGui.QDialog):
         
     def cheque_print(self):
         if self.account:
-            import datetime
+            template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
+            templ = Template(unicode(template.body), input_encoding='utf-8')
             account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % self.account.id)
-            #child = TransactionsReport(connection=self.connection, account = self.account)
-            templ = Template(filename="templates/cheque.htm", input_encoding='utf-8')
-            data=templ.render_unicode(account=account, sum=unicode(self.summ_edit.text()), document = unicode(self.payed_document_edit.text()), created=datetime.datetime.now().strftime(strftimeFormat))
 
-            file= open('templates/tmp/cheque.html', 'wb')
+            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            self.connection.commit()
+            sum = 10000
+
+            data=templ.render_unicode(account=account, tarif=tarif, sum=unicode(self.summ_edit.text()), document = unicode(self.payed_document_edit.text()), created=datetime.datetime.now().strftime(strftimeFormat))
+
+            file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))
             file.flush()
-            a=CardPreviewDialog(url="templates/tmp/cheque.html")
+            a=CardPreviewDialog(url="templates/tmp/temp.html")
             a.exec_()
-            
-            #print self.parentWidget().parent().workspace.addWindow(child)
-            #self.parent().workspace.addWindow(child)
-            #print "mainwindow", mainwindow
-            #child.show()
+
             
 class ConnectDialog(QtGui.QDialog):
     _connectsql = {}
@@ -1048,7 +1049,7 @@ class CustomWidget(QtGui.QTableWidgetItem):
 class TemplatesWindow(QtGui.QMainWindow):
     def __init__(self, connection):
         super(TemplatesWindow, self).__init__()
-        self.conenction = connection
+        self.connection = connection
         self.setObjectName("MainWindow")
         self.resize(891, 583)
         self.setIconSize(QtCore.QSize(18, 18))
@@ -1064,11 +1065,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         hght = 17
         sz.setHeight(hght)
         tree_header.setSizeHint(0,sz)
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
+
         self.gridLayout.addWidget(self.treeWidget, 0, 0, 2, 1)
         self.label = QtGui.QLabel(self.centralwidget)
         self.label.setObjectName("label")
@@ -1078,9 +1075,10 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.lineEdit_name.setObjectName("lineEdit_name")
         self.gridLayout.addWidget(self.lineEdit_name, 0, 2, 1, 1)
         self.textBrowser_remplate_body = QtGui.QTextBrowser(self.centralwidget)
-        self.textBrowser_remplate_body.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.textBrowser_remplate_body.setFrameShadow(QtGui.QFrame.Sunken)
-        self.textBrowser_remplate_body.setLineWidth(1)
+        #self.textBrowser_remplate_body = QtGui.QTextEdit(self.centralwidget)
+        #self.textBrowser_remplate_body.setFrameShape(QtGui.QFrame.StyledPanel)
+        #self.textBrowser_remplate_body.setFrameShadow(QtGui.QFrame.Sunken)
+        #self.textBrowser_remplate_body.setLineWidth(1)
         self.textBrowser_remplate_body.setUndoRedoEnabled(True)
         self.textBrowser_remplate_body.setReadOnly(False)
         self.textBrowser_remplate_body.setAcceptRichText(False)
@@ -1124,20 +1122,25 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionPreview)
 
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)"), self.editTemplate)
+        self.connect(self.actionSave, QtCore.SIGNAL("triggered()"), self.saveTemplate)
+        self.connect(self.actionPreview, QtCore.SIGNAL("triggered()"), self.preview)
         self.retranslateUi()
+        self.refresh()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Шаблоны", None, QtGui.QApplication.UnicodeUTF8))
         self.treeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Шаблоны", None, QtGui.QApplication.UnicodeUTF8))
-        __sortingEnabled = self.treeWidget.isSortingEnabled()
-        self.treeWidget.setSortingEnabled(False)
-        self.treeWidget.topLevelItem(2).setText(0, QtGui.QApplication.translate("MainWindow", "Счет-фактура", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget.topLevelItem(3).setText(0, QtGui.QApplication.translate("MainWindow", "Акт выполненных работ", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget.topLevelItem(1).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для юр. лиц", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget.topLevelItem(0).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для физ. лиц", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget.topLevelItem(4).setText(0, QtGui.QApplication.translate("MainWindow", "Карты экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget.setSortingEnabled(__sortingEnabled)
+        #__sortingEnabled = self.treeWidget.isSortingEnabled()
+        #self.treeWidget.setSortingEnabled(False)
+        #self.treeWidget.topLevelItem(2).setText(0, QtGui.QApplication.translate("MainWindow", "Счет-фактура", None, QtGui.QApplication.UnicodeUTF8))
+        #self.treeWidget.topLevelItem(3).setText(0, QtGui.QApplication.translate("MainWindow", "Акт выполненных работ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.treeWidget.topLevelItem(1).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для юр. лиц", None, QtGui.QApplication.UnicodeUTF8))
+        #self.treeWidget.topLevelItem(0).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для физ. лиц", None, QtGui.QApplication.UnicodeUTF8))
+        #self.treeWidget.topLevelItem(4).setText(0, QtGui.QApplication.translate("MainWindow", "Карты экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
+        #self.treeWidget.setSortingEnabled(__sortingEnabled)
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Название шаблона", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAddTemplate.setText(QtGui.QApplication.translate("MainWindow", "Добавить шаблон", None, QtGui.QApplication.UnicodeUTF8))
@@ -1145,13 +1148,122 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPreview.setText(QtGui.QApplication.translate("MainWindow", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
         
+        
+    def editTemplate(self, item1, item2):
+        id = self.treeWidget.currentItem().id
+        
+        if id==7:
+            self.actionSave.setDisabled(True)
+        else:
+             self.actionSave.setDisabled(False)
+        
+        template = self.connection.get("SELECT * FROM billservice_template WHERE type_id=%s" % id)
+        self.connection.commit()
+        self.treeWidget.currentItem().model_id = None
+        if template:
+            self.lineEdit_name.setText(unicode(template.name))
+            self.textBrowser_remplate_body.setPlainText(template.body)
+            self.treeWidget.currentItem().model_id = template.id
+        else:
+            self.lineEdit_name.setText(unicode(''))
+            self.textBrowser_remplate_body.setText("""<html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body>
+            
+            
+            
+            
+            </body>
+            </html>""")
+            
+    
+    def saveTemplate(self):
+        model = Object()
+        if self.treeWidget.currentItem().model_id:
+            model.id = self.treeWidget.currentItem().model_id
+        model.type_id = self.treeWidget.currentItem().id
+        model.name = unicode(self.lineEdit_name.text())
+        model.body = unicode(self.textBrowser_remplate_body.toPlainText())
+        self.connection.save(model, "billservice_template")
+        self.connection.commit()
+        
     def refresh(self):
         """
         1;"Договор на подключение физ. лиц"
         2;"Договор на подключение юр. лиц"
         3;"Счёт фактура"
         4;"Акт выполненных работ"
-        5;"Карты экспресс-оплаты"
+        5;"Кассовый чек"
+        6;"Накладная на карты экспресс оплаты"
+        7;"Карты экспресс-оплаты"
         """
+        titles = {'1':u'Договор на подключение для физ. лиц',
+                  '2':u'Договор на подключение для юр. лиц',
+                  '3':u'Счет-фактура',
+                  '4':u'Акт выполненных работ',
+                  '5':u'Кассовый чек',
+                  '6':u'Накладная на карты экспресс оплаты',
+                  '7':u'Карты экспресс-оплаты',
+                  }
         
+        i=1
+        self.treeWidget.clear()
+        for key in titles:
+            item = QtGui.QTreeWidgetItem(self.treeWidget)
+            item.id=i
+            item.setText(0, titles['%s' % i])
+            
+            i+=1
+            
+    def preview(self):
+        id = self.treeWidget.currentItem().id
+        templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
+        if id==1:
+
+            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            try:
+                data=templ.render_unicode(account=account, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat))
+            except Exception, e:
+                data=u"Error %s" % str(e)
+        if id==2:
+            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
+            bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
+            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            try:
+                data=templ.render_unicode(account=account, tarif=tarif, bank=bank, organization=organization,   created=datetime.datetime.now().strftime(strftimeFormat))
+            except Exception, e:
+                data=u"Error %s" % str(e)
+
+        if id==5:
+            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            sum = 10000
+            document=u"Банковский перевод №112432"
+            try:
+                data=templ.render_unicode(account=account, document=document, tarif=tarif, sum=sum,   created=datetime.datetime.now().strftime(strftimeFormat))
+            except Exception, e:
+                data=u"Error %s" % str(e)
+            
+
+        if id==6:
+           data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
+        if id in (3,4):
+            data=u"Preview for this type of documents unavailable. Please still waiting for next version of ExpertBilling"
+                                
+
+        self.connection.commit()
+        file= open('templates/tmp/temp.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/tmp/temp.html")
+        a.exec_()
+
         
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
+            

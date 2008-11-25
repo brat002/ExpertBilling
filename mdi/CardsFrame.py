@@ -266,18 +266,24 @@ class SaleCards(QtGui.QDialog):
         operator = self.connection.get_operator_info()
         
         dealer = self.connection.get_dealer_info(dealer_id)
+
+        template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=6')
         self.connection.commit()
-        templ = Template(filename="templates/invoice.htm", input_encoding='utf-8')
+        
+        templ = Template(unicode(template.body), input_encoding='utf-8')
+        
+
         data=templ.render_unicode(cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
                                   cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
                                   discount_sum = unicode(self.lineEdit_discount_amount.text()), pay = unicode(self.lineEdit_pay.text()),
                                   paydeffer = (datetime.datetime.now()+datetime.timedelta(days=self.spinBox_paydeffer.value())).strftime(strftimeFormat))
-               
-        file= open('templates/tmp/invoice.html', 'wb')
+
+        file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
         file.flush()
-        a=CardPreviewDialog(url="templates/tmp/invoice.html")
+        a=CardPreviewDialog(url="templates/tmp/temp.html")
         a.exec_()
+
         
 
     def recalculateAmount(self, t=None):

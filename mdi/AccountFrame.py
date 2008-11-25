@@ -26,8 +26,8 @@ from helpers import tableFormat
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget
-
+from CustomForms import CustomWidget, CardPreviewDialog
+from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
 class CashType(object):
@@ -2923,6 +2923,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.ipn_for_vpn = ipn_for_vpn
         self.tarif_id = tarif_id
         self.organization = None
+        self.bank = None
         
         self.setObjectName("AccountWindow")
         self.resize(848, 628)
@@ -3452,6 +3453,7 @@ class AccountWindow(QtGui.QMainWindow):
         
         self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_accounttarif)
         self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_accounttarif)
+        self.connect(self.toolButton_agreement_print, QtCore.SIGNAL("clicked()"), self.printAgreement)
         
         self.fixtures()
         self.dhcpActions()
@@ -3600,7 +3602,32 @@ class AccountWindow(QtGui.QMainWindow):
         #self.tabWidget.removeTab(self.tab_downtime)
         #self.tabWidget.removeTab(self.tab_suspended)
         
-        
+
+    def printAgreement(self):
+       
+        tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id = get_tarif(%s)" % self.model.id)
+        if self.groupBox_urdata.isChecked()==True:
+            template = self.connection.get("SELECT * FROM billservice_template WHERE type_id=2")
+            try:
+                data=templ.render_unicode(account=self.model, tarif=tarif, organization = self.organization, bank=self.bank, created=datetime.datetime.now().strftime(strftimeFormat))
+            except Exception, e:
+                data=u"Error %s" % str(e)
+            templ = Template(template.body, input_encoding='utf-8')
+        else:
+            template = self.connection.get("SELECT * FROM billservice_template WHERE type_id=1")
+            templ = Template(template.body, input_encoding='utf-8')
+            
+            try:
+                data=templ.render_unicode(account=self.model, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat))
+            except Exception, e:
+                data=u"Error %s" % str(e)
+            self.connection.commit()
+            file= open('templates/tmp/temp.html', 'wb')
+            file.write(data.encode("utf-8", 'replace'))
+            file.flush()
+            a=CardPreviewDialog(url="templates/tmp/temp.html")
+            a.exec_()
+                 
     def generate_login(self):
         self.lineEdit_username.setText(nameGen())
 
@@ -3636,6 +3663,7 @@ class AccountWindow(QtGui.QMainWindow):
         if not self.model:
             #self.add_accounttarif_toolButton.setDisabled(True)
             #self.del_accounttarif_toolButton.setDisabled(True)
+            self.toolButton_agreement_print.setDisabled(True)
             self.lineEdit_balance.setText(u"0")
             self.lineEdit_credit.setText(u"0")
 
@@ -3779,9 +3807,9 @@ class AccountWindow(QtGui.QMainWindow):
             model.room = unicode(self.lineEdit_room.text())
             
             #passport
-            passport = unicode(self.lineEdit_passport_n.text())
-            passport_given = unicode(self.lineEdit_passport_given.text())
-            passport_date = self.dateEdit_passport_date.date().toPyDate()
+            model.passport = unicode(self.lineEdit_passport_n.text())
+            model.passport_given = unicode(self.lineEdit_passport_given.text())
+            model.passport_date = self.dateEdit_passport_date.date().toPyDate()
             #print "passport_date", self.model.passport_date
             #dateTime().toPyDateTime()
             
@@ -3859,11 +3887,14 @@ class AccountWindow(QtGui.QMainWindow):
     
             if self.lineEdit_ipn_mac_address.text().isEmpty()==False:
                 if self.macValidator.validate(self.lineEdit_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
-                    cnt = self.connection.get("SELECT count(*) as cnt FROM billservice_account WHERE ipn_mac_address='%s' and id<>%s" % (unicode(self.lineEdit_ipn_mac_address.text()).upper(), model.id)).cnt
-                    if cnt>0 :
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
-                        self.connection.rollback()
-                        return
+                    try:
+                        id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
+                        if id!=model.id :
+                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+                            self.connection.rollback()
+                            return
+                    except:
+                        pass
                     model.ipn_mac_address = unicode(self.lineEdit_ipn_mac_address.text()).upper()
                 else:
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте MAC адрес."))
@@ -3929,6 +3960,7 @@ class AccountWindow(QtGui.QMainWindow):
                 bank.rs = self.lineEdit_rs.text()
                 bank.currency = ''
                 bank.id = self.connection.save(bank, "billservice_bankdata")
+                self.bank = bank
                 
                 org.name = unicode(self.lineEdit_organization.text())
                 org.uraddress = unicode(self.lineEdit_uraddress.text())
@@ -3938,7 +3970,8 @@ class AccountWindow(QtGui.QMainWindow):
                 org.unp = unicode(self.lineEdit_unp.text())
                 org.account_id = model.id
                 org.bank_id = bank.id
-                self.connection.save(org, "billservice_organization")
+                org.id = self.connection.save(org, "billservice_organization")
+                self.organization = org
                 print "save org.data"
             else:
                 if self.organization:
@@ -3948,6 +3981,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.connection.commit()
             
             self.model = model
+            self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
         except Exception, e:
             import sys, traceback
@@ -4021,7 +4055,11 @@ class AccountWindow(QtGui.QMainWindow):
         child=AddAccountTarif(connection=self.connection, ttype=self.ttype, model=model)
         if child.exec_()==1:
             self.accountTarifRefresh()
-    
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
+                
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
         columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
@@ -4705,4 +4743,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()
-    #---------------------------
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()
