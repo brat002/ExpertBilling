@@ -1,9 +1,14 @@
  #-*- coding=UTF-8 -*-
 import datetime
+import Pyro.core
+import Pyro.protocol
+import Pyro.constants
+import Pyro.errors
 
 from django.http import Http404, HttpResponseRedirect
 from django.db import connection
 from django.core.cache import cache
+from django.conf import settings
 
 from django.conf import settings
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType 
@@ -261,3 +266,56 @@ def account_prepays_traffic(request):
             'prepaidtraffic':prepaidtraffic,
             'account_tarif':account_tarif,
             }
+    
+
+class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
+    def __init__(self):
+        Pyro.protocol.DefaultConnValidator.__init__(self)
+    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+        return authid
+    def mungeIdent(self, ident):
+        return ident
+    
+    
+def client(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    user = request.session['user']
+    # CONNECTION TO RCP SERVER
+    try:
+        connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.CHILD_ADDRESS))
+        import hashlib
+        md1 = hashlib.md5("RPCwebadmin")
+        md1.hexdigest()
+       
+        password = str(md1.hexdigest())
+        #f = open('tmp', 'wb')
+        #f.write(child.password.toHex())
+        connection._setNewConnectionValidator(antiMungeValidator())
+        print connection._setIdentification("%s:%s" % (str('webadmin'), str(password)))
+        connection.test()
+
+        #return connection
+
+    except Exception, e:
+        #print "login connection error"
+        if isinstance(e, Pyro.errors.ConnectionDeniedError):
+            error_message = u"Отказано в авторизации."
+        else:
+            error_message  = u"Невозможно подключиться к серверу."
+    # create image
+    date_end = datetime.datetime.now()
+    day = datetime.timedelta(seconds=86400)
+    date_start = date_end-day
+    args = ('nfs_user_traf', date_start, date_end)
+    kwargs = {}
+    kwargs['return'] ={}
+    kwargs['options'] ={}
+    kwargs['users'] = [user.id]
+    imgs = connection.makeChart(*args, **kwargs)
+    img = imgs[0] 
+    from django.http import HttpResponse
+    response = HttpResponse(img, content_type='image/png')
+
+    return response
+        
