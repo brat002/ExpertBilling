@@ -445,7 +445,7 @@ class NfUDPSenderThread(Thread):
                         errflag = 1
                         print "open a new file"
                         #open a new file
-                        fname = ''.join((self.hpath, str(time.clock()), '.dmp'))
+                        fname = ''.join((self.hpath, str(time.time()), '.dmp'))
                         dfile = open(fname, 'ab')
                     except Exception, ex:
                         print "NFUDPSenderThread file creation exception: ", repr(ex)
@@ -463,7 +463,7 @@ class NfUDPSenderThread(Thread):
                         dfile.close()
                         #use locks is deadlockind arise
                         fnameQueue.append(fname)
-                        fname = ''.join((self.hpath, str(time.clock()), '.dmp'))
+                        fname = ''.join((self.hpath, str(time.time()), '.dmp'))
                         dfile = open(fname, 'ab')
                 except Exception, ex:
                         print "NFUDPSenderThread file write exception: ", repr(ex)
@@ -762,7 +762,7 @@ if __name__=='__main__':
     #get a dump' directrory string and check whethet it's writable
     dumpDir = config.get("core_nf", "dump_dir")
     try:
-        tfname = ''.join((dumpDir,'/','nf_', str(time.clock()), '.dmp'))
+        tfname = ''.join((dumpDir,'/','nf_', str(time.time()), '.dmp'))
         dfile = open(tfname, 'wb')
         dfile.write("testtesttesttesttest")
         dfile.close()
