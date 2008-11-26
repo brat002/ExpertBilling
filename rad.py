@@ -542,6 +542,7 @@ class AsyncAuth(AsyncUDPServer):
     def handle_readfrom(self,data, address):
         try:
             global numauth
+            numauth+=1
             if numauth>=180:
                 log("PREVENTING DoS")
                 return
@@ -553,7 +554,7 @@ class AsyncAuth(AsyncUDPServer):
             #print "BEFORE AUTH:%.20f" % (clock()-t)
             packetobject=packet.Packet(dict=dict,packet=data)
             access_type = get_accesstype(packetobject)
-            numauth+=1
+            
             if access_type in ['PPTP', 'PPPOE']:
                 log("Auth Type %s" % access_type)
     
@@ -594,6 +595,7 @@ class AsyncAuth(AsyncUDPServer):
                 del returndata
         except:
             print "bad packet"
+            numauth-=1
 
 class AsyncAcc(AsyncUDPServer):
     def __init__(self, host, port, dbconn):
@@ -604,10 +606,11 @@ class AsyncAcc(AsyncUDPServer):
     def handle_readfrom(self,data, address):
         try:
             global numacct
+            numacct+=1
             if numacct>=100:
                 log("PREVENTING ACCT DoS")
                 return 
-            numacct+=1
+            
             t = clock()
             assert len(data)<=4096
             addrport=address
@@ -625,6 +628,7 @@ class AsyncAcc(AsyncUDPServer):
             del coreconnect
         except:
             print "bad acct packet"
+            numacct-=1
                 
 
 class Starter(Thread):
