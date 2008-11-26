@@ -26,4 +26,5 @@ urlpatterns += patterns('billservice.views',
      (r'^session/info/$', 'vpn_session'),
      (r'^password/change/$', 'change_password'),
      (r'^card/activation/$', 'card_acvation'),
+     (r'^client/$', 'client'),
 )
