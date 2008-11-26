@@ -249,17 +249,14 @@ def account_prepays_traffic(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/account/login/')
     user = request.session['user']
-    #try:
-    from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
-    account_tarif = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())
-    print account_tarif  
-    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tarif)
-    print account_prepays_trafic
-    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
-    print prepaidtraffic 
-    #except:
-    #    prepaidtraffic = None
-    #    account_tarif = None  
+    try:
+        from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
+        account_tarif = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())[:1]
+        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tarif)
+        prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    except:
+        prepaidtraffic = None
+        account_tarif = None  
     return {
             'prepaidtraffic':prepaidtraffic,
             'account_tarif':account_tarif,
