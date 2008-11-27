@@ -1528,7 +1528,7 @@ class limit_checker(Thread):
     
                     block=False
     
-                    d=[]
+                    d=()
                     if in_direction:
                         d.append('INPUT')
                     if out_direction:
