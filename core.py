@@ -1471,6 +1471,7 @@ class limit_checker(Thread):
                     JOIN billservice_account as account ON account.id=acctt.account_id
                     LEFT JOIN billservice_trafficlimit as tlimit ON tlimit.tarif_id = tarif.id
                     LEFT JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period_id
+                    WHERE tarif.active=True
                     ORDER BY account.id ASC;
                     """)
                 account_tarifs=self.cur.fetchall()
@@ -1850,7 +1851,7 @@ class settlement_period_service_dog(Thread):
                                  JOIN billservice_onetimeservice as service ON service.tarif_id=tarif.id
                                  LEFT JOIN billservice_onetimeservicehistory as oth ON oth.accounttarif_id=(SELECT id FROM billservice_accounttarif
                                  WHERE account_id=account.id and datetime<now() ORDER BY datetime DESC LIMIT 1) and service.id=oth.onetimeservice_id
-                                 WHERE (account.ballance+account.credit)>0 and oth.id is Null;
+                                 WHERE (account.ballance+account.credit)>0 and oth.id is Null and tarif.active=True;
                                  """)
                 rows = self.cur.fetchall()
                 self.connection.commit()
@@ -1943,7 +1944,7 @@ class ipn_service(Thread):
                     JOIN billservice_accessparameters as accessparameters ON accessparameters.id=tariff.access_parameters_id
                     JOIN nas_nas as nas ON nas.id=account.nas_id
                     LEFT JOIN billservice_accountipnspeed as ipn_speed_table ON ipn_speed_table.account_id=account.id
-                    WHERE accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0'
+                    WHERE accessparameters.ipn_for_vpn=True and account.ipn_ip_address!='0.0.0.0' and tariff.active=True
                     ;""")
                 rows=self.cur.fetchall()
                 for row in rows:
