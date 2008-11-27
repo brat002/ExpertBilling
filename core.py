@@ -1651,6 +1651,7 @@ class settlement_period_service_dog(Thread):
                     """)
     
                 rows=self.cur.fetchall()
+                self.connection.commit()
                 self.cur.close()
                 self.cur = self.connection.cursor()
                 for row in rows:
@@ -1686,6 +1687,7 @@ class settlement_period_service_dog(Thread):
                                 WHERE created > %s and created< %s and account_id=%s and tarif_id=%s;
                                 """, (period_start, period_end, account_id, tarif_id,))
                             summ=self.cur.fetchone()[0]
+                            
                             if summ==None:
                                 summ=0
     
@@ -1851,6 +1853,7 @@ class settlement_period_service_dog(Thread):
                                  WHERE (account.ballance+account.credit)>0 and oth.id is Null;
                                  """)
                 rows = self.cur.fetchall()
+                self.connection.commit()
                 #print "onetime", rows
                 for row in rows:
                     account_id, service_id, service_name, cost, tarif_id, accounttarif_id = row
