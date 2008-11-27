@@ -54,7 +54,7 @@ def login(request):
                     request.session.modified = True
                     return HttpResponseRedirect('/index/')
                 else:
-                    form = LoginForm()
+                    form = LoginForm(initial={'username': form.cleaned_data['username']})
                     error_message = u'Проверьте пароль'
                     return {
                             'error_message':error_message,
