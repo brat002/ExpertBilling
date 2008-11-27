@@ -1528,13 +1528,11 @@ class limit_checker(Thread):
     
                     block=False
     
-                    d=''
+                    d=[]
                     if in_direction:
-                        d+=" 'INPUT'"
+                        d.append('INPUT')
                     if out_direction:
-                        if in_direction:
-                            d+=","
-                        d+="'OUTPUT'"
+                        d.append('OUTPUT')
     
                     self.connection.commit()
                     self.cur.execute("""
