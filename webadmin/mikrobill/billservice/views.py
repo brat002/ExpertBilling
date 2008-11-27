@@ -61,15 +61,15 @@ def login(request):
                             'form':form,
                             }
             except:
-                form = LoginForm()
+                form = LoginForm(initial={'username': form.cleaned_data['username']})
                 error_message = u'Пользователь не найден в базе'
                 return {
                         'error_message':error_message,
                         'form':form,
                         }
         else:
-            form = LoginForm()
-            error_message = u'Введите логин и пароль'
+            form = LoginForm(initial={'username': request.POST.get('username', None)})
+            error_message = u'Не введен логин или пароль'
             return {
                     'error_message':error_message,
                     'form':form,
@@ -312,6 +312,8 @@ def client(request):
     kwargs['return'] ={}
     kwargs['options'] ={}
     kwargs['users'] = [user.id]
+    kwargs['autoticks'] = True
+    kwargs['antialias'] = True
     imgs = connection.makeChart(*args, **kwargs)
     img = imgs[0] 
     from django.http import HttpResponse
