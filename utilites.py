@@ -397,7 +397,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             tkc=tnc+relativedelta(months=1)
             delta=tkc-tnc
 
-            return (tnc, tkc, delta.days*86400)
+            return (tnc, tkc, delta.days*86400+delta.seconds)
         elif repeat_after=='YEAR':
             #Февраль!
             #To-DO: Добавить проверку на prev 
