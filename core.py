@@ -1550,8 +1550,8 @@ class limit_checker(Thread):
                     self.connection.commit()
                     self.cur.close()
                     self.cur = self.connection.cursor()
-                    
-                    if sizes!=None:
+                    print "sizes", sizes
+                    if sizes[0]!=None:
                         tsize=sizes[0]
     
                     if tsize>limit_size:
