@@ -283,16 +283,16 @@ def client(request):
     user = request.session['user']
     # CONNECTION TO RCP SERVER
     try:
-        connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.CHILD_ADDRESS))
+        connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
         import hashlib
-        md1 = hashlib.md5("RPCwebadmin")
+        md1 = hashlib.md5(settings.RPC_PASSWORD)
         md1.hexdigest()
        
         password = str(md1.hexdigest())
         #f = open('tmp', 'wb')
         #f.write(child.password.toHex())
         connection._setNewConnectionValidator(antiMungeValidator())
-        print connection._setIdentification("%s:%s" % (str('webadmin'), str(password)))
+        print connection._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
         connection.test()
 
         #return connection

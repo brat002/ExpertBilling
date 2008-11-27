@@ -100,8 +100,9 @@ INSTALLED_APPS = (
     'lib',
 )
 
-CHILD_ADDRESS = '127.0.0.1'
-CHILD_USER = u'webadmin'
+RPC_ADDRESS = '127.0.0.1'
+RPC_USER = 'webadmin'
+RPC_PASSWORD = 'RPCwebadmin'
 
 CACHE_BACKEND = 'locmem:///'
 
