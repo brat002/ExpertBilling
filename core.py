@@ -1528,11 +1528,13 @@ class limit_checker(Thread):
     
                     block=False
     
-                    d=[]
+                    d=''
                     if in_direction:
-                        d.append('INPUT')
+                        d+=" 'INPUT'"
                     if out_direction:
-                        d.append('OUTPUT')
+                        if in_direction:
+                            d+=","
+                        d+="'OUTPUT'"
     
                     self.connection.commit()
                     self.cur.execute("""
@@ -1540,7 +1542,7 @@ class limit_checker(Thread):
                          WHERE nf.account_id=%s AND nf.traffic_class_id @> ARRAY[(SELECT tltc.trafficclass_id 
                          FROM billservice_trafficlimit_traffic_class as tltc 
                          WHERE tltc.trafficlimit_id=%s)] 
-                         AND (date_start>'%s' AND date_start<'%s') and ARRAY[nf.direction] @> ARRAY%s
+                         AND (date_start>'%s' AND date_start<'%s') and nf.direction in (%s)  
                          """ % (account_id, limit_id, settlement_period_start, settlement_period_end, d,))
     
                     tsize=0
