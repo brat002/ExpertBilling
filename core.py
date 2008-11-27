@@ -1558,7 +1558,7 @@ class limit_checker(Thread):
                         block=True
                         print "block =True"
                     else:
-                        print "tsize=", tsize
+                        print "tsize=", tsize, account_id, limit_id, settlement_period_start, settlement_period_end, d
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
     
