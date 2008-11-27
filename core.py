@@ -1474,6 +1474,7 @@ class limit_checker(Thread):
                     ORDER BY account.id ASC;
                     """)
                 account_tarifs=self.cur.fetchall()
+                self.connection.commit()
                 self.cur.close()
                 self.cur = self.connection.cursor()
                 oldid=-1
@@ -1502,7 +1503,7 @@ class limit_checker(Thread):
                             SET disabled_by_limit=%s
                             WHERE id=%s;
                             """, (False, account_id,))
-    
+                        self.connection.commit()
                         continue
     
                     if oldid==account_id and block:
@@ -1545,6 +1546,7 @@ class limit_checker(Thread):
     
                     tsize=0
                     sizes=self.cur.fetchall()
+                    self.connection.commit()
                     self.cur.close()
                     self.cur = self.connection.cursor()
                     for size in sizes:
