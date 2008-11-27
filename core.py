@@ -1546,16 +1546,19 @@ class limit_checker(Thread):
                          """, (account_id, limit_id, settlement_period_start, settlement_period_end, d,))
     
                     tsize=0
-                    sizes=self.cur.fetchall()
+                    sizes=self.cur.fetchone()
                     self.connection.commit()
                     self.cur.close()
                     self.cur = self.connection.cursor()
-                    for size in sizes:
-                        if size[0]!=None:
-                            tsize+=size[0]
+                    
+                    if sizes!=None:
+                        tsize=sizes[0]
     
                     if tsize>limit_size:
                         block=True
+                        print "block =True"
+                    else:
+                        print "tsize=", tsize
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
     
