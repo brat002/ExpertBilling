@@ -4688,7 +4688,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
             #self.addrow(a.suspended, i,10, enabled=a.status)
             #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-            self.tableWidget.setCellWidget(i,10,tableImageWidget(nops= not a.suspended, balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+            self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
             #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
             
