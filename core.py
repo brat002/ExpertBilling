@@ -1557,9 +1557,8 @@ class limit_checker(Thread):
     
                     if tsize>limit_size:
                         block=True
-                    else:
-                        block=False
-                    print "block", block
+
+                    print "block", block, size>limit_size, size, limit_size
 
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
