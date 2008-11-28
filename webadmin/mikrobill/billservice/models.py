@@ -853,4 +853,10 @@ class Document(models.Model):
     type = models.ForeignKey(DocumentType)
     body = models.TextField()
 
- 
+class SuspendedPeriod(models.Model):
+    account = models.ForeignKey(Account)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    
+    
+    
