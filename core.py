@@ -281,7 +281,7 @@ class check_vpn_access(Thread):
                                  account.ipn_mac_address AS ipn_mac_address,
                                  (SELECT tarif.active FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id)) AS tarif_status,
                                 (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
-                                OR 
+                                AND
                                 ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True))) as status
                                  FROM radius_activesession AS rs
                                  JOIN nas_nas AS nas ON nas.ipaddress=rs.nas_id
