@@ -1551,7 +1551,7 @@ class limit_checker(Thread):
                     self.connection.commit()
                     self.cur.close()
                     self.cur = self.connection.cursor()
-                    #print "sizes", sizes
+                    print "sizes", sizes
                     if sizes[0]!=None:
                         tsize=sizes[0]
     
@@ -1559,7 +1559,7 @@ class limit_checker(Thread):
                         block=True
                     else:
                         block=False
-                        #print "block =True"
+                    print "block", block
 
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
