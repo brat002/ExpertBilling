@@ -439,7 +439,7 @@ class periodical_service_bill(Thread):
                                      WHERE a.tarif_id=%d and b.suspended=False AND a.datetime < now() GROUP BY a.account_id ORDER BY a.account_id'''
                     self.cur.execute("""SELECT a.id, a.account_id,  max(a.datetime), (SELECT (b.ballance+b.credit) AS ballance 
                                         FROM billservice_account as b 
-                                        WHERE a.account_id=b) as ballance
+                                        WHERE a.account_id=b.id) as ballance
                                         FROM  billservice_accounttarif as a 
                                         WHERE a.tarif_id=%s  AND a.datetime < now() and a.id not in (SELECT account_id FROM billservice_suspendedperiod WHERE account_id=a.id AND start_date>now() AND end_date<now())
                                         GROUP BY a.id, a.account_id ORDER BY a.account_id""",  (tariff_id,))
