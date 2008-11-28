@@ -960,13 +960,6 @@ class tableImageWidget(QtGui.QWidget):
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         self.horizontalLayout.setMargin(0)
 
-        self.toolButton_active = QtGui.QToolButton(self)
-        self.toolButton_active.resize(17,17)
-        self.toolButton_active.setMinimumSize(QtCore.QSize(17, 17))
-        self.toolButton_active.setMaximumSize(QtCore.QSize(17, 17))
-        
-        
-        self.horizontalLayout.addWidget(self.toolButton_active)
         self.toolButton_balance_blocked = QtGui.QToolButton(self)
         self.toolButton_balance_blocked.setMinimumSize(QtCore.QSize(17, 17))
         self.toolButton_balance_blocked.setMaximumSize(QtCore.QSize(17, 17))
@@ -992,13 +985,7 @@ class tableImageWidget(QtGui.QWidget):
         self.toolButton_ipn_added.setMaximumSize(QtCore.QSize(17, 17))
         self.toolButton_ipn_added.resize(17,17)
         self.horizontalLayout.addWidget(self.toolButton_ipn_added)
-        
-        if nops==False:
-            self.toolButton_active.setIcon(QtGui.QIcon("images/false.png"))
-            self.toolButton_active.setToolTip(u"Периодические услуги не списывают деньги")
-        else:
-            self.toolButton_active.setIcon(QtGui.QIcon("images/ok.png"))
-            self.toolButton_active.setToolTip(u"Периодические услуги действуют")
+
     
         if balance_blocked==True:
             self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_false.png"))
