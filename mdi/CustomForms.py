@@ -1166,7 +1166,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             self.treeWidget.currentItem().model_id = template.id
         else:
             self.lineEdit_name.setText(unicode(''))
-            self.textBrowser_remplate_body.setText("""<html>
+            self.textBrowser_remplate_body.setPlainText("""<html>
             <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             </head>

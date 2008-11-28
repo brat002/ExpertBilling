@@ -281,7 +281,7 @@ class check_vpn_access(Thread):
                                  account.ipn_ip_address AS ipn_ip_address, 
                                  account.ipn_mac_address AS ipn_mac_address,
                                  (SELECT tarif.active FROM billservice_tariff AS tarif WHERE tarif.id=get_tarif(account.id)) AS tarif_status,
-                                (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
+                                (((account.allow_vpn_null=False and account.ballance+account.credit>0) or (account.allow_vpn_null=True)) 
                                 AND
                                 ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True))) as status
                                  FROM radius_activesession AS rs
@@ -1538,7 +1538,7 @@ class limit_checker(Thread):
                         d+="'OUTPUT'"
     
                     self.connection.commit()
-                    #В запрос ниже НЕЛЬЗЯ менять символ подстановки на ,,т.к. тогда неправильно форматируется d
+                    #В запрос ниже НЕЛЬЗЯ менять символ подстановки на , ,т.к. тогда неправильно форматируется d
                     self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf 
                          WHERE nf.account_id=%s AND nf.traffic_class_id @> ARRAY[(SELECT tltc.trafficclass_id 
