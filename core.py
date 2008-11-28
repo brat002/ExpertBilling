@@ -1557,6 +1557,8 @@ class limit_checker(Thread):
     
                     if tsize>limit_size:
                         block=True
+                    else:
+                        block=False
                         #print "block =True"
 
     
