@@ -1449,7 +1449,7 @@ class limit_checker(Thread):
     """
     def __init__ (self):
         Thread.__init__(self)
-
+ 
     def run(self):
         self.connection = pool.connection()
         self.connection._con._con.set_client_encoding('UTF8')
