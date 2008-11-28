@@ -1537,6 +1537,7 @@ class limit_checker(Thread):
                         d+="'OUTPUT'"
     
                     self.connection.commit()
+                    #В запрос ниже НЕЛЬЗЯ менять символ подстановки на ,,т.к. тогда неправильно форматируется d
                     self.cur.execute("""
                          SELECT sum(octets) as size FROM billservice_netflowstream as nf 
                          WHERE nf.account_id=%s AND nf.traffic_class_id @> ARRAY[(SELECT tltc.trafficclass_id 
@@ -1550,15 +1551,14 @@ class limit_checker(Thread):
                     self.connection.commit()
                     self.cur.close()
                     self.cur = self.connection.cursor()
-                    print "sizes", sizes
+                    #print "sizes", sizes
                     if sizes[0]!=None:
                         tsize=sizes[0]
     
                     if tsize>limit_size:
                         block=True
-                        print "block =True"
-                    else:
-                        print "tsize=", tsize, account_id, limit_id, settlement_period_start, settlement_period_end, d
+                        #print "block =True"
+
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
     
