@@ -1529,7 +1529,7 @@ class limit_checker(Thread):
     
                     block=False
     
-                    d=''
+                    d=""
                     if in_direction:
                         d+=" 'INPUT'"
                     if out_direction:
