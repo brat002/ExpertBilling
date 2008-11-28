@@ -21,6 +21,7 @@ import Pyro.constants
 import hmac
 import hashlib
 import zlib
+from decimal import Decimal
 from hashlib import md5
 import psycopg2
 import psycopg2.extras
@@ -1555,10 +1556,10 @@ class limit_checker(Thread):
                     if sizes[0]!=None:
                         tsize=sizes[0]
     
-                    if tsize>limit_size:
+                    if tsize>Decimal(limit_size):
                         block=True
 
-                    print "block", block, tsize>limit_size, tsize, limit_size
+                    print "block", block, tsize>Decimal(limit_size), tsize, limit_size
 
     
                     #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
