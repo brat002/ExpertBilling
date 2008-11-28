@@ -42,10 +42,9 @@ import ConfigParser
 
 
 
-global numauth, numacct
 
-numauth=0
-numacct=0
+
+
 gigaword = 4294967296
 account_timeaccess_cache={}
 account_timeaccess_cache_count=0
@@ -541,11 +540,7 @@ class AsyncAuth(AsyncUDPServer):
 
     def handle_readfrom(self,data, address):
         try:
-            global numauth
-            numauth+=1
-            if numauth>=180:
-                log("PREVENTING DoS")
-                return
+
             t = clock()
             returndata=''
             #data=self.request[0] # or recv(bufsize, flags)
@@ -560,7 +555,7 @@ class AsyncAuth(AsyncUDPServer):
     
                 coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
                 secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: numauth-=1; log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
+                if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
     
                 authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
                 log("Password check: %s" % authobject.AccessAccept)
@@ -572,7 +567,7 @@ class AsyncAuth(AsyncUDPServer):
                 #-----
                 coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
                 secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: numauth-=1; return
+                if packetfromcore is None: return
                 authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
                 returndata=authobject.ReturnPacket()
                 del coreconnect
@@ -581,10 +576,9 @@ class AsyncAuth(AsyncUDPServer):
             else:
                 #-----
                 returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
-                if returnpacket is None:numauth-=1; return
+                if returnpacket is None: return
                 returndata=authNA(returnpacket)
                  
-            numauth-=1 
             log("AUTH time:%.8f" % (clock()-t))
             if returndata!="":
                 self.sendto(returndata,address)
@@ -595,7 +589,7 @@ class AsyncAuth(AsyncUDPServer):
                 del returndata
         except:
             print "bad packet"
-            numauth-=1
+
 
 class AsyncAcc(AsyncUDPServer):
     def __init__(self, host, port, dbconn):
@@ -605,12 +599,6 @@ class AsyncAcc(AsyncUDPServer):
 
     def handle_readfrom(self,data, address):
         try:
-            global numacct
-            numacct+=1
-            if numacct>=100:
-                log("PREVENTING ACCT DoS")
-                return 
-            
             t = clock()
             assert len(data)<=4096
             addrport=address
@@ -623,12 +611,11 @@ class AsyncAcc(AsyncUDPServer):
                 self.socket.sendto(returndat,addrport)
                 del returndat
             log("ACC:%.20f" % (clock()-t))
-            numacct-=1
             del packetfromcore
             del coreconnect
         except:
             print "bad acct packet"
-            numacct-=1
+
                 
 
 class Starter(Thread):
