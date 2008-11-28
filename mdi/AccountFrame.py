@@ -26,7 +26,7 @@ from helpers import tableFormat
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget, CardPreviewDialog
+from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
@@ -3220,9 +3220,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_active = QtGui.QCheckBox(self.groupBox_status)
         self.checkBox_active.setObjectName("checkBox_active")
         self.horizontalLayout.addWidget(self.checkBox_active)
-        self.checkBox_suspended = QtGui.QCheckBox(self.groupBox_status)
-        self.checkBox_suspended.setObjectName("checkBox_suspended")
-        self.horizontalLayout.addWidget(self.checkBox_suspended)
+        #self.checkBox_suspended = QtGui.QCheckBox(self.groupBox_status)
+        #self.checkBox_suspended.setObjectName("checkBox_suspended")
+        #self.horizontalLayout.addWidget(self.checkBox_suspended)
         self.tabWidget.addTab(self.tab_general, "")
         self.tab_network_settings = QtGui.QWidget()
         self.tab_network_settings.setObjectName("tab_network_settings")
@@ -3377,7 +3377,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_suspended = tableFormat(self.tableWidget_suspended)
         
         self.gridLayout_5.addWidget(self.tableWidget_suspended, 0, 0, 1, 1)
-        #self.tabWidget.addTab(self.tab_suspended, "")
+        self.tabWidget.addTab(self.tab_suspended, "")
         self.tab_downtime = QtGui.QWidget()
         self.tab_downtime.setObjectName("tab_downtime")
         self.gridLayout_13 = QtGui.QGridLayout(self.tab_downtime)
@@ -3451,8 +3451,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.checkBox_assign_ipn_ip_from_dhcp, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
         self.connect(self.tableWidget_accounttarif, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
         
-        self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_accounttarif)
-        self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_accounttarif)
+        self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_action)
+        self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_action)
         self.connect(self.toolButton_agreement_print, QtCore.SIGNAL("clicked()"), self.printAgreement)
         
         self.fixtures()
@@ -3572,7 +3572,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.actionDel.setText(QtGui.QApplication.translate("MainWindow", "del", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_status.setTitle(QtGui.QApplication.translate("MainWindow", "Статус аккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_active.setText(QtGui.QApplication.translate("MainWindow", "Активен", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_suspended.setText(QtGui.QApplication.translate("MainWindow", "Отключить ПУ", None, QtGui.QApplication.UnicodeUTF8))
+        #self.checkBox_suspended.setText(QtGui.QApplication.translate("MainWindow", "Отключить ПУ", None, QtGui.QApplication.UnicodeUTF8))
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
@@ -3671,7 +3671,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_agreement_num.setText("%s" % self.model.id)
             self.lineEdit_agreement_date.setText(unicode(self.model.created.strftime(strftimeFormat)))
             
-            self.checkBox_suspended.setChecked(self.model.suspended)
+            #self.checkBox_suspended.setChecked(self.model.suspended)
             self.checkBox_active.setChecked(self.model.status)
 
             self.lineEdit_username.setText(unicode(self.model.username))
@@ -3765,6 +3765,7 @@ class AccountWindow(QtGui.QMainWindow):
             else:
                 self.groupBox_urdata.setChecked(False)
             self.accountTarifRefresh()
+            self.suspendedPeriodRefresh()
 
     def accept(self):
         """
@@ -3910,7 +3911,7 @@ class AccountWindow(QtGui.QMainWindow):
             model.credit = unicode(self.lineEdit_credit.text()) or 0
     
             model.assign_ipn_ip_from_dhcp = self.checkBox_assign_ipn_ip_from_dhcp.isChecked()
-            model.suspended = self.checkBox_suspended.isChecked()
+            #model.suspended = self.checkBox_suspended.isChecked()
             model.status = self.checkBox_active.isChecked()
             
             if model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
@@ -4009,7 +4010,19 @@ class AccountWindow(QtGui.QMainWindow):
             self.connection.commit()
 
 
-
+    def suspendedPeriodRefresh(self):
+        if self.model:
+            sp = self.connection.get_models("billservice_suspendedperiod", where={'account_id':self.model.id})
+            self.connection.commit()
+            self.tableWidget_suspended.setRowCount(len(sp))
+            i=0
+            for a in sp:
+                self.addrow(self.tableWidget_suspended, a.id, i, 0)
+                self.addrow(self.tableWidget_suspended, a.start_date.strftime(strftimeFormat), i, 1)
+                self.addrow(self.tableWidget_suspended, a.end_date.strftime(strftimeFormat), i, 2)
+                
+            self.tableWidget_suspended.setColumnHidden(0, True)
+            
     def addrow(self, widget, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
@@ -4023,6 +4036,18 @@ class AccountWindow(QtGui.QMainWindow):
     def getSelectedId(self, table):
         return int(table.item(table.currentRow(), 0).text())
 
+    def add_action(self):
+        if self.tabWidget.currentIndex()==3:
+            self.add_accounttarif()
+        elif self.tabWidget.currentIndex()==2:
+            self.add_suspendedperiod()
+    
+    def del_action(self):
+        if self.tabWidget.currentIndex()==3:
+            self.del_accounttarif()
+        elif self.tabWidget.currentIndex()==2:
+            self.del_suspendedperiod()
+                
     def add_accounttarif(self):
 
         child=AddAccountTarif(connection=self.connection,ttype=self.ttype, account=self.model)
@@ -4041,6 +4066,26 @@ class AccountWindow(QtGui.QMainWindow):
             self.connection.iddelete(i, "billservice_accounttarif")
             self.accountTarifRefresh()
 
+    def add_suspendedperiod(self):
+        child=SuspendedPeriodForm()
+
+        if child.exec_()==1:
+            model = Object()
+            model.account_id = self.model.id
+            model.start_date = child.start_date
+            model.end_date = child.end_date
+            self.connection.save(model, "billservice_suspendedperiod")
+            self.connection.commit()
+            self.suspendedPeriodRefresh()
+
+    def del_suspendedperiod(self):
+        i=self.getSelectedId(self.tableWidget_suspended)
+        ###
+
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.iddelete(i, "billservice_suspendedperiod")
+            self.suspendedPeriodRefresh()
+    
     def edit_accounttarif(self):
         i=self.getSelectedId(self.tableWidget_accounttarif)
         try:
