@@ -208,7 +208,7 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
     JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
     WHERE %s bsat.datetime<now() and account.username='%s' %s AND 
-    (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
+    (((account.allow_vpn_null=False and account.ballance+account.credit>0) or (account.allow_vpn_null=True)) 
     AND
     ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
     ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)

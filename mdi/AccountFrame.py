@@ -3980,7 +3980,6 @@ class AccountWindow(QtGui.QMainWindow):
             
             
             self.connection.commit()
-            
             self.model = model
             self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
@@ -4104,7 +4103,8 @@ class AccountWindow(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
-                
+
+
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
         columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
