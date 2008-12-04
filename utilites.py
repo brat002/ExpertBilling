@@ -821,5 +821,24 @@ def parse_custom_speed(speed_string):
 
     return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
 
+def parse_custom_speed_lst(speed_string):
+
+    match_obj = compile_obj.search(speed_string)
+    
+    # Retrieve group(s) by name
+    rxrate = match_obj.group('rxrate') or -1
+    txrate = match_obj.group('txrate') or -1
+    rxbrate = match_obj.group('rxbrate') or -1
+    txbrate = match_obj.group('txbrate') or -1
+    rbthr = match_obj.group('rbthr') or -1
+    tbthr = match_obj.group('tbthr') or -1
+    rbtm = match_obj.group('rbtm') or -1
+    tbtm = match_obj.group('tbtm') or -1
+    prt = match_obj.group('prt') or 8
+    rrm = match_obj.group('rrm') or -1
+    trm = match_obj.group('trm') or -1
+
+    return [formatator(rxrate, txrate), formatator(rxbrate, txbrate), formatator(rbthr, tbthr), formatator(rbtm, tbtm), prt, formatator(rrm, trm)]
+
     
             

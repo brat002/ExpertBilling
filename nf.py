@@ -195,7 +195,9 @@ def nfPacketHandle(data, addrport, flowCache):
                     if not passthr:
 
                         wrflow = flow[:]
-                        wrflow.append(time.time())
+                        ptime =  time.time()
+                        ptime = ptime - (ptime % 20)
+                        wrflow.append(ptime)
                         wrflow.append(tuple(classLst))
                         wrflow.append(nnode[9])
                         wrflow.append(nnode[10])
@@ -206,7 +208,9 @@ def nfPacketHandle(data, addrport, flowCache):
                 else:
                     if classLst:
                         wrflow = flow[:]
-                        wrflow.append(time.time())
+                        ptime =  time.time()
+                        ptime = ptime - (ptime % 20)
+                        wrflow.append(ptime)
                         wrflow.append(tuple(classLst))
                         wrflow.append(nnode[9])
                         wrflow.append(nnode[10])
@@ -339,7 +343,7 @@ class FlowDequeThread(Thread):
             
             #if aggregation time was still not reached -> sleep
             wtime = time.time() - aggrTime - stime
-            print wtime
+            #print wtime
             if wtime < 0:
                 time.sleep(abs(wtime))
             
@@ -421,9 +425,18 @@ class NfUDPSenderThread(Thread):
                 #print addrport
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
-                print dtrc, addr
+                #print dtrc, addr
+
                 #if wrong length (probably zero reply) - raise exception
-                if (dtrc == None) or (len(flst) != int(dtrc)):
+                if (dtrc == None):
+                    raise Exception("Empty!")
+                
+                if dtrc[:4] == 'SLP!':
+                    print "sleepFlag detected!"
+                    time.sleep(10)
+                    continue
+                    
+                if (len(flst) != int(dtrc)):
                     raise Exception("Unequal sizes!")
                 
                 #if the connection is OK but there were errors earlier
@@ -439,6 +452,7 @@ class NfUDPSenderThread(Thread):
                     nfFileThread.start()                  
                 
             except Exception, ex:
+                #print repr(ex)
                 #if no errors were detected earlier
                 if not errflag:
                     try:
@@ -499,33 +513,55 @@ class NfFileReadThread(Thread):
                 dfile = open(fname, 'rb')
                 flows = dfile.read()
                 dfile.close()
-                fnewname  = fname + 'a'
-                os.rename(fname, fnewname)
-                fname = fnewname
+                fcname  = fname + 'c'
                 flows  = flows.split('!FLW')[:-1]
+                if os.path.exists(fcname):
+                    cfile = open(fcname, 'rb')
+                    fwrt = len(cfile.read())
+                    flows = flows[fwrt:]
+                    cfile.close()
+                    cfile = open(fcname, 'ab')
+                else:
+                    cfile = open(fcname, 'wb')
+                #os.rename(fname, fnewname)
                 fcnt = 0
                 #send data
                 try:
                     for flow in flows:
                         nfsock.sendto(flow,addrport)                    
                         dtrc, addr = nfsock.recvfrom(128)
-                        if len(flow)!= int(dtrc):
+                        if (dtrc == None):
+                            raise Exception("Empty!")
+                
+                        if dtrc[:4] == 'SLP!':
+                            #print "sleepFlag detected!"
+                            time.sleep(10)
+                    
+                        elif (len(flow) != int(dtrc)):
                             raise Exception("Unequal sizes!")
+                        
                         fcnt += 1
-                        time.sleep(0.01)
+                        cfile.write('\n')
+                        if fcnt % 4 == 0:
+                            cfile.flush()
+                        time.sleep(0.1)
+                    cfile.close()
+                    os.remove(fname)
+                    os.remove(fcname)
                 except Exception, ex:
                     #if errors - write data to another file
                     print "NfFileReadThread flowsend exception: ", repr(ex)
-                    flows = flows[fcnt:]
+                    """flows = flows[fcnt:]
                     newfname = ''.join((self.hpath, str(time.clock()), '.dmp'))
                     dfile = open(newfname, 'ab')
                     for flow in flows:
                         dfile.write(flow)
-                        dfile.write('!FLW')
+                        dfile.write('!FLW')"""
                     dfile.close()
+                    cfile.close()
                     #use locks is deadlocking issues arise
-                    fnameQueue.appendleft(newfname)
-                    os.remove(fname)
+                    fnameQueue.appendleft(fname)
+                    #os.remove(fname)
                     return
                 
             except Exception, ex:
@@ -534,7 +570,7 @@ class NfFileReadThread(Thread):
                 fnameQueue.append(fname)
                 return
                         
-            os.remove(fname)                      
+            #os.remove(fname)                      
                            
                     
 class ServiceThread(Thread):
@@ -682,10 +718,10 @@ class RecoveryThread(Thread):
         global recoverAtt
         global dumpDir
         global fnameQueue
-        if recoverAtt:
+        """if recoverAtt:
             fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp*')))
-        else:
-            fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp')))
+        else:"""
+        fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp')))
         if fllist:
             for fl in fllist:
                 fnameQueue.appendleft(fl)

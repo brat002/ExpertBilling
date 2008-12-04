@@ -36,7 +36,7 @@ for i in range(1000):
             #print dtrc
         except Exception, ex:
             pass"""
-        time.sleep(0.0005)
+        time.sleep(0.001)
     print time.clock() - a
 
 
