@@ -478,8 +478,8 @@ class periodical_service_bill(Thread):
                         #print "new ps"
                         for account in accounts:
                             #if account.suspended
-                            if account[13]:
-                                continue
+                            '''if account[13]:
+                                continue'''
                             
                             accounttarif_id = account[12]
                             account_id = account[0]
@@ -983,7 +983,7 @@ class NetFlowRoutine(Thread):
                     if  (not acct[3] <= stream_date):
                         print "Wrong NetFlow data file of packet is too old"
                         
-                        '''cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.suspended, ba.created, ba.disabled_by_limit, ba.balance_blocked
+                        '''cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked
                         FROM billservice_account as ba
                         LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                         LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.id=%s;""", (stream_date, flow[19],))
@@ -2292,7 +2292,7 @@ acct structure
 [10] - bt.settlement_period_id, 
 [11] - bt.active, 
 [12] - act.id, 
-[13] - ba.suspended, 
+[13] - FALSE, 
 [14] - ba.created, 
 [15] - ba.disabled_by_limit, 
 [16] - ba.balance_blocked, 
@@ -2338,7 +2338,7 @@ class AccountServiceThread(Thread):
                 ptime =  time.time()
                 ptime = ptime - (ptime % 20)
                 tmpDate = datetime.datetime.fromtimestamp(ptime)
-                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.suspended, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username 
+                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username 
                     FROM billservice_account as ba
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
