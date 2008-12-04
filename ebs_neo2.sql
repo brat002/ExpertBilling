@@ -963,17 +963,28 @@ ALTER FUNCTION public.get_tariff_type(tarif_id integer) OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION on_tariff_delete_fun(oldrow billservice_tariff) RETURNS record
     AS $$
-        BEGIN
+DECLARE
+tts_id  integer;
+tas_id  integer;
+accp_id integer;
+BEGIN
+        
         IF oldrow.traffic_transmit_service_id NOTNULL THEN
-            DELETE FROM billservice_traffictransmitservice WHERE id=oldrow.traffic_transmit_service_id;
+        	tts_id = oldrow.traffic_transmit_service_id;
+            UPDATE billservice_tariff SET traffic_transmit_service_id=NULL WHERE id=oldrow.id;
+            DELETE FROM billservice_traffictransmitservice WHERE id=tts_id;
         END IF;
 
         IF oldrow.time_access_service_id NOTNULL THEN
-            DELETE FROM billservice_timeaccessservice WHERE id=oldrow.time_access_service_id;
+        	tas_id = oldrow.time_access_service_id;
+        	UPDATE billservice_tariff SET time_access_service_id=NULL WHERE id=oldrow.id;
+            DELETE FROM billservice_timeaccessservice WHERE id=tas_id;
         END IF;
 
         IF oldrow.access_parameters_id NOTNULL THEN
-            DELETE FROM billservice_accessparameters WHERE id=oldrow.access_parameters_id;
+        	--accp_id = oldrow.access_parameters_id;
+            --UPDATE billservice_tariff SET access_parameters_id=NULL WHERE id=oldrow.id;
+            DELETE FROM billservice_accessparameters WHERE id=accp_id;
         END IF;
                RETURN oldrow;               
         END;
@@ -8981,11 +8992,8 @@ ALTER TABLE ONLY billservice_netflowstream
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-ALTER TABLE ONLY billservice_netflowstream
-    ADD CONSTRAINT billservice_netflowstream_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
+-- add trigger for trafficclass_id
 
-ALTER TABLE ONLY billservice_netflowstream
-    ADD CONSTRAINT billservice_netflowstream_traffic_transmit_node_id_fkey FOREIGN KEY (traffic_transmit_node_id) REFERENCES billservice_traffictransmitnodes(id) ON DELETE CASCADE DEFERRABLE;
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
