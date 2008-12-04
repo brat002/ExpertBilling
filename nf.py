@@ -107,6 +107,7 @@ def flow5(data):
         [23] - nas_trafficnode.direction
         [24] - nas_trafficclass.store
         [25] - nas.trafficclass.passthrough
+        [26] - accounttarif.id
     """
     if len(data) != flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
@@ -161,9 +162,10 @@ def nfPacketHandle(data, addrport, flowCache):
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
             #checks for account
-            acc_id = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
-            if acc_id:
+            acc_acct = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
+            if acc_acct:
                 flow[11] = nas_id
+                acc_id, acctf_id = (acc_acct)
                 flow.append(acc_id)
                 passthr = True
                 #checks classes
@@ -202,6 +204,7 @@ def nfPacketHandle(data, addrport, flowCache):
                         wrflow.append(nnode[9])
                         wrflow.append(nnode[10])
                         wrflow.append(nnode[8])
+                        wrflow.append(acctf_id)
                         flowCache.addflow5(wrflow)
                         break
                
@@ -215,6 +218,7 @@ def nfPacketHandle(data, addrport, flowCache):
                         wrflow.append(nnode[9])
                         wrflow.append(nnode[10])
                         wrflow.append(nnode[8])
+                        wrflow.append(acctf_id)
                         flowCache.addflow5(wrflow)
 
 
@@ -611,11 +615,9 @@ class ServiceThread(Thread):
         while True:
             #print "Servicethread"
             try:
-                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")
-                self.connection.commit()
+                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")                
                 nasvals = self.cur.fetchall()
-                self.cur.close()
-                self.cur = self.connection.cursor()
+                self.connection.commit()
                 nascache = dict(nasvals)
                 del nasvals
             except Exception, ex:
@@ -634,11 +636,27 @@ class ServiceThread(Thread):
                         continue
                 
             try:
-                self.cur.execute("SELECT id,ipn_ip_address FROM billservice_account WHERE ipn_ip_address <> inet '0.0.0.0';")
+                self.cur.execute("SELECT ba.id,ba.vpn_ip_address,ba.ipn_ip_address, bacct.id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON ba.id=bacct.account_id;")
+                accts = self.cur.fetchall()
+                self.connection.commit()
+                icTmp = {}
+                vcTmp = {}
+                for acct in accts:
+                    vpn_ip, ipn_ip = acct[1:3]
+                    if vpn_ip != '0.0.0.0':
+                        vcTmp[parseAddress(vpn_ip)[0]] = (acct[0], acct[3])
+                    if ipn_ip != '0.0.0.0':
+                        icTmp[parseAddress(ipn_ip)[0]] = (acct[0], acct[3]) 
+                if icTmp:
+                    ipncache = icTmp                
+                if vcTmp:
+                    vpncache = vcTmp
+                del icTmp, vcTmp
+                
+                '''self.cur.execute("SELECT id,ipn_ip_address FROM billservice_account WHERE ipn_ip_address <> inet '0.0.0.0';")
                 self.connection.commit()
                 ipns = self.cur.fetchall()
-                self.cur.close()
-                self.cur = self.connection.cursor()
+
                 icTmp = {}
                 #ipncache = icTmp.fromkeys([parseAddress(x[0])[0] for x in self.cur.fetchall()], 1)
                 #turn IP strings into long integers
@@ -646,11 +664,11 @@ class ServiceThread(Thread):
                     icTmp[parseAddress(ipn[1])[0]] = ipn[0]
                 if icTmp:
                     ipncache = icTmp
-                del icTmp
+                del icTmp'''
             except Exception, ex:
-                print "Servicethread ipncache exception: ", repr(ex)
+                print "Servicethread ip cache exception: ", repr(ex)
                 
-            try:
+            '''try:
                 self.cur.execute("SELECT id,vpn_ip_address FROM billservice_account WHERE vpn_ip_address <> inet '0.0.0.0';")
                 self.connection.commit()
                 vpns = self.cur.fetchall()
@@ -665,15 +683,13 @@ class ServiceThread(Thread):
                 del vcTmp
                 #vpncache = vcTmp.fromkeys([parseAddress(x[0])[0] for x in self.cur.fetchall()], 1)
             except Exception, ex:
-                print "Servicethread vpncache exception: ", repr(ex)
+                print "Servicethread vpncache exception: ", repr(ex)'''
              
             #forms a class-nodes structure
             try:
                 self.cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
                 self.connection.commit()
                 nnodes = self.cur.fetchall()
-                self.cur.close()
-                self.cur = self.connection.cursor()
                 ndTmp = [[0, []]]
                 tc_id = nnodes[0][1]
                 for nnode in nnodes:

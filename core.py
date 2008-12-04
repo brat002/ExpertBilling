@@ -975,24 +975,30 @@ class NetFlowRoutine(Thread):
                     acct = cacheAT.get(flow[20])
                     #get collection date
                     stream_date = datetime.datetime.fromtimestamp(flow[21])
+                    cur_actf_id = acct[12]
                     if not acct:
                         continue
+                    
+                    flow_actf_id = flow[26]
+
                     #print stream_date
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
-                    if  (not acct[3] <= stream_date):
-                        print "Wrong NetFlow data file of packet is too old"
+                    if  (cur_actf_id  != flow_actf_id) or (not acct[3] <= stream_date):
+                        if oldAcct.has_key(flow_actf_id):
+                            acct = oldAcct[flow_actf_id]
+                        else:                        
+                            cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked
+                            FROM billservice_account as ba
+                            JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
+                            LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (flow[26],))
+                            acct = cur.fetchone()
+                            connection.commit()
+                            oldAcct[flow_actf_id] = acct                           
                         
-                        '''cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked
-                        FROM billservice_account as ba
-                        LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
-                        LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.id=%s;""", (stream_date, flow[19],))
-                        acct = cur.fetchone()
-                        connection.commit()'''
-                        continue
-                        #cur.close()
-                    if not acct:
-                        continue
+                        if not acct:
+                            continue
+                    
                     tarif_id = acct[4]
                     #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
                     if (tarif_id == None) or (not (acct[11] or store_na_tarif)) or (not (acct[29] or store_na_account)):
