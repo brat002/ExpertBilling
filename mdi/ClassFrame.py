@@ -579,10 +579,10 @@ class ClassChild(QtGui.QMainWindow):
         
 
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.addClassAction.setText(QtGui.QApplication.translate("MainWindow", "Add class", None, QtGui.QApplication.UnicodeUTF8))
-        self.delClassAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class", None, QtGui.QApplication.UnicodeUTF8))
-        self.addClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Add Node", None, QtGui.QApplication.UnicodeUTF8))
-        self.delClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Delete Class Node", None, QtGui.QApplication.UnicodeUTF8))
+        self.addClassAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить класс", None, QtGui.QApplication.UnicodeUTF8))
+        self.delClassAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить класс", None, QtGui.QApplication.UnicodeUTF8))
+        self.addClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Добавить подкласс", None, QtGui.QApplication.UnicodeUTF8))
+        self.delClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Удалить подкласс", None, QtGui.QApplication.UnicodeUTF8))
         self.editClassAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Class", None, QtGui.QApplication.UnicodeUTF8))
         self.editClassNodeAction.setText(QtGui.QApplication.translate("MainWindow", "Edit Node", None, QtGui.QApplication.UnicodeUTF8))
         
