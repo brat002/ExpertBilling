@@ -165,14 +165,26 @@ class check_vpn_access(Thread):
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
         speeds = spRec
+        min_from_start=0
+        f_speed = None
         for speed in speeds:
             #if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
-            if fMem.in_period_(speed[6], speed[7], speed[8], date_)[3]:
+            '''if fMem.in_period_(speed[6], speed[7], speed[8], date_)[3]:
                 for i in range(6):
                     speedi = speed[i]
                     if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
                         defaults[i] = speedi
-                return defaults
+                return defaults'''
+            tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
+            if from_start<min_from_start or min_from_start==0:
+                        min_from_start=from_start
+                        f_speed=speed
+                        
+        if f_speed != None:
+            for i in range(6):
+                    speedi = f_speed[i]
+                    if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
+                        defaults[i] = speedi
         return defaults
     
     def remove_sessions(self, cur, connection):
@@ -1859,6 +1871,7 @@ class settlement_period_service_dog(Thread):
                                                              )
                                 cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
                                 connection.commit()
+                                cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
                         
                 connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
@@ -1934,14 +1947,20 @@ class ipn_service(Thread):
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
         speeds = spRec
+        min_from_start=0
+        f_speed = None
         for speed in speeds:
             #if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
-            if fMem.in_period_(speed[6], speed[7], speed[8], date_)[3]:
-                for i in range(6):
-                    speedi = speed[i]
+            tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
+            if from_start<min_from_start or min_from_start==0:
+                        min_from_start=from_start
+                        f_speed=speed
+                        
+        if f_speed != None:
+            for i in range(6):
+                    speedi = f_speed[i]
                     if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
                         defaults[i] = speedi
-                return defaults
         return defaults
 
     def run(self):
