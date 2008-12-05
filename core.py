@@ -255,20 +255,7 @@ class check_vpn_access(Thread):
         connection._con._con.set_client_encoding('UTF8')
         while True:            
             try:
-                cur = connection.cursor()
-                #close frosen sessions
-                now = datetime.datetime.now()
-                cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;", (now, now,))
-                connection.commit()
 
-                #TODO: make nas_nas.ipadress UNIQUE and INDEXed
-                
-                cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_id
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL;
-                                 """)
-                rows=cur.fetchall()
-                connection.commit()
                 try:
                     #if caches were renewed, renew local copies
                     if curAT_date > dateAT:
@@ -286,9 +273,26 @@ class check_vpn_access(Thread):
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except Exception, ex:
                     print "Vpn speed thread exception: ", repr(ex)
-                    
+                   
+                cur = connection.cursor()
+                #close frosen sessions
+                now = datetime.datetime.now()
+                cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;", (now, now,))
+                connection.commit()
+
+                #TODO: make nas_nas.ipadress UNIQUE and INDEXed
+                
+                cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_id
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL;
+                                 """)
+                rows=cur.fetchall()
+                connection.commit()
                 for row in rows:
                     try:
                         result=None
@@ -453,6 +457,9 @@ class periodical_service_bill(Thread):
                         cacheSuspP = copy(curSuspPerCache)
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except:
                     try:
                         curAT_lock.release()
@@ -696,6 +703,9 @@ class TimeAccessBill(Thread):
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except:
                     try:
                         curAT_lock.release()
@@ -1399,6 +1409,9 @@ class limit_checker(Thread):
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except:
                     time.sleep(1)
                     continue
@@ -1618,6 +1631,9 @@ class settlement_period_service_dog(Thread):
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except:
                     try:
                         curAT_lock.release()
@@ -2023,6 +2039,9 @@ class ipn_service(Thread):
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
+                    else:
+                        time.sleep(10)
+                        continue
                 except Exception, ex:
                     print "Ipn speed thread exception: ", repr(ex)
                 cur = connection.cursor()
