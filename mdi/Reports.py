@@ -673,7 +673,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
     def __init__(self, connection):
         columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
         columns_t1=[u'Класс', u'Принято',u'Передано', u'Сумма',''] 
-        initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Серверы доступа"}
+        initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Сетевая статистика"}
         tabargs= [["tab0", columns_t0, "Детальная статистика"], ["tab1", columns_t1, "Сводная статистика"]]
         self.child = ReportPropertiesDialog(connection = connection)
         super(NetFlowReportEbs, self).__init__(connection, initargs, tabargs)

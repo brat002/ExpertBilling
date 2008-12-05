@@ -360,7 +360,8 @@ class sqliteDbAccess(object):
         else:
             self.dbfile = dbname
             self.filestat = 1
-            
+        #import sys 
+        #print >>sys.stderr, "dbpath=", self.dbfile
         self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         self.db.setDatabaseName(self.dbfile)
             

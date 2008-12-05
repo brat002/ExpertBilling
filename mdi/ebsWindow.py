@@ -69,7 +69,11 @@ class ebsTableWindow(QtGui.QMainWindow):
     def refresh(self):
         pass
     def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
+        try:
+            return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
+        except Exception,e:
+            print e
+            return -1
     #list example: [(name, title, iconpath, function)]
     #dict example: {objname:[actname, {"separator"}]
     def actionCreator(self, aList, objDict):

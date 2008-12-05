@@ -177,8 +177,8 @@ class check_vpn_access(Thread):
                 return defaults'''
             tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
             if from_start<min_from_start or min_from_start==0:
-                        min_from_start=from_start
-                        f_speed=speed
+                min_from_start=from_start
+                f_speed=speed
                         
         if f_speed != None:
             for i in range(6):
@@ -322,7 +322,7 @@ class check_vpn_access(Thread):
                         acc_status, allow_vpn_null,allow_vpn_block = acct[29:32]
                         disabled_by_limit, balance_blocked = acct[15:17]
                         acstatus = (((not allow_vpn_null) and (acct[1]+acct[2] >=0) or (allow_vpn_null)) \
-                                    or \
+                                    and \
                                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
                         #print row['balance']
                         """
@@ -1529,14 +1529,14 @@ class limit_checker(Thread):
                         sizes=cur.fetchone()
                         connection.commit()
     
-                        print "sizes", sizes
+                        #print "sizes", sizes
                         if sizes[0]!=None:
                             tsize=sizes[0]
                         #limitRec[4] - limit_size
                         if tsize>Decimal("%s" % limitRec[4]):
                             block=True
     
-                        print "block", block, tsize>Decimal("%s" % limitRec[4]), tsize, limitRec[4]
+                        #print "block", block, tsize>Decimal("%s" % limitRec[4]), tsize, limitRec[4]
     
         
                         #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
@@ -2049,8 +2049,11 @@ class ipn_service(Thread):
                 
                 ipnspTp=cur.fetchall()
                 connection.commit()
-                acc_ipn_sps = {}
+                acc_ipn_sps = {} # {account_id:(id, account_id, speed, state, static, datetime),}
                 for ipns in ipnspTp:
+                    """
+                    Индексируем параметры скорости по Acount_id
+                    """
                     acc_ipn_sps[ipns[1]] = ipns                  
                 
                 #for row in rows:
@@ -2060,6 +2063,9 @@ class ipn_service(Thread):
                         continue
                     account_vpn_ip, account_ipn_ip, account_mac_address  = acct[18:21]
                     if account_ipn_ip == '0.0.0.0':
+                        """
+                        Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем.
+                        """
                         continue
                     
                     #acct[5]- access_parameter_id
@@ -2079,7 +2085,7 @@ class ipn_service(Thread):
                     account_ipn_status = acct[22]
                     account_status = acct[29]
                     account_name = acct[32]                    
-                    period = c_tp_asInPeriod[tarif_id]         
+                    period = c_tp_asInPeriod[tarif_id]# True/False
                     nasRec = cacheNas[account_id]
                     nas_ipaddress = nasRec[3]
                     nas_login, nas_password = nasRec[5:7]
@@ -2178,7 +2184,7 @@ class ipn_service(Thread):
             
             #self.connection.close()
             gc.collect()
-            time.sleep(60)
+            time.sleep(120)
 
 
 #periodical function memoize class

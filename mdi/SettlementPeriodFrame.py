@@ -276,7 +276,7 @@ class SettlementPeriodEbs(ebsTableWindow):
             elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete("billservice_settlementperiod", id)
+                    self.connection.iddelete(id, "billservice_settlementperiod")
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:

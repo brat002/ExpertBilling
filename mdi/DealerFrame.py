@@ -764,7 +764,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader("dealer_frame_header", self.tableWidget)
-
+        
         #self.tableWidget.resizeColumnsToContents()
         #self.tableWidget.setSortingEnabled(True)
 

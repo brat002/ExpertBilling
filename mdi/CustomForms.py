@@ -1,6 +1,6 @@
 #-*-coding=utf-8*-
 
-import os
+import os, sys
 from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
 from Reports import TransactionsReport
 from helpers import makeHeaders
@@ -364,53 +364,30 @@ class ConnectDialog(QtGui.QDialog):
 
         self.tableWidget = QtGui.QTableView(self.centralwidget)
         try:
-            '''model = self.getModel("exbill_users")
-            model.removeColumn(0)
-            print model.record(0).value(1).toString()
-            print "----------getmodel-------"
-            model.setHeaderData(0, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
-            model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
-            self.tableWidget.setModel(model)
-            print self.tableWidget.model().record(0).value(1).toString()'''
-            '''self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-            self.db.setDatabaseName("exbillusers")
-            self.db.open()
-            self.model = QtSql.QSqlTableModel()
-            self.model.setTable("exbill_users")
-            self.model.select()
-            self.model.removeColumn(0)
-            self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
-            self.model.setHeaderData(0, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
-            self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
-            self.tableWidget.setModel(self.model)
-            self.tableWidget.setGeometry(QtCore.QRect(0,170,341,91))
-            self.tableWidget.setObjectName("tableWidget")
-            #self.tableWidget.setColumnHidden(0, True)
-            #self.tableWidget = tableFormat(self.tableWidget)
-            #self.tableWidget.update()
-            self.tableWidget.show()'''
             self.model = self.getModel("exbill_users")
-            #self.model.removeColumn(0)
-            self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
-            self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
-            self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
-            #height = self.tableWidget.fontMetrics().height()
-            #self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
-            #print height
-            self.tableWidget.verticalHeader().setDefaultSectionSize(tableHeight)
-            self.tableWidget.setModel(self.model)
-            self.tableWidget.setGeometry(QtCore.QRect(0,150,341,128))
-            self.tableWidget.setObjectName("tableWidget")
-            self.tableWidget = tableFormat(self.tableWidget)
-            self.tableWidget.setColumnHidden(3, True)
-            #self.tableWidget.setRowHeight(-1, 17)
-            #self.tableWidget.resizeRowsToContents()
-            self.tableWidget.setr
-            self.tableWidget.show()
-            self.twIndex = -1
-            #columns = [u'IP', 'Username']
-        except Exception, ex:
-            print ex
+        except:
+            print "model not found"
+        
+        #self.model.removeColumn(0)
+        self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
+        self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
+        self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
+        #height = self.tableWidget.fontMetrics().height()
+        #self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
+        #print height
+        self.tableWidget.verticalHeader().setDefaultSectionSize(tableHeight)
+        self.tableWidget.setModel(self.model)
+        self.tableWidget.setGeometry(QtCore.QRect(0,150,341,128))
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.tableWidget.setColumnHidden(3, True)
+        #self.tableWidget.setRowHeight(-1, 17)
+        #self.tableWidget.resizeRowsToContents()
+        #self.tableWidget.setr
+        self.tableWidget.show()
+        self.twIndex = -1
+        #columns = [u'IP', 'Username']
+
 
         self.save_pushButton = QtGui.QPushButton(self.centralwidget)
         self.save_pushButton.setGeometry(QtCore.QRect(260,70,75,23))
@@ -507,7 +484,7 @@ class ConnectDialog(QtGui.QDialog):
             self.name_edit.setText(self._name)
             self.password_edit.setText("*******")
         except Exception, ex:
-            print ex
+            print >>sys.stderr, ex
         '''dbi = self.db.select("select * from exbill_users;")
         p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
         p2 = dbi[4].value(3).toByteArray()
@@ -515,11 +492,15 @@ class ConnectDialog(QtGui.QDialog):
         print p1 == p2'''
         
     def getModel(self, table):
+        
         self.db = sqliteDbAccess(connectDBName, 'system')
+        #sys.stdin=sys.stderr
+        #print >>sys.stderr, "db", self.db, (self.db.filestat == 2) or (self.db.filestat == 4)
         if (self.db.filestat == 2) or (self.db.filestat == 4):
             self.db.action("CREATE TABLE exbill_users (ID INTEGER PRIMARY KEY, IP TEXT, Username TEXT, Password Text);", '')
         dbmodel = self.db.getTableModel(table)
         dbmodel.select()
+        #print >>sys.stderr, dbmodel, table
         return dbmodel
     
     def accept(self):

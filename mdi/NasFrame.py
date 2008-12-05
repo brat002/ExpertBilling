@@ -648,7 +648,7 @@ class NasEbs(ebsTableWindow):
             elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete("nas_nas", id)
+                    self.connection.iddelete(id, "nas_nas")
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
