@@ -1,4 +1,4 @@
-#-*-coding=utf-8*-
+﻿#-*-coding=utf-8*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
@@ -459,7 +459,7 @@ class ConnectDialog(QtGui.QDialog):
         self.connect_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.remove_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
         self.save_checkBox.setText(QtGui.QApplication.translate("MainWindow", "Запомнить", None, QtGui.QApplication.UnicodeUTF8))
-        self.address_edit.setValidator(self.ipValidator)
+        #self.address_edit.setValidator(self.ipValidator) <-НЕ ТРОГАТЬ! Там этот валидатор не нужен
         self.password_edit.setValidator(self.passValidator)
         self.exit_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Exit", None, QtGui.QApplication.UnicodeUTF8))
         self.save_pushButton.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
@@ -526,7 +526,7 @@ class ConnectDialog(QtGui.QDialog):
                             break
                     if not self.password:
                         print self.password
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль не совпадает с именем пользователя"))
+                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите пароль"))
                         return
             
             self.address = self.address_edit.text()
