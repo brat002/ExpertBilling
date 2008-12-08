@@ -107,7 +107,9 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         #Send CoA
         
-        speed_string= create_speed_string(speed, coa=True)
+        
+        #speed_string= create_speed_string(speed, coa=True)
+        speed_string= create_speed_string(speed)
         #print speed_string
         print 'send CoA'
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -148,6 +150,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
                              }
         speed = get_decimals_speeds(speed)
         #print speed
+        speed = speed_list_to_dict(speed)
         command_dict.update(speed)
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
@@ -754,11 +757,13 @@ def convert_values(value):
                 
 def get_decimals_speeds(params):
     #print "before", params
+    i = 0
     for param in params:
-        values = map(convert_values, str(params[param]).split('/'))
+        #values = map(convert_values, str(params[param]).split('/'))
+        values = map(convert_values, str(param).split('/'))
         #print values
-
-        params[param]='/'.join(values)
+        params[i] ='/'.join(values)
+        i += 1
     #print 'after', params
     return params
 
@@ -820,6 +825,10 @@ def parse_custom_speed(speed_string):
     trm = match_obj.group('trm') or -1
 
     return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
+
+def speed_list_to_dict(spList):
+    dkeys = ['max_limit', "burst_limit", 'burst_treshold', 'burst_time', 'priority', 'min_limit']
+    return dict(zip(dkeys, spList))
 
 def parse_custom_speed_lst(speed_string):
 

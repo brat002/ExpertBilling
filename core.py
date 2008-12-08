@@ -247,12 +247,12 @@ class check_vpn_access(Thread):
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
         """
         global tp_asInPeriod
-        global curNasCache, curAT_acIdx, curDefSpCache, curNewSpCache
+        global curNasCache,curNas_ipIdx, curAT_acIdx, curDefSpCache, curNewSpCache
         global curAT_date, curAT_lock
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
         connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
+        connection._con._con.set_client_encoding('UTF8')
         while True:            
             try:
 
@@ -263,7 +263,8 @@ class check_vpn_access(Thread):
                         #account-tarif cach indexed by account_id
                         cacheAT = copy(curAT_acIdx)
                         #nas cache
-                        cacheNas  = copy(curNasCache)
+                        #cacheNas  = copy(curNasCache)
+                        cacheNas = copy(curNas_ipIdx)
                         #default speed cache
                         cacheDefSp = copy(curDefSpCache)
                         #current speed cache
@@ -296,8 +297,8 @@ class check_vpn_access(Thread):
                 for row in rows:
                     try:
                         result=None
-                        nasRec = cacheNas[row[5]]
-                        acct = cacheAT[row[1]]
+                        nasRec = cacheNas[str(row[5])]
+                        acct = cacheAT.get(row[1])
                         '''
                         [0]  - id, 
                         [1]  - type, 
@@ -344,7 +345,7 @@ class check_vpn_access(Thread):
                                 speed=parse_custom_speed_lst(vpn_speed)
                             
                             newspeed=''
-                            newspeed = ''.join(speed[:6])
+                            newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                                 
                             #print row
                             #print row['speed_string'],"!!!", newspeed, type(row['speed_string']), type(newspeed)
@@ -363,8 +364,8 @@ class check_vpn_access(Thread):
                                                         nas_login=str(nasRec[5]), 
                                                         nas_password=nasRec[6], 
                                                         session_id=str(row[2]), 
-                                                        format_string=str(nasRec(14)),
-                                                        speed=speed)                           
+                                                        format_string=str(nasRec[14]),
+                                                        speed=speed[:6])                           
         
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession
@@ -390,9 +391,9 @@ class check_vpn_access(Thread):
                                      )
         
                         if result==True:
-                            disconnect_result=u'ACK'
+                            disconnect_result='ACK'
                         elif result==False:
-                            disconnect_result=u'NACK'
+                            disconnect_result='NACK'
         
                         if result is not None:
                             cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
@@ -2138,7 +2139,7 @@ class ipn_service(Thread):
                         speed = parse_custom_speed_lst(account_ipn_speed)
 
                     newspeed=''
-                    newspeed = ''.join(speed[:6])
+                    newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                      
                     ipn_speed = None
                     ipn_state = None
@@ -2162,7 +2163,7 @@ class ipn_service(Thread):
                                                     nas_ipaddress,nas_type,nas_name,
                                                     nas_login,nas_password,nas_secret='',                                                    
                                                     format_string=nas_ipn_speed,
-                                                    speed=speed)    
+                                                    speed=speed[:6])    
                         data_for_save=''
                         #print speed
     
@@ -2374,7 +2375,7 @@ class AccountServiceThread(Thread):
         global curATCache,curAT_acIdx,curAT_tfIdx
         global curAT_date, curAT_lock
         global curSPCache, curTLimitCache, curSuspPerCache
-        global curNasCache,curTTSCache
+        global curNasCache, curNas_ipIdx, curTTSCache
         global curDefSpCache, curNewSpCache
         global curPerTarifCache, curPersSetpCache
         global curTimeAccNCache, curTimePerNCache, curTimeAccSrvCache
@@ -2542,6 +2543,8 @@ class AccountServiceThread(Thread):
                 tmpspC = {}
                 #nas cache, indexed by ID
                 tmpnasC = {}
+                
+                tmpnasipC = {}
                 # default speed cache
                 tmpdsC = {}
                 #nondef speed cache
@@ -2558,12 +2561,14 @@ class AccountServiceThread(Thread):
                 tmpaccpC = {}
                 tmpotshC = {}
                 tmpsusppC = {}
+                
                 for tts in ttssTp:
                     tmpttsC[tts[0]] = tts
                 for sps in spsTp:
                     tmpspC[sps[0]] = sps
                 for nas in nasTp:
                     tmpnasC[nas[0]] = nas
+                    tmpnasipC[str(nas[3])] = nas
                 for ds in defspTmp:
                     tmpdsC[ds[6]] = ds
                 for ns in nspTmp:
@@ -2599,6 +2604,7 @@ class AccountServiceThread(Thread):
                 curSPCache = tmpspC
                 curTTSCache = tmpttsC
                 curNasCache = tmpnasC
+                curNas_ipIdx = tmpnasipC
                 curDefSpCache = tmpdsC
                 curNewSpCache = tmpnsC
                 curPerTarifCache = perTarTp
