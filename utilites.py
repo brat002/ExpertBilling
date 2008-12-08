@@ -109,7 +109,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         
         speed_string= create_speed_string(speed, coa=True)
         #print speed_string
-        #print 'send CoA'
+        print 'send CoA'
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
@@ -136,7 +136,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
-        #print 'SetSpeed Via SSH'
+        print 'SetSpeed Via SSH'
         command_dict={
                              'access_type':access_type,
                              'username': account_name,
