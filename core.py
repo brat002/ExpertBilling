@@ -252,7 +252,7 @@ class check_vpn_access(Thread):
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
         connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
+        #connection._con._con.set_client_encoding('UTF8')
         while True:            
             try:
 
@@ -348,13 +348,13 @@ class check_vpn_access(Thread):
                                 
                             #print row
                             #print row['speed_string'],"!!!", newspeed, type(row['speed_string']), type(newspeed)
-                            if row['speed_string']!=newspeed:
+                            if row[3]!=newspeed:
                                 print "set speed", newspeed
                                 coa_result=change_speed(dict=dict, account_id=row[1], 
                                                         account_name=str(acct[32]), 
-                                                        account_vpn_ip=acct[18], 
-                                                        account_ipn_ip=acct[19], 
-                                                        account_mac_address=acct[20], 
+                                                        account_vpn_ip=str(acct[18]), 
+                                                        account_ipn_ip=str(acct[19]), 
+                                                        account_mac_address=str(acct[20]), 
                                                         access_type=str(row[4]), 
                                                         nas_ip=str(nasRec[3]), 
                                                         nas_type=nasRec[1], 
@@ -375,8 +375,8 @@ class check_vpn_access(Thread):
                             result = PoD(dict=dict,
                                          account_id=row[1], 
                                          account_name=str(acct[32]), 
-                                         account_vpn_ip=acct[18], 
-                                         account_ipn_ip=acct[19], 
+                                         account_vpn_ip=str(acct[18]), 
+                                         account_ipn_ip=str(acct[19]), 
                                          account_mac_address=acct[20], 
                                          access_type=str(row[4]), 
                                          nas_ip=str(nasRec[3]), 
@@ -782,7 +782,7 @@ class TimeAccessBill(Thread):
                     periods=self.cur.fetchall()'''
                     #get the list of time periods and their cost
                     now = datetime.datetime.now()
-                    periods = cacheTimeAccN[ps_id]
+                    periods = cacheTimeAccN.get(ps_id, [])
                     for period in periods:
                         period_id=period[0]
                         period_cost=period[1]
@@ -798,7 +798,7 @@ class TimeAccessBill(Thread):
                             WHERE (%s IN (SELECT tptpn.timeperiod_id from billservice_timeperiod_time_period_nodes as tptpn WHERE tpn.id=tptpn.timeperiodnode_id))""", (period_id,))
                         period_nodes_data=self.cur.fetchall()'''
                         #get period nodes and check them
-                        period_nodes_data = cacheTimePerN[period_id]
+                        period_nodes_data = cacheTimePerN.get(period_id,[])
                         for period_node in period_nodes_data:
                             period_id, period_name =period_node[0:2]
                             period_start, period_length, repeat_after = period_node[2:5]
@@ -898,7 +898,7 @@ class NetFlowRoutine(Thread):
         #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
         #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
         #trafic_transmit_nodes=self.cur.fetchall()
-        trafic_transmit_nodes = cTRTRNodesCache.get((trafic_transmit_service_id, traffic_class_id))
+        trafic_transmit_nodes = cTRTRNodesCache.get((trafic_transmit_service_id, traffic_class_id), [])
         cost=0
         min_from_start=0
         # [0] - ttsn.id, [1] - ttsn.cost, [2] - ttsn.edge_start, [3] - ttsn.edge_end, [4] - tpn.time_start, [5] - tpn.length, [6] - tpn.repeat_after
@@ -1010,7 +1010,7 @@ class NetFlowRoutine(Thread):
                         if oldAcct.has_key(flow_actf_id):
                             acct = oldAcct[flow_actf_id]
                         else:                        
-                            cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked
+                            cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
                             FROM billservice_account as ba
                             JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
                             LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (flow[26],))
