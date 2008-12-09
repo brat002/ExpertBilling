@@ -121,7 +121,9 @@ class TransactionsReportEbs(ebsTableWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        
     def ebsPostInit(self, initargs):
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
         actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction)]
         objDict = {self.tableWidget:["actionDeleteTransaction"]}
