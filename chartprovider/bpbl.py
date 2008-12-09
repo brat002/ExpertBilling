@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from bpplotadapter import bpplotAdapter
 import copy
-
+import time
 #dictionary with query strings
 selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
@@ -61,6 +61,7 @@ class bpbl(object):
             ins, outs, trs = 0, 0, 0
             tm = tm + tmd
             times.append(tm - htmd)
+            sleeper = 0
             try:
                 while data[tnum][0] < tm:
                     if data[tnum][2] == 'INPUT':
@@ -71,6 +72,11 @@ class bpbl(object):
                         #trs  += data[tnum][1]
                         pass
                     tnum +=1
+                    sleeper += 1
+                    if sleeper == 500:
+                        sleeper = 0
+                        time.sleep(0.01)
+                time.sleep(0.1)
             except:
                 #catch exception and pass it if out of range (instead of checking)
                 pass
@@ -170,7 +176,7 @@ class bpbl(object):
             zeros.append(0)
             for item in y_total_u.itervalues():
                 item.append(0)
-
+            sleeper = 0
             try:
                 while data[tnum][0] < tm:
                     #totals  += data[tnum][1]
@@ -180,6 +186,11 @@ class bpbl(object):
                         y_total_u[str(data[tnum][2])] = zeros[:]
                         y_total_u[str(data[tnum][2])][-1] += data[tnum][1]
                     tnum +=1
+                    sleeper += 1
+                    if sleeper == 500:
+                        sleeper = 0
+                        time.sleep(0.01)
+                time.sleep(0.1)
             except:
                 pass
             #y_total.append(totals)
@@ -281,6 +292,11 @@ class bpbl(object):
                 while data[tnum][0] < tm:
                     totals  += data[tnum][1]
                     tnum +=1
+                    sleeper += 1
+                    if sleeper == 500:
+                        sleeper = 0
+                        time.sleep(0.01)
+                time.sleep(0.1)
             except:
                 pass
             y_total.append(totals)
@@ -470,8 +486,14 @@ class bpbl(object):
                                 except:
                                     y_ps[str(ctval)] = copy.deepcopy(zeros)
                                     y_ps[str(ctval)][0][data[tnum][2].lower()][-1] += data[tnum][1]
-
+                        
                     tnum +=1
+                    sleeper += 1
+                    if sleeper == 500:
+                        sleeper = 0
+                        time.sleep(0.01)
+                time.sleep(0.1)
+                
 
             except IndexError, ierr:
                 pass

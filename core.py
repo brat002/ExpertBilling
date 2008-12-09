@@ -1520,9 +1520,9 @@ class limit_checker(Thread):
                         #acct[0] = account_id, limitRec[0] = limit_id
                         cur.execute("""
                              SELECT sum(octets) as size FROM billservice_netflowstream as nf 
-                             WHERE nf.account_id=%s AND nf.traffic_class_id @> ARRAY[(SELECT tltc.trafficclass_id 
+                             WHERE nf.account_id=%s AND nf.traffic_class_id && ARRAY((SELECT tltc.trafficclass_id 
                              FROM billservice_trafficlimit_traffic_class as tltc 
-                             WHERE tltc.trafficlimit_id=%s)] 
+                             WHERE tltc.trafficlimit_id=%s)) 
                              AND (date_start>'%s' AND date_start<'%s') and nf.direction in (%s)  
                              """ % (account_id, limitRec[0], settlement_period_start, settlement_period_end, d,))
         
@@ -1636,6 +1636,7 @@ class settlement_period_service_dog(Thread):
                         time.sleep(10)
                         continue
                 except:
+                    
                     try:
                         curAT_lock.release()
                     except: pass
@@ -1691,7 +1692,7 @@ class settlement_period_service_dog(Thread):
                     if shedlRec==None:
                         shedulelog_id=-1
                     else:
-                        shedulelog_id,    = shedlRec[0]
+                        shedulelog_id    = shedlRec[0]
                         ballance_checkout = shedlRec[2]                        
                         prepaid_traffic_reset, prepaid_traffic_accrued = shedlRec[3:5]                        
                         prepaid_time_reset, prepaid_time_accrued       = shedlRec[5:7]
@@ -2376,7 +2377,7 @@ class AccountServiceThread(Thread):
         global curAT_date, curAT_lock
         global curSPCache, curTLimitCache, curSuspPerCache
         global curNasCache, curNas_ipIdx, curTTSCache
-        global curDefSpCache, curNewSpCache
+        global curDefSpCache, curNewSpCache, curShedLogCache
         global curPerTarifCache, curPersSetpCache
         global curTimeAccNCache, curTimePerNCache, curTimeAccSrvCache
         global curOneTimeSrvCache, curAccParCache, curIPNSpCache, curOTSHistCache
@@ -2463,7 +2464,7 @@ class AccountServiceThread(Thread):
                 shllTp = cur.fetchall()
                 cur.execute("""SELECT id, prepaid_time, reset_time FROM billservice_timeaccessservice;""")
                 taccsTp = cur.fetchall()
-                cur.execute("""SELECT id, name, cost FROM billservice_onetimeservice;""")
+                cur.execute("""SELECT id, tarif_id, cost FROM billservice_onetimeservice;""")
                 otsTp = cur.fetchall()
                 cur.execute("""SELECT id, access_type, access_time_id, max_limit, min_limit, 
                                burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""")
@@ -2619,6 +2620,7 @@ class AccountServiceThread(Thread):
                 curOTSHistCache = tmpotshC
                 curAccParCache = tmpaccpC
                 curSuspPerCache = tmpsusppC
+                curIPNSpCache = tmpipnsC
                 tpnInPeriod = tmpPerTP
                 tp_asInPeriod = tmpPerAPTP
                 prepaysCache = prepaysTmp
