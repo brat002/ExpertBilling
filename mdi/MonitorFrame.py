@@ -10,6 +10,7 @@ from helpers import dateDelim
 from helpers import HeaderUtil
 from helpers import humanable_bytes
 from helpers import Worker
+from helpers import prntime
 import time
 
 
@@ -165,7 +166,7 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
             self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 7)
             self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 8)
-            self.addrow(self.tableWidget, session.session_time, i, 9)
+            self.addrow(self.tableWidget, prntime(session.session_time), i, 9)
             self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
