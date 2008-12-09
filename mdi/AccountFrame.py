@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8-*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui
