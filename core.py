@@ -182,9 +182,9 @@ class check_vpn_access(Thread):
                         
         if f_speed != None:
             for i in range(6):
-                    speedi = f_speed[i]
-                    if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
-                        defaults[i] = speedi
+                speedi = f_speed[i]
+                if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
+                    defaults[i] = speedi
         return defaults
     
     def remove_sessions(self, cur, connection):

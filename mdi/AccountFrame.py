@@ -4678,7 +4678,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
             
             self.addrow(a.id, i,0, enabled=a.status)
             self.addrow(a.username, i,1, enabled=a.status)
-            self.addrow(a.ballance, i,2, color="red", enabled=a.status)
+            self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(a.credit, i,3, enabled=a.status)
             self.addrow(a.fullname, i,4, enabled=a.status)
             self.addrow(a.email, i,5, enabled=a.status)
@@ -4792,3 +4792,4 @@ class AccountsMdiChild(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
+            

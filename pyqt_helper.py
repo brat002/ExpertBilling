@@ -1,10 +1,17 @@
-from mako.template import Template
+#-*- coding=utf-8 -*-
 
-templ = Template("""
-% for a in b:
-${a["id"]}, ${a["name"]}
-% endfor
+a=1800
 
-""")
-b=[{'id':1, 'name':'lala'}, {'id':2, 'name':'nana'}]
-print templ.render(b=b, z=[1,2,3])
+def prntime(s):
+
+    m,s=divmod(s,60)
+    h,m=divmod(m,60)
+    if h==0 and m==0:
+        return u"%sс" % s
+    elif h==0 and m!=0:
+        return u"%sм %sс" % (m,s,)
+    else:
+        return u"%sч %sм %sс" % (h,m,s)
+    
+    
+print prntime(a)

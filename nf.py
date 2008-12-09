@@ -512,7 +512,7 @@ class NfFileReadThread(Thread):
                 fnameLock.release()
                 return
             #open file and read data
-            print fname
+            #print fname
             try:
                 dfile = open(fname, 'rb')
                 flows = dfile.read()

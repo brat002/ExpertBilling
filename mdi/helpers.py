@@ -239,7 +239,7 @@ def format_update (x,y):
     if y!='Null' and y!='None':
         if type(y)==StringType or type(y)==UnicodeType:
             y=y.replace("\\", r"\\").replace(r"'", r"\'").replace(r'"', r'\"')
-            print y
+            #print y
         return "%s='%s'" % (x,y)
     else:
         return "%s=%s" % (x,'Null')
@@ -484,3 +484,17 @@ class Worker(QtCore.QThread):
             self.emit(QtCore.SIGNAL("refresh()"))
             time.sleep(self.interval)
                     
+
+def prntime(s):
+    """
+    Функция возвращает длительность времени в удобном для человека виде 
+    """
+    m,s=divmod(s,60)
+    h,m=divmod(m,60)
+    if h==0 and m==0:
+        return u"%sс" % s
+    elif h==0 and m!=0:
+        return u"%sм %sс" % (m,s,)
+    else:
+        return u"%sч %sм %sс" % (h,m,s)
+    

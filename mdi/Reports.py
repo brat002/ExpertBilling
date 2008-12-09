@@ -415,7 +415,7 @@ class TransactionsReport(QtGui.QMainWindow):
         ids = []
         #import Pyro
         for index in self.tableWidget.selectedIndexes():
-            print index.row(), index.column()
+            #print index.row(), index.column()
             if index.column()>1:
                 continue
             
@@ -638,7 +638,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
     def addClass(self):
         selected_items = self.all_classes_listWidget.selectedItems()
-        print 1
+        #print 1
         for item in selected_items:
             self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
             self.selected_classes_listWidget.addItem(item)
@@ -917,7 +917,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             WHERE date_start between '%s' and '%s'
             
             """ % (self.child.start_date, self.child.end_date)
-            print 2            
+            #print 2            
         
         if len(self.child.users)>0 or len(self.child.classes)>0:
             sql+=" AND " 
@@ -1270,7 +1270,7 @@ class NetFlowReport(QtGui.QMainWindow):
                         
             sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id,class.name"
             
-            print sql
+            #print sql
             data = self.connection.sql(sql)
             #i=0
             self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
@@ -1313,7 +1313,7 @@ class NetFlowReport(QtGui.QMainWindow):
             JOIN nas_trafficclass as class ON class.id = netflowstream.traffic_class_id
              
             WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date) 
-            print 1
+            #print 1
         elif self.child.with_grouping_checkBox.checkState()==2:
             sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
             FROM billservice_netflowstream as netflowstream
@@ -1324,7 +1324,7 @@ class NetFlowReport(QtGui.QMainWindow):
             WHERE date_start between '%s' and '%s'
             
             """ % (self.child.start_date, self.child.end_date)
-            print 2            
+            #print 2            
         
         if len(self.child.users)>0 or len(self.child.classes)>0:
             sql+=" AND " 
