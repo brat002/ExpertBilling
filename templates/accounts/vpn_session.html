@@ -22,7 +22,7 @@
 		   <td>{{ session.nas_id }}</td>
 		   <td align="right">{% trafic_format session.bytes_out %}&nbsp;</td>
 		   <td align="right">{% trafic_format session.bytes_in %}&nbsp;</td>
-		   <td>{{ session.session_time }}</td>
+		   <td>{% time_format session.session_time %}</td>
 		   <td align="right">{% writen_off_time session user %}</td>
 		   <td align="right">{% writen_off_trafic session user %}</td>
 	   </tr>

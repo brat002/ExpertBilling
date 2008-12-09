@@ -61,3 +61,26 @@ def traffic_size(traffic, account_tarif):
     return {
             'size':size,
             }
+    
+    
+@register.inclusion_tag('accounts/tags/time_format.html')
+def time_format(s):
+    try:
+        m,s=divmod(s,60)
+        h,m=divmod(m,60)
+        if h==0 and m==0:
+            return {
+                    'time':u"%sс" % s,
+                    }
+        elif h==0 and m!=0:
+            return {
+                    'time':u"%sм %sс" % (m,s,),
+                    }
+        else:
+            return {
+                     'time': u"%sч %sм %sс" % (h,m,s),
+                   }
+    except:
+        return {
+                'time': u"0с",
+                }
