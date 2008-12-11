@@ -5,15 +5,17 @@ import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
 
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
 from django.conf import settings
+from django import template
 
 from django.conf import settings
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff 
 from billservice.forms import LoginForm, PasswordForm, CardForm
 from radius.models import ActiveSession  
+from billservice.utility import is_login_user
 
 from lib.decorators import render_to
 
@@ -79,21 +81,21 @@ def login(request):
          return {
                  'form':form,
                 }  
-         
+               
 def login_out(request):
     if request.session.has_key('user'):
         del request.session['user']
-    return HttpResponseRedirect('/index/')
+    return is_login_user(request)
 
 
 @render_to('accounts/index.html')
 def index(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return is_login_user(request)
     user = request.session['user']
     if not cache.get(user.id):
         del request.session['user']
-        return HttpResponseRedirect('/account/login/')
+        return is_login_user(request)
     cursor = connection.cursor()
     cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
     tarif = cursor.fetchone()
@@ -120,7 +122,7 @@ def index(request):
 @render_to('accounts/netflowstream_info.html')
 def netflowstream_info(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return is_login_user(request)
     from lib.paginator import SimplePaginator
     paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']), 500, 'page')
     return {
@@ -132,7 +134,7 @@ def netflowstream_info(request):
 @render_to('accounts/transaction.html')
 def transaction(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return is_login_user(request)
     from lib.paginator import SimplePaginator
     paginator = SimplePaginator(request, Transaction.objects.filter(account=request.session['user']), 100, 'page')
     return {
@@ -143,7 +145,7 @@ def transaction(request):
 @render_to('accounts/vpn_session.html')
 def vpn_session(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return is_login_user(request)
     from lib.paginator import SimplePaginator
     user = request.session['user']
     paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user), 50, 'page')
@@ -156,7 +158,7 @@ def vpn_session(request):
 @render_to('accounts/change_password.html')
 def change_password(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     if request.method == 'POST':
         form = PasswordForm(request.POST)
         if form.is_valid():
@@ -187,7 +189,7 @@ def change_password(request):
 @render_to('accounts/card_acvation.html')
 def card_acvation(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     if not request.session.has_key('express_pay'):
         return HttpResponseRedirect('/index/')
     user = request.session['user']
@@ -196,7 +198,7 @@ def card_acvation(request):
                 'error_message': u"Вам не доступна услуга активации карт экспресс оплаты!",
                 }
     if not cache.get(user.id):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     cache_user = cache.get(user.id)
     if int(cache_user['count']) > settings.ACTIVATION_COUNT and not bool(cache_user['blocked']):
         cache.delete(user.id)
@@ -254,7 +256,7 @@ def card_acvation(request):
 @render_to('accounts/account_prepays_traffic.html')
 def account_prepays_traffic(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     user = request.session['user']
     try:
         from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
@@ -281,7 +283,7 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     
 def client(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     user = request.session['user']
     # CONNECTION TO RCP SERVER
     try:
@@ -327,7 +329,7 @@ def client(request):
 @render_to('accounts/traffic_limit.html')        
 def traffic_limit(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/account/login/')
+        return HttpResponseRedirect('/')
     user = request.session['user']
     cursor = connection.cursor()
     cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
