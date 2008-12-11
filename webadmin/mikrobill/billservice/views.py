@@ -64,7 +64,7 @@ def login(request):
                             }
             except:
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = u'Пользователь не найден в базе'
+                error_message = u'Пользователя с таким логином и паролем не существует'
                 return {
                         'error_message':error_message,
                         'form':form,
