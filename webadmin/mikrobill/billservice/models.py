@@ -412,7 +412,6 @@ class TrafficLimit(models.Model):
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
     in_direction      = models.BooleanField(default=True, blank=True)
     out_direction     = models.BooleanField(default=True, blank=True)
-    transit_direction = models.BooleanField(default=True, blank=True)
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
 
     def __unicode__(self):
