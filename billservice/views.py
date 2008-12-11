@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.conf import settings
 
 from django.conf import settings
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType 
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff 
 from billservice.forms import LoginForm, PasswordForm, CardForm
 from radius.models import ActiveSession  
 
@@ -323,3 +323,23 @@ def client(request):
 
     return response
         
+
+@render_to('accounts/traffic_limit.html')        
+def traffic_limit(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/account/login/')
+    user = request.session['user']
+    cursor = connection.cursor()
+    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+    tarif = cursor.fetchone()
+    tarif = tarif[0]
+    try:
+        tarif = Tariff.objects.get(name=tarif)
+        traffic = TrafficLimit.objects.filter(tarif=tarif) 
+    except:
+        traffic = None
+    return {
+            'trafficlimit':traffic,
+            'user':user,
+            } 
+            
