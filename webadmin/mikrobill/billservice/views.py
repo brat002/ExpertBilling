@@ -31,7 +31,7 @@ def login(request):
                 user = Account.objects.get(username=form.cleaned_data['username'])
                 if not user.allow_webcab:
                     form = LoginForm()
-                    error_message = u'У данного пользователя нет прав пользоваться WEB Кабинетом!!!'
+                    error_message = u'У вас нет прав на вход в веб-кабинет'
                     return {
                             'error_message':error_message,
                             'form':form,
