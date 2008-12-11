@@ -18,19 +18,21 @@
 	</div>
 	<div style="clear: both"></div>
 	<div>
-	   <div style="width:260px; float:left" class="meny_items">
+
+	   <div style="width:30%; float:left; max-width:260px" class="meny_items">
 
 		   {% block menu_option %}{% endblock%}
         </div>
+		
 		<div style="padding-left:60px;">
 			{% block login %}
 			{% endblock %}
 		</div>
-        <div style=" float:left; padding-left:60px;">
+        <div style=" float:left; padding-left:60px; width:60%;">
 	       {% block content %}
 	       {% endblock%}
 	   </div>
-        
+		        
 	</div>
 	
   </body>
