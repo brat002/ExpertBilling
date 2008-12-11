@@ -16,12 +16,16 @@
 	   <div style="float: right"><img src="{{ MEDIA_URL }}img/design/header_right_image.gif" alt="1"></div>
 	   <div style="float: left"><img src="{{ MEDIA_URL }}img/design/header_left_image.jpg" alt="2"></div>
 	</div>
-	
+	<div style="clear: both"></div>
 	<div>
 	   <div style="width:260px; float:left" class="meny_items">
 
 		   {% block menu_option %}{% endblock%}
         </div>
+		<div style="padding-left:60px;">
+			{% block login %}
+			{% endblock %}
+		</div>
         <div style=" float:left; padding-left:60px;">
 	       {% block content %}
 	       {% endblock%}

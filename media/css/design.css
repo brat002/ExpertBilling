@@ -95,7 +95,7 @@ td.first_row  {
 	margin:0 auto;
 }
 
-.reg_centr {width:1000px; text-align:center;}
+.reg_centr {width:100%; float:right;}
 
 .registration label {
     display:block;
@@ -126,6 +126,7 @@ td.first_row  {
     font-size:12px;
 	color:#0A668C;
 	text-align:left;
+	width:100px;
 }
 
 .enter_table td input {
