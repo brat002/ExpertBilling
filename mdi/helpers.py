@@ -417,8 +417,8 @@ def transaction(account_id, type_id, approved, description, summ, bill):
     #o.tarif_id=1
     o.created = datetime.datetime.now()
     
-    sql = "UPDATE billservice_account SET ballance = ballance - %d WHERE id = %d;" % (summ, account_id)
-    sql += o.save("billservice_transaction")
+    #sql = "UPDATE billservice_account SET ballance = ballance - %d WHERE id = %d;" % (summ, account_id)
+    sql = o.save("billservice_transaction")
     
      
     return sql 

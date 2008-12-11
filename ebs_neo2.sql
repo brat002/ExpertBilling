@@ -586,7 +586,7 @@ CREATE TABLE billservice_transaction (
     type_id character varying,
     approved boolean,
     tarif_id integer,
-    summ double precision,
+    summ double precision DEFAULT 0::double precision,
     description text,
     created timestamp without time zone
 );

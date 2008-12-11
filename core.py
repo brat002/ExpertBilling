@@ -591,7 +591,7 @@ class periodical_service_bill(Thread):
                                             пока денег на счету не было
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
-                                            summ=ps_cost*nums                                        
+                                            summ = ps_cost*nums                                        
                                              
                                         #TODO: MAKE ACID!!!   
                                         transaction_id = transaction(cursor=cur,
@@ -3100,12 +3100,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         o.type_id = "MANUAL_TRANSACTION"
         o.approved = True
         o.description = ""
-        o.summ = sum
+        o.summ = sum * (-1)
         o.bill = document
         o.created = datetime.datetime.now()
         try:
-            sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
-            sql += o.save("billservice_transaction")
+            #sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
+            sql = o.save("billservice_transaction")
             
             cur.execute(sql)
             connection.commit()

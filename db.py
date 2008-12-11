@@ -249,13 +249,12 @@ def transaction(cursor, account, approved, type, summ, description, created=None
     #print 'new transaction'
     if not created:
         created=datetime.datetime.now()
-
-    cursor.execute("""
-                   UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
+    #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
+    cursor.execute("""                   
                     INSERT INTO billservice_transaction(bill,
                     account_id, approved, type_id, tarif_id, summ, description, created)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-                    """ , (summ, account, bill, account, approved, type, tarif , summ, description, created,))
+                    """ , (bill, account, approved, type, tarif , summ, description, created,))
 
     tr_id=cursor.fetchone()[0]
     #print tr_id
@@ -271,11 +270,11 @@ def delete_transaction(cursor, id):
                    DELETE FROM billservice_transaction WHERE id=%s RETURNING account_id, summ;
                    """ , (id,))
 
-    row=cursor.fetchone()
+    '''row=cursor.fetchone()
 
     cursor.execute("""
                    UPDATE billservice_account
-                   SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))
+                   SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))'''
 
 
 def ps_history(cursor, ps_id, transaction, accounttarif, created=None):
