@@ -116,7 +116,8 @@ def traffic_limit_coll(trafficlimit, user):
             'trafficlimit': trafficlimit,
             'settlement_period_start': settlement_period_start,
             'settlement_period_end': settlement_period_end,
-            'summ':summ,
+            'summ':summ/1024000,
+            'stay':trafficlimit.size/1024000,
             }
     
     
