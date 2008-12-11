@@ -27,4 +27,5 @@ urlpatterns += patterns('billservice.views',
      (r'^password/change/$', 'change_password'),
      (r'^card/activation/$', 'card_acvation'),
      (r'^client/$', 'client'),
+     (r'^traffic/limit/$', 'traffic_limit'),
 )

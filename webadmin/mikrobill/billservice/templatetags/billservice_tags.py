@@ -84,3 +84,42 @@ def time_format(s):
         return {
                 'time': u"0с",
                 }
+        
+@register.inclusion_tag('accounts/tags/traffic_limit_coll.html')
+def traffic_limit_coll(trafficlimit, user):
+    settlement_period = trafficlimit.settlement_period
+    if settlement_period.autostart==True:
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute("""SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1""" % (user.id)) 
+        sp_start = cursor.fetchone()
+        sp_start = sp_start[0]
+    else:
+        sp_start = settlement_period.time_start
+    from billservice.utility import settlement_period_info
+    settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=settlement_period.length_in, repeat_after_seconds=settlement_period.length)
+    #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
+    if trafficlimit.mode==True:
+        settlement_period_start=now-datetime.timedelta(seconds=delta)
+        settlement_period_end=datetime.datetime.now()
+    
+    cursor.execute = """SELECT sum(octets) FROM billservice_netflowstream AS bnf 
+                        JOIN billservice_trafficlimit AS btl ON btl.id=%s AND bnf.tarif_id=btl.tarif_id AND ((bnf.direction = 'INPUT') AND (btl.in_direction = TRUE) OR (bnf.direction = 'OUTPUT') AND (btl.out_direction = TRUE))
+                        JOIN billservice_trafficlimit_traffic_class as bttc ON btl.id=bttc.trafficlimit_id and ARRAY[bttc.trafficclass_id] <@ bnf.traffic_class_id WHERE
+                        account_id=%s AND (bnf.date_start BETWEEN '%s' AND '%s')""" % (trafficlimit.id, user.id, settlement_period_start,  settlement_period_end)
+    summ = cursor.fetchone()
+    try:
+        summ = summ[0]
+    except:
+        summ = 0 
+    return {
+            'trafficlimit': trafficlimit,
+            'settlement_period_start': settlement_period_start,
+            'settlement_period_end': settlement_period_end,
+            'summ':summ,
+            }
+    
+    
+    
+    
+    
