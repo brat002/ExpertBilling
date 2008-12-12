@@ -1,5 +1,6 @@
 ﻿# -*- coding:utf-8 -*-
 from django import template
+import datetime
 from django.db import connection
 from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic
 register = template.Library()
@@ -89,7 +90,6 @@ def time_format(s):
 def traffic_limit_coll(trafficlimit, user):
     settlement_period = trafficlimit.settlement_period
     if settlement_period.autostart==True:
-        from django.db import connection
         cursor = connection.cursor()
         cursor.execute("""SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1""" % (user.id)) 
         sp_start = cursor.fetchone()
@@ -100,7 +100,6 @@ def traffic_limit_coll(trafficlimit, user):
     settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=settlement_period.length_in, repeat_after_seconds=settlement_period.length)
     #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
     if trafficlimit.mode==True:
-        import datetime
         now=datetime.datetime.now()
         settlement_period_start=now-datetime.timedelta(seconds=delta)
         settlement_period_end=now
