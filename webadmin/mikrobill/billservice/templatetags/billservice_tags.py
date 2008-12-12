@@ -100,6 +100,7 @@ def traffic_limit_coll(trafficlimit, user):
     settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=settlement_period.length_in, repeat_after_seconds=settlement_period.length)
     #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
     if trafficlimit.mode==True:
+        import datetime
         now=datetime.datetime.now()
         settlement_period_start=now-datetime.timedelta(seconds=delta)
         settlement_period_end=datetime.datetime.now()
