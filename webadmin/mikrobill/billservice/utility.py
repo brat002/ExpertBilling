@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+﻿# -*- coding:utf-8 -*-
 from dateutil.relativedelta import relativedelta
 import datetime
 from django.http import HttpResponse
@@ -54,7 +54,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             length=604800
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=start+relativedelta(weeks=nums)
+            tnc=time_start+relativedelta(weeks=nums)
             tkc=tnc+relativedelta(weeks=1)
 
             return (tnc, tkc, length)
@@ -72,7 +72,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         elif repeat_after=='YEAR':
             #Февраль!
             #To-DO: Добавить проверку на prev 
-            tnc=start+relativedelta(years=relativedelta(now, time_start).years)
+            tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
 
             tkc=tnc+relativedelta(years=1)
             delta=tkc-tnc
