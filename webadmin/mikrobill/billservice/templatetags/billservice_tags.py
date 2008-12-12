@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+﻿# -*- coding:utf-8 -*-
 from django import template
 from django.db import connection
 from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic
@@ -105,10 +105,10 @@ def traffic_limit_coll(trafficlimit, user):
         settlement_period_start=now-datetime.timedelta(seconds=delta)
         settlement_period_end=datetime.datetime.now()
     
-    cursor.execute = """SELECT sum(octets) FROM billservice_netflowstream AS bnf 
+    cursor.execute("""SELECT sum(octets) FROM billservice_netflowstream AS bnf
                         JOIN billservice_trafficlimit AS btl ON btl.id=%s AND bnf.tarif_id=btl.tarif_id AND ((bnf.direction = 'INPUT') AND (btl.in_direction = TRUE) OR (bnf.direction = 'OUTPUT') AND (btl.out_direction = TRUE))
                         JOIN billservice_trafficlimit_traffic_class as bttc ON btl.id=bttc.trafficlimit_id and ARRAY[bttc.trafficclass_id] <@ bnf.traffic_class_id WHERE
-                        account_id=%s AND (bnf.date_start BETWEEN '%s' AND '%s')""" % (trafficlimit.id, user.id, settlement_period_start,  settlement_period_end)
+                        account_id=%s AND (bnf.date_start BETWEEN '%s' AND '%s')""" % (trafficlimit.id, user.id, settlement_period_start,  settlement_period_end))
     summ = cursor.fetchone()
     try:
         summ = summ[0]
