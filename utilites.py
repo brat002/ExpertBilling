@@ -167,12 +167,13 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
             return False
     return False
 
-def cred(account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
+def cred(account_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
         """
         Функция для вклюения/выключения пользователй на сервере доступа
         """
         command_dict={
                              'access_type':access_type,
+                             'password':account_password, 
                              'username': account_name,
                              'user_id':account_id,
                              'account_ipn_ip': account_ipn_ip,
@@ -234,7 +235,7 @@ def in_period(time_start, length, repeat_after, now=None):
             
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=start+relativedelta(weeks=nums)
+            tnc=time_start+relativedelta(weeks=nums)
             tkc=tnc+relativedelta(weeks=1)
 
             #print time_start, delta_days.seconds
@@ -305,7 +306,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
             delta_days=now - time_start
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=start+relativedelta(weeks=nums)
+            tnc=time_start+relativedelta(weeks=nums)
             tkc=tnc+relativedelta(weeks=1)
 
             if now>=tnc and now<=tkc:
@@ -321,7 +322,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
         elif repeat_after=='YEAR':
             #Февраль!
             
-            tnc=start+relativedelta(years=relativedelta(now, time_start).years)
+            tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
             tkc=tnc+relativedelta(years=1)
             
             if now>=tnc and now<=tkc:
@@ -386,7 +387,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             length=604800
             #Когда будет начало в текущем периоде.
             nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=start+relativedelta(weeks=nums)
+            tnc=time_start+relativedelta(weeks=nums)
             tkc=tnc+relativedelta(weeks=1)
 
             return (tnc, tkc, length)
@@ -404,7 +405,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         elif repeat_after=='YEAR':
             #Февраль!
             #To-DO: Добавить проверку на prev 
-            tnc=start+relativedelta(years=relativedelta(now, time_start).years)
+            tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
 
             tkc=tnc+relativedelta(years=1)
             delta=tkc-tnc

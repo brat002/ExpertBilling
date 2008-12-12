@@ -322,7 +322,7 @@ class check_vpn_access(Thread):
                         '''
                         acc_status, allow_vpn_null,allow_vpn_block = acct[29:32]
                         disabled_by_limit, balance_blocked = acct[15:17]
-                        acstatus = (((not allow_vpn_null) and (acct[1]+acct[2] >=0) or (allow_vpn_null)) \
+                        acstatus = (((not allow_vpn_null) and (acct[1]+acct[2] >0) or (allow_vpn_null)) \
                                     and \
                                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
                         #print row['balance']
@@ -356,14 +356,14 @@ class check_vpn_access(Thread):
                                                         account_vpn_ip=str(acct[18]), 
                                                         account_ipn_ip=str(acct[19]), 
                                                         account_mac_address=str(acct[20]), 
+                                                        access_type=str(row[4]), 
                                                         nas_ip=str(nasRec[3]), 
                                                         nas_type=nasRec[1], 
                                                         nas_name=str(nasRec[2]), 
                                                         nas_secret=str(nasRec[4]), 
                                                         nas_login=str(nasRec[5]), 
                                                         nas_password=nasRec[6], 
-                                                        session_id=str(row[2]),
-                                                        access_type=str(row[4]), 
+                                                        session_id=str(row[2]), 
                                                         format_string=str(nasRec[14]),
                                                         speed=speed[:6])                           
         
@@ -2060,6 +2060,7 @@ class ipn_service(Thread):
                 
                 #for row in rows:
                 for acct in cacheAT:
+                    #print "acct", acct
                     #if tariff not active
                     if not acct[11]:
                         continue
@@ -2082,6 +2083,7 @@ class ipn_service(Thread):
                     #print period
                     tarif_id= acct[4]
                     account_id = acct[0]
+                    account_password = acct[33]
                     account_ballance = acct[1]+acct[2]                    
                     account_disabled_by_limit, account_balance_blocked = acct[15:17]
                     account_ipn_status = acct[22]
@@ -2103,18 +2105,18 @@ class ipn_service(Thread):
                             """
                             Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled
                             """
-                            sended = cred(account_id, str(account_name), \
-                                          access_type, \
-                                          str(account_vpn_ip), str(account_ipn_ip), \
-                                          str(account_mac_address), nas_ip=str(nas_ipaddress), nas_login=str(nas_login), \
-                                          nas_password=nas_password, format_string=nas_user_add)
+                            sended = cred(account_id, account_name, 
+                                          account_password, access_type,
+                                          account_vpn_ip, account_ipn_ip, 
+                                          account_mac_address, nas_ipaddress, nas_login, 
+                                          nas_password, format_string=nas_user_add)
                             if sended == True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, account_id))
                         else:
-                            sended = cred(account_id, str(account_name), \
-                                          access_type, \
-                                          str(account_vpn_ip), str(account_ipn_ip), \
-                                          str(account_mac_address), nas_ip=str(nas_ipaddress), nas_login=str(nas_login), \
-                                          nas_password=nas_password, format_string=nas_user_enable)
+                            sended = cred(account_id, account_name, 
+                                          account_password, access_type,
+                                          account_vpn_ip, account_ipn_ip, 
+                                          account_mac_address, nas_ipaddress, nas_login, 
+                                          nas_password, format_string=nas_user_enable)
                             recreate_speed = True
                     
                             if sended == True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, account_id))
@@ -2122,12 +2124,11 @@ class ipn_service(Thread):
     
                         #шлём команду на отключение пользователя,account_ipn_status=False
                         #print u"ОТКЛЮЧАЕМ",row['account_username']
-                        account_id, account_name, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string
-                        sended = cred(account_id, str(account_name), \
-                                      access_type, \
-                                      str(account_vpn_ip), str(account_ipn_ip), \
-                                      str(account_mac_address), nas_ip=str(nas_ipaddress), nas_login=str(nas_login), \
-                                      nas_password=nas_password, format_string=nas_user_disable)
+                        sended = cred(account_id, account_name, \
+                                      account_password, access_type,
+                                      account_vpn_ip, account_ipn_ip, \
+                                      account_mac_address, nas_ipaddress, nas_login, \
+                                      nas_password, format_string=nas_user_disable)
     
                         if sended == True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, account_id,))
     
@@ -2139,7 +2140,8 @@ class ipn_service(Thread):
                         speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
                     else:
                         speed = parse_custom_speed_lst(account_ipn_speed)
-
+                    #print speed
+                    
                     newspeed=''
                     newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                      
@@ -2157,14 +2159,14 @@ class ipn_service(Thread):
                     if newspeed!=ipn_speed or (ipn_state==False and newspeed!=ipn_speed) or recreate_speed==True:
                         #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
                         #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-                        #change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
                         sended_speed = change_speed(dict, 
-                                                    str(account_id),str(account_name),str(account_vpn_ip),
-                                                    str(account_ipn_ip),str(account_mac_address),                                                     
-                                                    nas_ip=str(nas_ipaddress),nas_type=nas_type,nas_name=str(nas_name),
-                                                    nas_login=str(nas_login),nas_password=nas_password,nas_secret='',
-                                                    access_type=access_type,format_string=str(nas_ipn_speed),
-                                                    speed=speed[:6])    
+                                                    account_id,account_name,account_vpn_ip, \
+                                                    account_ipn_ip,account_mac_address, \
+                                                    access_type, \
+                                                    nas_ipaddress,nas_type,nas_name,\
+                                                    nas_login,nas_password,\
+                                                    format_string=nas_ipn_speed, \
+                                                    speed=speed[:6])
                         data_for_save=''
                         #print speed
     
@@ -2978,7 +2980,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             account_id=[account_id]
             
         for account in account_id:
-            cur.execute("""SELECT account.id as account_id, account.username as username, account.ipn_ip_address as ipn_ip_address,
+            cur.execute("""SELECT account.id as account_id, account.username as username, account.password as password, account.ipn_ip_address as ipn_ip_address,
                              account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
                              nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
                              nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
@@ -3010,7 +3012,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 command = row['user_delete_action']
             #print command
     
-            sended = cred(account_id=row['account_id'], account_name=row['username'], access_type = row['access_type'],
+            sended = cred(account_id=row['account_id'], account_name=row['username'], account_password=row['password'], access_type = row['access_type'],
                           account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
                           account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                           nas_password=row['nas_password'], format_string=command)
