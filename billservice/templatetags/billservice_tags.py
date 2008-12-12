@@ -103,7 +103,7 @@ def traffic_limit_coll(trafficlimit, user):
         import datetime
         now=datetime.datetime.now()
         settlement_period_start=now-datetime.timedelta(seconds=delta)
-        settlement_period_end=datetime.datetime.now()
+        settlement_period_end=now
     
     cursor.execute("""SELECT sum(octets) FROM billservice_netflowstream AS bnf
                         JOIN billservice_trafficlimit AS btl ON btl.id=%s AND bnf.tarif_id=btl.tarif_id AND ((bnf.direction = 'INPUT') AND (btl.in_direction = TRUE) OR (bnf.direction = 'OUTPUT') AND (btl.out_direction = TRUE))
