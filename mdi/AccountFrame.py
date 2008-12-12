@@ -4711,8 +4711,10 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         if self.connection.accountActions(id, 'enable'):
             QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт включён на сервере доступа."))
+            self.refresh()
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        
 
 
     def accountAdd(self):
@@ -4722,6 +4724,7 @@ class AccountsMdiChild(QtGui.QMainWindow):
 
         if self.connection.accountActions(id, 'create'):
             QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт добавлен на сервер доступа."))
+            self.refresh()
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
 
@@ -4731,8 +4734,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             return
 
         if self.connection.accountActions(id, 'delete'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт удалёг с сервера доступа."))
-            
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт удалён с сервера доступа."))
+            self.refresh()
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
 
@@ -4743,7 +4746,8 @@ class AccountsMdiChild(QtGui.QMainWindow):
             return
 
         if self.connection.accountActions(id, 'disable'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт удалён с сервера доступа."))
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт отключен на сервере доступа."))
+            self.refresh()
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
     

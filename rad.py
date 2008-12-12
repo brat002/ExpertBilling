@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+﻿#-*-coding=utf-8-*-
 import sys
 from daemonize import daemonize
 
@@ -18,7 +18,7 @@ import asyncore
 from threading import Thread
 import dictionary, packet
 
-from utilites import in_period, create_speed_string
+from utilites import in_period,in_period_info, create_speed_string
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 
 
@@ -201,37 +201,43 @@ class HandleAuth(HandleBase):
     
     def create_speed(self, tarif_id, speed=''):
         result_params=speed
+        print 1
         if speed=='':
+            #print 2
             defaults = get_default_speed_parameters(self.cur, tarif_id)
             speeds = get_speed_parameters(self.cur, tarif_id)
+            print "defaults=", defaults
             if defaults is None:
-                return "0/0"
+                defaults = ["0","0","0","0","8","0"]
             result=[]
             #print speeds
-
+            #print defaults
+            #print 3
+            min_delta=-1
+            minmal_period=[]
             for speed in speeds:
-                if in_period(speed[0],speed[1],speed[2])==True:
+                tnc,tkc,delta,res = in_period_info(speed[0],speed[1],speed[2])
+                if res==True and delta<min_delta or min_delta==-1:
+                    minimal_period=speed
+                    min_delta=delta
                     #print speed
-                    i=0
-                    for k in xrange(0, len(speed[3:])):
-                        s=speed[3+k]
-                        #print s
-                        if s==0:
-                            res=0
-                        elif s=='':
-                            res=defaults[i]
-                        else:
-                            res=s
-                        #print "res=",res
-                        result.append(res)
-                        i+=1
-                    break
+            
+            #print minmal_period
+            for k in xrange(0, len(minmal_period[3:])):
+                s=minimal_period[3+k]
+                #print s
+                if s=='':
+                    res=defaults[k]
+                else:
+                    res=s
+                #print "res=",res
+                result.append(res)
                     
             if speeds==[]:
                 result=defaults
             if result==[]:
-                return "0/0"
-            #print result
+                result=["0","0","0","0","8","0"]
+            #print "speedparams", defaults, speeds, result
             result_params=create_speed_string(result)
             self.speed=result_params
             #print "params=", result_params
@@ -587,8 +593,8 @@ class AsyncAuth(AsyncUDPServer):
                 del packetobject
                 del access_type
                 del returndata
-        except:
-            print "bad packet"
+        except Exception, e:
+            print e,"bad packet"
 
 
 class AsyncAcc(AsyncUDPServer):
