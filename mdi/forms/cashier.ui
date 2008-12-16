@@ -1,0 +1,250 @@
+<ui version="4.0" >
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>912</width>
+    <height>539</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Интерфейс кассира</string>
+  </property>
+  <widget class="QWidget" name="centralwidget" >
+   <layout class="QGridLayout" name="gridLayout_4" >
+    <item row="2" column="0" colspan="3" >
+     <widget class="QTableWidget" name="tableWidget" >
+      <column>
+       <property name="text" >
+        <string>#</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>ФИО</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Тарифный план</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Баланс</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Кредит</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Город</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Улица</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>Дом</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>к.</string>
+       </property>
+      </column>
+      <column>
+       <property name="text" >
+        <string>кв.</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="3" column="1" >
+     <widget class="QGroupBox" name="groupBox_pay" >
+      <property name="minimumSize" >
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="title" >
+       <string>Зачислить</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label_sum" >
+         <property name="text" >
+          <string>Сумма</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="lineEdit_sum" >
+         <property name="minimumSize" >
+          <size>
+           <width>0</width>
+           <height>22</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" >
+        <widget class="QPushButton" name="pushButton_pay" >
+         <property name="text" >
+          <string>Зачислить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3" >
+        <widget class="QPushButton" name="pushButton_print" >
+         <property name="text" >
+          <string>Печать чека</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="0" >
+     <widget class="QGroupBox" name="groupBox_tariffs" >
+      <property name="minimumSize" >
+       <size>
+        <width>450</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="title" >
+       <string>Перевести на другой тарифный план</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3" >
+       <item row="0" column="0" >
+        <widget class="QComboBox" name="comboBox_tariff" />
+       </item>
+       <item row="0" column="1" >
+        <widget class="QPushButton" name="pushButton_change_tariff" >
+         <property name="maximumSize" >
+          <size>
+           <width>75</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text" >
+          <string>Перевести</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="3" >
+     <widget class="QGroupBox" name="groupBox_filter" >
+      <property name="title" >
+       <string>Фильтр</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label_fullname" >
+         <property name="text" >
+          <string>ФИО</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" colspan="7" >
+        <widget class="QLineEdit" name="lineEdit_fullname" />
+       </item>
+       <item row="1" column="5" >
+        <widget class="QLabel" name="label_street" >
+         <property name="text" >
+          <string>Улица</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="6" >
+        <widget class="QLineEdit" name="lineEdit_street" />
+       </item>
+       <item row="1" column="7" >
+        <widget class="QLabel" name="label_house" >
+         <property name="text" >
+          <string>Дом</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="8" >
+        <widget class="QLineEdit" name="lineEdit_house" />
+       </item>
+       <item row="0" column="10" >
+        <widget class="QPushButton" name="pushButton" >
+         <property name="text" >
+          <string>Искать</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="label_username" >
+         <property name="text" >
+          <string>Username</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" >
+        <widget class="QLineEdit" name="lineEdit_username" />
+       </item>
+       <item row="1" column="3" >
+        <widget class="QLabel" name="label_city" >
+         <property name="text" >
+          <string>Город</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4" >
+        <widget class="QLineEdit" name="lineEdit_city" />
+       </item>
+       <item row="2" column="2" >
+        <widget class="QLineEdit" name="lineEdit_bulk" />
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="label_bulk" >
+         <property name="text" >
+          <string>Корпус</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3" >
+        <widget class="QLabel" name="label_room" >
+         <property name="text" >
+          <string>Квартира</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4" >
+        <widget class="QLineEdit" name="lineEdit_room" />
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+   <zorder>tableWidget</zorder>
+   <zorder>groupBox_pay</zorder>
+   <zorder>groupBox_tariffs</zorder>
+   <zorder>groupBox_filter</zorder>
+  </widget>
+  <widget class="QStatusBar" name="statusbar" />
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
