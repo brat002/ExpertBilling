@@ -3118,6 +3118,24 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
     
     @authentconn
+    def createAccountTarif(self, account, tarif, cur=None, connection=None):
+        
+        o = Object()
+        o.account_id = account
+        o.tarif_id=tarif
+        o.datetime = datetime.datetime.now()
+        try:
+            #sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
+            sql = o.save("billservice_accounttarif")
+            
+            cur.execute(sql)
+            connection.commit()
+            return True
+        except Exception, e:
+            print e
+            return False
+
+    @authentconn
     def dbaction(self, fname, *args, **kwargs):
         return dbRoutine.execRoutine(fname, *args, **kwargs)
     
@@ -3202,6 +3220,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
+        print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
         cur.execute("SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id))
         result=[]
         result = map(Object, cur.fetchall())
