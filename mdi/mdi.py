@@ -565,7 +565,7 @@ def login():
                 #f = open('tmp', 'wb')
                 #f.write(child.password.toHex())
                 connection._setNewConnectionValidator(antiMungeValidator())
-                print connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+                connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
                 connection.test()
                 waitchild.hide()
                 return connection

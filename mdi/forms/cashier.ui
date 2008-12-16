@@ -238,13 +238,25 @@
      </widget>
     </item>
    </layout>
-   <zorder>tableWidget</zorder>
-   <zorder>groupBox_pay</zorder>
-   <zorder>groupBox_tariffs</zorder>
-   <zorder>groupBox_filter</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar" />
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_fullname</tabstop>
+  <tabstop>lineEdit_username</tabstop>
+  <tabstop>lineEdit_city</tabstop>
+  <tabstop>lineEdit_street</tabstop>
+  <tabstop>lineEdit_house</tabstop>
+  <tabstop>lineEdit_bulk</tabstop>
+  <tabstop>lineEdit_room</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>comboBox_tariff</tabstop>
+  <tabstop>pushButton_change_tariff</tabstop>
+  <tabstop>lineEdit_sum</tabstop>
+  <tabstop>pushButton_pay</tabstop>
+  <tabstop>pushButton_print</tabstop>
+  <tabstop>tableWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

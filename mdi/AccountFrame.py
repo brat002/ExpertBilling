@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 
-import os, sys
+
 from PyQt4 import QtCore, QtGui
 
 import Pyro.core
@@ -2802,7 +2802,7 @@ class AddAccountFrame(QtGui.QDialog):
         except Exception, e:
             import Pyro
             print ''.join(Pyro.util.getPyroTraceback(e))
-            import sys, traceback
+            import traceback
             traceback.print_exc()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
             self.connection.rollback()
@@ -3985,7 +3985,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
         except Exception, e:
-            import sys, traceback
+            import traceback
             traceback.print_exc()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
             self.connection.rollback()

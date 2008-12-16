@@ -12,11 +12,11 @@ from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import HeaderUtil
 from CustomForms import CardPreviewDialog
+from CustomForms import ConnectDialog, ConnectionWaiting
 from helpers import dateDelim
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
-import ConfigParser
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -137,7 +137,19 @@ class MainWindow(QtGui.QMainWindow):
             HeaderUtil.setBinaryHeader("cashier_frame_header", bhdr)
             HeaderUtil.getHeader("cashier_frame_header", self.tableWidget)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
-        
+        self.setTabOrder(self.lineEdit_fullname, self.lineEdit_username)
+        self.setTabOrder(self.lineEdit_username, self.lineEdit_city)
+        self.setTabOrder(self.lineEdit_city, self.lineEdit_street)
+        self.setTabOrder(self.lineEdit_street, self.lineEdit_house)
+        self.setTabOrder(self.lineEdit_house, self.lineEdit_bulk)
+        self.setTabOrder(self.lineEdit_bulk, self.lineEdit_room)
+        self.setTabOrder(self.lineEdit_room, self.pushButton)
+        self.setTabOrder(self.pushButton, self.comboBox_tariff)
+        self.setTabOrder(self.comboBox_tariff, self.pushButton_change_tariff)
+        self.setTabOrder(self.pushButton_change_tariff, self.lineEdit_sum)
+        self.setTabOrder(self.lineEdit_sum, self.pushButton_pay)
+        self.setTabOrder(self.pushButton_pay, self.pushButton_print)
+        self.setTabOrder(self.pushButton_print, self.tableWidget)
         self.restoreWindow()
         self.refreshTariffs()
         
@@ -206,11 +218,8 @@ class MainWindow(QtGui.QMainWindow):
         #self.tablewidget.setShowGrid(False)
         
     def refreshTable(self):
-        def f(x):
-            if x!=u'':
-                return x
-                
-        
+
+
         fullname = u"%s" % self.lineEdit_fullname.text()
         username = u"%s" % self.lineEdit_username.text()
         city = u"%s" % self.lineEdit_city.text()
@@ -218,35 +227,36 @@ class MainWindow(QtGui.QMainWindow):
         house = u"%s" % self.lineEdit_house.text()
         bulk = u"%s" % self.lineEdit_bulk.text()
         room = u"%s" % self.lineEdit_room.text()
+
         
         res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username}
         #print res
 
         if fullname or city or street or house or bulk or room or username:
-            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s;" % ' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res])
+            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s ORDER BY username ASC;" % ' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res])
         else:
-            sql="SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account;"
+            sql="SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
         
         accounts = self.connection.sql(sql)
         self.connection.commit()
         i=0
         self.tableWidget.setRowCount(len(accounts))
         for account in accounts:
-            self.addrow(account.id, i,0, enabled=account.status)
-            self.addrow(account.username, i,1, enabled=account.status)
-            self.addrow(account.fullname, i,2, enabled=account.status)
-            self.addrow(account.tarif_name, i,3, enabled=account.status)
-            self.addrow(account.ballance, i,4, enabled=account.status)
-            self.addrow(account.credit, i,5, enabled=account.status)
-            self.addrow(account.city, i,6, enabled=account.status)
-            self.addrow(account.street, i,7, enabled=account.status)
-            self.addrow(account.house, i,8, enabled=account.status)
-            self.addrow(account.house_bulk, i,9, enabled=account.status)
-            self.addrow(account.room, i,10, enabled=account.status)
-            
-            
+            self.addrow(account.id, i, 0, enabled=account.status)
+            self.addrow(account.username, i, 1, enabled=account.status)
+            self.addrow(account.fullname, i, 2, enabled=account.status)
+            self.addrow(account.tarif_name, i, 3, enabled=account.status)
+            self.addrow(account.ballance, i, 4, enabled=account.status)
+            self.addrow(account.credit, i, 5, enabled=account.status)
+            self.addrow(account.city, i, 6, enabled=account.status)
+            self.addrow(account.street, i, 7, enabled=account.status)
+            self.addrow(account.house, i, 8, enabled=account.status)
+            self.addrow(account.house_bulk, i, 9, enabled=account.status)
+            self.addrow(account.room, i, 10, enabled=account.status)
+
             i+=1
-  
+
+
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())      
         
@@ -282,7 +292,7 @@ class MainWindow(QtGui.QMainWindow):
             self.connection.commit()
             sum = 10000
 
-            data=templ.render_unicode(account=account, tarif=tarif, sum=unicode(self.lineEdit_sum.text()), document = "", created=datetime.datetime.now().strftime(strftimeFormat))
+            data=templ.render_unicode(account=account, tarif=tarif, sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
 
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))
@@ -311,48 +321,49 @@ class MainWindow(QtGui.QMainWindow):
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
+
     def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+
         return authid
+
     def mungeIdent(self, ident):
         return ident
       
 
 def login():
+    child = ConnectDialog()
     while True:
-        try:
-            print 1
-            connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(host))
-            print 2
-            #password = unicode(child.password.toHex())
-            
-            connection._setNewConnectionValidator(antiMungeValidator())
-            print connection._setIdentification("%s:%s" % (str(user), str(password.toHex())))
-            connection.test()
-            #waitchild.hide()
-            return connection
 
-        except Exception, e:
-            #print "login connection error"
-            #waitchild.hide()
-            if isinstance(e, Pyro.errors.ConnectionDeniedError):
-                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-            else:
-                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-        #waitchild.hide()
-        #del waitchild
+        if child.exec_()==1:
+            waitchild = ConnectionWaiting()
+            waitchild.show()
+            try:
+                connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
+                password = unicode(child.password.toHex())
+                #f = open('tmp', 'wb')
+                #f.write(child.password.toHex())
+                connection._setNewConnectionValidator(antiMungeValidator())
+                connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+                connection.test()
+                waitchild.hide()
+                return connection
+
+            except Exception, e:
+                #print "login connection error"
+                waitchild.hide()
+                if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
+                else:
+                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+            waitchild.hide()
+            del waitchild
+        else:
+            return None
 
 
      
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    config = ConfigParser.ConfigParser()
-    config.read("client_config.ini")
-    host = config.get("server", "host")
-    user = config.get("server", "login")
-    password = config.get("server", "password")
-    password = QtCore.QCryptographicHash.hash(password, QtCore.QCryptographicHash.Md5)
-    
-    
 
     global connection
     connection = login() 
