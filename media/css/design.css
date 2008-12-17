@@ -217,3 +217,5 @@ td.first_row  {
 .border_right {
 	border-right:1px solid #a4a4a4;
 }
+
+.bold { font-weight:bold;}
