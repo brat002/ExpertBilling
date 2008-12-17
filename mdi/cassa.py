@@ -111,10 +111,17 @@ class MainWindow(QtGui.QMainWindow):
         self.comboBox_tariff = QtGui.QComboBox(self.groupBox_tariffs)
         self.comboBox_tariff.setObjectName("comboBox_tariff")
         self.gridLayout_3.addWidget(self.comboBox_tariff, 0, 0, 1, 1)
+
+        self.dateTime = QtGui.QDateTimeEdit(self.groupBox_tariffs)
+        self.dateTime.setCalendarPopup(True)
+        self.dateTime.setDateTime(datetime.datetime.now())
+        #self.dateTime.setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.dateTime.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.gridLayout_3.addWidget(self.dateTime, 0, 1, 1, 1)
         self.pushButton_change_tariff = QtGui.QPushButton(self.groupBox_tariffs)
         self.pushButton_change_tariff.setMaximumSize(QtCore.QSize(75, 16777215))
         self.pushButton_change_tariff.setObjectName("pushButton_change_tariff")
-        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 2, 1, 1)
         self.gridLayout_4.addWidget(self.groupBox_tariffs, 3, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(self)
@@ -235,7 +242,7 @@ class MainWindow(QtGui.QMainWindow):
         if fullname or city or street or house or bulk or room or username:
             sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s ORDER BY username ASC;" % ' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res])
         else:
-            sql="SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
+            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
         
         accounts = self.connection.sql(sql)
         self.connection.commit()
@@ -276,7 +283,8 @@ class MainWindow(QtGui.QMainWindow):
         account_id = self.getSelectedId()
         tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
         if account_id and tarif_id and QtGui.QMessageBox.question(self, u"Произвести перевод пользователя на нвоый тарифный план?" , u"Вы уверены, что хотите перевести пользователя на выбранный тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.createAccountTarif(account_id, tarif_id)
+            datetime = self.dateTime.dateTime().toPyDateTime()
+            self.connection.createAccountTarif(account_id, tarif_id, datetime)
             self.connection.commit()
             self.refreshTable()
         
@@ -334,7 +342,7 @@ def login():
     child = ConnectDialog()
     while True:
 
-        if child.exec_()==1:
+        if child.exec_() == 1:
             waitchild = ConnectionWaiting()
             waitchild.show()
             try:
