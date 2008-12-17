@@ -43,17 +43,17 @@
     {% endif %}
     <h1>{% if account.fullname %}{{account.fullname}}{% else %}{{account.username}}{% endif %} {% if not status %}<img src="{{ MEDIA_URL }}img/design/enable.png" />{% else %}<img src="{{ MEDIA_URL }}img/design/disable.png" />{% endif %}</h1>
 	{% if account.city or account.postcode or account.region or account.street or account.house or account.house_bulk or account.entrance or account.room %}
-	<div><span class="label">Адрес</span> : <span>{{ account.city }} {{ account.postcode }} {{ account.region }} {{ account.street }} {{ account.house }} {{ account.house_bulk }} {{ account.entrance }} {{ account.room }}</span></div>
+	<div><span class="label">Ваш Адрес</span> : <span class="bold">{{ account.postcode }} {%if account.city %}г. {{ account.city }}{% endif %} {% if account.region %}обл. {{ account.region }}{% endif %} {% if account.street %}ул. {{ account.street }}{% endif %} {% if account.house %}д. {{ account.house }}{% endif %} {% if account.house_bulk %}корп. {{ account.house_bulk }}{% endif %} {% if account.room  %}кв. {{ account.room }}{% endif %}</span></div>
 	{% endif %}
 	{% if account.email %}
-		<div><span class="label">E-mail</span> : <span>{{ account.email }}</span></div>
+		<div><span class="label">E-mail</span> : <span class="bold">{{ account.email }}</span></div>
 	{% endif %}
-	<div><span class="label">Cетевой IP адрес</span> : <span>{{ account.ipn_ip_address }}</span></div>
-	<div><span class="label">VPN IP адрес</span> : <span>{{ account.vpn_ip_address }}</span></div>
-	<div><span class="label">Тарифный план</span> : <span>{{ tarif }}</span></div>
-	<div><span class="label">Баланс</span><span> : </span>{{ ballance }}</div>
-	<div><span class="label">Размер кредита</span> : <span>{{ account.credit }}</span></div>
-	<div><span class="label">Дата подключения</span> : <span>{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
+	<div><span class="label">Cетевой IP адрес</span> : <span class="bold">{{ account.ipn_ip_address }}</span></div>
+	<div><span class="label">VPN IP адрес</span> : <span class="bold">{{ account.vpn_ip_address }}</span></div>
+	<div><span class="label">Тарифный план</span> : <span class="bold">{{ tarif }}</span></div>
+	<div><span class="label">Баланс</span><span> : </span class="bold">{{ ballance }}</div>
+	<div><span class="label">Размер кредита</span> : <span class="bold">{{ account.credit }}</span></div>
+	<div><span class="label">Дата подключения</span> : <span class="bold">{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
 	<div style="margin:15px 0;">
   		<img src="/client/">
   	</div>
@@ -63,7 +63,7 @@
 	   <div>
 	       {% for previous_tarif in tarifs %}
 		      {% ifnotequal tarif previous_tarif %}
-		      <div>
+		      <div class="bold">
 			     {{ tarif.tarif }}
 			  </div>
 			  {% endifnotequal %}
