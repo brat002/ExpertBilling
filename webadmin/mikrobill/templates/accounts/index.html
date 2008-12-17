@@ -42,15 +42,10 @@
        Ваш лимит превышен 
     {% endif %}
     <h1>{% if account.fullname %}{{account.fullname}}{% else %}{{account.username}}{% endif %} {% if not status %}<img src="{{ MEDIA_URL }}img/design/enable.png" />{% else %}<img src="{{ MEDIA_URL }}img/design/disable.png" />{% endif %}</h1>
-	<div><span class="label">Город</span> : <span>{{ account.city }}</span></div>
-	<div><span class="label">Индекс</span> : <span>{{ account.postcode }}</span></div>
-	<div><span class="label">Район</span> : <span>{{ account.region }}</span></div>
-	<div><span class="label">Улица</span> : <span>{{ account.street }}</span></div>
-	<div><span class="label">Номер дома</span> : <span>{{ account.house }}</span></div>
-	<div><span class="label">Корпус</span> : <span>{{ account.house_bulk }}</span></div>
-	<div><span class="label">Подъезд</span> : <span>{{ account.entrance }}</span></div>
-	<div><span class="label">Номер квартиры</span> : <span>{{ account.room }}</span></div>
-	<div><span class="label">E-mail</span> : <span>{{ account.email }}</span></div>
+	<div>{{ account.city }} {{ account.postcode }} {{ account.region }} {{ account.street }} {{ account.house }} {{ account.house_bulk }} {{ account.entrance }} {{ account.room }}</div>
+	{% if account.email %}
+		<div><span class="label">E-mail</span> : <span>{{ account.email }}</span></div>
+	{% endif %}
 	<div><span class="label">Cетевой IP адрес</span> : <span>{{ account.ipn_ip_address }}</span></div>
 	<div><span class="label">VPN IP адрес</span> : <span>{{ account.vpn_ip_address }}</span></div>
 	<div><span class="label">Тарифный план</span> : <span>{{ tarif }}</span></div>
@@ -60,6 +55,7 @@
 	<div style="margin:15px 0;">
   		<img src="/client/">
   	</div>
+
 	<div style="padding-top:30px;">
 	   <span class="label">Предыдущие тарифы пользователя :</span><br>
 	   <div>
@@ -72,6 +68,7 @@
 		   {% endfor %}
 	   </div>
 	</div>
+
   </div>
   {% else %}
     <h1>Вход не удался</h1>
