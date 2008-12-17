@@ -137,6 +137,7 @@ class AddTimePeriod(QtGui.QDialog):
         end=datetime.datetime.now()
 
         if self.nodemodel:
+            #print unicode(self.nodemodel.name)
             self.name_edit.setText(unicode(self.nodemodel.name))
     
             start = QtCore.QDateTime()
@@ -374,18 +375,19 @@ class TimePeriodChild(QtGui.QMainWindow):
 
 
     def editPeriod(self):
-        model = self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod;")
-        text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,model.name);
+        model = self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod")
 
-        if text[0].isEmpty()==True and text[2]:
+        text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,model.name)
+
+        if text[0].isEmpty()==True and text[1]==True:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                     u"Введено пустое название.")
             return
         try:
-            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % model.id)
+            model=self.connection.get_model(model.id, "billservice_timeperiod")
             model.name=unicode(text[0])
             self.connection.save(model, 'billservice_timeperiod')    
-            self.conection.commit()            
+            self.connection.commit()            
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
                         u"Введено недопустимое значение.")
@@ -432,13 +434,18 @@ class TimePeriodChild(QtGui.QMainWindow):
         
     def editNode(self):
         id = self.getSelectedId()
+        #print id
+        
         try:
-            nodemodel = self.connection.get("SELECT * FROM billservice_timeperiodnode WHERE id=%d" % id)
-        except:
-            pass
+            nodemodel = self.connection.get_model(unicode(self.getSelectedId()), "billservice_timeperiodnode")
+            #nodemodel = self.connection.sql("SELECT * FROM billservice_timeperiodnode WHERE id=%d;" % int(id))[0]
+        except Exception, e:
+            import Pyro.util
+            print ''.join(Pyro.util.getPyroTraceback(e))
+
         
         #name=unicode(self.getSelectedName())
-        model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % self.getTimeperiodId())
+        model=self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod")
         if not model:
             return
         self.connection.commit()
@@ -461,14 +468,12 @@ class TimePeriodChild(QtGui.QMainWindow):
 
         
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
-        JOIN billservice_timeperiod_time_period_nodes as tpn ON tpn.timeperiodnode_id=timeperiodnode.id
-        WHERE tpn.timeperiod_id=%d
-        """ % period_id)
+        WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)""" % period_id)
         self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
         i=0        
         for node in nodes:
-
+            #print "node_id=", node.id
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
             self.addrow(node.time_start.strftime(self.strftimeFormat), i,2)
@@ -478,7 +483,7 @@ class TimePeriodChild(QtGui.QMainWindow):
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
-        self.tableWidget.setSortingEnabled(True)
+        self.tableWidget.setSortingEnabled(False)
 
 
 
@@ -487,8 +492,9 @@ class TimePeriodChild(QtGui.QMainWindow):
             HeaderUtil.saveHeader(self.setname, self.tableWidget)
     def saveSplitter(self, *args):
         SplitterUtil.saveSplitter(self.splname, self.splitter)    
+    
     def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
 
     def getTimeperiodId(self):
         return self.treeWidget.currentItem().id
@@ -499,6 +505,8 @@ class TimePeriodChild(QtGui.QMainWindow):
         headerItem.setText(unicode(value))
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/tp_small.png"))
+        if y==0:
+            headerItem.id=value
         self.tableWidget.setItem(x,y,headerItem)
         
 
