@@ -42,7 +42,9 @@
        Ваш лимит превышен 
     {% endif %}
     <h1>{% if account.fullname %}{{account.fullname}}{% else %}{{account.username}}{% endif %} {% if not status %}<img src="{{ MEDIA_URL }}img/design/enable.png" />{% else %}<img src="{{ MEDIA_URL }}img/design/disable.png" />{% endif %}</h1>
-	<div>{{ account.city }} {{ account.postcode }} {{ account.region }} {{ account.street }} {{ account.house }} {{ account.house_bulk }} {{ account.entrance }} {{ account.room }}</div>
+	{% if account.city or account.postcode or account.region or account.street or account.house or account.house_bulk or account.entrance or account.room %}
+	<div><span class="label">Адрес</span> : <span>{{ account.city }} {{ account.postcode }} {{ account.region }} {{ account.street }} {{ account.house }} {{ account.house_bulk }} {{ account.entrance }} {{ account.room }}</span></div>
+	{% endif %}
 	{% if account.email %}
 		<div><span class="label">E-mail</span> : <span>{{ account.email }}</span></div>
 	{% endif %}
