@@ -3118,12 +3118,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
     
     @authentconn
-    def createAccountTarif(self, account, tarif, cur=None, connection=None):
+    def createAccountTarif(self, account, tarif, datetime, cur=None, connection=None):
         
         o = Object()
         o.account_id = account
         o.tarif_id=tarif
-        o.datetime = datetime.datetime.now()
+        o.datetime = datetime
         try:
             #sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
             sql = o.save("billservice_accounttarif")

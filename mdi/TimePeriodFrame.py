@@ -1,3 +1,4 @@
+import Pyro.errors
 #-*-coding=utf-8-*-
 
 from PyQt4 import QtCore, QtGui
@@ -419,7 +420,7 @@ class TimePeriodChild(QtGui.QMainWindow):
     def delNode(self):
         id = self.getSelectedId()
 
-        if id >0 and QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+        if id > 0 and QtGui.QMessageBox.question(self, u"Удалить запись?", u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No) == QtGui.QMessageBox.Yes:
             try:
                 #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
                 #self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
