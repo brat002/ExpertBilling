@@ -225,8 +225,8 @@ def card_acvation(request):
                 card.save()
                 summ = -card.nominal
                 type = TransactionType.objects.get(internal_name=u'ACTIVATION_CARD')
-                user.ballance = user.ballance-summ
-                user.save()
+                #user.ballance = user.ballance-summ
+                #user.save()
                 request.session['user'] = user
                 request.session.modified = True
                 transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now())
