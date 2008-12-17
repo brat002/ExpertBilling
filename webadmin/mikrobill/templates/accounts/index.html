@@ -51,26 +51,27 @@
 	<div><span class="label">Cетевой IP адрес</span> : <span class="bold">{{ account.ipn_ip_address }}</span></div>
 	<div><span class="label">VPN IP адрес</span> : <span class="bold">{{ account.vpn_ip_address }}</span></div>
 	<div><span class="label">Тарифный план</span> : <span class="bold">{{ tarif }}</span></div>
-	<div><span class="label">Баланс</span><span> : </span class="bold">{{ ballance }}</div>
+	<div><span class="label">Баланс</span><span> : <span class="bold">{{ ballance }}</div>
 	<div><span class="label">Размер кредита</span> : <span class="bold">{{ account.credit }}</span></div>
 	<div><span class="label">Дата подключения</span> : <span class="bold">{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
 	<div style="margin:15px 0;">
   		<img src="/client/">
   	</div>
-
+	
+	{% if tarif_flag %}
 	<div style="padding-top:30px;">
 	   <span class="label">Предыдущие тарифы пользователя :</span><br>
 	   <div>
 	       {% for previous_tarif in tarifs %}
 		      {% ifnotequal tarif previous_tarif %}
 		      <div class="bold">
-			     {{ tarif.tarif }}
+			     {{ previous_tarif.tarif }}
 			  </div>
 			  {% endifnotequal %}
 		   {% endfor %}
 	   </div>
 	</div>
-
+	{% endif %}
   </div>
   {% else %}
     <h1>Вход не удался</h1>
