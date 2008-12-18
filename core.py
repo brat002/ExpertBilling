@@ -504,8 +504,11 @@ class periodical_service_bill(Thread):
                             accounttarif_id = account[12]
                             account_id = account[0]
                             
+                            susp_per_mlt = 1
+                            
                             if cacheSuspP.has_key(account_id):
-                                continue
+                                susp_per_mlt = 0
+                                #continue
                             
                             #self.connection.commit()
                             
@@ -554,6 +557,7 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             cash_summ=cash_summ*nums
                                         #make an approved transaction
+                                        cash_summ = cash_summ * susp_per_mlt
                                         transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
                                         ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
@@ -593,7 +597,8 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             summ = ps_cost*nums                                        
                                              
-                                        #TODO: MAKE ACID!!!   
+                                        #TODO: MAKE ACID!!!
+                                        summ = summ * susp_per_mlt
                                         transaction_id = transaction(cursor=cur,
                                                                      account=account_id,
                                                                      approved=True,
@@ -643,9 +648,10 @@ class periodical_service_bill(Thread):
                                             descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
                                         else:
                                             summ=0
-                                            descr=u"иктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
+                                            descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
                                             
                                         #TODO: MAKE ACID!!!
+                                        summ = summ * susp_per_mlt
                                         transaction_id = transaction(cursor=cur,
                                                                      account=account_id,
                                                                      approved=True,
@@ -3401,6 +3407,9 @@ def main():
     threads.append(TimeAccessBill())
     #threads.append(NetFlowAggregate())
     #threads.append(NetFlowBill())
+    #ну се теперь осталась тока падкрутить кэш ну и что-бы синк транзакций с задержкай на диск
+    threads.append(NetFlowRoutine())
+    threads.append(NetFlowRoutine())
     threads.append(NetFlowRoutine())
     threads.append(limit_checker())
     threads.append(ipn_service())
