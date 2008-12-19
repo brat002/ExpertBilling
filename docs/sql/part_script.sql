@@ -29,7 +29,7 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-ALTER FUNCTION nfs_prev_ins(billservice_netflowstream) OWNER TO ebs;
+ALTER FUNCTION nfs_cur_ins(billservice_netflowstream) OWNER TO ebs;
 
 ------------------------------------------------------------------------------
 
