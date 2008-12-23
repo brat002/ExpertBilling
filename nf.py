@@ -3,6 +3,7 @@ import os, sys
 from daemonize import daemonize
 import socket, select, struct, datetime, time
 import asyncore
+import random
 from IPy import IP, IPint, parseAddress
 try:
     import mx.DateTime
@@ -481,7 +482,7 @@ class NfUDPSenderThread(Thread):
                         dfile.close()
                         #use locks is deadlockind arise
                         fnameQueue.append(fname)
-                        fname = ''.join((self.hpath, str(time.time()), '.dmp'))
+                        fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
                         dfile = open(fname, 'ab')
                 except Exception, ex:
                         print "NFUDPSenderThread file write exception: ", repr(ex)
@@ -492,11 +493,18 @@ class NfFileReadThread(Thread):
     '''
     Thread that reads previously written data dumps and resends data.
     '''
-    def __init__(self):
+    def __init__(self, tsleep=0, tcount=0):
         Thread.__init__(self)
-        self.hpath = ''.join((dumpDir,'/','nf_'))
+        self.hpath  = ''.join((dumpDir,'/','nf_'))
+        self.tsleep = tsleep
+        self.tcount = tcount
     
     def run(self):
+        #return if to protect from overthreading
+        if self.tcount == 5:
+            return
+        
+        time.sleep(self.tsleep)
         fname = None
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -566,6 +574,9 @@ class NfFileReadThread(Thread):
                     #use locks is deadlocking issues arise
                     fnameQueue.appendleft(fname)
                     #os.remove(fname)
+                    #run a cleanup thread
+                    nfFileThread = NfFileReadThread(60, self.tcount + 1)
+                    nfFileThread.start() 
                     return
                 
             except Exception, ex:
