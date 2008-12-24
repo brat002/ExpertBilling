@@ -1356,6 +1356,7 @@ class NetFlowReport(QtGui.QMainWindow):
         import time
         a=time.clock()
         flows = self.connection.sql(sql)
+        self.connection.commit()
         #print "request time=", time.clock()-a
         i=0
         self.tableWidget.clearContents()

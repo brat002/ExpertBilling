@@ -340,7 +340,8 @@ class check_vpn_access(Thread):
                             #chech whether speed changed
                             vpn_speed = acct[24]
                             if vpn_speed=='':
-                                speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
+                                
+                                speed=self.create_speed(list(cacheDefSp.get(tarif_id,[])), cacheNewSp.get(tarif_id, []), dateAT)
                             else:
                                 speed=parse_custom_speed_lst(vpn_speed)
                             
@@ -2201,10 +2202,6 @@ class ipn_service(Thread):
 class pfMemoize(object):
     __slots__ = ('periodCache', 'settlementCache')
     def __init__(self):
-        #self.dlock = dlock
-        #self.dlock.aquire()
-        #self.dnow = deepcopy(dnow)
-        #self.dlock.release()
         self.periodCache = {}
         self.settlementCache = {}
         
@@ -2213,8 +2210,6 @@ class pfMemoize(object):
         if res==None:
             res = in_period_info(time_start, length, repeat_after, date_)
             self.periodCache[(time_start, length, repeat_after, date_)] = res
-        '''else:
-            print "perget"'''
         return res
     
     def settlement_period_(self, time_start, length, repeat_after, stream_date):
@@ -2223,8 +2218,6 @@ class pfMemoize(object):
         if res==None:
             res = settlement_period_info(time_start, length, repeat_after, stream_date)
             self.settlementCache[(time_start, length, repeat_after, stream_date)] = res
-        '''else:
-            print "setget"'''
         return res
   
 '''
@@ -2716,27 +2709,6 @@ class NfAsyncUDPServer(asyncore.dispatcher):
         pass
     def writable(self):
         return (0)
-    """def writable (self):
-        return False
-
-    def sendto (self, data, addr):
-        self.outbuf.append((data, addr))
-        self.initiate_send()
-
-    def initiate_send(self):
-        b = self.outbuf
-        while len(b):
-            data, addr = b[0]
-            del b[0]
-            try:
-                result = self.socket.sendto (data, addr)
-                if result != len(data):
-                    self.log('Sent packet truncated to %d bytes' % result)
-            except socket.error, why:
-                if why[0] == EWOULDBLOCK:
-                    return
-                else:
-                    raise socket.error, why"""
 
     def handle_error (self, *info):
         traceback.print_exc()

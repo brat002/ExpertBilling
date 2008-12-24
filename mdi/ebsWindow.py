@@ -5,6 +5,7 @@ from helpers import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil, SplitterUtil
 from helpers import dateDelim
+from helpers import setFirstActive
 
 class ebsTableWindow(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -286,13 +287,17 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         #------------
         self.ebsPreInit(initargs)
         #------------
-        super(ebsTableWindow, self).__init__()
+        super(ebsTable_n_TreeWindow, self).__init__()
         self.setObjectName(initargs["objname"])
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
-        self.splitter = QtGui.QSplitter(self)
+        #self.centralwidget = QtGui.QWidget(self)
+        
+        self.centralwidget = QtGui.QWidget(self)
+        
+        self.splitter = QtGui.QSplitter(self.centralwidget)
         self.splitter.setGeometry(QtCore.QRect(*initargs["spltsize"]))
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
@@ -319,8 +324,9 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         tree_header.setSizeHint(0,sz)
         tree_header.setText(0,QtGui.QApplication.translate("MainWindow", initargs["treeheader"], None, QtGui.QApplication.UnicodeUTF8))
         wwidth =  self.width()
-        self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
+        
         self.setCentralWidget(self.splitter)
+        self.splitter.setSizes([wwidth / 5, wwidth - (wwidth / 5)])
         
         if initargs.has_key("menubarsize"):
             self.menubar = QtGui.QMenuBar(self)
@@ -341,6 +347,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         #---------
         self.ebsInterInit(initargs) 
         #---------
+        self.connectTree()
         #---------
         self.retranslateUI(initargs)
         #---------
@@ -349,6 +356,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         SplitterUtil.nullifySaved(self.splname)
         
         self.firsttime = True
+        
         self.refreshTree()
         self.refresh_()
         
@@ -406,7 +414,8 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             try:
                 setattr(self, atuple[0], QtGui.QAction(self))
                 newAct = getattr(self, atuple[0])
-                newAct.setIcon(QtGui.QIcon(atuple[2]))
+                if atuple[2]:
+                    newAct.setIcon(QtGui.QIcon(atuple[2]))
                 self.connect(newAct, QtCore.SIGNAL("triggered()"), atuple[3])
                 newAct.setText(QtGui.QApplication.translate("MainWindow", atuple[1], None, QtGui.QApplication.UnicodeUTF8)) 
                 aDict[atuple[0]] = newAct
@@ -459,5 +468,28 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
-            
+    def editRow(self):
+        pass
+    def connectTree(self):
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editRow)
         
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh_)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
+
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.refresh_)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.addNodeLocalAction)        
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refresh_)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)    
+           
+    def disconnectTree(self):
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editRow)
+        
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh_)
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
+
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.refresh_)
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemActivated(QTreeWidgetItem *,int)"), self.addNodeLocalAction)        
+        
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refresh_)
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)    
