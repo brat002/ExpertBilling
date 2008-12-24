@@ -162,12 +162,7 @@ DECLARE
                      CONSTRAINT nfs#rpdate#_id_pkey PRIMARY KEY (id) ) 
                      INHERITS (billservice_netflowstream) 
                      WITH (OIDS=FALSE);
-                     CREATE INDEX nfs#rpdate#_account_id ON nfs#rpdate# USING btree (account_id);
-                     CREATE INDEX nfs#rpdate#_date_start_id ON nfs#rpdate# USING btree (date_start);
-                     CREATE INDEX nfs#rpdate#_nas_id ON nfs#rpdate# USING btree (nas_id);
-                     CREATE INDEX nfs#rpdate#_tarif_id ON nfs#rpdate# USING btree (tarif_id);
-                     CREATE INDEX nfs#rpdate#_traffic_class_id ON nfs#rpdate# USING btree (traffic_class_id);
-                     CREATE INDEX nfs#rpdate#_traffic_transmit_node_id ON nfs#rpdate# USING btree (traffic_transmit_node_id);';
+                     CREATE INDEX nfs#rpdate#_date_start_id ON nfs#rpdate# USING btree (date_start);';
                      
     at_tx1_ text := 'ALTER TABLE nfs#rpdate# ALTER COLUMN id SET DEFAULT nextval(#qseqname#::regclass);';
 

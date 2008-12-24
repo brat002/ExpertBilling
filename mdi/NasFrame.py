@@ -689,7 +689,8 @@ class NasEbs(ebsTableWindow):
             i+=1
         self.tableWidget.setColumnHidden(0, True)
 
-        HeaderUtil.getHeader("nas_frame_header", self.tableWidget)
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
+        #self.delNodeLocalAction()
         #self.tableWidget.resizeColumnsToContents()
         #self.tableWidget.setSortingEnabled(True)
     
