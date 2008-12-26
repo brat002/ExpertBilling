@@ -24,11 +24,12 @@ req["NAS-Identifier"] = "MikroTik"
 #req["Framed-IP-Address"] = "10.0.0.100"
 
 #req['NAS-Port-Type'] = 'Virtual'
-req['Calling-Station-Id']='10.10.1.2'
+req['Calling-Station-Id']='10.10.1.64'
 
 #f=file("request", "wb")
 #f.write(req.ReplyPacket())
 #f.flush()
+
 import random
 for x in range(0,10000):
     req['Calling-Station-Id']='10.10.1.'+str(random.randint(0,255))

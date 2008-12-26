@@ -619,6 +619,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
     
     def refresh_(self):
         self.refresh()
+        
     def makePay(self):
         text = QtGui.QInputDialog.getDouble(self,u"Введите сумму оплаты", u"Сумма:", QtGui.QLineEdit.Normal);
         #print text

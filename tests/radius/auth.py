@@ -12,7 +12,7 @@ srv=Client(server="localhost",
 	dict=Dictionary("dictionary"))
 
 req=srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
-                User_Name="dolphinik")
+                User_Name="sasha")
 
 req["NAS-IP-Address"] = "10.10.1.100"
 req["NAS-Port"] = 0

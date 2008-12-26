@@ -312,7 +312,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             
         if initargs.has_key("tablesize"):
             self.tableWidget.setGeometry(QtCore.QRect(*initargs["tablesize"]))
-        self.setCentralWidget(self.tableWidget)
+        #self.setCentralWidget(self.tableWidget)
         self.tableWidget = tableFormat(self.tableWidget)
         self.treeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)

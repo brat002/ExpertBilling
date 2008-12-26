@@ -7,7 +7,9 @@ from db import Object as Object
 from helpers import makeHeaders
 from helpers import setFirstActive
 from helpers import HeaderUtil, SplitterUtil
+from ebsWindow import ebsTable_n_TreeWindow
 from IPy import *
+
 
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -394,6 +396,10 @@ class ClassNodeFrame(QtGui.QDialog):
         QtGui.QDialog.accept(self)
 
 
+
+class ClassChildEbs(ebsTable_n_TreeWindow):
+    def __init__(self, connection):
+        pass
 class ClassChild(QtGui.QMainWindow):
     sequenceNumber = 1
 

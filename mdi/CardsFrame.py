@@ -4,15 +4,16 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
+from ebsWindow import ebsTableWindow
 from db import Object as Object
-from helpers import makeHeaders
-from helpers import dateDelim
+from helpers import makeHeaders, dateDelim
 from time import mktime
 from CustomForms import ComboBoxDialog, CardPreviewDialog
 import datetime, calendar
 from helpers import transaction
 from helpers import HeaderUtil, SplitterUtil
 from helpers import write_cards
+
 import os, datetime
 from randgen import GenPasswd2
 import string
@@ -672,6 +673,308 @@ class AddCards(QtGui.QDialog):
         
     def updateTemplates(self):
         self.comboBox_templates.addItems([unicode(tmplt) for tmplt in os.listdir(templatedir) if ((tmplt.find("_printandum_") == -1) and os.path.isfile(''.join((templatedir, '/',tmplt))))])
+
+class CardsChildEbs(ebsTableWindow):
+    def __init__(self, connection):
+        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
+        initargs = {"setname":"cards_frame_period", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
+        super(CardsChildEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.setIconSize(QtCore.QSize(18, 18))
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setMovable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18, 18))
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setObjectName("toolBar")
+        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        
+        self.toolBar_filter = QtGui.QToolBar(self)
+        self.toolBar_filter.setMovable(False)
+        self.toolBar_filter.setAllowedAreas(QtCore.Qt.BottomToolBarArea)
+        self.toolBar_filter.setFloatable(False)
+        self.toolBar_filter.setObjectName("toolBar_filter")
+        ###################### Filter
+        self.comboBox_nominal = QtGui.QComboBox(self)        
+        self.comboBox_nominal.setGeometry(QtCore.QRect(0,0,60,20))
+        self.comboBox_nominal.setEditable(True)
+        
+        self.date_start = QtGui.QDateTimeEdit(self)
+        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        self.date_start.setCalendarPopup(True)
+        self.date_start.setObjectName("date_start")
+
+        self.date_end = QtGui.QDateTimeEdit(self)
+        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.date_end.setCalendarPopup(True)
+        self.date_end.setObjectName("date_end")
+
+        self.label_date_start = QtGui.QLabel(self)
+        self.label_date_start.setMargin(10)
+        self.label_date_start.setObjectName("date_start_label")
+
+        self.label_date_end = QtGui.QLabel(self)
+        self.label_date_end.setMargin(10)
+        self.label_date_end.setObjectName("date_end_label")
+        
+        self.label_nominal = QtGui.QLabel(self)
+        self.label_nominal.setMargin(10)        
+        self.label_filter = QtGui.QLabel(self)
+        self.label_filter.setMargin(10)
+        
+        self.checkBox_sold = QtGui.QCheckBox(self)
+        self.checkBox_activated = QtGui.QCheckBox(self)        
+        self.checkBox_filter = QtGui.QCheckBox(self)        
+        self.pushButton_go = QtGui.QPushButton(self)
+        
+        self.toolBar_filter.addWidget(self.checkBox_filter)
+        self.toolBar_filter.addWidget(self.label_nominal)
+        self.toolBar_filter.addWidget(self.comboBox_nominal)
+        self.toolBar_filter.addWidget(self.checkBox_sold)
+        self.toolBar_filter.addWidget(self.checkBox_activated)
+        self.toolBar_filter.addWidget(self.label_date_start)
+        self.toolBar_filter.addWidget(self.date_start)
+        self.toolBar_filter.addWidget(self.label_date_end)
+        self.toolBar_filter.addWidget(self.date_end)
+        self.toolBar_filter.addWidget(self.pushButton_go)
+        ######################        
+        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
+        self.insertToolBarBreak(self.toolBar_filter)
+     
+    def ebsPostInit(self, initargs):
+        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
+        self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
+        actList=[("actionGenerate_Cards", "Сгенерировать партию", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard)]
+        objDict = {self.tableWidget:["actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card"]}
+        self.actionCreator(actList, objDict)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        
+        self.filterActions()
+        self.fixtures()
+        
+        self.delNodeLocalAction()
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.date_start.setDateTime(settings.value("cards_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("cards_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+            
+    def retranslateUI(self, initargs):
+        super(CardsChildEbs, self).retranslateUI(initargs)
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar_filter.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Filter", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_nominal.setText(QtGui.QApplication.translate("MainWindow", "Номинал", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_filter.setText(QtGui.QApplication.translate("MainWindow", "Фильтр", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_start.setText(QtGui.QApplication.translate("MainWindow", "С", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_end.setText(QtGui.QApplication.translate("MainWindow", "По", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_sold.setText(QtGui.QApplication.translate("MainWindow", "Проданные", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_activated.setText(QtGui.QApplication.translate("MainWindow", "Активированные", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_go.setText(QtGui.QApplication.translate("MainWindow", "Фильтровать", None, QtGui.QApplication.UnicodeUTF8))
+        self.tableWidget.setColumnHidden(0, True)
+        
+    def saleCard(self):
+        
+        items = self.tableWidget.selectedIndexes()
+        cards = []
+        for item in items:
+            if item.column()>0:
+                continue
+            cards.append(unicode(self.tableWidget.item(item.row(), 0).text()))
+        
+        child = SaleCards(connection=self.connection, cards = cards)
+        if child.exec_()==1:
+            self.refresh()
+        
+    def fixtures(self):
+        nominals = self.connection.get_cards_nominal()
+        self.connection.commit()
+        self.comboBox_nominal.clear()
+        for nom in nominals:
+            
+            self.comboBox_nominal.addItem(unicode(nom.nominal))
+            
+    def filterActions(self):
+        if self.checkBox_filter.checkState()==2:
+            self.label_nominal.setDisabled(False)
+            self.comboBox_nominal.setDisabled(False)
+            self.label_date_start.setDisabled(False)
+            self.date_start.setDisabled(False)
+            self.label_date_end.setDisabled(False)
+            self.date_end.setDisabled(False)
+            self.checkBox_sold.setDisabled(False)
+            self.checkBox_activated.setDisabled(False)
+            self.pushButton_go.setDisabled(False)
+        else:
+            self.label_nominal.setDisabled(True)
+            self.comboBox_nominal.setDisabled(True)
+            self.label_date_start.setDisabled(True)
+            self.date_start.setDisabled(True)
+            self.label_date_end.setDisabled(True)
+            self.date_end.setDisabled(True)
+            self.checkBox_sold.setDisabled(True)
+            self.checkBox_activated.setDisabled(True)
+            self.pushButton_go.setDisabled(True)
+            self.refresh()
+            
+    def enableCard(self):
+        for index in self.tableWidget.selectedIndexes():
+            if index.column()>1:
+                continue
+            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            #print i
+            try:
+                #ids.append()
+                model=self.connection.get_model(int(i),"billservice_card")
+                model.disabled=False
+                self.connection.save(model,"billservice_card")
+                self.connection.commit()
+ 
+            except Exception, e:
+                pass   
+        
+        self.refresh()
+    
+    def disableCard(self):
+        ids=[]
+        for index in self.tableWidget.selectedIndexes():
+            #print index.column()
+            if index.column()>1:
+                continue
+            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            #print i
+            
+            try:
+                #ids.append()
+                model=self.connection.get_model(int(i),"billservice_card")
+                model.disabled=True
+                self.connection.save(model,"billservice_card")
+                self.connection.commit()
+
+            except Exception, e:
+                pass        
+        
+        self.refresh()
+        
+    def deleteCards(self):
+        """
+        """
+        ids=[]
+        for index in self.tableWidget.selectedIndexes():
+            #print index.column()
+            if index.column()>1:
+                continue
+            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            #print i
+            
+            try:
+                #ids.append()
+                self.connection.delete_card(i)
+            except Exception, e:
+                pass  
+            
+        self.connection.commit()    
+        self.refresh()     
+
+    def generateCards(self):
+
+        #print model.id
+        
+        last_series = self.connection.get_next_cardseries()
+        child=AddCards(connection=self.connection, last_series=last_series)
+        if child.exec_()==1:
+            self.refresh()
+            self.fixtures()
+        
+        
+    def refresh(self, widget=None):
+        
+        sql = """SELECT * FROM billservice_card"""
+        if self.checkBox_filter.checkState()==2:
+            start_date = self.date_start.dateTime().toPyDateTime()
+            end_date = self.date_end.dateTime().toPyDateTime()
+            sql+=" WHERE id>0 "
+            if unicode(self.comboBox_nominal.currentText())!="":
+                sql+=" AND nominal = '%s'" % unicode(self.comboBox_nominal.currentText())
+                
+            if self.checkBox_activated.checkState() == 2:
+                sql+=" AND activated>'%s' and activated<'%s'" % (start_date, end_date)
+            
+            if self.checkBox_sold.checkState() == 2:
+                sql+=" AND sold>'%s' and sold<'%s'" % (start_date, end_date)
+                
+            if self.checkBox_sold.checkState() == 0 and self.checkBox_activated.checkState() == 0:
+                sql+=" AND start_date>'%s' and end_date<'%s'" % (start_date, end_date)
+        else:
+            sql+=" WHERE sold is Null"
+            
+        self.tableWidget.setSortingEnabled(False)
+
+            
+        self.tableWidget.clearContents()
+
+        nodes = self.connection.sql(sql)
+        self.connection.commit()
+        self.tableWidget.setRowCount(len(nodes))
+        sql+=" ORDER BY id ASC"
+        i=0        
+        
+        for node in nodes:
+
+            self.addrow(node.id, i,0, status = node.disabled, activated=node.activated)
+            self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
+            self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
+            self.addrow(node.pin, i,3, status = node.disabled, activated=node.activated)
+            self.addrow(node.sold, i,4, status = node.disabled, activated=node.activated)
+            self.addrow(node.activated, i,5, status = node.disabled, activated=node.activated)
+            self.addrow(node.start_date.strftime(self.strftimeFormat), i,6, status = node.disabled, activated=node.activated)
+            self.addrow(node.end_date.strftime(self.strftimeFormat), i,7, status = node.disabled, activated=node.activated)
+            #self.tableWidget.setRowHeight(i, 17)
+            i+=1
+            
+        self.tableWidget.setColumnHidden(0, False)
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
+        self.delNodeLocalAction()
+        #self.tableWidget.setSortingEnabled(True)
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.dateTime()))
+            settings.setValue("cards_date_end", QtCore.QVariant(self.date_end.dateTime()))
+        except Exception, ex:
+            print "Cards settings save error: ", ex
+
+
+    def addrow(self, value, x, y, status, activated):
+        headerItem = QtGui.QTableWidgetItem()
+        
+        #print 'activated',activated
+        if value == None:
+            value = ""
+        
+        headerItem.setText(unicode(value))
+        
+        if status==True:
+            headerItem.setTextColor(QtGui.QColor('#FF0100'))
+        
+        if y==5:
+            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
+        if activated == None and y==0:
+            headerItem.setIcon(QtGui.QIcon("images/ok.png"))
+        elif activated!=None and y==0:
+            headerItem.setIcon(QtGui.QIcon("images/false.png"))
+    
+        self.tableWidget.setItem(x,y,headerItem)
+        
+
+        
+       
+    def delNodeLocalAction(self):
+        super(CardsChildEbs, self).delNodeLocalAction([self.actionDelete_Cards, self.actionEnable_card, self.actionDisable_Card, self.actionSell_Card])
 
 class CardsChild(QtGui.QMainWindow):
     sequenceNumber = 1

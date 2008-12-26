@@ -14,7 +14,7 @@ import threading
 
 import mdi_rc
 
-from AccountFrame import AccountsMdiChild
+from AccountFrame import AccountsMdiEbs as AccountsMdiChild
 from NasFrame import NasEbs
 from SettlementPeriodFrame import SettlementPeriodEbs as SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChild
