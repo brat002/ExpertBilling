@@ -1,138 +1,44 @@
 #-*-coding=utf-8-*-
 
-from daemonize import daemonize
-from encodings import idna, ascii
-import time, datetime, os, sys, gc, traceback
-
-from utilites import parse_custom_speed, parse_custom_speed_lst, cred, create_speed_string, change_speed, PoD, get_active_sessions, rosClient, SSHClient,settlement_period_info, in_period, in_period_info,create_speed_string
-import dictionary
-from threading import Thread
-import threading
-try:
-    import mx.DateTime
-except:
-    print 'cannot import mx'
-from db import Object as Object
-from db import delete_transaction, get_default_speed_parameters, get_speed_parameters,transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from db import dbRoutine
-import Pyro.core
-import Pyro.protocol
-import Pyro.constants
-import hmac
-import hashlib
-import zlib
-from decimal import Decimal
-from hashlib import md5
-import psycopg2
-import psycopg2.extras
-from marshal import dumps, loads
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-import psycopg2
 import IPy
-from IPy import intToIp
+import hmac
+import zlib
+import hashlib
 import asyncore
-from collections import deque
-from collections import defaultdict
-from threading import Lock
-from threading import Semaphore
-from copy import deepcopy
-from copy import copy
-#import SocketServer
-#from SocketServer import ThreadingTCPServer
-#from SocketServer import StreamRequestHandler
-
-from chartprovider.bpplotadapter import bpplotAdapter
-from chartprovider.bpcdplot import cdDrawer
-
+import threading
+import dictionary
 import ConfigParser
+import psycopg2, psycopg2.extras
+import time, datetime, os, sys, gc, traceback
+import Pyro.core, Pyro.protocol, Pyro.constants
+
+from IPy import intToIp
+from hashlib import md5
+from decimal import Decimal
+from constants import rules
+from copy import copy, deepcopy
+from db import Object as Object
+from daemonize import daemonize
+from marshal import dumps, loads
+from encodings import idna, ascii
+from threading import Thread, Lock
+from DBUtils.PooledDB import PooledDB
+from collections import deque, defaultdict
+from chartprovider.bpcdplot import cdDrawer
+from chartprovider.bpplotadapter import bpplotAdapter
+from utilites import create_speed_string, change_speed, PoD, get_active_sessions
+from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
+from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
+from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
+from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
+
+try:    import mx.DateTime
+except: print 'cannot import mx'
+
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 config = ConfigParser.ConfigParser()
 
-from DBUtils.PooledDB import PooledDB
-
-rules={
-       
-        'allow_pptp':u"""/ppp profile add name=internet only-one=yes use-compression=no use-encryption=yes use-vj-compression=yes local-address=%s;/interface pptp-server server set enabled=yes authentication=%s default-profile=internet;
-        """,
-        'allow_radius':u"""
-        /ppp aaa set accounting=yes use-radius=yes interim-update=%s; /radius add address=%s disabled=no secret=%s timeout=3000;""",
-        'smtp_protect' : u"""
-        /ip firewall filter
-
-add chain=forward protocol=tcp dst-port=25 src-address-list=spammer
-action=drop comment="BLOCK SPAMMERS OR INFECTED USERS"
-
-add chain=forward protocol=tcp dst-port=25 connection-limit=30,32 limit=50,5 action=add-src-to-address-list
-address-list=spammer address-list-timeout=30m comment="Detect and add-list SMTP virus or spammers"
-
-/system script
-add name="spammers" source=":log error \"----------Users detected like \
-    SPAMMERS -------------\";
-\n:foreach i in \[/ip firewall address-list find \
-    list=spammer\] do={:set usser \[/ip firewall address-list get \$i \
-    address\];
-\n:foreach j in=\[/ip hotspot active find address=\$usser\] \
-    do={:set ip \[/ip hotspot active get \$j user\];
-\n:log error \$ip;
-\n:log \
-    error \$usser} };" policy=ftp,read,write,policy,test,winbox  """,
-    
-    "malicious_trafic":"""
-    
-    /ip firewall filter
-add chain=forward connection-state=established comment="allow established connections"  
-add chain=forward connection-state=related comment="allow related connections"
-add chain=forward connection-state=invalid action=drop comment="drop invalid connections"  
-
-add chain=virus protocol=tcp dst-port=135-139 action=drop comment="Drop Blaster Worm" 
-add chain=virus protocol=udp dst-port=135-139 action=drop comment="Drop Messenger Worm"    
-add chain=virus protocol=tcp dst-port=445 action=drop comment="Drop Blaster Worm" 
-add chain=virus protocol=udp dst-port=445 action=drop comment="Drop Blaster Worm" 
-add chain=virus protocol=tcp dst-port=593 action=drop comment="________" 
-add chain=virus protocol=tcp dst-port=1024-1030 action=drop comment="________" 
-add chain=virus protocol=tcp dst-port=1080 action=drop comment="Drop MyDoom" 
-add chain=virus protocol=tcp dst-port=1214 action=drop comment="________" 
-add chain=virus protocol=tcp dst-port=1363 action=drop comment="ndm requester" 
-add chain=virus protocol=tcp dst-port=1364 action=drop comment="ndm server" 
-add chain=virus protocol=tcp dst-port=1368 action=drop comment="screen cast" 
-add chain=virus protocol=tcp dst-port=1373 action=drop comment="hromgrafx" 
-add chain=virus protocol=tcp dst-port=1377 action=drop comment="cichlid" 
-add chain=virus protocol=tcp dst-port=1433-1434 action=drop comment="Worm" 
-add chain=virus protocol=tcp dst-port=2745 action=drop comment="Bagle Virus" 
-add chain=virus protocol=tcp dst-port=2283 action=drop comment="Drop Dumaru.Y" 
-add chain=virus protocol=tcp dst-port=2535 action=drop comment="Drop Beagle" 
-add chain=virus protocol=tcp dst-port=2745 action=drop comment="Drop Beagle.C-K" 
-add chain=virus protocol=tcp dst-port=3127-3128 action=drop comment="Drop MyDoom" 
-add chain=virus protocol=tcp dst-port=3410 action=drop comment="Drop Backdoor OptixPro"
-add chain=virus protocol=tcp dst-port=4444 action=drop comment="Worm" 
-add chain=virus protocol=udp dst-port=4444 action=drop comment="Worm" 
-add chain=virus protocol=tcp dst-port=5554 action=drop comment="Drop Sasser" 
-add chain=virus protocol=tcp dst-port=8866 action=drop comment="Drop Beagle.B" 
-add chain=virus protocol=tcp dst-port=9898 action=drop comment="Drop Dabber.A-B" 
-add chain=virus protocol=tcp dst-port=10080 action=drop comment="Drop MyDoom.B" 
-add chain=virus protocol=tcp dst-port=12345 action=drop comment="Drop NetBus" 
-add chain=virus protocol=tcp dst-port=17300 action=drop comment="Drop Kuang2" 
-add chain=virus protocol=tcp dst-port=27374 action=drop comment="Drop SubSeven" 
-add chain=virus protocol=tcp dst-port=65506 action=drop comment="Drop PhatBot, Agobot, Gaobot"
-add chain=forward action=jump jump-target=virus comment="jump to the virus chain"
-add chain=forward action=accept protocol=tcp dst-port=80 comment="Allow HTTP" 
-add chain=forward action=accept protocol=tcp dst-port=25 comment="Allow SMTP" 
-add chain=forward protocol=tcp comment="allow TCP"
-add chain=forward protocol=icmp comment="allow ping"
-add chain=forward protocol=udp comment="allow udp"
-add chain=forward action=drop comment="drop everything else"
-
- """,
-    'gateway':u"""
-    /ip firewall nat add chain=srcnat src-address=0.0.0.0/0 action=masquerade
-    """
-        
-       }
-
-#redirect_std("core", redirect=config.get("stdout", "redirect"))
-#from mdi.helpers import Object as Object
-
-   
 def comparator(d, s):
     for key in s:
         if s[key]!='' and s[key]!='Null' and s[key]!='None':
@@ -2399,6 +2305,7 @@ class AccountServiceThread(Thread):
                 #list cache
                 
                 accts = cur.fetchall()
+                allowedUsersChecker(allowedUsers, lambda: len(accts))
                 #connection.commit()
                 #cur.close()
                 #index on account_id, directly links to tuples
@@ -3304,7 +3211,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         id = cur.fetchone()['id']
         return id
 
-
     @authentconn
     def connection_request(self, username, password, cur=None, connection=None):
         try:
@@ -3328,6 +3234,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def test(self, cur=None, connection=None):
         pass
 
+    @authentconn
+    def get_allowed_users(self, cur=None, connection=None):
+        return allowedUsers()
+    
     @authentconn
     def pod(self, session, cur=None, connection=None):
         print "Start POD"
@@ -3363,6 +3273,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 
+
+
+    
 def main():
     global curAT_date
     
@@ -3390,13 +3303,13 @@ def main():
     cacheThr = AccountServiceThread()
     cacheThr.start()
     
-    while curAT_date ==None:
+    while curAT_date == None:
         time.sleep(0.2)
         
     #i= range(len(threads))
     for th in threads:	
         th.start()
-        time.sleep(1)
+        time.sleep(0.5)
         
     NfAsyncUDPServer(coreAddr)            
     while 1: 
@@ -3438,6 +3351,8 @@ if __name__ == "__main__":
     else:
         raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
     
+    licenseFilePath = config.get("license", "filepath")
+    
     store_na_tarif   = False
     store_na_account = False
     if (config.get("core", "store_na_tarif")  =='True') or (config.get("core", "store_na_tarif")  =='1'):
@@ -3469,52 +3384,12 @@ if __name__ == "__main__":
     curAT_lock  = Lock()
     
     sendFlag = ''
-    '''
-    #global caches object
-    caches = object()
-    #cache with records from account-tarif table sequence with LAST tarif
-    curATCache  = []
-    #records from account-tarif sequence indexed by account.id
-    curAT_acIdx = {}
-    #records from account-tarif sequence indexed by tarif.id
-    curAT_tfIdx = {}
-    #records from account-tarif sequence indexed by accounttarif.id
-    curAT_acctIdx = {}
-    #cache to chech whether traffic transmit service fits in any of time period nodes
-    tpnInPeriod = None
-    #cache to check whether tarif-accessparameters sequence fits in any of time period nodes
-    tp_asInPeriod = None
-    #traffic transmit service information
-    curTTSCache = {}
-    #settlement period information
-    curSPCache = {}
-    #nas information
-    curNasCache = {}
-    curDefSpCache = {}
-    curNewSpCache = {}
-    curPerTarifCache = []
-    curPSSPCache = {}
-    curPersSetpCache = []
     
-    curTimeAccNCache = {}
-    curTimePerNCache = {}
-    curTLimitCache = {}
-    curShedLogCache = {}
-    curTimeAccSrvCache = {}
+    #function that returns number of allowed users
+    #create allowedUsers
+    allowedUsers = setAllowedUsers(pool.connection(), licenseFilePath)
     
-    curAccParCache = {}
-    curIPNSpCache = {}
-    curOneTimeSrvCache = {}
-    curOTSHistCache = {}
-    curSuspPerCache = {}
-    #curTCTTSSP_lock = Lock()
-    #cache with prepays information
-    prepaysCache = {}
-    #lock for operations with prepays cache
-    prepays_lock = Lock()
-    #cache with traffictransmitnodes information
-    TRTRNodesCache = {}
-    '''
+    print allowedUsers()
     fMem = pfMemoize()
 
     

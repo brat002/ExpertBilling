@@ -341,7 +341,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
 
 def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False):
         """
-        Функция возвращает дату начала и дату конца текущегопериода
+        Функция возвращает дату начала и дату конца текущего периода
         """
         
         #print time_start, repeat_after, repeat_after_seconds,  now
@@ -460,40 +460,29 @@ def create_speed_string(params, coa=False):
 
     if coa==True:
         result+="%s" % params['max_limit']
-
         #burst_limit
         result+=" %s" % params['burst_limit']
-
         #burst_treshold
         result+=" %s" % params['burst_treshold']
-
         #burst_time
         result+=" %s" % params['burst_time']
-
         #priority
         result+=" %s" % params['priority']
-
-        
+        #min_limit        
         result+=" %s" % params['min_limit']
         
     else:
         result+="%s" % params[0]
-
         #burst_limit
         result+=" %s" % params[1]
-
         #burst_treshold
         result+=" %s" % params[2]
-
         #burst_time
         result+=" %s" % params[3]
-
         #priority
         result+=" %s" % params[4]
-
-        
+        #min_limit
         result+=" %s" % params[5]
-
 
     return str(result)
 
@@ -790,28 +779,6 @@ def parse_custom_speed(speed_string):
     #compile_obj = re.compile(rawstr)
     match_obj = compile_obj.search(speed_string)
     
-    # method 2: using search function (w/ external flags)
-    #match_obj = re.search(rawstr, speed_string)
-    
-    # method 3: using search function (w/ embedded flags)
-    #match_obj = re.search(embedded_rawstr, speed_string)
-    
-    # Retrieve group(s) from match_obj
-    #all_groups = match_obj.groups()
-    
-    # Retrieve group(s) by index
-    '''group_1 = match_obj.group(1)
-    group_2 = match_obj.group(2)
-    group_3 = match_obj.group(3)
-    group_4 = match_obj.group(4)
-    group_5 = match_obj.group(5)
-    group_6 = match_obj.group(6)
-    group_7 = match_obj.group(7)
-    group_8 = match_obj.group(8)
-    group_9 = match_obj.group(9)
-    group_10 = match_obj.group(10)
-    group_11 = match_obj.group(11)'''
-    
     # Retrieve group(s) by name
     rxrate = match_obj.group('rxrate') or -1
     txrate = match_obj.group('txrate') or -1
@@ -850,5 +817,26 @@ def parse_custom_speed_lst(speed_string):
 
     return [formatator(rxrate, txrate), formatator(rxbrate, txbrate), formatator(rbthr, tbthr), formatator(rbtm, tbtm), prt, formatator(rrm, trm)]
 
+def setAllowedUsers(dbconnection, filepath):
+    def transformByte(lbyte):
+        ldict = {'A': 50, 'B': 250, 'C': 500, 'D': 800, 'E': 1000, 'F': ((1 << 63) - 1)}
+        return ldict.get(lbyte, 0)
+    #global allowedUsers
+    allowedUsers = lambda: 0
+    lfile = open(filepath, 'rb')
+    lfile.seek(-1, 2)
+    allowed = str(transformByte(lfile.read(1)))
+    allowedUsers = lambda: int(allowed)
+    lfile.close()
+    cur = dbconnection.cursor()
+    cur.callproc('crt_allowed_checker', (allowedUsers(),))
+    dbconnection.commit()
+    cur.close()
+    dbconnection.close()
+    return allowedUsers
     
-            
+def allowedUsersChecker(allowed, current):
+    if current() > allowed():
+        print "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
+        sys.exit()
+        #sys.exitfunc()

@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 import Pyro.core
 import traceback
+import psycopg2
 from ebsWindow import ebsTable_n_TreeWindow
 from db import Object as Object
 from helpers import dateDelim
@@ -3987,7 +3988,10 @@ class AccountWindow(QtGui.QMainWindow):
         except Exception, e:
             import traceback
             traceback.print_exc()
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
+            if isinstance(e, psycopg2.InternalError) and e.args[0].startswith('Amount'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Достигнуто максимальное число пользователей. \n" + e.args[0]))
+            else:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
             self.connection.rollback()
             return
         
@@ -4111,18 +4115,21 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
-        self.thread = Worker()
+        #self.thread = Worker()
         self.selected_account = selected_account
         super(AccountsMdiEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.tarif_treeWidget = self.treeWidget
+        self.tb = QtGui.QToolButton(self)
+        self.tb.setIcon(QtGui.QIcon("images/documents.png"))
+        self.tb.setText(u"Документы")
+        self.tb.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.menu = QtGui.QMenu(self.tb)
         
-    def ebsPostInit(self, initargs):
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
-        self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
+        
+        #self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
 
         actList=[("addAction", "Добавить аккаунт", "images/add.png", self.addframe), \
                  ("delAction", "Удалить аккаунт", "images/del.png", self.delete), \
@@ -4134,40 +4141,368 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \
                  ("actionAddAccount", "Добавить на сервер доступа", "images/add.png", self.accountAdd), \
                  ("actionDeleteAccount", "Удалить с сервера доступа", "images/del.png", self.accountDelete), \
-                 ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif)\
-                 ("editAccountAction", "Редактировать", "images/configure.png", self.editframe)\
+                 ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif),\
+                 ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
+                 ("prepaidTrafficTailsAction", "Остаток предоплаченного трафика", "", self.prepaidReport),\
+                 ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
+                 ("actOfProvidedServices", "Акт выполненных работ", "", self.pass_)\
                 ]
-        
 
-        objDict = {self.treeWidget:["editTarifAction", "addTarifAction", "delAction", "configureAction"], \
-                   self.tableWidget:["editAction", "addAction", "delAction", "configureAction"], \
-                   self.toolBar:["addAction", "delAction", "configureAction"]\
+
+
+        objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
+                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
+                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
+                   self.menu       :["prepaidTrafficTailsAction", "separator", "connectionAgreementAction", "separator", "actOfProvidedServices"],\
                   }
-        self.tarif_treeWidget.addAction(self.editTarifAction)
-        self.tarif_treeWidget.addAction(self.addTarifAction)
-        self.tarif_treeWidget.addAction(self.delTarifAction)
+        self.actionCreator(actList, objDict)
         
-        self.tableWidget.addAction(self.editAccountAction)
-        self.tableWidget.addAction(self.addAction)
-        self.tableWidget.addAction(self.delAction)
-        self.tableWidget.addAction(self.transactionAction)
-        self.tableWidget.addAction(self.actionEnableSession)
-        self.tableWidget.addAction(self.actionDisableSession)
-                        
-        self.tableWidget.addAction(self.actionAddAccount)
-        self.tableWidget.addAction(self.actionDeleteAccount)
+    def ebsPostInit(self, initargs):
+        
+        
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setIconSize(QtCore.QSize(18,18))
-        self.toolBar.addAction(self.addTarifAction)
-        self.toolBar.addAction(self.delTarifAction)
-        self.toolBar.addSeparator()        
-        self.toolBar.addAction(self.addAction)
-        self.toolBar.addAction(self.delAction)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.transactionAction)
-        self.toolBar.addAction(self.transactionReportAction)
-        self.actionCreator(actList, objDict)
+        
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
+        self.tb.setMenu(self.menu)
+        self.tb.setDisabled(True)
+        self.toolBar.addWidget(self.tb)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.editRow = self.editTarif
+        #self.connectTree()
         self.delNodeLocalAction()
+        self.addNodeLocalAction()
+        self.restoreWindow()
+        self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        
+    def retranslateUI(self, initargs):
+        super(AccountsMdiEbs, self).retranslateUI(initargs)
+      
+    def addTarif(self):
+        #print connection
+        tarifframe = TarifFrame(connection=self.connection)
+        if tarifframe.exec_() == 1:
+            #import datetime
+            #print datetime.datetime.now()
+            self.refreshTree()
+            self.refresh()
+        
+    
+    def delTarif(self):
+        tarif_id = self.getTarifId()
+        if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            accounts=self.connection.sql("""SELECT account.id 
+                    FROM billservice_account as account
+                    JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
+                    WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif_id)
+            if len(accounts)>0:
+                tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
+                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
+                child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
+                
+                if child.exec_()==1:
+                    tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(child.comboBox.currentText()))
+    
+                    try:    
+                        for account in accounts:
+                            accounttarif = Object()
+                            accounttarif.account_id = account.id
+                            accounttarif.tarif_id = tarif.id
+                            accounttarif.datetime = datetime.datetime.now() 
+                            self.connection.save(accounttarif, "billservice_accounttarif")
+                    
+                    
+                        #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                        self.connection.iddelete(tarif_id, "billservice_tariff")
+                        self.connection.commit()
+                    except Exception, e:
+                        print e
+                        self.connection.rollback()
+                        return
+            else:
+                try:
+                    #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                    self.connection.iddelete(tarif_id, "billservice_tariff")
+                    self.connection.commit()
+                except Exception, e:
+                    print e
+                    self.connection.rollback()
+                    return
+            #self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(0))
+            self.refreshTree()
+            try:
+                setFirstActive(self.tarif_treeWidget)
+            except Exception, ex:
+                print ex
+            #self.refresh()
+        
+    def editTarif(self, *args, **kwargs):
+        model = self.connection.get_model(self.getTarifId(), "billservice_tariff" )
+        
+        tarifframe = TarifFrame(connection=self.connection, model=model)
+        #self.parent.workspace.addWindow(tarifframe)
+        if tarifframe.exec_()==1:
+            self.refreshTree()
+            self.refresh()
+            
+    
+    def addframe(self):
+        tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
+        self.connection.commit()
+        #self.connection.flush()
+        id = self.getTarifId()
+        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+        WHERE tarif.id=%s""" % id).ipn_for_vpn
+        self.connection.commit()
+        #child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
+        child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
+        self.parent.workspace.addWindow(child)
+        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
+        child.show()
+        return
+        #self.connection.commit()
+        #child = AddAccountFrame(connection=self.connection)
+
+
+    def makeTransation(self):
+        id = self.getSelectedId()
+        account = self.connection.get_model(id, "billservice_account")
+        child = TransactionForm(connection=self.connection, account = account)
+        if child.exec_()==1:
+            tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = "", summ=child.result, bill=unicode(child.payed_document_edit.text()))
+            try:
+                
+                self.connection.transaction(tr)
+                self.connection.commit()
+            except Exception, e:
+                print "omg traf exception", e
+                self.connection.rollback()
+            
+            #Если будем переделывать - здесь нужно списывать со счёта пользователя указанную сумму денег.
+            self.refresh()
+       
+    def prepaidReport(self):
+        pass                                
+            
+    def transactionReport(self):
+        id = self.getSelectedId()
+        account = self.connection.get_model(id, "billservice_account")
+        tr = TransactionsReport(connection=self.connection, account = account)
+        self.parent.workspace.addWindow(tr)
+        tr.show()
+            
+    def refresh_(self):
+        self.refresh()
+        
+    def getTarifId(self):
+        return self.treeWidget.currentItem().id
+    
+    def pass_(self):
+        pass
+    
+    def delete(self):
+        id=self.getSelectedId()
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.accountActions(id, 'delete')
+            self.connection.iddelete(id, "billservice_account")
+            self.connection.commit()
+            self.refresh()
+
+
+    @connlogin
+    def editframe(self, *args, **kwargs):
+        #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
+        id=self.getSelectedId()
+        #print id
+        if id == 0:
+            return
+        try:
+            model = self.connection.get_model(id ,"billservice_account")
+        except Exception, e:
+            print e
+            return
+        #print 'model', model
+
+        
+        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+        WHERE tarif.id=%s""" % self.getTarifId()).ipn_for_vpn
+        tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
+        #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
+        child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
+        
+        self.parent.workspace.addWindow(child)
+        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
+        child.show()
+        return
+        
+
+    def addrow(self, value, x, y, color=None, enabled=True):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        if color:
+            if float(value)<0:
+                headerItem.setBackgroundColor(QtGui.QColor(color))
+                headerItem.setTextColor(QtGui.QColor('#ffffff'))
+        
+        if not enabled:
+            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
+        
+            
+        if y==1:
+            if enabled==True:
+                headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            else:
+                headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
+            
+
+        headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+        #self.tablewidget.setShowGrid(False)
+
+    def refreshTree(self):
+        self.disconnectTree()
+        curItem = -1
+        try:
+            curItem = self.tarif_treeWidget.indexOfTopLevelItem(self.tarif_treeWidget.currentItem())
+        except Exception, ex:
+            print ex
+        self.tarif_treeWidget.clear()
+
+        #tariffs = self.connection.foselect("billservice_tariff")
+        tariffs = self.connection.get_tariffs()
+        self.connection.commit()
+        self.tableWidget.setColumnHidden(0, True)
+        for tarif in tariffs:
+            item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+            item.id = tarif.id
+            item.tarif_type = tarif.ttype
+            item.setText(0, u"%s %s" % (tarif.ttype, tarif.name))
+            item.setIcon(0,QtGui.QIcon("images/folder.png"))
+            #tariff_type = self.connection.get("SELECT get_tariff_type(%d);" % tarif.id)
+            #item.setText(1, tarif.ttype)
+            if not tarif.active:
+                item.setDisabled(True)
+            
+        self.connectTree()
+        if curItem != -1:
+            self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
+        
+            
+    def refresh(self, item=None, k=''):
+        #self.tableWidget.setSortingEnabled(False)
+        #print item
+        if item:
+            id=item.id
+        else:
+            try:
+                id=self.getTarifId()
+            except:
+                return
+            
+        #print "tarif_id=",id
+        #print k
+
+        #self.connection.commit()
+        #tarif = self.connection.foselect("billservice_tariff", id)
+        
+        #self.connection.commit()
+        accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+        self.connection.commit()
+        #self.connection.commit()
+        #print accounts
+
+        #print "after acc"
+        self.tableWidget.setRowCount(len(accounts))
+        
+        
+        i=0
+        for a in accounts:
+            
+            self.addrow(a.id, i,0, enabled=a.status)
+            self.addrow(a.username, i,1, enabled=a.status)
+            self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
+            self.addrow(a.credit, i,3, enabled=a.status)
+            self.addrow(a.fullname, i,4, enabled=a.status)
+            self.addrow(a.email, i,5, enabled=a.status)
+            self.addrow(a.nas_name,i,6, enabled=a.status)
+            self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
+            self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
+            self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
+            #self.addrow(a.suspended, i,10, enabled=a.status)
+            #self.addrow(a.balance_blocked, i,11, enabled=a.status)
+            self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+            #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+            self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
+            
+            #self.tableWidget.setRowHeight(i, 17)
+            
+            if self.selected_account:
+                if self.selected_account.id == a.id:
+                    self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
+            i+=1
+        self.tableWidget.setColumnHidden(0, True)
+        #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
+        self.delNodeLocalAction()
+        #self.tableWidget.setSortingEnabled(True)
+        
+
+    def accountEnable(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+
+        if self.connection.accountActions(id, 'enable'):
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт включён на сервере доступа."))
+            self.refresh()
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        
+
+
+    def accountAdd(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+
+        if self.connection.accountActions(id, 'create'):
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт добавлен на сервер доступа."))
+            self.refresh()
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
+
+    def accountDelete(self):
+        id=self.getSelectedId()
+        if (id==0) and (QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить аккаунт? \n После удаления станет недоступна статистика и информация о проводках.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No):
+            return
+
+        if self.connection.accountActions(id, 'delete'):
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт удалён с сервера доступа."))
+            self.refresh()
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
+
+
+    def accountDisable(self):
+        id=self.getSelectedId()
+        if id==0:
+            return
+
+        if self.connection.accountActions(id, 'disable'):
+            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт отключен на сервере доступа."))
+            self.refresh()
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+    
+    
+    def addNodeLocalAction(self):
+        super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction])
+    def delNodeLocalAction(self):
+        super(AccountsMdiEbs, self).delNodeLocalAction([self.delAction,self.transactionAction,self.transactionReportAction])
         
 class AccountsMdiChild(QtGui.QMainWindow):
     sequenceNumber = 1

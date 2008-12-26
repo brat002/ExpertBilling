@@ -1,33 +1,28 @@
 #-*-coding=utf-8-*-
-import os, sys
-from daemonize import daemonize
-import socket, select, struct, datetime, time
-import asyncore
-import random
-from IPy import IP, IPint, parseAddress
-try:
-    import mx.DateTime
-except:
-    print "cannot inport mx"
-    
 
-from collections import deque
-import psycopg2
-from DBUtils.PooledDB import PooledDB
-import ConfigParser
-config = ConfigParser.ConfigParser()
-import threading
-from threading import Thread
-import marshal
+
 import gc
 import glob
+import random
+import os, sys
+import marshal
+import asyncore
+import psycopg2
+import threading
+import ConfigParser
+import socket, select, struct, datetime, time
 
-#from logger import redirect_std
 
-#redirect_std("nf", redirect=config.get("stdout", "redirect"))
+from threading import Thread
+from collections import deque
+from daemonize import daemonize
+from DBUtils.PooledDB import PooledDB
+from IPy import IP, IPint, parseAddress
 
+try:    import mx.DateTime
+except: print 'cannot import mx'
 
-
+config = ConfigParser.ConfigParser()
 #aggregation cache
 dcache   = {}
 #caches for Nas data, account IPN, VPN address indexes

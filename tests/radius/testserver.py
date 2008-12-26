@@ -6,12 +6,13 @@ from threading import Thread
 dict=dictionary.Dictionary("dicts\dictionary","dicts\dictionary.microsoft")
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.settimeout(1)
 f=open('request','rb')
 #u = pickle.Unpickler(f)
 data = f.read()
 n=0
 f.close()
-addr=('10.10.1.2',1812)
+addr=('10.10.1.64',1812)
 class AuthRequest(Thread):
       def __init__ (self):
             Thread.__init__(self)
@@ -30,7 +31,7 @@ class AuthRequest(Thread):
 #a.start()
 
 b=[]
-for i in xrange(0,1):
+for i in xrange(2):
       #print
       a=AuthRequest()
       b.append(a.start())
@@ -38,6 +39,7 @@ for i in xrange(0,1):
 time.sleep(20)
 print n
 for i in b:
-      i.join()
+      if i:
+            i.join()
     
 print n
