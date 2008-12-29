@@ -61,55 +61,46 @@ class AsyncUDPServer(asyncore.dispatcher):
         self.dbconn = None
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         #self.socket.settimeout(5)
+        #self.socket.setblocking(True)
         self.bind( (host, port) )
         self.set_reuse_addr()
 
         
     def handle_read_event (self):
         try:
-            #data, addr = self.socket.recvfrom(4096)
-            rectuple = self.socket.recvfrom(4096)
+            data, addr = self.socket.recvfrom(4096)
         except:            
             traceback.print_exc()
             return
-        #self.handle_readfrom(data, addr)
-        self.handle_readfrom(rectuple)
+        self.handle_readfrom(data, addr)
 
-    '''def handle_readfrom(self,data, address):
-        pass'''
-    def handle_readfrom(self, rectuple):
+    def handle_readfrom(self,data, address):
         pass
     
     def writable (self):
         return len(self.outbuf)
 
-    '''def sendto (self, data, addr):
+    def sendto (self, data, addr):
         self.outbuf.append((data, addr))
-        self.initiate_send()'''
+        self.initiate_send()
     
-    def sendto (self, sendtuple):
-        self.outbuf.append(sendtuple)
-        #self.initiate_send()
     
-    def handle_write_event(self):
+    def initiate_send(self):
         b = self.outbuf
         #self.send()
-        try:
-            while 1:
-                data, addr = b.popleft()
-                #data, addr = b[0]
-                #del b[0]
-                try:
-                    result = self.socket.sendto (data, addr)
-                    if result != len(data):
-                        self.log('Sent packet truncated to %d bytes' % result)
-                except socket.error, why:
-                    if why[0] == EWOULDBLOCK:
-                        return
-                    else:
-                        raise socket.error, why
-        except IndexError, iex:
-            return
+
+        while len(b):
+            data, addr = b.popleft()
+            try:
+                result = self.socket.sendto (data, addr)
+                if result != len(data):
+                    self.log('Sent packet truncated to %d bytes' % result)
+            except socket.error, why:
+                if why[0] == EWOULDBLOCK:
+                    return
+                else:
+                    raise socket.error, why
+
                 
     def handle_error (self, *info):
         traceback.print_exc()
@@ -139,611 +130,148 @@ def get_accesstype(packetobject):
         print show_packet(packetobject)
     return
     
-class HandleBase(object):
-
-    def auth_NA(self):
-        """
-        Denides access
-        """
-        
-        self.packetobject.username=None
-        self.packetobject.password=None
-        # Access denided
-        self.packetobject.code=3
-        return self.packetobject
-
-    # Main
-    def handle(self):
-        pass
-
-class HandleNA(HandleBase):
-
-    def __init__(self,  packetobject, dbCur):
-        """
-        TO-DO: Сделать проверку в методе get_nas_info на тип доступа 
-        """
-        self.nasip = str(packetobject['NAS-IP-Address'][0])
-        self.packetobject = packetobject.CreateReply()
-        self.cur = dbCur
-
-    def handle(self):
-        row=self.get_nas_info()
-        self.cur.close()
-        
-        if row is not None:
-            self.packetobject.secret = str(row[1])
-            return "", self.auth_NA()
-        
-    def get_nas_info(self):
-        row = get_nas_by_ip(self.cur, self.nasip)
-        return row
-        
-#auth_class
-class HandleAuth(HandleBase):
-
-    def __init__(self,  packetobject, access_type, dbCur):
-        self.nasip = str(packetobject['NAS-IP-Address'][0])
-        self.packetobject = packetobject
-        self.access_type=access_type
-        self.secret = ''
-
-        log(show_packet(packetobject))
-        
-
-        self.cur = dbCur
-
-    def auth_NA(self):
-        """
-        Deny access
-        """
-        self.packetobject.username=None
-        self.packetobject.password=None
-        self.packetobject.code=3
-        return self.secret, self.packetobject
-    
-    def create_speed(self, tarif_id, speed=''):
-        result_params=speed
-        #print 1
-        if speed=='':
-            #print 2
-            defaults = get_default_speed_parameters(self.cur, tarif_id)
-            speeds = get_speed_parameters(self.cur, tarif_id)
-            #print "defaults=", defaults
-            if defaults is None:
-                defaults = ["0","0","0","0","8","0"]
-            result=[]
-            #print speeds
-            #print defaults
-            #print 3
-            min_delta=-1
-            minimal_period=[]
-            for speed in speeds:
-                tnc,tkc,delta,res = in_period_info(speed[0],speed[1],speed[2])
-                if res==True and delta<min_delta or min_delta==-1:
-                    minimal_period=speed
-                    min_delta=delta
-                    #print speed
-            
-            #print minmal_period
-            for k in xrange(0, len(minimal_period[3:])):
-                s=minimal_period[3+k]
-                #print s
-                if s=='':
-                    res=defaults[k]
-                else:
-                    res=s
-                #print "res=",res
-                result.append(res)
-                    
-            if speeds==[]:
-                result=defaults
-            if result==[]:
-                result=["0","0","0","0","8","0"]
-            #print "speedparams", defaults, speeds, result
-            result_params=create_speed_string(result)
-            self.speed=result_params
-            #print "params=", result_params
-
-        if self.nas_type[:8]==u'mikrotik' and result_params!='':
-            self.replypacket.AddAttribute((14988,8),result_params)
-
-    def get_nas_info(self):
-        row = get_nas_by_ip(self.cur, self.nasip)
-        return row
-
-    def handle(self):
-        row=self.get_nas_info()
-        if row==None:
-            self.cur.close()
-            return '',None
-        self.nas_id=str(row[0])
-        self.nas_type=row[2]
-        self.multilink = row[3]
-        self.secret = str(row[1])
-        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
-
-        try:
-            station_id=self.packetobject['Calling-Station-Id'][0]
-        except:
-            station_id = ''
-
-        row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
-
-        if row==None:
-            self.cur.close()
-
-            log("Unknown User %s" % self.packetobject['User-Name'][0])
-            return self.auth_NA()
-
-        username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        #Проверка на то, указан ли сервер доступа
-        if int(nas_id)!=int(self.nas_id):
-            self.cur.close()
-            log("Unallowed NAS for user %s" % self.packetobject['User-Name'][0])
-            return self.auth_NA()
-
-
-        #TimeAccess
-        rows = time_periods_by_tarif_id(self.cur, tarif_id)
-        allow_dial=False
-        for row in rows:
-            if in_period(row[0],row[1],row[2])==True:
-                allow_dial=True
-                break
-
-        log("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
-        if self.packetobject['User-Name'][0]==username and allow_dial and tarif_status==True:
-            self.replypacket.code=2
-            self.replypacket.username=str(username) #Нельзя юникод
-            self.replypacket.password=str(password) #Нельзя юникод
-            self.replypacket.AddAttribute('Service-Type', 2)
-            self.replypacket.AddAttribute('Framed-Protocol', 1)
-            self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-            self.create_speed(tarif_id, speed=speed)
-            #print "Setting Speed For User" , self.speed
-            self.cur.close()
-        else:
-            self.cur.close()
-
-            return self.auth_NA()
-        return self.secret, self.replypacket
-
-#auth_class
-class HandleDHCP(HandleBase):
-
-    def __init__(self,  packetobject, dbCur):
-        self.nasip = packetobject['NAS-IP-Address'][0]
-        self.packetobject = packetobject
-        self.secret = ""
-
-        log(show_packet(packetobject))
-
-        self.cur = dbCur
-
-    def auth_NA(self):
-        """
-        Deny access
-        """
-        self.packetobject.code=3
-        return self.secret, self.packetobject
-    
-    def get_nas_info(self):
-        row = get_nas_by_ip(self.cur, self.nasip)
-        return row
-
-            
-    def handle(self):
-        row=self.get_nas_info()
-        if row==None:
-            self.cur.close()
-            return self.auth_NA()
-
-        self.nas_id=str(row[0])
-        self.nas_type=row[2]
-        self.secret=str(row[1])
-        
-        self.replypacket=packet.Packet(secret=self.secret,dict=dict)
-        row = get_account_data_by_username_dhcp(self.cur, self.packetobject['User-Name'][0])
-
-        if row==None:
-            self.cur.close()
-            return self.auth_NA()
-
-    
-        nas_id, ipaddress, netmask, mac_address, speed = row
-
-        if int(nas_id)!=int(self.nas_id):
-            self.cur.close()
-            return self.auth_NA()
-
-        #print 4
-        self.replypacket.code=2
-        self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-        self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
-        self.replypacket.AddAttribute('Session-Timeout', session_timeout)
-        #self.create_speed(tarif_id, speed=speed)
-        self.cur.close()
-        return self.secret, self.replypacket
-
-#acct class
-class HandleAcct(HandleBase):
-    """
-    process account information after connection
-    """
-
-    def __init__(self, packetobject, nasip, dbCur):
-        self.packetobject=packetobject
-        self.nasip=packetobject['NAS-IP-Address'][0]
-        self.replypacket=packetobject.CreateReply()
-        self.access_type=get_accesstype(self.packetobject)
-        self.cur = dbCur
-
-    def get_bytes(self):
-        if self.packetobject.has_key('Acct-Input-Gigawords') and self.packetobject['Acct-Input-Gigawords'][0]!=0:
-            bytes_in=self.packetobject['Acct-Input-Octets'][0]+(self.packetobject['Acct-Input-Gigawords'][0]*gigaword)
-        else:
-            bytes_in=self.packetobject['Acct-Input-Octets'][0]
-
-        if self.packetobject.has_key('Acct-Output-Gigawords') and self.packetobject['Acct-Output-Gigawords'][0]!=0:
-            bytes_out=self.packetobject['Acct-Output-Octets'][0]+(self.packetobject['Acct-Output-Gigawords'][0]*gigaword)
-        else:
-            bytes_out=self.packetobject['Acct-Output-Octets'][0]
-        return (bytes_in, bytes_out)
-
-    def acct_NA(self):
-        """
-        Deny access
-        """
-
-        # Access denided
-        self.replypacket.code=3
-        return self.replypacket
-    
-    def handle(self):
-
-        self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress=%s;""", (self.nasip,))
-        row = self.cur.fetchone()
-        #print 1
-        if row==None:
-            return None
-        
-        self.replypacket.secret=str(row[0])
-        global account_timeaccess_cache_count
-        if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
-            """
-            Раз в десять запросов обновлять информацию о аккаунте
-            """
-            log("Update Timeaccess Cache for %s" % self.packetobject['User-Name'][0])
-            self.cur.execute(
-            """
-            SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
-            JOIN billservice_tariff as tariff ON tariff.id=(SELECT tarif_id FROM billservice_accounttarif where account_id=account.id and datetime<now() ORDER BY id DESC LIMIT 1)
-            WHERE account.username=%s;
-            """, (self.packetobject['User-Name'][0],)
-            )
-            row=self.cur.fetchone()
-            if row==None:
-                self.cur.close()
-                log("Unkown User or user tarif %s" % self.packetobject['User-Name'][0])
-                return self.acct_NA()
-            account_id, time_access=row
-            account_timeaccess_cache[self.packetobject['User-Name'][0]]=[account_id, time_access,0]
-        
-        account_id, time_access = account_timeaccess_cache[self.packetobject['User-Name'][0]][0:2]
-        account_timeaccess_cache[self.packetobject['User-Name'][0]][2] +=1
-        #account_timeaccess_cache_count+=1
-
-        self.replypacket.code=5
-        now=datetime.datetime.now()
-
-        #print 3
-        if self.packetobject['Acct-Status-Type']==['Start']:
-            #Проверяем нет ли такой сессии в базе
-            self.cur.execute("""
-            SELECT id
-            FROM radius_activesession
-            WHERE account_id=%s and sessionid=%s and
-            caller_id=%s and called_id=%s and nas_id=%s and framed_protocol=%s;
-            """, (account_id, self.packetobject['Acct-Session-Id'][0], self.packetobject['Calling-Station-Id'][0],
-                   self.packetobject['Called-Station-Id'][0], self.packetobject['NAS-IP-Address'][0],self.access_type,))
-
-            allow_write = self.cur.fetchone()==None
-
-            if time_access and allow_write:
-
-                self.cur.execute(
-                """
-                INSERT INTO radius_session(
-                account_id, sessionid, date_start,
-                caller_id, called_id, framed_ip_address, nas_id, framed_protocol, checkouted_by_time, checkouted_by_trafic
-                )
-                VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s)
-                """, (account_id, self.packetobject['Acct-Session-Id'][0], now,
-                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
-                     self.packetobject['NAS-IP-Address'][0], self.access_type, False, False,))
-
-            if allow_write:
-
-                self.cur.execute(
-                """
-                INSERT INTO radius_activesession(
-                account_id, sessionid, date_start,
-                caller_id, called_id, framed_ip_address, nas_id, framed_protocol, session_status
-                )
-                VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
-                """, (account_id, self.packetobject['Acct-Session-Id'][0], now,
-                     self.packetobject['Calling-Station-Id'][0], self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
-                     self.packetobject['NAS-IP-Address'][0], self.access_type,))
-
-        if self.packetobject['Acct-Status-Type']==['Alive']:
-            bytes_in, bytes_out=self.get_bytes()
-            if time_access:
-                self.cur.execute(
-                            """
-                            INSERT INTO radius_session(
-                            account_id, sessionid, interrim_update,
-                            caller_id, called_id, framed_ip_address, nas_id, session_time,
-                            bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                            VALUES ( %s, %s, %s, %s, %s, %s, %s,
-                            %s, %s, %s, %s, %s, %s);
-                            """, (account_id, self.packetobject['Acct-Session-Id'][0],
-                                 now, self.packetobject['Calling-Station-Id'][0],
-                                 self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0],
-                                 self.packetobject['NAS-IP-Address'][0],
-                                 self.packetobject['Acct-Session-Time'][0],
-                                 bytes_in, bytes_out, self.access_type, False, False,)
-                            )
-            self.cur.execute(
-                        """
-                        UPDATE radius_activesession
-                        SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
-                        WHERE sessionid=%s and nas_id=%s;
-                        """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],)
-            )
-
-
-
-        if self.packetobject['Acct-Status-Type']==['Stop']:
-            bytes_in, bytes_out=self.get_bytes()
-            if time_access:
-                self.cur.execute(
-                """
-                INSERT INTO radius_session(
-                account_id, sessionid, interrim_update, date_end,
-                caller_id, called_id, framed_ip_address, nas_id, session_time,
-                bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                VALUES ( %s, %s, %s, %s, %s,
-                %s, %s, %s, %s,%s, %s, %s, %s, %s);
-                """, (account_id, self.packetobject['Acct-Session-Id'][0],
-                      now, now, self.packetobject['Calling-Station-Id'][0],
-                      self.packetobject['Called-Station-Id'][0], self.packetobject['Framed-IP-Address'][0], 
-                      self.packetobject['NAS-IP-Address'][0],
-                      self.packetobject['Acct-Session-Time'][0],
-                      bytes_in, bytes_out, self.access_type, False, False,)
-                )
-
-            self.cur.execute(
-               """
-               UPDATE radius_activesession
-               SET date_end=%s, session_status='ACK'
-               WHERE sessionid=%s and nas_id=%s;
-               """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],)
-               )
-            del account_timeaccess_cache[self.packetobject['User-Name'][0]]
-
-        self.cur.connection.commit()
-
-        self.cur.close()
-        
-        return self.replypacket
-
-class AsyncAuth(AsyncUDPServer):
-    def __init__(self, host, port, dbconn):
-        self.outbuf = []
-        AsyncUDPServer.__init__(self, host, port)
-        self.dbconn = dbconn
-
-
-        
-
-    def handle_readfrom(self, data, address):
-        try:
-
-            t = clock()
-            returndata=''
-            #data=self.request[0] # or recv(bufsize, flags)
-            assert len(data)<=4096
-            addrport=address
-            #print "BEFORE AUTH:%.20f" % (clock()-t)
-            packetobject=packet.Packet(dict=dict,packet=data)
-            access_type = get_accesstype(packetobject)
-            
-            if access_type in ['PPTP', 'PPPOE']:
-                log("Auth Type %s" % access_type)
-    
-                coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
-                secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
-    
-                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-                log("Password check: %s" % authobject.AccessAccept)
-                returndata=authobject.ReturnPacket()
-                del coreconnect
-                del packetfromcore
-                del authobject
-            elif access_type in ['DHCP'] :
-                #-----
-                coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
-                secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: return
-                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
-                returndata=authobject.ReturnPacket()
-                del coreconnect
-                del packetfromcore
-                del authobject
-            else:
-                #-----
-                returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
-                if returnpacket is None: return
-                returndata=authNA(returnpacket)
-                 
-            log("AUTH time:%.8f" % (clock()-t))
-            if returndata!="":
-                self.sendto(returndata,address)
-                del data
-                del addrport
-                del packetobject
-                del access_type
-                del returndata
-        except Exception, e:
-            print e,"bad packet"
-
-
-class AsyncAcc(AsyncUDPServer):
-    def __init__(self, host, port, dbconn):
-        self.outbuf = []
-        AsyncUDPServer.__init__(self, host, port)
-        self.dbconn = dbconn
-
-    def handle_readfrom(self,data, address):
-        try:
-            t = clock()
-            assert len(data)<=4096
-            addrport=address
-            packetobject=packet.AcctPacket(dict=dict,packet=data)
-    
-            coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=self.dbconn.cursor())
-            packetfromcore = coreconnect.handle()
-            if packetfromcore is not None: 
-                returndat=packetfromcore.ReplyPacket()
-                self.socket.sendto(returndat,addrport)
-                del returndat
-            log("ACC:%.20f" % (clock()-t))
-            del packetfromcore
-            del coreconnect
-        except:
-            print "bad acct packet"
-
-                
-
-class Starter(Thread):
-    def __init__ (self, address, port, handler):
-        self.address=address
-        self.port = port
-        self.handler=handler
-        Thread.__init__(self)
-
-    def run(self):
-
-        server = self.handler(self.address, self.port)
-
 class AsyncAuthServ(AsyncUDPServer):
     def __init__(self, host, port):
         global radOutAuthQueue
-        self.outbuf = radOutAuthQueue
+        self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        #self.dbconn = dbconn        
+        self.dateCache = datetime.datetime(2000, 1, 1)       
 
-    def handle_readfrom(self, rectuple):
-        try:
-            radIncAuthQueue.append(rectuple)
-            
-            #try:
-            '''sendtuple = radOutAuthQueue.popleft()
-            
-            if sendtuple[0]: 
-                self.sendto(sendtuple)'''
-                
-            '''t = clock()
+    def handle_readfrom(self, data, addrport):
+        global curCachesDate, curCachesLock, fMem
+        global curNasCache, curATCache_userIdx, curATCache_macIdx        
+        global tp_asInPeriod, curDefSpCache, curNewSpCache
+        
+        try:       
+            try:
+                #if caches were renewed, renew local copies
+                if curCachesDate > self.dateCache:
+                    curCachesLock.acquire()
+                    #account-tarif cach indexed by username
+                    self.cacheAT = copy(curATCache_userIdx)
+                    #account-tarif cach indexed by ipn_mac_address
+                    self.cacheAT_mac = copy(curATCache_macIdx)
+                    #nas cache, indexed by ipaddress
+                    self.cacheNas = copy(curNasCache)  
+                    #default speed
+                    self.cacheDefSpeed = copy(curDefSpCache)
+                    #new speed
+                    self.cacheNewSpeed = copy(curNewSpCache)
+                    #in_periods cache
+                    self.in_periods = copy(tp_asInPeriod)
+                    #date of renewal
+                    self.dateCache = deepcopy(curCachesDate)
+                    curCachesLock.release()
+            except Exception, ex:
+                print "Auth server cachecopy exception", repr(ex)                
+                        
+            t = clock()
             returndata=''
             #data=self.request[0] # or recv(bufsize, flags)
             assert len(data)<=4096
-            addrport=address
+            #addrport=address
             #print "BEFORE AUTH:%.20f" % (clock()-t)
+            
             packetobject=packet.Packet(dict=dict,packet=data)
+            
+            nas_ip = str(packetobject['NAS-IP-Address'][0])
             access_type = get_accesstype(packetobject)
             
             if access_type in ['PPTP', 'PPPOE']:
                 log("Auth Type %s" % access_type)
     
-                coreconnect = HandleAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
+                coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
+                coreconnect.nasip = nas_ip
+                coreconnect.nasCache = self.cacheNas; coreconnect.inTimePeriods = self.in_periods
+                coreconnect.fMem = fMem; coreconnect.atCache_uidx = self.cacheAT
+                coreconnect.defSpeed = self.cacheDefSpeed; coreconnect.newSpeed = self.cacheNewSpeed
                 secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0]));return
+                
+                if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0])); return
     
                 authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
                 log("Password check: %s" % authobject.AccessAccept)
-                returndata=authobject.ReturnPacket()
-                del coreconnect
-                del packetfromcore
-                del authobject
+                returndata=authobject.ReturnPacket() 
+                
             elif access_type in ['DHCP'] :
                 #-----
-                coreconnect = HandleDHCP(packetobject=packetobject, dbCur=self.dbconn.cursor())
+                coreconnect = HandleSDHCP(packetobject=packetobject)
+                coreconnect.atCache_mac = self.cacheAT_mac
+                coreconnect.nasip = nas_ip; coreconnect.nasCache = self.cacheNas
                 secret, packetfromcore=coreconnect.handle()
                 if packetfromcore is None: return
                 authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
                 returndata=authobject.ReturnPacket()
-                del coreconnect
-                del packetfromcore
-                del authobject
             else:
                 #-----
-                returnpacket = HandleNA(packetobject, self.server.dbconn.cursor()).handle()
+                coreconnect = HandleSNA(packetobject)
+                coreconnect.nasip = nas_ip; coreconnect.nasCache = self.cacheNas
+                returnpacket =coreconnect.handle()
                 if returnpacket is None: return
                 returndata=authNA(returnpacket)
                  
             log("AUTH time:%.8f" % (clock()-t))
-            if returndata!="":
-                self.sendto(returndata,address)
-                del data
-                del addrport
-                del packetobject
-                del access_type
-                del returndata'''
+            if returndata:
+                self.sendto(returndata,addrport)
+                del returndata
+                
+            del packetfromcore
+            del coreconnect
+            log("ACC:%.20f" % (clock()-t))
+            
         except Exception, ex:
-            #probable outqueue is empty
-            if isinstance(ex, IndexError):
-                pass
-            else:
-                print "Auth Server readfrom exception: ", repr(ex)
-
+            print "Auth Server readfrom exception: ", repr(ex)
 
 class AsyncAcctServ(AsyncUDPServer):
-    def __init__(self, host, port):
+    def __init__(self, host, port, dbconn):
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        #self.dbconn = dbconn
-        global radOutAcctQueue
-        self.outbuf = radOutAcctQueue
+        self.dbconn = dbconn
+        self.dbconn._con._con.set_isolation_level(0)
+        self.dbconn._con._con.set_client_encoding('UTF8')
+        self.dateCache = datetime.datetime(2000, 1, 1)
 
-    def handle_readfrom(self, rectuple):
-        try:
-            radIncAcctQueue.append(rectuple)            
-            #try:
-            sendtuple = radOutAcctQueue.popleft()            
-            #print sendtuple
-            #self.sendto(sendtuple)  
-            '''t = clock()
+
+    def handle_readfrom(self, data, addrport):
+        global curCachesDate, curCachesLock, fMem
+        global curNasCache, curATCache_userIdx
+        
+        try:       
+            try:
+                #if caches were renewed, renew local copies
+                if curCachesDate > self.dateCache:
+                    curCachesLock.acquire()
+                    #account-tarif cach indexed by username
+                    self.cacheAT = copy(curATCache_userIdx)
+                    #nas cache
+                    self.cacheNas = copy(curNasCache)                        
+                    #date of renewal
+                    self.dateCache = deepcopy(curCachesDate)
+                    curCachesLock.release()
+            except Exception, ex:
+                print "AcctRoutine cachecopy exception", repr(ex)                
+                        
+            t = clock()
             assert len(data)<=4096
-            addrport=address
             packetobject=packet.AcctPacket(dict=dict,packet=data)
     
-            coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=self.dbconn.cursor())
+            coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
+            coreconnect.nasCache = self.cacheNas; coreconnect.acctCache_unIdx = self.cacheAT                
+            
             packetfromcore = coreconnect.handle()
+            
             if packetfromcore is not None: 
                 returndat=packetfromcore.ReplyPacket()
                 self.socket.sendto(returndat,addrport)
                 del returndat
-            log("ACC:%.20f" % (clock()-t))
+                
             del packetfromcore
-            del coreconnect'''
+            del coreconnect    
+            log("ACC:%.20f" % (clock()-t))
+            #print "ACC:%.20f" % (clock()-t)
             
         except Exception, ex:
-            #probable outqueue is empty
-            if isinstance(ex, IndexError):
-                pass
-            else:
-                print "Acc Server readfrom exception: ", repr(ex)
+            print "Acc Server readfrom exception: ", repr(ex)
             #print "bad acct packet"
 
 
@@ -1033,7 +561,7 @@ class HandleSDHCP(HandleSBase):
 
 #acct class
 class HandleSAcct(HandleSBase):
-    __slots__ = () + ('access_type', 'acctCache_unIdx')
+    __slots__ = () + ('cur', 'access_type', 'acctCache_unIdx')
     """
     process account information after connection
     """
@@ -1082,7 +610,7 @@ class HandleSAcct(HandleSBase):
         Раз в десять запросов обновлять информацию о аккаунте
         """
         userName = self.packetobject['User-Name'][0]
-        log("Update Timeaccess Cache for %s" % userName)
+        #log("Update Timeaccess Cache for %s" % userName)
         
         '''self.cur.execute(
         """
@@ -1191,167 +719,7 @@ class HandleSAcct(HandleSBase):
         return self.replypacket
 
 
-class AuthRoutine(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-        
-    def run(self):
-        connection = pool.connection()
-        connection._con._con.set_isolation_level(0)
-        connection._con._con.set_client_encoding('UTF8')
-        global radIncAuthQueue, radOutAuthQueue
-        global curCachesDate, curCachesLock, fMem
-        global curNasCache, curATCache_userIdx, curATCache_macIdx        
-        global tp_asInPeriod, curDefSpCache, curNewSpCache
-        dateCache = datetime.datetime(2000, 1, 1)
-        cur = connection.cursor()
-        while True:
-            try:                
-                try:
-                    #if caches were renewed, renew local copies
-                    if curCachesDate > dateCache:
-                        curCachesLock.acquire()
-                        #account-tarif cach indexed by username
-                        cacheAT = copy(curATCache_userIdx)
-                        #account-tarif cach indexed by ipn_mac_address
-                        cacheAT_mac = copy(curATCache_macIdx)
-                        #nas cache, indexed by ipaddress
-                        cacheNas = copy(curNasCache)  
-                        #default speed
-                        cacheDefSpeed = copy(curDefSpCache)
-                        #new speed
-                        cacheNewSpeed = copy(curNewSpCache)
-                        #in_periods cache
-                        in_periods = copy(tp_asInPeriod)
-                        #date of renewal
-                        dateCache = deepcopy(curCachesDate)
-                        curCachesLock.release()
-                except Exception, ex:
-                    print "AuthRoutine cachecopy exception", repr(ex)
-                
-                try:
-                    data, addrport = radIncAuthQueue.popleft()
-                except Exception, ex:
-                    #out of range exception
-                    #time.sleep(5) нельзя делать таких больших слипов
-                    time.sleep(0.1)
-                    #print "sleep"
-                    continue
-                #print data
-                t = clock()
-                returndata=''
-                #data=self.request[0] # or recv(bufsize, flags)
-                assert len(data)<=4096
-                #addrport=address
-                #print "BEFORE AUTH:%.20f" % (clock()-t)
-                
-                packetobject=packet.Packet(dict=dict,packet=data)
-                
-                nas_ip = str(packetobject['NAS-IP-Address'][0])
-                print nas_ip
-                access_type = get_accesstype(packetobject)
-                
-                if access_type in ['PPTP', 'PPPOE']:
-                    log("Auth Type %s" % access_type)
-        
-                    coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
-                    coreconnect.nasip = nas_ip
-                    coreconnect.nasCache = cacheNas; coreconnect.inTimePeriods = in_periods
-                    coreconnect.fMem = fMem; coreconnect.atCache_uidx = cacheAT
-                    coreconnect.defSpeed = cacheDefSpeed; coreconnect.newSpeed = cacheNewSpeed
-                    secret, packetfromcore=coreconnect.handle()
-                    
-                    if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0])); return
-        
-                    authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-                    log("Password check: %s" % authobject.AccessAccept)
-                    returndata=authobject.ReturnPacket() 
-                    
-                elif access_type in ['DHCP'] :
-                    #-----
-                    coreconnect = HandleSDHCP(packetobject=packetobject)
-                    coreconnect.atCache_mac = cacheAT_mac
-                    coreconnect.nasip = nas_ip; coreconnect.nasCache = cacheNas
-                    secret, packetfromcore=coreconnect.handle()
-                    if packetfromcore is None: return
-                    authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
-                    returndata=authobject.ReturnPacket()
-                else:
-                    #-----
-                    coreconnect = HandleSNA(packetobject)
-                    coreconnect.nasip = nas_ip; coreconnect.nasCache = cacheNas
-                    returnpacket =coreconnect.handle()
-                    if returnpacket is None: return
-                    returndata=authNA(returnpacket)
-                     
-                log("AUTH time:%.8f" % (clock()-t))
-                if returndata!="":
-                    radOutAuthQueue.append((returndata,addrport))
-                    #self.sendto((returndata,addrport))
-                    
-            except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + repr(ex)
-                else:
-                    print self.getName() + ": exception: " + repr(ex)
-    
-class AcctRoutine(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-        
-    def run(self):
-        connection = pool.connection()
-        connection._con._con.set_isolation_level(0)
-        connection._con._con.set_client_encoding('UTF8')
-        global radIncAcctQueue, radOutAcctQueue
-        global curCachesDate, curCachesLock, fMem
-        global curNasCache, curATCache_userIdx
-        dateCache = datetime.datetime(2000, 1, 1)
-        cur = connection.cursor()
-        while True:
-            try:                
-                try:
-                    #if caches were renewed, renew local copies
-                    if curCachesDate > dateCache:
-                        curCachesLock.acquire()
-                        #account-tarif cach indexed by username
-                        cacheAT = copy(curATCache_userIdx)
-                        #nas cache
-                        cacheNas = copy(curNasCache)                        
-                        #date of renewal
-                        dateCache = deepcopy(curCachesDate)
-                        curCachesLock.release()
-                except Exception, ex:
-                    print "AcctRoutine cachecopy exception", repr(ex)
-                
-                try:
-                    data, addrport = radIncAcctQueue.popleft()
-                except Exception, ex:
-                    time.sleep(2)
-                    continue
-                
-                t = clock()
-                assert len(data)<=4096
 
-                packetobject=packet.AcctPacket(dict=dict,packet=data)
-        
-                coreconnect = HandleAcct(packetobject=packetobject, nasip=addrport[0], dbCur=connection.cursor())
-                coreconnect.nasCache = cacheNas; coreconnect.atCache_uidx = cacheAT                
-                
-                packetfromcore = coreconnect.handle()
-                
-                if packetfromcore is not None: 
-                    returndat=packetfromcore.ReplyPacket()
-                    radOutAcctQueue.append((returndat, addrport))
-                    
-                log("ACC:%.20f" % (clock()-t))
-
-            except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + repr(ex)
-                else:
-                    print self.getName() + ": exception: " + repr(ex)
-                    
 
 class CacheRoutine(Thread):
     '''
@@ -1486,8 +854,8 @@ class CacheRoutine(Thread):
                     i_fMem = 0
                     fMem.periodCache = {}                     
                        
-                print "auth queue len inc - %d ###### out - %d" % (len(radIncAuthQueue), len(radOutAuthQueue))
-                print "acct queue len inc - %d ###### out - %d" % (len(radIncAcctQueue), len(radOutAcctQueue))
+                #print "auth queue len inc - %d ###### out - %d" % (len(radIncAuthQueue), len(radOutAuthQueue))
+                #print "acct queue len inc - %d ###### out - %d" % (len(radIncAcctQueue), len(radOutAcctQueue))
                 print "rad ctime :", time.clock() - a
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -1533,11 +901,6 @@ def main():
 
     global curCachesDate
     
-    threads=[]    
-    #threads.append(AuthRoutine())
-    #threads.append(AcctRoutine())
-    threads.append(AcctRoutine())
-    
     caches = CacheRoutine()
     caches.start()
     
@@ -1545,16 +908,9 @@ def main():
     while curCachesDate == None:
         time.sleep(0.2)
     
-    for thread in threads:
-        thread.start()
-    
-    #server_auth = Starter("0.0.0.0", 1812, AsyncAuthServ)
-    #server_auth.start()
-    #server_auth = AsyncAuthServ("0.0.0.0", 1812)
+    server_auth = AsyncAuthServ("0.0.0.0", 1812)
 
-    #server_acct = Starter("0.0.0.0", 1813, AsyncAcctServ)
-    #server_acct.start()
-    server_acct = AsyncAcctServ("0.0.0.0", 1813)
+    server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
     
     while 1: 
         asyncore.poll(0.01)
