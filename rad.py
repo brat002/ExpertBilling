@@ -52,7 +52,7 @@ class AsyncUDPServer(asyncore.dispatcher):
     ac_in_buffer_size = 8096*10
     
     def __init__(self, host, port):
-        self.outbuf = []
+        self.outbuf = deque()
 
         asyncore.dispatcher.__init__(self)
 
@@ -60,7 +60,7 @@ class AsyncUDPServer(asyncore.dispatcher):
         self.port = port
         self.dbconn = None
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.socket.settimeout(0.5)
+        #self.socket.settimeout(5)
         self.bind( (host, port) )
         self.set_reuse_addr()
 
@@ -89,22 +89,27 @@ class AsyncUDPServer(asyncore.dispatcher):
     
     def sendto (self, sendtuple):
         self.outbuf.append(sendtuple)
-        self.initiate_send()
-        
-    def initiate_send(self):
+        #self.initiate_send()
+    
+    def handle_write_event(self):
         b = self.outbuf
-        while len(b):
-            data, addr = b[0]
-            del b[0]
-            try:
-                result = self.socket.sendto (data, addr)
-                if result != len(data):
-                    self.log('Sent packet truncated to %d bytes' % result)
-            except socket.error, why:
-                if why[0] == EWOULDBLOCK:
-                    return
-                else:
-                    raise socket.error, why
+        #self.send()
+        try:
+            while 1:
+                data, addr = b.popleft()
+                #data, addr = b[0]
+                #del b[0]
+                try:
+                    result = self.socket.sendto (data, addr)
+                    if result != len(data):
+                        self.log('Sent packet truncated to %d bytes' % result)
+                except socket.error, why:
+                    if why[0] == EWOULDBLOCK:
+                        return
+                    else:
+                        raise socket.error, why
+        except IndexError, iex:
+            return
                 
     def handle_error (self, *info):
         traceback.print_exc()
@@ -634,7 +639,8 @@ class Starter(Thread):
 
 class AsyncAuthServ(AsyncUDPServer):
     def __init__(self, host, port):
-        self.outbuf = []
+        global radOutAuthQueue
+        self.outbuf = radOutAuthQueue
         AsyncUDPServer.__init__(self, host, port)
         #self.dbconn = dbconn        
 
@@ -643,10 +649,10 @@ class AsyncAuthServ(AsyncUDPServer):
             radIncAuthQueue.append(rectuple)
             
             #try:
-            returndata, addrport = radOutAuthQueue.popleft()
+            '''sendtuple = radOutAuthQueue.popleft()
             
-            if returndata: 
-                self.socket.sendto(returndata,addrport)
+            if sendtuple[0]: 
+                self.sendto(sendtuple)'''
                 
             '''t = clock()
             returndata=''
@@ -696,7 +702,10 @@ class AsyncAuthServ(AsyncUDPServer):
                 del returndata'''
         except Exception, ex:
             #probable outqueue is empty
-            pass
+            if isinstance(ex, IndexError):
+                pass
+            else:
+                print "Auth Server readfrom exception: ", repr(ex)
 
 
 class AsyncAcctServ(AsyncUDPServer):
@@ -704,17 +713,16 @@ class AsyncAcctServ(AsyncUDPServer):
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
         #self.dbconn = dbconn
+        global radOutAcctQueue
+        self.outbuf = radOutAcctQueue
 
     def handle_readfrom(self, rectuple):
         try:
-            radIncAcctQueue.append(rectuple)
-            
+            radIncAcctQueue.append(rectuple)            
             #try:
-            returndat, addrport = radOutAcctQueue.popleft()
-            
-            
-            self.socket.sendto(returndat,addrport)
-                
+            sendtuple = radOutAcctQueue.popleft()            
+            #print sendtuple
+            #self.sendto(sendtuple)  
             '''t = clock()
             assert len(data)<=4096
             addrport=address
@@ -732,8 +740,10 @@ class AsyncAcctServ(AsyncUDPServer):
             
         except Exception, ex:
             #probable outqueue is empty
-            pass
-            #print "Acc Server readfrom exception: ", repr(ex)
+            if isinstance(ex, IndexError):
+                pass
+            else:
+                print "Acc Server readfrom exception: ", repr(ex)
             #print "bad acct packet"
 
 
@@ -915,7 +925,8 @@ class HandleSAuth(HandleSBase):
         if not acstatus:
             log("Unallowed NAS for user %s: account_status is false" % user_name)
             return self.auth_NA()
-
+        
+        
         if self.multilink==False:
             station_id_status = False
             if len(station_id)==17:
@@ -1520,26 +1531,30 @@ def setpriority(pid=None,priority=1):
 
 def main():
 
+    global curCachesDate
     
     threads=[]    
-    threads.append(AuthRoutine())
-    threads.append(AcctRoutine())
+    #threads.append(AuthRoutine())
+    #threads.append(AcctRoutine())
     threads.append(AcctRoutine())
     
     caches = CacheRoutine()
     caches.start()
     
-    time.sleep(10)
+    
+    while curCachesDate == None:
+        time.sleep(0.2)
     
     for thread in threads:
         thread.start()
     
-    server_auth = Starter("0.0.0.0", 1812, AsyncAuthServ)
-    server_auth.start()
-    
+    #server_auth = Starter("0.0.0.0", 1812, AsyncAuthServ)
+    #server_auth.start()
+    #server_auth = AsyncAuthServ("0.0.0.0", 1812)
 
-    server_acct = Starter("0.0.0.0", 1813, AsyncAcctServ)
-    server_acct.start()
+    #server_acct = Starter("0.0.0.0", 1813, AsyncAcctServ)
+    #server_acct.start()
+    server_acct = AsyncAcctServ("0.0.0.0", 1813)
     
     while 1: 
         asyncore.poll(0.01)
@@ -1582,7 +1597,8 @@ if __name__ == "__main__":
     radOutAcctQLock  = Lock()
     radOutAuthQLock = Lock()
     
-    curCachesDate = datetime.datetime(3333, 1, 1)
+    #curCachesDate = datetime.datetime(3333, 1, 1)
+    curCachesDate = None
     curCachesLock = Lock()
     fMem = pfMemoize()
 
