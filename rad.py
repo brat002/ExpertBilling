@@ -60,7 +60,7 @@ class AsyncUDPServer(asyncore.dispatcher):
         self.port = port
         self.dbconn = None
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.settimeout(0.5)
+        #self.socket.settimeout(0.5)
         self.bind( (host, port) )
         self.set_reuse_addr()
 
@@ -198,12 +198,12 @@ class HandleAuth(HandleBase):
     
     def create_speed(self, tarif_id, speed=''):
         result_params=speed
-        print 1
+        #print 1
         if speed=='':
             #print 2
             defaults = get_default_speed_parameters(self.cur, tarif_id)
             speeds = get_speed_parameters(self.cur, tarif_id)
-            print "defaults=", defaults
+            #print "defaults=", defaults
             if defaults is None:
                 defaults = ["0","0","0","0","8","0"]
             result=[]
@@ -211,7 +211,7 @@ class HandleAuth(HandleBase):
             #print defaults
             #print 3
             min_delta=-1
-            minmal_period=[]
+            minimal_period=[]
             for speed in speeds:
                 tnc,tkc,delta,res = in_period_info(speed[0],speed[1],speed[2])
                 if res==True and delta<min_delta or min_delta==-1:
@@ -220,7 +220,7 @@ class HandleAuth(HandleBase):
                     #print speed
             
             #print minmal_period
-            for k in xrange(0, len(minmal_period[3:])):
+            for k in xrange(0, len(minimal_period[3:])):
                 s=minimal_period[3+k]
                 #print s
                 if s=='':
@@ -797,7 +797,7 @@ class HandleSAuth(HandleSBase):
     
     def create_speed(self, tarif_id, speed=''):
         result_params=speed
-        print 1
+        #print 1
         if speed=='':
             #print 2
             #defaults = get_default_speed_parameters(self.cur, tarif_id)
@@ -903,8 +903,9 @@ class HandleSAuth(HandleSBase):
         password = acct_row[4]
         ipn_mac_address = acct_row[2]
         nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status, allow_vpn_null, allow_vpn_block, acc_status, ipn_ip_address = acct_row[5:19]
+        print common_vpn,access_type,self.access_type
         if (common_vpn == "False") and ((access_type is None) or (access_type != self.access_type)):
-            log("Unallowed NAS for user %s: access_type error. access type - %s; packet access type - %s" % (user_name, access_type, self.access_type))
+            log("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s" % (user_name, access_type, self.access_type))
             return self.auth_NA()
         
         acstatus = (((not allow_vpn_null) and (ballance >0) or (allow_vpn_null)) \
@@ -914,9 +915,8 @@ class HandleSAuth(HandleSBase):
         if not acstatus:
             log("Unallowed NAS for user %s: account_status is false" % user_name)
             return self.auth_NA()
-        
-        
-        if multilink==False:
+
+        if self.multilink==False:
             station_id_status = False
             if len(station_id)==17:
                 """
@@ -952,9 +952,9 @@ class HandleSAuth(HandleSBase):
 
         log("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
         
-        if self.packetobject['User-Name'][0]==username and allow_dial and tarif_status==True:
+        if self.packetobject['User-Name'][0]==user_name and allow_dial and tarif_status==True:
             self.replypacket.code=2
-            self.replypacket.username=str(username) #Нельзя юникод
+            self.replypacket.username=str(user_name) #Нельзя юникод
             self.replypacket.password=str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
@@ -1222,9 +1222,11 @@ class AuthRoutine(Thread):
                     data, addrport = radIncAuthQueue.popleft()
                 except Exception, ex:
                     #out of range exception
-                    time.sleep(5)
+                    #time.sleep(5) нельзя делать таких больших слипов
+                    time.sleep(0.1)
+                    #print "sleep"
                     continue
-                
+                #print data
                 t = clock()
                 returndata=''
                 #data=self.request[0] # or recv(bufsize, flags)
@@ -1235,7 +1237,7 @@ class AuthRoutine(Thread):
                 packetobject=packet.Packet(dict=dict,packet=data)
                 
                 nas_ip = str(packetobject['NAS-IP-Address'][0])
-                
+                print nas_ip
                 access_type = get_accesstype(packetobject)
                 
                 if access_type in ['PPTP', 'PPPOE']:
@@ -1322,7 +1324,7 @@ class AcctRoutine(Thread):
 
                 packetobject=packet.AcctPacket(dict=dict,packet=data)
         
-                coreconnect = HandleAcct(packetobject=packetobject, nasip=address[0], dbCur=connection.cursor())
+                coreconnect = HandleAcct(packetobject=packetobject, nasip=addrport[0], dbCur=connection.cursor())
                 coreconnect.nasCache = cacheNas; coreconnect.atCache_uidx = cacheAT                
                 
                 packetfromcore = coreconnect.handle()

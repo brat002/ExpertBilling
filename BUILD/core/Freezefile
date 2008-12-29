@@ -4,16 +4,20 @@ _EXT = '.pyd' if sys.platform == 'win32' else '.so'
 del sys
 PY_FILE = '../../core.py'
 FREEZE_LOCAL = True
-NONLOCAL = [ 'chartprovider' ]
+NONLOCAL = [ 'chartprovider']
 ADDITIONAL_MODULES = {'encodings':None,
 'idna':None,
 'encodings.ascii':None,
 'encodings.utf_8':None,
 'psycopg2.tz':None,
+'uuid':None,
 }
 C_FILE = 'OUTPUT/core.c'
 STAND_ALONE = True
 IGNORE_MISSING = True
-PROTECTION_MODULE = '../mikrobill/BUILD/core/protection.py'
-PROTECTION_KEY = '4'
-
+PROTECTION_MODULE = 'd:/projects/mikrobill/BUILD/protection.py'
+MAC = "0x5056c00008"
+RANDSTRING = "1823f439f3498f8488fn439h"
+NUMUSERS = "200"
+PROTECTION_KEY = MAC+RANDSTRING+NUMUSERS
+#PROTECTION_KEY = "2"

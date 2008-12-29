@@ -45,6 +45,9 @@ class ebsTableWindow(QtGui.QMainWindow):
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         
+        self.createFindToolbar()
+        self.connect(self.lineEdit_search_text, QtCore.SIGNAL("textEdited (const QString&)"), self.tableFind)
+        
         self.ebsPostInit(initargs)
         
     def retranslateUI(self, initargs):
@@ -55,6 +58,25 @@ class ebsTableWindow(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget)
         self.restoreWindow()
     
+    def createFindToolbar(self):
+        self.toolBar_find = QtGui.QToolBar(self)
+        self.toolBar_find.setMovable(False)
+        self.toolBar_find.setFloatable(False)
+        self.lineEdit_search_text = QtGui.QLineEdit(self)
+        self.toolBar_find.addWidget(self.lineEdit_search_text)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
+        
+    def tableFind(self):
+        self.tableWidget.clearSelection()
+        for y in xrange(self.tableWidget.rowCount()):
+            for x in xrange(self.tableWidget.columnCount()):
+                #print "check"
+                if unicode(self.tableWidget.item(y,x).text()).rfind(unicode(self.lineEdit_search_text.text()))>-1:
+                    self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
+                    self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
+                    #print "finded!"
+                    #break
+            
     def ebsRetranslateUi(self, initargs):
         pass
     
@@ -374,7 +396,8 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
         self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)
-        
+        self.createFindToolbar()
+        self.connect(self.lineEdit_search_text, QtCore.SIGNAL("textEdited (const QString&)"), self.tableFind)
         self.ebsPostInit(initargs)
         
     def retranslateUI(self, initargs):
@@ -388,6 +411,26 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     def ebsRetranslateUi(self, initargs):
         pass
     
+    def createFindToolbar(self):
+        #print "creating find toolbar"
+        self.toolBar_find = QtGui.QToolBar(self)
+        self.toolBar_find.setMovable(False)
+        self.toolBar_find.setFloatable(False)
+        self.lineEdit_search_text = QtGui.QLineEdit(self)
+        self.toolBar_find.addWidget(self.lineEdit_search_text)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
+        
+    def tableFind(self):
+        self.tableWidget.clearSelection()
+        for y in xrange(self.tableWidget.rowCount()):
+            for x in xrange(self.tableWidget.columnCount()):
+                print "check"
+                if unicode(self.tableWidget.item(y,x).text()).rfind(unicode(self.lineEdit_search_text.text()))>-1:
+                    self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
+                    self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
+                    print "finded!"
+                    #break
+                    
     def ebsPreInit(self, initargs):
         pass
     
