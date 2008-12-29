@@ -16,7 +16,7 @@ from CustomForms import ConnectDialog, ConnectionWaiting
 from helpers import dateDelim
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-
+tr_id=0
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, connection):
@@ -100,6 +100,7 @@ class MainWindow(QtGui.QMainWindow):
         self.gridLayout_2.addWidget(self.pushButton_pay, 0, 2, 1, 1)
         self.pushButton_print = QtGui.QPushButton(self.groupBox_pay)
         self.pushButton_print.setObjectName("pushButton_print")
+        self.pushButton_print.setHidden(True)
         self.gridLayout_2.addWidget(self.pushButton_print, 0, 3, 1, 1)
         self.gridLayout_4.addWidget(self.groupBox_pay, 3, 1, 1, 1)
         self.groupBox_tariffs = QtGui.QGroupBox(self.centralwidget)
@@ -271,8 +272,13 @@ class MainWindow(QtGui.QMainWindow):
         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             account = self.getSelectedId()
             document = u"Платёж проведён кассиром"
-            if self.connection.pay(account, float(unicode(self.lineEdit_sum.text())), document)==True:
+            global tr_id
+            tr_id = self.connection.pay(account, float(unicode(self.lineEdit_sum.text())), document)
+            if tr_id!=False:
                 QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
+                if QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                    self.cheque_print()
+                
                 self.lineEdit_sum.setText("")
                 self.refreshTable()
             else:
@@ -300,7 +306,7 @@ class MainWindow(QtGui.QMainWindow):
             self.connection.commit()
             sum = 10000
 
-            data=templ.render_unicode(account=account, tarif=tarif, sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
+            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id['id'], sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
 
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))

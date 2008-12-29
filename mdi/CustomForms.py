@@ -270,6 +270,7 @@ class TransactionForm(QtGui.QDialog):
         self.pushButton_cheque_print = QtGui.QPushButton(self)
         self.pushButton_cheque_print.setGeometry(QtCore.QRect(10,130,106,26))
         self.pushButton_cheque_print.setObjectName("pushButton_cheque_print")
+        self.pushButton_cheque_print.setHidden(True)
 
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setGeometry(QtCore.QRect(210,130,167,26))
@@ -1212,7 +1213,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             sum = 10000
             document=u"Банковский перевод №112432"
             try:
-                data=templ.render_unicode(account=account, document=document, tarif=tarif, sum=sum,   created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(account=account, document=document, transaction_id=1, tarif=tarif, sum=sum,   created=datetime.datetime.now().strftime(strftimeFormat))
             except Exception, e:
                 data=u"Error %s" % str(e)
             
