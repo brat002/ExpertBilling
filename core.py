@@ -2745,21 +2745,21 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def pay(self, account, sum, document, cur=None, connection=None):
         
-        #o = Object()
-        #o.account_id = account
-        #o.type_id = "MANUAL_TRANSACTION"
-        #o.approved = True
-        #o.description = ""
-        #o.summ = sum * (-1)
-        #o.bill = document
-        #o.created = datetime.datetime.now()
+        o = Object()
+        o.account_id = account
+        o.type_id = "MANUAL_TRANSACTION"
+        o.approved = True
+        o.description = ""
+        o.summ = sum * (-1)
+        o.bill = document
+        o.created = datetime.datetime.now()
         try:
-            #sql = o.save("billservice_transaction")
-            sql = "INSERT INTO billservice_transaction(account_id, type_id, approved, description, bill, summ, created) VALUES(%s,'%s', True, '', '%s',%s, '%s') RETURNING id;" % (account, "MANUAL_TRANSACTION", document, sum*(-1), datetime.datetime.now())
+            sql = o.save("billservice_transaction")
+            #sql = "INSERT INTO billservice_transaction(account_id, type_id, approved, description, bill, summ, created) VALUES(%s,'%s', True, '', '%s',%s, '%s') RETURNING id;" % (account, "MANUAL_TRANSACTION", document, sum*(-1), datetime.datetime.now())
             cur.execute(sql)
-            id=cur.fetchall()
+            id=cur.fetchall()[0]
             connection.commit()
-            return id[0]
+            return Object(id)
         except Exception, e:
             print e
             return False
