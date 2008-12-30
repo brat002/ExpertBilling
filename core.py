@@ -3351,7 +3351,6 @@ if __name__ == "__main__":
     else:
         raise Exception("Config '[core_nf] -> usock' value is wrong, must be 0 or 1")
     
-    licenseFilePath = config.get("license", "filepath")
     
     store_na_tarif   = False
     store_na_account = False
@@ -3387,7 +3386,7 @@ if __name__ == "__main__":
     
     #function that returns number of allowed users
     #create allowedUsers
-    allowedUsers = setAllowedUsers(pool.connection(), licenseFilePath)
+    allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
     
     print allowedUsers()
     fMem = pfMemoize()
