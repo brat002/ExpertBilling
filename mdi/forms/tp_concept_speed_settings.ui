@@ -144,7 +144,18 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="listWidget" />
+       <widget class="QListWidget" name="listWidget" >
+        <item>
+         <property name="text" >
+          <string>VPN</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Пиринг</string>
+         </property>
+        </item>
+       </widget>
       </item>
      </layout>
     </widget>

@@ -342,7 +342,7 @@ class HandleSAuth(HandleSBase):
             #speeds = get_speed_parameters(self.cur, tarif_id)
             defaults = self.defSpeed.get(tarif_id)
             speeds = self.newSpeed.get(tarif_id, [])
-            print "defaults=", defaults
+            #print "defaults=", defaults
             if defaults is None:
                 defaults = ["0","0","0","0","8","0"]
             else:
@@ -441,7 +441,7 @@ class HandleSAuth(HandleSBase):
         password = acct_row[4]
         ipn_mac_address = acct_row[2]
         nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status, allow_vpn_null, allow_vpn_block, acc_status, ipn_ip_address = acct_row[5:19]
-        print common_vpn,access_type,self.access_type
+        #print common_vpn,access_type,self.access_type
         if (common_vpn == "False") and ((access_type is None) or (access_type != self.access_type)):
             log("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s" % (user_name, access_type, self.access_type))
             return self.auth_NA()
@@ -856,7 +856,7 @@ class CacheRoutine(Thread):
                        
                 #print "auth queue len inc - %d ###### out - %d" % (len(radIncAuthQueue), len(radOutAuthQueue))
                 #print "acct queue len inc - %d ###### out - %d" % (len(radIncAcctQueue), len(radOutAcctQueue))
-                print "rad ctime :", time.clock() - a
+                #print "rad ctime :", time.clock() - a
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + repr(ex)
