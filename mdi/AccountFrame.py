@@ -4112,7 +4112,7 @@ class AccountWindow(QtGui.QMainWindow):
 
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
-        columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
+        columns=[u'#', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
         self.selected_account = selected_account
@@ -4121,6 +4121,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def ebsInterInit(self, initargs):
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.tarif_treeWidget = self.treeWidget
+        self.getTarifId = self.getTreeId
+        self.refresh_ = self.refresh
+        
         self.tb = QtGui.QToolButton(self)
         self.tb.setIcon(QtGui.QIcon("images/documents.png"))
         self.tb.setText(u"Документы")
@@ -4178,7 +4181,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
     def retranslateUI(self, initargs):
         super(AccountsMdiEbs, self).retranslateUI(initargs)
-      
+        self.tableWidget.setColumnHidden(0, False)
+        
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
@@ -4293,12 +4297,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.parent.workspace.addWindow(tr)
         tr.show()
             
-    def refresh_(self):
-        self.refresh()
-        
-    def getTarifId(self):
-        return self.treeWidget.currentItem().id
     
+    def getSelectedId(self):
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).data(39).toInt()[0])
+
+
     def pass_(self):
         pass
     
@@ -4339,7 +4342,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         return
         
 
-    def addrow(self, value, x, y, color=None, enabled=True):
+    def addrow(self, value, x, y, color=None, enabled=True, ctext=None, setdata=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
@@ -4357,9 +4360,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 headerItem.setIcon(QtGui.QIcon("images/user.png"))
             else:
                 headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
-            
-
-        headerItem.setText(unicode(value))
+        if setdata:
+            headerItem.setData(39, QtCore.QVariant(value))   
+        if ctext is not None:
+            headerItem.setText(unicode(ctext))
+        else:
+            headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
 
@@ -4420,9 +4426,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         
         i=0
-        for a in accounts:
-            
-            self.addrow(a.id, i,0, enabled=a.status)
+        for a in accounts:            
+            self.addrow(a.id, i,0, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(a.credit, i,3, enabled=a.status)
@@ -4444,7 +4449,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
-        self.tableWidget.setColumnHidden(0, True)
+            
+        self.tableWidget.setColumnHidden(0, False)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         #self.tableWidget.setSortingEnabled(True)

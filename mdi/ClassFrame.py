@@ -399,7 +399,287 @@ class ClassNodeFrame(QtGui.QDialog):
 
 class ClassChildEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection):
-        pass
+        columns  = ['#', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Next Hop']
+        initargs = {"setname":"class_frame", "objname":"ClassChildEbs", "winsize":(0,0,795,597), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,200,521), "treeheader":"Классы", "menubarsize":(0,0,800,21), "tbiconsize":(18,18)}
+        
+        super(ClassChildEbs, self).__init__(connection, initargs)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.protocols={'0':'-all-',  '37':'ddp', '98':'encap', 
+                        '3':'ggp',    '47':'gre', '20':'hmp', 
+                        '1':'icmp',   '38':'idpr-cmtp', 
+                        '2':'igmp',   '94':'ipip','89':'ospf',
+                        '4':'ipencap','17':'udp', '27':'rdp',      
+                        '6':'tcp'}
+        
+    def ebsInterInit(self, initargs):
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        
+        self.refreshTree = self.refresh_list
+        self.getClassId = self.getTreeId
+        
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editClass)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refreshTable)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+
+        actList=[("addClassAction", "Добавить класс", "images/folder_add.png", self.addClass), \
+                 ("delClassAction", "Удалить класс", "images/folder_delete.png", self.delClass), \
+                 ("editClassAction", "Edit class", "images/open.png", self.editClass), \
+                 ("addClassNodeAction", "Добавить подкласс", "images/add.png", self.addNode), \
+                 ("delClassNodeAction", "Удалить подкласс", "images/del.png", self.delNode), \
+                 ("editClassNodeAction", "Edit Node", "images/open.png", self.editNode), \
+                 ("upClassAction", "Повысить", "images/up.png", self.upClass), \
+                 ("downClassAction", "Понизить", "images/down.png", self.downClass)
+                ]
+
+
+        objDict = {self.treeWidget :["editClassAction", "addClassAction", "delClassAction"], \
+                   self.tableWidget:["editClassNodeAction", "addClassNodeAction", "delClassNodeAction"], \
+                   self.toolBar    :["addClassAction", "delClassAction", "separator","upClassAction", "downClassAction", "separator", "addClassNodeAction", "delClassNodeAction"]
+                  }
+        self.actionCreator(actList, objDict)
+        
+    def ebsPostInit(self, initargs):        
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        #self.connectTree()
+        self.delNodeLocalAction()
+        self.addNodeLocalAction()
+        self.restoreWindow()
+        self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        
+    def retranslateUI(self, initargs):
+        super(ClassChildEbs, self).retranslateUI(initargs)
+    def addClass(self):
+        #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),Dialog.accept)
+        child=ClassEdit(connection=self.connection)
+        if child.exec_()==1:
+            self.refresh_list()
+        
+    
+    def editClass(self, *args, **kwargs):
+        
+        try:
+            model=self.connection.get_model(self.treeWidget.currentItem().id, "nas_trafficclass")
+        except Exception, e:
+            print e
+        
+        child=ClassEdit(connection=self.connection, model=model)
+        
+        if child.exec_()==1:
+            self.refresh_list()
+            
+    def delClass(self):
+        
+        model = self.connection.get_model(self.getClassId(), "nas_trafficclass")
+        
+        if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            try:
+                
+                #self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
+                self.connection.iddelete(model.id, "nas_trafficclass")
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+
+            self.refresh_list()
+            
+            try:
+                setFirstActive(self.treeWidget)
+                self.refreshTable()
+            except Exception, ex:
+                print ex
+        
+        
+    def savePosition(self, direction):
+        item_changed_id = self.treeWidget.currentItem().id
+        #print "item_changed_id", item_changed_id 
+        
+        if direction == u"up":
+            item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())+1).id
+        elif direction == u"down":
+            item_swap_id = self.treeWidget.topLevelItem(self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())-1).id
+            
+        #print "item_swap_id=", item_swap_id
+        
+        model1 = self.connection.get_model(item_changed_id, "nas_trafficclass")
+        model2 = self.connection.get_model(item_swap_id, "nas_trafficclass")
+        #print model1.name, model2.name
+        a=model1.weight+0
+        b=model2.weight+0
+        #print "a,b", a,b, model1.id, model2.id
+        model1.weight=1000001
+        try:
+            
+            self.connection.save(model1,"nas_trafficclass")
+            
+            model2.weight=a
+            model1.weight=b
+            
+            self.connection.save(model2,"nas_trafficclass")
+            
+            self.connection.save(model1,"nas_trafficclass")
+            
+            #self.connection.create(model2.save("nas_trafficclass"))
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+        
+        #self.refresh_list()
+            
+
+    
+    def upClass(self):
+        index=self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        if index==0:
+            return
+        item = self.treeWidget.takeTopLevelItem(index)
+        self.treeWidget.insertTopLevelItem(index-1,item)
+        self.treeWidget.setCurrentItem(item)
+        self.savePosition(direction=u"up")
+        #pass
+    
+
+
+    def downClass(self):
+        index=self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        #print "index, self.treeWidget.topLevelItemCount()", index, self.treeWidget.topLevelItemCount()
+        if index==self.treeWidget.topLevelItemCount()-1:
+            return
+        
+        item = self.treeWidget.takeTopLevelItem(index)
+        self.treeWidget.insertTopLevelItem(index+1,item)
+        self.treeWidget.setCurrentItem(item)
+        self.savePosition(direction=u"down")
+        
+    def refresh_list(self):
+        curItem = -1
+        try:
+            curItem = self.treeWidget.indexOfTopLevelItem(self.treeWidget.currentItem())
+        except Exception, ex:
+            print ex
+        self.treeWidget.clear()
+        classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC;")
+        self.connection.commit()
+        for clas in classes:
+            item = QtGui.QTreeWidgetItem(self.treeWidget)
+            item.id = clas.id
+            item.setText(0, clas.name)
+            item.setIcon(0,QtGui.QIcon("images/folder.png"))
+            item.setBackgroundColor(0, QtGui.QColor(clas.color))
+            if clas.passthrough==True:
+                item.setIcon(0, QtGui.QIcon("images/down.png"))
+            
+        if curItem != -1:
+            self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
+        
+
+
+    def addNode(self):
+
+        try:
+            model=self.connection.get_model(self.getClassId(), "nas_trafficclass")
+        except Exception, e:
+            print e
+
+        child=ClassNodeFrame(connection = self.connection)
+        if child.exec_()==1:
+            child.model.traffic_class_id=model.id
+            try:
+                self.connection.save(child.model,"nas_trafficnode")
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+            
+            self.refreshTable()
+        
+    def delNode(self):
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            try:
+                self.connection.iddelete(self.getSelectedId(), "nas_trafficnode")
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+            self.refreshTable()
+        
+    def editNode(self):
+        try:
+            model=self.connection.get_model(self.getSelectedId(), "nas_trafficnode")
+        except Exception, e:
+            print e
+            #return
+        
+        
+        child=ClassNodeFrame(connection=self.connection, model=model)
+        if child.exec_()==1:
+            try:
+                self.connection.save(child.model,"nas_trafficnode")
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.connection.rollback()
+            self.refreshTable()
+        
+    def refreshTable(self, widget=None):
+        #self.tableWidget.setSortingEnabled(False)
+        if not widget:
+            class_id=self.getClassId()
+        else:
+            class_id=widget.id
+        self.tableWidget.clearContents()
+        self.tableWidget.setColumnHidden(0, True)
+        #print text
+        model = self.connection.get_model(class_id, "nas_trafficclass")
+        nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':model.id})
+        self.connection.commit()
+        self.tableWidget.setRowCount(len(nodes))        
+        i=0        
+        #['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        for node in nodes:
+
+            self.addrow(node.id, i,0)
+            self.addrow(node.name, i,1)
+            self.addrow(node.direction, i,2)
+            self.addrow(node.protocol, i,3)
+            self.addrow(node.src_ip, i,4)
+            self.addrow(node.src_port, i,5)
+            
+            self.addrow(node.dst_ip, i,6)
+            self.addrow(node.dst_port, i,7)
+            self.addrow(node.next_hop, i,8)
+            #self.tableWidget.setRowHeight(i, 17)
+            i+=1
+        
+        #self.tableWidget.resizeColumnsToContents()
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
+        #self.tableWidget.setSortingEnabled(True)
+        
+    
+    def addrow(self, value, x, y):
+        if value==None:
+            value=""
+        headerItem = QtGui.QTableWidgetItem()
+        headerItem.setText(unicode(value))
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/tc.png"))
+            
+        self.tableWidget.setItem(x,y,headerItem)
+          
+    def addNodeLocalAction(self):
+        super(ClassChildEbs, self).addNodeLocalAction([self.addClassNodeAction, self.delClassAction, self.upClassAction, self.downClassAction])
+    def delNodeLocalAction(self):
+        super(ClassChildEbs, self).delNodeLocalAction([self.delClassNodeAction])
+        
 class ClassChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
@@ -410,22 +690,7 @@ class ClassChild(QtGui.QMainWindow):
         super(ClassChild, self).__init__()
         self.connection = connection
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.protocols={'0':'-all-',
-           '37':'ddp',
-           '98':'encap', 
-           '3':'ggp', 
-           '47':'gre', 
-           '20':'hmp', 
-           '1':'icmp', 
-           '38':'idpr-cmtp', 
-           '2':'igmp', 
-           '4':'ipencap', 
-           '94':'ipip',  
-           '89':'ospf', 
-           '27':'rdp', 
-           '6':'tcp', 
-           '17':'udp'
-           }
+
         self.setObjectName("ClassMDI")
         self.resize(QtCore.QSize(QtCore.QRect(0,0,795,597).size()).expandedTo(self.minimumSizeHint()))
 
@@ -533,28 +798,7 @@ class ClassChild(QtGui.QMainWindow):
         self.tableWidget.addAction(self.delClassNodeAction)
         
         tableHeader = self.tableWidget.horizontalHeader()
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        self.connect(self.splitter, QtCore.SIGNAL("splitterMoved(int,int)"), self.saveSplitter)
-        self.connect(self.addClassAction, QtCore.SIGNAL("triggered()"), self.addClass)
-        self.connect(self.delClassAction, QtCore.SIGNAL("triggered()"), self.delClass)
-        
-        self.connect(self.upClassAction, QtCore.SIGNAL("triggered()"), self.upClass)
-        self.connect(self.downClassAction, QtCore.SIGNAL("triggered()"), self.downClass)
 
-        self.connect(self.addClassNodeAction, QtCore.SIGNAL("triggered()"), self.addNode)
-        self.connect(self.delClassNodeAction, QtCore.SIGNAL("triggered()"), self.delNode)
-        
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editClass)
-        
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.refreshTable)
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
-        
-        
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editNode)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-        self.connect(self.editClassAction, QtCore.SIGNAL("triggered()"), self.editClass)
-        self.connect(self.editClassNodeAction, QtCore.SIGNAL("triggered()"), self.editNode)
         self.refresh_list()
         try:
             setFirstActive(self.treeWidget)

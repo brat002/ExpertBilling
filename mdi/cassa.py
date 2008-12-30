@@ -22,7 +22,7 @@ tr_id=0
 class CassaEbs(ebsTableWindow):
     def __init__(self, connection):
         columns = ['#', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Город', u'Улица', u'д.', u'к.', u'кв.']
-        initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,912, 539), "wintitle":"Интерфейс кассира", "tablecolumns":columns}
+        initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,912, 539), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
