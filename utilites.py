@@ -823,7 +823,13 @@ def setAllowedUsers(dbconnection, filepath):
         return ldict.get(lbyte, 0)
     #global allowedUsers
     allowedUsers = lambda: 0
-    lfile = open(filepath, 'rb')
+    try:
+        lfile = open(filepath, 'rb')
+    except Exception,e:
+        print e
+        print "License not found"
+        sys.exit()
+        
     lfile.seek(-1, 2)
     allowed = str(transformByte(lfile.read(1)))
     allowedUsers = lambda: int(allowed)
