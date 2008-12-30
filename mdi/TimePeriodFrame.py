@@ -361,6 +361,8 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             
             self.refreshTable()
         
+    def getSelectedId(self):
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
     def refreshTable(self, widget=None):
         self.tableWidget.setSortingEnabled(False)
         if not widget:
