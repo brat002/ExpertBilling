@@ -348,23 +348,27 @@ class HandleSAuth(HandleSBase):
             else:
                 defaults = defaults[:6]
             result=[]
-            #print speeds
-            #print defaults
+            #print "speeds=",speeds
+            #print "defaults=",defaults
             #print 3
             min_delta=-1
             minimal_period=[]
+            now=datetime.datetime.now()
             for speed in speeds:
-                tnc,tkc,delta,res = fMem.in_period_(speed[0],speed[1],speed[2])
-                if res==True and delta<min_delta or min_delta==-1:
+                #print "sp",speed
+                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
+                #print "res=",res
+                if res==True and (delta<min_delta or min_delta==-1):
                     minimal_period=speed
                     min_delta=delta
                     #print speed
             
             #print minmal_period
-            if not minimal_period:
+            if minimal_period:
                 minimal_period = minimal_period[:6]
-            for k in xrange(0, len(minimal_period[3:])):
-                s=minimal_period[3+k]
+            #print "minimal_period",minimal_period
+            for k in xrange(0, len(minimal_period[:6])):
+                s=minimal_period[k]
                 #print s
                 if s=='':
                     res=defaults[k]
@@ -373,10 +377,12 @@ class HandleSAuth(HandleSBase):
                 #print "res=",res
                 result.append(res)
                     
-            if speeds==[]:
+            if result==[]:
                 result=defaults
             if result==[]:
                 result=["0","0","0","0","8","0"]
+                
+            #print result
             #print "speedparams", defaults, speeds, result
             result_params=create_speed_string(result)
             self.speed=result_params
