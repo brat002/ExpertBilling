@@ -19,9 +19,14 @@ class ebsTableWindow(QtGui.QMainWindow):
         super(ebsTableWindow, self).__init__()
         self.setObjectName(initargs["objname"])
         self.connection = connection
-        self.centralwidget = QtGui.QWidget(self)
         self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
-        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
+        if initargs.has_key("centralwidget") and initargs["centralwidget"]:            
+            self.centralwidget = QtGui.QWidget(self)        
+            self.tableWidget = QtGui.QTableWidget(self.centralwidget)
+            self.setCentralWidget(self.centralwidget)
+        else:
+            self.tableWidget = QtGui.QTableWidget(self)
+            self.setCentralWidget(self.tableWidget)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -32,7 +37,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         
         self.ebsInterInit(initargs) 
         
-        self.setCentralWidget(self.centralwidget)
+        
         self.retranslateUI(initargs)
         HeaderUtil.nullifySaved(self.setname)
         

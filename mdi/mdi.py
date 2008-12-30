@@ -17,8 +17,8 @@ import mdi_rc
 from AccountFrame import AccountsMdiEbs as AccountsMdiChild
 from NasFrame import NasEbs
 from SettlementPeriodFrame import SettlementPeriodEbs as SettlementPeriodChild
-from TimePeriodFrame import TimePeriodChild
-from ClassFrame import ClassChild
+from TimePeriodFrame import TimePeriodChildEbs as TimePeriodChild
+from ClassFrame import ClassChildEbs as ClassChild
 from MonitorFrame import MonitorEbs as MonitorFrame
 #from SystemUser import SystemUserChild
 from SystemUser import SystemEbs
