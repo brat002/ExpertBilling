@@ -257,7 +257,7 @@ class check_vpn_access(Thread):
                             #print row
                             #print row['speed_string'],"!!!", newspeed, type(row['speed_string']), type(newspeed)
                             if row[3]!=newspeed:
-                                print "set speed", newspeed
+                                #print "set speed", newspeed
                                 coa_result=change_speed(dict=dict, account_id=row[1], 
                                                         account_name=str(acct[32]), 
                                                         account_vpn_ip=str(acct[18]), 
@@ -1061,232 +1061,6 @@ class NetFlowRoutine(Thread):
                 else:
                     print self.getName() + ": exception: " + repr(ex)
                     
-class NetFlowBill(Thread):
-
-    class Picker(object):
-        def __init__(self):
-            self.data={}
-
-
-        def add_summ(self, account, tarif, summ):
-            if self.data.has_key(account):
-                self.data[account]['summ']+=summ
-            else:
-                self.data[account]={'tarif':tarif, 'summ':summ}
-
-        def get_list(self):
-            for key in self.data:
-                yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
-
-
-    def __init__(self):
-        #self.connection = pool.getconn()
-        #self.connection = psycopg2.connect(dsn)
-        #self.connection.set_client_encoding('UTF8')
-        #self.cur = self.connection.cursor()
-        #self.conn = True
-        Thread.__init__(self)
-
-    def get_actual_cost(self, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date):
-
-        if direction=="INPUT":
-            d = "in_direction=True"
-        elif direction=="OUTPUT":
-            d = "out_direction=True"
-        else:
-            return 0
-        #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
-        #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
-        """self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
-            FROM billservice_traffictransmitnodes as ttsn
-            JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
-            (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-            (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id))
-            WHERE ((ttsn.edge_start>='%s' AND ttsn.edge_end<='%s') OR (ttsn.edge_start>='%s' AND ttsn.edge_end='0' ))
-            AND (ttsn.traffic_transmit_service_id='%s') 
-            AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
-            AND ttsn.%s;''' % (octets_summ/(1024000), octets_summ/(1024000), octets_summ/(1024000), trafic_transmit_service_id, traffic_class_id, d,))"""
-
-        self.cur.execute('''SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after
-            FROM billservice_traffictransmitnodes as ttsn
-            JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
-            (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-            (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id))
-            WHERE (ttsn.traffic_transmit_service_id='%s') 
-            AND (ttsn.id IN (SELECT traffictransmitnodes_id FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id='%s'))
-            AND ttsn.%s;''' % (trafic_transmit_service_id, traffic_class_id, d,))
-        trafic_transmit_nodes=self.cur.fetchall()
-        cost=0
-        min_from_start=0
-        for node in trafic_transmit_nodes:
-            trafic_transmit_node_id=node[0]
-            trafic_cost=node[1]
-            trafic_edge_start=node[2]
-            trafic_edge_end=node[3]
-
-            period_start=node[4]
-            period_length=node[5]
-            repeat_after=node[6]
-            tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
-            if result:
-                if from_start<min_from_start or min_from_start==0:
-                    min_from_start=from_start
-                    cost=trafic_cost
-        del trafic_transmit_nodes
-        return cost
-
-
-
-
-    def run(self):
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
-        while True:            
-            try:
-                self.cur = self.connection.cursor()
-                a=time.clock()
-
-                self.cur.execute(
-                    """
-                    SELECT nf.id, nf.account_id, nf.tarif_id, nf.date_start::timestamp without time zone, nf.traffic_class_id, nf.direction, nf.octets, bs_acc.username, 
-                    tarif.traffic_transmit_service_id, tarif.settlement_period_id, transmitservice.cash_method, transmitservice.period_check, accounttarif.id, accounttarif.datetime::timestamp without time zone,
-                    settlementperiod.time_start::timestamp without time zone, settlementperiod.length_in, settlementperiod.length, settlementperiod.autostart
-                    FROM billservice_netflowstream as nf
-                    JOIN billservice_account as bs_acc ON bs_acc.id=nf.account_id
-                    JOIN nas_trafficclass as traficclass ON traficclass.id=nf.traffic_class_id
-                    JOIN billservice_tariff as tarif ON tarif.id=nf.tarif_id
-                    JOIN billservice_traffictransmitservice as transmitservice ON transmitservice.id=tarif.traffic_transmit_service_id
-                    JOIN billservice_accounttarif as accounttarif ON accounttarif.id=
-                    (SELECT id FROM billservice_accounttarif WHERE tarif_id=tarif.id and account_id=nf.account_id and datetime<nf.date_start ORDER BY datetime DESC LIMIT 1)
-                    LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id = tarif.settlement_period_id
-                    WHERE for_checkout=True and checkouted=False and tarif.active=True ORDER BY nf.account_id ASC LIMIT 10000;
-                    """)
-                rows=self.cur.fetchall()
-    
-                pays=self.Picker()
-    
-                for row in rows:
-                    nf_id, \
-                         account_id,\
-                         tarif_id, \
-                         stream_date, \
-                         traffic_class_id,\
-                         direction, \
-                         octets, \
-                         username, \
-                         trafic_transmit_service_id, \
-                         settlement_period_id, \
-                         cash_method, \
-                         period_check, \
-                         accounttarif_id,\
-                         accounttarif_datetime, \
-                         sp_time_start, \
-                         sp_length_in, \
-                         sp_length, \
-                         sp_autostart = row
-                    s=False
-                    #print nf_id
-    
-                    if trafic_transmit_service_id:
-                        if settlement_period_id:
-                            if sp_autostart==True:
-                                sp_time_start=accounttarif_datetime
-    
-                            #print "before SP", time.clock()-b
-                            settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=sp_time_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length, now=stream_date)
-    
-                            
-                            '''self.cur.execute(
-                                """
-                                SELECT sum(octets)
-                                FROM billservice_netflowstream
-                                WHERE tarif_id=%s and account_id=%s and checkouted=True and date_start between %s and %s
-                                """ , ( tarif_id, account_id, settlement_period_start, settlement_period_end,))'''
-    
-                            #octets_summ=self.cur.fetchone()[0] or 0
-                            octets_summ=0
-                        else:
-                            octets_summ=0
-                        #LOOP for every class
-                        trafic_cost=self.get_actual_cost(trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date)
-    
-
-    
-    
-                        if direction=="INPUT":
-                            d = "in_direction=True"
-                        elif direction=="OUTPUT":
-                            d = "out_direction=True"
-                        else:
-                            d = "out_direction=True"
-                        #alt?    
-                        
-    
-                        query="""
-                             SELECT prepais.id, prepais.size 
-                             FROM billservice_accountprepaystrafic as prepais
-                             JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                             JOIN billservice_prepaidtraffic_traffic_class ON billservice_prepaidtraffic_traffic_class.prepaidtraffic_id=prepaidtraffic.id
-                             WHERE prepais.size>0 and prepais.account_tarif_id=%s and billservice_prepaidtraffic_traffic_class.trafficclass_id=%s and prepaidtraffic.traffic_transmit_service_id=%s and prepaidtraffic.%s""" % (accounttarif_id,traffic_class_id, trafic_transmit_service_id, d)
-                        self.cur.execute(query)
-    
-                        try:
-                            prepaid_id, prepaid=self.cur.fetchone()
-                        except Exception, e:
-                            prepaid=0
-                            prepaid_id=-1
-                        if prepaid>0:
-                            if prepaid>=octets:
-                                prepaid=prepaid-octets
-                                octets=0
-                            elif octets>=prepaid:
-                                octets=octets-prepaid
-                                prepaid=0
-    
-    
-                            self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
-    
-                        summ=(trafic_cost*octets)/(1024000)
-    
-                        if summ>0:
-                            pays.add_summ(account_id, tarif_id, summ)
-    
-                    #till here
-                    self.cur.execute(
-                        """
-                        UPDATE billservice_netflowstream
-                        SET checkouted=True
-                        WHERE id=%s;
-                        """, (nf_id,))
-    
-                rows=None
-    
-                for l in pays.get_list():
-
-                    transaction(
-                        cursor=self.cur,
-                        type='NETFLOW_BILL',
-                        account=l['account'],
-                        approved=True,
-                        tarif=l['tarif'],
-                        summ=l['summ'],
-                        description=u"",
-                    )
-                    self.connection.commit()
-                self.connection.commit()
-
-            except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + str(ex)
-                else:
-                    print self.getName() + ": exception: " + str(ex)
-                
-            
-            self.cur.close()
-            #self.connection.close()
-            gc.collect()
-            time.sleep(45)
-        #connection.close()
 
 
 class limit_checker(Thread):
@@ -2547,15 +2321,15 @@ class AccountServiceThread(Thread):
                 if len(nfIncomingQueue) > 1000:
                     if not sendFlag or sendFlag!='SLP!':
                         sendFlag = 'SLP!'
-                        print "sf set!"
-                        print "incoming queue len: ", len(nfIncomingQueue)
+                        #print "sf set!"
+                        #print "incoming queue len: ", len(nfIncomingQueue)
                 else:
                     if sendFlag and sendFlag=='SLP!':
                         sendFlag = ''
-                        print "sf unset!"
-                        print "incoming queue len: ", len(nfIncomingQueue)
+                        #print "sf unset!"
+                        #print "incoming queue len: ", len(nfIncomingQueue)
                         
-                print "ast time :", time.clock() - a
+                #print "ast time :", time.clock() - a
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + repr(ex)
@@ -2566,19 +2340,6 @@ class AccountServiceThread(Thread):
             time.sleep(180)
             
 
-class NfAServStarter(Thread):
-        def __init__ (self, addr_):
-            self.addr_ = addr_
-            Thread.__init__(self)
-
-        def run(self):
-            #server = ThreadingUDPServer(self.address, self.handler)
-            #server.serve_forever()
-            
-            NfAsyncUDPServer(self.addr_)            
-            while 1: 
-                asyncore.poll(0.010)
-                
 class NfAsyncUDPServer(asyncore.dispatcher):
     ac_out_buffer_size = 8096*10
     ac_in_buffer_size = 8096*10
@@ -2879,7 +2640,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     
             row = cur.fetchone()
             connection.commit()
-            print "actions", row
+            #print "actions", row
             #print action
             if row==None:
                 return False
@@ -3105,7 +2866,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
-        print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
+        #print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
         cur.execute("SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id))
         result=[]
         result = map(Object, cur.fetchall())
@@ -3181,7 +2942,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             result=0
         else:
             result+=1
-        print result
+        #print result
         return result
     
     @authentconn
@@ -3283,16 +3044,13 @@ def main():
     
 
     threads=[]
-    #threads.append(NfAServStarter(coreAddr))
-    #threads.append(AccountServiceThread())
+
     #threads.append(CacheServiceThread())
     threads.append(RPCServer())
     threads.append(check_vpn_access())
     threads.append(periodical_service_bill())
     threads.append(TimeAccessBill())
-    #threads.append(NetFlowAggregate())
-    #threads.append(NetFlowBill())
-    #ну се теперь осталась тока падкрутить кэш ну и что-бы синк транзакций с задержкай на диск
+
     threads.append(NetFlowRoutine())
     threads.append(NetFlowRoutine())
     threads.append(NetFlowRoutine())
@@ -3314,19 +3072,6 @@ def main():
     NfAsyncUDPServer(coreAddr)            
     while 1: 
         asyncore.poll(0.010)
-    """while True:
-        #print pool
-        #print pool._connections
-        for t in threads:
-            #time.sleep(1)
-            #print t
-            #print 'thread status', t.getName(), t.isAlive()
-            if not t.isAlive():
-                print 'restarting thread', t.getName(), str(t)
-                #t.__init__()
-                #t.start()
-                print 'thread status', t.getName(), t.isAlive()
-        time.sleep(15)"""
 
 
 #===============================================================================
@@ -3388,7 +3133,7 @@ if __name__ == "__main__":
     #create allowedUsers
     allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
     
-    print allowedUsers()
+    allowedUsers()
     fMem = pfMemoize()
 
     
