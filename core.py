@@ -82,11 +82,12 @@ class check_vpn_access(Thread):
                     if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
                         defaults[i] = speedi
                 return defaults'''
+
             tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
-            if from_start<min_from_start or min_from_start==0:
+            if result==True and (from_start<min_from_start or min_from_start==0):
                 min_from_start=from_start
                 f_speed=speed
-                        
+        #print "f_speed=", f_speed                
         if f_speed != None:
             for i in range(6):
                 speedi = f_speed[i]
