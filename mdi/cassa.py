@@ -18,6 +18,7 @@ from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 tr_id=0
 
+#sys.stderr=sys.stdout
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, connection):
         super(MainWindow, self).__init__()
@@ -271,9 +272,9 @@ class MainWindow(QtGui.QMainWindow):
     def pay(self):
         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             account = self.getSelectedId()
-            document = u"Платёж проведён кассиром"
             global tr_id
-            tr_id = self.connection.pay(account, float(unicode(self.lineEdit_sum.text())), document)
+            tr_id = self.connection.pay(unicode(account), float(unicode(self.lineEdit_sum.text())), unicode(u"Платёж проведён кассиром"))
+
             if tr_id!=False:
                 QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
                 if QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
@@ -284,7 +285,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Обратитесь к администратору."))
             
-    
+
     def createAccountTarif(self):
         account_id = self.getSelectedId()
         tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
@@ -298,15 +299,15 @@ class MainWindow(QtGui.QMainWindow):
     def cheque_print(self):
         account_id = self.getSelectedId()
         if account_id:
-            template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
+            template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5;')
             templ = Template(unicode(template.body), input_encoding='utf-8')
-            account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % account_id)
+            account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1;" % account_id)
 
-            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s);" % account.id)
             self.connection.commit()
-            sum = 10000
+            #sum = 10000
 
-            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id['id'], sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
+            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id.id, sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
 
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))
