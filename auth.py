@@ -29,7 +29,7 @@ class Auth:
             self.plainusername=packetfromcore.username
             self.plainpassword=packetfromcore.password
         except Exception, e:
-            print e
+            pass
 
         self.ident=''
         self.AccessAccept=False
