@@ -3071,6 +3071,8 @@ def main():
     
     while curAT_date == None:
         time.sleep(0.2)
+        if not cacheThr.isAlive:
+            sys.exit()
         
     #i= range(len(threads))
     for th in threads:	

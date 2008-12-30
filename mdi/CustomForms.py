@@ -1,4 +1,4 @@
-﻿#-*-coding=utf-8*-
+#-*-coding=utf-8*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
@@ -1124,7 +1124,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         if id==7:
             self.actionSave.setDisabled(True)
         else:
-             self.actionSave.setDisabled(False)
+            self.actionSave.setDisabled(False)
         
         template = self.connection.get("SELECT * FROM billservice_template WHERE type_id=%s" % id)
         self.connection.commit()
@@ -1219,7 +1219,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             
 
         if id==6:
-           data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
+            data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
         if id in (3,4):
             data=u"Preview for this type of documents unavailable. Please still waiting for next version of ExpertBilling"
                                 

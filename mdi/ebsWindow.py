@@ -19,18 +19,20 @@ class ebsTableWindow(QtGui.QMainWindow):
         super(ebsTableWindow, self).__init__()
         self.setObjectName(initargs["objname"])
         self.connection = connection
+        self.centralwidget = QtGui.QWidget(self)
         self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
-        self.tableWidget = QtGui.QTableWidget()
+        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         if initargs.has_key("tablesize"):
             self.tableWidget.setGeometry(QtCore.QRect(*initargs["tablesize"]))
-        self.setCentralWidget(self.tableWidget)
+        #self.setCentralWidget(self.tableWidget)
         self.tableWidget = tableFormat(self.tableWidget)
         
         self.ebsInterInit(initargs) 
         
+        self.setCentralWidget(self.centralwidget)
         self.retranslateUI(initargs)
         HeaderUtil.nullifySaved(self.setname)
         
@@ -71,7 +73,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         for y in xrange(self.tableWidget.rowCount()):
             for x in xrange(self.tableWidget.columnCount()):
                 #print "check"
-                if unicode(self.tableWidget.item(y,x).text()).rfind(unicode(self.lineEdit_search_text.text()))>-1:
+                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()) or '').rfind(unicode(self.lineEdit_search_text.text()))>-1 and self.lineEdit_search_text.text():
                     self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
                     self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                     #print "finded!"
@@ -425,7 +427,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         for y in xrange(self.tableWidget.rowCount()):
             for x in xrange(self.tableWidget.columnCount()):
                 print "check"
-                if unicode(self.tableWidget.item(y,x).text()).rfind(unicode(self.lineEdit_search_text.text()))>-1:
+                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()) or '').rfind(unicode(self.lineEdit_search_text.text()))>-1 and self.lineEdit_search_text.text():
                     self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
                     self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                     print "finded!"
@@ -513,8 +515,10 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             self.close()
     def editRow(self):
         pass
+    def editTarif(self):
+        pass
     def connectTree(self):
-        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editRow)
+        self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
         self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh_)
         self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
@@ -526,7 +530,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         self.connect(self.treeWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.addNodeLocalAction)    
            
     def disconnectTree(self):
-        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editRow)
+        self.disconnect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
         self.disconnect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh_)
         self.disconnect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.addNodeLocalAction)
