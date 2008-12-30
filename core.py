@@ -8,6 +8,7 @@ import asyncore
 import threading
 import dictionary
 import ConfigParser
+import signal
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import Pyro.core, Pyro.protocol, Pyro.constants
@@ -3036,12 +3037,18 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 
+def stop_async():
+    del NfAsyncUDPServer
+    
     
 def main():
     global curAT_date
     
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-    
+    try:
+        signal.signal(signal.SIGUSR1, stop_async)
+    except:
+        pass
 
     threads=[]
 
