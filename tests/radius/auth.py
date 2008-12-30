@@ -7,7 +7,7 @@ from pyrad.dictionary import Dictionary
 import time
 from threading import Thread
 a=time.clock()
-srv=Client(server="localhost",
+srv=Client(server="10.10.1.64",
         secret="123",
 	dict=Dictionary("dictionary"))
 
