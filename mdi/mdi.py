@@ -24,7 +24,7 @@ from MonitorFrame import MonitorEbs as MonitorFrame
 from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelectDialog
-from CardsFrame import CardsChild
+from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow
 
