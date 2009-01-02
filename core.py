@@ -1458,7 +1458,7 @@ class settlement_period_service_dog(Thread):
                     account_balance_blocked = acct[16]
                     cost = acct[8]
                     #Если балланса не хватает - отключить пользователя
-                    if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and account_balance_blocked==False:
+                    if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
                         #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                         cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
                                     """, (account_id, cost,))
