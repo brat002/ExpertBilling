@@ -93,20 +93,24 @@ class MonitorEbs(ebsTableWindow):
         event.accept()
             
     def addrow(self, widget, value, x, y, color=False):
+        
+        item_type = QtGui.QTableWidgetItem()
         if value==None:
             value=''
-
-        if widget.item(x,y):
-            widget.item(x,y).setText(unicode(value))
+        if y==0:
+            text, item_type.sessionid = value
         else:
-            item_type = QtGui.QTableWidgetItem()
-            item_type.setText(unicode(value))
+            text=value
+            
+        if widget.item(x,y):
+            widget.item(x,y).setText(unicode(text))
+        else:
+            item_type.setText(unicode(text))
             widget.setItem(x, y, item_type)
         if y==1:
             item_type.setIcon(QtGui.QIcon("images/user.png"))
         
-        if y==0:
-            item_type.id, item_type.sessionid = value
+
             
         if color:
             if value=='ACTIVE':
@@ -157,7 +161,7 @@ class MonitorEbs(ebsTableWindow):
         i=0        
         self.tableWidget.setRowCount(len(sessions))        
         for session in sessions:
-            self.addrow(self.tableWidget, (session.id, session.sessionid), i, 0)
+            self.addrow(self.tableWidget, (i, session.sessionid), i, 0)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
             self.addrow(self.tableWidget, session.framed_ip_address, i, 3)
@@ -176,8 +180,8 @@ class MonitorEbs(ebsTableWindow):
             if sessions:
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         
-        self.tableWidget.setColumnHidden(0, True)
-        self.tableWidget.setSortingEnabled(True)
+        self.tableWidget.setColumnHidden(0, False)
+        #self.tableWidget.setSortingEnabled(True)
 
         
     def refresh_users(self):

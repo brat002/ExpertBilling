@@ -4112,7 +4112,7 @@ class AccountWindow(QtGui.QMainWindow):
 
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
-        columns=[u'#', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'Без ПУ', u'', u'Превышен лимит', u"Дата создания"]
+        columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания"]
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
         self.selected_account = selected_account
@@ -4350,7 +4350,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             if float(value)<0:
                 headerItem.setBackgroundColor(QtGui.QColor(color))
                 headerItem.setTextColor(QtGui.QColor('#ffffff'))
-        
+            elif float(value)==0:
+                headerItem.setBackgroundColor(QtGui.QColor("#ffdc51"))
+                #headerItem.setTextColor(QtGui.QColor('#ffffff'))
+                                
         if not enabled:
             headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         

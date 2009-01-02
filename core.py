@@ -191,7 +191,10 @@ class check_vpn_access(Thread):
                 cur = connection.cursor()
                 #close frosen sessions
                 now = datetime.datetime.now()
-                cur.execute("UPDATE radius_activesession SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;", (now, now,))
+                cur.execute("""UPDATE radius_activesession 
+                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
+                WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
+                UPDATE radius_activesession SET session_status='ACK' WHERE date_end is not Null and session_status='ACTIVE';""", (now, now,))
                 connection.commit()
 
                 #TODO: make nas_nas.ipadress UNIQUE and INDEXed
@@ -2839,9 +2842,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None):
         #print self.ticket
+        #print sql
         cur.execute(sql)
         #connection.commit()
-
+        
         #print dir(connection)
         result=[]
         a=time.clock()

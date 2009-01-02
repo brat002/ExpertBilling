@@ -489,6 +489,8 @@ def prntime(s):
     """
     Функция возвращает длительность времени в удобном для человека виде 
     """
+    if s==None:
+        return ""
     m,s=divmod(s,60)
     h,m=divmod(m,60)
     if h==0 and m==0:
