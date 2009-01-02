@@ -681,6 +681,8 @@ class CardsChildEbs(ebsTableWindow):
         super(CardsChildEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
+
+        
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.setIconSize(QtCore.QSize(18, 18))
         self.toolBar = QtGui.QToolBar(self)
@@ -743,13 +745,14 @@ class CardsChildEbs(ebsTableWindow):
         ######################        
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
         self.insertToolBarBreak(self.toolBar_filter)
-     
-    def ebsPostInit(self, initargs):
-        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
-        self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
         actList=[("actionGenerate_Cards", "Сгенерировать партию", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard)]
         objDict = {self.tableWidget:["actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card"]}
         self.actionCreator(actList, objDict)
+        
+    def ebsPostInit(self, initargs):
+        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
+        self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
+
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
         self.filterActions()
@@ -974,7 +977,7 @@ class CardsChildEbs(ebsTableWindow):
         
        
     def delNodeLocalAction(self):
-        super(CardsChildEbs, self).delNodeLocalAction([self.actionDelete_Cards, self.actionEnable_card, self.actionDisable_Card, self.actionSell_Card])
+        super(CardsChildEbs, self).delNodeLocalAction([self.actionDelete_Cards, self.actionEnable_Card, self.actionDisable_Card, self.actionSell_Card])
 
 class CardsChild(QtGui.QMainWindow):
     sequenceNumber = 1
