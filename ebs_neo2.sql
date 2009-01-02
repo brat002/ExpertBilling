@@ -799,7 +799,7 @@ CREATE TABLE radius_activesession (
     id integer NOT NULL,
     account_id integer NOT NULL,
     sessionid character varying(255),
-    interrim_update timestamp without time zone DEFAULT now(),
+    interrim_update timestamp without time zone,
     date_start timestamp without time zone,
     date_end timestamp without time zone,
     caller_id character varying(255),
