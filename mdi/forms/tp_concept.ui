@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1150</width>
-    <height>623</height>
+    <width>925</width>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -19,11 +19,11 @@
    </size>
   </property>
   <widget class="QWidget" name="centralwidget" >
-   <layout class="QGridLayout" name="gridLayout" >
-    <item row="0" column="1" >
+   <layout class="QGridLayout" name="gridLayout_15" >
+    <item row="0" column="0" >
      <widget class="QTabWidget" name="tabWidget" >
       <property name="currentIndex" >
-       <number>7</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab_7" >
        <attribute name="title" >
@@ -35,21 +35,31 @@
           <property name="title" >
            <string>Название и описание</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3" >
-           <item>
+          <layout class="QGridLayout" name="gridLayout" >
+           <item row="0" column="0" >
             <widget class="QLabel" name="tarif_name_label" >
              <property name="text" >
               <string>Название тарифного плана</string>
              </property>
             </widget>
            </item>
-           <item>
+           <item row="0" column="1" >
             <widget class="QLineEdit" name="tarif_name_edit" />
+           </item>
+           <item row="1" column="0" >
+            <widget class="QLabel" name="label_4" >
+             <property name="text" >
+              <string>Описание</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" >
+            <widget class="QLineEdit" name="lineEdit_4" />
            </item>
           </layout>
          </widget>
         </item>
-        <item row="0" column="1" >
+        <item row="0" column="2" >
          <widget class="QGroupBox" name="groupBox_3" >
           <property name="maximumSize" >
            <size>
@@ -125,33 +135,33 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_13" >
            <item row="0" column="0" >
+            <widget class="QLabel" name="label_3" >
+             <property name="text" >
+              <string>Стоимость</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" colspan="3" >
+            <widget class="QLineEdit" name="tarif_cost_edit_3" />
+           </item>
+           <item row="1" column="0" >
             <widget class="QLabel" name="sp_name_label_3" >
              <property name="text" >
               <string>Расчётный период</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="1" >
+           <item row="1" column="1" colspan="2" >
             <widget class="QComboBox" name="sp_name_edit_3" />
            </item>
-           <item row="0" column="2" >
+           <item row="1" column="3" >
             <widget class="QToolButton" name="toolButton_2" >
              <property name="text" >
               <string>...</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="3" >
-            <widget class="QLabel" name="tarif_cost_label_3" >
-             <property name="text" >
-              <string>Стоимость</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="3" >
-            <widget class="QLineEdit" name="tarif_cost_edit_3" />
-           </item>
-           <item row="3" column="0" colspan="3" >
+           <item row="2" column="0" colspan="4" >
             <widget class="QCheckBox" name="reset_tarif_cost_edit_3" >
              <property name="text" >
               <string>Производить доснятие в конце расчётного периода</string>
@@ -161,45 +171,19 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="1" >
-         <widget class="QGroupBox" name="groupBox_6" >
-          <property name="title" >
-           <string>Тариф доступен для самостоятельного подключения пользователями</string>
-          </property>
-          <property name="checkable" >
-           <bool>true</bool>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5" >
-           <item>
-            <widget class="QLabel" name="label_2" >
-             <property name="text" >
-              <string>Стоимость подключения</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEdit_2" />
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBox" >
-             <property name="text" >
-              <string>Разрешить подключаться пользователям с отрицательным балансом</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item rowspan="2" row="2" column="1" >
+        <item rowspan="2" row="2" column="2" >
          <widget class="QGroupBox" name="groupBox_5" >
           <property name="title" >
            <string>IPN авторизация</string>
+          </property>
+          <property name="checkable" >
+           <bool>true</bool>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout" >
            <item>
             <widget class="QRadioButton" name="radioButton_5" >
              <property name="text" >
-              <string>Авторизировать через NAS Actions</string>
+              <string>Через NAS Actions</string>
              </property>
              <property name="checked" >
               <bool>true</bool>
@@ -209,44 +193,16 @@
            <item>
             <widget class="QRadioButton" name="radioButton_3" >
              <property name="text" >
-              <string>Авторизировать по логину/паролю на веб странице</string>
+              <string>По логину/паролю на веб странице</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QRadioButton" name="radioButton_4" >
              <property name="text" >
-              <string>Авторизировать через клиентского агента</string>
+              <string>Через клиентского агента</string>
              </property>
             </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="3" column="0" >
-         <widget class="QGroupBox" name="groupBox_4" >
-          <property name="maximumSize" >
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title" >
-           <string>Разрешить самостоятельно блокировать/разблокировать учётную запись</string>
-          </property>
-          <property name="checkable" >
-           <bool>true</bool>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4" >
-           <item>
-            <widget class="QLabel" name="label" >
-             <property name="text" >
-              <string>Стоимость простоя в месяц</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEdit" />
            </item>
           </layout>
          </widget>
@@ -284,7 +240,7 @@
           </layout>
          </widget>
         </item>
-        <item row="4" column="1" >
+        <item row="4" column="2" >
          <widget class="QGroupBox" name="groupBox" >
           <property name="title" >
            <string>Другие параметры</string>
@@ -314,7 +270,77 @@
           </layout>
          </widget>
         </item>
+        <item row="3" column="0" >
+         <widget class="QGroupBox" name="groupBox_4" >
+          <property name="maximumSize" >
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title" >
+           <string>Разрешить самостоятельно блокировать/разблокировать учётную запись</string>
+          </property>
+          <property name="checkable" >
+           <bool>true</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_14" >
+           <item row="1" column="1" >
+            <widget class="QLineEdit" name="lineEdit" />
+           </item>
+           <item row="1" column="0" >
+            <widget class="QLabel" name="label" >
+             <property name="text" >
+              <string>Стоимость простоя в месяц</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="2" >
+         <widget class="QGroupBox" name="groupBox_6" >
+          <property name="title" >
+           <string>Тариф доступен для самостоятельного подключения пользователями</string>
+          </property>
+          <property name="checkable" >
+           <bool>true</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_16" >
+           <item row="1" column="1" >
+            <widget class="QCheckBox" name="checkBox" >
+             <property name="text" >
+              <string>Разрешить подключаться пользователям с отрицательным балансом</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" >
+            <widget class="QLineEdit" name="lineEdit_2" >
+             <property name="text" >
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" >
+            <widget class="QLabel" name="label_2" >
+             <property name="text" >
+              <string>Стоимость</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
+       <zorder>sp_groupbox</zorder>
+       <zorder>groupBox_5</zorder>
+       <zorder>groupBox</zorder>
+       <zorder>groupBox_7</zorder>
+       <zorder>groupBox_2</zorder>
+       <zorder>groupBox_3</zorder>
+       <zorder>groupBox_4</zorder>
+       <zorder>label_2</zorder>
+       <zorder>groupBox_6</zorder>
       </widget>
       <widget class="QWidget" name="tab_8" >
        <attribute name="title" >
@@ -592,7 +618,7 @@
           </property>
           <column>
            <property name="text" >
-            <string>Id</string>
+            <string>#</string>
            </property>
           </column>
           <column>
@@ -646,7 +672,7 @@
           </property>
           <column>
            <property name="text" >
-            <string>Id</string>
+            <string>#</string>
            </property>
           </column>
           <column>
