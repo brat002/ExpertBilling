@@ -857,5 +857,16 @@ class SuspendedPeriod(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     
+class Group(models.Model):
+    trafficclass = models.ManyToManyField(TrafficClass)
+    in_direction = models.BooleanField()
+    out_direction = models.BooleanField()
+    # 1 -sum, 2-max
+    type = models.IntegerField()
     
+class GroupStat(models.Model):
+    group = models.ForeignKey(Group)
+    account = models.ForeignKey(Account)
+    bytes = models.IntegerField()
+    datetime = models.DateTimeField()
     
