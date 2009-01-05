@@ -1,0 +1,18 @@
+  10:13:49 PM yolta_ku: use profilers
+  10:26:11 PM yolta_ku: locale module
+  10:27:18 PM yolta_ku: gettext module
+  10:29:20 PM yolta_ku: logging module!
+  11:09:33 PM yolta_ku: logging - syslog wrapper
+  12:03:15 AM yolta_ku: di = sorted(d.iteritems(), key=itemgetter(0))
+  12:18:02 AM yolta_ku: qsettings - tempdelete file
+  12:18:11 AM yolta_ku: global TODO
+  12:35:29 AM yolta_ku: encode report  data into hash and seek recent!
+
+use weakref threads for payment threads in NetFlowRoutine
+
+save queues and pending data in core.py if database is down
+
+gracefully handle queues (deplete or save) in core.py on restart/shutdown
+(maybe on restart drop everything?)
+
+test temp_db versus python dictionary for memoizing
