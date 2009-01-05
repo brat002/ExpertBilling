@@ -3,12 +3,13 @@
 import IPy
 import hmac
 import zlib
+import signal
 import hashlib
 import asyncore
+import isdlogger
 import threading
 import dictionary
 import ConfigParser
-import signal
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import Pyro.core, Pyro.protocol, Pyro.constants
@@ -2334,7 +2335,7 @@ class AccountServiceThread(Thread):
                         #print "sf unset!"
                         #print "incoming queue len: ", len(nfIncomingQueue)
                         
-                #print "ast time :", time.clock() - a
+                logger.info("ast time : %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     print self.getName() + ": database connection is down: " + repr(ex)
@@ -3118,6 +3119,9 @@ if __name__ == "__main__":
     if (config.get("core", "store_na_account")=='True') or (config.get("core", "store_na_account")=='1'):
         store_na_account = True
         
+    logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file"), filemode=config.get("core", "log_fmode")) 
+             
+    logger.lprint('core start')
     pool = PooledDB(
         mincached=13,
         maxcached=30,
