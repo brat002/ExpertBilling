@@ -1293,3 +1293,212 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.end_date = self.dateTimeEdit_end_date.dateTime().toPyDateTime()
         
         QtGui.QDialog.accept(self)
+        
+class GroupsDialog(QtGui.QDialog):
+    def __init__(self, connection):
+        super(GroupsDialog, self).__init__()
+        self.connection = connection
+        self.setObjectName("GroupsDialog")
+        self.resize(555, 278)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.commandLinkButton = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton.setObjectName("commandLinkButton")
+        self.horizontalLayout.addWidget(self.commandLinkButton)
+        self.commandLinkButton_2 = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton_2.setObjectName("commandLinkButton_2")
+        self.horizontalLayout.addWidget(self.commandLinkButton_2)
+        self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        
+        self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.add_group)
+        self.connect(self.commandLinkButton_2, QtCore.SIGNAL("clicked()"), self.del_group)
+        
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Выберите группу трафика", None, QtGui.QApplication.UnicodeUTF8))
+        columns = [u"#",u"Название группы",u"Классы",u"Направления", u"Тип"]
+        makeHeaders(columns, self.tableWidget)
+        
+        self.commandLinkButton.setText(QtGui.QApplication.translate("Dialog", "Добавить группу", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton.setDescription(QtGui.QApplication.translate("Dialog", "Добавить новую группу трафика", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_2.setText(QtGui.QApplication.translate("Dialog", "Удалить группу", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_2.setDescription(QtGui.QApplication.translate("Dialog", "Удалить существующую группу", None, QtGui.QApplication.UnicodeUTF8))
+
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/tp_small.png"))
+        if y==0:
+            headerItem.id=value
+        if y!=0:
+            if y==2:
+                
+                value = u"\n".join(value)
+                headerItem.setText(value)
+            else:
+                headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+        
+    def fixtures(self):
+        groups = self.connection.sql("SELECT gr.*, ARRAY[(SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))] as classnames FROM billservice_group as gr")
+        #print groups
+        self.connection.commit()
+        i=0
+        for a in groups:
+            self.tableWidget.insertRow(i)
+            self.addrow(a.id, i, 0)
+            self.addrow(a.name, i, 1)
+            self.addrow(a.classnames, i, 2)
+            self.addrow(a.direction, i, 3)
+            self.addrow(a.type, i, 4)
+            i+=1
+        self.tableWidget.resizeColumnsToContents()
+        
+        
+    def add_group(self):
+        child = GroupEditDialog(connection=self.connection)
+        child.exec_()
+        self.fixtures()
+    
+    def del_group(self):
+        pass
+    
+class GroupEditDialog(QtGui.QDialog):
+    def __init__(self, connection, model=None):
+        super(GroupEditDialog, self).__init__()
+        self.connection=connection
+        self.model = model
+        self.directions = {"1":u"Входящий", "2":u"Исходящий", "3":u"Сумма Вх + Исх", "4":u"Максимальный"}
+        self.types = {"1":u"Сумма классов", "2":u"Максимальный класс"}
+        
+        self.setObjectName("GroupEditDialog")
+        self.resize(346, 376)
+        self.gridLayout_2 = QtGui.QGridLayout(self)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label = QtGui.QLabel(self)
+        self.label.setObjectName("label")
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.groupBox_params = QtGui.QGroupBox(self)
+        self.groupBox_params.setObjectName("groupBox_params")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_params)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label_directions = QtGui.QLabel(self.groupBox_params)
+        self.label_directions.setObjectName("label_directions")
+        self.gridLayout.addWidget(self.label_directions, 0, 0, 1, 1)
+        self.comboBox_directions = QtGui.QComboBox(self.groupBox_params)
+        self.comboBox_directions.setObjectName("comboBox_directions")
+
+        self.gridLayout.addWidget(self.comboBox_directions, 0, 1, 1, 1)
+        self.comboBox_grouptype = QtGui.QComboBox(self.groupBox_params)
+        self.comboBox_grouptype.setObjectName("comboBox_grouptype")
+
+        self.gridLayout.addWidget(self.comboBox_grouptype, 1, 1, 1, 1)
+        self.label_grouptype = QtGui.QLabel(self.groupBox_params)
+        self.label_grouptype.setObjectName("label_grouptype")
+        self.gridLayout.addWidget(self.label_grouptype, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_params, 2, 0, 1, 2)
+        self.lineEdit_name = QtGui.QLineEdit(self)
+        self.lineEdit_name.setObjectName("lineEdit_name")
+        self.gridLayout_2.addWidget(self.lineEdit_name, 0, 1, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 3, 0, 1, 2)
+        self.groupBox_classes = QtGui.QGroupBox(self)
+        self.groupBox_classes.setObjectName("groupBox_classes")
+        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_classes)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.listWidget_classes = QtGui.QListWidget(self.groupBox_classes)
+        self.listWidget_classes.setObjectName("listWidget_classes")
+        QtGui.QListWidgetItem(self.listWidget_classes)
+        QtGui.QListWidgetItem(self.listWidget_classes)
+        self.gridLayout_3.addWidget(self.listWidget_classes, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_classes, 1, 0, 1, 2)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_params.setTitle(QtGui.QApplication.translate("Dialog", "Параметры группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_directions.setText(QtGui.QApplication.translate("Dialog", "Направление в классах", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_grouptype.setText(QtGui.QApplication.translate("Dialog", "Тип группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_classes.setTitle(QtGui.QApplication.translate("Dialog", "Классы", None, QtGui.QApplication.UnicodeUTF8))
+        #self.listWidget_classes.setSortingEnabled(True)
+
+        
+        
+    def fixtures(self):
+        classes = self.connection.get_models("nas_trafficclass")
+        self.connection.commit()
+        self.listWidget_classes.clear()
+        for clas in classes:
+            item = QtGui.QListWidgetItem(unicode(clas.name))
+            item.setCheckState(QtCore.Qt.Unchecked)
+            item.id = clas.id
+            self.listWidget_classes.addItem(item)
+            
+        
+        
+        i=0
+        for direction in self.directions:
+            self.comboBox_directions.addItem(self.directions[direction])
+            self.comboBox_directions.setItemData(i, QtCore.QVariant(direction))
+            i+=1
+
+        
+        
+        i=0
+        for gtype in self.types:
+            self.comboBox_grouptype.addItem(self.types[gtype])
+            self.comboBox_grouptype.setItemData(i, QtCore.QVariant(gtype))
+            i+=1            
+        
+        
+    def accept(self):
+        if unicode(self.lineEdit_name.text())=="" or self.listWidget_classes.count()==0: 
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте введённые вами данные."))
+            return
+        try:
+            model = Object()
+            model.name = u"%s" % self.lineEdit_name.text()
+            model.direction = self.comboBox_directions.itemData(self.comboBox_directions.currentIndex()).toInt()[0]
+            model.type = self.comboBox_grouptype.itemData(self.comboBox_grouptype.currentIndex()).toInt()[0]
+            model.id = self.connection.save(model, "billservice_group")
+            
+            for i in xrange(self.listWidget_classes.count()):
+                clas = self.listWidget_classes.item(i)
+                if clas.checkState()==QtCore.Qt.Checked:
+                    node = Object()
+                    node.group_id= model.id
+                    node.trafficclass_id = clas.id
+                    self.connection.save(node, "billservice_group_trafficclass")
+            self.connection.commit()
+        except Exception, e:
+            self.connection.rollback()
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при создании группы."))
+            return
+        QtGui.QDialog.accept(self)
