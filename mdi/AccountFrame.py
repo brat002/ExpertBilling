@@ -1534,8 +1534,10 @@ class TarifFrame(QtGui.QDialog):
             self.onetime_tableWidget.setColumnHidden(0, True)
             
             #Limites
-            traffic_limites = self.connection.sql(""" SELECT trafficlimit.*, settlementperiod.name as settlement_period_name, settlementperiod.id as settlementperiod_id FROM billservice_trafficlimit as trafficlimit
+            traffic_limites = self.connection.sql(""" SELECT trafficlimit.*, settlementperiod.name as settlement_period_name, settlementperiod.id as settlementperiod_id, group.name as group_name
+            FROM billservice_trafficlimit as trafficlimit
             LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id=trafficlimit.settlement_period_id
+            JOIN billservice_group AS group ON group.id=trafficlimit.group_id
             WHERE trafficlimit.tarif_id=%d
             """ % self.model.id)
              
@@ -1547,21 +1549,16 @@ class TarifFrame(QtGui.QDialog):
                 self.limit_tableWidget.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
-                    traffic_classes = self.connection.sql(""" 
-                    SELECT trafficclass.* FROM nas_trafficclass as trafficclass
-                    JOIN billservice_trafficlimit_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
-                    WHERE ttc.trafficlimit_id=%d
-                    """ % node.id)
-
                     self.addrow(self.limit_tableWidget, node.id,i, 0)
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
                     self.addrow(self.limit_tableWidget, node.settlement_period_name,i, 3, item_type='combobox', id=node.settlementperiod_id)
-                    self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
-                    self.addrow(self.limit_tableWidget, unicode(node.size/(1024000)),i, 7)
+                    self.addrow(self.limit_tableWidget, node.group_name,i, 4, id=node.group_id)
+                    #self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
+                    self.addrow(self.limit_tableWidget, unicode(node.size/(1024000)),i, 5)
                     
-                    self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
-                    self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
+                    #self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
+                    #self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
                     #self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
                     
                     i+=1
