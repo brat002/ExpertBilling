@@ -1295,9 +1295,11 @@ class SuspendedPeriodForm(QtGui.QDialog):
         QtGui.QDialog.accept(self)
         
 class GroupsDialog(QtGui.QDialog):
-    def __init__(self, connection):
+    def __init__(self, connection,default_id=None):
         super(GroupsDialog, self).__init__()
         self.connection = connection
+        self.selected_group = -1
+        self.default_id=default_id
         self.directions = {"1":u"Входящий", "2":u"Исходящий", "3":u"Сумма Вх + Исх", "4":u"Максимальный"}
         self.types = {"1":u"Сумма классов", "2":u"Максимальный класс"}
         self.setObjectName("GroupsDialog")
@@ -1371,6 +1373,8 @@ class GroupsDialog(QtGui.QDialog):
             self.addrow(a.classnames, i, 2)
             self.addrow(self.directions["%s" % a.direction], i, 3)
             self.addrow(self.types["%s" % a.type], i, 4)
+            if a.id==self.default_id:
+                self.tableWidget.selectRow(i)
             i+=1
         self.tableWidget.resizeColumnsToContents()
         
@@ -1395,6 +1399,9 @@ class GroupsDialog(QtGui.QDialog):
             self.connection.commit()
             self.fixtures()
     
+    def accept(self):
+        self.selected_group = self.getSelectedId()
+        QtGui.QDialog.accept(self)
 class GroupEditDialog(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(GroupEditDialog, self).__init__()

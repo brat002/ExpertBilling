@@ -786,7 +786,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'За последний', u'Период', u'Направления', u'Вх', u'Исх', u'МБ']
+        columns=[u'Id', u'Название', u'За последний', u'Период', u'Группа', u'МБ']
         
         makeHeaders(columns, self.limit_tableWidget)
         
@@ -842,11 +842,11 @@ class TarifFrame(QtGui.QDialog):
         if item_type == 'combobox':
             item = QtGui.QTableWidgetItem()
             item.setText(unicode(value))
-            item.id=id
+            
             widget.setItem(x, y, item)
 
 
-            
+        item.id=id    
         #if type(value)==BooleanType and value==True:
         #    item.setIcon(QtGui.QIcon("images/ok.png"))
         #elif type(value)==BooleanType and value==False:
@@ -882,8 +882,8 @@ class TarifFrame(QtGui.QDialog):
         self.limit_tableWidget.insertRow(current_row)
         self.addrow(self.limit_tableWidget, True, current_row, 2, item_type='checkbox')
 
-        self.addrow(self.limit_tableWidget, True, current_row, 5, item_type='checkbox')
-        self.addrow(self.limit_tableWidget, True, current_row, 6, item_type='checkbox')
+        #self.addrow(self.limit_tableWidget, True, current_row, 5, item_type='checkbox')
+        #self.addrow(self.limit_tableWidget, True, current_row, 6, item_type='checkbox')
         #self.addrow(self.limit_tableWidget, True, current_row, 7, item_type='checkbox')
 
     
@@ -1127,17 +1127,16 @@ class TarifFrame(QtGui.QDialog):
 
     def limitClassEdit(self,y,x):
         if x==4:
-            child = GroupsDialog(self.connection)
-            child.exec_()
-            return
+            item = self.limit_tableWidget.item(y,x)
             try:
-                models = self.limit_tableWidget.item(y,x).models
+                default_id = item.id
             except:
-                models = []
+                default_id=-1
+            child = GroupsDialog(self.connection, default_id)
             
-            child = CheckBoxDialog(all_items=self.connection.get_models("nas_trafficclass"), selected_items = models)
-            if child.exec_()==1:
-                self.limit_tableWidget.setItem(y,x, CustomWidget(parent=self.limit_tableWidget, models=child.selected_items))
+            if child.exec_()==1 and child.selected_group!=-1:
+                group = self.connection.get_model(child.selected_group, "billservice_group")
+                self.addrow(self.limit_tableWidget, group.name, y,x, id=group.id)
                 if len(child.selected_items)>0:
                     #self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
                     self.limit_tableWidget.resizeColumnsToContents()
@@ -1150,6 +1149,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             child = ComboBoxDialog(items=self.connection.get_models("billservice_settlementperiod"), selected_item = default_text )
+            self.connection.commit()
             if child.exec_()==1:
                 self.addrow(self.limit_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
 
@@ -1167,7 +1167,7 @@ class TarifFrame(QtGui.QDialog):
             
             self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
              
-        if x==7:
+        if x==5:
             item = self.limit_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -1534,10 +1534,10 @@ class TarifFrame(QtGui.QDialog):
             self.onetime_tableWidget.setColumnHidden(0, True)
             
             #Limites
-            traffic_limites = self.connection.sql(""" SELECT trafficlimit.*, settlementperiod.name as settlement_period_name, settlementperiod.id as settlementperiod_id, group.name as group_name
+            traffic_limites = self.connection.sql(""" SELECT trafficlimit.*, settlementperiod.name as settlement_period_name, settlementperiod.id as settlementperiod_id, gr.name as group_name
             FROM billservice_trafficlimit as trafficlimit
             LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id=trafficlimit.settlement_period_id
-            JOIN billservice_group AS group ON group.id=trafficlimit.group_id
+            LEFT JOIN billservice_group AS gr ON gr.id=trafficlimit.group_id
             WHERE trafficlimit.tarif_id=%d
             """ % self.model.id)
              
@@ -1943,21 +1943,12 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.limit_tableWidget, i)
                     #print self.limit_tableWidget.item(i, 1), self.limit_tableWidget.item(i, 3), self.limit_tableWidget.item(i, 8), self.limit_tableWidget.cellWidget(i, 4)
-                    if (self.limit_tableWidget.cellWidget(i, 5).checkState()==self.limit_tableWidget.cellWidget(i, 6).checkState()==0) or self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 7)==None or self.limit_tableWidget.item(i, 4)==None:
+                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 5)==None or self.limit_tableWidget.item(i, 4)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
                         self.connection.rollback()
                         return
-                    elif self.limit_tableWidget.item(i, 4)!=None:
-                        if self.limit_tableWidget.item(i, 4)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"В настройках лимитов не указаны классы трафика")
-                            self.connection.rollback()
-                            return                            
-                    
-                    traffic_class_models = [x.id for x in self.limit_tableWidget.item(i, 4).models]
-    
-                    if len(traffic_class_models)==0:
-                        return
-                    
+
+                   
                     if id!=-1:
                         
                         limit = self.connection.get_model(id, "billservice_trafficlimit")
@@ -1968,39 +1959,17 @@ class TarifFrame(QtGui.QDialog):
                     limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                     limit.settlement_period_id = self.limit_tableWidget.item(i, 3).id
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                    limit.size=unicode(float(unicode(self.limit_tableWidget.item(i, 7).text()))*1024000)
-    
-                    limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
-                    limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
+                    limit.size=unicode(float(unicode(self.limit_tableWidget.item(i, 5).text()))*1024000)
+                    limit.group_id = self.limit_tableWidget.item(i, 4).id
+                    #limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
+                    #limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
                     #limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
                     
                     limit.id = self.connection.save(limit, "billservice_trafficlimit")
                     
 
                     
-                    #print 'limit_id=', limit.id
-                    
-                    traffic_classes_for_limit = self.connection.sql("""SELECT class.* FROM nas_trafficclass as class
-                    JOIN billservice_trafficlimit_traffic_class as tc ON tc.trafficclass_id = class.id
-                    WHERE tc.trafficlimit_id=%d
-                    """ % limit.id)
-                    if traffic_classes_for_limit==None:
-                        traffic_classes_for_limit=[]
-                        
-                    traffic_classes_for_limit= [x.id for x in traffic_classes_for_limit]
-                    for cl in traffic_class_models:
-                        if cl not in traffic_classes_for_limit:
-                            tc = Object()
-                            tc.trafficlimit_id = limit.id
-                            tc.trafficclass_id = cl
-                            self.connection.save(tc, "billservice_trafficlimit_traffic_class")
-    
-                    for cl in traffic_classes_for_limit:
-                        if cl not in traffic_class_models:
-                            d = Object()
-                            d.trafficlimit_id = limit.id
-                            d.trafficclass_id = cl
-                            self.connection.delete(d, "billservice_trafficlimit_traffic_class")
+
 
             elif self.limites_checkbox.checkState()==0:
                 d = Object()
