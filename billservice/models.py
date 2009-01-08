@@ -858,9 +858,10 @@ class SuspendedPeriod(models.Model):
     end_date = models.DateTimeField()
     
 class Group(models.Model):
+    name = models.CharField(max_length=255)
     trafficclass = models.ManyToManyField(TrafficClass)
-    in_direction = models.BooleanField()
-    out_direction = models.BooleanField()
+    #1 - in, 2-out, 3 - sum, 4-max
+    direction = models.IntegerField()
     # 1 -sum, 2-max
     type = models.IntegerField()
     
