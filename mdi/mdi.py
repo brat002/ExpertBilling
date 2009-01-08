@@ -298,13 +298,13 @@ class MainWindow(QtGui.QMainWindow):
     def createActions(self):
         self.newAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
                                     u"&Пользователи и тарифы", self)
-        self.newAct.setShortcut(self.tr("Ctrl+A"))
+        #self.newAct.setShortcut(self.tr("Ctrl+A"))
         self.newAct.setStatusTip(u"Пользователи и тарифы")
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
         self.dealerAct = QtGui.QAction(QtGui.QIcon("images/add.png"),
                                     u"&Дилеры", self)
-        self.dealerAct.setShortcut(self.tr("Ctrl+D"))
+        #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
         self.dealerAct.setStatusTip(u"Дилеры")
         self.connect(self.dealerAct, QtCore.SIGNAL("triggered()"), self.dealers)
         
@@ -313,13 +313,13 @@ class MainWindow(QtGui.QMainWindow):
         self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
                                      u"&Серверы доступа", self)
         
-        self.openAct.setShortcut(self.tr("Ctrl+N"))
+        #self.openAct.setShortcut(self.tr("Ctrl+N"))
         self.openAct.setStatusTip(u'Серверы доступа')
         self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
 
         self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"),
                                      u'Расчётные периоды', self)
-        self.saveAct.setShortcut(self.tr("Ctrl+S"))
+        #self.saveAct.setShortcut(self.tr("Ctrl+S"))
         self.saveAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
 
@@ -334,20 +334,20 @@ class MainWindow(QtGui.QMainWindow):
 
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
                                     u'Периоды тарификации', self)
-        self.cutAct.setShortcut(self.tr("Ctrl+T"))
+        #self.cutAct.setShortcut(self.tr("Ctrl+T"))
         self.cutAct.setStatusTip(u"Периоды тарификации")
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
         self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
                                      u"Классы трафика", self)
-        self.copyAct.setShortcut(self.tr("Ctrl+C"))
+        #self.copyAct.setShortcut(self.tr("Ctrl+C"))
         self.copyAct.setStatusTip(u"Классы трафика")
         self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
 
         self.pasteAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
                                       u"Монитор сессий", self)
         
-        self.pasteAct.setShortcut(self.tr("Ctrl+M"))
+        #self.pasteAct.setShortcut(self.tr("Ctrl+M"))
         self.pasteAct.setStatusTip(u"Монитор сессий")
 
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
