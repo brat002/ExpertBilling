@@ -408,10 +408,11 @@ class TrafficLimit(models.Model):
     tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
-    traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Лимит на класс', blank=True, null=True)
+    #traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Лимит на класс', blank=True, null=True)
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
-    in_direction      = models.BooleanField(default=True, blank=True)
-    out_direction     = models.BooleanField(default=True, blank=True)
+    #in_direction      = models.BooleanField(default=True, blank=True)
+    #out_direction     = models.BooleanField(default=True, blank=True)
+    group             = models.ForeignKey("Group")
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
 
     def __unicode__(self):
@@ -656,42 +657,44 @@ class AccountIPNSpeed(models.Model):
         verbose_name_plural = u"Скорости IPN клиентов"
 
 
-class RawNetFlowStream(models.Model):
-    nas = models.ForeignKey(Nas)
-    date_start = models.DateTimeField(auto_now_add=True, default='')
-    src_addr = models.IPAddressField()
-    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Направление трафика', blank=True, null=True)
-    direction = models.CharField(verbose_name=u"Тип трафика", choices=DIRECTIONS_LIST, max_length=32)
-    dst_addr = models.IPAddressField()
-    next_hop = models.IPAddressField()
-    in_index = models.IntegerField()
-    out_index = models.IntegerField()
-    packets = models.IntegerField()
-    octets = models.IntegerField()
-    src_port = models.IntegerField()
-    dst_port = models.IntegerField()
-    tcp_flags = models.IntegerField()
-    protocol = models.IntegerField()
-    tos = models.IntegerField()
-    source_as = models.IntegerField()
-    dst_as =  models.IntegerField()
-    src_netmask_length = models.IntegerField()
-    dst_netmask_length = models.IntegerField()
-    fetched=models.BooleanField(blank=True, default=False)
-
-    class Admin:
-        ordering = ['-date_start']
-        list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
-
-    class Meta:
-        verbose_name = u"Сырая NetFlow статистика"
-        verbose_name_plural = u"Сырая NetFlow статистика"
-
-    def __unicode__(self):
-        return u"%s" % self.nas
-    
-    def get_protocol(self):
-        print 
+#===============================================================================
+# class RawNetFlowStream(models.Model):
+#    nas = models.ForeignKey(Nas)
+#    date_start = models.DateTimeField(auto_now_add=True, default='')
+#    src_addr = models.IPAddressField()
+#    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Направление трафика', blank=True, null=True)
+#    direction = models.CharField(verbose_name=u"Тип трафика", choices=DIRECTIONS_LIST, max_length=32)
+#    dst_addr = models.IPAddressField()
+#    next_hop = models.IPAddressField()
+#    in_index = models.IntegerField()
+#    out_index = models.IntegerField()
+#    packets = models.IntegerField()
+#    octets = models.IntegerField()
+#    src_port = models.IntegerField()
+#    dst_port = models.IntegerField()
+#    tcp_flags = models.IntegerField()
+#    protocol = models.IntegerField()
+#    tos = models.IntegerField()
+#    source_as = models.IntegerField()
+#    dst_as =  models.IntegerField()
+#    src_netmask_length = models.IntegerField()
+#    dst_netmask_length = models.IntegerField()
+#    fetched=models.BooleanField(blank=True, default=False)
+# 
+#    class Admin:
+#        ordering = ['-date_start']
+#        list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
+# 
+#    class Meta:
+#        verbose_name = u"Сырая NetFlow статистика"
+#        verbose_name_plural = u"Сырая NetFlow статистика"
+# 
+#    def __unicode__(self):
+#        return u"%s" % self.nas
+#    
+#    def get_protocol(self):
+#        print 
+#===============================================================================
 
 class NetFlowStream(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
@@ -870,4 +873,10 @@ class GroupStat(models.Model):
     account = models.ForeignKey(Account)
     bytes = models.IntegerField()
     datetime = models.DateTimeField()
+    
+class GroupStatAll(models.Model):
+    account = models.ForeignKey(Account)
+    
+[cl[[123][13123]],c2[[12]][2323]]
+
     

@@ -1298,8 +1298,10 @@ class GroupsDialog(QtGui.QDialog):
     def __init__(self, connection):
         super(GroupsDialog, self).__init__()
         self.connection = connection
+        self.directions = {"1":u"Входящий", "2":u"Исходящий", "3":u"Сумма Вх + Исх", "4":u"Максимальный"}
+        self.types = {"1":u"Сумма классов", "2":u"Максимальный класс"}
         self.setObjectName("GroupsDialog")
-        self.resize(555, 278)
+        self.resize(655, 278)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.tableWidget = QtGui.QTableWidget(self)
@@ -1327,7 +1329,7 @@ class GroupsDialog(QtGui.QDialog):
         
         self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.add_group)
         self.connect(self.commandLinkButton_2, QtCore.SIGNAL("clicked()"), self.del_group)
-        
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_group)
         QtCore.QMetaObject.connectSlotsByName(self)
         self.fixtures()
 
@@ -1350,35 +1352,48 @@ class GroupsDialog(QtGui.QDialog):
         if y!=0:
             if y==2:
                 
-                value = u"\n".join([vstr.decode('utf-8') for vstr in value])
+                value = u", ".join([vstr.decode('utf-8') for vstr in value])
                 headerItem.setText(value)
             else:
                 headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
         
     def fixtures(self):
-        groups = self.connection.sql("SELECT gr.*, ARRAY[(SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))] as classnames FROM billservice_group as gr")
-        #print groups
+        groups = self.connection.sql("SELECT gr.*, ARRAY((SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))) as classnames FROM billservice_group as gr")
         self.connection.commit()
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(len(groups))
         i=0
         for a in groups:
-            self.tableWidget.insertRow(i)
+            
             self.addrow(a.id, i, 0)
             self.addrow(a.name, i, 1)
             self.addrow(a.classnames, i, 2)
-            self.addrow(a.direction, i, 3)
-            self.addrow(a.type, i, 4)
+            self.addrow(self.directions["%s" % a.direction], i, 3)
+            self.addrow(self.types["%s" % a.type], i, 4)
             i+=1
         self.tableWidget.resizeColumnsToContents()
         
-        
+    def getSelectedId(self):
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
+    
     def add_group(self):
         child = GroupEditDialog(connection=self.connection)
-        child.exec_()
-        self.fixtures()
-    
+        if child.exec_()==1:
+            self.fixtures()
+        
+    def edit_group(self):
+        model = self.connection.get_model(self.getSelectedId(), "billservice_group")
+        self.connection.commit()
+        child = GroupEditDialog(connection=self.connection, model=model)
+        if child.exec_()==1:
+            self.fixtures()
+        
     def del_group(self):
-        pass
+        if QtGui.QMessageBox.question(self, u"Удалить группу?" , u"При удалении группы будут удалены все её связи с лимитами трафика.\nВы уверены что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.iddelete(self.getSelectedId(), "billservice_group")
+            self.connection.commit()
+            self.fixtures()
     
 class GroupEditDialog(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -1451,12 +1466,21 @@ class GroupEditDialog(QtGui.QDialog):
         
         
     def fixtures(self):
+        selected_classes = []
+        if self.model:
+            self.lineEdit_name.setText(unicode(self.model.name))
+            selected_classes = self.connection.sql("SELECT trafficclass_id as id FROM billservice_group_trafficclass WHERE group_id=%s" % self.model.id)
+            selected_classes = [x.id for x in selected_classes]
         classes = self.connection.get_models("nas_trafficclass")
         self.connection.commit()
         self.listWidget_classes.clear()
         for clas in classes:
             item = QtGui.QListWidgetItem(unicode(clas.name))
             item.setCheckState(QtCore.Qt.Unchecked)
+            for x in selected_classes:
+                if  clas.id in selected_classes: 
+                    item.setCheckState(QtCore.Qt.Checked) 
+                    
             item.id = clas.id
             self.listWidget_classes.addItem(item)
             
@@ -1466,6 +1490,11 @@ class GroupEditDialog(QtGui.QDialog):
         for direction in self.directions:
             self.comboBox_directions.addItem(self.directions[direction])
             self.comboBox_directions.setItemData(i, QtCore.QVariant(direction))
+            if self.model:
+                #print direction, self.model.direction,type(direction), type(self.model.direction) 
+                if int(direction)==self.model.direction:
+                    #print "current index=", i
+                    self.comboBox_directions.setCurrentIndex(i)
             i+=1
 
         
@@ -1474,27 +1503,43 @@ class GroupEditDialog(QtGui.QDialog):
         for gtype in self.types:
             self.comboBox_grouptype.addItem(self.types[gtype])
             self.comboBox_grouptype.setItemData(i, QtCore.QVariant(gtype))
+            if self.model:
+                if int(gtype)==self.model.type:
+                    #print "current index=", i
+                    self.comboBox_grouptype.setCurrentIndex(i)
             i+=1            
         
-        
+
+            
     def accept(self):
-        if unicode(self.lineEdit_name.text())=="" or self.listWidget_classes.count()==0: 
+        if self.model:
+            model = self.model
+        else:
+            model = Object()
+        traffic_classes=[]
+        for i in xrange(self.listWidget_classes.count()):
+            clas = self.listWidget_classes.item(i)
+            if clas.checkState()==QtCore.Qt.Checked:
+                traffic_classes.append(clas.id)
+        if unicode(self.lineEdit_name.text())=="" or self.listWidget_classes.count()==0 or traffic_classes==[]: 
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте введённые вами данные."))
             return
+        
         try:
-            model = Object()
+            
             model.name = u"%s" % self.lineEdit_name.text()
             model.direction = self.comboBox_directions.itemData(self.comboBox_directions.currentIndex()).toInt()[0]
             model.type = self.comboBox_grouptype.itemData(self.comboBox_grouptype.currentIndex()).toInt()[0]
             model.id = self.connection.save(model, "billservice_group")
             
-            for i in xrange(self.listWidget_classes.count()):
-                clas = self.listWidget_classes.item(i)
-                if clas.checkState()==QtCore.Qt.Checked:
-                    node = Object()
-                    node.group_id= model.id
-                    node.trafficclass_id = clas.id
-                    self.connection.save(node, "billservice_group_trafficclass")
+
+            #Удаляем старые связи и добавляем только нужные новые
+            self.connection.command("DELETE FROM billservice_group_trafficclass WHERE group_id=%s;" % model.id)
+            for tc in traffic_classes:
+                node = Object()
+                node.group_id = model.id
+                node.trafficclass_id = tc
+                self.connection.save(node, "billservice_group_trafficclass")
             self.connection.commit()
         except Exception, e:
             self.connection.rollback()
