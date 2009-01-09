@@ -8,38 +8,26 @@ import os, sys
 import marshal
 import asyncore
 import psycopg2
+import isdlogger
 import threading
 import ConfigParser
 import socket, select, struct, datetime, time
 
 
 from threading import Thread
-from collections import deque
 from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
+from collections import deque, defaultdict
+
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
 config = ConfigParser.ConfigParser()
-#aggregation cache
-dcache   = {}
-#caches for Nas data, account IPN, VPN address indexes
-global ipncache, vpncache
-nascache = {}
-ipncache = {}
-vpncache = {}
-#locks
-dcacheLock = threading.Lock()
-fqueueLock = threading.Lock()
-dbLock = threading.Lock()
-
-nfFlowCache = None
-packetCount = None
 
 #binary strings lengthes
-flowLENGTH = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
+flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
 headerLENGTH = struct.calcsize("!HHIIIIBBH")
 
 class reception_server(asyncore.dispatcher):
@@ -104,6 +92,7 @@ def flow5(data):
         [24] - nas_trafficclass.store
         [25] - nas.trafficclass.passthrough
         [26] - accounttarif.id
+        [27] - groups
     """
     if len(data) != flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
@@ -169,6 +158,7 @@ def nfPacketHandle(data, addrport, flowCache):
                 direction=None
                 fnode=None
                 classLst = []
+                groupLst = set()
                 #Направление берёт из первого пройденного нода
                 for nclass, nnodes in nodesCache:                    
                     for nnode in nnodes:
@@ -191,7 +181,6 @@ def nfPacketHandle(data, addrport, flowCache):
                             break
                     
                     if not passthr:
-
                         wrflow = flow[:]
                         ptime =  time.time()
                         ptime = ptime - (ptime % 20)
@@ -200,7 +189,10 @@ def nfPacketHandle(data, addrport, flowCache):
                         wrflow.append(nnode[9])
                         wrflow.append(nnode[10])
                         wrflow.append(nnode[8])
-                        wrflow.append(acctf_id)
+                        wrflow.append(acctf_id)                        
+                        for tcl in classLst:
+                            groupLst = groupLst.union(groupsCache.get((tcl, nnode[9]), set()))
+                        wrflow.append(tuple(groupLst))
                         flowCache.addflow5(wrflow)
                         break
                
@@ -215,6 +207,9 @@ def nfPacketHandle(data, addrport, flowCache):
                         wrflow.append(nnode[10])
                         wrflow.append(nnode[8])
                         wrflow.append(acctf_id)
+                        for tcl in classLst:
+                            groupLst = groupLst.union(groupsCache.get((tcl, nnode[9]), set()))
+                        wrflow.append(tuple(groupLst))
                         flowCache.addflow5(wrflow)
 
 
@@ -441,26 +436,27 @@ class NfUDPSenderThread(Thread):
                 
                 #if the connection is OK but there were errors earlier
                 if errflag:
-                    print "errflag detected"
+                    logger.info('NFUDPSenderThread errflag detected - time %f', time.time())
                     dfile.close()
                     #use locks is deadlocking  arise
                     fnameQueue.append(fname)
                     
                     errflag = 0
                     #run a cleanup thread
-                    nfFileThread = NfFileReadThread()
-                    nfFileThread.start()                  
+                    #nfFileThread = NfFileReadThread()
+                    #nfFileThread.start()                  
                 
             except Exception, ex:
-                #print repr(ex)
+                logger.debug('NFUDPSenderThread exp: %s', repr(ex))
                 #if no errors were detected earlier
                 if not errflag:
                     try:
                         errflag = 1
-                        print "open a new file"
+                        
                         #open a new file
-                        fname = ''.join((self.hpath, str(time.time()), '.dmp'))
+                        fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
                         dfile = open(fname, 'ab')
+                        logger.info('NFUDPSenderThread open a new file: %s', fname)
                     except Exception, ex:
                         print "NFUDPSenderThread file creation exception: ", repr(ex)
                         continue
@@ -495,11 +491,11 @@ class NfFileReadThread(Thread):
         self.tcount = tcount
     
     def run(self):
-        #return if to protect from overthreading
+        '''#return if to protect from overthreading
         if self.tcount == 5:
             return
         
-        time.sleep(self.tsleep)
+        #time.sleep(self.tsleep)'''
         fname = None
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -513,7 +509,8 @@ class NfFileReadThread(Thread):
                 fnameLock.release()
             except Exception, ex:
                 fnameLock.release()
-                return
+                time.sleep(240)
+                continue
             #open file and read data
             #print fname
             try:
@@ -530,9 +527,7 @@ class NfFileReadThread(Thread):
                     cfile = open(fcname, 'ab')
                 else:
                     cfile = open(fcname, 'wb')
-                #os.rename(fname, fnewname)
                 fcnt = 0
-                #send data
                 try:
                     for flow in flows:
                         nfsock.sendto(flow,addrport)                    
@@ -558,21 +553,14 @@ class NfFileReadThread(Thread):
                 except Exception, ex:
                     #if errors - write data to another file
                     print "NfFileReadThread flowsend exception: ", repr(ex)
-                    """flows = flows[fcnt:]
-                    newfname = ''.join((self.hpath, str(time.clock()), '.dmp'))
-                    dfile = open(newfname, 'ab')
-                    for flow in flows:
-                        dfile.write(flow)
-                        dfile.write('!FLW')"""
                     dfile.close()
                     cfile.close()
                     #use locks is deadlocking issues arise
                     fnameQueue.appendleft(fname)
                     #os.remove(fname)
                     #run a cleanup thread
-                    nfFileThread = NfFileReadThread(60, self.tcount + 1)
-                    nfFileThread.start() 
-                    return
+                    time.sleep(60)
+                    continue
                 
             except Exception, ex:
                 print "NfFileReadThread fileread exception: ", repr(ex)
@@ -605,46 +593,40 @@ class ServiceThread(Thread):
     '''
     def __init__(self):
         
-        self.connection = pool.connection()
+        #self.connection = pool.connection()
         #self.connection._con._con.set_isolation_level(0)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor()
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor()
         Thread.__init__(self)
         
     def run(self):
         #TODO: перенести обновления кешей нас, ипн, впн, а также проверку на переполнение словаря
-        global nascache
-        global ipncache
-        global vpncache
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        global nascache, ipncache, vpncache
         #global databaseQueue
         global nodesCache
+        global groupsCache
         while True:
-            #print "Servicethread"
+            cur = connection.cursor()
+            a = time.clock()
             try:
-                self.cur.execute("""SELECT ipaddress, id from nas_nas;""")                
-                nasvals = self.cur.fetchall()
-                self.connection.commit()
-                nascache = dict(nasvals)
-                del nasvals
-            except Exception, ex:
-                print "Servicethread nascache exception: ", repr(ex)
-                try:
-                    self.cur = self.connection.cursor()
-                except Exception, ex:
-                    print repr(ex)
-                    time.sleep(5)
-                    try:
-                        self.connection = pool.connection()
-                        self.connection._con._con.set_client_encoding('UTF8')
-                    except Exception, ex:
-                        print repr(ex)
-                        time.sleep(10)
-                        continue
+                cur.execute("""SELECT ipaddress, id from nas_nas;""")                
+                nasvals = cur.fetchall()
+                cur.execute("SELECT ba.id,ba.vpn_ip_address,ba.ipn_ip_address, bacct.id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON ba.id=bacct.account_id;")
+                accts = cur.fetchall()
+                cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
+                nnodes = cur.fetchall()
+                cur.execute("SELECT id, trafficclass, in_direction, out_direction, type from billservice_group;")
+                groups = cur.fetchall()
+                connection.commit()
+                cur.close()
                 
-            try:
-                self.cur.execute("SELECT ba.id,ba.vpn_ip_address,ba.ipn_ip_address, bacct.id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON ba.id=bacct.account_id;")
-                accts = self.cur.fetchall()
-                self.connection.commit()
+                #nas cache creation
+                nascache = dict(nasvals)
+                del nasvals            
+
+                #vpn-ipn caches creation
                 icTmp = {}
                 vcTmp = {}
                 for acct in accts:
@@ -659,43 +641,8 @@ class ServiceThread(Thread):
                     vpncache = vcTmp
                 del icTmp, vcTmp
                 
-                '''self.cur.execute("SELECT id,ipn_ip_address FROM billservice_account WHERE ipn_ip_address <> inet '0.0.0.0';")
-                self.connection.commit()
-                ipns = self.cur.fetchall()
-
-                icTmp = {}
-                #ipncache = icTmp.fromkeys([parseAddress(x[0])[0] for x in self.cur.fetchall()], 1)
-                #turn IP strings into long integers
-                for ipn in ipns:
-                    icTmp[parseAddress(ipn[1])[0]] = ipn[0]
-                if icTmp:
-                    ipncache = icTmp
-                del icTmp'''
-            except Exception, ex:
-                print "Servicethread ip cache exception: ", repr(ex)
+                #forms a class-nodes structure
                 
-            '''try:
-                self.cur.execute("SELECT id,vpn_ip_address FROM billservice_account WHERE vpn_ip_address <> inet '0.0.0.0';")
-                self.connection.commit()
-                vpns = self.cur.fetchall()
-                self.cur.close()
-                self.cur = self.connection.cursor()
-                vcTmp = {}
-                #turn IP strings into long integers
-                for vpn in vpns:
-                    vcTmp[parseAddress(vpn[1])[0]] = vpn[0]
-                if vcTmp:
-                    vpncache = vcTmp
-                del vcTmp
-                #vpncache = vcTmp.fromkeys([parseAddress(x[0])[0] for x in self.cur.fetchall()], 1)
-            except Exception, ex:
-                print "Servicethread vpncache exception: ", repr(ex)'''
-             
-            #forms a class-nodes structure
-            try:
-                self.cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
-                self.connection.commit()
-                nnodes = self.cur.fetchall()
                 ndTmp = [[0, []]]
                 tc_id = nnodes[0][1]
                 for nnode in nnodes:
@@ -718,15 +665,33 @@ class ServiceThread(Thread):
                 if ndTmp[0][0]:
                     nodesCache = ndTmp
                     #print ndTmp
-                del ndTmp
-            except Exception, ex:
-                print "Servicethread trafficnodes exception: ", repr(ex)
-                               
-            try:
-                self.cur.close()
-                self.cur = self.connection.cursor()
-            except: pass
+                del ndTmp         
+
+                #maybe aggregate groups in core?
+                #insert - on added - recount?
+                #recount if classes differ?
+                #id, trafficclass, in_direction, out_direction, type
+                gpTmp = defaultdict(set)
+                for group in groups:
+                    in_dir, out_dir = group[2:4]
+                    g_id   = group[0]
+                    g_type = group[4]
+                    for tclass in group[1]:
+                        if in_dir:
+                            gpTmp[(tclass, 'INPUT')].add((g_id, g_type))
+                        if out_dir:
+                            gpTmp[(tclass, 'OUTPUT')].add((g_id, g_type))
+
+                groupsCache = gpTmp
+                del gpTmp
                 
+                logger.info("nf time : %s", time.clock() - a)
+            except Exception, ex:
+                if isinstance(ex, psycopg2.OperationalError):
+                    print self.getName() + ": database connection is down: " + repr(ex)
+                else:
+                    print self.getName() + ": exception: " + repr(ex)
+            #print exception!    
             gc.collect()
             time.sleep(300)
                
@@ -748,8 +713,8 @@ class RecoveryThread(Thread):
             for fl in fllist:
                 fnameQueue.appendleft(fl)
                 
-            nfFileThread = NfFileReadThread()
-            nfFileThread.start()
+            #nfFileThread = NfFileReadThread()
+            #nfFileThread.start()
             
 def main ():        
     global packetCount
@@ -757,9 +722,14 @@ def main ():
     global recover
     packetCount = 0
     nfFlowCache = FlowCache()
+    
     if recover:
         recThr = RecoveryThread()
         recThr.start()
+        time.sleep(0.5)
+    #-----
+    nfFileThread = NfFileReadThread()
+    nfFileThread.start()
     #-----
     svcThread = ServiceThread()
     svcThread.start()
@@ -802,6 +772,9 @@ if __name__=='__main__':
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
+    
+    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file"), filemode=config.get("nf", "log_fmode")) 
+
     #get socket parameters. AF_UNIX support
     if config.get("core_nf", "usock") == '0':
         coreHost = config.get("core_nf_inet", "host")
@@ -828,6 +801,22 @@ if __name__=='__main__':
     except Exception, ex:
         raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: operations with filename like '" +tfname+ "' were not executed properly!")
 
+    
+    #aggregation cache
+    dcache   = {}
+    #caches for Nas data, account IPN, VPN address indexes
+    global ipncache, vpncache
+    nascache = {}
+    ipncache = {}
+    vpncache = {}
+    groupsCache = defaultdict(set)
+    #locks
+    dcacheLock = threading.Lock()
+    fqueueLock = threading.Lock()
+    dbLock = threading.Lock()
+    
+    nfFlowCache = None
+    packetCount = None
     #queues
     flowQueue = deque()
     databaseQueue = deque()

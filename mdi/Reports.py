@@ -897,8 +897,16 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
     def refresh(self):        
         self.status_label.setText(u"Подождите, идёт обработка.")
         #self.tableWidget.setSortingEnabled(False)
+        groupP = False
+        userss   = set()
+        portss   = set()
+        classess = set()
+        udict     = {}
+        portdict  = {}
+        classdict = {}
+        
         if self.child.with_grouping_checkBox.checkState()==0:
-            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
+            '''sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
             netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
             account.username as account_username, class.name as class_name, class.color as class_color, ports.name as port_name, 
             ports.description as port_description, ports1.name as port_name1, ports1.description as port_description1
@@ -907,8 +915,13 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             LEFT JOIN billservice_ports as ports1 ON ports1.protocol = netflowstream.protocol and netflowstream.dst_port = ports1.port
             JOIN billservice_account as account ON account.id = netflowstream.account_id
             JOIN nas_trafficclass as class ON ARRAY[class.id] <@ netflowstream.traffic_class_id
-            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date) 
-
+            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date)'''
+            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
+            netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, 
+            netflowstream.account_id, netflowstream.traffic_class_id
+            FROM billservice_netflowstream as netflowstream
+            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date)
+            
         elif self.child.with_grouping_checkBox.checkState()==2:
             sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
             FROM billservice_netflowstream as netflowstream
@@ -918,7 +931,8 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             
             """ % (self.child.start_date, self.child.end_date)
             #print 2            
-        
+            groupP = True
+            
         if len(self.child.users)>0 or len(self.child.classes)>0:
             sql+=" AND " 
         
@@ -943,61 +957,102 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             sql+=" LIMIT 100"
         else:            
             sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
+        #a = open('tmpf', 'wb')
+        #a.write(sql)
+        #a.close()
+        #sys.exit()
         flows = self.connection.sql(sql)
         self.connection.commit()
+        if not groupP:
+            if flows:
+                for flow in flows:
+                    userss.add(flow.account_id)
+                    portss.add(flow.src_port)
+                    portss.add(flow.dst_port)
+                    classess = classess.union(flow.traffic_class_id)
+    
+                users_   = self.connection.sql("SELECT id, username AS account_username FROM billservice_account WHERE id IN (%s);" % ','.join([str(accid) for accid in userss]))
+                ports_   = self.connection.sql("SELECT port, protocol, name as port_name, description as port_description FROM billservice_ports WHERE port IN (%s);" % ','.join([str(prt) for prt in portss]))
+                classes_ = self.connection.sql("SELECT id, name as class_name, color as class_color FROM nas_trafficclass WHERE id IN (%s);" % ','.join([str(cls) for cls in classess]))
+                self.connection.commit()
+                for usr in users_:
+                    udict[usr.id] = usr
+                for prt in ports_:
+                    portdict[(prt.port, prt.protocol)] = prt
+                for cls in classes_:
+                    classdict[cls.id] = cls
         i=0
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
         octets_in_summ=0
         octets_out_summ=0
-
         c=self.current_page*500
+        icount = 0
         #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
-        for flow in flows:
-            self.addrow(c, i, 0)
-            if self.child.with_grouping_checkBox.checkState()==0:
-                if flow.direction=='INPUT':
-                    octets_in_summ+=int(flow.octets)
-                elif flow.direction=='OUTPUT':
-                    octets_out_summ+=int(flow.octets)
-                
-                if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1==None):                
-                    if flow.port_name==None and flow.port_name1!=None:
-                        flow.port_name=flow.port_name1
-                        flow.port_description=flow.port_description1
-                    elif flow.port_name==None:
-                        flow.port_description=''    
+        for clflow in flows:
+            clflows = []
+            if not groupP:
+                if icount == 100:
+                    break
+                clflow.account_username = getattr(udict.get(clflow.account_id, {}),'account_username', '')
+                clflow.port_name = getattr(portdict.get((clflow.src_port, clflow.protocol), {}),'port_name', None)
+                clflow.port_description = getattr(portdict.get((clflow.src_port, clflow.protocol), {}),'port_description', None)
+                clflow.port_name1 = getattr(portdict.get((clflow.dst_port, clflow.protocol), {}),'port_name', None)
+                clflow.port_description1 = getattr(portdict.get((clflow.dst_port, clflow.protocol), {}),'port_description', None)
+                for cls in clflow.traffic_class_id:
+                    clflow.class_name  = getattr(classdict.get(cls, {}),'class_name', '')
+                    clflow.class_color = getattr(classdict.get(cls, {}),'class_color', '')
+                    clflows.append(clflow)
+            else:
+                clflows.appemd(clflow)
+            
+            for flow in clflows:
+                icount += 1                   
                         
-                    if flow.port_name!='' and flow.port_name is not None:
-                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                self.addrow(c, i, 0)
+                if self.child.with_grouping_checkBox.checkState()==0:
+                    if flow.direction=='INPUT':
+                        octets_in_summ+=int(flow.octets)
+                    elif flow.direction=='OUTPUT':
+                        octets_out_summ+=int(flow.octets)
+                    
+                    if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1==None):                
+                        if flow.port_name==None and flow.port_name1!=None:
+                            flow.port_name=flow.port_name1
+                            flow.port_description=flow.port_description1
+                        elif flow.port_name==None:
+                            flow.port_description=''    
+                            
+                        if flow.port_name!='' and flow.port_name is not None:
+                            self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
+                        else:
+                            self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
+                        self.tableWidget.item(i,3).setToolTip(flow.port_description)                
+                     
+                    elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name==None):                
+                        if flow.port_name1==None and flow.port_name!=None:
+                            flow.port_name1 = flow.port_name
+                            flow.port_description1 = flow.port_description
+                        elif flow.port_name1==None: 
+                            flow.port_name1=""    
+                            flow.port_description1 = ""   
+                        if flow.port_name1!='' and flow.port_name1 is not None:
+                            self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
+                        else:
+                            self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
+                        self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
                     else:
-                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
-                    self.tableWidget.item(i,3).setToolTip(flow.port_description)                
-                 
-                elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name==None):                
-                    if flow.port_name1==None and flow.port_name!=None:
-                        flow.port_name1 = flow.port_name
-                        flow.port_description1 = flow.port_description
-                    elif flow.port_name1==None: 
-                        flow.port_name1=""    
-                        flow.port_description1 = ""   
-                    if flow.port_name1!='' and flow.port_name1 is not None:
-                        self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
-                    else:
-                        self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
-                    self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
+                        self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
+    
+    
+                    self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 7)
+                    self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 4)
+        
+                    self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 5)
                 else:
                     self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
-
-
-                self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 7)
-                self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 4)
-    
-                self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 5)
-            else:
-                self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
-                self.addrow(flow.src_addr, i, 4)
-                self.addrow(flow.dst_addr, i, 5)
+                    self.addrow(flow.src_addr, i, 4)
+                    self.addrow(flow.dst_addr, i, 5)
                 
             self.addrow(flow.account_username, i, 1)            
             self.addrow(humanable_bytes(flow.octets), i, 6)
@@ -1440,103 +1495,6 @@ class NetFlowReport(QtGui.QMainWindow):
         
         
 
-"""class ReportSelectDialog(QtGui.QDialog):
-    def __init__(self,  connection):
-        super(ReportSelectDialog, self).__init__()
-        self.setObjectName("reportSelectDialog")
-        self.chartinfo = []
-        self.selectedId = -1
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,482,510).size()).expandedTo(self.minimumSizeHint()))
-
-        self.reportSelectButtonBox = QtGui.QDialogButtonBox(self)
-        self.reportSelectButtonBox.setGeometry(QtCore.QRect(-20,460,340,30))
-        self.reportSelectButtonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.reportSelectButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton)
-        self.reportSelectButtonBox.setObjectName("reportSelectButtonBox")
-
-        self.reportSelectList = QtGui.QListWidget(self)
-        self.reportSelectList.setGeometry(QtCore.QRect(10,10,461,430))
-        self.reportSelectList.setObjectName("reportSelectList")
-
-        self.retranslateUi()
-        
-        QtCore.QObject.connect(self.reportSelectList, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.accept)
-        #QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("accepted()"), self.accept)
-        QtCore.QObject.connect(self.reportSelectButtonBox,QtCore.SIGNAL("rejected()"), self.reject)
-        #QtCore.QMetaObject.connectSlotsByName(reportSelectDialog)
-        self.fixtures()
-        
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("reportSelectDialog", "Выберите отчет", None, QtGui.QApplication.UnicodeUTF8))
-    
-    def fixtures(self):
-        try:
-            philes = os.listdir(_xmlpath)
-        except Exception, ex:
-            print ex
-            return None
-        philes = [phile for phile in philes if phile.endswith(".xml")]
-        self.chartinfo = []
-        #ilelement
-        for phile in philes:
-            try:
-                f = open(_xmlpath+ "/" + phile)
-                descstate = -3
-                descstr = ''
-                chtype  = []
-                for infoline in f:
-                    if descstate == -3:
-                        if infoline.find("<description>") != -1:
-                            descstate = infoline.find("<description>") + len("<description>")
-                            descstr   = infoline.rstrip()[descstate:]
-
-                        
-                    if descstate != -2 and descstate != -3:
-                        if infoline.find("</description>") != -1:
-                            descend = infoline.find("</description>")
-                            if descstate == -1: 
-                                descstr += " " + infoline[0:descend].lstrip()
-                                descstate = -2
-                            else:
-                                descstr   = infoline[descstate:descend]
-                                descstate = -2
-                        else:
-                            if descstate == -1:
-                                descstr += " " + infoline.lstrip().rstrip()
-                                descstate = -1
-                            descstate = -1
-                        
-                    
-                    chindex = infoline.find("<chart")
-                    if  chindex != -1:
-                        chindex += len("<chart")
-                        #attribs = infoline[chindex:infoline.find(">", chindex)]
-                        chtypes = infoline.find('''type="''', chindex) + len('''type="''')
-                        chtype.append(infoline[chtypes:infoline.find('''"''', chtypes)])
-                        break
-                        
-                if not chtype:
-                    break
-                
-                if not descstr:
-                    descstr = phile
-                self.chartinfo.append([phile, chtype, descstr])
-                            
-            except Exception, ex:
-                print ex
-        
-        print self.chartinfo
-        i = 0
-        for infotuple in self.chartinfo:
-            item = QtGui.QListWidgetItem()
-            item.setText(QtCore.QString.fromUtf8(infotuple[2]))
-            item.id = i
-            self.reportSelectList.addItem(item)
-            i += 1
-    
-    def accept(self):
-        self.selectedId = self.reportSelectList.selectedItems()[0].id
-        QtGui.QDialog.accept(self)"""
 
 class StatReport(QtGui.QMainWindow):
     def __init__(self, connection, chartinfo):

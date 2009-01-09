@@ -69,4 +69,7 @@ class isdlogger(object):
         
     def critical(self, message, vars):
         self.log(4, message, vars)
+        
+    def writeInfoP(self):
+        return self.loggingLevel <= 1
     
