@@ -861,6 +861,7 @@ class SuspendedPeriod(models.Model):
     end_date = models.DateTimeField()
     
 class Group(models.Model):
+    #make it an array
     name = models.CharField(max_length=255)
     trafficclass = models.ManyToManyField(TrafficClass)
     #1 - in, 2-out, 3 - sum, 4-max
@@ -873,6 +874,8 @@ class GroupStat(models.Model):
     account = models.ForeignKey(Account)
     bytes = models.IntegerField()
     datetime = models.DateTimeField()
+    trafficclass = models.ForeignKey(TrafficClass, blank=True, null=True)
+    
     
 class GroupStatAll(models.Model):
     account = models.ForeignKey(Account)
