@@ -16,7 +16,7 @@ import time
 
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Передано', u'Принято', u'Длительность, с', u'Статус']
+        columns=[u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус']
         initargs = {"setname":"monitor_frame_header", "objname":"MonitorEbsMDI", "winsize":(0,0,1102,593), "wintitle":"Монитор активности", "tablecolumns":columns, "tablesize":(0,0,801,541)}
         super(MonitorEbs, self).__init__(connection, initargs)
         
@@ -161,6 +161,11 @@ class MonitorEbs(ebsTableWindow):
         i=0        
         self.tableWidget.setRowCount(len(sessions))        
         for session in sessions:
+            if session.date_end==None:
+                date_end=""
+            else:
+                date_end = session.date_end.strftime(self.strftimeFormat)
+                
             self.addrow(self.tableWidget, (i, session.sessionid), i, 0)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
@@ -168,10 +173,11 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, session.nas_name, i, 4)
             self.addrow(self.tableWidget, session.framed_protocol, i, 5)
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
-            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 7)
-            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 8)
-            self.addrow(self.tableWidget, prntime(session.session_time), i, 9)
-            self.addrow(self.tableWidget, session.session_status, i, 10, color=True)
+            self.addrow(self.tableWidget, date_end, i, 7)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 8)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 9)
+            self.addrow(self.tableWidget, prntime(session.session_time), i, 10)
+            self.addrow(self.tableWidget, session.session_status, i, 11, color=True)
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()

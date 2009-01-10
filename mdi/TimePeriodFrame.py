@@ -385,6 +385,8 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             QtGui.QMessageBox.warning(self, u"Ошибка",
                     u"Введено пустое название.")
             return
+        if text[1]==False:
+            return
         try:
             model=self.connection.get_model(model.id, "billservice_timeperiod")
             model.name=unicode(text[0])

@@ -1113,7 +1113,7 @@ class limit_checker(Thread):
                         #settlement_period cache
                         cacheSP  = copy(curSPCache)
                         #traffic_transmit_service
-                        cacheTLimit = copy(curTLimitCache)
+                        cacheTLimit = copy(curTLimitCache) #id, tarif_id, "name", settlement_period_id, size, group_id, "mode"
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
@@ -1175,13 +1175,14 @@ class limit_checker(Thread):
                                 WHERE id=%s;
                                 """, (False, account_id,))
                             connection.commit()
+                            print "set user %s new limit %s state %s" %(account_id, limitRec[0], False)
                         continue
                     
                     for limitRec in limitRecs:
-                        lr_in_dir  = limitRec[5]
-                        lr_out_dir = limitRec[6]
+                        #lr_in_dir  = limitRec[5]
+                        #lr_out_dir = limitRec[6]
                         
-                        if lr_in_dir==lr_out_dir==False:
+                        if not limitRec[5]:
                             continue
                         block=False
                         
@@ -1207,31 +1208,27 @@ class limit_checker(Thread):
                         settlement_period_start, settlement_period_end, delta = settlement_period_info(sp_start, spRec[3], spRec[2], dateAT)
                         #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
                         now= dateAT
-                        limit_mode = limitRec[7]
+                        limit_mode = limitRec[6]
                         if limit_mode==True:
                             settlement_period_start=now-datetime.timedelta(seconds=delta)
                             settlement_period_end=now       
                         
-                        #limitRec[5] - in_direction
-                        d=""
-                        if lr_in_dir:
-                            d+=" 'INPUT'"
-                        if lr_out_dir:
-                            if lr_in_dir:
-                                d+=","
-                            d+="'OUTPUT'"
-        
                         connection.commit()
                         #В запрос ниже НЕЛЬЗЯ менять символ подстановки на , ,т.к. тогда неправильно форматируется d
                         #acct[0] = account_id, limitRec[0] = limit_id
-                        cur.execute("""
-                             SELECT sum(octets) as size FROM billservice_netflowstream as nf 
-                             WHERE nf.account_id=%s AND nf.traffic_class_id && ARRAY((SELECT tltc.trafficclass_id 
-                             FROM billservice_trafficlimit_traffic_class as tltc 
-                             WHERE tltc.trafficlimit_id=%s)) 
-                             AND (date_start>'%s' AND date_start<'%s') and nf.direction in (%s)  
-                             """ % (account_id, limitRec[0], settlement_period_start, settlement_period_end, d,))
+                        #cur.execute("""
+                        #     SELECT sum(octets) as size FROM billservice_netflowstream as nf 
+                        #     WHERE nf.account_id=%s AND nf.traffic_class_id && ARRAY((SELECT tltc.trafficclass_id 
+                        #     FROM billservice_trafficlimit_traffic_class as tltc 
+                        #     WHERE tltc.trafficlimit_id=%s)) 
+                        #     AND (date_start>'%s' AND date_start<'%s') and nf.direction in (%s)  
+                        #     """ % (account_id, limitRec[0], settlement_period_start, settlement_period_end, d,))
         
+                        cur.execute("""
+                        SELECT sum(bytes) as size FROM billservice_groupstat
+                        WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s 
+                        """ , (limitRec[5], account_id, settlement_period_start, settlement_period_end,))
+                        
                         tsize=0
                         sizes=cur.fetchone()
                         connection.commit()
@@ -1256,6 +1253,7 @@ class limit_checker(Thread):
                                 WHERE id=%s;
                                 """ , (block, account_id,))
                             connection.commit()
+                            print "set user %s new limit %s state %s" %(account_id, limitRec[0], block)
     
                 connection.commit()
                 #print self.getName() + " threadend"
@@ -1980,7 +1978,7 @@ class AccountServiceThread(Thread):
                             FROM billservice_timeperiodnode as tpn
                             JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id;""")
                 timeperndTp = cur.fetchall()
-                cur.execute("""SELECT id, tarif_id, "name", settlement_period_id, size, in_direction, out_direction, "mode" FROM billservice_trafficlimit;""")
+                cur.execute("""SELECT id, tarif_id, "name", settlement_period_id, size, group_id, "mode" FROM billservice_trafficlimit;""")
                 tlimitsTp = cur.fetchall()
                 cur.execute("""SELECT id,account_id, ballance_checkout, prepaid_traffic_reset,prepaid_traffic_accrued, 
                                       prepaid_time_reset, prepaid_time_accrued, balance_blocked, accounttarif_id 
