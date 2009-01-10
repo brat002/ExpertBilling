@@ -880,6 +880,6 @@ class GroupStat(models.Model):
 class GroupStatAll(models.Model):
     account = models.ForeignKey(Account)
     
-[cl[[123][13123]],c2[[12]][2323]]
+[cl[[123],[13123]],c2[[12]],[2323]]
 
     
