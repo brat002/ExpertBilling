@@ -725,7 +725,7 @@ class TarifFrame(QtGui.QDialog):
         self.checkBoxAllowExpressPay.setText(QtGui.QApplication.translate("Dialog", "Разрешить активацию карт экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
         
         self.speed_table.clear()
-        columns=[u'Id',u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
+        columns=[u'#',u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
         
         makeHeaders(columns, self.speed_table) 
         
@@ -736,7 +736,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_time_checkbox.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце расчётного периода предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
         self.timeaccess_table.clear()
 
-        columns=[u'Id', u'Время', u'Цена']
+        columns=[u'#', u'Время', u'Цена']
         
         makeHeaders(columns, self.timeaccess_table)     
         
@@ -746,7 +746,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'Id', u'От МБ', u'До МБ', u'Направления', u'Вх', u'Исх', u'Время', u'Цена за МБ']
+        columns=[u'#', u'От МБ', u'До МБ', u'Классы', u'Вх', u'Исх', u'Время', u'Цена за МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
         self.trafficcost_tableWidget.setColumnHidden(1, True)     
@@ -757,7 +757,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         
         self.prepaid_tableWidget.clear()
-        columns=[u'Id', u'Направления', u'Вх', u'Исх',  u'МБ']
+        columns=[u'#', u'Направления', u'Вх', u'Исх',  u'МБ']
         
         makeHeaders(columns, self.prepaid_tableWidget)                
                 
@@ -768,7 +768,7 @@ class TarifFrame(QtGui.QDialog):
         
         self.onetime_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'Стоимость']
+        columns=[u'#', u'Название', u'Стоимость']
         
         makeHeaders(columns, self.onetime_tableWidget)
         
@@ -777,7 +777,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         
         self.periodical_tableWidget.clear()
-        columns=[u'Id', u'Название', u'Период', u'Способ снятия', u'Стоимость']
+        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость']
         
         makeHeaders(columns, self.periodical_tableWidget)
         
@@ -786,7 +786,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'Id', u'Название', u'За последний', u'Период', u'Группа', u'МБ']
+        columns=[u'#', u'Название', u'За последний', u'Период', u'Группа', u'МБ']
         
         makeHeaders(columns, self.limit_tableWidget)
         
@@ -1137,7 +1137,7 @@ class TarifFrame(QtGui.QDialog):
             if child.exec_()==1 and child.selected_group!=-1:
                 group = self.connection.get_model(child.selected_group, "billservice_group")
                 self.addrow(self.limit_tableWidget, group.name, y,x, id=group.id)
-                if len(child.selected_items)>0:
+                if child.selected_group>0:
                     #self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
                     self.limit_tableWidget.resizeColumnsToContents()
                     self.limit_tableWidget.resizeRowsToContents()
@@ -3383,7 +3383,7 @@ class AccountWindow(QtGui.QMainWindow):
 
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
-        columns=[u'id', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания"]
+        columns=[u'#', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания"]
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
         self.selected_account = selected_account
