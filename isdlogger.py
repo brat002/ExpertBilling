@@ -1,6 +1,10 @@
+'''
+Syslog/Logging wrapper
+'''
 import logging
 try: import syslog
 except ImportError, ipe: import syslog_dummy as syslog
+
 
 dateDelim = "."
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -9,6 +13,7 @@ loggingLevels = {0: logging.DEBUG, 1: logging.INFO, 2: logging.WARNING, 3: loggi
 syslogLevels  = {0: syslog.LOG_DEBUG, 1: syslog.LOG_INFO, 2: syslog.LOG_WARNING, 3: syslog.LOG_ERR, 4 : syslog.LOG_CRIT} 
 
 loggingFormat = '%(asctime)s %(levelname)-8s %(message)s'
+
 class isdlogger(object):
     def __init__ (self, ltype, loglevel=0, ident=None, filename=None, format=None, filemode=None, fflush=True):
         self.loggingLevel = loglevel
@@ -32,31 +37,43 @@ class isdlogger(object):
         else:
             raise Exception('Unknown logger type!')
         
+    '''generic logging method'''
     def log(self, level, message, vars):
         if level >= self.loggingLevel:
             self.log_(self.levels[level], message % vars)
             
+    """quick method with 'repr'"""
     def reprl(self, level, obj, message='%s'):
         if level >= self.loggingLevel:
             self.log_(self.levels[level], message % repr(obj))
             
+    '''print a message with 'INFO' level'''
     def lprint(self, message):
         if 1 >= self.loggingLevel:
             self.log_(self.levels[1], message)
             
+            
+    '''syslog log method'''
     def syslogLog(self, level, message):
         syslog.syslog(level, message)
         
+    '''logging log method'''
     def loggingLog(self, level, message):
         logging.log(level, message)
-        '''if self.fflush:
-            logging._handlerList[0].flush()'''
-            #logging.Handler.flush()
+            
+    '''set logging level'''
     def setLevel(self, level):
         self.loggingLevel = level
         
+    def setNewLevel(self, level):
+        if self.loggingLevel != level:
+            self.loggingLevel = level
+        
     def debug(self, message, vars):
         self.log(0, message, vars)
+        
+    def debugfun(self, message, fun, vars):
+        self.log(0, message, fun(*vars))
         
     def info(self, message, vars):
         self.log(1, message, vars)
@@ -70,6 +87,7 @@ class isdlogger(object):
     def critical(self, message, vars):
         self.log(4, message, vars)
         
+    '''predicate - whether level <= INFO level'''
     def writeInfoP(self):
         return self.loggingLevel <= 1
     

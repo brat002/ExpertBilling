@@ -264,6 +264,25 @@ def transaction(cursor, account, approved, type, summ, description, created=None
     #print "transaction_id=", cursor.fetchall()
     return tr_id
 
+def transaction_noret(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
+    if not created:
+        created=datetime.datetime.now()
+    #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
+    cursor.execute("""                   
+                    INSERT INTO billservice_transaction(bill,
+                    account_id, approved, type_id, tarif_id, summ, description, created)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
+                    """ , (bill, account, approved, type, tarif , summ, description, created,))
+    
+def transaction_text(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
+    if not created:
+        created=datetime.datetime.now()
+    #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
+    return """ INSERT INTO billservice_transaction(bill,
+               account_id, approved, type_id, tarif_id, summ, description, created)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
+           """ % (bill, account, approved, type, tarif , summ, description, created,)
+
 def delete_transaction(cursor, id):
 
     cursor.execute("""
