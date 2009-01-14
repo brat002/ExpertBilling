@@ -10,6 +10,7 @@ import asyncore
 import datetime
 import traceback
 import dictionary
+import isdlogger
 import ConfigParser
 import psycopg2, psycopg2.extras
 
@@ -94,7 +95,7 @@ class AsyncUDPServer(asyncore.dispatcher):
             try:
                 result = self.socket.sendto (data, addr)
                 if result != len(data):
-                    self.log('Sent packet truncated to %d bytes' % result)
+                    logger.warning('Sent packet truncated to %s bytes', result)
             except socket.error, why:
                 if why[0] == EWOULDBLOCK:
                     return
@@ -104,7 +105,7 @@ class AsyncUDPServer(asyncore.dispatcher):
                 
     def handle_error (self, *info):
         traceback.print_exc()
-        log('uncaptured python exception, closing channel %s' % `self`)
+        logger.error('uncaptured python exception, closing channel %s', repr(self))
         self.close()
     
     def handle_close(self):
@@ -163,7 +164,7 @@ class AsyncAuthServ(AsyncUDPServer):
                     self.dateCache = deepcopy(curCachesDate)
                     curCachesLock.release()
             except Exception, ex:
-                print "Auth server cachecopy exception", repr(ex)                
+                logger.error("Auth server cachecopy exception: %s", repr(ex))
                         
             t = clock()
             returndata=''
@@ -178,7 +179,7 @@ class AsyncAuthServ(AsyncUDPServer):
             access_type = get_accesstype(packetobject)
             
             if access_type in ['PPTP', 'PPPOE']:
-                log("Auth Type %s" % access_type)
+                logger.info("Auth Type %s", access_type)
     
                 coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                 coreconnect.nasip = nas_ip
@@ -187,10 +188,10 @@ class AsyncAuthServ(AsyncUDPServer):
                 coreconnect.defSpeed = self.cacheDefSpeed; coreconnect.newSpeed = self.cacheNewSpeed
                 secret, packetfromcore=coreconnect.handle()
                 
-                if packetfromcore is None: log("Unknown NAS %s" % str(packetobject['NAS-IP-Address'][0])); return
+                if packetfromcore is None: logger.info("Unknown NAS %s", str(packetobject['NAS-IP-Address'][0])); return
     
                 authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-                log("Password check: %s" % authobject.AccessAccept)
+                logger.info("Password check: %s", authobject.AccessAccept)
                 returndata=authobject.ReturnPacket() 
                 
             elif access_type in ['DHCP'] :
@@ -210,17 +211,17 @@ class AsyncAuthServ(AsyncUDPServer):
                 if returnpacket is None: return
                 returndata=authNA(returnpacket)
                  
-            log("AUTH time:%.8f" % (clock()-t))
+            logger.info("AUTH time: %s", (clock()-t))
             if returndata:
                 self.sendto(returndata,addrport)
                 del returndata
                 
             del packetfromcore
             del coreconnect
-            log("ACC:%.20f" % (clock()-t))
+            logger.info("ACC: %s", (clock()-t))
             
         except Exception, ex:
-            print "Auth Server readfrom exception: ", repr(ex)
+            logger.error("Auth Server readfrom exception: %s", repr(ex))
 
 class AsyncAcctServ(AsyncUDPServer):
     def __init__(self, host, port, dbconn):
@@ -249,7 +250,7 @@ class AsyncAcctServ(AsyncUDPServer):
                     self.dateCache = deepcopy(curCachesDate)
                     curCachesLock.release()
             except Exception, ex:
-                print "AcctRoutine cachecopy exception", repr(ex)                
+                logger.error("AcctRoutine cachecopy exception: %s", repr(ex))
                         
             t = clock()
             assert len(data)<=4096
@@ -267,11 +268,11 @@ class AsyncAcctServ(AsyncUDPServer):
                 
             del packetfromcore
             del coreconnect    
-            log("ACC:%.20f" % (clock()-t))
+            logger.info("ACC: %s", (clock()-t))
             #print "ACC:%.20f" % (clock()-t)
             
         except Exception, ex:
-            print "Acc Server readfrom exception: ", repr(ex)
+            logger.error("Acc Server readfrom exception: %s", repr(ex))
             #print "bad acct packet"
 
 
@@ -319,7 +320,7 @@ class HandleSAuth(HandleSBase):
         self.access_type=access_type
         self.secret = ''
         
-        log(show_packet(packetobject))
+        logger.debugfun('%s', show_packet, (packetobject,))
         
 
         #self.cur = dbCur
@@ -419,7 +420,7 @@ class HandleSAuth(HandleSBase):
         acct_row = self.atCache_uidx.get(user_name)
         
         if acct_row is None:
-            log("Unknown User %s" % user_name)
+            logger.warning("Unknown User %s", user_name)
             return self.auth_NA()
         '''
 [0]  - ba.id, 
@@ -449,7 +450,7 @@ class HandleSAuth(HandleSBase):
         nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status, allow_vpn_null, allow_vpn_block, acc_status, ipn_ip_address = acct_row[5:19]
         #print common_vpn,access_type,self.access_type
         if (common_vpn == "False") and ((access_type is None) or (access_type != self.access_type)):
-            log("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s" % (user_name, access_type, self.access_type))
+            logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, access_type, self.access_type))
             return self.auth_NA()
         
         acstatus = (((not allow_vpn_null) and (ballance >0) or (allow_vpn_null)) \
@@ -457,7 +458,7 @@ class HandleSAuth(HandleSBase):
                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
         
         if not acstatus:
-            log("Unallowed NAS for user %s: account_status is false" % user_name)
+            logger.warning("Unallowed NAS for user %s: account_status is false", user_name)
             return self.auth_NA()
         
         
@@ -475,13 +476,13 @@ class HandleSAuth(HandleSBase):
                 station_id_status = ((str(ipn_ip_address) == station_id) or (ipn_ip_address == '0.0.0.0'))
             
             if not station_id_status:
-                log("Unallowed NAS for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s " % (user_name, station_id, ipn_ip_address, ipn_mac_address))
+                logger.warning("Unallowed NAS for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s ", (user_name, station_id, ipn_ip_address, ipn_mac_address))
                 return self.auth_NA()
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         #Проверка на то, указан ли сервер доступа
         if int(nas_id)!=int(self.nas_id):
-            log("Unallowed NAS for user %s" % user_name)
+            logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA()
 
 
@@ -495,7 +496,7 @@ class HandleSAuth(HandleSBase):
         
         allow_dial = self.inTimePeriods.get(tarif_id, False)
 
-        log("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s" %( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
         
         if self.packetobject['User-Name'][0]==user_name and allow_dial and tarif_status==True:
             self.replypacket.code=2
@@ -518,7 +519,7 @@ class HandleSDHCP(HandleSBase):
         self.packetobject = packetobject
         self.secret = ""
 
-        log(show_packet(packetobject))
+        logger.debugfun('%s', show_packet, packetobject)
 
         #self.cur = dbCur
 
@@ -632,7 +633,7 @@ class HandleSAcct(HandleSBase):
 
         if acct_row==None:
             self.cur.close()
-            log("Unkown User or user tarif %s" % userName)
+            logger.warning("Unkown User or user tarif %s", userName)
             return self.acct_NA()
         
         account_id  = acct_row[0]
@@ -858,16 +859,24 @@ class CacheRoutine(Thread):
                 i_fMem += 1
                 if i_fMem == 9:
                     i_fMem = 0
-                    fMem.periodCache = {}                     
+                    fMem.periodCache = {}
+                    #reread dynamic options
+                    config.read("ebs_config_runtime.ini")
+                    logger.setNewLevel(int(config.get("radius", "log_level")))
+                    global writeProf
+                    writeProf = logger.writeInfoP()
+                
+                if writeProf:
+                    pass
                        
                 #print "auth queue len inc - %d ###### out - %d" % (len(radIncAuthQueue), len(radOutAuthQueue))
                 #print "acct queue len inc - %d ###### out - %d" % (len(radIncAcctQueue), len(radOutAcctQueue))
                 #print "rad ctime :", time.clock() - a
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + repr(ex)
+                    logger.error("%s: database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    print self.getName() + ": exception: " + repr(ex)
+                    logger.error("%s: exception: %s", (self.getName(), repr(ex)))
             
             gc.collect()
             time.sleep(60)
@@ -883,6 +892,7 @@ class pfMemoize(object):
             res = in_period_info(time_start, length, repeat_after, date_)
             self.periodCache[(time_start, length, repeat_after, date_)] = res
         return res
+
 
 
 def setpriority(pid=None,priority=1):
@@ -908,6 +918,7 @@ def main():
     global curCachesDate
     
     caches = CacheRoutine()
+    caches.setName("CacheRoutine")
     caches.start()
     
     
@@ -936,6 +947,10 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
+    logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file"), filemode=config.get("radius", "log_fmode")) 
+    #write profiling info?
+    writeProf = logger.writeInfoP()         
+    logger.lprint('Radius start')
     pool = PooledDB(
         mincached=3,
         maxcached=10,
@@ -946,7 +961,9 @@ if __name__ == "__main__":
                                                                config.get("db", "host"),
                                                                config.get("db", "password"))
     )
-
+    
+    
+    #queues and locks
     radIncAcctQueue  = deque()
     radIncAuthQueue = deque()
     
