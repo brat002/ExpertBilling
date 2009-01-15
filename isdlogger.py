@@ -2,6 +2,7 @@
 Syslog/Logging wrapper
 '''
 import logging
+from logging import handlers
 try: import syslog
 except ImportError, ipe: import syslog_dummy as syslog
 
@@ -15,7 +16,7 @@ syslogLevels  = {0: syslog.LOG_DEBUG, 1: syslog.LOG_INFO, 2: syslog.LOG_WARNING,
 loggingFormat = '%(asctime)s %(levelname)-8s %(message)s'
 
 class isdlogger(object):
-    def __init__ (self, ltype, loglevel=0, ident=None, filename=None, format=None, filemode=None, fflush=True):
+    def __init__ (self, ltype, loglevel=0, ident=None, filename=None, format=loggingFormat, filemode='a+', maxBytes=10485760, backupCount=3):
         self.loggingLevel = loglevel
         self.ident  = ident
         if ltype == 'syslog':
@@ -26,14 +27,19 @@ class isdlogger(object):
         elif ltype == 'logging':
             self.log_ = self.loggingLog
             self.levels = loggingLevels
-            self.fflush = fflush
-            if not format: self.loggingFormat = loggingFormat
-            else: self.loggingFormat = format
-            if not filemode: self.filemode = 'w'
-            else: self.filemode = filemode
+            #self.fflush = fflush
+            #if not format: self.loggingFormat = loggingFormat
+            #else: self.loggingFormat = format
+            #if not filemode: self.filemode = 'a+'
+            #else: self.filemode = filemode
             if not filename : raise Exception('Please specify the filename!')
-            else: self.filename = filename
-            logging.basicConfig(level=self.levels[loglevel], format=self.loggingFormat, filename=self.filename, filemode=self.filemode)
+            #else: self.filename = filename
+            #logging.config
+            logging.root.setLevel(self.levels[loglevel])
+            rtHdlr = handlers.RotatingFileHandler(filename, mode=filemode, maxBytes=maxBytes, backupCount=backupCount)
+            rtHdlr.setFormatter(logging.Formatter(format))
+            logging.root.addHandler(rtHdlr)
+            #logging.basicConfig(level=self.levels[loglevel], format=self.loggingFormat, filename=self.filename, filemode=self.filemode)
         else:
             raise Exception('Unknown logger type!')
         

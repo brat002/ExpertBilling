@@ -947,7 +947,7 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
-    logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file"), filemode=config.get("radius", "log_fmode")) 
+    logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file")) 
     #write profiling info?
     writeProf = logger.writeInfoP()         
     logger.lprint('Radius start')

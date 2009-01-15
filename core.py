@@ -1855,7 +1855,7 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
 
     #create logger
-    logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file"), filemode=config.get("core", "log_fmode")) 
+    logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file")) 
     
     logger.lprint('core start')
     pool = PooledDB(

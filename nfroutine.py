@@ -895,7 +895,7 @@ if __name__ == "__main__":
     if (config.get("nfroutine", "store_na_account")=='True') or (config.get("nfroutine", "store_na_account")=='1'):
         store_na_account = True
         
-    logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file"), filemode=config.get("nfroutine", "log_fmode")) 
+    logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file")) 
     #write profiling info?
     writeProf = logger.writeInfoP()         
     logger.lprint('Nfroutine start')
