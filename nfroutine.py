@@ -15,6 +15,7 @@ from daemonize import daemonize
 from threading import Thread, Lock
 from copy import copy, deepcopy
 from DBUtils.PooledDB import PooledDB
+from DBUtils.PersistentDB import PersistentDB
 from collections import deque, defaultdict
 from utilites import in_period_info
 from db import delete_transaction, dbRoutine
@@ -31,50 +32,70 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 class Picker(object):
     __slots__= ('data',)
     def __init__(self):
-        self.data={}      
+        self.data=defaultdict(int)      
 
     def add_summ(self, account, tarif, summ):
-        if self.data.has_key(account):
+        self.data[(account, tarif)] += summ
+        '''if self.data.has_key((account, tarif)):
             self.data[account]['summ']+=summ
         else:
-            self.data[account]={'tarif':tarif, 'summ':summ}
+            self.data[account]={'tarif':tarif, 'summ':summ}'''
 
     def get_list(self):
-        for key in self.data:
-            yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
+        while len(self.data) > 0:
+            #yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
+            yield self.data.popitem()
 
 #maybe save if database errors???
 class DepickerThread(Thread):
     '''Thread that takes a Picker object and executes transactions'''
-    def __init__ (self, picker, cursor):
-        self.picker = picker
-        self.cur = cursor
+    def __init__ (self):
         Thread.__init__(self)
         
-    def run(self):
-        a = time.clock()
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
-        now = datetime.datetime.now()
-        icount = 0
-        for l in self.picker.get_list():
-            #debit accounts
-            transaction(
-                cursor=self.cur,
-                type='NETFLOW_BILL',
-                account=l['account'],
-                approved=True,
-                tarif=l['tarif'],
-                summ=l['summ'],
-                description=u"",
-                created=now
-            )
-            icount += 1
-        #connection.commit()
-        self.cur.close()
-        logger.info("Depicker thread icount: %s run time: %s", (icount, time.clock() - a))
-
+    def run(self):        
+        connection = pool.connection()
+        connection._con._con.set_client_encoding('UTF8')
+        cur = connection.cursor()
+        global depickerQueue, depickerLock
+        while True:
+            try:
+                if len(depickerQueue) > 0:
+                    depickerLock.acquire()
+                    picker = depickerQueue.popleft()
+                    depickerLock.release()
+                else:
+                    time.sleep(10)
+                    continue                
+                
+                a = time.clock()
+                now = datetime.datetime.now()
+                icount = 0
+                ilist = picker.get_list()
+                ilen = len(picker.data)
+                for acc_tf_id, summ in ilist:
+                    #debit accounts
+                    transaction(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
+                                tarif=acc_tf_id[1], summ=summ, description=u"", created=now)
+                    icount += 1
+                connection.commit()
+                if writeProf:
+                    logger.info("%s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
+            except IndexError, ierr:
+                try: depickerLock.release()
+                except: pass
+                time.sleep(60)
+                logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                continue             
+            except psycopg2.OperationalError, p2oerr:
+                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
+            except psycopg2.ProgrammingError, p2perr:
+                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
+            except psycopg2.InterfaceError, p2ierr:
+                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
+                try: cur = connection.cursor()
+                except: pass
+            except Exception, ex:
+                logger.error("%s : exception: %s", (self.getName(), repr(ex)))    
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
@@ -311,9 +332,10 @@ class NetFlowRoutine(Thread):
 
     
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        connection._con._con.set_isolation_level(0)
+        connection = persist.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        connection._con.set_client_encoding('UTF8')
+        #connection._con._con.set_isolation_level(0)
         global curAT_acIdx
         global curAT_date,curAT_lock
         global nfIncomingQueue
@@ -324,10 +346,11 @@ class NetFlowRoutine(Thread):
         global groupAggrTime, statAggrTime
         global groupDeque, statDeque
         global groupLast, statLast
+        global gPicker, pickerLock, pickerTime
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
-        sumPick = Picker()
-        pstartD = time.time()
+        #sumPick = Picker()
+        #pstartD = time.time()
         oldAcct = defaultdict(list)
         cur = connection.cursor()
         icount = 0
@@ -364,12 +387,16 @@ class NetFlowRoutine(Thread):
                 
                 #if deadlocks arise add locks
                 #time to pick
-                if sumPick.data and (time.time() > pstartD + 60.0):
+                if (time.time() > pickerTime + 60.0):
                     #start thread that cleans Picker
-                    depickThr = DepickerThread(sumPick, connection.cursor())
-                    depickThr.start()
-                    sumPick = Picker()
-                    pstartD = time.time()
+                    #depickThr = DepickerThread(sumPick, connection.cursor())
+                    #depickThr.start()
+                    #add picker to a depicker queue
+                    pickerLock.acquire()
+                    depickerQueue.append(gPicker)                    
+                    gPicker = Picker()
+                    pickerTime = time.time()
+                    pickerLock.release()
                     
                 #if deadlocks arise add locks
                 #pop flows
@@ -555,18 +582,15 @@ class NetFlowRoutine(Thread):
                                         #cur = connection.cursor()
                                         cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
                                         connection.commit()
-                                        #cur.close()
-                                        '''
-                                        #if the cache didn't change in meantime, save changes in cache
-                                        if prepHnd == prepInf[1]:
-                                            prepInf[1] = prepInf[1] - prepaid
-                                        '''
+
             
                             summ=(trafic_cost*octets)/(1024000)
         
                             if summ>0:
                                 #account_id, tariff_id, summ
-                                sumPick.add_summ(flow[20], acct[4], summ)
+                                pickerLock.acquire()
+                                gPicker.add_summ(flow[20], acct[4], summ)
+                                pickerLock.release()
                                     
                                 #insert statistics
                     #cur = connection.cursor()
@@ -833,18 +857,22 @@ def main():
     except: print '''
 
     threads=[]
-    for i in xrange(3):
+    for i in xrange(int(config.get("nfroutine", "routinethreads"))):
         newNfr = NetFlowRoutine()
         newNfr.setName('NFR NetFlowRoutine #%s ' % i)
         threads.append(newNfr)
-    
-    grdqTh = groupDequeThread()
-    grdqTh.setName('groupDequeThread#1')
-    threads.append(grdqTh)
-    
-    stdqTh = statDequeThread()
-    stdqTh.setName('statDequeThread#1')
-    threads.append(stdqTh)
+    for i in xrange(int(config.get("nfroutine", "groupstatthreads"))):
+        grdqTh = groupDequeThread()
+        grdqTh.setName('groupDequeThread #%i' % i)
+        threads.append(grdqTh)
+    for i in xrange(int(config.get("nfroutine", "globalstatthreads"))):
+        stdqTh = statDequeThread()
+        stdqTh.setName('statDequeThread #%i' % i)
+        threads.append(stdqTh)
+    for i in xrange(int(config.get("nfroutine", "depickerthreads"))):
+        depTh = DepickerThread()
+        depTh.setName('depickerThread #%i' % i)
+        threads.append(depTh)
     
     cacheThr = AccountServiceThread()
     cacheThr.setName('NFR AccountServiceThread')
@@ -858,7 +886,8 @@ def main():
     #i= range(len(threads))
     for th in threads:	
         th.start()
-        time.sleep(0.5)
+        logger.info("NFR %s start", th.getName())
+        time.sleep(0.1)
         
     NfAsyncUDPServer(coreAddr)            
     while 1: 
@@ -901,15 +930,18 @@ if __name__ == "__main__":
     logger.lprint('Nfroutine start')
     
     pool = PooledDB(
-        mincached=9,
+        mincached=4,
         maxcached=20,
         blocking=True,
         #maxusage=20, 
         creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password")))
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                               config.get("db", "host"), config.get("db", "password")))
+    persist = PersistentDB(
+        setsession=["SET synchronous_commit TO OFF;"],
+        creator=psycopg2,
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
+                                                               config.get("db", "host"), config.get("db", "password")))
 
     #--------------------------------------------------------
     #quequ for Incoming packet lists
@@ -947,6 +979,13 @@ if __name__ == "__main__":
     statLock  = Lock()    
     groupLast = None
     statLast  = None
+    
+    depickerQueue = deque()
+    depickerLock  = Lock()
+    
+    gPicker = Picker()
+    pickerLock = Lock()
+    pickerTime = 0
     
     #function that returns number of allowed users
     #create allowedUsers
