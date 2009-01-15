@@ -830,7 +830,7 @@ if __name__=='__main__':
                                                                config.get("db", "password"))
     )
     
-    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file"), filemode=config.get("nf", "log_fmode")) 
+    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
     logger.lprint('Nf start')
     #write profiling info predicate
     writeProf = logger.writeInfoP()
@@ -907,6 +907,7 @@ if __name__=='__main__':
         aggrNum   = float(config.get("nf", "aggrnum"))
     except:
         pass
+
     main()
 
 

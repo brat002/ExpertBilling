@@ -693,7 +693,7 @@ if __name__ == "__main__":
         daemonize("/dev/null", "log.txt", "log.txt")
      
     config.read("ebs_config.ini")
-    logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file"), filemode=config.get("rpc", "log_fmode")) 
+    logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
              
     logger.lprint('Ebs RPC start')
     pool = PooledDB(
