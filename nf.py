@@ -156,12 +156,17 @@ def nfPacketHandle(data, addrport, flowCache):
             if acc_acct_tf:
                 flow[11] = nas_id
                 #acc_id, acctf_id, tf_id = (acc_acct_tf)
-                flow.append(acc_acct_tf)                
-                flowCache.addflow5(flow)                
+                flow.append(acc_acct_tf)
+                if checkClasses:
+                    for nclass, nnodes in nodesCache:                    
+                        for nnode in nnodes:
+                            if (((flow[0] & nnode[1]) == nnode[0]) and ((flow[2] & nnode[3]) == nnode[2]) and ((flow[3] == nnode[4]) or (not nnode[4])) and ((flow[9] == nnode[5]) or (not nnode[5])) and ((flow[10] == nnode[6]) or (not nnode[6])) and ((flow[13] == nnode[7]) or (not nnode[7]))):
+                                flowCache.addflow5(flow)
+                                return
+                    return
                 
-                #ASK!!!!!!!!!!!
-
-
+                flowCache.addflow5(flow)         
+                
                         
 
 class FlowCache(object):
@@ -351,46 +356,12 @@ class FlowDequeThread(Thread):
                         #found passthrough=false
                         if not passthr:
                             self.add_classes_groups(flow, classLst, nnode, acctf_id, has_groups, tarifGroups)
-                            '''
-                            #wrflow = flow[:]
-                            ptime =  time.time()
-                            ptime = ptime - (ptime % 20)
-                            flow.append(ptime)
-                            flow.append(tuple(classLst))
-                            flow.append(nnode[9])
-                            flow.append(nnode[10])
-                            flow.append(nnode[8])
-                            flow.append(acctf_id)
-                            flow.append(has_groups)
-                            #add groups, ckeck if al
-                            if has_groups:
-                                groupLst = set()
-                                for tcl in classLst:
-                                    groupLst.update(tarifGroups.intersection(class_groupsCache.get((tcl, nnode[9]), set())))                            
-                                flow.append(tuple([self.isect_classes(groupsCache[group_][:], classLst) for group_ in groupLst]))
-                            '''
                             break
                    
-                    #if traversed all nodes
+                    #if traversed all the nodes
                     else:
                         if classLst:
                             self.add_classes_groups(flow, classLst, node, acctf_id, has_groups)
-                            '''
-                            #wrflow = flow[:]
-                            ptime =  time.time()
-                            ptime = ptime - (ptime % 20)
-                            flow.append(ptime)
-                            flow.append(tuple(classLst))
-                            flow.append(nnode[9])
-                            flow.append(nnode[10])
-                            flow.append(nnode[8])
-                            flow.append(acctf_id)
-                            flow.append(has_groups)
-                            if has_groups:
-                                for tcl in classLst:
-                                    groupLst.update(tarifGroups.intersection(class_groupsCache.get((tcl, nnode[9]), set())))                            
-                                flow.append(tuple([self.isect_classes(groupsCache[group_][:], classLst) for group_ in groupLst]))
-                            '''
                         else: 
                             logger.lprint("continued")
                             continue
@@ -849,6 +820,8 @@ if __name__=='__main__':
     sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
     recover    = (config.get("nfroutine_nf", "recover") == '1')
     recoverAtt = (config.get("nfroutine_nf", "recoverAttempted") == '1')
+    
+    checkClasses = (config.get("nf", "checkclasses") == '1')
     #get a dump' directrory string and check whethet it's writable
     dumpDir = config.get("nfroutine_nf", "dump_dir")
     try:
