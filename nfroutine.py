@@ -387,7 +387,7 @@ class NetFlowRoutine(Thread):
                 
                 #if deadlocks arise add locks
                 #time to pick
-                if (time.time() > pickerTime + 60.0):
+                if (time.time() > pickerTime + 300.0):
                     #start thread that cleans Picker
                     #depickThr = DepickerThread(sumPick, connection.cursor())
                     #depickThr.start()
