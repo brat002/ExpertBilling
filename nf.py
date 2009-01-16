@@ -291,10 +291,27 @@ class FlowDequeThread(Thread):
         flow.append(has_groups)
         #add groups, check if any
         if has_groups:
-            groupLst = set()
+            dr = 0
+            flow_dir = nnode[9]
+            if flow_dir == 'INPUT':
+                dr = 2
+            elif flow_dir == 'OUTPUT':
+                dr = 1
+            groupLst = []
+            fcset = set(classLst)
+            for tgrp in tarifGroups:
+                if (tgrp[2] == dr) or (tgrp[0] == 0):
+                    continue
+                group_cls = fcset.intersection(tgrp[1])
+                if group_cls:
+                    group_add = tgrp[:]
+                    group_add[1] = tuple(group_cls)
+                    groupLst.append(tuple(group_add))
+            flow.append(tuple(groupLst))
+            '''groupLst = set()
             for tcl in classLst:
                 groupLst.update(tarifGroups.intersection(class_groupsCache.get((tcl, nnode[9]), set())))                            
-            flow.append(tuple([self.isect_classes(groupsCache[group_][:], classLst) for group_ in groupLst]))
+            flow.append(tuple([self.isect_classes(groupsCache[group_][:], classLst) for group_ in groupLst]))'''
 
     def run(self):
         j = 0
@@ -669,29 +686,30 @@ class ServiceThread(Thread):
                 groups_ = {}
                 for group in groups:
                     if not group[1]: continue
-                    direction = group[2]
-                    g_id   = group[0]
-                    g_type = group[3]
-                    classes_ = group[1]
+                    #direction = group[2]
+                    #g_id   = group[0]
+                    #g_type = group[3]
+                    #classes_ = group[1]
                     lgroup = list(group)
-                    lgroup[1] = set(lgroup[1])
-                    groups_[g_id] = lgroup
-                    for tclass in group[1]:
+                    #lgroup[1] = set(lgroup[1])
+                    groups_[group[0]] = lgroup
+                    '''for tclass in group[1]:
                         if direction   == 1:
                             gpcTmp[(tclass, 'INPUT')].add(g_id)
                         elif direction == 2:
                             gpcTmp[(tclass, 'OUTPUT')].add(g_id)
                         elif direction in (3,4):
                             gpcTmp[(tclass, 'INPUT')].add(g_id)
-                            gpcTmp[(tclass, 'OUTPUT')].add(g_id)
-
+                            gpcTmp[(tclass, 'OUTPUT')].add(g_id)'''
+        
                 groupsCache = groups_
                 class_groupsCache = gpcTmp
                 del gpcTmp
                 
-                tg_ = {}
+                tg_ = defaultdict(list)
                 for tarif_id, groups__ in tarif_groups:
-                    tg_[tarif_id] = set(groups__)
+                    for grp in set(groups__):
+                        tg_[tarif_id].append(groupsCache.get(grp, [0,[]]))
                     
                 tarif_groupsCache = tg_
                 

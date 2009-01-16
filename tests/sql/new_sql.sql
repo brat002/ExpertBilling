@@ -155,7 +155,7 @@ EXCEPTION WHEN unique_violation THEN
         IF j = 0 THEN
 	    old_classes_ := array_append(old_classes_, nclass);
 	    old_classbytes_ := array_append(old_classbytes_, nbytes);
-	    IF classbytes[i] > max_ THEN
+	    IF nbytes > max_ THEN
 	        max_ := nbytes;
 	        maxclass_ := nclass;
 	    END IF;
