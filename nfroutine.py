@@ -843,13 +843,13 @@ class NfAsyncUDPServer(asyncore.dispatcher):
         self.close()
     
     def handle_close(self):
-        self.close()
-        
-
+        self.close()     
 
 
 def stop_async():
     del NfAsyncUDPServer
+    
+    
 def main():
     global curAT_date
     '''try:

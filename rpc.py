@@ -48,7 +48,12 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 if val[1] == 'rpc':
                     serv = val[0]
                     break
-
+                
+            if len(pool._connections) == maxUsers:
+                logger.error("rpc max_users depleted: %s", repr(ex))
+                conn.utoken = ''
+                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
+            
             user, mdpass = hash.split(':', 1)
             try:
                 obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s';" % user)
@@ -181,9 +186,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         Pyro.config.PYRO_DETAILED_TRACEBACK = 1
         Pyro.config.PYRO_PRINT_REMOTE_TRACEBACK = 1
-
         Pyro.core.initServer()
         daemon=Pyro.core.Daemon()
+        daemon.setTimeout(45)
         #daemon.adapter.setIdentification = setIdentification
         daemon.setNewConnectionValidator(hostCheckingValidator())
         daemon.connect(self,"rpc")
@@ -695,6 +700,7 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
     logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
              
+    maxUsers = int(config.get("rpc", "max_users"))
     logger.lprint('Ebs RPC start')
     pool = PooledDB(
         mincached=1,
