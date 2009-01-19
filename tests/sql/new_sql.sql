@@ -18,7 +18,7 @@ CREATE TABLE billservice_group
   CONSTRAINT billservice_group_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_group OWNER TO mikrobill;
+ALTER TABLE billservice_group OWNER TO ebs;
 
 CREATE TABLE billservice_group_trafficclass
 (
