@@ -121,6 +121,10 @@ td.first_row  {
     margin-right:60px;
 }
 
+.registration button.button {
+    float:right;
+    margin-right:60px;
+}
 
 .enter_table th {
     font-size:12px;
