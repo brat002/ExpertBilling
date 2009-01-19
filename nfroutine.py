@@ -448,7 +448,7 @@ class NetFlowRoutine(Thread):
                     account_id = flow[20]
                     nas_id = flow[11]
                     
-                    has_groups = flow[27]
+                    has_groups = (len(flow) > 27) and flow[27]
                     #check for groups
                     '''Статистика по группам: 
                     аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
