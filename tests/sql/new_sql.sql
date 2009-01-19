@@ -35,7 +35,7 @@ CREATE TABLE billservice_group_trafficclass
   CONSTRAINT billservice_group_trafficclass_group_id_key UNIQUE (group_id, trafficclass_id)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_group_trafficclass OWNER TO mikrobill;
+ALTER TABLE billservice_group_trafficclass OWNER TO ebs;
 
 CREATE TABLE billservice_groupstat
 (
@@ -57,7 +57,7 @@ CREATE TABLE billservice_groupstat
   CONSTRAINT billservice_groupstat_group_id_key UNIQUE (group_id, account_id, datetime)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_groupstat OWNER TO mikrobill;
+ALTER TABLE billservice_groupstat OWNER TO ebs;
 
 CREATE INDEX billservice_groupstat_account_id
   ON billservice_groupstat
@@ -93,7 +93,7 @@ CREATE TABLE billservice_globalstat
   CONSTRAINT billservice_globalstat_acc_dt_uq_key UNIQUE (account_id, datetime)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_globalstat OWNER TO mikrobill;
+ALTER TABLE billservice_globalstat OWNER TO ebs;
 
 CREATE INDEX billservice_globalstat_acc_dt_id
   ON billservice_globalstat
@@ -122,7 +122,7 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-ALTER FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer) OWNER TO mikrobill;
+ALTER FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer) OWNER TO ebs;
 
 CREATE OR REPLACE FUNCTION group_type2_fn(group_id_ integer, account_id_ integer, octets_ integer, datetime_ timestamp without time zone, classes_ integer[], classbytes_ integer[], max_class_ integer)
   RETURNS void AS
@@ -172,7 +172,7 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-ALTER FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer) OWNER TO mikrobill;
+ALTER FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer) OWNER TO ebs;
 
 CREATE OR REPLACE FUNCTION global_stat_fn(account_id_ integer, bytes_in_ bigint, bytes_out_ bigint, datetime_ timestamp without time zone, nas_id_ integer, classes_ integer[], classbytes_ bigint[])
   RETURNS void AS
@@ -215,4 +215,4 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-ALTER FUNCTION global_stat_fn(integer, bigint, bigint, timestamp without time zone, integer, integer[], bigint[]) OWNER TO mikrobill;
+ALTER FUNCTION global_stat_fn(integer, bigint, bigint, timestamp without time zone, integer, integer[], bigint[]) OWNER TO ebs;

@@ -1402,6 +1402,7 @@ class GroupsDialog(QtGui.QDialog):
     def accept(self):
         self.selected_group = self.getSelectedId()
         QtGui.QDialog.accept(self)
+        
 class GroupEditDialog(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(GroupEditDialog, self).__init__()

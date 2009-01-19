@@ -135,7 +135,7 @@ class AddAccountTarif(QtGui.QDialog):
         for tarif in tarifs:
             self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
         now=datetime.datetime.now()
-        print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
+        #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
             self.tarif_edit.setCurrentIndex(self.tarif_edit.findData(self.model.tarif_id))
 
@@ -3467,13 +3467,18 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def delTarif(self):
         tarif_id = self.getTarifId()
         if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            print 1
             accounts=self.connection.sql("""SELECT account.id 
                     FROM billservice_account as account
                     JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
-                    WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC""" % tarif_id)
+                    WHERE accounttarif.tarif_id=%d ORDER BY account.username ASC;""" % tarif_id)
+            print 2
+            self.connection.commit()
             if len(accounts)>0:
+
                 tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
                 tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
+
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
                 if child.exec_()==1:
@@ -3496,16 +3501,20 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                         self.connection.rollback()
                         return
             else:
+
                 try:
                     #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
                     self.connection.iddelete(tarif_id, "billservice_tariff")
                     self.connection.commit()
+
                 except Exception, e:
                     print e
+
                     self.connection.rollback()
                     return
             #self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(0))
             self.refreshTree()
+
             try:
                 setFirstActive(self.tarif_treeWidget)
             except Exception, ex:

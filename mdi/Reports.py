@@ -57,7 +57,7 @@ _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"),
 class TransactionsReportEbs(ebsTableWindow):
     def __init__(self, connection ,account=None):
         self.account = account
-        columns=[u'#', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
+        columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
@@ -142,8 +142,13 @@ class TransactionsReportEbs(ebsTableWindow):
     def refresh(self):
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
         self.connection.commit()
+        self.user_edit.addItem(u"-Все клиенты-")
+        self.user_edit.setItemData(0, QtCore.QVariant(0))
+        i=1
         for account in accounts:
             self.user_edit.addItem(account.username)
+            self.user_edit.setItemData(i, QtCore.QVariant(account.id))
+            i+=1
         
         if self.account:
             self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
@@ -151,10 +156,12 @@ class TransactionsReportEbs(ebsTableWindow):
 
 
     def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=""
-            
-        headerItem = QtGui.QTableWidgetItem()
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
+
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
                 
@@ -165,17 +172,25 @@ class TransactionsReportEbs(ebsTableWindow):
         start_date = self.date_start.dateTime().toPyDateTime()
         end_date = self.date_end.dateTime().toPyDateTime()
         
-        if self.system_transactions_checkbox.checkState()==2:
-            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
+        account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
+        if self.system_transactions_checkbox.checkState()==2 and account_id:
+            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
+                                            FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
-                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
-        else:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name
+                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%s ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
+        elif account_id:
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
             FROM billservice_transaction as transaction
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
+            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
+        else:
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
+            FROM billservice_transaction as transaction
+            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
+            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' ORDER BY transaction.created DESC""" %  (start_date, end_date))                        
         self.connection.commit()
         self.tableWidget.setRowCount(len(transactions))
         i=0
@@ -184,12 +199,13 @@ class TransactionsReportEbs(ebsTableWindow):
         write_off = 0
         for transaction in transactions:
             self.addrow(transaction.id, i, 0)
-            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 1)
-            self.addrow(transaction.bill, i, 2)
-            self.addrow(transaction.transaction_type_name, i, 3)
-            self.addrow(transaction.tariff_name, i, 4)
-            self.addrow(transaction.summ, i, 5)
-            self.addrow(transaction.description, i, 6)
+            self.addrow(transaction.username, i, 1)
+            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 2)
+            self.addrow(transaction.bill, i, 3)
+            self.addrow(transaction.transaction_type_name, i, 4)
+            self.addrow(transaction.tariff_name, i, 5)
+            self.addrow(transaction.summ, i, 6)
+            self.addrow(transaction.description, i, 7)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
                 
@@ -199,7 +215,7 @@ class TransactionsReportEbs(ebsTableWindow):
             settings.setValue("trans_date_end", QtCore.QVariant(self.date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
-        self.tableWidget.setSortingEnabled(True)
+        #self.tableWidget.setSortingEnabled(True)
         
     def delete_transaction(self):
         ids = []
