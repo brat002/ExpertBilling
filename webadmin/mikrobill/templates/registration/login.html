@@ -14,7 +14,10 @@
 <tr><td><label for="id_password">{{ form.password.label }}</label></td><td>{{ form.password }}</td></tr>
 </table>
 
-<input type="image" src="{{ MEDIA_URL }}img/design/ok_button.gif" class="button"/>
+<button type="submit" class="button">OK</button>
+<!--
+<input type="submit" value="OK" class="button"/>
+-->
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
 </div>
