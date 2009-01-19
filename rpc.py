@@ -49,10 +49,10 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                     serv = val[0]
                     break
                 
-            if len(pool._connections) == maxUsers:
+            '''if len(pool._connections) == maxUsers:
                 logger.error("rpc max_users depleted: %s", repr(ex))
                 conn.utoken = ''
-                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
+                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)'''
             
             user, mdpass = hash.split(':', 1)
             try:
