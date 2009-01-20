@@ -158,12 +158,15 @@ def nfPacketHandle(data, addrport, flowCache):
                 #acc_id, acctf_id, tf_id = (acc_acct_tf)
                 flow.append(acc_acct_tf)
                 if checkClasses:
-                    for nclass, nnodes in nodesCache:                    
+                    break_outer = False
+                    for nclass, nnodes in nodesCache:                        
                         for nnode in nnodes:
                             if (((flow[0] & nnode[1]) == nnode[0]) and ((flow[2] & nnode[3]) == nnode[2]) and ((flow[3] == nnode[4]) or (not nnode[4])) and ((flow[9] == nnode[5]) or (not nnode[5])) and ((flow[10] == nnode[6]) or (not nnode[6])) and ((flow[13] == nnode[7]) or (not nnode[7]))):
                                 flowCache.addflow5(flow)
-                                return
-                    return
+                                break_outer = True
+                                break
+                        if break_outer: break
+                    continue
                 
                 flowCache.addflow5(flow)         
                 
