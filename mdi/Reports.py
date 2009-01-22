@@ -1631,7 +1631,6 @@ class StatReport(QtGui.QMainWindow):
         #print self.centralWidget().logicalDpiX()
         document = self.centralWidget()
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        #printer.setResolution(120)
         printer.setPageSize(QtGui.QPrinter.A4)
         dialog = QtGui.QPrintDialog(printer, self)
         dialog.setWindowTitle(self.tr("Print Document"))

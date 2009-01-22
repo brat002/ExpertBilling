@@ -874,11 +874,12 @@ class ConnectionWaiting(QtGui.QDialog):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Подключаемся", None, QtGui.QApplication.UnicodeUTF8))
         
 class CardPreviewDialog(QtGui.QDialog):
-    def __init__(self, url):
+    def __init__(self, url, printer=None):
         super(CardPreviewDialog, self).__init__()
         self.setObjectName("CardPreviewDialog")
         #self.filelist=[]
         self.url = url
+        self.printer = printer
         self.setObjectName("Dialog")
         self.resize(472, 636)
         self.verticalLayout = QtGui.QVBoxLayout(self)
@@ -919,17 +920,17 @@ class CardPreviewDialog(QtGui.QDialog):
         #self.webView.settings().setShouldPrintBackground(True)
         
     def printCard(self):
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        #printer.setResolution(120)
-        printer.setPageSize(QtGui.QPrinter.A4)
-        dialog = QtGui.QPrintDialog(printer, self)
-        dialog.setWindowTitle(self.tr("Print Document"))
-        if dialog.exec_() != QtGui.QDialog.Accepted:
-            return
-        printer.setFullPage(True)
-        #printer.setResolution(120)
-        #printer.setOutputFileName("lol.pdf")
-        #print printer.resolution()
+        if not self.printer:
+            printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+            printer.setPageSize(QtGui.QPrinter.A4)
+            dialog = QtGui.QPrintDialog(printer, self)
+            dialog.setWindowTitle(self.tr("Print Document"))
+            if dialog.exec_() != QtGui.QDialog.Accepted:
+                return
+            printer.setFullPage(True)
+        else:
+            printer = self.printer
+
         self.webView.print_(printer)
 
 class tableImageWidget(QtGui.QWidget):

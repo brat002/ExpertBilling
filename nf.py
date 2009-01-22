@@ -317,34 +317,34 @@ class FlowDequeThread(Thread):
         j = 0
         while True:
             if suicideCondition[self.tname]: break
-            fqueueLock.acquire()
             try:
-                #get keylist and time
-                keylist, stime = flowQueue.popleft()
-                fqueueLock.release()
-            except Exception, ex:
-                fqueueLock.release()
-                time.sleep(5)
-                continue
-            
-            
-            #if aggregation time was still not reached -> sleep
-            wtime = time.time() - aggrTime - stime
-            #logger.info('fdqThread wtime: %s', wtime)
-            if wtime < 0:
-                time.sleep(abs(wtime))
-            
-            #TO-DO: переделать на execute_many
-            fcnt = 0
-            flst = []
-            for key in keylist:
-                dcacheLock.acquire()
-                i = 1
+                fqueueLock.acquire()
                 try:
-                    flow = dcache.pop(key)
+                    #get keylist and time
+                    keylist, stime = flowQueue.popleft()
+                    fqueueLock.release()
+                except Exception, ex:
+                    fqueueLock.release()
+                    time.sleep(5)
+                    continue
+                
+                
+                #if aggregation time was still not reached -> sleep
+                wtime = time.time() - aggrTime - stime
+                #logger.info('fdqThread wtime: %s', wtime)
+                if wtime < 0:
+                    time.sleep(abs(wtime))
+                
+                #TO-DO: переделать на execute_many
+                fcnt = 0
+                flst = []
+                for key in keylist:
+                    dcacheLock.acquire()
+                    flow = dcache.pop(key, None)
                     dcacheLock.release()
-                    i = 0
-                    
+                    if not flow:
+                        continue
+                        
                     #get id's
                     acc_id, acctf_id, tf_id = flow.pop()
                     flow.append(acc_id)
@@ -374,21 +374,16 @@ class FlowDequeThread(Thread):
                         #found passthrough=false
                         if not passthr:
                             self.add_classes_groups(flow, classLst, nnode, acctf_id, has_groups, tarifGroups)
-                            break
-                   
+                            break                   
                     #if traversed all the nodes
                     else:
                         if classLst:
                             self.add_classes_groups(flow, classLst, node, acctf_id, has_groups)
-                        else: 
-                            logger.lprint("continued")
-                            continue
+                        else: continue
                         
                     #construct a list
                     flst.append(tuple(flow))
-                    fcnt += 1
-                    
-                    ##TODO: add time check!!!
+                    fcnt += 1                    
                     #append to databaseQueue
                     if fcnt == 37:
                         dbLock.acquire()
@@ -397,17 +392,15 @@ class FlowDequeThread(Thread):
                         flst = []
                         fcnt = 0
                         #ftime = time.time()
-                except Exception, ex:
+                if len(flst) > 0:
+                    dbLock.acquire()
+                    databaseQueue.append(flst)
+                    dbLock.release()
+                    flst = []
+                del keylist
+                gc.collect()
+            except Exception, ex:
                     logger.error("fdqThread exception: %s", repr(ex))
-                    #del flow
-                    if i: dcacheLock.release()
-            if len(flst) > 0:
-                dbLock.acquire()
-                databaseQueue.append(flst)
-                dbLock.release()
-                flst = []
-            del keylist
-            gc.collect()
             
  
 

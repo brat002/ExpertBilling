@@ -1,5 +1,6 @@
 #! /bin/sh
 
+#CKECK WHETHER PROCESS IS ALIVE - kill -0 !!!
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/opt/ebs/data/core
 
