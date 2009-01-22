@@ -4,6 +4,7 @@
 import gc
 import glob
 import random
+import signal
 import os, sys
 import marshal
 import asyncore
@@ -14,23 +15,16 @@ import traceback
 import ConfigParser
 import socket, select, struct, datetime, time
 
-
 from threading import Thread
 from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
-
+from utilites import graceful_loader, graceful_saver
 
 try:    import mx.DateTime
 except: pass
-#print 'cannot import mx'
 
-config = ConfigParser.ConfigParser()
-
-#binary strings lengthes
-flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
-headerLENGTH = struct.calcsize("!HHIIIIBBH")
 
 class reception_server(asyncore.dispatcher):
     '''
@@ -249,11 +243,13 @@ class nfDequeThread(Thread):
     that gets flows and caches them.
     '''
     def __init__(self):
+        self.tname = self.__class__.__name__
         Thread.__init__(self)
         
     def run(self):
         global nfFlowCache
         while True:
+            if suicideCondition[self.tname]: break
             #TODO: add locks if deadlocking issues arise
             try:
                 data, addrport = nfQueue.popleft()
@@ -271,6 +267,7 @@ class FlowDequeThread(Thread):
     constructs small lists of flows and appends them to 'databaseQueue'.
     '''
     def __init__(self):
+        self.tname = self.__class__.__name__
         Thread.__init__(self)
         
     
@@ -319,6 +316,7 @@ class FlowDequeThread(Thread):
     def run(self):
         j = 0
         while True:
+            if suicideCondition[self.tname]: break
             fqueueLock.acquire()
             try:
                 #get keylist and time
@@ -419,7 +417,8 @@ class NfUDPSenderThread(Thread):
     Thread that gets packet lists from databaseQueue, marshals them and sends to Core module
     If there are errors, flow data are written to a file. When connection is established again, NfFileReadThread to clean up that files and resend data is started.
     '''
-    def __init__(self):        
+    def __init__(self): 
+        self.tname = self.__class__.__name__
         self.outbuf = []
         self.hpath = ''.join((dumpDir,'/','nf_'))
         Thread.__init__(self)
@@ -433,6 +432,9 @@ class NfUDPSenderThread(Thread):
         dfile = None
         fname = None
         while True:
+            if suicideCondition[self.tname]:
+                if errflag: dfile.close(); fnameQueue.append(fname)
+                break
             #get a bunch of packets
             dbLock.acquire()
             try:
@@ -509,6 +511,7 @@ class NfFileReadThread(Thread):
     '''
     def __init__(self, tsleep=0, tcount=0):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
         self.hpath  = ''.join((dumpDir,'/','nf_'))
         self.tsleep = tsleep
         self.tcount = tcount
@@ -521,6 +524,7 @@ class NfFileReadThread(Thread):
         nfsock.settimeout(sockTimeout)
         dfile = None
         while True:
+            if suicideCondition[self.tname]: break
             #get a file name from a queue
             fnameLock.acquire()
             try:
@@ -616,6 +620,7 @@ class ServiceThread(Thread):
     '''
     def __init__(self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
         
     def run(self):
         #TODO: перенести обновления кешей нас, ипн, впн, а также проверку на переполнение словаря
@@ -625,6 +630,7 @@ class ServiceThread(Thread):
         global nodesCache, groupsCache
         global class_groupsCache, tarif_groupsCache
         while True:
+            if suicideCondition[self.tname]: break
             cur = connection.cursor()
             a = time.clock()
             try:
@@ -744,23 +750,46 @@ class RecoveryThread(Thread):
     def __init__(self):
         Thread.__init__(self)
     def run(self):
-        global dumpDir
-        global fnameQueue
-        fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp')))
-        if fllist:
-            for fl in fllist:
-                fnameQueue.appendleft(fl)
-                
-            #nfFileThread = NfFileReadThread()
-            #nfFileThread.start()
+        global dumpDir, fnameQueue
+        try:
+            fllist = glob.glob(''.join((dumpDir, '/', 'nf_*.dmp')))
+            if fllist:
+                for fl in fllist:
+                    fnameQueue.appendleft(fl)
+        except Exception, ex:
+            logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
+
+def SIGUSR1_handler(signum, frame):
+    graceful_save()
+
+def graceful_save():
+    global cacheThr, threads, suicideCondition
+    asyncore.close_all()
+    suicideCondition[cacheThr.tname] = True
+    for thr in threads:
+            suicideCondition[thr.tname] = True
+    time.sleep(10)
+           
+    graceful_saver([['dcache','nfFlowCache'], ['flowQueue'], ['databaseQueue']],
+                   globals(), 'nf_', saveDir)
+    
+    pool.close()
+    time.sleep(2)
+    sys.exit()
+        
+def graceful_recover():
+    graceful_loader(['dcache','nfFlowCache','flowQueue','databaseQueue'],
+                    globals(), 'nf_', saveDir)
+    
+
             
 def main ():        
-    global packetCount
-    global nfFlowCache
+    global packetCount, nfFlowCache, threads, cacheThr
     global recover, cachesRead
     packetCount = 0
     nfFlowCache = FlowCache()
     
+    graceful_recover()
     #recover leftover dumps?
     if recover:
         recThr = RecoveryThread()
@@ -777,29 +806,31 @@ def main ():
         threads[-1].setName(thName)
 
     #-----
-    svcThread = ServiceThread()
-    svcThread.setName('NfServiceThread')
-    svcThread.start()
+    cacheThr = ServiceThread()
+    suicideCondition[cacheThr.__class__.__name__] = False
+    cacheThr.setName('NfCacheThread')
+    cacheThr.start()
     
     #sleep until all caches are read
     while not cachesRead:
         time.sleep(0.2)
-        if not svcThread.isAlive:
+        if not cacheThr.isAlive:
             sys.exit()
             
-    for th in threads:	
+    for th in threads:
+        suicideCondition[th.__class__.__name__] = False
         th.start()
         time.sleep(0.5)
-
+        
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1 - windows!')    
     reception_server(config.get("nf", "host"), int(config.get("nf", "port")))            
     while 1: 
         asyncore.poll(0.010)
-        
-    return
 
 
 
-import socket
 if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline', 'iserver']:
     import sys
     print "License key error. Exit from application."
@@ -808,19 +839,20 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
 if __name__=='__main__':
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
+        
+    config = ConfigParser.ConfigParser()
+
+    #binary strings lengthes
+    flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
+    headerLENGTH = struct.calcsize("!HHIIIIBBH")
     
     config.read("ebs_config.ini")
 
     pool = PooledDB(
-        mincached=2,
-        maxcached=9,
-        blocking=True,
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password"))
-    )
+        mincached=1,  maxcached=9,
+        blocking=True,creator=psycopg2,
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                               config.get("db", "host"), config.get("db", "password")))
     
     logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
     logger.lprint('Nf start')
@@ -831,6 +863,7 @@ if __name__=='__main__':
         coreHost = config.get("nfroutine_nf_inet", "host")
         corePort = int(config.get("nfroutine_nf_inet", "port"))
         coreAddr = (coreHost, corePort)
+        
     elif config.get("nfroutine_nf", "usock") == '1':
         coreHost = config.get("nfroutine_nf_unix", "host")
         corePort = 0
@@ -841,6 +874,7 @@ if __name__=='__main__':
     sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
     recover    = (config.get("nfroutine_nf", "recover") == '1')
     recoverAtt = (config.get("nfroutine_nf", "recoverAttempted") == '1')
+    saveDir = config.get("nf", "save_dir")
     
     checkClasses = (config.get("nf", "checkclasses") == '1')
     #get a dump' directrory string and check whethet it's writable
@@ -852,8 +886,9 @@ if __name__=='__main__':
         dfile.close()
         os.remove(tfname)
     except Exception, ex:
-        raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: operations with filename like '" +tfname+ "' were executed with errors!")
+        raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
 
+    suicideCondition = {}
     cachesRead = False
     #aggregation cache
     dcache   = {}

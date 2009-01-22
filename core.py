@@ -46,11 +46,7 @@ def comparator(d, s):
     return d
 
 class check_vpn_access(Thread):
-    def __init__ (self):
-        #self.dict=dict
-        #self.timeout=timeout
-        
-          
+    def __init__ (self):          
         Thread.__init__(self)
 
     def check_period(self, rows):
@@ -147,7 +143,7 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
         """
-        global tp_asInPeriod
+        global tp_asInPeriod, suicideCondition
         global curNasCache,curNas_ipIdx, curAT_acIdx, curDefSpCache, curNewSpCache
         global curAT_date, curAT_lock
         cacheAT = None
@@ -156,6 +152,7 @@ class check_vpn_access(Thread):
         connection._con._con.set_client_encoding('UTF8')
         while True:            
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -344,10 +341,11 @@ class periodical_service_bill(Thread):
         connection._con._con.set_client_encoding('UTF8')
         global curAT_date,curAT_lock
         global curAT_tfIdx, curPerTarifCache, curPersSetpCache
-        global fMem
+        global fMem, suicideCondition
         dateAT = datetime.datetime(2000, 1, 1)
         while True:
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -600,10 +598,11 @@ class TimeAccessBill(Thread):
         connection._con._con.set_client_encoding('UTF8')
         global curAT_date,curAT_lock
         global curAT_acctIdx, curTimeAccNCache, curTimePerNCache
-        global fMem
+        global fMem, suicideCondition
         dateAT = datetime.datetime(2000, 1, 1)
         while True:
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -763,6 +762,7 @@ class limit_checker(Thread):
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
+        global suicideCondition
         global curATCache, curAT_tfIdx
         global curAT_date, curAT_lock
         global curSPCache, curTLimitCache       
@@ -771,6 +771,7 @@ class limit_checker(Thread):
         
         while True:            
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -975,11 +976,12 @@ class settlement_period_service_dog(Thread):
         connection._con._con.set_client_encoding('UTF8')
         global curATCache, curShedLogCache, curSPCache, curTimeAccSrvCache, curTTSCache
         global curOneTimeSrvCache, curOTSHistCache
-        global fMem
+        global fMem, suicideCondition
         global curAT_date, curAT_lock
         dateAT = datetime.datetime(2000, 1, 1)
         while True:
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -1315,7 +1317,7 @@ class ipn_service(Thread):
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
-        global tp_asInPeriod
+        global tp_asInPeriod, suicideCondition
         global curNasCache,curATCache
         global curAccParCache,curDefSpCache,curNewSpCache
         global curAT_date,curAT_lock
@@ -1323,6 +1325,7 @@ class ipn_service(Thread):
         dateAT = datetime.datetime(2000, 1, 1)
         while True:             
             try:
+                if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
@@ -1574,8 +1577,9 @@ class AccountServiceThread(Thread):
         global tp_asInPeriod
         i_fMem = 0
         while True:
+            if suicideCondition[self.__class__.__name__]: break
             a = time.clock()
-            try:
+            try:                
                 cur = connection.cursor()
                 ptime =  time.time()
                 ptime = ptime - (ptime % 20)
@@ -1783,7 +1787,6 @@ class AccountServiceThread(Thread):
                 curAT_lock.release()
                 #del accts, tmpacIdx, tmptfIdx, tmpspC, tmpttsC, tmpnasC, tmpdsC, tmpnsC, tmpDate
                 #del ttssTp, spsTp, nasTp, defspTmp, nspTmp
-                
                 #every cacheRenewalTime*3
                 i_fMem += 1
                 if i_fMem == 3:
@@ -1809,12 +1812,24 @@ class AccountServiceThread(Thread):
 
 
     
+
+def SIGUSR1_handler(signum, frame):
+    graceful_save()
+    
+def graceful_save():
+    global cacheThr, threads, suicideCondition
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
+    time.sleep(20)
+    pool.close()
+    time.sleep(2)
+    sys.exit()
+    
 def main():
-    global curAT_date
+    global curAT_date, suicideCondition, threads, cacheThr
     
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
-    
     threads = []
     thrnames = [(check_vpn_access, 'Core VPN Thread'), (periodical_service_bill, 'Core Period. Bill Thread'), \
                 (TimeAccessBill, 'Core Time Access Thread'), (limit_checker, 'Core Limit Thread'),\
@@ -1825,6 +1840,7 @@ def main():
         threads[-1].setName(thName)
     
     cacheThr = AccountServiceThread()
+    suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.setName('Core AccountServiceThread')
     cacheThr.start()
     
@@ -1833,10 +1849,18 @@ def main():
         if not cacheThr.isAlive:
             sys.exit()
         
-    #i= range(len(threads))
     for th in threads:	
+        suicideCondition[th.__class__.__name__] = False
         th.start()
-        time.sleep(0.5)
+        time.sleep(0.2)
+        
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1 - windows!')
+    
+    #main thread should not exit!
+    while True:
+        time.sleep(300)
         
 
 
@@ -1859,20 +1883,17 @@ if __name__ == "__main__":
     
     logger.lprint('core start')
     pool = PooledDB(
-        mincached=7,
-        maxcached=20,
-        blocking=True,
-        #maxusage=20, 
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password")))
+        mincached=7,  maxcached=20,
+        blocking=True,creator=psycopg2,
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
+                                                               config.get("db", "host"),config.get("db", "password")))
+    
     #last cache renewal date
     curAT_date  = None
     #lock for cache operations
     curAT_lock  = Lock()
     
+    suicideCondition = {}
     #function that returns number of allowed users
     #create allowedUsers
     allowedUsers = setAllowedUsers(pool.connection(), "license.lic")

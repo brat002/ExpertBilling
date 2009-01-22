@@ -1,26 +1,13 @@
 !rewrite nf 
-  10:13:49 PM yolta_ku: use profilers
   10:26:11 PM yolta_ku: locale module
   10:27:18 PM yolta_ku: gettext module
-  [10:29:20 PM yolta_ku: logging module!]
-  [11:09:33 PM yolta_ku: logging - syslog wrapper]
   12:03:15 AM yolta_ku: di = sorted(d.iteritems(), key=itemgetter(0))
   12:18:02 AM yolta_ku: qsettings - tempdelete file
-  [12:18:11 AM yolta_ku: global TODO] - =)
   12:35:29 AM yolta_ku: encode report  data into hash and seek recent!
-
-store in a list and use weakref threads for payment threads in NetFlowRoutine
-
 save queues and pending data in core.py if database is down
 
 gracefully handle queues (deplete or save) in core.py on restart/shutdown
 (maybe on restart drop everything?)
-
--- [test temp_db versus python dictionary for memoizing] - closed - bad
-
-#30min - hour aggregation for users
-
-  8:29:49 PM yolta_ku: вынести рпц сервер
   9:17:29 PM yolta_ku: log thread run time
   12:55:24 AM yolta_ku: refactor code!
   12:55:52 AM yolta_ku: create cache creator!
@@ -36,21 +23,10 @@ class Cacher(object):
 store in file, calc start/end date, calc length - process
 for paged reports - also! - select 2-4 pages!
 
-make dynamic config reread! DO IT ON SIGNALS!
-
-global group - type 0 - array - [class: - Input/Optput: - octets]
-group direction flags
-
-GROUP ZERO:
-  0.0.0.0/0 or
-  biggest subnet
-
-group_fin_stat
-group_rep_stat
-id-group_id-account_id-acct_id_nas_id-input-output-octets
-
-
-GLOBAL GLOBAL GLOBAL AGGREGATION DICTIONARIES!!!!!!!!!
-
 SELECT * from temp_classinf where ARRAY[5] <@ (clinf).classes;
 SELECT (clinf).classes, (clinf).octets from temp_classinf;
+
+
+TUNNEL PYRO THROUGH SSH! ?? for every client? hmmmm
+
+Pyro.core.Daemon(host='127.0.0.1')

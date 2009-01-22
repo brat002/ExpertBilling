@@ -4,6 +4,7 @@ import gc
 import os
 import sys
 import time
+import signal
 import socket
 import packet
 import asyncore
@@ -37,10 +38,6 @@ gigaword = 4294967296
 account_timeaccess_cache={}
 account_timeaccess_cache_count=0
 
-def log(message):
-    global debug_mode
-    if debug_mode>0:
-        print message
         
 def show_packet(packetobject):
     b=''
@@ -133,7 +130,6 @@ def get_accesstype(packetobject):
     
 class AsyncAuthServ(AsyncUDPServer):
     def __init__(self, host, port):
-        global radOutAuthQueue
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
         self.dateCache = datetime.datetime(2000, 1, 1)       
@@ -143,28 +139,26 @@ class AsyncAuthServ(AsyncUDPServer):
         global curNasCache, curATCache_userIdx, curATCache_macIdx        
         global tp_asInPeriod, curDefSpCache, curNewSpCache
         
-        try:       
-            try:
-                #if caches were renewed, renew local copies
-                if curCachesDate > self.dateCache:
-                    curCachesLock.acquire()
-                    #account-tarif cach indexed by username
-                    self.cacheAT = copy(curATCache_userIdx)
-                    #account-tarif cach indexed by ipn_mac_address
-                    self.cacheAT_mac = copy(curATCache_macIdx)
-                    #nas cache, indexed by ipaddress
-                    self.cacheNas = copy(curNasCache)  
-                    #default speed
-                    self.cacheDefSpeed = copy(curDefSpCache)
-                    #new speed
-                    self.cacheNewSpeed = copy(curNewSpCache)
-                    #in_periods cache
-                    self.in_periods = copy(tp_asInPeriod)
-                    #date of renewal
-                    self.dateCache = deepcopy(curCachesDate)
-                    curCachesLock.release()
-            except Exception, ex:
-                logger.error("Auth server cachecopy exception: %s", repr(ex))
+        try:     
+            #if caches were renewed, renew local copies
+            if curCachesDate > self.dateCache:
+                curCachesLock.acquire()
+                #account-tarif cach indexed by username
+                self.cacheAT = copy(curATCache_userIdx)
+                #account-tarif cach indexed by ipn_mac_address
+                self.cacheAT_mac = copy(curATCache_macIdx)
+                #nas cache, indexed by ipaddress
+                self.cacheNas = copy(curNasCache)  
+                #default speed
+                self.cacheDefSpeed = copy(curDefSpCache)
+                #new speed
+                self.cacheNewSpeed = copy(curNewSpCache)
+                #in_periods cache
+                self.in_periods = copy(tp_asInPeriod)
+                #date of renewal
+                self.dateCache = deepcopy(curCachesDate)
+                curCachesLock.release()
+
                         
             t = clock()
             returndata=''
@@ -237,20 +231,18 @@ class AsyncAcctServ(AsyncUDPServer):
         global curCachesDate, curCachesLock, fMem
         global curNasCache, curATCache_userIdx
         
-        try:       
-            try:
-                #if caches were renewed, renew local copies
-                if curCachesDate > self.dateCache:
-                    curCachesLock.acquire()
-                    #account-tarif cach indexed by username
-                    self.cacheAT = copy(curATCache_userIdx)
-                    #nas cache
-                    self.cacheNas = copy(curNasCache)                        
-                    #date of renewal
-                    self.dateCache = deepcopy(curCachesDate)
-                    curCachesLock.release()
-            except Exception, ex:
-                logger.error("AcctRoutine cachecopy exception: %s", repr(ex))
+        try:  
+            if curCachesDate > self.dateCache:
+                #if caches were renewed, renew local copies                
+                curCachesLock.acquire()
+                #account-tarif cach indexed by username
+                self.cacheAT = copy(curATCache_userIdx)
+                #nas cache
+                self.cacheNas = copy(curNasCache)                        
+                #date of renewal
+                self.dateCache = deepcopy(curCachesDate)
+                curCachesLock.release()
+
                         
             t = clock()
             assert len(data)<=4096
@@ -601,23 +593,19 @@ class HandleSAcct(HandleSBase):
         return self.replypacket
     
     def handle(self):
-
         #self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress=%s;""", (self.nasip,))
         row = self.nasCache.get(self.nasip)
         #print 1
         if row==None:
             return None
         
-        n_secret = row[1]
-        
-        self.replypacket.secret=str(n_secret)
-        
+        n_secret = row[1]        
+        self.replypacket.secret=str(n_secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         """
         Раз в десять запросов обновлять информацию о аккаунте
         """
         userName = self.packetobject['User-Name'][0]
-        #log("Update Timeaccess Cache for %s" % userName)
         
         '''self.cur.execute(
         """
@@ -626,9 +614,7 @@ class HandleSAcct(HandleSBase):
         WHERE account.username=%s;
         """, (self.packetobject['User-Name'][0],)
         )'''
-        
-        #row=self.cur.fetchone()
-        
+
         acct_row = self.acctCache_unIdx.get(userName)
 
         if acct_row==None:
@@ -669,7 +655,6 @@ class HandleSAcct(HandleSBase):
                                        self.packetobject['NAS-IP-Address'][0], 
                                        self.access_type, False, False,))
             if allow_write:
-
                 self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
                                            caller_id, called_id, framed_ip_address, nas_id, 
                                            framed_protocol, session_status)
@@ -721,8 +706,7 @@ class HandleSAcct(HandleSBase):
                              """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],))
 
         self.cur.connection.commit()
-        self.cur.close()
-        
+        self.cur.close()        
         return self.replypacket
 
 
@@ -765,6 +749,7 @@ class CacheRoutine(Thread):
         
         i_fMem = 0
         while True:
+            if suicideCondition[self.__class__.__name__]: break
             a = time.clock()
             try:
                 cur = connection.cursor()
@@ -913,29 +898,43 @@ def setpriority(pid=None,priority=1):
     handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
     win32process.SetPriorityClass(handle, priorityclasses[priority])
 
-def main():
 
-    global curCachesDate
-    
-    caches = CacheRoutine()
-    caches.setName("CacheRoutine")
-    caches.start()
-    
+def SIGUSR1_handler(signum, frame):
+    graceful_save()
+
+def graceful_save():
+    global  cacheThr, suicideCondition
+    asyncore.close_all()
+    suicideCondition[cacheThr.__class__.__name__] = True
+    time.sleep(5)
+    pool.close()
+    sys.exit()
+
+        
+
+def main():
+    global curCachesDate, cacheThr, suicideCondition
+    cacheThr = CacheRoutine()
+    suicideCondition[cacheThr.__class__.__name__] = False
+    cacheThr.setName("CacheRoutine")
+    cacheThr.start()    
     
     while curCachesDate == None:
         time.sleep(0.2)
+        if not cacheThr.isAlive:
+            sys.exit()
     
     server_auth = AsyncAuthServ("0.0.0.0", 1812)
-
     server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1 - windows!')
     
     while 1: 
         asyncore.poll(0.01)
-
-import socket
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'kenny','billing','medusa', 'Billing.NemirovOnline', 'iserver']:
-    import sys
-    print "Licension key error. Exit from application."
+        
+if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'xubuntu', 'kenny','billing','medusa', 'Billing.NemirovOnline', 'iserver']:
+    print >> sys.stderr, "License key error. Exit from application."
     sys.exit(1)
 
 if __name__ == "__main__":
@@ -952,30 +951,13 @@ if __name__ == "__main__":
     writeProf = logger.writeInfoP()         
     logger.lprint('Radius start')
     pool = PooledDB(
-        mincached=3,
-        maxcached=10,
-        blocking=True,
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password"))
-    )
+        mincached=3, maxcached=10,
+        blocking=True, creator=psycopg2,
+        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                               config.get("db", "host"), config.get("db", "password")))
     
     
-    #queues and locks
-    radIncAcctQueue  = deque()
-    radIncAuthQueue = deque()
-    
-    radIncAcctQLock  = Lock()
-    radIncAuthQLock = Lock()
-    
-    radOutAcctQueue  = deque()
-    radOutAuthQueue = deque()
-    
-    radOutAcctQLock  = Lock()
-    radOutAuthQLock = Lock()
-    
+    suicideCondition = {}
     #curCachesDate = datetime.datetime(3333, 1, 1)
     curCachesDate = None
     curCachesLock = Lock()
@@ -983,16 +965,14 @@ if __name__ == "__main__":
 
     try:
         common_vpn = config.get("radius", "common_vpn")
-    except Exception, e:
-        common_vpn=False
+    except Exception, e: common_vpn=False
 
     try:
         debug_mode = int(config.get("radius", "debug_mode"))
-    except Exception, e:
-        debug_mode=0
+    except Exception, e: debug_mode=0
 
     try:
         session_timeout = int(config.get("dhcp", "session_timeout"))
-    except Exception, e:
-        session_timeout=86400
+    except Exception, e: session_timeout=86400
+    
     main()
