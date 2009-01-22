@@ -1,5 +1,7 @@
 #-*-coding=utf-8-*-
 
+
+import cPickle
 import signal
 import asyncore
 import isdlogger
@@ -19,7 +21,7 @@ from DBUtils.PersistentDB import PersistentDB
 from collections import deque, defaultdict
 from utilites import in_period_info
 from db import delete_transaction, dbRoutine
-from utilites import allowedUsersChecker, setAllowedUsers
+from utilites import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
 try:    import mx.DateTime
@@ -51,13 +53,15 @@ class DepickerThread(Thread):
     '''Thread that takes a Picker object and executes transactions'''
     def __init__ (self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
         
     def run(self):        
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         cur = connection.cursor()
-        global depickerQueue, depickerLock
+        global depickerQueue, depickerLock, suicideCondition
         while True:
+            if suicideCondition[self.tname]: break
             try:
                 if len(depickerQueue) > 0:
                     depickerLock.acquire()
@@ -101,6 +105,7 @@ class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
     def __init__ (self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
 
     def run(self):
         connection = pool.connection()
@@ -111,13 +116,12 @@ class groupDequeThread(Thread):
         #direction type->operations
         gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
         global writeProf
-        icount = 0
-        timecount = 0
+        icount = 0; timecount = 0
         while True:
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
-                #ftm = open('routtmp', 'ab+')
             try:
+                if suicideCondition[self.tname]: break
                 if writeProf:
                     a = time.clock()
                 groupLock.acquire()
@@ -200,6 +204,7 @@ class statDequeThread(Thread):
     '''Thread picks out and sends to the DB global statistics'''
     def __init__ (self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
 
     def run(self):
         connection = pool.connection()
@@ -215,6 +220,7 @@ class statDequeThread(Thread):
                 #gkey[0] - account_id, gkey[2] - date
                 #ftm = open('routtmp', 'ab+')
             try:
+                if suicideCondition[self.tname]: break
                 if writeProf:
                     a = time.clock()
                     
@@ -277,11 +283,12 @@ class statDequeThread(Thread):
                 except: pass
             except Exception, ex:
                 logger.error("%s : exception: %s", (self.getName(), repr(ex)))
-                
+       
 class NetFlowRoutine(Thread):
     '''Thread that handles NetFlow statistic packets and bills according to them'''
     def __init__ (self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
         
     def get_actual_cost(self, trafic_transmit_service_id, traffic_class_id, direction, octets_summ, stream_date, cTRTRNodesCache):
         """
@@ -345,7 +352,6 @@ class NetFlowRoutine(Thread):
         global groupAggrDict, statAggrDict
         global groupAggrTime, statAggrTime
         global groupDeque, statDeque
-        global groupLast, statLast
         global gPicker, pickerLock, pickerTime
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
@@ -358,11 +364,12 @@ class NetFlowRoutine(Thread):
         global writeProf
         while True:
             try:   
+                if suicideCondition[self.tname]: break
                 if writeProf:
                     a = time.clock()
-                try:
-                    #if caches were renewed, renew local copies
-                    if curAT_date > dateAT:
+                if curAT_date > dateAT:
+                    try:
+                        #if caches were renewed, renew local copies                    
                         curAT_lock.acquire()
                         #cacheAT = deepcopy(curATCache)
                         #account-tarif cach indexed by account_id
@@ -381,16 +388,13 @@ class NetFlowRoutine(Thread):
                         dateAT = deepcopy(curAT_date)
 
                         curAT_lock.release()
-                except:
-                    time.sleep(1)
-                    continue
+                    except:
+                        time.sleep(1)
+                        continue
                 
                 #if deadlocks arise add locks
                 #time to pick
                 if (time.time() > pickerTime + 300.0):
-                    #start thread that cleans Picker
-                    #depickThr = DepickerThread(sumPick, connection.cursor())
-                    #depickThr.start()
                     #add picker to a depicker queue
                     pickerLock.acquire()
                     depickerQueue.append(gPicker)                    
@@ -417,8 +421,7 @@ class NetFlowRoutine(Thread):
                     if not acct:
                         continue
                     
-                    flow_actf_id = flow[26]
-                    
+                    flow_actf_id = flow[26]                    
                     #print stream_date
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
@@ -466,7 +469,7 @@ class NetFlowRoutine(Thread):
                                 if not grec:
                                     #add new record to the queue and the dictionary
                                     groupDeque.append((gkey, time.time()))
-                                    grec = [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), (group_id, group_dir, group_type)]
+                                    grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
                                     groupAggrDict[gkey] = grec
                                 #aggregate bytes for every class/direction
                                 for class_ in group_classes:
@@ -484,7 +487,7 @@ class NetFlowRoutine(Thread):
                         srec = statAggrDict.get(skey)
                         if not srec:
                             statDeque.append((skey, time.time()))
-                            srec = [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), [nas_id, {'INPUT':0, 'OUTPUT':0}]]
+                            srec = [defaultdict(ddict_IO), [nas_id, {'INPUT':0, 'OUTPUT':0}]]
                             statAggrDict[skey] = srec
                         #calculation for every class
                         for class_ in flow_classes:
@@ -655,10 +658,12 @@ class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
+        
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
-        global caches, fMem, sendFlag, nfIncomingQueue
+        global caches, fMem, sendFlag, nfIncomingQueue, suicideCondition
         global curAT_acIdx
         global curAT_date, curAT_lock
         global curSPCache, curTTSCache
@@ -666,6 +671,7 @@ class AccountServiceThread(Thread):
         while True:
             a = time.clock()
             try:
+                if suicideCondition[self.tname]: break
                 cur = connection.cursor()
                 ptime =  time.time()
                 ptime = ptime - (ptime % 20)
@@ -846,20 +852,60 @@ class NfAsyncUDPServer(asyncore.dispatcher):
         self.close()     
 
 
-def stop_async():
-    del NfAsyncUDPServer
-    
-    
-def main():
-    global curAT_date
-    '''try:
-        signal.signal(signal.SIGUSR1, stop_async)
-    except: print '''
+        
 
+def ddict_IO():
+    return {'INPUT':0, 'OUTPUT':0}
+
+def SIGUSR1_handler(signum, frame):
+    graceful_save()
+
+def graceful_save():
+    global nfIncomingQueue, depickerQueue, cacheThr, threads, suicideCondition, depickerQueue_
+    asyncore.close_all()
+    #cacheThr.exit()
+    suicideCondition[cacheThr.tname] = True
+    st_time = time.time()
+    time.sleep(1)
+    i = 0
+    while True:
+        if len(nfIncomingQueue) > 300:  break
+        if len(nfIncomingQueue) == 0:   break
+        if i == 4:                      break
+        time.sleep(1)
+
+    for thr in threads:
+        if not isinstance(thr, DepickerThread):
+            suicideCondition[thr.tname] = True
+    time.sleep(1)
+    depickerLock.acquire()
+    depickerQueue_ = depickerQueue
+    depickerQueue = deque()
+    depickerLock.release()
+    time.sleep(1.5)
+    for thr in threads:
+            suicideCondition[thr.tname] = True
+           
+    graceful_saver([['depickerQueue_'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDict'], ['statDeque', 'statAggrDict']],
+                   globals(), 'nfroutine_', saveDir)
+    
+    pool.close()
+    time.sleep(2)
+    sys.exit()
+        
+def graceful_recover():
+    graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDict','statDeque', 'statAggrDict'],
+                    globals(), 'nfroutine_', saveDir)
+    
+
+def main():
+    graceful_recover()
+    global curAT_date, suicideCondition
+    global threads, cacheThr, NfAsyncUDPServer
     threads=[]
     for i in xrange(int(config.get("nfroutine", "routinethreads"))):
         newNfr = NetFlowRoutine()
-        newNfr.setName('NFR NetFlowRoutine #%s ' % i)
+        newNfr.setName('NetFlowRoutine #%s ' % i)
         threads.append(newNfr)
     for i in xrange(int(config.get("nfroutine", "groupstatthreads"))):
         grdqTh = groupDequeThread()
@@ -876,25 +922,31 @@ def main():
     
     cacheThr = AccountServiceThread()
     cacheThr.setName('NFR AccountServiceThread')
+    suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.start()
-    
     while curAT_date == None:
         time.sleep(0.2)
         if not cacheThr.isAlive:
             sys.exit()
         
     #i= range(len(threads))
-    for th in threads:	
-        th.start()
+    for th in threads:
+        suicideCondition[th.__class__.__name__] = False
+        th.start()        
         logger.info("NFR %s start", th.getName())
         time.sleep(0.1)
         
+    time.sleep(30)
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1 - windows!')
+    #asyncore.
     NfAsyncUDPServer(coreAddr)            
     while 1: 
         asyncore.poll(0.010)
 #===============================================================================
 import socket
-if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha', 'iserver','kenny','billing', 'medusa', 'Billing.NemirovOnline']:
+if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha', 'xubuntu', 'iserver','kenny','billing', 'medusa', 'Billing.NemirovOnline']:
     import sys
     print "License key error. Exit from application."
     sys.exit(1)
@@ -915,7 +967,8 @@ if __name__ == "__main__":
         coreAddr = (coreHost,)
     else:
         raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
-    
+    #temp save on restart or graceful stop
+    saveDir = config.get("nfroutine", "save_dir")
     #store stat. for old tarifs and accounts?
     store_na_tarif   = False
     store_na_account = False
@@ -930,11 +983,8 @@ if __name__ == "__main__":
     logger.lprint('Nfroutine start')
     
     pool = PooledDB(
-        mincached=4,
-        maxcached=20,
-        blocking=True,
-        #maxusage=20, 
-        creator=psycopg2,
+        mincached=4,  maxcached=20,
+        blocking=True,creator=psycopg2,
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                config.get("db", "host"), config.get("db", "password")))
     persist = PersistentDB(
@@ -944,7 +994,9 @@ if __name__ == "__main__":
                                                                config.get("db", "host"), config.get("db", "password")))
 
     #--------------------------------------------------------
-    #quequ for Incoming packet lists
+    
+    suicideCondition = {}
+    #queue for Incoming packet lists
     nfIncomingQueue = deque()
     #lock for nfIncomingQueue operations
     nfQueueLock = Lock()
@@ -958,8 +1010,7 @@ if __name__ == "__main__":
     sendFlag = ''
     
     
-    #group statistinc an global statistics objects
-    
+    #group statistinc an global statistics objects    
     #key = account, group id , time
     #[(1,2,3)][0][4]['INPUT']
     #[(1,2, )][1] = group info
@@ -977,15 +1028,13 @@ if __name__ == "__main__":
     statDeque  = deque()    
     groupLock = Lock()
     statLock  = Lock()    
-    groupLast = None
-    statLast  = None
     
     depickerQueue = deque()
     depickerLock  = Lock()
     
     gPicker = Picker()
     pickerLock = Lock()
-    pickerTime = 0
+    pickerTime = time.time() + 5
     
     #function that returns number of allowed users
     #create allowedUsers

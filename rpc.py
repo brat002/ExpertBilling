@@ -90,6 +90,7 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SECURITY)
         except Exception, ex:
+            logger.info("acceptIdentification exception: %s", repr(ex))
             conn.utoken = ''
             return (0,Pyro.constants.DENIED_SECURITY)
 
@@ -685,13 +686,33 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             session_id=str(session), 
             format_string=str(row['reset_action'])
         )
-def main():
-    threads=[]
 
+def SIGUSR1_handler(signum, frame):
+    graceful_save()
+
+def graceful_save():
+    global threads
+    for th in threads:
+        if isinstance(th, RPCServer):
+            th.daemon.shutdown(disconnect=True)
+    pool.close()
+    time.sleep(2)
+    sys.exit()
+    
+def main():
+    global threads
+    threads=[]
     threads.append(RPCServer())
     for th in threads:	
         th.start()
-        time.sleep(0.5)
+        time.sleep(0.1)
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1 - windows!')
+    
+    #main thread should not exit!
+    while True:
+        time.sleep(300)
         
 if __name__ == "__main__":
     if "-D" not in sys.argv:

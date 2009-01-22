@@ -1,12 +1,17 @@
 #-*-coding=utf-8-*-
+
 from distutils.dist import command_re
+from dateutil.relativedelta import relativedelta
+
+import re
+import glob
 import packet
 import socket
-import datetime, calendar
-from dateutil.relativedelta import relativedelta
+import cPickle
 import paramiko
-import sys,  time, md5, binascii, socket, select
-import re
+import datetime, calendar
+import os, sys, time, md5, binascii, socket, select
+
 
 class IPNAccount(object):
     def __init__(self):
@@ -53,30 +58,16 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         sock.sendto(doc_data,(str(nas_ip), 1700))
         (data, addrport) = sock.recvfrom(8192)
         doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
-
-        #for key,value in doc.items():
-        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
-
         sock.close()
-        #try:
-        #    print doc['Error-Cause'][0]
-        #except:
-        #    pass
+
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe']:
         #ssh
         print 'POD ROS'
         command_string=command_string_parser(command_string=format_string, command_dict=
-                            {
-                             'access_type':access_type,
-                             'username': account_name,
-                             'user_id':account_id,
-                             'account_ipn_ip': account_ipn_ip,
-                             'account_vpn_ip': account_vpn_ip,
-                             'account_mac_address':account_mac_address,
-                             'session': session_id
-                             }
-                            )
+                            {'access_type': access_type, 'username': account_name,'user_id': account_id,
+                             'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
+                             'account_mac_address':account_mac_address,'session': session_id})
         #print command_string
         if nas_type=='mikrotik3' and False:
             """
@@ -171,21 +162,12 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
         """
         Функция для вклюения/выключения пользователй на сервере доступа
         """
-        command_dict={
-                             'access_type':access_type,
-                             'password':account_password, 
-                             'username': account_name,
-                             'user_id':account_id,
-                             'account_ipn_ip': account_ipn_ip,
-                             'account_vpn_ip': account_vpn_ip,
-                             'account_mac_address':account_mac_address,
-                             }
+        command_dict={'access_type':access_type,
+                      'password':account_password, 'username': account_name, 'user_id':account_id,        
+                      'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
+                      'account_mac_address':account_mac_address}
 
-
-        #print 'command_dict=', command_dict
-        
-        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
-        
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         #print command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
@@ -320,8 +302,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
                 result=True
 
         elif repeat_after=='YEAR':
-            #Февраль!
-            
+            #Февраль!            
             tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
             tkc=tnc+relativedelta(years=1)
             
@@ -412,8 +393,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             return (tnc, tkc, delta.seconds)
 
         
-def command_string_parser(command_string='', command_dict={}):
-    
+def command_string_parser(command_string='', command_dict={}):    
     import re
     if len(command_string) == 0 or len(command_dict) == 0:
         return ''
@@ -705,8 +685,7 @@ def get_sessions_for_nas(nas):
     sessions = []
     if nas['type'] in ['mikrotik2.8', 'mikrotik2.9']:
         #Use SSH For fetching sessions
-        try:
-            
+        try:            
             ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
             response=ssh.send_command("/ppp active print terse without-paging")[0]
             response = response.readlines()
@@ -730,9 +709,7 @@ def get_sessions_for_nas(nas):
     return sessions
 
 def get_active_sessions(nas):
-    return get_sessions_for_nas(nas)
- 
-    
+    return get_sessions_for_nas(nas)     
     
 def convert(alist):
     return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
@@ -799,9 +776,7 @@ def speed_list_to_dict(spList):
     return dict(zip(dkeys, spList))
 
 def parse_custom_speed_lst(speed_string):
-
-    match_obj = compile_obj.search(speed_string)
-    
+    match_obj = compile_obj.search(speed_string)    
     # Retrieve group(s) by name
     rxrate = match_obj.group('rxrate') or -1
     txrate = match_obj.group('txrate') or -1
@@ -814,7 +789,6 @@ def parse_custom_speed_lst(speed_string):
     prt = match_obj.group('prt') or 8
     rrm = match_obj.group('rrm') or -1
     trm = match_obj.group('trm') or -1
-
     return [formatator(rxrate, txrate), formatator(rxbrate, txbrate), formatator(rbthr, tbthr), formatator(rbtm, tbtm), prt, formatator(rrm, trm)]
 
 def setAllowedUsers(dbconnection, filepath):
@@ -843,6 +817,37 @@ def setAllowedUsers(dbconnection, filepath):
     
 def allowedUsersChecker(allowed, current):
     if current() > allowed():
-        print "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
+        print stderr >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
         sys.exit()
-        #sys.exitfunc()
+
+def graceful_saver(objlists, globals_, moduleName, saveDir):
+    for objlist in objlists:
+        if len(globals_[objlist[0]]) > 0:
+            for objname in objlist:
+                if objname[-1] == '_': objname = objname[:-1]
+                f = open(saveDir + '/' + moduleName + objname + '.dmp', 'wb')
+                cPickle.dump(globals_[objname], f)
+                f.close()
+                
+def graceful_loader(objnames, globals_, moduleName, saveDir):
+    fllist = glob.glob(saveDir + '/' + moduleName + '*' + '.dmp')
+    dumpedObjs = []
+    for objname in objnames:
+        i = 0
+        for fname in fllist:
+            if fname.find(objname) != -1:
+                f = open(fname, 'rb')
+                try:
+                    globals_[objname] = cPickle.load(f)
+                except Exception, ex:
+                    print >> sys.stderr, 'Problems with unpickling file %s: %s' % (fname, repr(ex))
+                finally:
+                    f.close()
+                    os.unlink(fname)
+                break
+            i += 1
+        if i < len(fllist):
+            fllist.pop(i)
+                
+        
+            

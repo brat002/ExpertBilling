@@ -1,0 +1,2077 @@
+2009-01-14 21:25:32,042 INFO     core start
+2009-01-14 21:25:32,183 INFO     Allowed users: 9223372036854775807
+2009-01-14 21:25:32,262 INFO     ast time : 0.0514688319326
+2009-01-14 21:25:32,417 INFO     VPN thread run time: 0.0103281282956
+2009-01-14 21:25:33,026 INFO     Period. service thread run time: 0.114863760618
+2009-01-14 21:25:33,526 INFO     Time access thread run time: 0.0483139616907
+2009-01-14 21:25:34,121 INFO     Limit thread run time: 0.000212876217508
+2009-01-14 21:25:34,714 INFO     Settlement period thread run time: 0.0473018218796
+2009-01-14 21:25:35,214 INFO     IPN thread run time: 0.0041320894136
+2009-01-14 21:28:32,306 INFO     ast time : 0.0355620616587
+2009-01-14 21:28:32,494 INFO     VPN thread run time: 0.0131907826274
+2009-01-14 21:28:33,056 INFO     Period. service thread run time: 0.00517831176867
+2009-01-14 21:28:33,572 INFO     Time access thread run time: 0.019344358012
+2009-01-14 21:28:34,119 INFO     Limit thread run time: 0.000255060349843
+2009-01-14 21:28:34,776 INFO     Settlement period thread run time: 0.0442221008536
+2009-01-14 21:28:35,229 INFO     IPN thread run time: 0.00286935909452
+2009-01-14 21:31:32,400 INFO     ast time : 0.0367999284825
+2009-01-14 21:31:32,555 INFO     VPN thread run time: 0.0129552778356
+2009-01-14 21:31:33,072 INFO     Period. service thread run time: 0.00437960690533
+2009-01-14 21:31:33,680 INFO     Time access thread run time: 0.0177765609876
+2009-01-14 21:31:34,164 INFO     Limit thread run time: 0.000257015905675
+2009-01-14 21:31:34,930 INFO     Settlement period thread run time: 0.039513401843
+2009-01-14 21:31:35,259 INFO     IPN thread run time: 0.0029255114826
+2009-01-14 21:34:32,446 INFO     ast time : 0.0373787730006
+2009-01-14 21:34:32,555 INFO     VPN thread run time: 0.00541158163946
+2009-01-14 21:34:33,085 INFO     Period. service thread run time: 0.00432261642197
+2009-01-14 21:34:33,757 INFO     Time access thread run time: 0.0183822245565
+2009-01-14 21:34:34,196 INFO     Limit thread run time: 0.000255060349787
+2009-01-14 21:34:35,023 INFO     Settlement period thread run time: 0.0563099500076
+2009-01-14 21:34:35,305 INFO     IPN thread run time: 0.00435949261703
+2009-01-14 21:37:32,490 INFO     ast time : 0.0346982647236
+2009-01-14 21:37:32,569 INFO     VPN thread run time: 0.00510120699698
+2009-01-14 21:37:33,101 INFO     Period. service thread run time: 0.00403095924207
+2009-01-14 21:37:33,788 INFO     Time access thread run time: 0.0174156212591
+2009-01-14 21:37:34,194 INFO     Limit thread run time: 0.000258412731228
+2009-01-14 21:37:35,085 INFO     Settlement period thread run time: 0.0377740746379
+2009-01-14 21:37:35,319 INFO     IPN thread run time: 0.00298306069635
+2009-01-14 21:40:32,536 INFO     ast time : 0.0352494520952
+2009-01-14 21:40:32,599 INFO     VPN thread run time: 0.00577587374937
+2009-01-14 21:40:33,115 INFO     Period. service thread run time: 0.00500566412768
+2009-01-14 21:40:33,865 INFO     Time access thread run time: 0.0183017674034
+2009-01-14 21:40:34,256 INFO     Limit thread run time: 0.000284673052079
+2009-01-14 21:40:35,131 INFO     Settlement period thread run time: 0.0439513960573
+2009-01-14 21:40:35,334 INFO     IPN thread run time: 0.00302273054263
+2009-01-14 21:43:32,582 INFO     ast time : 0.0351857568492
+2009-01-14 21:43:32,614 INFO     VPN thread run time: 0.00598064837845
+2009-01-14 21:43:33,130 INFO     Period. service thread run time: 0.00385467985461
+2009-01-14 21:43:33,894 INFO     Time access thread run time: 0.018325234073
+2009-01-14 21:43:34,301 INFO     Limit thread run time: 0.000257854000893
+2009-01-14 21:43:35,176 INFO     Settlement period thread run time: 0.0387406779353
+2009-01-14 21:43:35,348 INFO     IPN thread run time: 0.00286209560159
+2009-01-14 21:46:32,644 INFO     ast time : 0.03434905833
+2009-01-14 21:46:32,690 INFO     VPN thread run time: 0.00575296580996
+2009-01-14 21:46:33,160 INFO     Period. service thread run time: 0.00403123860701
+2009-01-14 21:46:33,957 INFO     Time access thread run time: 0.0184643579003
+2009-01-14 21:46:34,346 INFO     Limit thread run time: 0.00025645717551
+2009-01-14 21:46:35,269 INFO     Settlement period thread run time: 0.0678357165507
+2009-01-14 21:46:35,378 INFO     IPN thread run time: 0.00358816553512
+2009-01-14 21:49:32,690 INFO     ast time : 0.0363568554105
+2009-01-14 21:49:32,704 INFO     VPN thread run time: 0.00745848983593
+2009-01-14 21:49:33,174 INFO     Period. service thread run time: 0.00393569573794
+2009-01-14 21:49:33,986 INFO     Time access thread run time: 0.0222938948943
+2009-01-14 21:49:34,392 INFO     Limit thread run time: 0.000258412731228
+2009-01-14 21:49:35,329 INFO     Settlement period thread run time: 0.0386359160173
+2009-01-14 21:49:35,392 INFO     IPN thread run time: 0.00641953097397
+2009-01-14 21:52:32,750 INFO     ast time : 0.0455949010279
+2009-01-14 21:52:33,188 INFO     Period. service thread run time: 0.00386585445926
+2009-01-14 21:52:34,016 INFO     Time access thread run time: 0.017794999085
+2009-01-14 21:52:34,391 INFO     Limit thread run time: 0.000257015905618
+2009-01-14 21:52:35,375 INFO     Settlement period thread run time: 0.0446352818585
+2009-01-14 21:52:35,407 INFO     IPN thread run time: 0.00286209560159
+2009-01-14 21:52:42,720 INFO     VPN thread run time: 0.00712269296787
+2009-01-14 21:55:32,796 INFO     ast time : 0.0361367157
+2009-01-14 21:55:33,203 INFO     Period. service thread run time: 0.0097238615524
+2009-01-14 21:55:34,046 INFO     Time access thread run time: 0.018697348406
+2009-01-14 21:55:34,405 INFO     Limit thread run time: 0.00025533971484
+2009-01-14 21:55:35,421 INFO     IPN thread run time: 0.00236119395072
+2009-01-14 21:55:35,437 INFO     Settlement period thread run time: 0.0506349270647
+2009-01-14 21:55:42,719 INFO     VPN thread run time: 0.00534844512367
+2009-01-14 21:58:32,842 INFO     ast time : 0.036543191942
+2009-01-14 21:58:33,233 INFO     Period. service thread run time: 0.00387647033358
+2009-01-14 21:58:34,108 INFO     Time access thread run time: 0.0174759641238
+2009-01-14 21:58:34,436 INFO     Limit thread run time: 0.00026232384289
+2009-01-14 21:58:35,436 INFO     IPN thread run time: 0.00290763211524
+2009-01-14 21:58:35,499 INFO     Settlement period thread run time: 0.0395064177151
+2009-01-14 21:58:42,717 INFO     VPN thread run time: 0.00537051496781
+2009-01-14 22:01:32,904 INFO     ast time : 0.0445101262872
+2009-01-14 22:01:33,247 INFO     Period. service thread run time: 0.00869160745287
+2009-01-14 22:01:34,138 INFO     Time access thread run time: 0.0173745545871
+2009-01-14 22:01:34,450 INFO     Limit thread run time: 0.000256177810115
+2009-01-14 22:01:35,450 INFO     IPN thread run time: 0.00285762576004
+2009-01-14 22:01:35,545 INFO     Settlement period thread run time: 0.0402000812951
+2009-01-14 22:01:42,732 INFO     VPN thread run time: 0.0049374990399
+2009-01-14 22:04:32,950 INFO     ast time : 0.0352547600323
+2009-01-14 22:04:33,262 INFO     Period. service thread run time: 0.00530905464257
+2009-01-14 22:04:34,167 INFO     Time access thread run time: 0.0177919260686
+2009-01-14 22:04:34,450 INFO     Limit thread run time: 0.000258692096395
+2009-01-14 22:04:35,464 INFO     IPN thread run time: 0.0028333209948
+2009-01-14 22:04:35,605 INFO     Settlement period thread run time: 0.0386099350617
+2009-01-14 22:04:42,730 INFO     VPN thread run time: 0.00536101655371
+2009-01-14 22:07:32,994 INFO     ast time : 0.0359637886936
+2009-01-14 22:07:33,276 INFO     Period. service thread run time: 0.00535738480721
+2009-01-14 22:07:34,213 INFO     Time access thread run time: 0.0211797868164
+2009-01-14 22:07:34,494 INFO     Limit thread run time: 0.000263161938165
+2009-01-14 22:07:35,494 INFO     IPN thread run time: 0.0036965591994
+2009-01-14 22:07:35,651 INFO     Settlement period thread run time: 0.0381978715168
+2009-01-14 22:07:42,730 INFO     VPN thread run time: 0.00494141015133
+2009-01-14 22:10:33,040 INFO     ast time : 0.0352329695534
+2009-01-14 22:10:33,290 INFO     Period. service thread run time: 0.00382171477077
+2009-01-14 22:10:34,243 INFO     Time access thread run time: 0.01740584348
+2009-01-14 22:10:34,493 INFO     Limit thread run time: 0.000243606380081
+2009-01-14 22:10:35,509 INFO     IPN thread run time: 0.00292495275198
+2009-01-14 22:10:35,713 INFO     Settlement period thread run time: 0.045220551774
+2009-01-14 22:10:42,743 INFO     VPN thread run time: 0.00619212777065
+2009-01-14 22:13:33,086 INFO     ast time : 0.0336576296709
+2009-01-14 22:13:33,321 INFO     Period. service thread run time: 0.00381417191284
+2009-01-14 22:13:34,305 INFO     Time access thread run time: 0.0188018309591
+2009-01-14 22:13:34,523 INFO     Limit thread run time: 0.000245561936026
+2009-01-14 22:13:35,523 INFO     IPN thread run time: 0.00283192416919
+2009-01-14 22:13:35,759 INFO     Settlement period thread run time: 0.0408155226432
+2009-01-14 22:13:42,743 INFO     VPN thread run time: 0.00596528329743
+2009-01-14 22:16:33,132 INFO     ast time : 0.0394119923062
+2009-01-14 22:16:33,335 INFO     Period. service thread run time: 0.00652066114571
+2009-01-14 22:16:34,351 INFO     Time access thread run time: 0.0181495134157
+2009-01-14 22:16:34,523 INFO     Limit thread run time: 0.000263441303105
+2009-01-14 22:16:35,523 INFO     IPN thread run time: 0.00324817819046
+2009-01-14 22:16:35,803 INFO     Settlement period thread run time: 0.0384252747208
+2009-01-14 22:16:42,757 INFO     VPN thread run time: 0.00620414047035
+2009-01-14 22:19:33,177 INFO     ast time : 0.0338364233444
+2009-01-14 22:19:33,349 INFO     Period. service thread run time: 0.00431898467559
+2009-01-14 22:19:34,397 INFO     Time access thread run time: 0.017671240339
+2009-01-14 22:19:34,538 INFO     Limit thread run time: 0.000248355586791
+2009-01-14 22:19:35,538 INFO     IPN thread run time: 0.0028037082925
+2009-01-14 22:19:35,849 INFO     Settlement period thread run time: 0.0364719538379
+2009-01-14 22:19:42,756 INFO     VPN thread run time: 0.00534565147245
+2009-01-14 22:22:33,223 INFO     ast time : 0.0325460358786
+2009-01-14 22:22:33,365 INFO     Period. service thread run time: 0.00521826097975
+2009-01-14 22:22:34,443 INFO     Time access thread run time: 0.0172798498133
+2009-01-14 22:22:34,552 INFO     Limit thread run time: 0.00025645717551
+2009-01-14 22:22:35,552 INFO     IPN thread run time: 0.00285259718794
+2009-01-14 22:22:35,895 INFO     Settlement period thread run time: 0.038271065177
+2009-01-14 22:22:42,770 INFO     VPN thread run time: 0.00539314354228
+2009-01-14 22:25:33,253 INFO     ast time : 0.0346588742423
+2009-01-14 22:25:33,394 INFO     Period. service thread run time: 0.0186699706246
+2009-01-14 22:25:34,473 INFO     Time access thread run time: 0.0176581101787
+2009-01-14 22:25:34,566 INFO     Limit thread run time: 0.000255619080235
+2009-01-14 22:25:35,566 INFO     IPN thread run time: 0.00283639401096
+2009-01-14 22:25:35,957 INFO     Settlement period thread run time: 0.0394717764411
+2009-01-14 22:25:42,769 INFO     VPN thread run time: 0.00492297205392
+2009-01-14 22:28:33,315 INFO     ast time : 0.0355455791168
+2009-01-14 22:28:33,408 INFO     Period. service thread run time: 0.00771438828133
+2009-01-14 22:28:34,486 INFO     Time access thread run time: 0.0174675831704
+2009-01-14 22:28:34,581 INFO     Limit thread run time: 0.00025813336606
+2009-01-14 22:28:35,581 INFO     IPN thread run time: 0.00284030512285
+2009-01-14 22:28:36,003 INFO     Settlement period thread run time: 0.0395620113732
+2009-01-14 22:28:42,799 INFO     VPN thread run time: 0.00533950543968
+2009-01-14 22:31:33,345 INFO     ast time : 0.0338501122351
+2009-01-14 22:31:33,424 INFO     Period. service thread run time: 0.00510595620381
+2009-01-14 22:31:34,549 INFO     Time access thread run time: 0.0173675704591
+2009-01-14 22:31:34,627 INFO     Limit thread run time: 0.000249752412856
+2009-01-14 22:31:35,595 INFO     IPN thread run time: 0.00285120036187
+2009-01-14 22:31:36,049 INFO     Settlement period thread run time: 0.0379894651419
+2009-01-14 22:31:42,813 INFO     VPN thread run time: 0.00492632443502
+2009-01-14 22:34:33,391 INFO     ast time : 0.0332637248584
+2009-01-14 22:34:33,437 INFO     Period. service thread run time: 0.00433937832895
+2009-01-14 22:34:34,609 INFO     Time access thread run time: 0.0185761039465
+2009-01-14 22:34:34,657 INFO     Limit thread run time: 0.000253104793956
+2009-01-14 22:34:35,609 INFO     IPN thread run time: 0.00306072419789
+2009-01-14 22:34:36,094 INFO     Settlement period thread run time: 0.0356067600769
+2009-01-14 22:34:42,812 INFO     VPN thread run time: 0.00491961967236
+2009-01-14 22:37:33,437 INFO     ast time : 0.0330745946767
+2009-01-14 22:37:33,453 INFO     Period. service thread run time: 0.0038395941383
+2009-01-14 22:37:34,640 INFO     Time access thread run time: 0.0176131323951
+2009-01-14 22:37:34,655 INFO     Limit thread run time: 0.000246400031756
+2009-01-14 22:37:35,624 INFO     IPN thread run time: 0.00283918766218
+2009-01-14 22:37:36,155 INFO     Settlement period thread run time: 0.05323777184
+2009-01-14 22:37:42,828 INFO     VPN thread run time: 0.00491934030742
+2009-01-14 22:40:33,483 INFO     ast time : 0.0355978203934
+2009-01-14 22:40:34,654 INFO     Time access thread run time: 0.018686732531
+2009-01-14 22:40:34,670 INFO     Limit thread run time: 0.000236342886637
+2009-01-14 22:40:35,638 INFO     IPN thread run time: 0.00323504802964
+2009-01-14 22:40:36,217 INFO     Settlement period thread run time: 0.0437661769865
+2009-01-14 22:40:42,825 INFO     VPN thread run time: 0.00539845147887
+2009-01-14 22:40:43,467 INFO     Period. service thread run time: 0.00394156240509
+2009-01-14 22:43:33,528 INFO     ast time : 0.0337632296842
+2009-01-14 22:43:34,684 INFO     Limit thread run time: 0.000247517491516
+2009-01-14 22:43:34,700 INFO     Time access thread run time: 0.0270766256608
+2009-01-14 22:43:35,653 INFO     IPN thread run time: 0.00303893371893
+2009-01-14 22:43:36,278 INFO     Settlement period thread run time: 0.0403305448035
+2009-01-14 22:43:42,841 INFO     VPN thread run time: 0.00446956247197
+2009-01-14 22:43:43,482 INFO     Period. service thread run time: 0.00382450842244
+2009-01-14 22:46:33,573 INFO     ast time : 0.0334251978957
+2009-01-14 22:46:34,714 INFO     Limit thread run time: 0.000254222254625
+2009-01-14 22:46:34,730 INFO     Time access thread run time: 0.0173790244289
+2009-01-14 22:46:35,667 INFO     IPN thread run time: 0.0028419813134
+2009-01-14 22:46:36,323 INFO     Settlement period thread run time: 0.0386903922154
+2009-01-14 22:46:42,839 INFO     VPN thread run time: 0.00506516889709
+2009-01-14 22:46:43,512 INFO     Period. service thread run time: 0.00427512435272
+2009-01-14 22:49:33,619 INFO     ast time : 0.0338467598531
+2009-01-14 22:49:34,713 INFO     Limit thread run time: 0.000249193682066
+2009-01-14 22:49:34,760 INFO     Time access thread run time: 0.0185805737874
+2009-01-14 22:49:35,681 INFO     IPN thread run time: 0.00298082577501
+2009-01-14 22:49:36,369 INFO     Settlement period thread run time: 0.0394720558061
+2009-01-14 22:49:42,838 INFO     VPN thread run time: 0.00577056581187
+2009-01-14 22:49:43,526 INFO     Period. service thread run time: 0.00393485764289
+2009-01-14 22:52:33,665 INFO     ast time : 0.0346440678913
+2009-01-14 22:52:34,727 INFO     Limit thread run time: 0.000245003205237
+2009-01-14 22:52:34,790 INFO     Time access thread run time: 0.0173647768079
+2009-01-14 22:52:35,697 INFO     IPN thread run time: 0.00281236861156
+2009-01-14 22:52:36,430 INFO     Settlement period thread run time: 0.0399131733229
+2009-01-14 22:52:42,852 INFO     VPN thread run time: 0.00623738491959
+2009-01-14 22:52:43,540 INFO     Period. service thread run time: 0.00389686398739
+2009-01-14 22:55:33,710 INFO     ast time : 0.0364211093874
+2009-01-14 22:55:34,757 INFO     Limit thread run time: 0.000247238126576
+2009-01-14 22:55:34,821 INFO     Time access thread run time: 0.017704205422
+2009-01-14 22:55:35,710 INFO     IPN thread run time: 0.00282130829419
+2009-01-14 22:55:36,476 INFO     Settlement period thread run time: 0.0399047923684
+2009-01-14 22:55:42,851 INFO     VPN thread run time: 0.00492017840315
+2009-01-14 22:55:43,555 INFO     Period. service thread run time: 0.00384322588434
+2009-01-14 22:58:33,756 INFO     ast time : 0.0340934392498
+2009-01-14 22:58:34,773 INFO     Limit thread run time: 0.000251428603406
+2009-01-14 22:58:34,851 INFO     Time access thread run time: 0.0176016784262
+2009-01-14 22:58:35,726 INFO     IPN thread run time: 0.00291880672012
+2009-01-14 22:58:36,523 INFO     Settlement period thread run time: 0.0381844619915
+2009-01-14 22:58:42,851 INFO     VPN thread run time: 0.00505008318032
+2009-01-14 22:58:43,569 INFO     Period. service thread run time: 0.00414326401824
+2009-01-14 23:01:33,802 INFO     ast time : 0.0375846650904
+2009-01-14 23:01:34,802 INFO     Limit thread run time: 0.000330768295498
+2009-01-14 23:01:34,881 INFO     Time access thread run time: 0.0174094752265
+2009-01-14 23:01:35,740 INFO     IPN thread run time: 0.00283220353413
+2009-01-14 23:01:36,568 INFO     Settlement period thread run time: 0.0347602837792
+2009-01-14 23:01:42,927 INFO     VPN thread run time: 0.0368650205537
+2009-01-14 23:01:43,584 INFO     Period. service thread run time: 0.00512970223917
+2009-01-14 23:04:33,848 INFO     ast time : 0.033471013774
+2009-01-14 23:04:34,816 INFO     Limit thread run time: 0.000249193682976
+2009-01-14 23:04:34,911 INFO     Time access thread run time: 0.0180293864159
+2009-01-14 23:04:35,755 INFO     IPN thread run time: 0.00283415908962
+2009-01-14 23:04:36,644 INFO     Settlement period thread run time: 0.0447394850462
+2009-01-14 23:04:42,927 INFO     VPN thread run time: 0.00447151802837
+2009-01-14 23:04:43,598 INFO     Period. service thread run time: 0.00429607673595
+2009-01-14 23:07:33,878 INFO     ast time : 0.0346820615468
+2009-01-14 23:07:34,832 INFO     Limit thread run time: 0.000247796856456
+2009-01-14 23:07:34,924 INFO     Time access thread run time: 0.0179318879918
+2009-01-14 23:07:35,769 INFO     IPN thread run time: 0.00283136543931
+2009-01-14 23:07:36,721 INFO     Settlement period thread run time: 0.0421293767777
+2009-01-14 23:07:42,924 INFO     VPN thread run time: 0.00447878152136
+2009-01-14 23:07:43,612 INFO     Period. service thread run time: 0.00515680065473
+2009-01-14 23:10:33,940 INFO     ast time : 0.0468081837216
+2009-01-14 23:10:34,831 INFO     Limit thread run time: 0.000330209565618
+2009-01-14 23:10:34,956 INFO     Time access thread run time: 0.0175106053985
+2009-01-14 23:10:35,783 INFO     IPN thread run time: 0.00281125115089
+2009-01-14 23:10:36,783 INFO     Settlement period thread run time: 0.0416519417977
+2009-01-14 23:10:42,940 INFO     VPN thread run time: 0.00576665470089
+2009-01-14 23:10:43,627 INFO     Period. service thread run time: 0.00391306716301
+2009-01-14 23:13:34,000 INFO     ast time : 0.0477504822538
+2009-01-14 23:13:34,845 INFO     Limit thread run time: 0.000252825429016
+2009-01-14 23:13:34,986 INFO     Time access thread run time: 0.0182146054876
+2009-01-14 23:13:35,798 INFO     IPN thread run time: 0.0038102608014
+2009-01-14 23:13:36,828 INFO     Settlement period thread run time: 0.0437946722277
+2009-01-14 23:13:42,953 INFO     VPN thread run time: 0.00575240707985
+2009-01-14 23:13:43,641 INFO     Period. service thread run time: 0.00480340378454
+2009-01-14 23:16:34,046 INFO     ast time : 0.0382123985037
+2009-01-14 23:16:34,859 INFO     Limit thread run time: 0.000271263526884
+2009-01-14 23:16:35,016 INFO     Time access thread run time: 0.018098110234
+2009-01-14 23:16:35,812 INFO     IPN thread run time: 0.00284868607559
+2009-01-14 23:16:36,891 INFO     Settlement period thread run time: 0.0413287163592
+2009-01-14 23:16:42,953 INFO     VPN thread run time: 0.00495621650225
+2009-01-14 23:16:43,655 INFO     Period. service thread run time: 0.0038309338197
+2009-01-14 23:19:34,092 INFO     ast time : 0.0350547346106
+2009-01-14 23:19:34,874 INFO     Limit thread run time: 0.000251987334195
+2009-01-14 23:19:35,046 INFO     Time access thread run time: 0.0175854752497
+2009-01-14 23:19:35,826 INFO     IPN thread run time: 0.00284617178932
+2009-01-14 23:19:36,936 INFO     Settlement period thread run time: 0.0381794334189
+2009-01-14 23:19:42,983 INFO     VPN thread run time: 0.00491514983059
+2009-01-14 23:19:43,671 INFO     Period. service thread run time: 0.0038823370005
+2009-01-14 23:22:34,138 INFO     ast time : 0.0338442455677
+2009-01-14 23:22:34,934 INFO     Limit thread run time: 0.000268469875664
+2009-01-14 23:22:35,092 INFO     Time access thread run time: 0.0187431642853
+2009-01-14 23:22:35,842 INFO     IPN thread run time: 0.00466623551347
+2009-01-14 23:22:36,982 INFO     Settlement period thread run time: 0.0407624432719
+2009-01-14 23:22:42,982 INFO     VPN thread run time: 0.00619324523086
+2009-01-14 23:22:43,700 INFO     Period. service thread run time: 0.00390468620935
+2009-01-14 23:25:34,184 INFO     ast time : 0.0325519025464
+2009-01-14 23:25:34,964 INFO     Limit thread run time: 0.000258133365605
+2009-01-14 23:25:35,121 INFO     Time access thread run time: 0.017440205389
+2009-01-14 23:25:35,855 INFO     IPN thread run time: 0.0029227178311
+2009-01-14 23:25:37,043 INFO     Settlement period thread run time: 0.0407473575551
+2009-01-14 23:25:42,996 INFO     VPN thread run time: 0.0101116203323
+2009-01-14 23:25:43,714 INFO     Period. service thread run time: 0.0133307445503
+2009-01-14 23:28:34,230 INFO     ast time : 0.0352810203531
+2009-01-14 23:28:34,996 INFO     Limit thread run time: 0.000257574636635
+2009-01-14 23:28:35,167 INFO     Time access thread run time: 0.0198505675999
+2009-01-14 23:28:35,885 INFO     IPN thread run time: 0.00377254651085
+2009-01-14 23:28:37,088 INFO     Settlement period thread run time: 0.0472090726616
+2009-01-14 23:28:42,994 INFO     VPN thread run time: 0.00492464824492
+2009-01-14 23:28:43,730 INFO     Period. service thread run time: 0.00428406403626
+2009-01-14 23:31:34,276 INFO     ast time : 0.0390275859081
+2009-01-14 23:31:35,009 INFO     Limit thread run time: 0.000246679396696
+2009-01-14 23:31:35,197 INFO     Time access thread run time: 0.0176226308095
+2009-01-14 23:31:35,901 INFO     IPN thread run time: 0.00294311148446
+2009-01-14 23:31:37,165 INFO     Settlement period thread run time: 0.0507290731084
+2009-01-14 23:31:43,009 INFO     VPN thread run time: 0.00672906752152
+2009-01-14 23:31:43,743 INFO     Period. service thread run time: 0.0043703878564
+2009-01-14 23:34:34,321 INFO     ast time : 0.035129325096
+2009-01-14 23:34:35,009 INFO     Limit thread run time: 0.000248355587246
+2009-01-14 23:34:35,227 INFO     Time access thread run time: 0.019137907193
+2009-01-14 23:34:35,914 INFO     IPN thread run time: 0.00283807020151
+2009-01-14 23:34:37,243 INFO     Settlement period thread run time: 0.039136538303
+2009-01-14 23:34:43,009 INFO     VPN thread run time: 0.00522301018646
+2009-01-14 23:34:43,759 INFO     Period. service thread run time: 0.00383875604348
+2009-01-14 23:37:34,367 INFO     ast time : 0.0341350646522
+2009-01-14 23:37:35,023 INFO     Limit thread run time: 0.000244444475356
+2009-01-14 23:37:35,273 INFO     Time access thread run time: 0.0185154817163
+2009-01-14 23:37:35,914 INFO     IPN thread run time: 0.00325767660343
+2009-01-14 23:37:37,305 INFO     Settlement period thread run time: 0.0460469137843
+2009-01-14 23:37:43,023 INFO     VPN thread run time: 0.00585716899695
+2009-01-14 23:37:43,773 INFO     Period. service thread run time: 0.00385328302946
+2009-01-14 23:40:34,413 INFO     ast time : 0.0342976551492
+2009-01-14 23:40:35,069 INFO     Limit thread run time: 0.000241930189077
+2009-01-14 23:40:35,335 INFO     Time access thread run time: 0.0190652722622
+2009-01-14 23:40:35,927 INFO     IPN thread run time: 0.00324817819001
+2009-01-14 23:40:37,365 INFO     Settlement period thread run time: 0.0440192817805
+2009-01-14 23:40:43,022 INFO     VPN thread run time: 0.00578062295699
+2009-01-14 23:40:43,788 INFO     Period. service thread run time: 0.00439832436768
+2009-01-14 23:43:34,459 INFO     ast time : 0.0347714583841
+2009-01-14 23:43:35,068 INFO     Limit thread run time: 0.000250311142736
+2009-01-14 23:43:35,365 INFO     Time access thread run time: 0.0173776276042
+2009-01-14 23:43:35,943 INFO     IPN thread run time: 0.00287662258779
+2009-01-14 23:43:37,411 INFO     Settlement period thread run time: 0.0403433955998
+2009-01-14 23:43:43,020 INFO     VPN thread run time: 0.00533643242488
+2009-01-14 23:43:43,802 INFO     Period. service thread run time: 0.00384881318678
+2009-01-14 23:46:34,503 INFO     ast time : 0.0332531089844
+2009-01-14 23:46:35,082 INFO     Limit thread run time: 0.000252266698226
+2009-01-14 23:46:35,378 INFO     Time access thread run time: 0.0176871641506
+2009-01-14 23:46:35,957 INFO     IPN thread run time: 0.00283834956826
+2009-01-14 23:46:37,473 INFO     Settlement period thread run time: 0.0437686912719
+2009-01-14 23:46:43,035 INFO     VPN thread run time: 0.00534201972732
+2009-01-14 23:46:43,816 INFO     Period. service thread run time: 0.00387674969716
+2009-01-14 23:49:34,549 INFO     ast time : 0.0385646779123
+2009-01-14 23:49:35,096 INFO     Limit thread run time: 0.000258692096395
+2009-01-14 23:49:35,440 INFO     Time access thread run time: 0.0176664911323
+2009-01-14 23:49:35,971 INFO     IPN thread run time: 0.00290623528963
+2009-01-14 23:49:37,565 INFO     Settlement period thread run time: 0.0700692406426
+2009-01-14 23:49:43,033 INFO     VPN thread run time: 0.00534565147245
+2009-01-14 23:49:43,831 INFO     Period. service thread run time: 0.00384797509105
+2009-01-14 23:52:34,595 INFO     ast time : 0.0338364233448
+2009-01-14 23:52:35,142 INFO     Limit thread run time: 0.000244723840297
+2009-01-14 23:52:35,486 INFO     Time access thread run time: 0.017895291161
+2009-01-14 23:52:36,049 INFO     IPN thread run time: 0.0352623028921
+2009-01-14 23:52:37,611 INFO     Settlement period thread run time: 0.0382920175616
+2009-01-14 23:52:43,049 INFO     VPN thread run time: 0.00574681977741
+2009-01-14 23:52:43,845 INFO     Period. service thread run time: 0.00384657826726
+2009-01-14 23:55:34,657 INFO     ast time : 0.0415435481336
+2009-01-14 23:55:35,173 INFO     Limit thread run time: 0.000256457175055
+2009-01-14 23:55:35,516 INFO     Time access thread run time: 0.0176569927189
+2009-01-14 23:55:36,062 INFO     IPN thread run time: 0.00289059084389
+2009-01-14 23:55:37,673 INFO     Settlement period thread run time: 0.0386998906288
+2009-01-14 23:55:43,048 INFO     VPN thread run time: 0.00533671178891
+2009-01-14 23:55:43,859 INFO     Period. service thread run time: 0.00397676240937
+2009-01-14 23:58:34,703 INFO     ast time : 0.0330061502227
+2009-01-14 23:58:35,203 INFO     Limit thread run time: 0.000256736540905
+2009-01-14 23:58:35,562 INFO     Time access thread run time: 0.0192921167363
+2009-01-14 23:58:36,125 INFO     IPN thread run time: 0.034764474256
+2009-01-14 23:58:37,717 INFO     Settlement period thread run time: 0.0386032302977
+2009-01-14 23:58:43,046 INFO     VPN thread run time: 0.00497996253762
+2009-01-14 23:58:43,875 INFO     Period. service thread run time: 0.0039429592307
+2009-01-15 00:01:34,747 INFO     ast time : 0.0360531855295
+2009-01-15 00:01:35,201 INFO     Limit thread run time: 0.000250869872616
+2009-01-15 00:01:35,592 INFO     Time access thread run time: 0.0178941737013
+2009-01-15 00:01:36,138 INFO     IPN thread run time: 0.00327220359031
+2009-01-15 00:01:37,763 INFO     Settlement period thread run time: 0.037394696812
+2009-01-15 00:01:43,061 INFO     VPN thread run time: 0.00575296580973
+2009-01-15 00:01:43,888 INFO     Period. service thread run time: 0.00426953705028
+2009-01-15 00:04:34,793 INFO     ast time : 0.0380905953116
+2009-01-15 00:04:35,216 INFO     Limit thread run time: 0.000258692096395
+2009-01-15 00:04:35,621 INFO     Time access thread run time: 0.018556269024
+2009-01-15 00:04:36,154 INFO     IPN thread run time: 0.00328868613178
+2009-01-15 00:04:37,825 INFO     Settlement period thread run time: 0.040759090889
+2009-01-15 00:04:43,075 INFO     VPN thread run time: 0.00577196263839
+2009-01-15 00:04:43,904 INFO     Period. service thread run time: 0.00471568313878
+2009-01-15 00:07:34,839 INFO     ast time : 0.0351318393823
+2009-01-15 00:07:35,262 INFO     Limit thread run time: 0.000249473047006
+2009-01-15 00:07:35,684 INFO     Time access thread run time: 0.0175195450811
+2009-01-15 00:07:36,167 INFO     IPN thread run time: 0.00332751788301
+2009-01-15 00:07:37,871 INFO     Settlement period thread run time: 0.0416608814794
+2009-01-15 00:07:43,073 INFO     VPN thread run time: 0.00508304826508
+2009-01-15 00:07:43,917 INFO     Period. service thread run time: 0.00393122589594
+2009-01-15 00:10:34,885 INFO     ast time : 0.0346697694822
+2009-01-15 00:10:35,260 INFO     Limit thread run time: 0.000246679397605
+2009-01-15 00:10:35,713 INFO     Time access thread run time: 0.0176198371573
+2009-01-15 00:10:36,167 INFO     IPN thread run time: 0.00282019083534
+2009-01-15 00:10:37,933 INFO     Settlement period thread run time: 0.0437756754
+2009-01-15 00:10:43,072 INFO     VPN thread run time: 0.00455281327595
+2009-01-15 00:10:43,931 INFO     Period. service thread run time: 0.00383680048799
+2009-01-15 00:13:34,930 INFO     ast time : 0.0351608933543
+2009-01-15 00:13:35,275 INFO     Limit thread run time: 0.000248355587246
+2009-01-15 00:13:35,743 INFO     Time access thread run time: 0.0176704022433
+2009-01-15 00:13:36,180 INFO     IPN thread run time: 0.00281739718412
+2009-01-15 00:13:37,977 INFO     Settlement period thread run time: 0.0369030142101
+2009-01-15 00:13:43,088 INFO     VPN thread run time: 0.00533950544013
+2009-01-15 00:13:43,947 INFO     Period. service thread run time: 0.0038549592191
+2009-01-15 00:16:34,960 INFO     ast time : 0.0321119024902
+2009-01-15 00:16:35,321 INFO     Limit thread run time: 0.000256736540905
+2009-01-15 00:16:35,805 INFO     Time access thread run time: 0.0173871260158
+2009-01-15 00:16:36,196 INFO     IPN thread run time: 0.00293249561037
+2009-01-15 00:16:38,023 INFO     Settlement period thread run time: 0.0386049064891
+2009-01-15 00:16:43,085 INFO     VPN thread run time: 0.00556579118347
+2009-01-15 00:16:43,960 INFO     Period. service thread run time: 0.00428350530638
+2009-01-15 00:19:35,023 INFO     ast time : 0.0385526652135
+2009-01-15 00:19:35,351 INFO     Limit thread run time: 0.000246958761636
+2009-01-15 00:19:35,898 INFO     Time access thread run time: 0.0176444212884
+2009-01-15 00:19:36,210 INFO     IPN thread run time: 0.00284952417132
+2009-01-15 00:19:38,085 INFO     Settlement period thread run time: 0.0391312303673
+2009-01-15 00:19:43,085 INFO     VPN thread run time: 0.00447542913935
+2009-01-15 00:19:43,976 INFO     Period. service thread run time: 0.00390189255813
+2009-01-15 00:22:35,069 INFO     ast time : 0.0402322082846
+2009-01-15 00:22:35,397 INFO     Limit thread run time: 0.000244165110416
+2009-01-15 00:22:35,927 INFO     Time access thread run time: 0.0198301739474
+2009-01-15 00:22:36,240 INFO     IPN thread run time: 0.00397843859901
+2009-01-15 00:22:38,131 INFO     Settlement period thread run time: 0.040368538459
+2009-01-15 00:22:43,099 INFO     VPN thread run time: 0.0104968648247
+2009-01-15 00:22:43,990 INFO     Period. service thread run time: 0.00428071165516
+2009-01-15 00:25:35,114 INFO     ast time : 0.0378408429006
+2009-01-15 00:25:35,411 INFO     Limit thread run time: 0.000246679395786
+2009-01-15 00:25:35,941 INFO     Time access thread run time: 0.0176095006482
+2009-01-15 00:25:36,255 INFO     IPN thread run time: 0.00283332099389
+2009-01-15 00:25:38,207 INFO     Settlement period thread run time: 0.044960183488
+2009-01-15 00:25:43,098 INFO     VPN thread run time: 0.00586610868231
+2009-01-15 00:25:44,019 INFO     Period. service thread run time: 0.0161020464893
+2009-01-15 00:28:35,160 INFO     ast time : 0.0342602202236
+2009-01-15 00:28:35,440 INFO     Limit thread run time: 0.000348368297637
+2009-01-15 00:28:35,987 INFO     Time access thread run time: 0.0191004722674
+2009-01-15 00:28:36,285 INFO     IPN thread run time: 0.0037088512654
+2009-01-15 00:28:38,253 INFO     Settlement period thread run time: 0.0381805508805
+2009-01-15 00:28:43,112 INFO     VPN thread run time: 0.0057588324762
+2009-01-15 00:28:44,035 INFO     Period. service thread run time: 0.00383261001116
+2009-01-15 00:31:35,206 INFO     ast time : 0.0354799283159
+2009-01-15 00:31:35,440 INFO     Limit thread run time: 0.000254780985415
+2009-01-15 00:31:36,017 INFO     Time access thread run time: 0.0177628720976
+2009-01-15 00:31:36,299 INFO     IPN thread run time: 0.00281180987986
+2009-01-15 00:31:38,299 INFO     Settlement period thread run time: 0.0360266458447
+2009-01-15 00:31:43,111 INFO     VPN thread run time: 0.00491123872052
+2009-01-15 00:31:44,049 INFO     Period. service thread run time: 0.00430473705455
+2009-01-15 00:34:35,250 INFO     ast time : 0.0365236363832
+2009-01-15 00:34:35,454 INFO     Limit thread run time: 0.000258412732364
+2009-01-15 00:34:36,048 INFO     Time access thread run time: 0.0176628593854
+2009-01-15 00:34:36,313 INFO     IPN thread run time: 0.00283667337499
+2009-01-15 00:34:38,345 INFO     Settlement period thread run time: 0.0347309504432
+2009-01-15 00:34:43,111 INFO     VPN thread run time: 0.00533754988464
+2009-01-15 00:34:44,063 INFO     Period. service thread run time: 0.00384210842458
+2009-01-15 00:37:35,312 INFO     ast time : 0.0438703801738
+2009-01-15 00:37:35,484 INFO     Limit thread run time: 0.000255619079326
+2009-01-15 00:37:36,125 INFO     Time access thread run time: 0.0363384173124
+2009-01-15 00:37:36,344 INFO     IPN thread run time: 0.00288556227133
+2009-01-15 00:37:38,391 INFO     Settlement period thread run time: 0.040324678137
+2009-01-15 00:37:43,125 INFO     VPN thread run time: 0.00615860395737
+2009-01-15 00:37:44,078 INFO     Period. service thread run time: 0.00472713710769
+2009-01-15 00:40:35,358 INFO     ast time : 0.0354606521214
+2009-01-15 00:40:35,483 INFO     Limit thread run time: 0.000241371459197
+2009-01-15 00:40:36,233 INFO     Time access thread run time: 0.0174312657055
+2009-01-15 00:40:36,358 INFO     IPN thread run time: 0.00281488289693
+2009-01-15 00:40:38,437 INFO     Settlement period thread run time: 0.0368787094449
+2009-01-15 00:40:43,140 INFO     VPN thread run time: 0.00501097206507
+2009-01-15 00:40:44,108 INFO     Period. service thread run time: 0.00386026715751
+2009-01-15 00:43:35,404 INFO     ast time : 0.0427210720918
+2009-01-15 00:43:35,497 INFO     Limit thread run time: 0.000248914317126
+2009-01-15 00:43:36,263 INFO     Time access thread run time: 0.017490770475
+2009-01-15 00:43:36,372 INFO     IPN thread run time: 0.0028981337
+2009-01-15 00:43:38,497 INFO     Settlement period thread run time: 0.045921478848
+2009-01-15 00:43:43,138 INFO     VPN thread run time: 0.00576749279571
+2009-01-15 00:43:44,107 INFO     Period. service thread run time: 0.0038588703319
+2009-01-15 00:46:35,450 INFO     ast time : 0.0326658835129
+2009-01-15 00:46:35,512 INFO     Limit thread run time: 0.000256457176874
+2009-01-15 00:46:36,309 INFO     Time access thread run time: 0.0176206752531
+2009-01-15 00:46:36,387 INFO     IPN thread run time: 0.00282661623169
+2009-01-15 00:46:38,543 INFO     Settlement period thread run time: 0.0411904306275
+2009-01-15 00:46:43,153 INFO     VPN thread run time: 0.0049280006242
+2009-01-15 00:46:44,137 INFO     Period. service thread run time: 0.00887207731648
+2009-01-15 00:49:35,510 INFO     ast time : 0.0409669385353
+2009-01-15 00:49:35,526 INFO     Limit thread run time: 0.000247517491516
+2009-01-15 00:49:36,338 INFO     Time access thread run time: 0.018997665904
+2009-01-15 00:49:36,401 INFO     IPN thread run time: 0.00326773374763
+2009-01-15 00:49:38,588 INFO     Settlement period thread run time: 0.0378254778188
+2009-01-15 00:49:43,151 INFO     VPN thread run time: 0.00619967062812
+2009-01-15 00:49:44,151 INFO     Period. service thread run time: 0.00472099107537
+2009-01-15 00:52:35,556 INFO     ast time : 0.0356637505611
+2009-01-15 00:52:36,369 INFO     Time access thread run time: 0.0178785292537
+2009-01-15 00:52:36,479 INFO     IPN thread run time: 0.0350720552469
+2009-01-15 00:52:38,651 INFO     Settlement period thread run time: 0.0424757895216
+2009-01-15 00:52:43,181 INFO     VPN thread run time: 0.0053492832194
+2009-01-15 00:52:44,165 INFO     Period. service thread run time: 0.00389686398557
+2009-01-15 00:52:45,540 INFO     Limit thread run time: 0.000272660352493
+2009-01-15 00:55:35,602 INFO     ast time : 0.035772423591
+2009-01-15 00:55:36,400 INFO     Time access thread run time: 0.0183811070965
+2009-01-15 00:55:36,493 INFO     IPN thread run time: 0.00281153051583
+2009-01-15 00:55:38,696 INFO     Settlement period thread run time: 0.0390759160728
+2009-01-15 00:55:43,180 INFO     VPN thread run time: 0.00586666741219
+2009-01-15 00:55:44,180 INFO     Period. service thread run time: 0.00384378461422
+2009-01-15 00:55:45,539 INFO     Limit thread run time: 0.000270704797003
+2009-01-15 00:58:35,648 INFO     ast time : 0.0397441574278
+2009-01-15 00:58:36,430 INFO     Time access thread run time: 0.018986211935
+2009-01-15 00:58:36,507 INFO     IPN thread run time: 0.00282382258229
+2009-01-15 00:58:38,773 INFO     Settlement period thread run time: 0.0555844388036
+2009-01-15 00:58:43,194 INFO     VPN thread run time: 0.00490900379918
+2009-01-15 00:58:44,194 INFO     Period. service thread run time: 0.00381947984897
+2009-01-15 00:58:45,555 INFO     Limit thread run time: 0.000343898456777
+2009-01-15 01:01:35,694 INFO     ast time : 0.0325136295251
+2009-01-15 01:01:36,444 INFO     Time access thread run time: 0.0175421736567
+2009-01-15 01:01:36,522 INFO     IPN thread run time: 0.00454080057716
+2009-01-15 01:01:38,819 INFO     Settlement period thread run time: 0.0425492625454
+2009-01-15 01:01:43,194 INFO     VPN thread run time: 0.00620358174092
+2009-01-15 01:01:44,210 INFO     Period. service thread run time: 0.0038236703258
+2009-01-15 01:01:45,569 INFO     Limit thread run time: 0.000278806384813
+2009-01-15 01:04:35,740 INFO     ast time : 0.038561604897
+2009-01-15 01:04:36,473 INFO     Time access thread run time: 0.0177114689159
+2009-01-15 01:04:36,536 INFO     IPN thread run time: 0.00281795591218
+2009-01-15 01:04:38,911 INFO     Settlement period thread run time: 0.0713138122301
+2009-01-15 01:04:43,193 INFO     VPN thread run time: 0.00498638793397
+2009-01-15 01:04:44,223 INFO     Period. service thread run time: 0.00385300366361
+2009-01-15 01:04:45,584 INFO     Limit thread run time: 0.000277409559203
+2009-01-15 01:07:35,786 INFO     ast time : 0.0381081953146
+2009-01-15 01:07:36,503 INFO     Time access thread run time: 0.0176561546232
+2009-01-15 01:07:36,551 INFO     IPN thread run time: 0.00282521940608
+2009-01-15 01:07:38,957 INFO     Settlement period thread run time: 0.0368854142071
+2009-01-15 01:07:43,207 INFO     VPN thread run time: 0.00546382291759
+2009-01-15 01:07:44,239 INFO     Period. service thread run time: 0.0073850168119
+2009-01-15 01:07:45,628 INFO     Limit thread run time: 0.000273219082374
+2009-01-15 01:10:35,831 INFO     ast time : 0.0343529694419
+2009-01-15 01:10:36,565 INFO     IPN thread run time: 0.00921122656655
+2009-01-15 01:10:36,581 INFO     Time access thread run time: 0.0300451593703
+2009-01-15 01:10:39,019 INFO     Settlement period thread run time: 0.0451509898594
+2009-01-15 01:10:43,221 INFO     VPN thread run time: 0.00671007069468
+2009-01-15 01:10:44,253 INFO     Period. service thread run time: 0.0038175242953
+2009-01-15 01:10:45,628 INFO     Limit thread run time: 0.000273777812254
+2009-01-15 01:13:35,877 INFO     ast time : 0.033836423343
+2009-01-15 01:13:36,579 INFO     IPN thread run time: 0.00282605750181
+2009-01-15 01:13:36,627 INFO     Time access thread run time: 0.0184900594904
+2009-01-15 01:13:39,079 INFO     Settlement period thread run time: 0.0425431165131
+2009-01-15 01:13:43,220 INFO     VPN thread run time: 0.00576246422497
+2009-01-15 01:13:44,267 INFO     Period. service thread run time: 0.00394994335875
+2009-01-15 01:13:45,642 INFO     Limit thread run time: 0.000267073050054
+2009-01-15 01:16:35,923 INFO     ast time : 0.0367856808607
+2009-01-15 01:16:36,595 INFO     IPN thread run time: 0.00314844484456
+2009-01-15 01:16:36,641 INFO     Time access thread run time: 0.0173100212451
+2009-01-15 01:16:39,141 INFO     Settlement period thread run time: 0.0412761957177
+2009-01-15 01:16:43,250 INFO     VPN thread run time: 0.00498862285531
+2009-01-15 01:16:44,282 INFO     Period. service thread run time: 0.0038722798563
+2009-01-15 01:16:45,657 INFO     Limit thread run time: 0.000270425431154
+2009-01-15 01:19:35,969 INFO     ast time : 0.0356760426257
+2009-01-15 01:19:36,608 INFO     IPN thread run time: 0.00284086385182
+2009-01-15 01:19:36,671 INFO     Time access thread run time: 0.0175125609549
+2009-01-15 01:19:39,219 INFO     Settlement period thread run time: 0.0497890094957
+2009-01-15 01:19:43,250 INFO     VPN thread run time: 0.00500203238153
+2009-01-15 01:19:44,296 INFO     Period. service thread run time: 0.00392787351484
+2009-01-15 01:19:45,671 INFO     Limit thread run time: 0.000260647651885
+2009-01-15 01:22:36,013 INFO     ast time : 0.0363856300173
+2009-01-15 01:22:36,624 INFO     IPN thread run time: 0.00332919407447
+2009-01-15 01:22:36,733 INFO     Time access thread run time: 0.0189272658954
+2009-01-15 01:22:39,326 INFO     Settlement period thread run time: 0.0906277194445
+2009-01-15 01:22:43,263 INFO     VPN thread run time: 0.00576805152559
+2009-01-15 01:22:44,326 INFO     Period. service thread run time: 0.00468746726256
+2009-01-15 01:22:45,686 INFO     Limit thread run time: 0.000276012733593
+2009-01-15 01:25:36,059 INFO     ast time : 0.0375452746084
+2009-01-15 01:25:36,638 INFO     IPN thread run time: 0.00284421623473
+2009-01-15 01:25:36,763 INFO     Time access thread run time: 0.0175346307988
+2009-01-15 01:25:39,371 INFO     Settlement period thread run time: 0.0373536301395
+2009-01-15 01:25:43,263 INFO     VPN thread run time: 0.00490760697357
+2009-01-15 01:25:44,341 INFO     Period. service thread run time: 0.0156938940563
+2009-01-15 01:25:45,684 INFO     Limit thread run time: 0.000270984161034
+2009-01-15 01:28:36,121 INFO     ast time : 0.035014226667
+2009-01-15 01:28:36,653 INFO     IPN thread run time: 0.00282968924876
+2009-01-15 01:28:36,792 INFO     Time access thread run time: 0.0176421863671
+2009-01-15 01:28:39,417 INFO     Settlement period thread run time: 0.0366423665582
+2009-01-15 01:28:43,262 INFO     VPN thread run time: 0.00542527052858
+2009-01-15 01:28:44,355 INFO     Period. service thread run time: 0.00384015286909
+2009-01-15 01:28:45,730 INFO     Limit thread run time: 0.000274615907983
+2009-01-15 01:31:36,167 INFO     ast time : 0.0342719535583
+2009-01-15 01:31:36,667 INFO     IPN thread run time: 0.00280538448351
+2009-01-15 01:31:36,869 INFO     Time access thread run time: 0.0186330944289
+2009-01-15 01:31:39,494 INFO     Settlement period thread run time: 0.0499141650689
+2009-01-15 01:31:43,276 INFO     VPN thread run time: 0.00490006411383
+2009-01-15 01:31:44,369 INFO     Period. service thread run time: 0.00402537193804
+2009-01-15 01:31:45,729 INFO     Limit thread run time: 0.000270984162853
+2009-01-15 01:34:36,213 INFO     ast time : 0.0405302908603
+2009-01-15 01:34:36,681 INFO     IPN thread run time: 0.0028347178195
+2009-01-15 01:34:36,900 INFO     Time access thread run time: 0.0186152150618
+2009-01-15 01:34:39,540 INFO     Settlement period thread run time: 0.0395231796228
+2009-01-15 01:34:43,322 INFO     VPN thread run time: 0.00492408951504
+2009-01-15 01:34:44,384 INFO     Period. service thread run time: 0.00427959419358
+2009-01-15 01:34:45,743 INFO     Limit thread run time: 0.000274336542134
+2009-01-15 01:37:36,257 INFO     ast time : 0.0329835216489
+2009-01-15 01:37:36,696 INFO     IPN thread run time: 0.00350435600012
+2009-01-15 01:37:36,930 INFO     Time access thread run time: 0.0179212721177
+2009-01-15 01:37:39,601 INFO     Settlement period thread run time: 0.0477272949502
+2009-01-15 01:37:43,336 INFO     VPN thread run time: 0.00491207681443
+2009-01-15 01:37:44,414 INFO     Period. service thread run time: 0.00383233064531
+2009-01-15 01:37:45,757 INFO     Limit thread run time: 0.000276850827504
+2009-01-15 01:40:36,303 INFO     ast time : 0.0359693759965
+2009-01-15 01:40:36,710 INFO     IPN thread run time: 0.00280147337071
+2009-01-15 01:40:36,944 INFO     Time access thread run time: 0.0186884087216
+2009-01-15 01:40:39,678 INFO     Settlement period thread run time: 0.0407590908908
+2009-01-15 01:40:43,335 INFO     VPN thread run time: 0.0053459308383
+2009-01-15 01:40:44,428 INFO     Period. service thread run time: 0.00401754971608
+2009-01-15 01:40:45,773 INFO     Limit thread run time: 0.000272939716524
+2009-01-15 01:43:36,349 INFO     ast time : 0.0363236109606
+2009-01-15 01:43:36,724 INFO     IPN thread run time: 0.00293500989756
+2009-01-15 01:43:36,974 INFO     Time access thread run time: 0.0189633039954
+2009-01-15 01:43:39,724 INFO     Settlement period thread run time: 0.0407713829554
+2009-01-15 01:43:43,334 INFO     VPN thread run time: 0.0044650926302
+2009-01-15 01:43:44,444 INFO     Period. service thread run time: 0.00462349265035
+2009-01-15 01:43:45,819 INFO     Limit thread run time: 0.000273777812254
+2009-01-15 01:46:36,395 INFO     ast time : 0.0338280423912
+2009-01-15 01:46:36,739 INFO     IPN thread run time: 0.00282549877193
+2009-01-15 01:46:37,005 INFO     Time access thread run time: 0.0181810816739
+2009-01-15 01:46:39,786 INFO     Settlement period thread run time: 0.0381799921488
+2009-01-15 01:46:43,348 INFO     VPN thread run time: 0.00496487682176
+2009-01-15 01:46:44,457 INFO     Period. service thread run time: 0.00427456562284
+2009-01-15 01:46:45,832 INFO     Limit thread run time: 0.000275174637864
+2009-01-15 01:49:36,440 INFO     ast time : 0.037369274587
+2009-01-15 01:49:36,753 INFO     IPN thread run time: 0.00289003211219
+2009-01-15 01:49:37,035 INFO     Time access thread run time: 0.0174720530122
+2009-01-15 01:49:39,848 INFO     Settlement period thread run time: 0.0400271542894
+2009-01-15 01:49:43,348 INFO     VPN thread run time: 0.0049458799931
+2009-01-15 01:49:44,473 INFO     Period. service thread run time: 0.00453856565582
+2009-01-15 01:49:45,894 INFO     Limit thread run time: 0.000284673053102
+2009-01-15 01:52:36,486 INFO     ast time : 0.0350072425408
+2009-01-15 01:52:36,767 INFO     IPN thread run time: 0.00282996861279
+2009-01-15 01:52:37,065 INFO     Time access thread run time: 0.017620395889
+2009-01-15 01:52:39,892 INFO     Settlement period thread run time: 0.0373019475937
+2009-01-15 01:52:43,345 INFO     VPN thread run time: 0.00500314984129
+2009-01-15 01:52:44,486 INFO     Period. service thread run time: 0.00384238778861
+2009-01-15 01:52:45,892 INFO     Limit thread run time: 0.000281879400063
+2009-01-15 01:55:36,532 INFO     ast time : 0.0329645248203
+2009-01-15 01:55:36,782 INFO     IPN thread run time: 0.00283080670852
+2009-01-15 01:55:37,095 INFO     Time access thread run time: 0.017881602269
+2009-01-15 01:55:39,954 INFO     Settlement period thread run time: 0.0434404372627
+2009-01-15 01:55:43,377 INFO     VPN thread run time: 0.00532833083525
+2009-01-15 01:55:44,502 INFO     Period. service thread run time: 0.00385104810812
+2009-01-15 01:55:45,907 INFO     Limit thread run time: 0.000263441303105
+2009-01-15 01:58:36,578 INFO     ast time : 0.0347091599615
+2009-01-15 01:58:36,796 INFO     IPN thread run time: 0.00334707344155
+2009-01-15 01:58:37,203 INFO     Time access thread run time: 0.0185663261655
+2009-01-15 01:58:39,984 INFO     Settlement period thread run time: 0.0343038011815
+2009-01-15 01:58:43,375 INFO     VPN thread run time: 0.00446928310703
+2009-01-15 01:58:44,516 INFO     Period. service thread run time: 0.00456566407229
+2009-01-15 01:58:45,921 INFO     Limit thread run time: 0.000275174639683
+2009-01-15 02:01:36,640 INFO     ast time : 0.0439469262164
+2009-01-15 02:01:36,812 INFO     IPN thread run time: 0.00297328291708
+2009-01-15 02:01:37,233 INFO     Time access thread run time: 0.0174351768146
+2009-01-15 02:01:40,046 INFO     Settlement period thread run time: 0.0360255283849
+2009-01-15 02:01:43,390 INFO     VPN thread run time: 0.00458298471131
+2009-01-15 02:01:44,529 INFO     Period. service thread run time: 0.00382618461299
+2009-01-15 02:01:45,967 INFO     Limit thread run time: 0.000300876228721
+2009-01-15 02:04:36,686 INFO     ast time : 0.0382445254909
+2009-01-15 02:04:36,825 INFO     IPN thread run time: 0.0036870607837
+2009-01-15 02:04:37,263 INFO     Time access thread run time: 0.0192479770485
+2009-01-15 02:04:40,107 INFO     Settlement period thread run time: 0.0398880304601
+2009-01-15 02:04:43,420 INFO     VPN thread run time: 0.00675700403372
+2009-01-15 02:04:44,545 INFO     Period. service thread run time: 0.00425724498564
+2009-01-15 02:04:45,967 INFO     Limit thread run time: 0.000272660352493
+2009-01-15 02:07:36,730 INFO     ast time : 0.0347910139426
+2009-01-15 02:07:36,841 INFO     IPN thread run time: 0.00282829242497
+2009-01-15 02:07:37,293 INFO     Time access thread run time: 0.0176589482762
+2009-01-15 02:07:40,153 INFO     Settlement period thread run time: 0.0437779103195
+2009-01-15 02:07:43,466 INFO     VPN thread run time: 0.00492101649797
+2009-01-15 02:07:44,559 INFO     Period. service thread run time: 0.00411840052038
+2009-01-15 02:07:45,996 INFO     Limit thread run time: 0.000362057191523
+2009-01-15 02:10:36,776 INFO     ast time : 0.0346641821779
+2009-01-15 02:10:36,855 INFO     IPN thread run time: 0.00282549877011
+2009-01-15 02:10:37,339 INFO     Time access thread run time: 0.0180746435653
+2009-01-15 02:10:40,198 INFO     Settlement period thread run time: 0.0384548874208
+2009-01-15 02:10:43,464 INFO     VPN thread run time: 0.00631644524765
+2009-01-15 02:10:44,573 INFO     Period. service thread run time: 0.00381612746787
+2009-01-15 02:10:45,996 INFO     Limit thread run time: 0.000345295280567
+2009-01-15 02:13:36,822 INFO     ast time : 0.0348404615652
+2009-01-15 02:13:36,869 INFO     IPN thread run time: 0.00280873686279
+2009-01-15 02:13:37,401 INFO     Time access thread run time: 0.0187747325435
+2009-01-15 02:13:40,276 INFO     Settlement period thread run time: 0.0422517386978
+2009-01-15 02:13:43,479 INFO     VPN thread run time: 0.00532050861148
+2009-01-15 02:13:44,588 INFO     Period. service thread run time: 0.00383568302641
+2009-01-15 02:13:46,009 INFO     Limit thread run time: 0.000279085750662
+2009-01-15 02:16:36,852 INFO     ast time : 0.0338305566765
+2009-01-15 02:16:36,884 INFO     IPN thread run time: 0.00283779083475
+2009-01-15 02:16:37,430 INFO     Time access thread run time: 0.0182053864373
+2009-01-15 02:16:40,352 INFO     Settlement period thread run time: 0.0407540623164
+2009-01-15 02:16:43,477 INFO     VPN thread run time: 0.00490425459066
+2009-01-15 02:16:44,602 INFO     Period. service thread run time: 0.00379824810079
+2009-01-15 02:16:46,025 INFO     Limit thread run time: 0.000271822256764
+2009-01-15 02:19:36,898 INFO     ast time : 0.0341836741827
+2009-01-15 02:19:37,444 INFO     Time access thread run time: 0.0177503006671
+2009-01-15 02:19:40,398 INFO     Settlement period thread run time: 0.0399978209534
+2009-01-15 02:19:43,507 INFO     VPN thread run time: 0.00972274408923
+2009-01-15 02:19:44,632 INFO     Period. service thread run time: 0.00382869889654
+2009-01-15 02:19:46,069 INFO     Limit thread run time: 0.000251428606134
+2009-01-15 02:19:46,898 INFO     IPN thread run time: 0.00285315591827
+2009-01-15 02:22:36,944 INFO     ast time : 0.0355603854696
+2009-01-15 02:22:37,476 INFO     Time access thread run time: 0.0189954309826
+2009-01-15 02:22:40,460 INFO     Settlement period thread run time: 0.0399911161912
+2009-01-15 02:22:43,506 INFO     VPN thread run time: 0.00554288324201
+2009-01-15 02:22:44,647 INFO     Period. service thread run time: 0.0043385402314
+2009-01-15 02:22:46,085 INFO     Limit thread run time: 0.000255619081145
+2009-01-15 02:22:46,913 INFO     IPN thread run time: 0.0028545527457
+2009-01-15 02:25:36,990 INFO     ast time : 0.034689883767
+2009-01-15 02:25:37,520 INFO     Time access thread run time: 0.0188725103326
+2009-01-15 02:25:40,506 INFO     Settlement period thread run time: 0.0407571353353
+2009-01-15 02:25:43,520 INFO     VPN thread run time: 0.00495817205956
+2009-01-15 02:25:44,661 INFO     Period. service thread run time: 0.0160081798094
+2009-01-15 02:25:46,084 INFO     Limit thread run time: 0.000253104793956
+2009-01-15 02:25:46,927 INFO     IPN thread run time: 0.002853994014
+2009-01-15 02:28:37,036 INFO     ast time : 0.0354911029171
+2009-01-15 02:28:37,536 INFO     Time access thread run time: 0.0190719770253
+2009-01-15 02:28:40,551 INFO     Settlement period thread run time: 0.0391032938569
+2009-01-15 02:28:43,519 INFO     VPN thread run time: 0.00488693395528
+2009-01-15 02:28:44,676 INFO     Period. service thread run time: 0.00391278779716
+2009-01-15 02:28:46,114 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 02:28:46,941 INFO     IPN thread run time: 0.00297328291708
+2009-01-15 02:31:37,081 INFO     ast time : 0.0359850204404
+2009-01-15 02:31:37,565 INFO     Time access thread run time: 0.0178293609933
+2009-01-15 02:31:40,612 INFO     Settlement period thread run time: 0.0403408813108
+2009-01-15 02:31:43,549 INFO     VPN thread run time: 0.00492325142113
+2009-01-15 02:31:44,690 INFO     Period. service thread run time: 0.00385048937824
+2009-01-15 02:31:46,128 INFO     Limit thread run time: 0.000255619077507
+2009-01-15 02:31:46,956 INFO     IPN thread run time: 0.00283639401096
+2009-01-15 02:34:37,127 INFO     ast time : 0.0347122329804
+2009-01-15 02:34:37,595 INFO     Time access thread run time: 0.017931329261
+2009-01-15 02:34:40,657 INFO     Settlement period thread run time: 0.0462882852407
+2009-01-15 02:34:43,549 INFO     VPN thread run time: 0.00499560698154
+2009-01-15 02:34:44,704 INFO     Period. service thread run time: 0.00384127032885
+2009-01-15 02:34:46,157 INFO     Limit thread run time: 0.000256736540905
+2009-01-15 02:34:46,970 INFO     IPN thread run time: 0.00313028610981
+2009-01-15 02:37:37,188 INFO     ast time : 0.0378341381365
+2009-01-15 02:37:37,625 INFO     Time access thread run time: 0.0178307578208
+2009-01-15 02:37:40,720 INFO     Settlement period thread run time: 0.0437745579402
+2009-01-15 02:37:43,548 INFO     VPN thread run time: 0.00445727040642
+2009-01-15 02:37:44,720 INFO     Period. service thread run time: 0.00425054022344
+2009-01-15 02:37:46,157 INFO     Limit thread run time: 0.000260927015916
+2009-01-15 02:37:46,984 INFO     IPN thread run time: 0.00285259719021
+2009-01-15 02:40:37,233 INFO     ast time : 0.0404981638749
+2009-01-15 02:40:37,655 INFO     Time access thread run time: 0.0218150630863
+2009-01-15 02:40:40,812 INFO     Settlement period thread run time: 0.0433652880492
+2009-01-15 02:40:43,562 INFO     VPN thread run time: 0.00627789285863
+2009-01-15 02:40:44,733 INFO     Period. service thread run time: 0.00395161955021
+2009-01-15 02:40:46,187 INFO     Limit thread run time: 0.000251428602496
+2009-01-15 02:40:47,000 INFO     IPN thread run time: 0.0028880765567
+2009-01-15 02:43:37,279 INFO     ast time : 0.0325421247653
+2009-01-15 02:43:37,701 INFO     Time access thread run time: 0.0208490185214
+2009-01-15 02:43:40,858 INFO     Settlement period thread run time: 0.0369519031046
+2009-01-15 02:43:43,576 INFO     VPN thread run time: 0.00470394980584
+2009-01-15 02:43:44,749 INFO     Period. service thread run time: 0.00394184176912
+2009-01-15 02:43:46,201 INFO     Limit thread run time: 0.000251428606134
+2009-01-15 02:43:47,013 INFO     IPN thread run time: 0.00284645115607
+2009-01-15 02:46:37,325 INFO     ast time : 0.0349893631719
+2009-01-15 02:46:37,716 INFO     Time access thread run time: 0.017689678436
+2009-01-15 02:46:40,918 INFO     Settlement period thread run time: 0.0460773645791
+2009-01-15 02:46:43,575 INFO     VPN thread run time: 0.00500426730287
+2009-01-15 02:46:44,763 INFO     Period. service thread run time: 0.00391530208435
+2009-01-15 02:46:46,232 INFO     Limit thread run time: 0.000246120664087
+2009-01-15 02:46:47,029 INFO     IPN thread run time: 0.00287215274511
+2009-01-15 02:49:37,371 INFO     ast time : 0.0356595600824
+2009-01-15 02:49:37,778 INFO     Time access thread run time: 0.0189563198655
+2009-01-15 02:49:40,964 INFO     Settlement period thread run time: 0.0399003225284
+2009-01-15 02:49:43,589 INFO     VPN thread run time: 0.00618598173605
+2009-01-15 02:49:44,778 INFO     Period. service thread run time: 0.00399128939534
+2009-01-15 02:49:46,262 INFO     Limit thread run time: 0.000246958763455
+2009-01-15 02:49:47,042 INFO     IPN thread run time: 0.00304759403662
+2009-01-15 02:52:37,417 INFO     ast time : 0.0326055406476
+2009-01-15 02:52:37,808 INFO     Time access thread run time: 0.018387532491
+2009-01-15 02:52:41,026 INFO     Settlement period thread run time: 0.0460139487004
+2009-01-15 02:52:43,588 INFO     VPN thread run time: 0.00488441966809
+2009-01-15 02:52:44,792 INFO     Period. service thread run time: 0.00394463542034
+2009-01-15 02:52:46,292 INFO     Limit thread run time: 0.000254780985415
+2009-01-15 02:52:47,058 INFO     IPN thread run time: 0.0028405844896
+2009-01-15 02:55:37,479 INFO     ast time : 0.0412935163513
+2009-01-15 02:55:37,838 INFO     Time access thread run time: 0.0184970436203
+2009-01-15 02:55:41,072 INFO     Settlement period thread run time: 0.0373147983883
+2009-01-15 02:55:43,602 INFO     VPN thread run time: 0.00704167708318
+2009-01-15 02:55:44,806 INFO     Period. service thread run time: 0.00465506090768
+2009-01-15 02:55:46,306 INFO     Limit thread run time: 0.000260088923824
+2009-01-15 02:55:47,072 INFO     IPN thread run time: 0.00390999414594
+2009-01-15 02:58:37,509 INFO     ast time : 0.0338462011205
+2009-01-15 02:58:37,851 INFO     Time access thread run time: 0.0176332466835
+2009-01-15 02:58:41,134 INFO     Settlement period thread run time: 0.0390488176599
+2009-01-15 02:58:43,634 INFO     VPN thread run time: 0.00489950538395
+2009-01-15 02:58:44,821 INFO     Period. service thread run time: 0.00381417191238
+2009-01-15 02:58:46,305 INFO     Limit thread run time: 0.000250311142736
+2009-01-15 02:58:47,101 INFO     IPN thread run time: 0.00332863534277
+2009-01-15 03:01:37,569 INFO     ast time : 0.0413245258824
+2009-01-15 03:01:37,898 INFO     Time access thread run time: 0.0206713423067
+2009-01-15 03:01:41,319 INFO     Settlement period thread run time: 0.180542219754
+2009-01-15 03:01:43,631 INFO     VPN thread run time: 0.00625498492082
+2009-01-15 03:01:44,851 INFO     Period. service thread run time: 0.0040136386051
+2009-01-15 03:01:46,319 INFO     Limit thread run time: 0.000261765111645
+2009-01-15 03:01:47,117 INFO     IPN thread run time: 0.00285539084143
+2009-01-15 03:04:37,615 INFO     ast time : 0.0362506966667
+2009-01-15 03:04:37,927 INFO     Time access thread run time: 0.0183347324855
+2009-01-15 03:04:41,772 INFO     Settlement period thread run time: 0.438169935005
+2009-01-15 03:04:43,663 INFO     VPN thread run time: 0.00624576587506
+2009-01-15 03:04:44,849 INFO     Period. service thread run time: 0.00382394969347
+2009-01-15 03:04:46,334 INFO     Limit thread run time: 0.000253663525655
+2009-01-15 03:04:47,131 INFO     IPN thread run time: 0.00296490196342
+2009-01-15 03:07:37,661 INFO     ast time : 0.0347974393371
+2009-01-15 03:07:37,973 INFO     Time access thread run time: 0.0192546818107
+2009-01-15 03:07:41,832 INFO     Settlement period thread run time: 0.0412655798427
+2009-01-15 03:07:43,677 INFO     VPN thread run time: 0.00489140379432
+2009-01-15 03:07:44,864 INFO     Period. service thread run time: 0.00384406398007
+2009-01-15 03:07:46,348 INFO     Limit thread run time: 0.000251707966527
+2009-01-15 03:07:47,145 INFO     IPN thread run time: 0.00331131470375
+2009-01-15 03:10:37,707 INFO     ast time : 0.0359883728233
+2009-01-15 03:10:38,003 INFO     Time access thread run time: 0.0197938564816
+2009-01-15 03:10:41,878 INFO     Settlement period thread run time: 0.0399735161882
+2009-01-15 03:10:43,690 INFO     VPN thread run time: 0.00531212765782
+2009-01-15 03:10:44,878 INFO     Period. service thread run time: 0.00395553066119
+2009-01-15 03:10:46,362 INFO     Limit thread run time: 0.000254222253716
+2009-01-15 03:10:47,160 INFO     IPN thread run time: 0.00287187338108
+2009-01-15 03:13:37,753 INFO     ast time : 0.0349614266597
+2009-01-15 03:13:38,033 INFO     Time access thread run time: 0.0177586816171
+2009-01-15 03:13:41,940 INFO     Settlement period thread run time: 0.0417147989465
+2009-01-15 03:13:43,690 INFO     VPN thread run time: 0.00659357543918
+2009-01-15 03:13:44,908 INFO     Period. service thread run time: 0.00381137826116
+2009-01-15 03:13:46,408 INFO     Limit thread run time: 0.000260647651885
+2009-01-15 03:13:47,236 INFO     IPN thread run time: 0.0328309882971
+2009-01-15 03:16:37,799 INFO     ast time : 0.0356008934104
+2009-01-15 03:16:38,049 INFO     Time access thread run time: 0.017939430847
+2009-01-15 03:16:42,002 INFO     Settlement period thread run time: 0.0500007682531
+2009-01-15 03:16:43,704 INFO     VPN thread run time: 0.0056468070652
+2009-01-15 03:16:44,924 INFO     Period. service thread run time: 0.00382199413434
+2009-01-15 03:16:46,407 INFO     Limit thread run time: 0.000343619092746
+2009-01-15 03:16:47,252 INFO     IPN thread run time: 0.00421338466185
+2009-01-15 03:19:37,844 INFO     ast time : 0.0387328557117
+2009-01-15 03:19:38,078 INFO     Time access thread run time: 0.0193544151552
+2009-01-15 03:19:42,062 INFO     Settlement period thread run time: 0.0457938089894
+2009-01-15 03:19:43,703 INFO     VPN thread run time: 0.00493163237115
+2009-01-15 03:19:44,921 INFO     Period. service thread run time: 0.00389379097032
+2009-01-15 03:19:46,421 INFO     Limit thread run time: 0.000254780985415
+2009-01-15 03:19:47,266 INFO     IPN thread run time: 0.00303949244699
+2009-01-15 03:22:37,890 INFO     ast time : 0.0337442328564
+2009-01-15 03:22:38,140 INFO     Time access thread run time: 0.0179648530757
+2009-01-15 03:22:42,296 INFO     Settlement period thread run time: 0.182073419946
+2009-01-15 03:22:43,733 INFO     VPN thread run time: 0.00488721331931
+2009-01-15 03:22:44,951 INFO     Period. service thread run time: 0.00510176572789
+2009-01-15 03:22:46,437 INFO     Limit thread run time: 0.000258971464064
+2009-01-15 03:22:47,280 INFO     IPN thread run time: 0.0028405844896
+2009-01-15 03:25:37,936 INFO     ast time : 0.0355852489629
+2009-01-15 03:25:38,170 INFO     Time access thread run time: 0.0192038373607
+2009-01-15 03:25:42,358 INFO     Settlement period thread run time: 0.0472160567879
+2009-01-15 03:25:43,747 INFO     VPN thread run time: 0.0128334746441
+2009-01-15 03:25:44,983 INFO     Period. service thread run time: 0.0203559390939
+2009-01-15 03:25:46,450 INFO     Limit thread run time: 0.000400330209231
+2009-01-15 03:25:47,295 INFO     IPN thread run time: 0.00283834956645
+2009-01-15 03:28:37,980 INFO     ast time : 0.0338635217595
+2009-01-15 03:28:38,200 INFO     Time access thread run time: 0.0177486244756
+2009-01-15 03:28:42,418 INFO     Settlement period thread run time: 0.0451476374765
+2009-01-15 03:28:43,746 INFO     VPN thread run time: 0.00540711179929
+2009-01-15 03:28:44,996 INFO     Period. service thread run time: 0.00425696562161
+2009-01-15 03:28:46,480 INFO     Limit thread run time: 0.000268190509814
+2009-01-15 03:28:47,309 INFO     IPN thread run time: 0.0028679622701
+2009-01-15 03:31:38,026 INFO     ast time : 0.0349499726944
+2009-01-15 03:31:38,214 INFO     Time access thread run time: 0.0178821610025
+2009-01-15 03:31:42,464 INFO     Settlement period thread run time: 0.0416245640154
+2009-01-15 03:31:43,746 INFO     VPN thread run time: 0.00574542294999
+2009-01-15 03:31:45,012 INFO     Period. service thread run time: 0.00383456556665
+2009-01-15 03:31:46,512 INFO     Limit thread run time: 0.000254501621384
+2009-01-15 03:31:47,355 INFO     IPN thread run time: 0.00284700988777
+2009-01-15 03:34:38,072 INFO     ast time : 0.033857655093
+2009-01-15 03:34:38,259 INFO     Time access thread run time: 0.0188968150978
+2009-01-15 03:34:42,526 INFO     Settlement period thread run time: 0.0466662662438
+2009-01-15 03:34:43,759 INFO     VPN thread run time: 0.00530849591087
+2009-01-15 03:34:45,026 INFO     Period. service thread run time: 0.00732830569177
+2009-01-15 03:34:46,509 INFO     Limit thread run time: 0.000252266701864
+2009-01-15 03:34:47,369 INFO     IPN thread run time: 0.00333980994765
+2009-01-15 03:37:38,118 INFO     ast time : 0.0351404997018
+2009-01-15 03:37:38,290 INFO     Time access thread run time: 0.0186328150667
+2009-01-15 03:37:42,618 INFO     Settlement period thread run time: 0.0836980677741
+2009-01-15 03:37:43,759 INFO     VPN thread run time: 0.00660223576051
+2009-01-15 03:37:45,039 INFO     Period. service thread run time: 0.00468299741988
+2009-01-15 03:37:46,525 INFO     Limit thread run time: 0.000254501617746
+2009-01-15 03:37:47,384 INFO     IPN thread run time: 0.00284645115607
+2009-01-15 03:40:38,164 INFO     ast time : 0.033658467768
+2009-01-15 03:40:38,321 INFO     Time access thread run time: 0.0177472276519
+2009-01-15 03:40:42,664 INFO     Settlement period thread run time: 0.0377480936841
+2009-01-15 03:40:43,805 INFO     VPN thread run time: 0.00487855300162
+2009-01-15 03:40:45,055 INFO     Period. service thread run time: 0.00518054668646
+2009-01-15 03:40:46,539 INFO     Limit thread run time: 0.000262603207375
+2009-01-15 03:40:47,382 INFO     IPN thread run time: 0.00285120036278
+2009-01-15 03:43:38,210 INFO     ast time : 0.0325731342964
+2009-01-15 03:43:38,381 INFO     Time access thread run time: 0.0177123070134
+2009-01-15 03:43:42,726 INFO     Settlement period thread run time: 0.0416181386172
+2009-01-15 03:43:43,803 INFO     VPN thread run time: 0.00530654035902
+2009-01-15 03:43:45,069 INFO     Period. service thread run time: 0.00383847667763
+2009-01-15 03:43:46,553 INFO     Limit thread run time: 0.000321269882988
+2009-01-15 03:43:47,413 INFO     IPN thread run time: 0.00286907972986
+2009-01-15 03:46:38,256 INFO     ast time : 0.0355623410251
+2009-01-15 03:46:38,411 INFO     Time access thread run time: 0.018721653174
+2009-01-15 03:46:42,770 INFO     Settlement period thread run time: 0.0395039034265
+2009-01-15 03:46:43,818 INFO     VPN thread run time: 0.00660000084099
+2009-01-15 03:46:45,084 INFO     Period. service thread run time: 0.00387507350752
+2009-01-15 03:46:46,568 INFO     Limit thread run time: 0.000262603207375
+2009-01-15 03:46:47,427 INFO     IPN thread run time: 0.00292048291158
+2009-01-15 03:49:38,302 INFO     ast time : 0.0362479030155
+2009-01-15 03:49:38,441 INFO     Time access thread run time: 0.0184420086916
+2009-01-15 03:49:42,832 INFO     Settlement period thread run time: 0.0498487936311
+2009-01-15 03:49:43,816 INFO     VPN thread run time: 0.00492464824492
+2009-01-15 03:49:45,098 INFO     Period. service thread run time: 0.00426283228444
+2009-01-15 03:49:46,566 INFO     Limit thread run time: 0.000254222253716
+2009-01-15 03:49:47,441 INFO     IPN thread run time: 0.00287494639633
+2009-01-15 03:52:38,362 INFO     ast time : 0.0382191032659
+2009-01-15 03:52:38,457 INFO     Time access thread run time: 0.0193921294449
+2009-01-15 03:52:42,940 INFO     Settlement period thread run time: 0.0475965520782
+2009-01-15 03:52:43,832 INFO     VPN thread run time: 0.00676342943189
+2009-01-15 03:52:45,128 INFO     Period. service thread run time: 0.00478552441564
+2009-01-15 03:52:46,582 INFO     Limit thread run time: 0.000251149234828
+2009-01-15 03:52:47,457 INFO     IPN thread run time: 0.00373734650566
+2009-01-15 03:55:38,408 INFO     ast time : 0.0386680430056
+2009-01-15 03:55:38,486 INFO     Time access thread run time: 0.0178782498879
+2009-01-15 03:55:42,986 INFO     Settlement period thread run time: 0.0385881445836
+2009-01-15 03:55:43,829 INFO     VPN thread run time: 0.00488693395164
+2009-01-15 03:55:45,142 INFO     Period. service thread run time: 0.00382814016848
+2009-01-15 03:55:46,595 INFO     Limit thread run time: 0.000252825426287
+2009-01-15 03:55:47,470 INFO     IPN thread run time: 0.00291517497317
+2009-01-15 03:58:38,453 INFO     ast time : 0.038512157269
+2009-01-15 03:58:38,516 INFO     Time access thread run time: 0.0180701737227
+2009-01-15 03:58:43,032 INFO     Settlement period thread run time: 0.0372765253705
+2009-01-15 03:58:43,845 INFO     VPN thread run time: 0.0050238228614
+2009-01-15 03:58:45,157 INFO     Period. service thread run time: 0.00383959413739
+2009-01-15 03:58:46,611 INFO     Limit thread run time: 0.000362895283615
+2009-01-15 03:58:47,516 INFO     IPN thread run time: 0.00318727659396
+2009-01-15 04:01:38,500 INFO     ast time : 0.039404170082
+2009-01-15 04:01:38,546 INFO     Time access thread run time: 0.0179014371934
+2009-01-15 04:01:43,094 INFO     Settlement period thread run time: 0.0450504184191
+2009-01-15 04:01:43,844 INFO     VPN thread run time: 0.00588203249208
+2009-01-15 04:01:45,171 INFO     Period. service thread run time: 0.00403934019414
+2009-01-15 04:01:46,608 INFO     Limit thread run time: 0.000254501617746
+2009-01-15 04:01:47,530 INFO     IPN thread run time: 0.00331327026288
+2009-01-15 04:04:38,546 INFO     ast time : 0.0372122713925
+2009-01-15 04:04:38,608 INFO     Time access thread run time: 0.0187655134941
+2009-01-15 04:04:43,138 INFO     Settlement period thread run time: 0.0399000431607
+2009-01-15 04:04:43,858 INFO     VPN thread run time: 0.0074998358723
+2009-01-15 04:04:45,186 INFO     Period. service thread run time: 0.00393401954716
+2009-01-15 04:04:46,624 INFO     Limit thread run time: 0.000242768284807
+2009-01-15 04:04:47,546 INFO     IPN thread run time: 0.00284281940912
+2009-01-15 04:07:38,607 INFO     ast time : 0.0363261252496
+2009-01-15 04:07:38,638 INFO     Time access thread run time: 0.0187269611088
+2009-01-15 04:07:43,200 INFO     Settlement period thread run time: 0.043843840489
+2009-01-15 04:07:43,857 INFO     VPN thread run time: 0.00531715622856
+2009-01-15 04:07:45,200 INFO     Period. service thread run time: 0.00424299736187
+2009-01-15 04:07:46,654 INFO     Limit thread run time: 0.000251987334195
+2009-01-15 04:07:47,559 INFO     IPN thread run time: 0.00294367021706
+2009-01-15 04:10:38,637 INFO     ast time : 0.034009350351
+2009-01-15 04:10:43,246 INFO     Settlement period thread run time: 0.0373201063267
+2009-01-15 04:10:43,871 INFO     VPN thread run time: 0.00660000083735
+2009-01-15 04:10:45,214 INFO     Period. service thread run time: 0.00408655289721
+2009-01-15 04:10:46,667 INFO     Limit thread run time: 0.000374907984224
+2009-01-15 04:10:47,559 INFO     IPN thread run time: 0.00295624164573
+2009-01-15 04:10:48,653 INFO     Time access thread run time: 0.0177771197195
+2009-01-15 04:13:38,683 INFO     ast time : 0.0335785693424
+2009-01-15 04:13:43,308 INFO     Settlement period thread run time: 0.0385873064879
+2009-01-15 04:13:43,869 INFO     VPN thread run time: 0.00501348635225
+2009-01-15 04:13:45,230 INFO     Period. service thread run time: 0.00383400683859
+2009-01-15 04:13:46,698 INFO     Limit thread run time: 0.000250031778705
+2009-01-15 04:13:47,573 INFO     IPN thread run time: 0.00328673057447
+2009-01-15 04:13:48,683 INFO     Time access thread run time: 0.0177472276482
+2009-01-15 04:16:38,729 INFO     ast time : 0.033764067779
+2009-01-15 04:16:43,354 INFO     Settlement period thread run time: 0.0429060118004
+2009-01-15 04:16:43,884 INFO     VPN thread run time: 0.0056680388152
+2009-01-15 04:16:45,259 INFO     Period. service thread run time: 0.00397592431545
+2009-01-15 04:16:46,713 INFO     Limit thread run time: 0.000251149238466
+2009-01-15 04:16:47,588 INFO     IPN thread run time: 0.00296657815488
+2009-01-15 04:16:48,713 INFO     Time access thread run time: 0.0174890942835
+2009-01-15 04:19:38,773 INFO     ast time : 0.0336422645923
+2009-01-15 04:19:43,414 INFO     Settlement period thread run time: 0.042224919649
+2009-01-15 04:19:43,884 INFO     VPN thread run time: 0.00618486427629
+2009-01-15 04:19:45,273 INFO     Period. service thread run time: 0.00383875604166
+2009-01-15 04:19:46,711 INFO     Limit thread run time: 0.000255898445175
+2009-01-15 04:19:47,601 INFO     IPN thread run time: 0.00318057183176
+2009-01-15 04:19:48,743 INFO     Time access thread run time: 0.0177472276482
+2009-01-15 04:22:38,819 INFO     ast time : 0.0356545315117
+2009-01-15 04:22:43,507 INFO     Settlement period thread run time: 0.0793846703964
+2009-01-15 04:22:43,898 INFO     VPN thread run time: 0.00624436904764
+2009-01-15 04:22:45,289 INFO     Period. service thread run time: 0.00380327667153
+2009-01-15 04:22:46,726 INFO     Limit thread run time: 0.000246400031756
+2009-01-15 04:22:47,617 INFO     IPN thread run time: 0.00285203845851
+2009-01-15 04:22:48,819 INFO     Time access thread run time: 0.0185702372801
+2009-01-15 04:25:38,881 INFO     ast time : 0.0378486651207
+2009-01-15 04:25:43,552 INFO     Settlement period thread run time: 0.0424685260296
+2009-01-15 04:25:43,913 INFO     VPN thread run time: 0.00539314353955
+2009-01-15 04:25:45,302 INFO     Period. service thread run time: 0.0103124838497
+2009-01-15 04:25:46,756 INFO     Limit thread run time: 0.000251987334195
+2009-01-15 04:25:47,631 INFO     IPN thread run time: 0.00289198767132
+2009-01-15 04:25:48,865 INFO     Time access thread run time: 0.0177220847909
+2009-01-15 04:28:38,911 INFO     ast time : 0.0329932994246
+2009-01-15 04:28:43,598 INFO     Settlement period thread run time: 0.0374254269736
+2009-01-15 04:28:43,927 INFO     VPN thread run time: 0.00487631807846
+2009-01-15 04:28:45,318 INFO     Period. service thread run time: 0.00380970207334
+2009-01-15 04:28:46,770 INFO     Limit thread run time: 0.000246400031756
+2009-01-15 04:28:47,645 INFO     IPN thread run time: 0.00285567020546
+2009-01-15 04:28:48,895 INFO     Time access thread run time: 0.0174552911049
+2009-01-15 04:31:38,973 INFO     ast time : 0.0372885380675
+2009-01-15 04:31:43,660 INFO     Settlement period thread run time: 0.0463963995426
+2009-01-15 04:31:43,926 INFO     VPN thread run time: 0.00532050861148
+2009-01-15 04:31:45,332 INFO     Period. service thread run time: 0.00466735297596
+2009-01-15 04:31:46,785 INFO     Limit thread run time: 0.000251987334195
+2009-01-15 04:31:47,660 INFO     IPN thread run time: 0.00325153056838
+2009-01-15 04:31:48,926 INFO     Time access thread run time: 0.0177399641543
+2009-01-15 04:34:39,019 INFO     ast time : 0.0379989635549
+2009-01-15 04:34:43,706 INFO     Settlement period thread run time: 0.038215750883
+2009-01-15 04:34:43,924 INFO     VPN thread run time: 0.00574905470057
+2009-01-15 04:34:45,346 INFO     Period. service thread run time: 0.0038314925514
+2009-01-15 04:34:46,799 INFO     Limit thread run time: 0.000250311142736
+2009-01-15 04:34:47,674 INFO     IPN thread run time: 0.00309508610735
+2009-01-15 04:34:48,956 INFO     Time access thread run time: 0.0175712276287
+2009-01-15 04:37:39,063 INFO     ast time : 0.0359763601227
+2009-01-15 04:37:43,752 INFO     Settlement period thread run time: 0.0373120047407
+2009-01-15 04:37:43,986 INFO     VPN thread run time: 0.00579403248412
+2009-01-15 04:37:45,361 INFO     Period. service thread run time: 0.00481848949858
+2009-01-15 04:37:46,845 INFO     Limit thread run time: 0.000258133368334
+2009-01-15 04:37:47,688 INFO     IPN thread run time: 0.0030635178482
+2009-01-15 04:37:48,970 INFO     Time access thread run time: 0.0174971958731
+2009-01-15 04:40:39,109 INFO     ast time : 0.0338970455741
+2009-01-15 04:40:43,812 INFO     Settlement period thread run time: 0.0480435362588
+2009-01-15 04:40:43,984 INFO     VPN thread run time: 0.00499616571324
+2009-01-15 04:40:45,375 INFO     Period. service thread run time: 0.00382227349837
+2009-01-15 04:40:46,844 INFO     Limit thread run time: 0.000255060349446
+2009-01-15 04:40:47,703 INFO     IPN thread run time: 0.00303977181466
+2009-01-15 04:40:49,062 INFO     Time access thread run time: 0.0207048661214
+2009-01-15 04:43:39,155 INFO     ast time : 0.0337090328503
+2009-01-15 04:43:43,875 INFO     Settlement period thread run time: 0.0399377574504
+2009-01-15 04:43:44,015 INFO     VPN thread run time: 0.00517048954498
+2009-01-15 04:43:45,390 INFO     Period. service thread run time: 0.00382618461299
+2009-01-15 04:43:46,858 INFO     Limit thread run time: 0.000261485747615
+2009-01-15 04:43:47,717 INFO     IPN thread run time: 0.00290651465184
+2009-01-15 04:43:49,092 INFO     Time access thread run time: 0.019727646948
+2009-01-15 04:46:39,201 INFO     ast time : 0.0347823536249
+2009-01-15 04:46:43,920 INFO     Settlement period thread run time: 0.0423028625119
+2009-01-15 04:46:44,013 INFO     VPN thread run time: 0.00532022924745
+2009-01-15 04:46:45,420 INFO     Period. service thread run time: 0.0039809528862
+2009-01-15 04:46:46,872 INFO     Limit thread run time: 0.000250311142736
+2009-01-15 04:46:47,733 INFO     IPN thread run time: 0.00314313690615
+2009-01-15 04:46:49,138 INFO     Time access thread run time: 0.0179131705299
+2009-01-15 04:49:39,232 INFO     ast time : 0.0342683218114
+2009-01-15 04:49:43,966 INFO     Settlement period thread run time: 0.0357570585074
+2009-01-15 04:49:44,028 INFO     VPN thread run time: 0.00617341030738
+2009-01-15 04:49:45,434 INFO     Period. service thread run time: 0.00557417213349
+2009-01-15 04:49:46,888 INFO     Limit thread run time: 0.000247517491516
+2009-01-15 04:49:47,746 INFO     IPN thread run time: 0.0029372448189
+2009-01-15 04:49:49,168 INFO     Time access thread run time: 0.017638833986
+2009-01-15 04:52:39,276 INFO     ast time : 0.0353757251287
+2009-01-15 04:52:44,026 INFO     VPN thread run time: 0.0044483307247
+2009-01-15 04:52:44,042 INFO     Settlement period thread run time: 0.0506410730959
+2009-01-15 04:52:45,448 INFO     Period. service thread run time: 0.00391753700751
+2009-01-15 04:52:46,901 INFO     Limit thread run time: 0.000249473047006
+2009-01-15 04:52:47,823 INFO     IPN thread run time: 0.0338794455711
+2009-01-15 04:52:49,184 INFO     Time access thread run time: 0.0182478499337
+2009-01-15 04:55:39,338 INFO     ast time : 0.036834569757
+2009-01-15 04:55:44,026 INFO     VPN thread run time: 0.0061694991964
+2009-01-15 04:55:44,119 INFO     Settlement period thread run time: 0.0460762471193
+2009-01-15 04:55:45,463 INFO     Period. service thread run time: 0.00513417207912
+2009-01-15 04:55:46,901 INFO     Limit thread run time: 0.000258133364696
+2009-01-15 04:55:47,854 INFO     IPN thread run time: 0.00380020365992
+2009-01-15 04:55:49,213 INFO     Time access thread run time: 0.0182640531129
+2009-01-15 04:58:39,368 INFO     ast time : 0.0338389376302
+2009-01-15 04:58:44,040 INFO     VPN thread run time: 0.00489894665589
+2009-01-15 04:58:44,165 INFO     Settlement period thread run time: 0.047200971072
+2009-01-15 04:58:45,477 INFO     Period. service thread run time: 0.00400944813009
+2009-01-15 04:58:46,915 INFO     Limit thread run time: 0.000253384157986
+2009-01-15 04:58:47,868 INFO     IPN thread run time: 0.00331913692935
+2009-01-15 04:58:49,243 INFO     Time access thread run time: 0.0178634435397
+2009-01-15 05:01:39,414 INFO     ast time : 0.0337961947662
+2009-01-15 05:01:44,085 INFO     VPN thread run time: 0.00445000691616
+2009-01-15 05:01:44,226 INFO     Settlement period thread run time: 0.0407574146993
+2009-01-15 05:01:45,493 INFO     Period. service thread run time: 0.00382255286604
+2009-01-15 05:01:46,930 INFO     Limit thread run time: 0.000249752411037
+2009-01-15 05:01:47,882 INFO     IPN thread run time: 0.00284728924817
+2009-01-15 05:01:49,273 INFO     Time access thread run time: 0.0179503260879
+2009-01-15 05:04:39,476 INFO     ast time : 0.0398782526827
+2009-01-15 05:04:44,085 INFO     VPN thread run time: 0.00574821660484
+2009-01-15 05:04:44,288 INFO     Settlement period thread run time: 0.0483474855064
+2009-01-15 05:04:45,506 INFO     Period. service thread run time: 0.00555405784689
+2009-01-15 05:04:46,976 INFO     Limit thread run time: 0.000253104793956
+2009-01-15 05:04:47,898 INFO     IPN thread run time: 0.00284924480729
+2009-01-15 05:04:49,335 INFO     Time access thread run time: 0.0194932596169
+2009-01-15 05:07:39,522 INFO     ast time : 0.0381498207171
+2009-01-15 05:07:44,099 INFO     VPN thread run time: 0.004895873637
+2009-01-15 05:07:44,349 INFO     Settlement period thread run time: 0.0441891357696
+2009-01-15 05:07:45,522 INFO     Period. service thread run time: 0.00556383562798
+2009-01-15 05:07:47,006 INFO     Limit thread run time: 0.000259809559793
+2009-01-15 05:07:47,911 INFO     IPN thread run time: 0.00585381661585
+2009-01-15 05:07:49,365 INFO     Time access thread run time: 0.0182428213629
+2009-01-15 05:10:39,566 INFO     ast time : 0.0335495153704
+2009-01-15 05:10:44,098 INFO     VPN thread run time: 0.00613569601774
+2009-01-15 05:10:44,394 INFO     Settlement period thread run time: 0.0430515610205
+2009-01-15 05:10:45,536 INFO     Period. service thread run time: 0.00391362589289
+2009-01-15 05:10:47,052 INFO     Limit thread run time: 0.000250311142736
+2009-01-15 05:10:47,941 INFO     IPN thread run time: 0.00287662258779
+2009-01-15 05:10:49,380 INFO     Time access thread run time: 0.0176664911342
+2009-01-15 05:13:39,612 INFO     ast time : 0.0338288804851
+2009-01-15 05:13:44,112 INFO     VPN thread run time: 0.00583062931037
+2009-01-15 05:13:44,457 INFO     Settlement period thread run time: 0.0468098599122
+2009-01-15 05:13:45,549 INFO     Period. service thread run time: 0.00399939098497
+2009-01-15 05:13:47,065 INFO     Limit thread run time: 0.000260927015916
+2009-01-15 05:13:47,957 INFO     IPN thread run time: 0.0042910481643
+2009-01-15 05:13:49,410 INFO     Time access thread run time: 0.0176259831896
+2009-01-15 05:16:39,642 INFO     ast time : 0.0329550264069
+2009-01-15 05:16:44,111 INFO     VPN thread run time: 0.00497661015834
+2009-01-15 05:16:44,502 INFO     Settlement period thread run time: 0.0437787484152
+2009-01-15 05:16:45,565 INFO     Period. service thread run time: 0.00391725763984
+2009-01-15 05:16:47,081 INFO     Limit thread run time: 0.000255339713476
+2009-01-15 05:16:47,970 INFO     IPN thread run time: 0.00286935909389
+2009-01-15 05:16:49,456 INFO     Time access thread run time: 0.0223885996675
+2009-01-15 05:19:39,703 INFO     ast time : 0.0364144046252
+2009-01-15 05:19:44,125 INFO     VPN thread run time: 0.00620386110313
+2009-01-15 05:19:44,563 INFO     Settlement period thread run time: 0.042900983226
+2009-01-15 05:19:45,578 INFO     Period. service thread run time: 0.00465645773147
+2009-01-15 05:19:47,095 INFO     Limit thread run time: 0.000251149238466
+2009-01-15 05:19:47,986 INFO     IPN thread run time: 0.00305094641953
+2009-01-15 05:19:49,486 INFO     Time access thread run time: 0.0190426436893
+2009-01-15 05:22:39,734 INFO     ast time : 0.0334232423374
+2009-01-15 05:22:44,125 INFO     VPN thread run time: 0.00445056564422
+2009-01-15 05:22:44,625 INFO     Settlement period thread run time: 0.037316195212
+2009-01-15 05:22:45,594 INFO     Period. service thread run time: 0.00507913715046
+2009-01-15 05:22:47,141 INFO     Limit thread run time: 0.000253663522017
+2009-01-15 05:22:47,984 INFO     IPN thread run time: 0.00286963845792
+2009-01-15 05:22:49,546 INFO     Time access thread run time: 0.0189264278015
+2009-01-15 05:25:39,779 INFO     ast time : 0.0325826327062
+2009-01-15 05:25:44,154 INFO     VPN thread run time: 0.00500734031812
+2009-01-15 05:25:44,671 INFO     Settlement period thread run time: 0.039530722479
+2009-01-15 05:25:45,624 INFO     Period. service thread run time: 0.0125163952398
+2009-01-15 05:25:47,140 INFO     Limit thread run time: 0.000267911145784
+2009-01-15 05:25:48,015 INFO     IPN thread run time: 0.00287215274875
+2009-01-15 05:25:49,576 INFO     Time access thread run time: 0.0192423897424
+2009-01-15 05:28:39,825 INFO     ast time : 0.0345507599413
+2009-01-15 05:28:44,154 INFO     VPN thread run time: 0.00488693395164
+2009-01-15 05:28:44,717 INFO     Settlement period thread run time: 0.0373139602925
+2009-01-15 05:28:45,638 INFO     Period. service thread run time: 0.00389881954106
+2009-01-15 05:28:47,170 INFO     Limit thread run time: 0.000258692096395
+2009-01-15 05:28:48,029 INFO     IPN thread run time: 0.00288109243047
+2009-01-15 05:28:49,607 INFO     Time access thread run time: 0.0228065298797
+2009-01-15 05:31:39,887 INFO     ast time : 0.0483938601137
+2009-01-15 05:31:44,184 INFO     VPN thread run time: 0.00495817205956
+2009-01-15 05:31:44,871 INFO     Settlement period thread run time: 0.136707039583
+2009-01-15 05:31:45,653 INFO     Period. service thread run time: 0.00469556884855
+2009-01-15 05:31:47,168 INFO     Limit thread run time: 0.000252825429925
+2009-01-15 05:31:48,043 INFO     IPN thread run time: 0.00390412748311
+2009-01-15 05:31:49,637 INFO     Time access thread run time: 0.0175142371445
+2009-01-15 05:34:39,933 INFO     ast time : 0.0354964108556
+2009-01-15 05:34:44,183 INFO     VPN thread run time: 0.00575045152073
+2009-01-15 05:34:44,917 INFO     Settlement period thread run time: 0.0416142275062
+2009-01-15 05:34:45,667 INFO     Period. service thread run time: 0.00857650902253
+2009-01-15 05:34:47,213 INFO     Limit thread run time: 0.000253663525655
+2009-01-15 05:34:48,058 INFO     IPN thread run time: 0.00284393686889
+2009-01-15 05:34:49,667 INFO     Time access thread run time: 0.0186682944332
+2009-01-15 05:37:39,979 INFO     ast time : 0.03734496982
+2009-01-15 05:37:44,197 INFO     VPN thread run time: 0.00628627381593
+2009-01-15 05:37:44,979 INFO     Settlement period thread run time: 0.0480633711813
+2009-01-15 05:37:45,681 INFO     Period. service thread run time: 0.00393038780021
+2009-01-15 05:37:47,229 INFO     Limit thread run time: 0.000254222257354
+2009-01-15 05:37:48,056 INFO     IPN thread run time: 0.00287243210914
+2009-01-15 05:37:49,697 INFO     Time access thread run time: 0.0177600784446
+2009-01-15 05:40:40,025 INFO     ast time : 0.0338439662009
+2009-01-15 05:40:44,227 INFO     VPN thread run time: 0.00573927691948
+2009-01-15 05:40:45,039 INFO     Settlement period thread run time: 0.0468878027787
+2009-01-15 05:40:45,696 INFO     Period. service thread run time: 0.00382283223371
+2009-01-15 05:40:47,259 INFO     Limit thread run time: 0.000255339713476
+2009-01-15 05:40:48,071 INFO     IPN thread run time: 0.00287634322376
+2009-01-15 05:40:49,711 INFO     Time access thread run time: 0.0184353039258
+2009-01-15 05:43:40,085 INFO     ast time : 0.0369563729473
+2009-01-15 05:43:44,226 INFO     VPN thread run time: 0.00531827369196
+2009-01-15 05:43:45,101 INFO     Settlement period thread run time: 0.0433284118517
+2009-01-15 05:43:45,710 INFO     Period. service thread run time: 0.00388820367152
+2009-01-15 05:43:47,257 INFO     Limit thread run time: 0.000252266698226
+2009-01-15 05:43:48,085 INFO     IPN thread run time: 0.00296685751891
+2009-01-15 05:43:49,773 INFO     Time access thread run time: 0.0175346307988
+2009-01-15 05:46:40,147 INFO     ast time : 0.0560979118854
+2009-01-15 05:46:44,240 INFO     VPN thread run time: 0.00790295973275
+2009-01-15 05:46:45,163 INFO     Settlement period thread run time: 0.0442849580031
+2009-01-15 05:46:45,724 INFO     Period. service thread run time: 0.00465673709914
+2009-01-15 05:46:47,272 INFO     Limit thread run time: 0.000252546065894
+2009-01-15 05:46:48,099 INFO     IPN thread run time: 0.00340937186047
+2009-01-15 05:46:49,802 INFO     Time access thread run time: 0.0194924215211
+2009-01-15 05:49:40,193 INFO     ast time : 0.0377277000298
+2009-01-15 05:49:44,240 INFO     VPN thread run time: 0.00488721331931
+2009-01-15 05:49:45,255 INFO     Settlement period thread run time: 0.0838430582662
+2009-01-15 05:49:45,740 INFO     Period. service thread run time: 0.00381417191238
+2009-01-15 05:49:47,286 INFO     Limit thread run time: 0.00032182861105
+2009-01-15 05:49:48,115 INFO     IPN thread run time: 0.00284980353899
+2009-01-15 05:49:49,834 INFO     Time access thread run time: 0.0174125482445
+2009-01-15 05:52:40,239 INFO     ast time : 0.0362263919014
+2009-01-15 05:52:44,239 INFO     VPN thread run time: 0.00490732760591
+2009-01-15 05:52:45,316 INFO     Settlement period thread run time: 0.0446623802745
+2009-01-15 05:52:45,753 INFO     Period. service thread run time: 0.00398598146057
+2009-01-15 05:52:47,332 INFO     Limit thread run time: 0.000258971464064
+2009-01-15 05:52:48,128 INFO     IPN thread run time: 0.00299786704636
+2009-01-15 05:52:49,864 INFO     Time access thread run time: 0.0180330181611
+2009-01-15 05:55:40,283 INFO     ast time : 0.0362769569874
+2009-01-15 05:55:44,253 INFO     VPN thread run time: 0.00540767052735
+2009-01-15 05:55:45,361 INFO     Settlement period thread run time: 0.0403517765517
+2009-01-15 05:55:45,769 INFO     Period. service thread run time: 0.0038521655697
+2009-01-15 05:55:47,331 INFO     Limit thread run time: 0.000259809556155
+2009-01-15 05:55:48,144 INFO     IPN thread run time: 0.00287997496707
+2009-01-15 05:55:49,894 INFO     Time access thread run time: 0.0177100720903
+2009-01-15 05:58:40,329 INFO     ast time : 0.0357615283501
+2009-01-15 05:58:44,267 INFO     VPN thread run time: 0.00581582296218
+2009-01-15 05:58:45,424 INFO     Settlement period thread run time: 0.037764296856
+2009-01-15 05:58:45,782 INFO     Period. service thread run time: 0.00385579731665
+2009-01-15 05:58:47,345 INFO     Limit thread run time: 0.000333841311658
+2009-01-15 05:58:48,157 INFO     IPN thread run time: 0.00287159401705
+2009-01-15 05:58:49,924 INFO     Time access thread run time: 0.0179346816403
+2009-01-15 06:01:40,391 INFO     ast time : 0.037282112673
+2009-01-15 06:01:44,266 INFO     VPN thread run time: 0.00584822931705
+2009-01-15 06:01:45,500 INFO     Settlement period thread run time: 0.0665981290913
+2009-01-15 06:01:45,812 INFO     Period. service thread run time: 0.00827563279745
+2009-01-15 06:01:47,391 INFO     Limit thread run time: 0.000349765123246
+2009-01-15 06:01:48,173 INFO     IPN thread run time: 0.00290483846402
+2009-01-15 06:01:49,953 INFO     Time access thread run time: 0.0179064657641
+2009-01-15 06:04:40,421 INFO     ast time : 0.0337107090418
+2009-01-15 06:04:44,296 INFO     VPN thread run time: 0.0054853340298
+2009-01-15 06:04:45,546 INFO     Settlement period thread run time: 0.0407613258103
+2009-01-15 06:04:45,828 INFO     Period. service thread run time: 0.00385467985689
+2009-01-15 06:04:47,390 INFO     Limit thread run time: 0.000259250828094
+2009-01-15 06:04:48,187 INFO     IPN thread run time: 0.00285986068047
+2009-01-15 06:04:50,015 INFO     Time access thread run time: 0.0176751514518
+2009-01-15 06:07:40,467 INFO     ast time : 0.0333310518508
+2009-01-15 06:07:44,311 INFO     VPN thread run time: 0.0046511497967
+2009-01-15 06:07:45,592 INFO     Settlement period thread run time: 0.0368985443711
+2009-01-15 06:07:45,842 INFO     Period. service thread run time: 0.00392396240568
+2009-01-15 06:07:47,404 INFO     Limit thread run time: 0.000271263525065
+2009-01-15 06:07:48,201 INFO     IPN thread run time: 0.00287327020487
+2009-01-15 06:07:50,045 INFO     Time access thread run time: 0.0179701610141
+2009-01-15 06:10:40,513 INFO     ast time : 0.0373142396566
+2009-01-15 06:10:44,309 INFO     VPN thread run time: 0.00539537846271
+2009-01-15 06:10:45,668 INFO     Settlement period thread run time: 0.0387381636501
+2009-01-15 06:10:45,857 INFO     Period. service thread run time: 0.003953016374
+2009-01-15 06:10:47,434 INFO     Limit thread run time: 0.000265955586656
+2009-01-15 06:10:48,246 INFO     IPN thread run time: 0.00344149885132
+2009-01-15 06:10:50,059 INFO     Time access thread run time: 0.0175385419097
+2009-01-15 06:13:40,559 INFO     ast time : 0.0347625186987
+2009-01-15 06:13:44,323 INFO     VPN thread run time: 0.00491207681625
+2009-01-15 06:13:45,730 INFO     Settlement period thread run time: 0.0486919426912
+2009-01-15 06:13:45,871 INFO     Period. service thread run time: 0.00387144176057
+2009-01-15 06:13:47,434 INFO     Limit thread run time: 0.000250869874435
+2009-01-15 06:13:48,262 INFO     IPN thread run time: 0.00283751147072
+2009-01-15 06:13:50,121 INFO     Time access thread run time: 0.0176933101866
+2009-01-15 06:16:40,619 INFO     ast time : 0.0351346330317
+2009-01-15 06:16:44,338 INFO     VPN thread run time: 0.00531380384928
+2009-01-15 06:16:45,792 INFO     Settlement period thread run time: 0.0459469010748
+2009-01-15 06:16:45,885 INFO     Period. service thread run time: 0.00425193704723
+2009-01-15 06:16:47,447 INFO     Limit thread run time: 0.000247796859185
+2009-01-15 06:16:48,276 INFO     IPN thread run time: 0.00419299101122
+2009-01-15 06:16:50,151 INFO     Time access thread run time: 0.0183861356672
+2009-01-15 06:19:40,665 INFO     ast time : 0.0334075978899
+2009-01-15 06:19:44,338 INFO     VPN thread run time: 0.00492381014919
+2009-01-15 06:19:45,838 INFO     Settlement period thread run time: 0.0437753960359
+2009-01-15 06:19:45,900 INFO     Period. service thread run time: 0.00383931477336
+2009-01-15 06:19:47,463 INFO     Limit thread run time: 0.000252266698226
+2009-01-15 06:19:48,290 INFO     IPN thread run time: 0.00287215274511
+2009-01-15 06:19:50,165 INFO     Time access thread run time: 0.0176184403317
+2009-01-15 06:22:40,711 INFO     ast time : 0.0336850074527
+2009-01-15 06:22:44,335 INFO     VPN thread run time: 0.00497828634616
+2009-01-15 06:22:45,882 INFO     Settlement period thread run time: 0.0368815030961
+2009-01-15 06:22:45,914 INFO     Period. service thread run time: 0.00382003858249
+2009-01-15 06:22:47,476 INFO     Limit thread run time: 0.000254222253716
+2009-01-15 06:22:48,305 INFO     IPN thread run time: 0.00316101627686
+2009-01-15 06:22:50,196 INFO     Time access thread run time: 0.0174614371354
+2009-01-15 06:25:40,756 INFO     ast time : 0.0325482707995
+2009-01-15 06:25:44,351 INFO     VPN thread run time: 0.00579654676767
+2009-01-15 06:25:45,944 INFO     Period. service thread run time: 0.0128608524283
+2009-01-15 06:25:45,960 INFO     Settlement period thread run time: 0.0577805279718
+2009-01-15 06:25:47,492 INFO     Limit thread run time: 0.000259530192125
+2009-01-15 06:25:48,303 INFO     IPN thread run time: 0.00287327020487
+2009-01-15 06:25:50,242 INFO     Time access thread run time: 0.0193555326186
+2009-01-15 06:28:40,802 INFO     ast time : 0.0369689443796
+2009-01-15 06:28:44,365 INFO     VPN thread run time: 0.00593874361221
+2009-01-15 06:28:45,959 INFO     Period. service thread run time: 0.00423042593684
+2009-01-15 06:28:46,022 INFO     Settlement period thread run time: 0.0430116118114
+2009-01-15 06:28:47,506 INFO     Limit thread run time: 0.000250031778705
+2009-01-15 06:28:48,319 INFO     IPN thread run time: 0.00286293369936
+2009-01-15 06:28:50,286 INFO     Time access thread run time: 0.0176402308134
+2009-01-15 06:31:40,848 INFO     ast time : 0.0392711922832
+2009-01-15 06:31:44,364 INFO     VPN thread run time: 0.00575296580791
+2009-01-15 06:31:45,973 INFO     Period. service thread run time: 0.00398486399354
+2009-01-15 06:31:46,066 INFO     Settlement period thread run time: 0.0409431925
+2009-01-15 06:31:47,505 INFO     Limit thread run time: 0.000250031778705
+2009-01-15 06:31:48,348 INFO     IPN thread run time: 0.00500761967851
+2009-01-15 06:31:50,332 INFO     Time access thread run time: 0.0181794054806
+2009-01-15 06:34:40,894 INFO     ast time : 0.0347971599695
+2009-01-15 06:34:44,378 INFO     VPN thread run time: 0.00531352448888
+2009-01-15 06:34:45,987 INFO     Period. service thread run time: 0.00381975921482
+2009-01-15 06:34:46,128 INFO     Settlement period thread run time: 0.0494786348572
+2009-01-15 06:34:47,519 INFO     Limit thread run time: 0.000255339713476
+2009-01-15 06:34:48,362 INFO     IPN thread run time: 0.00288248925062
+2009-01-15 06:34:50,362 INFO     Time access thread run time: 0.0225958885858
+2009-01-15 06:37:40,940 INFO     ast time : 0.0338316741399
+2009-01-15 06:37:44,378 INFO     VPN thread run time: 0.00491766411869
+2009-01-15 06:37:46,003 INFO     Period. service thread run time: 0.00424467355333
+2009-01-15 06:37:46,190 INFO     Settlement period thread run time: 0.0487514474589
+2009-01-15 06:37:47,533 INFO     Limit thread run time: 0.000321269886626
+2009-01-15 06:37:48,408 INFO     IPN thread run time: 0.00283667337499
+2009-01-15 06:37:50,392 INFO     Time access thread run time: 0.0177550498775
+2009-01-15 06:40:40,986 INFO     ast time : 0.0364775411435
+2009-01-15 06:40:44,391 INFO     VPN thread run time: 0.00746268031799
+2009-01-15 06:40:46,016 INFO     Period. service thread run time: 0.0051048387395
+2009-01-15 06:40:46,250 INFO     Settlement period thread run time: 0.0420944561411
+2009-01-15 06:40:47,548 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 06:40:48,423 INFO     IPN thread run time: 0.00802979149739
+2009-01-15 06:40:50,438 INFO     Time access thread run time: 0.0177743260647
+2009-01-15 06:43:41,032 INFO     ast time : 0.039805617751
+2009-01-15 06:43:44,407 INFO     VPN thread run time: 0.0113352395347
+2009-01-15 06:43:46,032 INFO     Period. service thread run time: 0.0128812460753
+2009-01-15 06:43:46,296 INFO     Settlement period thread run time: 0.04923027927
+2009-01-15 06:43:47,562 INFO     Limit thread run time: 0.000254222257354
+2009-01-15 06:43:48,437 INFO     IPN thread run time: 0.00332053375314
+2009-01-15 06:43:50,500 INFO     Time access thread run time: 0.0186635452264
+2009-01-15 06:46:41,076 INFO     ast time : 0.0338230138223
+2009-01-15 06:46:44,404 INFO     VPN thread run time: 0.0053353149633
+2009-01-15 06:46:46,046 INFO     Period. service thread run time: 0.00425556879782
+2009-01-15 06:46:46,358 INFO     Settlement period thread run time: 0.043775954764
+2009-01-15 06:46:47,562 INFO     Limit thread run time: 0.000254222250078
+2009-01-15 06:46:48,451 INFO     IPN thread run time: 0.00286097814387
+2009-01-15 06:46:50,529 INFO     Time access thread run time: 0.0174779196823
+2009-01-15 06:49:41,122 INFO     ast time : 0.0346652996377
+2009-01-15 06:49:44,436 INFO     VPN thread run time: 0.00887235668051
+2009-01-15 06:49:46,059 INFO     Period. service thread run time: 0.00392927033681
+2009-01-15 06:49:46,434 INFO     Settlement period thread run time: 0.0747938634668
+2009-01-15 06:49:47,575 INFO     Limit thread run time: 0.000251987337833
+2009-01-15 06:49:48,467 INFO     IPN thread run time: 0.00285371464997
+2009-01-15 06:49:50,559 INFO     Time access thread run time: 0.0176120149335
+2009-01-15 06:52:41,168 INFO     ast time : 0.0347058075786
+2009-01-15 06:52:44,450 INFO     VPN thread run time: 0.00532497845415
+2009-01-15 06:52:46,075 INFO     Period. service thread run time: 0.00382199413434
+2009-01-15 06:52:46,496 INFO     Settlement period thread run time: 0.0390664176593
+2009-01-15 06:52:47,591 INFO     Limit thread run time: 0.000261206376308
+2009-01-15 06:52:48,480 INFO     IPN thread run time: 0.0029372448189
+2009-01-15 06:52:50,575 INFO     Time access thread run time: 0.0180894499135
+2009-01-15 06:55:41,213 INFO     ast time : 0.0346876488475
+2009-01-15 06:55:44,448 INFO     VPN thread run time: 0.00445196247165
+2009-01-15 06:55:46,088 INFO     Period. service thread run time: 0.0038236703258
+2009-01-15 06:55:46,542 INFO     Settlement period thread run time: 0.0386166398239
+2009-01-15 06:55:47,635 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 06:55:48,496 INFO     IPN thread run time: 0.00285008289939
+2009-01-15 06:55:50,605 INFO     Time access thread run time: 0.0175083704744
+2009-01-15 06:58:41,259 INFO     ast time : 0.0367077379924
+2009-01-15 06:58:44,463 INFO     VPN thread run time: 0.00663408338733
+2009-01-15 06:58:46,104 INFO     Period. service thread run time: 0.00392815288069
+2009-01-15 06:58:46,588 INFO     Settlement period thread run time: 0.0408496051896
+2009-01-15 06:58:47,634 INFO     Limit thread run time: 0.000471568317153
+2009-01-15 06:58:48,509 INFO     IPN thread run time: 0.00289031147986
+2009-01-15 06:58:50,651 INFO     Time access thread run time: 0.0178480784598
+2009-01-15 07:01:41,322 INFO     ast time : 0.034263293237
+2009-01-15 07:01:44,477 INFO     VPN thread run time: 0.0126912778069
+2009-01-15 07:01:46,118 INFO     Period. service thread run time: 0.00426087673259
+2009-01-15 07:01:46,650 INFO     Settlement period thread run time: 0.0440905198848
+2009-01-15 07:01:47,650 INFO     Limit thread run time: 0.000256736544543
+2009-01-15 07:01:48,525 INFO     IPN thread run time: 0.00317135277874
+2009-01-15 07:01:50,680 INFO     Time access thread run time: 0.0172907450542
+2009-01-15 07:04:41,351 INFO     ast time : 0.0338255281022
+2009-01-15 07:04:44,476 INFO     VPN thread run time: 0.00492911808396
+2009-01-15 07:04:46,132 INFO     Period. service thread run time: 0.00412007671548
+2009-01-15 07:04:46,694 INFO     Settlement period thread run time: 0.03989501459
+2009-01-15 07:04:47,664 INFO     Limit thread run time: 0.000245841300057
+2009-01-15 07:04:48,539 INFO     IPN thread run time: 0.00380160048371
+2009-01-15 07:04:50,710 INFO     Time access thread run time: 0.0176083831902
+2009-01-15 07:07:41,413 INFO     ast time : 0.0372770840986
+2009-01-15 07:07:44,474 INFO     VPN thread run time: 0.00535570862121
+2009-01-15 07:07:46,147 INFO     Period. service thread run time: 0.00380355603556
+2009-01-15 07:07:46,788 INFO     Settlement period thread run time: 0.0416273576702
+2009-01-15 07:07:47,678 INFO     Limit thread run time: 0.000251707970165
+2009-01-15 07:07:48,553 INFO     IPN thread run time: 0.0028668448067
+2009-01-15 07:07:50,740 INFO     Time access thread run time: 0.0186518118935
+2009-01-15 07:10:41,459 INFO     ast time : 0.0403056813084
+2009-01-15 07:10:44,490 INFO     VPN thread run time: 0.00531464194501
+2009-01-15 07:10:46,161 INFO     Period. service thread run time: 0.00380607032275
+2009-01-15 07:10:46,848 INFO     Settlement period thread run time: 0.0490819363913
+2009-01-15 07:10:47,693 INFO     Limit thread run time: 0.000252266698226
+2009-01-15 07:10:48,568 INFO     IPN thread run time: 0.00307888292446
+2009-01-15 07:10:50,756 INFO     Time access thread run time: 0.0178447260769
+2009-01-15 07:13:41,503 INFO     ast time : 0.034385375795
+2009-01-15 07:13:44,489 INFO     VPN thread run time: 0.00575380391092
+2009-01-15 07:13:46,176 INFO     Period. service thread run time: 0.0039463116118
+2009-01-15 07:13:46,911 INFO     Settlement period thread run time: 0.0411859607848
+2009-01-15 07:13:47,707 INFO     Limit thread run time: 0.000311492105538
+2009-01-15 07:13:48,582 INFO     IPN thread run time: 0.00286488924758
+2009-01-15 07:13:50,801 INFO     Time access thread run time: 0.0205232787994
+2009-01-15 07:16:41,549 INFO     ast time : 0.0335998010924
+2009-01-15 07:16:44,503 INFO     VPN thread run time: 0.00660167702881
+2009-01-15 07:16:46,190 INFO     Period. service thread run time: 0.00382059731055
+2009-01-15 07:16:47,003 INFO     Settlement period thread run time: 0.073515209333
+2009-01-15 07:16:47,721 INFO     Limit thread run time: 0.000245841300057
+2009-01-15 07:16:48,581 INFO     IPN thread run time: 0.00286460988718
+2009-01-15 07:16:50,815 INFO     Time access thread run time: 0.0174558498329
+2009-01-15 07:19:41,595 INFO     ast time : 0.0338380995308
+2009-01-15 07:19:44,502 INFO     VPN thread run time: 0.00491487046384
+2009-01-15 07:19:46,204 INFO     Period. service thread run time: 0.00380662905809
+2009-01-15 07:19:47,049 INFO     Settlement period thread run time: 0.0382562588275
+2009-01-15 07:19:47,736 INFO     Limit thread run time: 0.000258971464064
+2009-01-15 07:19:48,627 INFO     IPN thread run time: 0.0231484727847
+2009-01-15 07:19:50,845 INFO     Time access thread run time: 0.0174737292036
+2009-01-15 07:22:41,641 INFO     ast time : 0.0382344683458
+2009-01-15 07:22:44,516 INFO     VPN thread run time: 0.00532050860784
+2009-01-15 07:22:46,220 INFO     Period. service thread run time: 0.00519088320289
+2009-01-15 07:22:47,109 INFO     Settlement period thread run time: 0.0369013380187
+2009-01-15 07:22:47,734 INFO     Limit thread run time: 0.000252546065894
+2009-01-15 07:22:48,641 INFO     IPN thread run time: 0.00284868607559
+2009-01-15 07:22:50,875 INFO     Time access thread run time: 0.0177206879598
+2009-01-15 07:25:41,687 INFO     ast time : 0.0339984551174
+2009-01-15 07:25:44,515 INFO     VPN thread run time: 0.00488721331931
+2009-01-15 07:25:46,250 INFO     Period. service thread run time: 0.0122588206068
+2009-01-15 07:25:47,155 INFO     Settlement period thread run time: 0.047200971072
+2009-01-15 07:25:47,750 INFO     Limit thread run time: 0.000341663537256
+2009-01-15 07:25:48,655 INFO     IPN thread run time: 0.0028690797335
+2009-01-15 07:25:50,905 INFO     Time access thread run time: 0.0176975006616
+2009-01-15 07:28:41,733 INFO     ast time : 0.0374860492084
+2009-01-15 07:28:44,529 INFO     VPN thread run time: 0.00574877532927
+2009-01-15 07:28:46,263 INFO     Period. service thread run time: 0.00441620373022
+2009-01-15 07:28:47,201 INFO     Settlement period thread run time: 0.035612347383
+2009-01-15 07:28:47,779 INFO     Limit thread run time: 0.000251149234828
+2009-01-15 07:28:48,671 INFO     IPN thread run time: 0.00376891476481
+2009-01-15 07:28:50,936 INFO     Time access thread run time: 0.0176609038244
+2009-01-15 07:31:41,779 INFO     ast time : 0.0338797249424
+2009-01-15 07:31:44,529 INFO     VPN thread run time: 0.00491710539063
+2009-01-15 07:31:46,279 INFO     Period. service thread run time: 0.00388317510078
+2009-01-15 07:31:47,263 INFO     Settlement period thread run time: 0.0382015032665
+2009-01-15 07:31:47,825 INFO     Limit thread run time: 0.000260647655523
+2009-01-15 07:31:48,684 INFO     IPN thread run time: 0.00298306070181
+2009-01-15 07:31:50,966 INFO     Time access thread run time: 0.0175106053939
+2009-01-15 07:34:41,823 INFO     ast time : 0.0392153192661
+2009-01-15 07:34:44,528 INFO     VPN thread run time: 0.00489615300467
+2009-01-15 07:34:46,292 INFO     Period. service thread run time: 0.00380383540323
+2009-01-15 07:34:47,309 INFO     Settlement period thread run time: 0.0382277635872
+2009-01-15 07:34:47,839 INFO     Limit thread run time: 0.000248914322583
+2009-01-15 07:34:48,714 INFO     IPN thread run time: 0.00313028611708
+2009-01-15 07:34:51,042 INFO     Time access thread run time: 0.0178019832092
+2009-01-15 07:37:41,869 INFO     ast time : 0.0355682076915
+2009-01-15 07:37:44,542 INFO     VPN thread run time: 0.00489307998942
+2009-01-15 07:37:46,308 INFO     Period. service thread run time: 0.00384071160079
+2009-01-15 07:37:47,355 INFO     Settlement period thread run time: 0.039891103479
+2009-01-15 07:37:47,885 INFO     Limit thread run time: 0.000254780985415
+2009-01-15 07:37:48,730 INFO     IPN thread run time: 0.00429579737101
+2009-01-15 07:37:51,072 INFO     Time access thread run time: 0.0190608024204
+2009-01-15 07:40:41,915 INFO     ast time : 0.0368778713528
+2009-01-15 07:40:44,540 INFO     VPN thread run time: 0.00616391189396
+2009-01-15 07:40:46,322 INFO     Period. service thread run time: 0.0048886101431
+2009-01-15 07:40:47,400 INFO     Settlement period thread run time: 0.0377539603505
+2009-01-15 07:40:47,915 INFO     Limit thread run time: 0.000258692096395
+2009-01-15 07:40:48,743 INFO     IPN thread run time: 0.004244952921
+2009-01-15 07:40:51,102 INFO     Time access thread run time: 0.0182215896202
+2009-01-15 07:43:41,961 INFO     ast time : 0.0360123982246
+2009-01-15 07:43:44,539 INFO     VPN thread run time: 0.00490006411565
+2009-01-15 07:43:46,336 INFO     Period. service thread run time: 0.00381556874345
+2009-01-15 07:43:47,461 INFO     Settlement period thread run time: 0.0386155223605
+2009-01-15 07:43:47,914 INFO     Limit thread run time: 0.000264279398834
+2009-01-15 07:43:48,757 INFO     IPN thread run time: 0.00284868607559
+2009-01-15 07:43:51,118 INFO     Time access thread run time: 0.0182006372343
+2009-01-15 07:46:42,039 INFO     ast time : 0.0356757632617
+2009-01-15 07:46:44,569 INFO     VPN thread run time: 0.00444246405823
+2009-01-15 07:46:46,351 INFO     Period. service thread run time: 0.0042728894332
+2009-01-15 07:46:47,506 INFO     Settlement period thread run time: 0.0433756245548
+2009-01-15 07:46:47,928 INFO     Limit thread run time: 0.000254222250078
+2009-01-15 07:46:48,773 INFO     IPN thread run time: 0.00569681342313
+2009-01-15 07:46:51,148 INFO     Time access thread run time: 0.0183637864611
+2009-01-15 07:49:42,084 INFO     ast time : 0.0326295660489
+2009-01-15 07:49:44,569 INFO     VPN thread run time: 0.006088203947
+2009-01-15 07:49:46,365 INFO     Period. service thread run time: 0.00516015303583
+2009-01-15 07:49:47,552 INFO     Settlement period thread run time: 0.0369717380236
+2009-01-15 07:49:47,944 INFO     Limit thread run time: 0.000247517491516
+2009-01-15 07:49:48,786 INFO     IPN thread run time: 0.00295596228534
+2009-01-15 07:49:51,209 INFO     Time access thread run time: 0.017977145144
+2009-01-15 07:52:42,130 INFO     ast time : 0.0375363349231
+2009-01-15 07:52:44,582 INFO     VPN thread run time: 0.00488386093639
+2009-01-15 07:52:46,380 INFO     Period. service thread run time: 0.00853264870238
+2009-01-15 07:52:47,614 INFO     Settlement period thread run time: 0.0433342785182
+2009-01-15 07:52:47,957 INFO     Limit thread run time: 0.000246120667725
+2009-01-15 07:52:48,786 INFO     IPN thread run time: 0.00284030512557
+2009-01-15 07:52:51,239 INFO     Time access thread run time: 0.0177008530445
+2009-01-15 07:55:42,176 INFO     ast time : 0.033920232876
+2009-01-15 07:55:44,582 INFO     VPN thread run time: 0.00573760072439
+2009-01-15 07:55:46,394 INFO     Period. service thread run time: 0.00382059731055
+2009-01-15 07:55:47,676 INFO     Settlement period thread run time: 0.0450428755648
+2009-01-15 07:55:47,957 INFO     Limit thread run time: 0.000256177809206
+2009-01-15 07:55:48,801 INFO     IPN thread run time: 0.00284812734753
+2009-01-15 07:55:51,269 INFO     Time access thread run time: 0.0177391260659
+2009-01-15 07:58:42,221 INFO     ast time : 0.0343021249864
+2009-01-15 07:58:44,596 INFO     VPN thread run time: 0.00489615300467
+2009-01-15 07:58:46,408 INFO     Period. service thread run time: 0.00497409587115
+2009-01-15 07:58:47,720 INFO     Settlement period thread run time: 0.0390739605136
+2009-01-15 07:58:47,970 INFO     Limit thread run time: 0.000270704797003
+2009-01-15 07:58:48,815 INFO     IPN thread run time: 0.00287466702866
+2009-01-15 07:58:51,315 INFO     Time access thread run time: 0.0174404847494
+2009-01-15 08:01:42,266 INFO     ast time : 0.033243889935
+2009-01-15 08:01:44,595 INFO     VPN thread run time: 0.00544678164442
+2009-01-15 08:01:46,423 INFO     Period. service thread run time: 0.0038029973075
+2009-01-15 08:01:47,766 INFO     Settlement period thread run time: 0.0354402584708
+2009-01-15 08:01:47,986 INFO     Limit thread run time: 0.000258133368334
+2009-01-15 08:01:48,829 INFO     IPN thread run time: 0.00293249560491
+2009-01-15 08:01:51,345 INFO     Time access thread run time: 0.0176589482726
+2009-01-15 08:04:42,312 INFO     ast time : 0.0349686901536
+2009-01-15 08:04:44,594 INFO     VPN thread run time: 0.00518389906938
+2009-01-15 08:04:46,437 INFO     Period. service thread run time: 0.00557221658528
+2009-01-15 08:04:47,812 INFO     Settlement period thread run time: 0.0399687669778
+2009-01-15 08:04:48,000 INFO     Limit thread run time: 0.000248076219577
+2009-01-15 08:04:48,844 INFO     IPN thread run time: 0.00291405751341
+2009-01-15 08:04:51,375 INFO     Time access thread run time: 0.0175273673085
+2009-01-15 08:07:42,358 INFO     ast time : 0.0373192682309
+2009-01-15 08:07:44,608 INFO     VPN thread run time: 0.00639494684583
+2009-01-15 08:07:46,453 INFO     Period. service thread run time: 0.00380634969042
+2009-01-15 08:07:47,858 INFO     Settlement period thread run time: 0.0407574146957
+2009-01-15 08:07:48,015 INFO     Limit thread run time: 0.000245282571996
+2009-01-15 08:07:48,858 INFO     IPN thread run time: 0.00286880036583
+2009-01-15 08:07:51,405 INFO     Time access thread run time: 0.0180168149891
+2009-01-15 08:10:42,405 INFO     ast time : 0.0355059092763
+2009-01-15 08:10:44,608 INFO     VPN thread run time: 0.00488665458397
+2009-01-15 08:10:46,469 INFO     Period. service thread run time: 0.00771550574427
+2009-01-15 08:10:47,921 INFO     Settlement period thread run time: 0.0407532242243
+2009-01-15 08:10:48,015 INFO     Limit thread run time: 0.000320711151289
+2009-01-15 08:10:48,875 INFO     IPN thread run time: 0.00285427337803
+2009-01-15 08:10:51,437 INFO     Time access thread run time: 0.0176740339957
+2009-01-15 08:13:42,453 INFO     ast time : 0.033840613818
+2009-01-15 08:13:44,625 INFO     VPN thread run time: 0.00488386094366
+2009-01-15 08:13:46,483 INFO     Period. service thread run time: 0.0039340195508
+2009-01-15 08:13:47,969 INFO     Settlement period thread run time: 0.0454856692668
+2009-01-15 08:13:48,030 INFO     Limit thread run time: 0.000249752418313
+2009-01-15 08:13:48,890 INFO     IPN thread run time: 0.00300736546342
+2009-01-15 08:13:51,469 INFO     Time access thread run time: 0.0180746435653
+2009-01-15 08:16:42,483 INFO     ast time : 0.0334260359887
+2009-01-15 08:16:44,625 INFO     VPN thread run time: 0.00488916887116
+2009-01-15 08:16:46,500 INFO     Period. service thread run time: 0.0038029973075
+2009-01-15 08:16:48,030 INFO     Settlement period thread run time: 0.0480742664222
+2009-01-15 08:16:48,046 INFO     Limit thread run time: 0.000251149234828
+2009-01-15 08:16:48,905 INFO     IPN thread run time: 0.00284673051647
+2009-01-15 08:16:51,500 INFO     Time access thread run time: 0.0177385673305
+2009-01-15 08:19:42,546 INFO     ast time : 0.0378447540061
+2009-01-15 08:19:44,625 INFO     VPN thread run time: 0.00535542925354
+2009-01-15 08:19:46,515 INFO     Period. service thread run time: 0.00397033700574
+2009-01-15 08:19:48,062 INFO     Limit thread run time: 0.000256736544543
+2009-01-15 08:19:48,108 INFO     Settlement period thread run time: 0.0502357143123
+2009-01-15 08:19:48,905 INFO     IPN thread run time: 0.00292858450121
+2009-01-15 08:19:51,530 INFO     Time access thread run time: 0.0203235327426
+2009-01-15 08:22:42,594 INFO     ast time : 0.0360763728386
+2009-01-15 08:22:44,640 INFO     VPN thread run time: 0.00490118157177
+2009-01-15 08:22:46,530 INFO     Period. service thread run time: 0.0038493719112
+2009-01-15 08:22:48,078 INFO     Limit thread run time: 0.000243047645199
+2009-01-15 08:22:48,155 INFO     Settlement period thread run time: 0.0446352818544
+2009-01-15 08:22:48,921 INFO     IPN thread run time: 0.00285790512135
+2009-01-15 08:22:51,562 INFO     Time access thread run time: 0.0179282562458
+2009-01-15 08:25:42,640 INFO     ast time : 0.0369178205656
+2009-01-15 08:25:44,640 INFO     VPN thread run time: 0.0044539180235
+2009-01-15 08:25:46,546 INFO     Period. service thread run time: 0.0137489541303
+2009-01-15 08:25:48,078 INFO     Limit thread run time: 0.000258412736002
+2009-01-15 08:25:48,203 INFO     Settlement period thread run time: 0.040368538459
+2009-01-15 08:25:48,937 INFO     IPN thread run time: 0.00285259718657
+2009-01-15 08:25:51,594 INFO     Time access thread run time: 0.0181492340489
+2009-01-15 08:28:42,687 INFO     ast time : 0.034225578951
+2009-01-15 08:28:44,640 INFO     VPN thread run time: 0.00465953075036
+2009-01-15 08:28:46,562 INFO     Period. service thread run time: 0.00381249572092
+2009-01-15 08:28:48,094 INFO     Limit thread run time: 0.000248076219577
+2009-01-15 08:28:48,265 INFO     Settlement period thread run time: 0.0403232813114
+2009-01-15 08:28:48,953 INFO     IPN thread run time: 0.00290455909999
+2009-01-15 08:28:51,608 INFO     Time access thread run time: 0.017402491103
+2009-01-15 08:31:42,733 INFO     ast time : 0.0354078521195
+2009-01-15 08:31:44,655 INFO     VPN thread run time: 0.0054898038652
+2009-01-15 08:31:46,578 INFO     Period. service thread run time: 0.0038904385874
+2009-01-15 08:31:48,108 INFO     Limit thread run time: 0.000248914322583
+2009-01-15 08:31:48,312 INFO     Settlement period thread run time: 0.0425936815955
+2009-01-15 08:31:48,969 INFO     IPN thread run time: 0.00290791148291
+2009-01-15 08:31:51,640 INFO     Time access thread run time: 0.0173918752262
+2009-01-15 08:34:42,765 INFO     ast time : 0.0338987217692
+2009-01-15 08:34:44,655 INFO     VPN thread run time: 0.00533475623524
+2009-01-15 08:34:46,594 INFO     Period. service thread run time: 0.00383540366602
+2009-01-15 08:34:48,125 INFO     Limit thread run time: 0.000253942889685
+2009-01-15 08:34:48,375 INFO     Settlement period thread run time: 0.0417349132404
+2009-01-15 08:34:48,983 INFO     IPN thread run time: 0.00286544798291
+2009-01-15 08:34:51,671 INFO     Time access thread run time: 0.0178662371836
+2009-01-15 08:37:42,812 INFO     ast time : 0.0332880296264
+2009-01-15 08:37:44,671 INFO     VPN thread run time: 0.0057300578701
+2009-01-15 08:37:46,608 INFO     Period. service thread run time: 0.00389351160266
+2009-01-15 08:37:48,140 INFO     Limit thread run time: 0.000254780985415
+2009-01-15 08:37:48,421 INFO     Settlement period thread run time: 0.0386222271336
+2009-01-15 08:37:49,000 INFO     IPN thread run time: 0.00286209559999
+2009-01-15 08:37:51,703 INFO     Time access thread run time: 0.0176871641524
+2009-01-15 08:40:42,858 INFO     ast time : 0.0334819090203
+2009-01-15 08:40:44,671 INFO     VPN thread run time: 0.00489587364427
+2009-01-15 08:40:46,625 INFO     Period. service thread run time: 0.00383316873922
+2009-01-15 08:40:48,171 INFO     Limit thread run time: 0.000252266705502
+2009-01-15 08:40:48,469 INFO     Settlement period thread run time: 0.0399084241217
+2009-01-15 08:40:49,015 INFO     IPN thread run time: 0.0028763432274
+2009-01-15 08:40:51,733 INFO     Time access thread run time: 0.0176871641524
+2009-01-15 08:43:42,905 INFO     ast time : 0.037379890462
+2009-01-15 08:43:44,671 INFO     VPN thread run time: 0.0062776134946
+2009-01-15 08:43:46,655 INFO     Period. service thread run time: 0.00622118174215
+2009-01-15 08:43:48,171 INFO     Limit thread run time: 0.000252546065894
+2009-01-15 08:43:48,530 INFO     Settlement period thread run time: 0.0374315730078
+2009-01-15 08:43:49,030 INFO     IPN thread run time: 0.00373287666298
+2009-01-15 08:43:51,765 INFO     Time access thread run time: 0.0181911388208
+2009-01-15 08:46:42,953 INFO     ast time : 0.035003052064
+2009-01-15 08:46:44,687 INFO     VPN thread run time: 0.00572251500853
+2009-01-15 08:46:46,671 INFO     Period. service thread run time: 0.00426646403503
+2009-01-15 08:46:48,187 INFO     Limit thread run time: 0.000324901629938
+2009-01-15 08:46:48,578 INFO     Settlement period thread run time: 0.0472993075964
+2009-01-15 08:46:49,046 INFO     IPN thread run time: 0.00333087026956
+2009-01-15 08:46:51,796 INFO     Time access thread run time: 0.0180902880093
+2009-01-15 08:49:43,000 INFO     ast time : 0.033050289916
+2009-01-15 08:49:44,687 INFO     VPN thread run time: 0.00487883236201
+2009-01-15 08:49:46,687 INFO     Period. service thread run time: 0.0046908196382
+2009-01-15 08:49:48,203 INFO     Limit thread run time: 0.000252825433563
+2009-01-15 08:49:48,640 INFO     Settlement period thread run time: 0.0395505574052
+2009-01-15 08:49:49,062 INFO     IPN thread run time: 0.00296937180246
+2009-01-15 08:49:51,828 INFO     Time access thread run time: 0.0180467070531
+2009-01-15 08:52:43,046 INFO     ast time : 0.0325823533494
+2009-01-15 08:52:44,687 INFO     VPN thread run time: 0.00630163889582
+2009-01-15 08:52:46,703 INFO     Period. service thread run time: 0.00376276872703
+2009-01-15 08:52:48,219 INFO     Limit thread run time: 0.000256736544543
+2009-01-15 08:52:48,687 INFO     Settlement period thread run time: 0.0399036749077
+2009-01-15 08:52:49,078 INFO     IPN thread run time: 0.00339707979583
+2009-01-15 08:52:51,858 INFO     Time access thread run time: 0.0178313165525
+2009-01-15 08:55:43,094 INFO     ast time : 0.036334226832
+2009-01-15 08:55:44,703 INFO     VPN thread run time: 0.00510679429863
+2009-01-15 08:55:46,719 INFO     Period. service thread run time: 0.00413181004842
+2009-01-15 08:55:48,219 INFO     Limit thread run time: 0.000249193682976
+2009-01-15 08:55:48,750 INFO     Settlement period thread run time: 0.0424743926997
+2009-01-15 08:55:49,094 INFO     IPN thread run time: 0.00284226067743
+2009-01-15 08:55:51,890 INFO     Time access thread run time: 0.0175768149275
+2009-01-15 08:58:43,140 INFO     ast time : 0.0356391664245
+2009-01-15 08:58:44,703 INFO     VPN thread run time: 0.00661508655321
+2009-01-15 08:58:46,733 INFO     Period. service thread run time: 0.00516993081692
+2009-01-15 08:58:48,233 INFO     Limit thread run time: 0.000251149242104
+2009-01-15 08:58:48,796 INFO     Settlement period thread run time: 0.0398952939504
+2009-01-15 08:58:49,108 INFO     IPN thread run time: 0.00436005135271
+2009-01-15 08:58:51,921 INFO     Time access thread run time: 0.0177575641646
+2009-01-15 09:01:43,187 INFO     ast time : 0.0360001061636
+2009-01-15 09:01:44,719 INFO     VPN thread run time: 0.00577084517863
+2009-01-15 09:01:46,750 INFO     Period. service thread run time: 0.00414382274175
+2009-01-15 09:01:48,250 INFO     Limit thread run time: 0.000254222250078
+2009-01-15 09:01:48,858 INFO     Settlement period thread run time: 0.0429129959302
+2009-01-15 09:01:49,125 INFO     IPN thread run time: 0.00312218452746
+2009-01-15 09:01:51,953 INFO     Time access thread run time: 0.0174717736518
+2009-01-15 09:04:43,233 INFO     ast time : 0.0345968551846
+2009-01-15 09:04:44,719 INFO     VPN thread run time: 0.00535012131877
+2009-01-15 09:04:46,765 INFO     Period. service thread run time: 0.00426841959415
+2009-01-15 09:04:48,265 INFO     Limit thread run time: 0.000249193682976
+2009-01-15 09:04:48,905 INFO     Settlement period thread run time: 0.0438499865195
+2009-01-15 09:04:49,125 INFO     IPN thread run time: 0.00284924480366
+2009-01-15 09:04:51,983 INFO     Time access thread run time: 0.0175108847616
+2009-01-15 09:07:43,280 INFO     ast time : 0.0321241945567
+2009-01-15 09:07:44,719 INFO     VPN thread run time: 0.0049358228498
+2009-01-15 09:07:46,780 INFO     Period. service thread run time: 0.00426534657163
+2009-01-15 09:07:48,265 INFO     Limit thread run time: 0.000252546058618
+2009-01-15 09:07:49,062 INFO     Settlement period thread run time: 0.138531852514
+2009-01-15 09:07:49,140 INFO     IPN thread run time: 0.00284281941276
+2009-01-15 09:07:52,015 INFO     Time access thread run time: 0.0176354816067
+2009-01-15 09:10:43,328 INFO     ast time : 0.0321172104232
+2009-01-15 09:10:44,733 INFO     VPN thread run time: 0.00578676899022
+2009-01-15 09:10:46,796 INFO     Period. service thread run time: 0.00468914345402
+2009-01-15 09:10:48,280 INFO     Limit thread run time: 0.000250869874435
+2009-01-15 09:10:49,108 INFO     Settlement period thread run time: 0.0368968681796
+2009-01-15 09:10:49,155 INFO     IPN thread run time: 0.0028545527457
+2009-01-15 09:10:52,046 INFO     Time access thread run time: 0.0188761420795
+2009-01-15 09:13:43,375 INFO     ast time : 0.0351069758908
+2009-01-15 09:13:44,733 INFO     VPN thread run time: 0.0044611815174
+2009-01-15 09:13:46,812 INFO     Period. service thread run time: 0.00392815288069
+2009-01-15 09:13:48,296 INFO     Limit thread run time: 0.000257574632997
+2009-01-15 09:13:49,155 INFO     Settlement period thread run time: 0.0377612238444
+2009-01-15 09:13:49,171 INFO     IPN thread run time: 0.00291629243293
+2009-01-15 09:13:52,078 INFO     Time access thread run time: 0.0197455263115
+2009-01-15 09:16:43,421 INFO     ast time : 0.0334064804265
+2009-01-15 09:16:44,733 INFO     VPN thread run time: 0.00510036890046
+2009-01-15 09:16:46,828 INFO     Period. service thread run time: 0.00382702270872
+2009-01-15 09:16:48,312 INFO     Limit thread run time: 0.000259530184849
+2009-01-15 09:16:49,187 INFO     IPN thread run time: 0.00301211467013
+2009-01-15 09:16:49,219 INFO     Settlement period thread run time: 0.0516364509967
+2009-01-15 09:16:52,108 INFO     Time access thread run time: 0.0174125482445
+2009-01-15 09:19:43,469 INFO     ast time : 0.0347974393371
+2009-01-15 09:19:44,750 INFO     VPN thread run time: 0.00575073088839
+2009-01-15 09:19:46,844 INFO     Period. service thread run time: 0.00387172112823
+2009-01-15 09:19:48,328 INFO     Limit thread run time: 0.000256177816482
+2009-01-15 09:19:49,203 INFO     IPN thread run time: 0.00285483211337
+2009-01-15 09:19:49,265 INFO     Settlement period thread run time: 0.0390616684526
+2009-01-15 09:19:52,140 INFO     Time access thread run time: 0.0177477863836
+2009-01-15 09:22:43,515 INFO     ast time : 0.0346803853536
+2009-01-15 09:22:44,750 INFO     VPN thread run time: 0.00617760078603
+2009-01-15 09:22:46,858 INFO     Period. service thread run time: 0.00398793701606
+2009-01-15 09:22:48,328 INFO     Limit thread run time: 0.000246958763455
+2009-01-15 09:22:49,219 INFO     IPN thread run time: 0.00294841942377
+2009-01-15 09:22:49,328 INFO     Settlement period thread run time: 0.0367814903875
+2009-01-15 09:22:52,171 INFO     Time access thread run time: 0.0173460593505
+2009-01-15 09:25:43,546 INFO     ast time : 0.0325502263586
+2009-01-15 09:25:44,765 INFO     VPN thread run time: 0.00491347364004
+2009-01-15 09:25:46,875 INFO     Period. service thread run time: 0.012996903235
+2009-01-15 09:25:48,344 INFO     Limit thread run time: 0.000252266698226
+2009-01-15 09:25:49,233 INFO     IPN thread run time: 0.00284281940549
+2009-01-15 09:25:49,375 INFO     Settlement period thread run time: 0.0399240685656
+2009-01-15 09:25:52,203 INFO     Time access thread run time: 0.0176880022482
+2009-01-15 09:28:43,608 INFO     ast time : 0.0369619602498
+2009-01-15 09:28:44,765 INFO     VPN thread run time: 0.00488665459125
+2009-01-15 09:28:46,890 INFO     Period. service thread run time: 0.00395022272278
+2009-01-15 09:28:48,358 INFO     Limit thread run time: 0.000248076226853
+2009-01-15 09:28:49,250 INFO     IPN thread run time: 0.00333701630007
+2009-01-15 09:28:49,437 INFO     Settlement period thread run time: 0.046017859815
+2009-01-15 09:28:52,233 INFO     Time access thread run time: 0.0178863514739
+2009-01-15 09:31:43,655 INFO     ast time : 0.0395337954978
+2009-01-15 09:31:44,765 INFO     VPN thread run time: 0.00575073088839
+2009-01-15 09:31:46,921 INFO     Period. service thread run time: 0.00390049573616
+2009-01-15 09:31:48,375 INFO     Limit thread run time: 0.000324342901877
+2009-01-15 09:31:49,265 INFO     IPN thread run time: 0.00283471782313
+2009-01-15 09:31:49,483 INFO     Settlement period thread run time: 0.0394927288216
+2009-01-15 09:31:52,265 INFO     Time access thread run time: 0.0189387198698
+2009-01-15 09:34:43,703 INFO     ast time : 0.0352279409781
+2009-01-15 09:34:44,780 INFO     VPN thread run time: 0.0104971441906
+2009-01-15 09:34:46,937 INFO     Period. service thread run time: 0.00519283875474
+2009-01-15 09:34:48,390 INFO     Limit thread run time: 0.000257295265328
+2009-01-15 09:34:49,280 INFO     IPN thread run time: 0.00284226067743
+2009-01-15 09:34:49,530 INFO     Settlement period thread run time: 0.0390778716246
+2009-01-15 09:34:52,296 INFO     Time access thread run time: 0.0184269229794
+2009-01-15 09:37:43,750 INFO     ast time : 0.0352874457531
+2009-01-15 09:37:44,780 INFO     VPN thread run time: 0.00488581649552
+2009-01-15 09:37:46,953 INFO     Period. service thread run time: 0.00469277519733
+2009-01-15 09:37:48,390 INFO     Limit thread run time: 0.000247517491516
+2009-01-15 09:37:49,296 INFO     IPN thread run time: 0.00296797498595
+2009-01-15 09:37:49,578 INFO     Settlement period thread run time: 0.0399997765126
+2009-01-15 09:37:52,344 INFO     Time access thread run time: 0.0262829493659
+2009-01-15 09:40:43,796 INFO     ast time : 0.0332598137466
+2009-01-15 09:40:44,812 INFO     VPN thread run time: 0.00542275624321
+2009-01-15 09:40:46,983 INFO     Period. service thread run time: 0.00383931476972
+2009-01-15 09:40:48,405 INFO     Limit thread run time: 0.000252266698226
+2009-01-15 09:40:49,312 INFO     IPN thread run time: 0.00283304163167
+2009-01-15 09:40:49,640 INFO     Settlement period thread run time: 0.0403677003633
+2009-01-15 09:40:52,375 INFO     Time access thread run time: 0.0176533609701
+2009-01-15 09:43:43,844 INFO     ast time : 0.03556066483
+2009-01-15 09:43:44,812 INFO     VPN thread run time: 0.00538671814138
+2009-01-15 09:43:47,000 INFO     Period. service thread run time: 0.00384127032885
+2009-01-15 09:43:48,421 INFO     Limit thread run time: 0.000255060345808
+2009-01-15 09:43:49,328 INFO     IPN thread run time: 0.00418880053621
+2009-01-15 09:43:49,687 INFO     Settlement period thread run time: 0.0434270277401
+2009-01-15 09:43:52,405 INFO     Time access thread run time: 0.0174670244451
+2009-01-15 09:46:43,890 INFO     ast time : 0.0335992423643
+2009-01-15 09:46:44,828 INFO     VPN thread run time: 0.00444861008873
+2009-01-15 09:46:47,015 INFO     Period. service thread run time: 0.00391418462095
+2009-01-15 09:46:48,437 INFO     Limit thread run time: 0.000250869874435
+2009-01-15 09:46:49,344 INFO     IPN thread run time: 0.002862933703
+2009-01-15 09:46:49,750 INFO     Settlement period thread run time: 0.0403330590925
+2009-01-15 09:46:52,437 INFO     Time access thread run time: 0.0178181863885
+2009-01-15 09:49:43,937 INFO     ast time : 0.0346211599535
+2009-01-15 09:49:44,828 INFO     VPN thread run time: 0.00617452777078
+2009-01-15 09:49:47,030 INFO     Period. service thread run time: 0.00383680048981
+2009-01-15 09:49:48,453 INFO     Limit thread run time: 0.000248634954914
+2009-01-15 09:49:49,358 INFO     IPN thread run time: 0.00283667337499
+2009-01-15 09:49:49,796 INFO     Settlement period thread run time: 0.040892906778
+2009-01-15 09:49:52,453 INFO     Time access thread run time: 0.0176891197043
+2009-01-15 09:52:43,983 INFO     ast time : 0.0352075473347
+2009-01-15 09:52:44,828 INFO     VPN thread run time: 0.00459527676867
+2009-01-15 09:52:47,046 INFO     Period. service thread run time: 0.00385216557333
+2009-01-15 09:52:48,453 INFO     Limit thread run time: 0.000253663529293
+2009-01-15 09:52:49,375 INFO     IPN thread run time: 0.00293612736277
+2009-01-15 09:52:49,844 INFO     Settlement period thread run time: 0.0408996115439
+2009-01-15 09:52:52,483 INFO     Time access thread run time: 0.0174424403085
+2009-01-15 09:55:44,046 INFO     ast time : 0.0450425961972
+2009-01-15 09:55:44,844 INFO     VPN thread run time: 0.00541465465358
+2009-01-15 09:55:47,062 INFO     Period. service thread run time: 0.0038236703258
+2009-01-15 09:55:48,469 INFO     Limit thread run time: 0.000243606380536
+2009-01-15 09:55:49,390 INFO     IPN thread run time: 0.00284058449324
+2009-01-15 09:55:49,905 INFO     Settlement period thread run time: 0.0472708123561
+2009-01-15 09:55:52,515 INFO     Time access thread run time: 0.0179201546562
+2009-01-15 09:58:44,078 INFO     ast time : 0.0328147851178
+2009-01-15 09:58:44,844 INFO     VPN thread run time: 0.00532581654988
+2009-01-15 09:58:47,078 INFO     Period. service thread run time: 0.00391586081241
+2009-01-15 09:58:48,483 INFO     Limit thread run time: 0.000240253997617
+2009-01-15 09:58:49,405 INFO     IPN thread run time: 0.00282633686584
+2009-01-15 09:58:49,969 INFO     Settlement period thread run time: 0.0407917766061
+2009-01-15 09:58:52,546 INFO     Time access thread run time: 0.0180659832477
+2009-01-15 10:01:44,125 INFO     ast time : 0.0338434074729
+2009-01-15 10:01:44,858 INFO     VPN thread run time: 0.00701988660876
+2009-01-15 10:01:47,094 INFO     Period. service thread run time: 0.00382758144406
+2009-01-15 10:01:48,500 INFO     Limit thread run time: 0.000253942889685
+2009-01-15 10:01:49,421 INFO     IPN thread run time: 0.00286628607864
+2009-01-15 10:01:50,015 INFO     Settlement period thread run time: 0.0391415668782
+2009-01-15 10:01:52,578 INFO     Time access thread run time: 0.020293920039
+2009-01-15 10:04:44,171 INFO     ast time : 0.0377033952609
+2009-01-15 10:04:44,858 INFO     VPN thread run time: 0.00542974037671
+2009-01-15 10:04:47,108 INFO     Period. service thread run time: 0.00383791794593
+2009-01-15 10:04:48,515 INFO     Limit thread run time: 0.000246400028118
+2009-01-15 10:04:49,437 INFO     IPN thread run time: 0.00412789893016
+2009-01-15 10:04:50,062 INFO     Settlement period thread run time: 0.0382118397756
+2009-01-15 10:04:52,608 INFO     Time access thread run time: 0.0178746181409
+2009-01-15 10:07:44,233 INFO     ast time : 0.0396935923418
+2009-01-15 10:07:44,858 INFO     VPN thread run time: 0.00542918164138
+2009-01-15 10:07:47,125 INFO     Period. service thread run time: 0.00383847668127
+2009-01-15 10:07:48,530 INFO     Limit thread run time: 0.000363174651284
+2009-01-15 10:07:49,453 INFO     IPN thread run time: 0.00291601307254
+2009-01-15 10:07:50,108 INFO     Settlement period thread run time: 0.0352449822531
+2009-01-15 10:07:52,640 INFO     Time access thread run time: 0.0176704022379
+2009-01-15 10:10:44,280 INFO     ast time : 0.0357704680355
+2009-01-15 10:10:44,875 INFO     VPN thread run time: 0.00533699115476
+2009-01-15 10:10:47,140 INFO     Period. service thread run time: 0.00391809573921
+2009-01-15 10:10:48,546 INFO     Limit thread run time: 0.000251987330557
+2009-01-15 10:10:49,469 INFO     IPN thread run time: 0.00325907342631
+2009-01-15 10:10:50,171 INFO     Settlement period thread run time: 0.0462198407913
+2009-01-15 10:10:52,671 INFO     Time access thread run time: 0.0178000276574
+2009-01-15 10:13:44,328 INFO     ast time : 0.0407238908883
+2009-01-15 10:13:44,875 INFO     VPN thread run time: 0.00662849607761
+2009-01-15 10:13:47,155 INFO     Period. service thread run time: 0.00424942276004
+2009-01-15 10:13:48,562 INFO     Limit thread run time: 0.000258692096395
+2009-01-15 10:13:49,469 INFO     IPN thread run time: 0.00369180999405
+2009-01-15 10:13:50,233 INFO     Settlement period thread run time: 0.0430077006968
+2009-01-15 10:13:52,703 INFO     Time access thread run time: 0.019223392912
+2009-01-15 10:16:44,375 INFO     ast time : 0.0342482075212
+2009-01-15 10:16:44,890 INFO     VPN thread run time: 0.00492576570105
+2009-01-15 10:16:47,171 INFO     Period. service thread run time: 0.00393932748557
+2009-01-15 10:16:48,578 INFO     Limit thread run time: 0.000438323862909
+2009-01-15 10:16:49,483 INFO     IPN thread run time: 0.00282158765913
+2009-01-15 10:16:50,280 INFO     Settlement period thread run time: 0.0390686525789
+2009-01-15 10:16:52,733 INFO     Time access thread run time: 0.017385449828
+2009-01-15 10:19:44,421 INFO     ast time : 0.0355916743647
+2009-01-15 10:19:44,890 INFO     VPN thread run time: 0.00487715617783
+2009-01-15 10:19:47,203 INFO     Period. service thread run time: 0.00382841953979
+2009-01-15 10:19:48,594 INFO     Limit thread run time: 0.000248634954914
+2009-01-15 10:19:49,500 INFO     IPN thread run time: 0.00283499718353
+2009-01-15 10:19:50,328 INFO     Settlement period thread run time: 0.0416443989379
+2009-01-15 10:19:52,765 INFO     Time access thread run time: 0.0178285229049
+2009-01-15 10:22:44,469 INFO     ast time : 0.0330815788038
+2009-01-15 10:22:44,890 INFO     VPN thread run time: 0.00541046417493
+2009-01-15 10:22:47,219 INFO     Period. service thread run time: 0.00382730207639
+2009-01-15 10:22:48,608 INFO     Limit thread run time: 0.000256736537267
+2009-01-15 10:22:49,515 INFO     IPN thread run time: 0.00308642578602
+2009-01-15 10:22:50,375 INFO     Settlement period thread run time: 0.0374449825322
+2009-01-15 10:22:52,796 INFO     Time access thread run time: 0.0178978054464
+2009-01-15 10:25:44,515 INFO     ast time : 0.0358101378806
+2009-01-15 10:25:44,905 INFO     VPN thread run time: 0.00656619765505
+2009-01-15 10:25:47,233 INFO     Period. service thread run time: 0.0103074552753
+2009-01-15 10:25:48,608 INFO     Limit thread run time: 0.000561803244636
+2009-01-15 10:25:49,530 INFO     IPN thread run time: 0.0028341590878
+2009-01-15 10:25:50,437 INFO     Settlement period thread run time: 0.0425062403156
+2009-01-15 10:25:52,812 INFO     Time access thread run time: 0.0179587070452
+2009-01-15 10:28:44,562 INFO     ast time : 0.0377844111426
+2009-01-15 10:28:44,905 INFO     VPN thread run time: 0.00575128962373
+2009-01-15 10:28:47,250 INFO     Period. service thread run time: 0.00468607043877
+2009-01-15 10:28:48,625 INFO     Limit thread run time: 0.000243885748205
+2009-01-15 10:28:49,546 INFO     IPN thread run time: 0.00282633687311
+2009-01-15 10:28:50,483 INFO     Settlement period thread run time: 0.0407923353414
+2009-01-15 10:28:52,844 INFO     Time access thread run time: 0.0178860721135
+2009-01-15 10:31:44,608 INFO     ast time : 0.0356785569165
+2009-01-15 10:31:44,905 INFO     VPN thread run time: 0.00532022924745
+2009-01-15 10:31:47,265 INFO     Period. service thread run time: 0.00381640683918
+2009-01-15 10:31:48,640 INFO     Limit thread run time: 0.000251428602496
+2009-01-15 10:31:49,562 INFO     IPN thread run time: 0.00354430521111
+2009-01-15 10:31:50,546 INFO     Settlement period thread run time: 0.0414047036684
+2009-01-15 10:31:52,875 INFO     Time access thread run time: 0.0176751514446
+2009-01-15 10:34:44,671 INFO     ast time : 0.0392784557844
+2009-01-15 10:34:44,921 INFO     VPN thread run time: 0.00531967051938
+2009-01-15 10:34:47,280 INFO     Period. service thread run time: 0.00425696562161
+2009-01-15 10:34:48,655 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 10:34:49,578 INFO     IPN thread run time: 0.00287103527808
+2009-01-15 10:34:50,594 INFO     Settlement period thread run time: 0.0386602207873
+2009-01-15 10:34:52,905 INFO     Time access thread run time: 0.0183702118593
+2009-01-15 10:37:44,719 INFO     ast time : 0.035574353722
+2009-01-15 10:37:44,921 INFO     VPN thread run time: 0.00573732136399
+2009-01-15 10:37:47,296 INFO     Period. service thread run time: 0.0038309338197
+2009-01-15 10:37:48,671 INFO     Limit thread run time: 0.000248355587246
+2009-01-15 10:37:49,594 INFO     IPN thread run time: 0.00334455915436
+2009-01-15 10:37:50,640 INFO     Settlement period thread run time: 0.0358363982014
+2009-01-15 10:37:52,937 INFO     Time access thread run time: 0.0179145673537
+2009-01-15 10:40:44,765 INFO     ast time : 0.0338252487418
+2009-01-15 10:40:44,937 INFO     VPN thread run time: 0.00491906094248
+2009-01-15 10:40:47,312 INFO     Period. service thread run time: 0.00384406397643
+2009-01-15 10:40:48,671 INFO     Limit thread run time: 0.000262603207375
+2009-01-15 10:40:49,608 INFO     IPN thread run time: 0.00281823527621
+2009-01-15 10:40:50,687 INFO     Settlement period thread run time: 0.0378313444889
+2009-01-15 10:40:52,969 INFO     Time access thread run time: 0.0177852213019
+2009-01-15 10:43:44,812 INFO     ast time : 0.0385294779117
+2009-01-15 10:43:44,937 INFO     VPN thread run time: 0.00492520697298
+2009-01-15 10:43:47,328 INFO     Period. service thread run time: 0.00383847668127
+2009-01-15 10:43:48,687 INFO     Limit thread run time: 0.000254501625022
+2009-01-15 10:43:49,625 INFO     IPN thread run time: 0.00283639400732
+2009-01-15 10:43:50,750 INFO     Settlement period thread run time: 0.0463712566852
+2009-01-15 10:43:53,000 INFO     Time access thread run time: 0.017998656258
+2009-01-15 10:46:44,858 INFO     ast time : 0.0351796108225
+2009-01-15 10:46:44,937 INFO     VPN thread run time: 0.00573536581214
+2009-01-15 10:46:47,344 INFO     Period. service thread run time: 0.0039546925691
+2009-01-15 10:46:48,703 INFO     Limit thread run time: 0.000255619081145
+2009-01-15 10:46:49,625 INFO     IPN thread run time: 0.00284365750122
+2009-01-15 10:46:50,796 INFO     Settlement period thread run time: 0.0417254148197
+2009-01-15 10:46:53,030 INFO     Time access thread run time: 0.0181009038861
+2009-01-15 10:49:44,905 INFO     ast time : 0.0352377187592
+2009-01-15 10:49:44,953 INFO     VPN thread run time: 0.00488749268698
+2009-01-15 10:49:47,358 INFO     Period. service thread run time: 0.00397536558012
+2009-01-15 10:49:48,719 INFO     Limit thread run time: 0.000258971464064
+2009-01-15 10:49:49,640 INFO     IPN thread run time: 0.00284868607559
+2009-01-15 10:49:50,844 INFO     Settlement period thread run time: 0.0391748113252
+2009-01-15 10:49:53,062 INFO     Time access thread run time: 0.0182534372361
+2009-01-15 10:52:44,953 INFO     ast time : 0.0353832679903
+2009-01-15 10:52:44,969 INFO     VPN thread run time: 0.005805207089
+2009-01-15 10:52:47,375 INFO     Period. service thread run time: 0.00385384175752
+2009-01-15 10:52:48,733 INFO     Limit thread run time: 0.00024360637326
+2009-01-15 10:52:49,655 INFO     IPN thread run time: 0.00284868607559
+2009-01-15 10:52:50,905 INFO     Settlement period thread run time: 0.0450819866746
+2009-01-15 10:52:53,094 INFO     Time access thread run time: 0.0178218181391
+2009-01-15 10:55:45,000 INFO     ast time : 0.0347072044096
+2009-01-15 10:55:47,390 INFO     Period. service thread run time: 0.00468243869545
+2009-01-15 10:55:48,750 INFO     Limit thread run time: 0.000242488917138
+2009-01-15 10:55:49,671 INFO     IPN thread run time: 0.00285511147376
+2009-01-15 10:55:50,953 INFO     Settlement period thread run time: 0.0412024433244
+2009-01-15 10:55:53,125 INFO     Time access thread run time: 0.0176307324
+2009-01-15 10:55:54,969 INFO     VPN thread run time: 0.00492911808396
+2009-01-15 10:58:45,030 INFO     ast time : 0.0316995595858
+2009-01-15 10:58:47,405 INFO     Period. service thread run time: 0.00383903540933
+2009-01-15 10:58:48,765 INFO     Limit thread run time: 0.000239974629949
+2009-01-15 10:58:49,687 INFO     IPN thread run time: 0.00282521940971
+2009-01-15 10:58:51,015 INFO     Settlement period thread run time: 0.0391502271959
+2009-01-15 10:58:53,155 INFO     Time access thread run time: 0.0178542244903
+2009-01-15 10:58:54,983 INFO     VPN thread run time: 0.00498303554923
+2009-01-15 11:01:45,078 INFO     ast time : 0.0346678139249
+2009-01-15 11:01:47,421 INFO     Period. service thread run time: 0.00386836874532
+2009-01-15 11:01:48,780 INFO     Limit thread run time: 0.000250590506766
+2009-01-15 11:01:49,703 INFO     IPN thread run time: 0.00283332099934
+2009-01-15 11:01:51,062 INFO     Settlement period thread run time: 0.0399059098272
+2009-01-15 11:01:53,187 INFO     Time access thread run time: 0.0179743514891
+2009-01-15 11:01:54,983 INFO     VPN thread run time: 0.00536213401938
+2009-01-15 11:04:45,125 INFO     ast time : 0.0347647536182
+2009-01-15 11:04:47,453 INFO     Period. service thread run time: 0.00383959413739
+2009-01-15 11:04:48,796 INFO     Limit thread run time: 0.000248076219577
+2009-01-15 11:04:49,719 INFO     IPN thread run time: 0.00282214638719
+2009-01-15 11:04:51,125 INFO     Settlement period thread run time: 0.0390666970197
+2009-01-15 11:04:53,219 INFO     Time access thread run time: 0.0220754313705
+2009-01-15 11:04:54,983 INFO     VPN thread run time: 0.0049771688864
+2009-01-15 11:07:45,187 INFO     ast time : 0.0365191665478
+2009-01-15 11:07:47,469 INFO     Period. service thread run time: 0.00473551805771
+2009-01-15 11:07:48,812 INFO     Limit thread run time: 0.000251707970165
+2009-01-15 11:07:49,733 INFO     IPN thread run time: 0.00281600035669
+2009-01-15 11:07:51,171 INFO     Settlement period thread run time: 0.0411990909488
+2009-01-15 11:07:53,250 INFO     Time access thread run time: 0.0179103768751
+2009-01-15 11:07:55,000 INFO     VPN thread run time: 0.00579347374878
+2009-01-15 11:10:45,233 INFO     ast time : 0.0426950911351
+2009-01-15 11:10:47,483 INFO     Period. service thread run time: 0.00381864175142
+2009-01-15 11:10:48,844 INFO     Limit thread run time: 0.000248634954914
+2009-01-15 11:10:49,750 INFO     IPN thread run time: 0.00299311783601
+2009-01-15 11:10:51,219 INFO     Settlement period thread run time: 0.0416259608392
+2009-01-15 11:10:53,312 INFO     Time access thread run time: 0.0177955578183
+2009-01-15 11:10:55,000 INFO     VPN thread run time: 0.00535542924626
+2009-01-15 11:13:45,280 INFO     ast time : 0.0357020235824
+2009-01-15 11:13:47,500 INFO     Period. service thread run time: 0.00409269893862
+2009-01-15 11:13:48,844 INFO     Limit thread run time: 0.000257854000665
+2009-01-15 11:13:49,765 INFO     IPN thread run time: 0.00286125750426
+2009-01-15 11:13:51,280 INFO     Settlement period thread run time: 0.0420855164557
+2009-01-15 11:13:53,344 INFO     Time access thread run time: 0.0203489549604
+2009-01-15 11:13:55,000 INFO     VPN thread run time: 0.00493973396078
+2009-01-15 11:16:45,328 INFO     ast time : 0.0355763092812
+2009-01-15 11:16:47,515 INFO     Period. service thread run time: 0.00524647685961
+2009-01-15 11:16:48,858 INFO     Limit thread run time: 0.000266234950686
+2009-01-15 11:16:49,780 INFO     IPN thread run time: 0.0028618162396
+2009-01-15 11:16:51,328 INFO     Settlement period thread run time: 0.0399207161754
+2009-01-15 11:16:53,375 INFO     Time access thread run time: 0.0178106435342
+2009-01-15 11:16:55,015 INFO     VPN thread run time: 0.00585549281095
+2009-01-15 11:19:45,375 INFO     ast time : 0.0355447410257
+2009-01-15 11:19:47,530 INFO     Period. service thread run time: 0.00518222287792
+2009-01-15 11:19:48,875 INFO     Limit thread run time: 0.000249752411037
+2009-01-15 11:19:49,796 INFO     IPN thread run time: 0.00285818448901
+2009-01-15 11:19:51,390 INFO     Settlement period thread run time: 0.0461569836334
+2009-01-15 11:19:53,390 INFO     Time access thread run time: 0.0178913800482
+2009-01-15 11:19:55,015 INFO     VPN thread run time: 0.00582979121828
+2009-01-15 11:22:45,437 INFO     ast time : 0.0402903162249
+2009-01-15 11:22:47,546 INFO     Period. service thread run time: 0.00386166397948
+2009-01-15 11:22:48,890 INFO     Limit thread run time: 0.000254501617746
+2009-01-15 11:22:49,812 INFO     IPN thread run time: 0.00300010196952
+2009-01-15 11:22:51,453 INFO     Settlement period thread run time: 0.0476691870062
+2009-01-15 11:22:53,421 INFO     Time access thread run time: 0.0177768403519
+2009-01-15 11:22:55,030 INFO     VPN thread run time: 0.00583398168965
+2009-01-15 11:25:45,483 INFO     ast time : 0.0342954202279
+2009-01-15 11:25:47,578 INFO     Period. service thread run time: 0.0147166748793
+2009-01-15 11:25:48,905 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 11:25:49,828 INFO     IPN thread run time: 0.00291629243293
+2009-01-15 11:25:51,515 INFO     Settlement period thread run time: 0.0455258978473
+2009-01-15 11:25:53,469 INFO     Time access thread run time: 0.0195424278791
+2009-01-15 11:25:55,030 INFO     VPN thread run time: 0.0045290672424
+2009-01-15 11:28:45,546 INFO     ast time : 0.042912995923
+2009-01-15 11:28:47,594 INFO     Period. service thread run time: 0.00582671820302
+2009-01-15 11:28:48,921 INFO     Limit thread run time: 0.000256457176874
+2009-01-15 11:28:49,844 INFO     IPN thread run time: 0.0032758353409
+2009-01-15 11:28:51,578 INFO     Settlement period thread run time: 0.0416513830642
+2009-01-15 11:28:53,500 INFO     Time access thread run time: 0.0183992658276
+2009-01-15 11:28:55,030 INFO     VPN thread run time: 0.00579179755732
+2009-01-15 11:31:45,594 INFO     ast time : 0.0385836747373
+2009-01-15 11:31:47,608 INFO     Period. service thread run time: 0.00608792457933
+2009-01-15 11:31:48,937 INFO     Limit thread run time: 0.000260088927462
+2009-01-15 11:31:49,858 INFO     IPN thread run time: 0.0029419940256
+2009-01-15 11:31:51,625 INFO     Settlement period thread run time: 0.0400880558809
+2009-01-15 11:31:53,530 INFO     Time access thread run time: 0.0180391641916
+2009-01-15 11:31:55,046 INFO     VPN thread run time: 0.00581470550242
+2009-01-15 11:34:45,640 INFO     ast time : 0.0329972105392
+2009-01-15 11:34:47,625 INFO     Period. service thread run time: 0.00398207035323
+2009-01-15 11:34:48,937 INFO     Limit thread run time: 0.00031344765739
+2009-01-15 11:34:49,875 INFO     IPN thread run time: 0.00289506067929
+2009-01-15 11:34:51,687 INFO     Settlement period thread run time: 0.0452845263862
+2009-01-15 11:34:53,562 INFO     Time access thread run time: 0.0189099452618
+2009-01-15 11:34:55,046 INFO     VPN thread run time: 0.00960233772639
+2009-01-15 11:37:45,687 INFO     ast time : 0.0342579853022
+2009-01-15 11:37:47,640 INFO     Period. service thread run time: 0.00402006399963
+2009-01-15 11:37:48,953 INFO     Limit thread run time: 0.000259250824456
+2009-01-15 11:37:49,890 INFO     IPN thread run time: 0.00327248295798
+2009-01-15 11:37:51,733 INFO     Settlement period thread run time: 0.0407769702579
+2009-01-15 11:37:53,594 INFO     Time access thread run time: 0.0194737040583
+2009-01-15 11:37:55,062 INFO     VPN thread run time: 0.00968698535144
+2009-01-15 11:40:45,733 INFO     ast time : 0.0343253122919
+2009-01-15 11:40:47,655 INFO     Period. service thread run time: 0.00388541001303
+2009-01-15 11:40:48,969 INFO     Limit thread run time: 0.000261765111645
+2009-01-15 11:40:49,905 INFO     IPN thread run time: 0.00286349243106
+2009-01-15 11:40:51,780 INFO     Settlement period thread run time: 0.037772677817
+2009-01-15 11:40:53,625 INFO     Time access thread run time: 0.0174214879225
+2009-01-15 11:40:55,062 INFO     VPN thread run time: 0.0053755435365
+2009-01-15 11:43:45,796 INFO     ast time : 0.0360741379191
+2009-01-15 11:43:47,671 INFO     Period. service thread run time: 0.00821752485353
+2009-01-15 11:43:48,983 INFO     Limit thread run time: 0.000262044479314
+2009-01-15 11:43:49,921 INFO     IPN thread run time: 0.00290427973232
+2009-01-15 11:43:51,875 INFO     Settlement period thread run time: 0.0617869030903
+2009-01-15 11:43:53,655 INFO     Time access thread run time: 0.0175932974744
+2009-01-15 11:43:55,078 INFO     VPN thread run time: 0.00538113083894
+2009-01-15 11:46:45,844 INFO     ast time : 0.0463262788981
+2009-01-15 11:46:47,687 INFO     Period. service thread run time: 0.00397704177158
+2009-01-15 11:46:49,000 INFO     Limit thread run time: 0.000312330201268
+2009-01-15 11:46:49,937 INFO     IPN thread run time: 0.00286097814387
+2009-01-15 11:46:51,937 INFO     Settlement period thread run time: 0.0450713707978
+2009-01-15 11:46:53,687 INFO     Time access thread run time: 0.0218276345186
+2009-01-15 11:46:55,094 INFO     VPN thread run time: 0.00537330861698
+2009-01-22 10:25:40,213 INFO     core start
+2009-01-22 10:25:40,463 INFO     Allowed users: 9223372036854775807
+2009-01-22 10:25:40,714 INFO     ast time : 0.248656183956
+2009-01-22 10:25:40,871 ERROR    Core VPN Thread : exception: 'check_vpn_access'
+2009-01-22 10:25:41,075 ERROR    Core Period. Bill Thread : exception: 'periodical_service_bill'
+2009-01-22 10:25:41,279 ERROR    Core Time Access Thread : exception: 'TimeAccessBill'
+2009-01-22 10:25:41,483 ERROR    Core Limit Thread : exception: 'limit_checker'
+2009-01-22 10:25:41,686 ERROR    Core Settlement Per. Thread : exception: 'settlement_period_service_dog'
+2009-01-22 10:25:41,890 ERROR    Core IPN Thread : exception: 'ipn_service'
+2009-01-22 10:25:42,108 INFO     NO SIGUSR1 - windows!
+2009-01-22 10:27:58,917 INFO     core start
+2009-01-22 10:27:59,075 INFO     Allowed users: 9223372036854775807
+2009-01-22 10:27:59,138 INFO     ast time : 0.0476909774846
+2009-01-22 10:27:59,293 ERROR    Core VPN Thread : exception: 'check_vpn_access'
+2009-01-22 10:27:59,497 ERROR    Core Period. Bill Thread : exception: 'periodical_service_bill'
+2009-01-22 10:27:59,701 ERROR    Core Time Access Thread : exception: 'TimeAccessBill'
+2009-01-22 10:27:59,904 ERROR    Core Limit Thread : exception: 'limit_checker'
+2009-01-22 10:28:00,108 ERROR    Core Settlement Per. Thread : exception: 'settlement_period_service_dog'
+2009-01-22 10:28:00,312 ERROR    Core IPN Thread : exception: 'ipn_service'
+2009-01-22 10:28:00,532 INFO     NO SIGUSR1 - windows!
+2009-01-22 10:30:14,772 INFO     core start
+2009-01-22 10:30:14,928 INFO     Allowed users: 9223372036854775807
+2009-01-22 10:30:14,992 INFO     ast time : 0.0520929335991
+2009-01-22 10:30:15,226 INFO     VPN thread run time: 0.0898809764928
+2009-01-22 10:30:15,759 INFO     Limit thread run time: 0.000196952405962
+2009-01-22 10:30:15,852 INFO     Time access thread run time: 0.30218421615
+2009-01-22 10:30:15,963 INFO     Period. service thread run time: 0.609276318638
+2009-01-22 10:30:16,025 INFO     Settlement period thread run time: 0.0518929081769
+2009-01-22 10:30:16,165 INFO     IPN thread run time: 0.00365130205096
+2009-01-22 10:30:16,369 INFO     NO SIGUSR1 - windows!
+2009-01-22 12:13:39,424 INFO     core start
+2009-01-22 12:13:39,628 INFO     Allowed users: 9223372036854775807
+2009-01-22 12:14:32,197 INFO     VPN thread run time: 0.0103323187724
+2009-01-22 12:14:32,479 INFO     Period. service thread run time: 0.0850242139713
+2009-01-22 12:14:32,618 INFO     Time access thread run time: 0.0234971204441
+2009-01-22 12:14:32,806 INFO     Limit thread run time: 0.000943136627704
+2009-01-22 12:14:33,072 INFO     Settlement period thread run time: 0.0531176448403
+2009-01-22 12:14:33,229 INFO     IPN thread run time: 0.00499532761845
+2009-01-22 12:14:33,431 INFO     NO SIGUSR1 - windows!
+2009-01-22 12:14:34,167 INFO     ast time : 54.4438329452
+2009-01-22 12:21:24,111 INFO     core start
+2009-01-22 12:21:24,252 INFO     Allowed users: 9223372036854775807
+2009-01-22 12:21:24,377 INFO     ast time : 0.0579738486316
+2009-01-22 12:21:37,851 INFO     Period. service thread run time: 0.00792977878473
+2009-01-22 12:21:38,069 INFO     Time access thread run time: 0.0242846507028
+2009-01-22 12:21:38,257 INFO     Limit thread run time: 0.00104342870393
+2009-01-22 12:21:38,539 INFO     Settlement period thread run time: 0.0679550054546
+2009-01-22 12:21:38,680 INFO     IPN thread run time: 0.0049472768187
+2009-01-22 12:21:38,882 INFO     NO SIGUSR1 - windows!
+2009-01-22 12:21:39,648 INFO     VPN thread run time: 1.99716723774
+2009-01-22 12:28:24,089 INFO     core start
+2009-01-22 12:28:24,262 INFO     Allowed users: 9223372036854775807
+2009-01-22 12:28:24,371 INFO     ast time : 0.059864871094
+2009-01-22 12:28:27,311 INFO     Period. service thread run time: 0.00820858516934
+2009-01-22 12:28:27,529 INFO     Time access thread run time: 0.0230059965722
+2009-01-22 12:28:27,717 INFO     Limit thread run time: 0.000975822346136
+2009-01-22 12:28:27,983 INFO     Settlement period thread run time: 0.0563504579493
+2009-01-22 12:28:28,138 INFO     IPN thread run time: 0.0047609402871
+2009-01-22 12:28:28,342 INFO     NO SIGUSR1 - windows!
