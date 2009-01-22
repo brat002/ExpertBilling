@@ -24,7 +24,7 @@ class CassaEbs(ebsTableWindow):
         columns = ['#', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Город', u'Улица', u'д.', u'к.', u'кв.']
         initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,912, 539), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
-        
+        self.printer = None
     def ebsInterInit(self, initargs):
         
         self.gridLayout_4 = QtGui.QGridLayout(self.centralwidget)
@@ -109,6 +109,12 @@ class CassaEbs(ebsTableWindow):
         self.comboBox_tariff = QtGui.QComboBox(self.groupBox_tariffs)
         self.comboBox_tariff.setObjectName("comboBox_tariff")
         self.gridLayout_3.addWidget(self.comboBox_tariff, 0, 0, 1, 1)
+        self.groupBox_prefs = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_prefs.setObjectName("groupBox_prefs")
+        self.pushButton_getPrinter = QtGui.QPushButton(self.groupBox_prefs)
+        self.pushButton_getPrinter.setGeometry(QtCore.QRect(10, 27, 61, 25))
+        self.pushButton_getPrinter.setObjectName("pushButton_getPrinter")
+        self.gridLayout_4.addWidget(self.groupBox_prefs, 3, 2, 1, 1)
 
         self.dateTime = QtGui.QDateTimeEdit(self.groupBox_tariffs)
         self.dateTime.setCalendarPopup(True)
@@ -138,7 +144,8 @@ class CassaEbs(ebsTableWindow):
         self.setTabOrder(self.pushButton_change_tariff, self.lineEdit_sum)
         self.setTabOrder(self.lineEdit_sum, self.pushButton_pay)
         self.setTabOrder(self.pushButton_pay, self.pushButton_print)
-        self.setTabOrder(self.pushButton_print, self.tableWidget)        
+        self.setTabOrder(self.pushButton_print, self.pushButton_getPrinter)
+        self.setTabOrder(self.pushButton_getPrinter, self.tableWidget)    
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
@@ -147,7 +154,8 @@ class CassaEbs(ebsTableWindow):
         self.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.refreshTable)
         self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
         self.connect(self.pushButton_print, QtCore.SIGNAL("clicked()"), self.cheque_print)
-
+        self.connect(self.pushButton_getPrinter, QtCore.SIGNAL("clicked()"), self.getPrinter)
+        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.restoreWindow()
         self.refreshTariffs()
@@ -171,6 +179,9 @@ class CassaEbs(ebsTableWindow):
         self.pushButton_print.setText(QtGui.QApplication.translate("MainWindow", "Печать чека", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_tariffs.setTitle(QtGui.QApplication.translate("MainWindow", "Перевести на другой тарифный план", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_change_tariff.setText(QtGui.QApplication.translate("MainWindow", "Перевести", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_prefs.setTitle(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_getPrinter.setText(QtGui.QApplication.translate("MainWindow", "Принтер", None, QtGui.QApplication.UnicodeUTF8))
+
 
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
@@ -263,7 +274,11 @@ class CassaEbs(ebsTableWindow):
             if tr_id!=False:
                 QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
                 if QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-                    self.cheque_print()
+                    if not self.printer:
+                        QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
+                        self.getPrinter()
+                    if self.printer:
+                        self.cheque_print()
                 
                 self.lineEdit_sum.setText("")
                 self.refreshTable()
@@ -282,6 +297,9 @@ class CassaEbs(ebsTableWindow):
         
 
     def cheque_print(self):
+        if not self.printer:
+            QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
+            return
         account_id = self.getSelectedId()
         if account_id:
             template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
@@ -292,16 +310,26 @@ class CassaEbs(ebsTableWindow):
             self.connection.commit()
             sum = 10000
 
-            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id['id'], sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
-
+            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id.id, sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
+            
+            #it seem that software printers can change the path!
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))
             file.flush()
-            a=CardPreviewDialog(url="templates/tmp/temp.html")
+            file.close()
+            a=CardPreviewDialog(url="templates/tmp/temp.html", printer=self.printer)
             a.exec_()
             
 
-        
+    
+    def getPrinter(self):
+        printer = QtGui.QPrinter()
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Печать"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        self.printer = printer
+    
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, connection):
         super(MainWindow, self).__init__()
