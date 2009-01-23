@@ -877,9 +877,20 @@ class GroupStat(models.Model):
     trafficclass = models.ForeignKey(TrafficClass, blank=True, null=True)
     
     
-class GroupStatAll(models.Model):
-    account = models.ForeignKey(Account)
+#class GroupStatAll(models.Model):
+#    account = models.ForeignKey(Account)
     
-#[cl[[123],[13123]],c2[[12]],[2323]]
-
+class SpeedLimit(models.Model):
+    limit = models.ForeignKey(TrafficLimit)
+    max_tx = models.IntegerField()
+    max_rx = models.IntegerField()
+    burst_tx = models.IntegerField()
+    burst_rx = models.IntegerField()
+    burst_treshold_tx = models.IntegerField()
+    burst_treshold_rx = models.IntegerField()
+    burst_time_tx = models.IntegerField()
+    burst_time_rx = models.IntegerField()
+    min_tx = models.IntegerField()
+    min_rx = models.IntegerField()
+    priority = models.IntegerField()
     
