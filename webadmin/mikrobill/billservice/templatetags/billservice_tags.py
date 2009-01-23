@@ -89,8 +89,8 @@ def time_format(s):
 @register.inclusion_tag('accounts/tags/traffic_limit_coll.html')
 def traffic_limit_coll(trafficlimit, user):
     settlement_period = trafficlimit.settlement_period
+    cursor = connection.cursor()
     if settlement_period.autostart==True:
-        cursor = connection.cursor()
         cursor.execute("""SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1""" % (user.id)) 
         sp_start = cursor.fetchone()
         sp_start = sp_start[0]
