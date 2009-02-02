@@ -341,7 +341,7 @@ class periodical_service_bill(Thread):
         connection._con._con.set_client_encoding('UTF8')
         global curAT_date,curAT_lock
         global curAT_tfIdx, curPerTarifCache, curPersSetpCache
-        global fMem, suicideCondition
+        global fMem, suicideCondition, transaction_number
         dateAT = datetime.datetime(2000, 1, 1)
         while True:
             try:
@@ -376,18 +376,14 @@ class periodical_service_bill(Thread):
                 cur = connection.cursor()
                 #transactions per day
                 #TODO: toconfig!
-                transaction_number=24
-                n=(86400)/transaction_number
-    
                 
-                '''self.cur.execute("""SELECT id, settlement_period_id, ps_null_ballance_checkout  
-                                 FROM billservice_tariff  as tarif
-                                 WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
-                rows=self.cur.fetchall()'''
+                n=(86400)/transaction_number
+                n_delta = datetime.timedelta(seconds=n)
                 #get a list of tarifs with periodical services
                 rows = cachePerTarif
                 #print "SELECT TP"
                 #loop through tarifs
+                now=datetime.datetime.now()
                 for row in rows:
                     #self.connection.commit()
                     #print row
@@ -400,7 +396,7 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
-                        #print "new ps"
+                        #print "new ps"                        
                         for account in accounts:
                             #if account.suspended
                             '''if account[13]:
@@ -426,7 +422,7 @@ class periodical_service_bill(Thread):
                                 #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, dateAT)
                                 #self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;", (ps_id, tariff_id, account_id,))
-                                now=datetime.datetime.now()
+                                
                                 #now = dateAT
                                 if ps_cash_method=="GRADUAL":
                                     """
@@ -454,17 +450,24 @@ class periodical_service_bill(Thread):
                                         lc=now - last_checkout
                                         nums, ost=divmod(lc.seconds+lc.days*86400,n)
                                         #Нижеследующая функция добавляет много проблем. Временно отключена
-                                        if True==False and nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
                                             """
                                             Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                             пока денег на счету не было
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
-                                            cash_summ=cash_summ*nums
-                                        #make an approved transaction
-                                        cash_summ = cash_summ * susp_per_mlt
-                                        transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
-                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
+                                            chk_date = last_checkout + n_delta
+                                            while chk_date < now:
+                                                cash_summ_prev=cash_summ*susp_per_mlt
+                                                transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ_prev, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = chk_date)
+                                                ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                chk_date += n_delta
+                                            connection.commit()
+                                        else:
+                                            #make an approved transaction
+                                            cash_summ = cash_summ * susp_per_mlt
+                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
+                                            ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
                                 if ps_cash_method=="AT_START":
                                     """
@@ -492,7 +495,7 @@ class periodical_service_bill(Thread):
                                         if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                             summ=ps_cost
                                             
-                                        if False and nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
                                             #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
                                             #и с каколго до какого момента у пользователя стояла отметка "не списывать деньги по период.услугам"
                                             """
@@ -500,17 +503,20 @@ class periodical_service_bill(Thread):
                                             пока денег на счету не было
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
-                                            summ = ps_cost*nums                                        
+                                            chk_date = last_checkout + delta
+                                            while chk_date <= now:
+                                                summ_prev=ps_cost*susp_per_mlt
+                                                transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id, 
+                                                                             summ=summ_prev, description=u"Проводка по периодической услуге со cнятием суммы в начале периода", created = chk_date)
+                                                ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                chk_date += delta
+                                            connection.commit() 
+                                        else:
                                              
-                                        #TODO: MAKE ACID!!!
-                                        summ = summ * susp_per_mlt
-                                        transaction_id = transaction(cursor=cur,
-                                                                     account=account_id,
-                                                                     approved=True,
-                                                                     type='PS_AT_START',
-                                                                     tarif = tariff_id,
-                                                                     summ = summ,
-                                                                     description=u"Проводка по периодической услуге со нятием суммы в начале периода",
+                                            #TODO: MAKE ACID!!!
+                                            summ = summ * susp_per_mlt
+                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
+                                                                     summ = summ, description=u"Проводка по периодической услуге со cнятием суммы в начале периода",
                                                                      created = now)
                                         ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
@@ -522,7 +528,7 @@ class periodical_service_bill(Thread):
                                     для остальных со статусом False
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)
-                                    self.connection.commit()
+                                    connection.commit()
                                     if last_checkout is None:
                                         first_time=True
                                         last_checkout=now
@@ -546,11 +552,20 @@ class periodical_service_bill(Thread):
                                             nums, ost=divmod(le.seconds+le.days*86400, delta)
     
                                             summ=ps_cost
-                                            if False and  nums>0 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
-                                                summ=ps_cost*nums
+                                            descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
+                                            if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                                chk_date = last_checkout + delta
+                                                #now or (now - delta)???
+                                                while chk_date <= (now - delta):
+                                                    summ_prev=ps_cost*susp_per_mlt
+                                                    transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_END', tarif = tariff_id, 
+                                                                                 summ=summ_prev, description=descr, created = chk_date)
+                                                    ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                    chk_date += delta
+                                                connection.commit() 
                                             if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                                 summ=ps_cost
-                                            descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
+                                            
                                         else:
                                             summ=0
                                             descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
@@ -1789,7 +1804,7 @@ class AccountServiceThread(Thread):
                 #del ttssTp, spsTp, nasTp, defspTmp, nspTmp
                 #every cacheRenewalTime*3
                 i_fMem += 1
-                if i_fMem == 3:
+                if i_fMem == 3:                  
                     i_fMem = 0
                     #nullify caches
                     fMem.settlementCache = {}
@@ -1809,11 +1824,7 @@ class AccountServiceThread(Thread):
             time.sleep(180)
             
 
-
-
-    
-
-def SIGUSR1_handler(signum, frame):
+def SIGTERM_handler(signum, frame):
     graceful_save()
     
 def graceful_save():
@@ -1855,8 +1866,8 @@ def main():
         time.sleep(0.2)
         
     try:
-        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
-    except: logger.lprint('NO SIGUSR1 - windows!')
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
     
     #main thread should not exit!
     while True:
@@ -1877,6 +1888,8 @@ if __name__ == "__main__":
         
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
+    
+    transaction_number = int(config.get("core", 'transaction_number'))
 
     #create logger
     logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file")) 
