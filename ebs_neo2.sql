@@ -8797,9 +8797,6 @@ ALTER TABLE ONLY django_site
     ADD CONSTRAINT django_site_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY nas_nas
-    ADD CONSTRAINT nas_nas_name_key UNIQUE (name);
-
-ALTER TABLE ONLY nas_nas
     ADD CONSTRAINT nas_nas_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY nas_trafficclass
