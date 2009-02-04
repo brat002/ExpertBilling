@@ -443,8 +443,7 @@ class periodical_service_bill(Thread):
                                         cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                         lc=now - last_checkout
                                         nums, ost=divmod(lc.seconds+lc.days*86400,n)
-                                        description=u"Проводка по периодической услуге со cнятием суммы в течении периода"
-                                        #Нижеследующая функция добавляет много проблем. Временно отключена
+                                        description=u"Проводка по периодической услуге со cнятием суммы в течении периода"                                        
                                         if nums>1:
                                             """
                                             Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
@@ -452,8 +451,8 @@ class periodical_service_bill(Thread):
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
-                                            while chk_date < now:
-                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                            while chk_date < now:                                                
+                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))                                                
                                                 connection.commit()
                                                 chk_date += n_delta
                                                 #psycopg2._psycopg.cursor.c
@@ -796,40 +795,12 @@ class limit_checker(Thread):
                     continue
                 #cur = self.connection.cursor()
                 #get tarifs with limits
-                '''self.cur.execute(
-                    """
-                    SELECT account.id, account.disabled_by_limit, acctt.datetime::timestamp without time zone,  
-                    tlimit.id, tlimit.size, tlimit.mode, tlimit.in_direction, tlimit.out_direction,
-                    sp.time_start::timestamp without time zone, sp.length, sp.length_in, sp.autostart
-                    FROM billservice_tariff as tarif
-                    JOIN billservice_accounttarif as acctt ON acctt.tarif_id=tarif.id 
-                    AND acctt.datetime=
-                    (SELECT datetime FROM billservice_accounttarif WHERE account_id=acctt.account_id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-                    JOIN billservice_account as account ON account.id=acctt.account_id
-                    LEFT JOIN billservice_trafficlimit as tlimit ON tlimit.tarif_id = tarif.id
-                    LEFT JOIN billservice_settlementperiod as sp ON sp.id = tlimit.settlement_period_id
-                    WHERE tarif.active=True
-                    ORDER BY account.id ASC;
-                    """)
-                account_tarifs=self.cur.fetchall()
-                self.connection.commit()'''
+
                 #self.cur.close()
                 #self.cur = self.connection.cursor()
                 #!if tarif.id not in limitcache.keys()
                 oldid=-1
-                """for row in account_tarifs:
-                    account_id, \
-                              disabled_by_limit,\
-                              account_start, \
-                              limit_id, \
-                              limit_size, \
-                              limit_mode, \
-                              in_direction, \
-                              out_direction, \
-                              sp_time_start, \
-                              sp_length, \
-                              sp_length_in, \
-                              autostart_sp = row"""
+
                 cur = connection.cursor()
                 for acct in cacheAT:
                     
@@ -845,59 +816,51 @@ class limit_checker(Thread):
                                 SET disabled_by_limit=%s
                                 WHERE id=%s;
                                 """, (False, account_id,))
-                            connection.commit()
-                            print "set user %s new limit %s state %s" %(account_id, limitRec[0], False)
+                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;""", (account_id))
+                        connection.commit()
+
                         continue
-                    
+                    block=False
+                    speed_changed = False                    
                     for limitRec in limitRecs:
                         #lr_in_dir  = limitRec[5]
                         #lr_out_dir = limitRec[6]
                         
                         if not limitRec[5]:
                             continue
-                        block=False
-                        
-                        if oldid==account_id and block:
+                        limit_action = limitRec[7]
+
+                        if oldid==account_id and (block or speed_changed):
+                            #Т.к. Лимиты отсортированы в порядке убывания размеров,то сначала проверяются все самые большие лимиты.
                             """
-                            Если у аккаунта уже есть одно превышение лимита
+                            Если у аккаунта уже есть одно превышение лимита или изменена скорость
                             то больше для него лимиты не проверяем
                             """
                             continue
                         
                         #get settlement period record
                         spRec = cacheSP[limitRec[3]]
-                        '''if autostart_sp==True:
-                            sp_start=account_start
-                        else:
-                            sp_start = sp_time_start'''
+
                         #if autostart - start time = acct.datetime
                         if spRec[4]:
                             sp_start = acct[3]
                         else:
                             sp_start = spRec[1]
-                        #settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=sp_length_in, repeat_after_seconds=sp_length)
+                        
                         settlement_period_start, settlement_period_end, delta = settlement_period_info(sp_start, spRec[3], spRec[2], dateAT)
                         #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
-                        now= dateAT
+                        now = dateAT
                         limit_mode = limitRec[6]
                         if limit_mode==True:
                             settlement_period_start=now-datetime.timedelta(seconds=delta)
-                            settlement_period_end=now       
+                            settlement_period_end=now
                         
                         connection.commit()
-                        #В запрос ниже НЕЛЬЗЯ менять символ подстановки на , ,т.к. тогда неправильно форматируется d
-                        #acct[0] = account_id, limitRec[0] = limit_id
-                        #cur.execute("""
-                        #     SELECT sum(octets) as size FROM billservice_netflowstream as nf 
-                        #     WHERE nf.account_id=%s AND nf.traffic_class_id && ARRAY((SELECT tltc.trafficclass_id 
-                        #     FROM billservice_trafficlimit_traffic_class as tltc 
-                        #     WHERE tltc.trafficlimit_id=%s)) 
-                        #     AND (date_start>'%s' AND date_start<'%s') and nf.direction in (%s)  
-                        #     """ % (account_id, limitRec[0], settlement_period_start, settlement_period_end, d,))
+
         
                         cur.execute("""
                         SELECT sum(bytes) as size FROM billservice_groupstat
-                        WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s 
+                        WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s
                         """ , (limitRec[5], account_id, settlement_period_start, settlement_period_end,))
                         
                         tsize=0
@@ -908,10 +871,18 @@ class limit_checker(Thread):
                         if sizes[0]!=None:
                             tsize=sizes[0]
                         #limitRec[4] - limit_size
-                        if tsize>Decimal("%s" % limitRec[4]):
+                        if tsize>Decimal("%s" % limitRec[4]) and limit_action==0:
                             block=True
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;""", (account_id))
+                            connection.commit()
+                        elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
+                            #Меняем скорость
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;
+                                           INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%d,%d);""", (account_id, account_id, limitRec[8],))
 
-        
+                            connection.commit()
+                            speed_changed=True
+                            block = False
                         #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
                         #account_id
                         oldid=account_id
@@ -924,7 +895,7 @@ class limit_checker(Thread):
                                 WHERE id=%s;
                                 """ , (block, account_id,))
                             connection.commit()
-                            print "set user %s new limit %s state %s" %(account_id, limitRec[0], block)
+                            logger.info("set user %s new limit %s state %s", (account_id, limitRec[0], block))
     
                 connection.commit()
                 #print self.getName() + " threadend"
@@ -1652,7 +1623,18 @@ class AccountServiceThread(Thread):
                             FROM billservice_timeperiodnode as tpn
                             JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id;""")
                 timeperndTp = cur.fetchall()
-                cur.execute("""SELECT id, tarif_id, "name", settlement_period_id, size, group_id, "mode" FROM billservice_trafficlimit;""")
+                cur.execute("""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
+                                    trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
+                                    trafficlimit."mode", trafficlimit.action,
+                                    speedlimit.id,
+                                    speedlimit.max_tx, speedlimit.max_rx, speedlimit.burst_tx, speedlimit.burst_rx, 
+                                    speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, speedlimit.burst_time_tx, 
+                                    speedlimit.burst_time_rx, speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority
+                                    FROM billservice_trafficlimit as trafficlimit
+                                    LEFT JOIN billservice_speedlimit as speedlimit ON speedlimit.limit_id=trafficlimit.id
+                                    ORDER BY trafficlimit.size DESC;""") # DESC Критично!
+                #action = 0:block
+                #action = 1:change speed
                 tlimitsTp = cur.fetchall()
                 cur.execute("""SELECT id,account_id, ballance_checkout, prepaid_traffic_reset,prepaid_traffic_accrued, 
                                       prepaid_time_reset, prepaid_time_accrued, balance_blocked, accounttarif_id 

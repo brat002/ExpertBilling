@@ -1556,3 +1556,188 @@ class GroupEditDialog(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при создании группы."))
             return
         QtGui.QDialog.accept(self)
+
+
+class SpeedLimitDialog(QtGui.QDialog):
+    def __init__(self, connection, model=None):
+        super(SpeedLimitDialog, self).__init__()
+        self.setObjectName("SpeedLimitDialog")
+        self.connection = connection
+        self.model = model
+        self.resize(297, 256)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.groupBox_speed_settings = QtGui.QGroupBox(self)
+        self.groupBox_speed_settings.setObjectName("groupBox_speed_settings")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_speed_settings)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label_tx = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_tx.setObjectName("label_tx")
+        self.gridLayout_2.addWidget(self.label_tx, 0, 1, 1, 1)
+        self.label_rx = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_rx.setObjectName("label_rx")
+        self.gridLayout_2.addWidget(self.label_rx, 0, 2, 1, 1)
+        self.label_max = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_max.setObjectName("label_max")
+        self.gridLayout_2.addWidget(self.label_max, 1, 0, 1, 1)
+        self.spinBox_max_tx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_max_tx.setMaximum(100000)
+        self.spinBox_max_tx.setObjectName("spinBox_max_tx")
+        self.gridLayout_2.addWidget(self.spinBox_max_tx, 1, 1, 1, 1)
+        self.label_burst_treshold = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_burst_treshold.setObjectName("label_burst_treshold")
+        self.gridLayout_2.addWidget(self.label_burst_treshold, 3, 0, 1, 1)
+        self.spinBox_burst_treshold_tx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_treshold_tx.setMaximum(100000)
+        self.spinBox_burst_treshold_tx.setObjectName("spinBox_burst_treshold_tx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_treshold_tx, 3, 1, 1, 1)
+        self.label_burst_time = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_burst_time.setObjectName("label_burst_time")
+        self.gridLayout_2.addWidget(self.label_burst_time, 4, 0, 1, 1)
+        self.spinBox_burst_time_tx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_time_tx.setMaximum(100000)
+        self.spinBox_burst_time_tx.setObjectName("spinBox_burst_time_tx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_time_tx, 4, 1, 1, 1)
+        self.label_min = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_min.setObjectName("label_min")
+        self.gridLayout_2.addWidget(self.label_min, 5, 0, 1, 1)
+        self.spinBox_min_tx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_min_tx.setMaximum(100000)
+        self.spinBox_min_tx.setObjectName("spinBox_min_tx")
+        self.gridLayout_2.addWidget(self.spinBox_min_tx, 5, 1, 1, 1)
+        self.label_priority = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_priority.setObjectName("label_priority")
+        self.gridLayout_2.addWidget(self.label_priority, 6, 0, 1, 1)
+        self.spinBox_priority = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_priority.setMinimum(1)
+        self.spinBox_priority.setMaximum(8)
+        self.spinBox_priority.setProperty("value", QtCore.QVariant(1))
+        self.spinBox_priority.setObjectName("spinBox_priority")
+        self.gridLayout_2.addWidget(self.spinBox_priority, 6, 1, 1, 1)
+        self.label_burst = QtGui.QLabel(self.groupBox_speed_settings)
+        self.label_burst.setObjectName("label_burst")
+        self.gridLayout_2.addWidget(self.label_burst, 2, 0, 1, 1)
+        self.spinBox_burst_tx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_tx.setMaximum(100000)
+        self.spinBox_burst_tx.setObjectName("spinBox_burst_tx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_tx, 2, 1, 1, 1)
+        self.spinBox_max_rx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_max_rx.setMaximum(100000)
+        self.spinBox_max_rx.setObjectName("spinBox_max_rx")
+        self.gridLayout_2.addWidget(self.spinBox_max_rx, 1, 2, 1, 1)
+        self.spinBox_burst_rx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_rx.setMaximum(100000)
+        self.spinBox_burst_rx.setObjectName("spinBox_burst_rx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_rx, 2, 2, 1, 1)
+        self.spinBox_burst_treshold_rx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_treshold_rx.setMaximum(100000)
+        self.spinBox_burst_treshold_rx.setObjectName("spinBox_burst_treshold_rx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_treshold_rx, 3, 2, 1, 1)
+        self.spinBox_burst_time_rx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_burst_time_rx.setMaximum(100000)
+        self.spinBox_burst_time_rx.setObjectName("spinBox_burst_time_rx")
+        self.gridLayout_2.addWidget(self.spinBox_burst_time_rx, 4, 2, 1, 1)
+        self.spinBox_min_rx = QtGui.QSpinBox(self.groupBox_speed_settings)
+        self.spinBox_min_rx.setMaximum(100000)
+        self.spinBox_min_rx.setObjectName("spinBox_min_rx")
+        self.gridLayout_2.addWidget(self.spinBox_min_rx, 5, 2, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_speed_settings, 0, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Изменить скорость", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_speed_settings.setTitle(QtGui.QApplication.translate("Dialog", "Настройки скорости", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_tx.setText(QtGui.QApplication.translate("Dialog", "TX", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_rx.setText(QtGui.QApplication.translate("Dialog", "RX", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_max.setText(QtGui.QApplication.translate("Dialog", "MAX", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_max_tx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_burst_treshold.setText(QtGui.QApplication.translate("Dialog", "Burst Treshold", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_treshold_tx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_burst_time.setText(QtGui.QApplication.translate("Dialog", "Burst time", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_time_tx.setSuffix(QtGui.QApplication.translate("Dialog", " c", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_min.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_min_tx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_priority.setText(QtGui.QApplication.translate("Dialog", "Priority", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_burst.setText(QtGui.QApplication.translate("Dialog", "Burst", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_tx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_max_rx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_rx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_treshold_rx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_burst_time_rx.setSuffix(QtGui.QApplication.translate("Dialog", " c", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_min_rx.setSuffix(QtGui.QApplication.translate("Dialog", " %", None, QtGui.QApplication.UnicodeUTF8))
+        
+    def fixtures(self):
+        if self.model:
+            #self.model = self.connection.get_model(self.model.id, "billservice_speedlimit")
+            #self.connection.commit()
+            print "fixturemodel", self.model
+            self.spinBox_max_tx.setValue(int(self.model.max_tx))
+            self.spinBox_max_rx.setValue(int(self.model.max_rx))
+            
+            self.spinBox_burst_tx.setValue(int(self.model.burst_tx))
+            self.spinBox_burst_rx.setValue(int(self.model.burst_rx))
+
+            self.spinBox_burst_treshold_tx.setValue(int(self.model.burst_treshold_tx))
+            self.spinBox_burst_treshold_rx.setValue(int(self.model.burst_treshold_rx))
+
+            self.spinBox_burst_time_tx.setValue(int(self.model.burst_time_tx))
+            self.spinBox_burst_time_rx.setValue(int(self.model.burst_time_rx))
+            
+            self.spinBox_min_tx.setValue(int(self.model.min_tx))
+            self.spinBox_min_rx.setValue(int(self.model.min_rx))
+            
+            self.spinBox_priority.setValue(int(self.model.priority))
+        else:
+            self.spinBox_max_tx.setValue(100)
+            self.spinBox_max_rx.setValue(100)
+            
+            self.spinBox_burst_tx.setValue(100)
+            self.spinBox_burst_rx.setValue(100)
+
+            self.spinBox_burst_treshold_tx.setValue(100)
+            self.spinBox_burst_treshold_rx.setValue(100)
+
+            self.spinBox_burst_time_tx.setValue(1)
+            self.spinBox_burst_time_rx.setValue(1)
+            
+            self.spinBox_min_tx.setValue(100)
+            self.spinBox_min_rx.setValue(100)
+            
+            self.spinBox_priority.setValue(8)
+            
+    def accept(self):
+        self.model = Object()
+
+        self.model.max_tx = unicode(self.spinBox_max_tx.value())
+        self.model.max_rx = unicode(self.spinBox_max_rx.value())
+
+        self.model.burst_tx = unicode(self.spinBox_burst_tx.value())
+        self.model.burst_rx = unicode(self.spinBox_burst_rx.value())
+
+        self.model.burst_treshold_tx = unicode(self.spinBox_burst_treshold_tx.value())
+        self.model.burst_treshold_rx = unicode(self.spinBox_burst_treshold_rx.value())
+
+        self.model.burst_time_tx = unicode(self.spinBox_burst_time_tx.value())
+        self.model.burst_time_rx = unicode(self.spinBox_burst_time_rx.value())
+
+        self.model.min_tx = unicode(self.spinBox_min_tx.value())
+        self.model.min_rx = unicode(self.spinBox_min_rx.value())
+
+        self.model.priority = unicode(self.spinBox_priority.value())
+        #self.model.limit_id = self.limit_id
+        #for x in self.model.__dict__:
+        #    print x, self.model.__dict__[x]
+
+        #self.model.id = self.connection.save(self.model, "billservice_speedlimit")
+        #self.connection.commit()
+        QtGui.QDialog.accept(self)

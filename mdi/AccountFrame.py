@@ -27,7 +27,7 @@ from helpers import tableFormat
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog
+from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
@@ -38,8 +38,10 @@ class CashType(object):
         
 cash_types = [CashType(0, "AT_START"), CashType(1,"AT_END"), CashType(2, "GRADUAL")]
 
-                                           
-        
+limit_actions = [CashType(0, u"Заблокировать пользователя"), CashType(1,u"Изменить скорость")]
+                               
+la_list = [u"Заблокировать пользователя", u"Изменить скорость"]
+
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection,ttype, account=None, model=None):
         super(AddAccountTarif, self).__init__()
@@ -786,7 +788,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limit_tableWidget.clear()
 
-        columns=[u'#', u'Название', u'За последний', u'Период', u'Группа', u'МБ']
+        columns=[u'#', u'Название', u'За последний', u'Период', u'Группа', u'МБ',u"Действие", u"Скорость"]
         
         makeHeaders(columns, self.limit_tableWidget)
         
@@ -1178,6 +1180,44 @@ class TarifFrame(QtGui.QDialog):
            
             self.limit_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
+        if x==6:
+            item = self.limit_tableWidget.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+                
+                       
+            child = ComboBoxDialog(items=limit_actions, selected_item = default_text )
+            self.connection.commit()
+            if child.exec_()==1:
+                self.addrow(self.limit_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
+            if child.selected_id==0:
+                try:
+                    self.limit_tableWidget.item(y, 7).setText("")
+                except:
+                    pass
+                
+        if x==7:
+
+            if not self.limit_tableWidget.item(y,6): return
+            if self.limit_tableWidget.item(y,6).id==0: return
+            print "self.limit_tableWidget.item(y,6).id", self.limit_tableWidget.item(y,6).id
+            item = self.limit_tableWidget.item(y,x)
+            #limit_id = unicode(self.limit_tableWidget.item(y,0).text())
+            try:
+                model = item.model
+            except:
+                model = None
+            print "speedmodel=", model
+            child = SpeedLimitDialog(self.connection, model)
+            
+            if child.exec_()==1 and child.model:
+                self.addrow(self.limit_tableWidget, u"%s%%/%s%% %s%%/%s%% %s%%/%s%% %s/%s %s %s%%/%s%%" % (child.model.max_tx, child.model.max_rx, child.model.burst_tx, child.model.burst_rx, child.model.burst_treshold_tx, child.model.burst_treshold_rx, child.model.burst_time_tx, child.model.burst_time_rx, child.model.priority, child.model.min_tx, child.model.min_rx) , y,x)
+                self.limit_tableWidget.item(y,x).model = child.model
+                self.limit_tableWidget.resizeColumnsToContents()
+                self.limit_tableWidget.resizeRowsToContents()
+                    
     def oneTimeServicesEdit(self,y,x):
         if x==1:
             item = self.onetime_tableWidget.item(y,x)
@@ -1549,6 +1589,8 @@ class TarifFrame(QtGui.QDialog):
                 self.limit_tableWidget.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
+                    speedmodel = self.connection.sql("SELECT * FROM billservice_speedlimit WHERE limit_id=%s" % node.id)
+                    self.connection.commit()
                     self.addrow(self.limit_tableWidget, node.id,i, 0)
                     self.addrow(self.limit_tableWidget, node.name,i, 1)
                     self.addrow(self.limit_tableWidget, node.mode,i, 2, item_type='checkbox')
@@ -1556,10 +1598,14 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, node.group_name,i, 4, id=node.group_id)
                     #self.limit_tableWidget.setItem(i,4, CustomWidget(parent=self.limit_tableWidget, models=traffic_classes))
                     self.addrow(self.limit_tableWidget, unicode(node.size/(1024000)),i, 5)
-                    
+                    self.addrow(self.limit_tableWidget, la_list[node.action],i, 6, id = node.action)
+                    if len(speedmodel)>0:
+                        #print "speedmodel", speedmodel
+                        self.addrow(self.limit_tableWidget, u"%s%%/%s%% %s%%/%s%% %s%%/%s%% %s/%s %s %s%%/%s%%" % (speedmodel[0].max_tx, speedmodel[0].max_rx, speedmodel[0].burst_tx, speedmodel[0].burst_rx, speedmodel[0].burst_treshold_tx, speedmodel[0].burst_treshold_rx, speedmodel[0].burst_time_tx, speedmodel[0].burst_time_rx, speedmodel[0].priority, speedmodel[0].min_tx, speedmodel[0].min_rx),i, 7)
+                        self.limit_tableWidget.item(i, 7).model = speedmodel[0]
                     #self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     #self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
-                    #self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')                    
+                    #self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')
                     
                     i+=1
                     self.limit_tableWidget.resizeColumnsToContents()
@@ -1943,7 +1989,7 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.limit_tableWidget, i)
                     #print self.limit_tableWidget.item(i, 1), self.limit_tableWidget.item(i, 3), self.limit_tableWidget.item(i, 8), self.limit_tableWidget.cellWidget(i, 4)
-                    if self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 5)==None or self.limit_tableWidget.item(i, 4)==None:
+                    if self.limit_tableWidget.item(i, 6)==None or (self.limit_tableWidget.item(i, 6).id==1 and self.limit_tableWidget.item(i, 7)==None) or self.limit_tableWidget.item(i, 1)==None or self.limit_tableWidget.item(i, 3)==None or self.limit_tableWidget.item(i, 5)==None or self.limit_tableWidget.item(i, 4)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
                         self.connection.rollback()
                         return
@@ -1961,13 +2007,18 @@ class TarifFrame(QtGui.QDialog):
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
                     limit.size=unicode(float(unicode(self.limit_tableWidget.item(i, 5).text()))*1024000)
                     limit.group_id = self.limit_tableWidget.item(i, 4).id
+                    limit.action = self.limit_tableWidget.item(i, 6).id
+                    
+                    
                     #limit.in_direction = self.limit_tableWidget.cellWidget(i,5).checkState()==2
                     #limit.out_direction = self.limit_tableWidget.cellWidget(i,6).checkState()==2
                     #limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
                     
                     limit.id = self.connection.save(limit, "billservice_trafficlimit")
-                    
-
+                    if limit.action==1:
+                        speedlimit_model = self.limit_tableWidget.item(i, 7).model
+                        speedlimit_model.limit_id = limit.id
+                        self.connection.save(speedlimit_model, "billservice_speedlimit")
                     
 
 
