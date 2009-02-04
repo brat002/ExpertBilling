@@ -408,13 +408,11 @@ class TrafficLimit(models.Model):
     tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
-    #traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Лимит на класс', blank=True, null=True)
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
-    #in_direction      = models.BooleanField(default=True, blank=True)
-    #out_direction     = models.BooleanField(default=True, blank=True)
     group             = models.ForeignKey("Group")
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
-
+    action            = models.IntegerField()
+    
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -894,3 +892,7 @@ class SpeedLimit(models.Model):
     min_rx = models.IntegerField()
     priority = models.IntegerField()
     
+class AccountSpeedLimit(models.Model):
+    account = models.ForeignKey(Account)
+    speedlimit = models.ForeignKey(SpeedLimit)
+
