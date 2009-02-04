@@ -359,7 +359,7 @@ class periodical_service_bill(Thread):
                         #traffic_transmit_service
                         cachePerSetp = copy(curPersSetpCache)
                         #date of renewal
-                        
+    
                         cacheSuspP = copy(curSuspPerCache)
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
@@ -405,25 +405,19 @@ class periodical_service_bill(Thread):
                             accounttarif_id = account[12]
                             account_id = account[0]
                             
-                            susp_per_mlt = 1
-                            
+                            susp_per_mlt = 1                            
                             if cacheSuspP.has_key(account_id):
                                 susp_per_mlt = 0
                                 #continue
                             
-                            #self.connection.commit()
-                            
                             account_datetime = account[3]
                             account_ballance = account[1] + account[2]
-                            if account_ballance>0 or null_ballance_checkout==True:
+                            if True:
                                 if autostart_sp==True:
                                     time_start_ps=account_datetime
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-                                #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, repeat_after_seconds=length_ps)
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, dateAT)
-                                #self.cur.execute("SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory WHERE service_id=%s AND transaction_id=(SELECT id FROM billservice_transaction WHERE tarif_id=%s AND account_id=%s ORDER BY datetime DESC LIMIT 1) ORDER BY datetime DESC LIMIT 1;", (ps_id, tariff_id, account_id,))
-                                
-                                #now = dateAT
+
                                 if ps_cash_method=="GRADUAL":
                                     """
                                     # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
@@ -433,7 +427,7 @@ class periodical_service_bill(Thread):
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)
                                     
-                                    if last_checkout==None:
+                                    if last_checkout is None:
                                         last_checkout=account_datetime
                                     #print "last checkout", last_checkout
                                     if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
@@ -449,8 +443,9 @@ class periodical_service_bill(Thread):
                                         cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                         lc=now - last_checkout
                                         nums, ost=divmod(lc.seconds+lc.days*86400,n)
+                                        description=u"Проводка по периодической услуге со cнятием суммы в течении периода"
                                         #Нижеследующая функция добавляет много проблем. Временно отключена
-                                        if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                        if nums>1:
                                             """
                                             Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                             пока денег на счету не было
@@ -458,15 +453,16 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
                                             while chk_date < now:
-                                                cash_summ_prev=cash_summ*susp_per_mlt
-                                                transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ_prev, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = chk_date)
-                                                ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                                connection.commit()
                                                 chk_date += n_delta
-                                            connection.commit()
+                                                #psycopg2._psycopg.cursor.c
                                         else:
                                             #make an approved transaction
                                             cash_summ = cash_summ * susp_per_mlt
-                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=u"Проводка по периодической услуге со cнятием суммы в течении периода", created = now)
+                                            if (null_ballance_checkout==False) and (account_ballance<=0):
+                                                cash_summ = 0
+                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = now)
                                             ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
                                 if ps_cash_method=="AT_START":
@@ -494,8 +490,9 @@ class periodical_service_bill(Thread):
                                         nums, ost=divmod(lc.seconds+lc.days*86400, delta)
                                         if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                             summ=ps_cost
-                                            
-                                        if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                           
+                                        description=u"Проводка по периодической услуге со cнятием суммы в начале периода"
+                                        if nums>1:
                                             #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
                                             #и с каколго до какого момента у пользователя стояла отметка "не списывать деньги по период.услугам"
                                             """
@@ -504,27 +501,27 @@ class periodical_service_bill(Thread):
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + delta
+                                            summ_prev=ps_cost
                                             while chk_date <= now:
-                                                summ_prev=ps_cost*susp_per_mlt
-                                                transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id, 
-                                                                             summ=summ_prev, description=u"Проводка по периодической услуге со cнятием суммы в начале периода", created = chk_date)
-                                                ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                                connection.commit()
                                                 chk_date += delta
                                             connection.commit() 
                                         else:
                                              
                                             #TODO: MAKE ACID!!!
                                             summ = summ * susp_per_mlt
+                                            if (null_ballance_checkout==False) and (account_ballance<=0):
+                                                summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
-                                                                     summ = summ, description=u"Проводка по периодической услуге со cнятием суммы в начале периода",
+                                                                     summ = summ, description=description,
                                                                      created = now)
                                         ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
                                     Смотрим завершился ли хотя бы один расчётный период.
-                                    Если завершился - считаем сколько уже их завершилось.
-    
+                                    Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)
@@ -534,8 +531,7 @@ class periodical_service_bill(Thread):
                                         last_checkout=now
                                     else:
                                         first_time=False
-                                    # Здесь нужно проверить сколько раз прошёл расчётный период
-    
+                                    # Здесь нужно проверить сколько раз прошёл расчётный период    
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
                                     # для всех остальных False
@@ -553,33 +549,26 @@ class periodical_service_bill(Thread):
     
                                             summ=ps_cost
                                             descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
-                                            if nums>1 and (account_ballance>0 or (null_ballance_checkout==True and account_ballance<=0)):
+                                            if nums>1:
                                                 chk_date = last_checkout + delta
                                                 #now or (now - delta)???
+                                                summ_prev=ps_cost
                                                 while chk_date <= (now - delta):
-                                                    summ_prev=ps_cost*susp_per_mlt
-                                                    transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_END', tarif = tariff_id, 
-                                                                                 summ=summ_prev, description=descr, created = chk_date)
-                                                    ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                                    cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                                    connection.commit()
                                                     chk_date += delta
-                                                connection.commit() 
-                                            if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
-                                                summ=ps_cost
-                                            
+
+                                            if (null_ballance_checkout==False) and (account_ballance<=0):
+                                                summ=0
                                         else:
                                             summ=0
                                             descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
                                             
                                         #TODO: MAKE ACID!!!
                                         summ = summ * susp_per_mlt
-                                        transaction_id = transaction(cursor=cur,
-                                                                     account=account_id,
-                                                                     approved=True,
-                                                                     type='PS_AT_END',
-                                                                     tarif = tariff_id,
-                                                                     summ=summ,
-                                                                     description=descr,
-                                                                     created = now)
+                                        transaction_id = transaction(cursor=cur, account=account_id,approved=True,
+                                                                     type='PS_AT_END', tarif = tariff_id,summ=summ,
+                                                                     description=descr, created = now)
                                         ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
                 connection.commit()
@@ -591,9 +580,6 @@ class periodical_service_bill(Thread):
                 else:
                     logger.error("%s : exception: %s", (self.getName(), str(ex)))
             gc.collect()
-            
-            
-            #self.connection.close()
             time.sleep(180)
             
 class TimeAccessBill(Thread):
