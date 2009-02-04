@@ -310,9 +310,9 @@ class check_vpn_access(Thread):
                 logger.info("VPN thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
                 #gc.collect()
             time.sleep(60)
 
@@ -398,21 +398,23 @@ class periodical_service_bill(Thread):
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
                         #print "new ps"                        
                         for account in accounts:
-                            #if account.suspended
-                            '''if account[13]:
-                                continue'''
-                            
-                            accounttarif_id = account[12]
-                            account_id = account[0]
-                            
-                            susp_per_mlt = 1                            
-                            if cacheSuspP.has_key(account_id):
-                                susp_per_mlt = 0
-                                #continue
-                            
-                            account_datetime = account[3]
-                            account_ballance = account[1] + account[2]
-                            if True:
+                            try:
+                                #if account.suspended
+                                '''if account[13]:
+                                    continue'''
+                                
+                                accounttarif_id = account[12]
+                                if accounttarif_id is None:
+                                    continue
+                                
+                                account_id = account[0]                            
+                                susp_per_mlt = 1                            
+                                if cacheSuspP.has_key(account_id):
+                                    susp_per_mlt = 0
+                                    #continue
+                                
+                                account_datetime = account[3]
+                                account_ballance = account[1] + account[2]
                                 if autostart_sp==True:
                                     time_start_ps=account_datetime
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
@@ -570,14 +572,18 @@ class periodical_service_bill(Thread):
                                                                      description=descr, created = now)
                                         ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
                                     connection.commit()
+                            except Exception, ex:
+                                if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
+                                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
+                                else: raise ex
                 connection.commit()
                 cur.close()
                 logger.info("Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             gc.collect()
             time.sleep(180)
             
@@ -743,9 +749,9 @@ class TimeAccessBill(Thread):
                 logger.info("Time access thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
 
             gc.collect()
             time.sleep(60)
@@ -904,9 +910,9 @@ class limit_checker(Thread):
                 logger.info("Limit thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             
             #self.connection.close()
             gc.collect()
@@ -1244,9 +1250,9 @@ class settlement_period_service_dog(Thread):
                 logger.info("Settlement period thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
 
             gc.collect()
             time.sleep(120)
@@ -1457,9 +1463,9 @@ class ipn_service(Thread):
                 logger.info("IPN thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
+                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
                 else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                    logger.error("%s : exception: %s", (self.getName(), repr(ex)))
                     traceback.print_exc(file=sys.stdout)
 
             
