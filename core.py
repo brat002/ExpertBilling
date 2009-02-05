@@ -491,7 +491,7 @@ class periodical_service_bill(Thread):
                                         nums, ost=divmod(lc.seconds+lc.days*86400, delta)
                                         if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                             summ=ps_cost
-                                           
+
                                         description=u"Проводка по периодической услуге со cнятием суммы в начале периода"
                                         if nums>1:
                                             #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
@@ -509,7 +509,7 @@ class periodical_service_bill(Thread):
                                                 chk_date += delta
                                             connection.commit() 
                                         else:
-                                             
+
                                             #TODO: MAKE ACID!!!
                                             summ = summ * susp_per_mlt
                                             if (null_ballance_checkout==False) and (account_ballance<=0):
@@ -879,12 +879,12 @@ class limit_checker(Thread):
                         #limitRec[4] - limit_size
                         if tsize>Decimal("%s" % limitRec[4]) and limit_action==0:
                             block=True
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;""", (account_id))
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id))
                             connection.commit()
                         elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
                             #Меняем скорость
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;
-                                           INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%d,%d);""", (account_id, account_id, limitRec[8],))
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
+                            cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
 
                             connection.commit()
                             speed_changed=True
@@ -1632,10 +1632,7 @@ class AccountServiceThread(Thread):
                 cur.execute("""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
                                     trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
                                     trafficlimit."mode", trafficlimit.action,
-                                    speedlimit.id,
-                                    speedlimit.max_tx, speedlimit.max_rx, speedlimit.burst_tx, speedlimit.burst_rx, 
-                                    speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, speedlimit.burst_time_tx, 
-                                    speedlimit.burst_time_rx, speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority
+                                    speedlimit.id
                                     FROM billservice_trafficlimit as trafficlimit
                                     LEFT JOIN billservice_speedlimit as speedlimit ON speedlimit.limit_id=trafficlimit.id
                                     ORDER BY trafficlimit.size DESC;""") # DESC Критично!
