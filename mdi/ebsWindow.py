@@ -159,7 +159,10 @@ class ebsTableWindow(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()    
-                     
+        if event.key() == QtCore.Qt.Key_Return and self.lineEdit_search_text.hasFocus()==True:
+            self.tableFind()
+            
+            
 class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
     sequenceNumber = 1
     def __init__(self, connection, initargs, tabargs):
@@ -306,7 +309,8 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
-                   
+        if event.key() == QtCore.Qt.Key_Return and self.lineEdit_search_text.hasFocus()==True:
+            self.tableFind()
                 
 class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     sequenceNumber = 1
@@ -528,8 +532,13 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         event.accept()
 
     def keyPressEvent(self, event):
+        #print "key pressed"
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
+        #print event.key()
+        if event.key() == QtCore.Qt.Key_Return and self.lineEdit_search_text.hasFocus()==True:
+            self.tableFind()
+            
     def editRow(self):
         pass
     def editTarif(self):

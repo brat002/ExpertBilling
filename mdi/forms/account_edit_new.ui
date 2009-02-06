@@ -17,7 +17,7 @@
     <item row="0" column="0" >
      <widget class="QTabWidget" name="tabWidget" >
       <property name="currentIndex" >
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_general" >
        <attribute name="title" >
@@ -944,29 +944,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0" >
-            <widget class="QLabel" name="label_ipn_ip_mask" >
-             <property name="text" >
-              <string>Маска подсети</string>
-             </property>
-             <property name="buddy" >
-              <cstring>lineEdit_ipn_ip_address</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1" >
-            <widget class="QLineEdit" name="lineEdit_ipn_ip_mask" >
-             <property name="minimumSize" >
-              <size>
-               <width>0</width>
-               <height>22</height>
-              </size>
-             </property>
-             <property name="inputMask" >
-              <string>000.000.000.000; </string>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="0" >
             <widget class="QLabel" name="label_ipn_mac_address" >
              <property name="text" >
@@ -1010,7 +987,7 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="3" >
+           <item row="1" column="0" colspan="2" >
             <widget class="QCheckBox" name="lineEdit_assign_ipn_ip_from_dhcp" >
              <property name="text" >
               <string>Выдавать IP адрес с помощью DHCP</string>
@@ -1465,7 +1442,6 @@
   <tabstop>checkBox_credit</tabstop>
   <tabstop>toolButton_get_ipn_from_pool</tabstop>
   <tabstop>comboBox_ipn_pool</tabstop>
-  <tabstop>lineEdit_ipn_ip_mask</tabstop>
   <tabstop>lineEdit_ipn_mac_address</tabstop>
   <tabstop>listWidget_nasses</tabstop>
   <tabstop>comboBox_vpn_pool</tabstop>

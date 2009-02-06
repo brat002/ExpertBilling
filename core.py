@@ -30,7 +30,7 @@ from utilites import create_speed_string, change_speed, PoD, get_active_sessions
 from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
-from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
+from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted, get_limit_speed
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -822,7 +822,7 @@ class limit_checker(Thread):
                                 SET disabled_by_limit=%s
                                 WHERE id=%s;
                                 """, (False, account_id,))
-                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%d;""", (account_id))
+                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id))
                         connection.commit()
 
                         continue
@@ -1417,6 +1417,7 @@ class ipn_service(Thread):
                     connection.commit()
                     account_ipn_speed = acct[23]
                     
+                    account_limit_speed = get_limit_speed(cur, account_id)
                     #print account_ipn_speed
                     if account_ipn_speed=='' or account_ipn_speed==None:    
                         speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
@@ -1426,7 +1427,9 @@ class ipn_service(Thread):
                     
                     newspeed=''
                     newspeed = ''.join([unicode(spi) for spi in speed[:6]])
-                     
+                    
+                    print newspeed
+                    print account_limit_speed
                     ipn_speed = None
                     ipn_state = None
                     accipnRec = acc_ipn_sps.get(account_id)

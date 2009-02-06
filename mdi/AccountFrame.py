@@ -2197,9 +2197,11 @@ class TarifFrame(QtGui.QDialog):
 
     
             elif (self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0) and not model.isnull("traffic_transmit_service_id"):
+                tsid = model.traffic_transmit_service_id
                 model.traffic_transmit_service_id=None
-                self.connection.iddelete(model.traffic_transmit_service_id, "billservice_traffictransmitservice" )
-                
+                self.connection.save(model, "billservice_tariff")
+                self.connection.iddelete(tsid, "billservice_traffictransmitservice" )
+
                 
                             
         
@@ -2532,6 +2534,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_9.addWidget(self.lineEdit_credit, 1, 1, 1, 1)
         self.checkBox_credit = QtGui.QCheckBox(self.groupBox_balance_info)
         self.checkBox_credit.setEnabled(False)
+        self.checkBox_credit.setChecked(True)
         self.checkBox_credit.setObjectName("checkBox_credit")
         self.gridLayout_9.addWidget(self.checkBox_credit, 2, 0, 1, 2)
         self.groupBox_status = QtGui.QGroupBox(self.tab_general)
