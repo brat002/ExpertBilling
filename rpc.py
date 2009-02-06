@@ -14,7 +14,7 @@ import Pyro.core, Pyro.protocol, Pyro.constants
 
 from IPy import intToIp
 from hashlib import md5
-from utilites import PoD, cred
+from utilites import PoD, cred, SSHClient
 from decimal import Decimal
 from db import Object as Object
 from daemonize import daemonize
