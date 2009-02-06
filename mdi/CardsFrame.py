@@ -231,9 +231,9 @@ class SaleCards(QtGui.QDialog):
     def printCards(self):
         
         if len(self.cards)>0:
-           crd = "(" + ",".join(self.cards) + ")"
+            crd = "(" + ",".join(self.cards) + ")"
         else:
-           crd = "(0)" 
+            crd = "(0)" 
         
         cards = self.connection.get_notsold_cards(self.cards)
         self.connection.commit()
@@ -304,7 +304,6 @@ class SaleCards(QtGui.QDialog):
         
     def fixtures(self):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
-        #dealers = self.connection.sql("SELECT * FROM billservice_dealer WHERE deleted=False;")
         dealers = self.connection.get_models(table="billservice_dealer", where={'deleted':False})
         self.connection.commit()
         i=0
@@ -320,7 +319,6 @@ class SaleCards(QtGui.QDialog):
             
     def dealerInfo(self, index):
         id = self.comboBox_dealer.itemData(index).toInt()[0]
-
         #print id
         dealer = self.connection.get_models(table="billservice_dealer", where={'deleted':False, 'id':id})[0]
         self.connection.commit()
@@ -680,9 +678,7 @@ class CardsChildEbs(ebsTableWindow):
         initargs = {"setname":"cards_frame_period", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
         super(CardsChildEbs, self).__init__(connection, initargs)
         
-    def ebsInterInit(self, initargs):
-
-        
+    def ebsInterInit(self, initargs):        
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.setIconSize(QtCore.QSize(18, 18))
         self.toolBar = QtGui.QToolBar(self)
@@ -752,12 +748,13 @@ class CardsChildEbs(ebsTableWindow):
     def ebsPostInit(self, initargs):
         self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
-        self.filterActions()
-        self.fixtures()
         
+        self.fixtures()        
+        self.filterActions()
         self.delNodeLocalAction()
         
         try:
@@ -797,8 +794,7 @@ class CardsChildEbs(ebsTableWindow):
         nominals = self.connection.get_cards_nominal()
         self.connection.commit()
         self.comboBox_nominal.clear()
-        for nom in nominals:
-            
+        for nom in nominals:            
             self.comboBox_nominal.addItem(unicode(nom.nominal))
             
     def filterActions(self):
@@ -943,7 +939,6 @@ class CardsChildEbs(ebsTableWindow):
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
         self.delNodeLocalAction()
-        #self.tableWidget.setSortingEnabled(True)
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.dateTime()))
@@ -1352,8 +1347,7 @@ class CardsChild(QtGui.QMainWindow):
     
 
     def addrow(self, value, x, y, status, activated):
-        headerItem = QtGui.QTableWidgetItem()
-        
+        headerItem = QtGui.QTableWidgetItem()        
         #print 'activated',activated
         if value == None:
             value = ""
