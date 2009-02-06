@@ -54,15 +54,6 @@ class check_vpn_access(Thread):
             if in_period(row['time_start'],row['length'],row['repeat_after'])==True:
                 return True
         return False
-
-    """def create_speed_(self, tarif_id, nas_type):
-        defaults = get_default_speed_parameters(self.cur, tarif_id)
-        speeds = get_speed_parameters(self.cur, tarif_id)
-        for speed in speeds:
-            if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
-                defaults = comparator(defaults, speed)
-                return defaults
-        return defaults"""
     
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
@@ -161,7 +152,6 @@ class check_vpn_access(Thread):
                         #account-tarif cach indexed by account_id
                         cacheAT = copy(curAT_acIdx)
                         #nas cache
-                        #cacheNas  = copy(curNasCache)
                         cacheNas = copy(curNas_ipIdx)
                         #default speed cache
                         cacheDefSp = copy(curDefSpCache)
@@ -179,20 +169,17 @@ class check_vpn_access(Thread):
                     logger.error("Vpn speed thread exception: %s", repr(ex))
                    
                 cur = connection.cursor()
-                #close frosen sessions
+                #close frozen sessions
                 now = datetime.datetime.now()
                 cur.execute("""UPDATE radius_activesession 
                 SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
                 WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
-                UPDATE radius_activesession SET session_status='ACK' WHERE date_end is not Null and session_status='ACTIVE';""", (now, now,))
+                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""", (now, now,))
                 connection.commit()
-
-                #TODO: make nas_nas.ipadress UNIQUE and INDEXed
-                
+                #TODO: make nas_nas.ipadress UNIQUE and INDEXed                
                 cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL;
-                                 """)
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL;""")
                 rows=cur.fetchall()
                 connection.commit()
                 for row in rows:
@@ -226,19 +213,16 @@ class check_vpn_access(Thread):
                         acstatus = (((not allow_vpn_null) and (acct[1]+acct[2] >0) or (allow_vpn_null)) \
                                     and \
                                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
-                        #print row['balance']
+
                         """
-                        allow_vpn_null
-                        allow_vpn_block
-                        
+                        allow_vpn_null allow_vpn_block                        
                         (((account.allow_vpn_null=False and account.ballance+account.credit>=0) or (account.allow_vpn_null=True)) 
                         OR 
                         ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
                         """
                         tarif_id = acct[4]
-                        tarif_status = acct[11]
-                        if acstatus and c_tp_asInPeriod[tarif_id] and tarif_status:
-                            #chech whether speed changed
+                        if acstatus and c_tp_asInPeriod[tarif_id]:
+                            #chech whether speed has changed
                             vpn_speed = acct[24]
                             if vpn_speed=='':
                                 
@@ -358,8 +342,7 @@ class periodical_service_bill(Thread):
                         cachePerTarif  = copy(curPerTarifCache)
                         #traffic_transmit_service
                         cachePerSetp = copy(curPersSetpCache)
-                        #date of renewal
-    
+                        #date of renewal    
                         cacheSuspP = copy(curSuspPerCache)
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
@@ -375,8 +358,7 @@ class periodical_service_bill(Thread):
                 
                 cur = connection.cursor()
                 #transactions per day
-                #TODO: toconfig!
-                
+                #TODO: toconfig!                
                 n=(86400)/transaction_number
                 n_delta = datetime.timedelta(seconds=n)
                 #get a list of tarifs with periodical services
@@ -385,10 +367,7 @@ class periodical_service_bill(Thread):
                 #loop through tarifs
                 now=datetime.datetime.now()
                 for row in rows:
-                    #self.connection.commit()
-                    #print row
                     tariff_id, settlement_period_id, null_ballance_checkout=row
-
                     #get accounts for tarif
                     accounts = cacheAT.get(tariff_id, [])
                     #get periodical services data
@@ -396,30 +375,18 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
-                        #print "new ps"                        
                         for account in accounts:
                             try:
-                                #if account.suspended
-                                '''if account[13]:
-                                    continue'''
-                                
-                                accounttarif_id = account[12]
-                                if accounttarif_id is None:
-                                    continue
-                                
-                                account_id = account[0]                            
-                                susp_per_mlt = 1                            
-                                if cacheSuspP.has_key(account_id):
-                                    susp_per_mlt = 0
-                                    #continue
-                                
+                                accounttarif_id = account[2]
+                                if accounttarif_id is None: continue
+                                account_id = account[0]
+                                susp_per_mlt = 0 if cacheSuspP.has_key(account_id) else 1
                                 account_datetime = account[3]
                                 account_ballance = account[1] + account[2]
                                 if autostart_sp==True:
                                     time_start_ps=account_datetime
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, dateAT)
-
                                 if ps_cash_method=="GRADUAL":
                                     """
                                     # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
@@ -427,8 +394,7 @@ class periodical_service_bill(Thread):
                                     # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
-                                    last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)
-                                    
+                                    last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)                                    
                                     if last_checkout is None:
                                         last_checkout=account_datetime
                                     #print "last checkout", last_checkout
@@ -614,10 +580,6 @@ class TimeAccessBill(Thread):
                     #if caches were renewed, renew local copies
                     if curAT_date > dateAT:
                         curAT_lock.acquire()
-                        #cacheAT = deepcopy(curATCache)
-                        #account-tarif cach indexed by account_id
-                        #cacheAT = deepcopy(curAT_acctIdx)
-                        #settlement_period cache
                         cacheTimeAccN  = copy(curTimeAccNCache)
                         #traffic_transmit_service
                         cacheTimePerN = copy(curTimePerNCache)
@@ -635,17 +597,9 @@ class TimeAccessBill(Thread):
                     continue
                 
                 cur = connection.cursor()
-                '''self.cur.execute("""
-                                 SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update::timestamp without time zone, tacc.id, tarif.id, acc_t.id
-                                 FROM radius_session as rs
-                                 JOIN billservice_accounttarif as acc_t ON acc_t.account_id=rs.account_id
-                                 JOIN billservice_tariff as tarif ON tarif.id=acc_t.tarif_id
-                                 JOIN billservice_timeaccessservice as tacc ON tacc.id=tarif.time_access_service_id
-                                 WHERE rs.checkouted_by_time=False and rs.date_start is NUll and acc_t.datetime<rs.interrim_update and tarif.active=True ORDER BY rs.interrim_update ASC;
-                                 """)'''
                 cur.execute("""SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id
                                  FROM radius_session AS rs
-                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id
+                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
                                  WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id NOTNULL)
                                  ORDER BY rs.interrim_update ASC;""")
@@ -690,34 +644,11 @@ class TimeAccessBill(Thread):
                             prepaid=0
                         cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
                         connection.commit()
-    
-                    '''self.cur.execute("""
-                        SELECT tan.time_period_id, tan.cost
-                        FROM billservice_timeaccessnode as tan
-                        JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id
-                        WHERE tan.time_access_service_id=%s
-                        """ % ps_id)'''
-                    '''self.cur.execute("""SELECT tan.time_period_id, tan.cost
-                        FROM billservice_timeaccessnode as tan
-                        WHERE (tan.time_period_id is not NULL) AND (tan.time_access_service_id=%s)""", (ps_id,))
-                    periods=self.cur.fetchall()'''
                     #get the list of time periods and their cost
                     now = datetime.datetime.now()
                     periods = cacheTimeAccN.get(ps_id, [])
                     for period in periods:
-                        period_id=period[0]
-                        period_cost=period[1]
-                        '''self.cur.execute(
-                            """
-                            SELECT tpn.id, tpn.name, tpn.time_start::timestamp without time zone, tpn.length, tpn.repeat_after
-                            FROM billservice_timeperiodnode as tpn
-                            JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id
-                            WHERE tptpn.timeperiod_id=%s
-                            """ % period_id)'''
-                        '''self.cur.execute("""SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after
-                            FROM billservice_timeperiodnode as tpn
-                            WHERE (%s IN (SELECT tptpn.timeperiod_id from billservice_timeperiod_time_period_nodes as tptpn WHERE tpn.id=tptpn.timeperiodnode_id))""", (period_id,))
-                        period_nodes_data=self.cur.fetchall()'''
+                        period_id, period_cost=period[0:2]
                         #get period nodes and check them
                         period_nodes_data = cacheTimePerN.get(period_id,[])
                         for period_node in period_nodes_data:
@@ -727,16 +658,10 @@ class TimeAccessBill(Thread):
                             if fMem.in_period_(period_start,period_length,repeat_after, dateAT)[3]:
                                 summ=(float(total_time)/60.000)*period_cost
                                 if summ>0:
-                                    transaction(
-                                        cursor=cur,
-                                        type='TIME_ACCESS',
-                                        account=account_id,
-                                        approved=True,
-                                        tarif=tarif_id,
-                                        summ=summ,
+                                    transaction(cursor=cur, type='TIME_ACCESS', account=account_id,
+                                        approved=True, tarif=tarif_id, summ=summ,
                                         description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
-                                        created=now
-                                    )
+                                        created=now)
                                     connection.commit()
 
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
@@ -773,8 +698,7 @@ class limit_checker(Thread):
         global curAT_date, curAT_lock
         global curSPCache, curTLimitCache       
         cacheAT = None
-        dateAT = datetime.datetime(2000, 1, 1)        
-        
+        dateAT = datetime.datetime(2000, 1, 1)
         while True:            
             try:
                 if suicideCondition[self.__class__.__name__]: break
@@ -799,39 +723,23 @@ class limit_checker(Thread):
                 except:
                     time.sleep(1)
                     continue
-                #cur = self.connection.cursor()
-                #get tarifs with limits
-
-                #self.cur.close()
-                #self.cur = self.connection.cursor()
-                #!if tarif.id not in limitcache.keys()
+                
                 oldid=-1
-
                 cur = connection.cursor()
                 for acct in cacheAT:
-                    
                     account_id = acct[0]
                     tarif_id = acct[4]
                     limitRecs = cacheTLimit.get(tarif_id)
                     disabled_by_limit = acct[15]
                     if not limitRecs:
                         if disabled_by_limit:
-                            cur.execute(
-                                """
-                                UPDATE billservice_account
-                                SET disabled_by_limit=%s
-                                WHERE id=%s;
-                                """, (False, account_id,))
+                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;""", (False, account_id,))
                         cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id))
                         connection.commit()
-
                         continue
                     block=False
                     speed_changed = False                    
                     for limitRec in limitRecs:
-                        #lr_in_dir  = limitRec[5]
-                        #lr_out_dir = limitRec[6]
-                        
                         if not limitRec[5]:
                             continue
                         limit_action = limitRec[7]
@@ -948,8 +856,7 @@ class settlement_period_service_dog(Thread):
     def run(self):
         """
         Сделать привязку к пользователю через billservice_accounttarif
-        """ 
-        
+        """         
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         global curATCache, curShedLogCache, curSPCache, curTimeAccSrvCache, curTTSCache
@@ -972,12 +879,9 @@ class settlement_period_service_dog(Thread):
                         cacheSetP = copy(curSPCache)
                         cacheShedLog  = copy(curShedLogCache)
                         #traffic_transmit_service
-                        cacheTTS = copy(curTTSCache)
-                        
-                        cacheTAccS = copy(curTimeAccSrvCache)
-                        
-                        cacheOTSrv = copy(curOneTimeSrvCache)
-                        
+                        cacheTTS = copy(curTTSCache)                        
+                        cacheTAccS = copy(curTimeAccSrvCache)                        
+                        cacheOTSrv = copy(curOneTimeSrvCache)                        
                         cacheOTSHist = copy(curOTSHistCache)
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
@@ -985,54 +889,14 @@ class settlement_period_service_dog(Thread):
                     else:
                         time.sleep(10)
                         continue
-                except:
-                    
+                except:                    
                     try:
                         curAT_lock.release()
                     except: pass
                     time.sleep(1)
                     continue
                 cur = connection.cursor()
-                '''self.cur.execute(
-                    """
-                    SELECT shedulelog.id, shedulelog.accounttarif_id, account.id, account.balance_blocked, (account.ballance+account.credit) as balance, 
-                    shedulelog.ballance_checkout::timestamp without time zone, 
-                    shedulelog.prepaid_traffic_reset::timestamp without time zone, 
-                    shedulelog.prepaid_time_reset::timestamp without time zone,
-                    sp.time_start::timestamp without time zone, sp.length, 
-                    sp.length_in,sp.autostart, accounttarif.id, 
-                    accounttarif.datetime::timestamp without time zone,  
-                    tariff.id, tariff.reset_tarif_cost , tariff.cost, tariff.traffic_transmit_service_id, 
-                    tariff.time_access_service_id, traffictransmit.reset_traffic, timeaccessservice.reset_time,
-                    shedulelog.balance_blocked::timestamp without time zone, 
-                    shedulelog.prepaid_traffic_accrued::timestamp without time zone, 
-                    shedulelog.prepaid_time_accrued::timestamp without time zone
-                    FROM billservice_account as account
-                    LEFT JOIN billservice_shedulelog as shedulelog on shedulelog.account_id=account.id
-                    JOIN billservice_tariff as tariff ON tariff.id=get_tarif(account.id)
-                    JOIN billservice_accounttarif AS accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif
-                    WHERE account_id=account.id and tarif_id=tariff.id and  datetime<now() ORDER BY datetime DESC LIMIT 1)
-                    LEFT JOIN billservice_settlementperiod as sp ON sp.id=tariff.settlement_period_id
-                    LEFT JOIN billservice_traffictransmitservice as traffictransmit ON traffictransmit.id=tariff.traffic_transmit_service_id
-                    LEFT JOIN billservice_timeaccessservice as timeaccessservice ON timeaccessservice.id=tariff.time_access_service_id
-                    WHERE account.status=True and tariff.active=True;
-                    """)
-    
-                rows=self.cur.fetchall()
-                self.connection.commit()
-                self.cur.close()
-                self.cur = self.connection.cursor()'''
-                '''
-                for row in rows:
-                    (shedulelog_id, accounttarif_id_shedulelog, account_id, account_balance_blocked, account_balance,ballance_checkout, prepaid_traffic_reset, prepaid_time_reset,
-                     time_start, length, length_in, autostart, accounttarif_id, acct_datetime, tarif_id,
-                     reset_tarif_cost, cost, traffic_transmit_service_id, time_access_service_id,
-                     reset_traffic, reset_time, balance_blocked, prepaid_traffic_accrued, prepaid_time_accrued) = row
-                '''
                 for acct in cacheAT:
-                    #account.status=True and tariff.active=True
-                    if not (acct[29] or acct[11]):
-                        continue
                     account_id = acct[0]
                     ballance_checkout, balance_blocked = (None, None)
                     prepaid_traffic_reset, prepaid_traffic_accrued, accounttarif_id_shedulelog = (None, None, None)
@@ -1351,8 +1215,7 @@ class ipn_service(Thread):
                         """
                         Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем.
                         """
-                        continue
-                    
+                        continue                    
                     #acct[5]- access_parameter_id
                     accpRec = cacheAccp.get(acct[5])
                     #accessparameters.ipn_for_vpn==True
@@ -1361,8 +1224,6 @@ class ipn_service(Thread):
                     #print "check ipn"
                     sended=None
                     recreate_speed = False
-                    #period=self.check_period(time_periods_by_tarif_id(self.cur, row['tarif_id']))
-                    #print period
                     tarif_id= acct[4]
                     account_id = acct[0]
                     account_password = acct[33]
@@ -1447,10 +1308,9 @@ class ipn_service(Thread):
                         sended_speed = change_speed(dict, 
                                                     account_id,account_name,account_vpn_ip, \
                                                     account_ipn_ip,account_mac_address, \
-                                                    access_type, \
                                                     nas_ipaddress,nas_type,nas_name,\
                                                     nas_login,nas_password,\
-                                                    format_string=nas_ipn_speed, \
+                                                    format_string=nas_ipn_speed, access_type=access_type,\
                                                     speed=speed[:6])
                         data_for_save=''
                         #print speed
@@ -1568,7 +1428,7 @@ class AccountServiceThread(Thread):
                 cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password  
                     FROM billservice_account as ba
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
-                    LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
+                    LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.status AND bt.active;""", (tmpDate,))
                 #list cache
                 
                 accts = cur.fetchall()
