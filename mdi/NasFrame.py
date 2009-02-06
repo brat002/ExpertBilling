@@ -449,7 +449,7 @@ class AddNasFrame(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            print 'New nas'
+            #print 'New nas'
             model=Object()
 
         if unicode(self.nas_name.text())==u"":
@@ -479,7 +479,8 @@ class AddNasFrame(QtGui.QDialog):
         model.login = unicode(self.ssh_name_lineEdit.text())
         model.password = unicode(self.ssh_password_lineEdit.text())
         model.type = unicode(self.nas_comboBox.currentText())
-        model.name = unicode(self.nas_name.text())
+        model.name = unicode(self.lineEdit_name.text())
+        model.identify = unicode(self.nas_name.text())
         model.ipaddress = unicode(self.nas_ip.text())
         model.secret = unicode(self.nas_secret.text())
 
@@ -518,7 +519,8 @@ class AddNasFrame(QtGui.QDialog):
             self.nas_comboBox.addItem(nas)
 
         if self.model:
-            self.nas_name.setText(unicode(self.model.name))
+            self.lineEdit_name.setText(unicode(self.model.name))
+            self.nas_name.setText(unicode(self.model.identify))
             self.nas_ip.setText(unicode(self.model.ipaddress))
             self.nas_secret.setText(unicode(self.model.secret))
             self.ssh_name_lineEdit.setText(unicode(self.model.login))
@@ -552,7 +554,7 @@ class AddNasFrame(QtGui.QDialog):
 
 class NasEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u"id", u"Имя", u"Тип", u"IP"]
+        columns=[u"id", u"Имя", u"Identify", u"Тип", u"IP"]
         initargs = {"setname":"nas_frame_header", "objname":"NasEbsMDI", "winsize":(0,0,400,400), "wintitle":"Серверы доступа", "tablecolumns":columns}
         super(NasEbs, self).__init__(connection, initargs)
         
@@ -664,7 +666,7 @@ class NasEbs(ebsTableWindow):
 
 
     def refresh(self):
-        #self.tableWidget.setSortingEnabled(False)
+        self.tableWidget.clearContents()
         nasses = self.connection.get_models(table="nas_nas")
         self.connection.commit()
         self.tableWidget.setRowCount(len(nasses))
@@ -672,8 +674,9 @@ class NasEbs(ebsTableWindow):
         for nas in nasses:
             self.addrow(nas.id, i,0)
             self.addrow(nas.name, i,1)
-            self.addrow(nas.type, i,2)
-            self.addrow(nas.ipaddress, i,3)
+            self.addrow(nas.identify, i,2)
+            self.addrow(nas.type, i,3)
+            self.addrow(nas.ipaddress, i,4)
             #self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
