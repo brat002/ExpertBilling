@@ -123,6 +123,16 @@ class dbRoutine(object):
 
 #Primitives
 
+def get_limit_speed(cursor, account_id):
+    cursor.execute("""SELECT speedlimit.max_tx, speedlimit.max_rx, 
+                      speedlimit.burst_tx, speedlimit.burst_rx, 
+                      speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
+                      speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
+                      speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority
+                      FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
+                      WHERE accountspeedlimit.speedlimit_id=speedlimit.id AND accountspeedlimit.account_id=%s;""", (account_id,))
+    return cursor.fetchone()
+    
 def get_nas_by_ip(cursor, ip):
 
     cursor.execute("""SELECT id, secret, type, multilink from nas_nas WHERE ipaddress=%s;""" , (ip,))
