@@ -14,6 +14,7 @@ import Pyro.core, Pyro.protocol, Pyro.constants
 
 from IPy import intToIp
 from hashlib import md5
+from utilites import PoD, cred
 from decimal import Decimal
 from db import Object as Object
 from daemonize import daemonize
@@ -687,7 +688,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             format_string=str(row['reset_action'])
         )
 
-def SIGUSR1_handler(signum, frame):
+def SIGTERM_handler(signum, frame):
     graceful_save()
 
 def graceful_save():
@@ -707,8 +708,8 @@ def main():
         th.start()
         time.sleep(0.1)
     try:
-        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
-    except: logger.lprint('NO SIGUSR1 - windows!')
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
     
     #main thread should not exit!
     while True:
@@ -727,7 +728,8 @@ if __name__ == "__main__":
         mincached=1,
         maxcached=10,
         blocking=True,
-        #maxusage=20, 
+        #maxusage=20,
+        setsession=["SET statement_timeout = 6000000;"],
         creator=psycopg2,
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
                                                                config.get("db", "username"),
