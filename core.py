@@ -734,7 +734,7 @@ class limit_checker(Thread):
                     if not limitRecs:
                         if disabled_by_limit:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;""", (False, account_id,))
-                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id))
+                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                         connection.commit()
                         continue
                     block=False
@@ -787,7 +787,7 @@ class limit_checker(Thread):
                         #limitRec[4] - limit_size
                         if tsize>Decimal("%s" % limitRec[4]) and limit_action==0:
                             block=True
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id))
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                             connection.commit()
                         elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
                             #Меняем скорость
