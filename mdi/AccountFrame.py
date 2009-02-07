@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 import Pyro.core
 import traceback
-import psycopg2
+
 from ebsWindow import ebsTable_n_TreeWindow
 from db import Object as Object
 from helpers import dateDelim

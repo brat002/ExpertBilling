@@ -377,7 +377,7 @@ class periodical_service_bill(Thread):
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
                         for account in accounts:
                             try:
-                                accounttarif_id = account[2]
+                                accounttarif_id = account[12]
                                 if accounttarif_id is None: continue
                                 account_id = account[0]
                                 susp_per_mlt = 0 if cacheSuspP.has_key(account_id) else 1

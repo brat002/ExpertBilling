@@ -3,7 +3,7 @@
 Database wrapper for mikrobill
 """
 #Post
-import psycopg2, datetime
+import  datetime
 import os
 
 from types import InstanceType, StringType, UnicodeType
