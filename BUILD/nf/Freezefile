@@ -1,9 +1,8 @@
-import sys
-_PREFIX = 'C:/Python25/Lib/site-packages/' if sys.platform == 'win32' else '/usr/lib/python2.5/site-packages/'
-_EXT = '.pyd' if sys.platform == 'win32' else '.so'
-del sys
+#import sys
+_PREFIX = '/usr/lib/python2.5/site-packages/'
+_EXT = '.so'
+#del sys
 PY_FILE = '../../nf.py'
-FREEZE_LOCAL = True
 ADDITIONAL_MODULES = {
 	'DBUtils':
 		None, #_PREFIX + 'DBUtils/__init__.py',
@@ -23,8 +22,18 @@ ADDITIONAL_MODULES = {
 		_PREFIX + 'mx/Misc/__init__.py',
 	'mx.Misc.LazyModule':
 		_PREFIX + 'mx/Misc/LazyModule.py',
+	'DateTime':
+		_PREFIX + 'mx/DateTime/__init__.py',
+	'Parser':
+		_PREFIX + 'mx/DateTime/Parser.py',
+	'mxDateTime':
+		_PREFIX + 'mx/DateTime/mxDateTime/__init__.py',
+	'ARPA':
+		_PREFIX + 'mx/DateTime/ARPA.py',
 }
-C_FILE = 'OUTPUT/nf.c'
-STAND_ALONE = True
+C_FILE = '../OUTPUT/nf.c'
 IGNORE_MISSING = True
-
+import commands
+_code, PROTECTION_KEY = commands.getstatusoutput("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
+if _code:
+	raise SystemError, "can't generate a key"

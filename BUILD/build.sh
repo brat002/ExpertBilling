@@ -3,15 +3,15 @@ cd nf
 echo "****************************************
 Building 'nf'
 ****************************************"
-../../freezer/freezer.py
+../../freezer/freezer.py || exit $?
 cd ../core
 echo "****************************************
 Building 'core'
 ****************************************"
-../../freezer/freezer.py
+../../freezer/freezer.py || exit $?
 cd ../rad
 echo "****************************************
 Building 'rad'
 ****************************************"
-../../freezer/freezer.py
+../../freezer/freezer.py || exit $?
 cd ../

@@ -1,29 +1,16 @@
-import sys
-#import uuid
-_PREFIX = 'C:/Python25/Lib/site-packages/' if sys.platform == 'win32' else '/usr/lib/python2.5/site-packages/'
-_EXT = '.pyd' if sys.platform == 'win32' else '.so'
-del sys
+_PREFIX = '/usr/lib/python2.5/site-packages/'
 PY_FILE = '../../rad.py'
-FREEZE_LOCAL = True
-ADDITIONAL_MODULES = {'encodings':None,
-'idna':None,
-'encodings.ascii':None,
-'encodings.utf_8':None,
-'psycopg2.tz':None,
-'uuid':None,
+ADDITIONAL_MODULES = {
+	'encodings': None,
+	'idna': None,
+	'encodings.ascii': None,
+	'encodings.utf_8': None,
+	'psycopg2.tz': None,
+	'uuid': None,
 }
-C_FILE = 'OUTPUT/rad.c'
-STAND_ALONE = True
+C_FILE = '../OUTPUT/rad.c'
 IGNORE_MISSING = True
-
-PROTECTION_MODULE = 'protection.py'
-
-#RANDSTRING = "1823f439f3498f8488fn439h"
-#NUMUSERS = "200"
-#MAC = hex(uuid.getnode())
-
-#PROTECTION_KEY = "%s%s%s" % (MAC, RANDSTRING, NUMUSERS)
-#print PROTECTION_KEY
-#PROTECTION_KEY="0x5056c00008L1823f439f3498f8488fn439h200"
-
-PROTECTION_KEY="123"
+import commands
+_code, PROTECTION_KEY = commands.getstatusoutput("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
+if _code:
+	raise SystemError, "can't generate a key"
