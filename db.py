@@ -128,7 +128,8 @@ def get_limit_speed(cursor, account_id):
                       speedlimit.burst_tx, speedlimit.burst_rx, 
                       speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                       speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
-                      speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority
+                      speedlimit.priority,
+                      speedlimit.min_tx, speedlimit.min_rx
                       FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                       WHERE accountspeedlimit.speedlimit_id=speedlimit.id AND accountspeedlimit.account_id=%s;""", (account_id,))
     return cursor.fetchone()

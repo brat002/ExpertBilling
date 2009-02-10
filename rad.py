@@ -22,7 +22,7 @@ from daemonize import daemonize
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
 from collections import deque, defaultdict
-from utilites import in_period,in_period_info, create_speed_string
+from utilites import in_period,in_period_info, create_speed_string, get_corrected_speed
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -137,7 +137,7 @@ class AsyncAuthServ(AsyncUDPServer):
     def handle_readfrom(self, data, addrport):
         global curCachesDate, curCachesLock, fMem
         global curNasCache, curATCache_userIdx, curATCache_macIdx        
-        global tp_asInPeriod, curDefSpCache, curNewSpCache
+        global tp_asInPeriod, curDefSpCache, curNewSpCache, account_speed_limit_cache
         
         try:     
             #if caches were renewed, renew local copies
@@ -326,7 +326,7 @@ class HandleSAuth(HandleSBase):
         self.packetobject.code=3
         return self.secret, self.packetobject
     
-    def create_speed(self, tarif_id, speed=''):
+    def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
         #print 1
         if speed=='':
@@ -336,8 +336,9 @@ class HandleSAuth(HandleSBase):
             defaults = self.defSpeed.get(tarif_id)
             speeds = self.newSpeed.get(tarif_id, [])
             #print "defaults=", defaults
+            #print "defaults", defaults
             if defaults is None:
-                defaults = ["0","0","0","0","8","0"]
+                defaults = ["0/0","0/0","0/0","0/0","8","0/0"]
             else:
                 defaults = defaults[:6]
             result=[]
@@ -348,7 +349,7 @@ class HandleSAuth(HandleSBase):
             minimal_period=[]
             now=datetime.datetime.now()
             for speed in speeds:
-                #print "sp",speed
+                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
                 tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
                 #print "res=",res
                 if res==True and (delta<min_delta or min_delta==-1):
@@ -356,27 +357,40 @@ class HandleSAuth(HandleSBase):
                     min_delta=delta
                     #print speed
             
-            #print minmal_period
+            #print "minmal_period", minimal_period
             if minimal_period:
                 minimal_period = minimal_period[:6]
+            else:
+                minimal_period = ["0/0","0/0","0/0","0/0","8","0/0"]
             #print "minimal_period",minimal_period
-            for k in xrange(0, len(minimal_period[:6])):
+
+            for k in xrange(0, 6):
                 s=minimal_period[k]
                 #print s
-                if s=='':
+                if s=='0/0' or s=='/':
                     res=defaults[k]
                 else:
                     res=s
                 #print "res=",res
                 result.append(res)
-                    
+            
+            #print account_id
+            #print result
+            #print account_speed_limit_cache
+            #print minimal_period[:6]
+            correction = account_speed_limit_cache[account_id]
+            print "correction", correction
+            #Проводим корректировку скорости в соответствии с лимитом
+            result = get_corrected_speed(result, correction)
+            print result
             if result==[]:
                 result=defaults
             if result==[]:
-                result=["0","0","0","0","8","0"]
+                result=["0/0","0/0","0/0","0/0","8","0/0"]
                 
             #print result
             #print "speedparams", defaults, speeds, result
+            
             result_params=create_speed_string(result)
             self.speed=result_params
             #print "params=", result_params
@@ -450,7 +464,7 @@ class HandleSAuth(HandleSBase):
                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
         
         if not acstatus:
-            logger.warning("Unallowed NAS for user %s: account_status is false", user_name)
+            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA()
         
         
@@ -497,7 +511,8 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-            self.create_speed(tarif_id, speed=speed)
+            #account_speed_limit_cache
+            self.create_speed(tarif_id, account_id=acct_row[0], speed=speed)
             #print "Setting Speed For User" , self.speed
         else:
             return self.auth_NA()
@@ -745,7 +760,7 @@ class CacheRoutine(Thread):
         
         global curCachesDate, curCachesLock
         global curNasCache, curATCache_userIdx, curATCache_macIdx        
-        global tp_asInPeriod, curDefSpCache, curNewSpCache
+        global tp_asInPeriod, curDefSpCache, curNewSpCache, account_speed_limit_cache
         
         i_fMem = 0
         while True:
@@ -766,10 +781,11 @@ class CacheRoutine(Thread):
                     JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                     LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id ;""", (tmpDate,))
-                                
+                connection.commit()                
                 accts = cur.fetchall()
                 
                 cur.execute("""SELECT id, secret, type, multilink, ipaddress FROM nas_nas;""")
+                connection.commit()
                 nasTp = cur.fetchall()
                 
                 cur.execute("""SELECT tpn.time_start::timestamp without time zone as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
@@ -777,6 +793,7 @@ class CacheRoutine(Thread):
                     JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
                     JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
                     JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id""")
+                connection.commit()
                 tpnapsTp = cur.fetchall()
                 
                 cur.execute("""
@@ -788,6 +805,7 @@ class CacheRoutine(Thread):
                     FROM billservice_accessparameters as accessparameters
                     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id;
                     """)
+                connection.commit()
                 defspTmp = cur.fetchall()
                 
                 cur.execute("""
@@ -801,14 +819,31 @@ class CacheRoutine(Thread):
                     JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
                     JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
                     JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id;""")
+                connection.commit()
                 nspTmp = cur.fetchall()
                 
+                cur.execute("""SELECT speedlimit.max_tx, speedlimit.max_rx, 
+                                  speedlimit.burst_tx, speedlimit.burst_rx, 
+                                  speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
+                                  speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
+                                  speedlimit.priority,
+                                  speedlimit.min_tx, speedlimit.min_rx, accountspeedlimit.account_id
+                                  FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
+                                  WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""")
+                acctlimitTmp = cur.fetchall()
                 connection.commit()
+                
                 #index on username
                 tmpunIdx = {}
                 #index on ipn mac address
                 tmpmcIdx = {}
-
+                
+                #index on account_id in accountlimit
+                acctlimit = {}
+                
+                for tmplimit in acctlimitTmp:
+                    acctlimit[tmplimit[11]] = tmplimit
+                    
                 for acct in accts:
                     tmpunIdx[str(acct[1])] = acct
                     tmpmcIdx[str(acct[2])] = acct
@@ -833,6 +868,7 @@ class CacheRoutine(Thread):
                     tmpnsC[ns[9]].append(ns)
                   
                 curCachesLock.acquire()
+                account_speed_limit_cache = acctlimit 
                 curNasCache = tmpnasC
                 curATCache_userIdx = tmpunIdx
                 curATCache_macIdx  = tmpmcIdx
