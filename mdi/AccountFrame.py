@@ -39,9 +39,11 @@ class CashType(object):
 cash_types = [CashType(0, "AT_START"), CashType(1,"AT_END"), CashType(2, "GRADUAL")]
 
 limit_actions = [CashType(0, u"Заблокировать пользователя"), CashType(1,u"Изменить скорость")]
-                               
+
 la_list = [u"Заблокировать пользователя", u"Изменить скорость"]
 
+ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном балансе"), CashType(2,u"При отрицательном балансе")]
+ps_list = [u"При любом балансе", u"При положительном балансе", u"При отрицательном балансе"]
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection,ttype, account=None, model=None):
         super(AddAccountTarif, self).__init__()
@@ -233,6 +235,7 @@ class TarifFrame(QtGui.QDialog):
         self.ps_null_ballance_checkout_edit = QtGui.QCheckBox(self.tab_1)
         self.ps_null_ballance_checkout_edit.setGeometry(QtCore.QRect(10,230,451,30))
         self.ps_null_ballance_checkout_edit.setObjectName("ps_null_ballance_checkout_edit")
+        self.ps_null_ballance_checkout_edit.setHidden(True)
 
         self.access_type_edit = QtGui.QComboBox(self.tab_1)
         self.access_type_edit.setGeometry(QtCore.QRect(150,260,241,21))
@@ -779,7 +782,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         
         self.periodical_tableWidget.clear()
-        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость']
+        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость', u"Условие"]
         
         makeHeaders(columns, self.periodical_tableWidget)
         
@@ -959,8 +962,11 @@ class TarifFrame(QtGui.QDialog):
 
                 
     def addPeriodicalRow(self):
-        self.periodical_tableWidget.insertRow(self.periodical_tableWidget.rowCount())
-    
+        current_row = self.periodical_tableWidget.rowCount()
+        self.periodical_tableWidget.insertRow(current_row)
+        self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 5)
+        self.periodical_tableWidget.item(current_row,5).selected_id=0
+        
     def delPeriodicalRow(self):
         current_row = self.periodical_tableWidget.currentRow()
         id = self.getIdFromtable(self.periodical_tableWidget, current_row)
@@ -1195,6 +1201,7 @@ class TarifFrame(QtGui.QDialog):
             if child.selected_id==0:
                 try:
                     self.limit_tableWidget.item(y, 7).setText("")
+                    self.limit_tableWidget.item(y, 7).model=None
                 except:
                     pass
                 
@@ -1202,14 +1209,15 @@ class TarifFrame(QtGui.QDialog):
 
             if not self.limit_tableWidget.item(y,6): return
             if self.limit_tableWidget.item(y,6).id==0: return
-            print "self.limit_tableWidget.item(y,6).id", self.limit_tableWidget.item(y,6).id
+            #print "self.limit_tableWidget.item(y,6).id", self.limit_tableWidget.item(y,6).id
             item = self.limit_tableWidget.item(y,x)
             #limit_id = unicode(self.limit_tableWidget.item(y,0).text())
             try:
                 model = item.model
             except:
                 model = None
-            print "speedmodel=", model
+            print "speedlimit_model=", model
+            #print "speedmodel=", model
             child = SpeedLimitDialog(self.connection, model)
             
             if child.exec_()==1 and child.model:
@@ -1385,6 +1393,18 @@ class TarifFrame(QtGui.QDialog):
             self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
 
+        if x==5:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+                
+                       
+            child = ComboBoxDialog(items=ps_conditions, selected_item = default_text )
+            self.connection.commit()
+            if child.exec_()==1:
+                self.addrow(self.periodical_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
 
     def getIdFromtable(self, tablewidget, row=0):
         tmp=tablewidget.item(row, 0)
@@ -1448,7 +1468,7 @@ class TarifFrame(QtGui.QDialog):
             self.tarif_cost_edit.setText(unicode(self.model.cost))
             self.tarif_description_edit.setText(self.model.description)
             self.reset_tarif_cost_edit.setCheckState(self.model.reset_tarif_cost == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.ps_null_ballance_checkout_edit.setCheckState(self.model.ps_null_ballance_checkout == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            #self.ps_null_ballance_checkout_edit.setCheckState(self.model.ps_null_ballance_checkout == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
             access_parameters = self.connection.get_model(self.model.access_parameters_id, "billservice_accessparameters")
             #Speed default parameters
@@ -1554,6 +1574,8 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, node.settlement_period_name,i, 2, 'combobox', node.settlement_period_id)
                     self.addrow(self.periodical_tableWidget, node.cash_method, i, 3)
                     self.addrow(self.periodical_tableWidget, node.cost,i, 4)
+                    self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 5)
+                    self.periodical_tableWidget.item(i, 5).selected_id = node.condition
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
             
@@ -1603,6 +1625,9 @@ class TarifFrame(QtGui.QDialog):
                         #print "speedmodel", speedmodel
                         self.addrow(self.limit_tableWidget, u"%s%%/%s%% %s%%/%s%% %s%%/%s%% %s/%s %s %s%%/%s%%" % (speedmodel[0].max_tx, speedmodel[0].max_rx, speedmodel[0].burst_tx, speedmodel[0].burst_rx, speedmodel[0].burst_treshold_tx, speedmodel[0].burst_treshold_rx, speedmodel[0].burst_time_tx, speedmodel[0].burst_time_rx, speedmodel[0].priority, speedmodel[0].min_tx, speedmodel[0].min_rx),i, 7)
                         self.limit_tableWidget.item(i, 7).model = speedmodel[0]
+                        #for x in speedmodel[0].__dict__:
+                        #    print x, speedmodel[0].__dict__[x]
+                            
                     #self.addrow(self.limit_tableWidget, node.in_direction, i, 5, item_type='checkbox')
                     #self.addrow(self.limit_tableWidget, node.out_direction, i, 6, item_type='checkbox')
                     #self.addrow(self.limit_tableWidget, node.transit_direction, i, 7, item_type='checkbox')
@@ -1936,6 +1961,7 @@ class TarifFrame(QtGui.QDialog):
                     periodical_service.settlement_period_id = unicode(self.periodical_tableWidget.item(i, 2).id)
                     periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
                     periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
+                    periodical_service.condition = self.periodical_tableWidget.item(i,5).selected_id
                     
                     self.connection.save(periodical_service, "billservice_periodicalservice")    
                       
@@ -1975,11 +2001,15 @@ class TarifFrame(QtGui.QDialog):
                     #limit.transit_direction = self.limit_tableWidget.cellWidget(i,7).checkState()==2
                     
                     limit.id = self.connection.save(limit, "billservice_trafficlimit")
-                    if limit.action==1:
+                    try:
                         speedlimit_model = self.limit_tableWidget.item(i, 7).model
-                        speedlimit_model.limit_id = limit.id
-                        self.connection.save(speedlimit_model, "billservice_speedlimit")
-                    
+                        if limit.action==1: 
+                            speedlimit_model.limit_id = limit.id
+                            self.connection.save(speedlimit_model, "billservice_speedlimit")
+                        elif limit.action==0:
+                            self.connection.iddelete(speedlimit_model, "billservice_speedlimit")
+                    except:
+                        pass
 
 
             elif self.limites_checkbox.checkState()==0:

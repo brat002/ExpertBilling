@@ -539,7 +539,7 @@ def flatten(x):
         if hasattr(el, "__iter__") and not isinstance(el, basestring):
             result.extend(flatten(el))
         else:
-            print el
+            #print el
             if el=='':
                 result.append(el)
             else:
@@ -547,9 +547,9 @@ def flatten(x):
     return result
 
 def check_speed(speed):
-    print speed
+    #print speed
     speed = flatten(map(split_speed,get_decimals_speeds(speed)))
-    print speed
+    #print speed
     if speed[2]==speed[3]==speed[4]==speed[5]==speed[6]==speed[7] in ('', 0) and ((speed[0]>=speed[9] and speed[1]>=speed[10]) or speed[9] in ('', 0) or speed[10] in ('', 0)):
         return True
     else:
