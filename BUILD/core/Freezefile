@@ -19,4 +19,3 @@ _code, PROTECTION_KEY = commands.getstatusoutput ("python2.5 ../../regbill/genke
 if _code:
 	raise SystemError, "can't generate a key"
 print PROTECTION_KEY
-../../freezer/freezer.py: invalid syntax (Freezefile, line 20)
