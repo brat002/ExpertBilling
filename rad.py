@@ -362,7 +362,7 @@ class HandleSAuth(HandleSBase):
                 minimal_period = minimal_period[:6]
             else:
                 minimal_period = ["0/0","0/0","0/0","0/0","8","0/0"]
-            #print "minimal_period",minimal_period
+            print "minimal_period",minimal_period
 
             for k in xrange(0, 6):
                 s=minimal_period[k]
@@ -378,11 +378,11 @@ class HandleSAuth(HandleSBase):
             #print result
             #print account_speed_limit_cache
             #print minimal_period[:6]
-            correction = account_speed_limit_cache[account_id]
-            print "correction", correction
+            correction = account_speed_limit_cache.get(account_id)
+            #print "correction", correction
             #Проводим корректировку скорости в соответствии с лимитом
             result = get_corrected_speed(result, correction)
-            print result
+            #print result
             if result==[]:
                 result=defaults
             if result==[]:

@@ -1681,7 +1681,7 @@ class SpeedLimitDialog(QtGui.QDialog):
         if self.model:
             #self.model = self.connection.get_model(self.model.id, "billservice_speedlimit")
             #self.connection.commit()
-            print "fixturemodel", self.model
+            #print "fixturemodel", self.model
             self.spinBox_max_tx.setValue(int(self.model.max_tx))
             self.spinBox_max_rx.setValue(int(self.model.max_rx))
             
@@ -1717,7 +1717,9 @@ class SpeedLimitDialog(QtGui.QDialog):
             self.spinBox_priority.setValue(8)
             
     def accept(self):
-        self.model = Object()
+        if self.model==None:
+            self.model = Object()
+            
 
         self.model.max_tx = unicode(self.spinBox_max_tx.value())
         self.model.max_rx = unicode(self.spinBox_max_rx.value())

@@ -378,7 +378,7 @@ class periodical_service_bill(Thread):
                     rows_ps = cachePerSetp.get(tariff_id,[])
                     #debit every account for tarif on every periodical service
                     for row_ps in rows_ps:
-                        ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
+                        ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id, ps_condition_type = row_ps
                         for account in accounts:
                             #print account
                             try:
@@ -416,12 +416,8 @@ class periodical_service_bill(Thread):
                                         cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                         lc=now - last_checkout
                                         nums, ost=divmod(lc.seconds+lc.days*86400,n)
-                                        description=u"Проводка по периодической услуге со cнятием суммы в течении периода"                                        
+                                        description=name_sp                                      
                                         if nums>1:
-                                            """
-                                            Если стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
-                                            пока денег на счету не было
-                                            """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
                                             while chk_date < now:                                                
@@ -432,7 +428,8 @@ class periodical_service_bill(Thread):
                                         else:
                                             #make an approved transaction
                                             cash_summ = cash_summ * susp_per_mlt
-                                            if (null_ballance_checkout==False) and (account_ballance<=0):
+                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                                #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = now)
                                             ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
@@ -463,7 +460,7 @@ class periodical_service_bill(Thread):
                                         if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
                                             summ=ps_cost
 
-                                        description=u"Проводка по периодической услуге со cнятием суммы в начале периода"
+                                        description=ps_name
                                         if nums>1:
                                             #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
                                             #и с каколго до какого момента у пользователя стояла отметка "не списывать деньги по период.услугам"
@@ -483,8 +480,9 @@ class periodical_service_bill(Thread):
 
                                             #TODO: MAKE ACID!!!
                                             summ = summ * susp_per_mlt
-                                            if (null_ballance_checkout==False) and (account_ballance<=0):
-                                                summ = 0
+                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                                #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                                                cash_summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
                                                                      summ = summ, description=description,
                                                                      created = now)
@@ -520,7 +518,7 @@ class periodical_service_bill(Thread):
                                             nums, ost=divmod(le.seconds+le.days*86400, delta)
     
                                             summ=ps_cost
-                                            descr=u"Проводка по периодической услуге со снятием суммы в конце периода"
+                                            descr=ps_name
                                             if nums>1:
                                                 chk_date = last_checkout + delta
                                                 #now or (now - delta)???
@@ -530,8 +528,9 @@ class periodical_service_bill(Thread):
                                                     connection.commit()
                                                     chk_date += delta
 
-                                            if (null_ballance_checkout==False) and (account_ballance<=0):
-                                                summ=0
+                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                                #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                                                cash_summ = 0
                                         else:
                                             summ=0
                                             descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
@@ -1490,9 +1489,11 @@ class AccountServiceThread(Thread):
                                  WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
                 perTarTp = cur.fetchall()
                 cur.execute("""SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start,
-                                     c.length, c.length_in, c.autostart, b.tarif_id
+                                     c.length, c.length_in, c.autostart, b.tarif_id, b.condition
                                      FROM billservice_periodicalservice as b 
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id;""")
+                #b.condition 0 - При любом балансе. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                
                 psspTp = cur.fetchall()
                 cur.execute("""
                         SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
