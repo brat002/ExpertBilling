@@ -4,36 +4,16 @@ _EXT = '.so'
 #del sys
 PY_FILE = '../../nf.py'
 ADDITIONAL_MODULES = {
-	'DBUtils':
-		None, #_PREFIX + 'DBUtils/__init__.py',
-	'DBUtils.PooledDB':
-		None, #_PREFIX + 'DBUtils/PooledDB.py',
-	'mx':
-		_PREFIX + 'mx/__init__.py',
-	'mx.DateTime':
-		_PREFIX + 'mx/DateTime/__init__.py',
-	'mx.DateTime.DateTime':
-		_PREFIX + 'mx/DateTime/DateTime.py',
-	'mx.DateTime.mxDateTime':
-		_PREFIX + 'mx/DateTime/mxDateTime/__init__.py',
-	'mx.DateTime.mxDateTime.mxDateTime':
-		_PREFIX + 'mx/DateTime/mxDateTime/mxDateTime' + _EXT,
-	'mx.Misc':
-		_PREFIX + 'mx/Misc/__init__.py',
-	'mx.Misc.LazyModule':
-		_PREFIX + 'mx/Misc/LazyModule.py',
-	'DateTime':
-		_PREFIX + 'mx/DateTime/__init__.py',
-	'Parser':
-		_PREFIX + 'mx/DateTime/Parser.py',
-	'mxDateTime':
-		_PREFIX + 'mx/DateTime/mxDateTime/__init__.py',
-	'ARPA':
-		_PREFIX + 'mx/DateTime/ARPA.py',
+	'r_hmac':
+		None,
+	'win32ui':
+		None,
 }
 C_FILE = '../OUTPUT/nf.c'
 IGNORE_MISSING = True
 import commands
-_code, PROTECTION_KEY = commands.getstatusoutput("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
+print 'Generating the protection key: ',
+_code, PROTECTION_KEY = commands.getstatusoutput ("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
 if _code:
 	raise SystemError, "can't generate a key"
+print PROTECTION_KEY
