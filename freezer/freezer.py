@@ -55,7 +55,7 @@ _PROTECTION_CHUNK_1 = r"""
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	del __0
-	return __6
+	return __6.upper()
 """
 
 _PROTECTION_CHUNK_2 = """
@@ -417,7 +417,7 @@ def _get_mods():
 	if missing:
 		if _flags[ 'IGNORE_MISSING' ]:
 			print '=================================================='
-			print 'WARNING: missing modules %r' % missing
+			print >> sys.stderr, 'WARNING: missing modules %r' % missing
 		else: raise FreezerError( "missing modules %r" % missing )
 	print '=================================================='
 	print 'Loading modules:'
@@ -491,8 +491,10 @@ def _copy_mods():
 	_WRITE2LOG( '- missing modules after compiling %r' % missing )
 	_find_mods( missing, mf.modules )
 	if missing:
-		if _flags[ 'IGNORE_MISSING' ]: print 'WARNING: missing modules %r' % missing
-		else: raise ImportError( 'missing modules %r' % missing )
+		if _flags[ 'IGNORE_MISSING' ]:
+			print >> sys.stderr, 'WARNING: missing modules %r' % missing
+		else:
+			raise ImportError( 'missing modules %r' % missing )
 	print '=================================================='
 	print 'Detecting required modules:'
 	for m in mf.modules.itervalues():

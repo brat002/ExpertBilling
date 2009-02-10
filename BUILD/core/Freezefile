@@ -4,16 +4,18 @@ NONLOCAL = [
 	'chartprovider'
 ]
 ADDITIONAL_MODULES = {
-	'encodings': None,
-	'idna': None,
-	'encodings.ascii': None,
-	'encodings.utf_8': None,
-	'psycopg2.tz': None,
-	'uuid': None,
+	'idna':
+		None,
+	'r_hmac':
+		None,
+	'win32ui':
+		None,
 }
 C_FILE = '../OUTPUT/core.c'
 IGNORE_MISSING = True
 import commands
-_code, PROTECTION_KEY = commands.getstatusoutput("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
+print 'Generating the protection key: ',
+_code, PROTECTION_KEY = commands.getstatusoutput ("python2.5 ../../regbill/genkey.py ../../regbill.reg ../../license.lic")
 if _code:
 	raise SystemError, "can't generate a key"
+print PROTECTION_KEY
