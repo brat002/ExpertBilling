@@ -160,7 +160,7 @@ class PeriodicalService(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
     cost              = models.FloatField(verbose_name=u'Стоимость услуги', default=0, blank=True)
     cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
-#    cash_times        = models.IntegerField(verbose_name=u'Количество снятий', blank=True, null=True)
+    condition         = models.IntegerField()# 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
 
     def __unicode__(self):
         return u"%s" % self.name
