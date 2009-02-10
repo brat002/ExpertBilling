@@ -94,10 +94,10 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
 def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
-    #print access_type
+    print access_type
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         #Send CoA
-        
+        print "send coa"
         
         #speed_string= create_speed_string(speed, coa=True)
         speed_string= create_speed_string(speed)
@@ -146,7 +146,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        print command_string
+        print "command_string=", command_string
         try:
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
@@ -850,4 +850,50 @@ def graceful_loader(objnames, globals_, moduleName, saveDir):
             fllist.pop(i)
                 
         
-            
+def split_speed(speed):
+    return speed.split("/")
+
+def flatten(x):
+    """flatten(sequence) -> list
+
+    Returns a single, flat list which contains all elements retrieved
+    from the sequence and all recursively contained sub-sequences
+    (iterables).
+    """
+
+    result = []
+    for el in x:
+        #if isinstance(el, (list, tuple)):
+        if hasattr(el, "__iter__") and not isinstance(el, basestring):
+            result.extend(flatten(el))
+        else:
+            result.append(int(el))
+    return result
+
+def correct_speed(speed, correction):
+    """
+    Возвращает скорректированную скорость
+    """
+    res = []
+    #max
+    res.append("%s/%s" % (speed[0]*correction[0]/100, speed[1]*correction[1]/100))
+    #burst in
+    res.append("%s/%s" % (speed[2]*correction[2]/100, speed[3]*correction[3]/100))
+    #burst treshold
+    res.append("%s/%s" % (speed[4]*correction[4]/100, speed[5]*correction[5]/100))
+    #burst time
+    res.append("%s/%s" % (correction[6], correction[7]))
+    #priority
+    res.append("%s" % correction[8])
+    #min
+    res.append("%s/%s" % (speed[9]*correction[9]/100, speed[10]*correction[10]/100))
+    return res
+
+
+
+   
+def get_corrected_speed(speed, correction):
+    if correction is not None:
+        return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
+    else:
+        return speed

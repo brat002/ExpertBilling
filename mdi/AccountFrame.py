@@ -23,7 +23,7 @@ from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , Transa
 import time
 from Reports import TransactionsReportEbs as TransactionsReport
 
-from helpers import tableFormat
+from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
@@ -1708,43 +1708,6 @@ class TarifFrame(QtGui.QDialog):
         
         #self.trafficcost_tableWidget.resizeRowsToContents()
 
-    def get_speed(self, speed):
-        
-        speed_in, speed_out = speed.split("/")
-        if speed_in.endswith(u"k"):
-            speed_in = int(speed_in[0:-1])*1024
-        elif speed_in.endswith(u"M"):
-            speed_in = int(speed_in[0:-1])*1024000
-        else:
-            speed_in=int(speed_in)
-        
-        if speed_out.endswith(u"k"):
-            speed_out = int(speed_out[0:-1])*1024
-        elif speed_out.endswith(u"M"):
-            speed_out = int(speed_out[0:-1])*1024000
-        else:
-            speed_out=int(speed_out)
-                       
-        return speed_in, speed_out
-    
-    def compare_speeds(self, speed1, speed2):
-
-        speed1_in, speed1_out = self.get_speed(unicode(speed1))
-        speed2_in, speed2_out = self.get_speed(unicode(speed2))
-        
-        if speed1_in<speed2_in:
-            return False
-
-        if speed1_out<speed2_out:
-            return False        
-        return True
-    
-
-
-            
-                
-          
-    #@transaction.commit_manually            
     def accept(self):
         #import datetime
         #print datetime.datetime.now()
@@ -1790,6 +1753,11 @@ class TarifFrame(QtGui.QDialog):
             access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
             access_parameters.ipn_for_vpn = self.ipn_for_vpn.checkState()==2
             
+            if check_speed([access_parameters.max_limit, access_parameters.burst_limit, access_parameters.burst_treshold, access_parameters.burst_time, access_parameters.priority, access_parameters.min_limit])==False:
+                QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка в настройках скорости")
+#                print 1
+                self.connection.rollback()
+                return              
 
             model.access_parameters_id=self.connection.save(access_parameters, "billservice_accessparameters")
             
@@ -1844,22 +1812,14 @@ class TarifFrame(QtGui.QDialog):
                     return
                 
                 speed.time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.speed_table.item(i,1).text())).id
-                try:
-                    if self.speed_table.item(i,3) and not self.compare_speeds(self.speed_table.item(i,2).text() or 0, self.speed_table.item(i,3).text() or 0):
-                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании максимальной и гарантированной скорости")
-                        #print 1
-                        self.connection.rollback()
-                        
-                        return
-    
-                    if self.speed_table.item(i,4) and self.speed_table.item(i,5) and not self.compare_speeds(self.speed_table.item(i,4).text() or 0, self.speed_table.item(i,5).text() or 0):
-                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка при указании пиковой и средней скорости")
-                        #print 2
-                        self.connection.rollback()
-                        
-                        return
-                except:
-                    print "speed compare error"
+                #try:
+                if check_speed([speed.max_limit, speed.burst_limit, speed.burst_treshold, speed.burst_time, speed.priority, speed.min_limit])==False:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка в настройках скорости")
+                    print 1
+                    self.connection.rollback()
+                    return    
+                #except:
+                #    print "speed compare error"
                 self.connection.save(speed, "billservice_timespeed")
             
             #Период

@@ -26,7 +26,7 @@ from encodings import idna, ascii
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
 from collections import deque, defaultdict
-from utilites import create_speed_string, change_speed, PoD, get_active_sessions
+from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
@@ -230,6 +230,10 @@ class check_vpn_access(Thread):
                             else:
                                 speed=parse_custom_speed_lst(vpn_speed)
                             
+                            account_limit_speed = get_limit_speed(cur, row[1])
+                            connection.commit()
+                            speed = get_corrected_speed(speed[:6], account_limit_speed)
+                            
                             newspeed=''
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                                 
@@ -376,6 +380,7 @@ class periodical_service_bill(Thread):
                     for row_ps in rows_ps:
                         ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id=row_ps
                         for account in accounts:
+                            #print account
                             try:
                                 accounttarif_id = account[12]
                                 if accounttarif_id is None: continue
@@ -751,7 +756,7 @@ class limit_checker(Thread):
                             то больше для него лимиты не проверяем
                             """
                             continue
-                        
+                        #print 1
                         #get settlement period record
                         spRec = cacheSP[limitRec[3]]
 
@@ -789,14 +794,16 @@ class limit_checker(Thread):
                             block=True
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                             connection.commit()
+                            #print "block client"
                         elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
                             #Меняем скорость
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                             cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
-
+                            #print "Change speed"
                             connection.commit()
                             speed_changed=True
                             block = False
+                        #print settlement_period_start, settlement_period_end, limitRec[5], account_id, tsize, Decimal("%s" % limitRec[4]), limit_action
                         #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
                         #account_id
                         oldid=account_id
@@ -1206,6 +1213,7 @@ class ipn_service(Thread):
                 
                 #for row in rows:
                 for acct in cacheAT:
+                    #print acct
                     #print "acct", acct
                     #if tariff not active
                     if not acct[11]:
@@ -1219,6 +1227,7 @@ class ipn_service(Thread):
                     #acct[5]- access_parameter_id
                     accpRec = cacheAccp.get(acct[5])
                     #accessparameters.ipn_for_vpn==True
+                    #print accpRec
                     if (not accpRec) or (not accpRec[9]):
                         continue
                     #print "check ipn"
@@ -1278,19 +1287,22 @@ class ipn_service(Thread):
                     connection.commit()
                     account_ipn_speed = acct[23]
                     
+                    #print account_id
                     account_limit_speed = get_limit_speed(cur, account_id)
-                    #print account_ipn_speed
+                    connection.commit()
+                    print "account_limit_speed", account_limit_speed
                     if account_ipn_speed=='' or account_ipn_speed==None:    
                         speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
                     else:
                         speed = parse_custom_speed_lst(account_ipn_speed)
-                    #print speed
+                    #print "speed",speed
+                    #print "corrected_speed=", 
+                    
+                    speed = get_corrected_speed(speed[:6], account_limit_speed)
                     
                     newspeed=''
                     newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                     
-                    print newspeed
-                    print account_limit_speed
                     ipn_speed = None
                     ipn_state = None
                     accipnRec = acc_ipn_sps.get(account_id)
@@ -1302,7 +1314,8 @@ class ipn_service(Thread):
                     nas_ipn_speed = nasRec[15]
                     #print newspeed, row['ipn_speed'],row['ipn_state']
                     #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
-                    if newspeed!=ipn_speed or (ipn_state==False and newspeed!=ipn_speed) or recreate_speed==True:
+
+                    if newspeed!=ipn_speed or ipn_state==False or recreate_speed==True:
                         #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
                         #отправляем на сервер доступа новые настройки скорости, помечаем state=True
                         sended_speed = change_speed(dict, 
@@ -1314,7 +1327,7 @@ class ipn_service(Thread):
                                                     speed=speed[:6])
                         data_for_save=''
                         #print speed
-    
+                        #print "speed sended=", sended_speed
                         cur.execute("UPDATE billservice_accountipnspeed SET speed=%s, state=%s WHERE account_id=%s RETURNING id;", (newspeed, sended_speed, account_id,))
                         id = cur.fetchone()
                         #print 'id=', id
