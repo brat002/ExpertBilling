@@ -749,10 +749,7 @@ class CardsChildEbs(ebsTableWindow):
         self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        
-        
         self.fixtures()        
         self.filterActions()
         self.delNodeLocalAction()

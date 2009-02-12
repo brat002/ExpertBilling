@@ -252,10 +252,11 @@ class SystemEbs(ebsTableWindow):
             self.refresh()
             
     def delete(self):
+        id = self.getSelectedId()
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 #self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
-                self.connection.iddelete("billservice_systemuser", self.getSelectedId())
+                self.connection.iddelete(id, "billservice_systemuser")
                 self.connection.commit()
             except Exception, e:
                 print e

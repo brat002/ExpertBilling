@@ -14,6 +14,8 @@ import threading
 import traceback
 import ConfigParser
 import socket, select, struct, datetime, time
+import modulefinder
+
 
 from threading import Thread
 from daemonize import daemonize
@@ -37,22 +39,40 @@ class reception_server(asyncore.dispatcher):
         self.bind( (host, port) )
         
     def handle_connect(self):
-        #print 'New packet'
-        pass
-    
+        pass    
     
     def handle_read(self):        
         data, addrport = self.recvfrom(8192)        
         try:
             assert len(data)<=8192
-            #NetFlowPacket(data, addrport, nfFlowCache, None)
-            #nfPacketHandle(data, addrport, nfFlowCache)
             nfQueue.append((data, addrport))
         except Exception, ex:
             logger.error("NF server exception: %s",(repr(ex),))
         
     def writable(self):
         return (0)
+    
+class nfDequeThread(Thread):
+    '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
+    that gets flows and caches them.'''
+    
+    def __init__(self):
+        self.tname = self.__class__.__name__
+        Thread.__init__(self)
+        
+    def run(self):
+        global nfFlowCache
+        while True:
+            if suicideCondition[self.tname]: break
+            #TODO: add locks if deadlocking issues arise
+            try:
+                data, addrport = nfQueue.popleft()        
+
+                nfPacketHandle(data, addrport, nfFlowCache)
+            except IndexError, ierr:
+                time.sleep(3); continue    
+            except Exception, ex:
+                logger.error("NFP exception: %s", (repr(ex),))
 
 
 def flow5(data):
@@ -117,9 +137,7 @@ def nfPacketHandle(data, addrport, flowCache):
     Function receiving a binary Netflow packet, sender addrport and FlowCache reference.
     Gets, unpacks and checks flows from packets.
     Approved packets are added to FlowCache.
-    '''
-
-    
+    '''    
     if len(data) < 16:
         #raise ValueError, "Short packet"
         return
@@ -133,15 +151,13 @@ def nfPacketHandle(data, addrport, flowCache):
         _nf = struct.unpack("!H", data[:2])
         pVersion = _nf[0]
         if not pVersion in nfFLOW_TYPES.keys():
-            raise RuntimeWarning, \
-                  "NetFlow version %d is not yet implemented" % \
-                  pVersion
-        hdr_class = nfFLOW_TYPES[pVersion][0]
+            raise RuntimeWarning, "NetFlow version %d is not yet implemented" % pVersion
+        hdr_class  = nfFLOW_TYPES[pVersion][0]
         flow_class = nfFLOW_TYPES[pVersion][1]
         hdr = hdr_class(data[:headerLENGTH])
         #======
         #runs through flows
-        for n in range(hdr[1]):
+        for n in xrange(hdr[1]):
             offset = headerLENGTH + (flowLENGTH * n)
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
@@ -167,12 +183,9 @@ def nfPacketHandle(data, addrport, flowCache):
                         
 
 class FlowCache(object):
-    '''
-    Aggregates flows.
-    '''
+    '''Aggregates flows.'''
     def __init__(self):
         dcache = {}
-        #nascache = {}
         #list for keeping keys
         self.keylist = []
         self.stime = time.time()
@@ -190,91 +203,47 @@ class FlowCache(object):
         #no such value, must add
         if not val:
             dcacheLock.acquire()
-            i = 1
-            j = 0
-            try:
-                #adds
-                dcache[key] = flow
-                i=0
-                dcacheLock.release()
-                #stores key in a list
-                self.keylist.append(key)
-                #time to start over?
-                if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
-                    #-----------------
-                    #appends keylist to flowQueue
-                    fqueueLock.acquire()
-                    flowQueue.append((self.keylist, time.time()))
-                    fqueueLock.release()
-                    #-----------------
-                    #nullifies keylist
-                    self.keylist = []
-                    self.stime = time.time()
-                    #=====
-                    gc.collect()
-                    #print 'reset'
-            except Exception, ex:
-                if i:
-                    dcacheLock.release()
-                print "create rec ex: ", ex
-                
+            #adds
+            dcache[key] = flow
+            dcacheLock.release()
+            #stores key in a list
+            self.keylist.append(key)
+            #time to start over?
+            if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
+                #-----------------
+                #appends keylist to flowQueue
+                fqueueLock.acquire()
+                flowQueue.append((self.keylist, time.time()))
+                fqueueLock.release()
+                #-----------------
+                #nullifies keylist
+                self.keylist = []
+                self.stime = time.time()
+                #=====              
         else:
             dcacheLock.acquire()
-            i = 1
-            try:
-                #appends flows
-                dflow= dcache[key]
-                '''dflow.octets  += flow.octets
-                dflow.packets += flow.packets
-                dflow.finish = flow.finish'''
-                dflow[6] += flow[6]
-                dflow[5] += flow[5]
-                dflow[8] = flow[8]
-                i = 0;
-                dcacheLock.release()
-            except Exception, ex:
-                if i:
-                    dcacheLock.release()
+            #appends flows
+            dflow= dcache[key]
+            dflow[6] += flow[6]
+            dflow[5] += flow[5]
+            dflow[8] = flow[8]
+            dcacheLock.release()
 
 
-class nfDequeThread(Thread):
-    '''
-    Thread that gets packets recieved by the server from nfQueue queue and puts them onto the conveyour
-    that gets flows and caches them.
-    '''
-    def __init__(self):
-        self.tname = self.__class__.__name__
-        Thread.__init__(self)
-        
-    def run(self):
-        global nfFlowCache
-        while True:
-            if suicideCondition[self.tname]: break
-            #TODO: add locks if deadlocking issues arise
-            try:
-                data, addrport = nfQueue.popleft()
-            except Exception, ex:
-                time.sleep(3)
-                continue
-            try:
-                nfPacketHandle(data, addrport, nfFlowCache)
-            except Exception, ex:
-                logger.error("NFP exception: %s", (repr(ex),))
+
+
                 
 class FlowDequeThread(Thread):
-    '''
-    Gets a keylist with keys to flows that are to be aggregated, waits for aggregation time, pops them from aggregation cache,
-    constructs small lists of flows and appends them to 'databaseQueue'.
-    '''
+    '''Gets a keylist with keys to flows that are to be aggregated, waits for aggregation time, pops them from aggregation cache,
+    constructs small lists of flows and appends them to 'databaseQueue'.'''
+    
     def __init__(self):
         self.tname = self.__class__.__name__
-        Thread.__init__(self)
-        
+        Thread.__init__(self)        
     
     def isect_classes(self, groups_rec, class_list):
         '''Calculates intersection of group classes and flow classes.
-           Returns a tuple.
-        '''
+           Returns a tuple.'''
         groups_rec[1].intersection_update(class_list)
         groups_rec[1] = tuple(groups_rec[1])
         return tuple(groups_rec)
@@ -308,32 +277,22 @@ class FlowDequeThread(Thread):
                     group_add[1] = tuple(group_cls)
                     groupLst.append(tuple(group_add))
             flow.append(tuple(groupLst))
-            '''groupLst = set()
-            for tcl in classLst:
-                groupLst.update(tarifGroups.intersection(class_groupsCache.get((tcl, nnode[9]), set())))                            
-            flow.append(tuple([self.isect_classes(groupsCache[group_][:], classLst) for group_ in groupLst]))'''
 
     def run(self):
         j = 0
         while True:
             if suicideCondition[self.tname]: break
-            try:
+            try:                
                 fqueueLock.acquire()
-                try:
-                    #get keylist and time
-                    keylist, stime = flowQueue.popleft()
-                    fqueueLock.release()
-                except Exception, ex:
-                    fqueueLock.release()
-                    time.sleep(5)
-                    continue
-                
-                
+                iqueue = 1
+                #get keylist and time
+                keylist, stime = flowQueue.popleft()
+                fqueueLock.release()
+                iqueue = 0                
                 #if aggregation time was still not reached -> sleep
                 wtime = time.time() - aggrTime - stime
                 #logger.info('fdqThread wtime: %s', wtime)
-                if wtime < 0:
-                    time.sleep(abs(wtime))
+                if wtime < 0: time.sleep(abs(wtime))
                 
                 #TO-DO: переделать на execute_many
                 fcnt = 0
@@ -342,9 +301,7 @@ class FlowDequeThread(Thread):
                     dcacheLock.acquire()
                     flow = dcache.pop(key, None)
                     dcacheLock.release()
-                    if not flow:
-                        continue
-                        
+                    if not flow: continue                        
                     #get id's
                     acc_id, acctf_id, tf_id = flow.pop()
                     flow.append(acc_id)
@@ -353,7 +310,7 @@ class FlowDequeThread(Thread):
                     tarifGroups = tarif_groupsCache.get(tf_id)
                     if tarifGroups: 
                         has_groups = True
-                        #groupLst = set()
+                    
                     passthr = True
                     #checks classes
                     direction=None
@@ -378,7 +335,7 @@ class FlowDequeThread(Thread):
                     #if traversed all the nodes
                     else:
                         if classLst:
-                            self.add_classes_groups(flow, classLst, node, acctf_id, has_groups)
+                            self.add_classes_groups(flow, classLst, node, acctf_id, has_groups, tarifGroups)
                         else: continue
                         
                     #construct a list
@@ -398,16 +355,17 @@ class FlowDequeThread(Thread):
                     dbLock.release()
                     flst = []
                 del keylist
-                gc.collect()
+            except IndexError, ierr:
+                if iqueue:
+                    fqueueLock.release()
+                    time.sleep(5)
+                continue
             except Exception, ex:
                     logger.error("fdqThread exception: %s", repr(ex))
             
- 
-
-                
+            
 class NfUDPSenderThread(Thread):
-    '''
-    Thread that gets packet lists from databaseQueue, marshals them and sends to Core module
+    '''Thread that gets packet lists from databaseQueue, marshals them and sends to Core module
     If there are errors, flow data are written to a file. When connection is established again, NfFileReadThread to clean up that files and resend data is started.
     '''
     def __init__(self): 
@@ -420,25 +378,22 @@ class NfUDPSenderThread(Thread):
         addrport = coreAddr
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         nfsock.settimeout(sockTimeout)
-        errflag = 0
+        errflag   = 0
         flnumpack = 0
         dfile = None
         fname = None
-        while True:
-            if suicideCondition[self.tname]:
-                if errflag: dfile.close(); fnameQueue.append(fname)
-                break
-            #get a bunch of packets
-            dbLock.acquire()
+        while True:     
             try:
-                flst = marshal.dumps(databaseQueue.popleft())
+                if suicideCondition[self.tname]:
+                    if errflag: dfile.close(); fnameQueue.append(fname)
+                    break
+                #get a bunch of packets
+                dbLock.acquire()
+                dqueue  = 1            
+                fpacket = databaseQueue.popleft()
                 dbLock.release()
-            except Exception, ex:
-                dbLock.release()
-                time.sleep(1)
-                continue
-            
-            try:
+                flst   = marshal.dumps(fpacket)
+                dqueue = 0
                 #send data
                 nfsock.sendto(flst,addrport)
                 #recover reply
@@ -463,10 +418,16 @@ class NfUDPSenderThread(Thread):
                     #use locks is deadlocking  arise
                     fnameQueue.append(fname)
                     #clear errflag
-                    errflag = 0                
-                
+                    errflag = 0
+                    
+            except IndexError, ierr:
+                if dqueue:
+                    dbLock.release()
+                    time.sleep(5)
+                continue    
             except Exception, ex:
                 logger.debug('NFUDPSenderThread exp: %s', repr(ex))
+                if dqueue: continue
                 #if no errors were detected earlier
                 if not errflag:
                     try:
@@ -499,9 +460,7 @@ class NfUDPSenderThread(Thread):
             del flst
             
 class NfFileReadThread(Thread):
-    '''
-    Thread that reads previously written data dumps and resends data.
-    '''
+    '''Thread that reads previously written data dumps and resends data.'''
     def __init__(self, tsleep=0, tcount=0):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
@@ -517,19 +476,15 @@ class NfFileReadThread(Thread):
         nfsock.settimeout(sockTimeout)
         dfile = None
         while True:
-            if suicideCondition[self.tname]: break
-            #get a file name from a queue
-            fnameLock.acquire()
             try:
-                fname = fnameQueue.popleft()
+                if suicideCondition[self.tname]: break
+                
+                #get a file name from a queue
+                fnameLock.acquire()
+                fqueue = 1
+                fname  = fnameQueue.popleft()
                 fnameLock.release()
-            except Exception, ex:
-                fnameLock.release()
-                time.sleep(240)
-                continue
-            #open file and read data
-            #print fname
-            try:
+                fqueue = 0
                 #open the file
                 dfile = open(fname, 'rb')
                 #read flows
@@ -574,15 +529,18 @@ class NfFileReadThread(Thread):
                 except Exception, ex:
                     #if errors - write data to another file
                     logger.error("NfFileReadThread flowsend exception: %s", (repr(ex),))
-                    dfile.close()
-                    cfile.close()
+                    dfile.close(); cfile.close()
                     #append file again
                     #use locks is deadlocking issues arise
                     fnameQueue.appendleft(fname)
                     #run a cleanup thread
                     time.sleep(60)
                     continue
-                
+            except IndexError, ierr:
+                if fqueue:
+                    fnameLock.release()
+                    time.sleep(240)
+                continue    
             except Exception, ex:
                 logger.error("NfFileReadThread fileread exception: %s", (repr(ex),))
                 traceback.print_exc(file=sys.stderr)
@@ -609,8 +567,8 @@ class ServiceThread(Thread):
     [10] - store
     [11] - traffic_class_id
     [12] - weight
-        
     '''
+    
     def __init__(self):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
@@ -680,8 +638,7 @@ class ServiceThread(Thread):
                     nclTmp[1].append(tuple(nlist))
                 if ndTmp[0][0]:
                     nodesCache = ndTmp
-                del ndTmp         
-
+                del ndTmp       
 
                 #id, trafficclass, in_direction, out_direction, type
                 gpcTmp = defaultdict(set)
@@ -695,14 +652,6 @@ class ServiceThread(Thread):
                     lgroup = list(group)
                     #lgroup[1] = set(lgroup[1])
                     groups_[group[0]] = lgroup
-                    '''for tclass in group[1]:
-                        if direction   == 1:
-                            gpcTmp[(tclass, 'INPUT')].add(g_id)
-                        elif direction == 2:
-                            gpcTmp[(tclass, 'OUTPUT')].add(g_id)
-                        elif direction in (3,4):
-                            gpcTmp[(tclass, 'INPUT')].add(g_id)
-                            gpcTmp[(tclass, 'OUTPUT')].add(g_id)'''
         
                 groupsCache = groups_
                 class_groupsCache = gpcTmp
@@ -752,7 +701,7 @@ class RecoveryThread(Thread):
         except Exception, ex:
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
 
-def SIGUSR1_handler(signum, frame):
+def SIGTERM_handler(signum, frame):
     graceful_save()
 
 def graceful_save():
@@ -762,7 +711,7 @@ def graceful_save():
     for thr in threads:
             suicideCondition[thr.tname] = True
     time.sleep(10)
-           
+    
     graceful_saver([['dcache','nfFlowCache'], ['flowQueue'], ['databaseQueue']],
                    globals(), 'nf_', saveDir)
     
@@ -773,9 +722,7 @@ def graceful_save():
 def graceful_recover():
     graceful_loader(['dcache','nfFlowCache','flowQueue','databaseQueue'],
                     globals(), 'nf_', saveDir)
-    
-
-            
+                
 def main ():        
     global packetCount, nfFlowCache, threads, cacheThr
     global recover, cachesRead
@@ -816,12 +763,11 @@ def main ():
         time.sleep(0.5)
         
     try:
-        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
-    except: logger.lprint('NO SIGUSR1 - windows!')    
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')    
     reception_server(config.get("nf", "host"), int(config.get("nf", "port")))            
     while 1: 
         asyncore.poll(0.010)
-
 
 
 if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline', 'iserver']:
@@ -833,6 +779,7 @@ if __name__=='__main__':
     if "-D" not in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
         
+
     config = ConfigParser.ConfigParser()
 
     #binary strings lengthes

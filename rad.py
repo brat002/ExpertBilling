@@ -289,7 +289,7 @@ class HandleSNA(HandleSBase):
     __slots__ = () 
     def __init__(self,  packetobject):
         """
-        TO-DO: Сделать проверку в методе get_nas_info на тип доступа 
+        TO-DO: ?????�?�?�?�?? ?????????�?????? ?? ???�?�?????� get_nas_info ???� ?�???? ???????�?????� 
         """
         #self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject.CreateReply()
@@ -349,7 +349,7 @@ class HandleSAuth(HandleSBase):
             minimal_period=[]
             now=datetime.datetime.now()
             for speed in speeds:
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+                #???????�???�?�???�?? ???????�?�???�?????�???? ?? ???�???�?? ?????�?????�?????? ???�???????????? ???� ?????�?�, ?????�?????�?� ???�???�?�?? ?? ?�?�?????�???? ?????�???�???????? ?????????�?�???�????
                 tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
                 #print "res=",res
                 if res==True and (delta<min_delta or min_delta==-1):
@@ -380,7 +380,7 @@ class HandleSAuth(HandleSBase):
             #print minimal_period[:6]
             correction = account_speed_limit_cache.get(account_id)
             #print "correction", correction
-            #Проводим корректировку скорости в соответствии с лимитом
+            #???????????????? ?????????�???�???????????? ?????????????�?? ?? ???????�???�?�???�?????? ?? ?�???????�????
             result = get_corrected_speed(result, correction)
             #print result
             if result==[]:
@@ -388,8 +388,6 @@ class HandleSAuth(HandleSBase):
             if result==[]:
                 result=["0/0","0/0","0/0","0/0","8","0/0"]
                 
-            #print result
-            #print "speedparams", defaults, speeds, result
             
             result_params=create_speed_string(result)
             self.speed=result_params
@@ -465,20 +463,15 @@ class HandleSAuth(HandleSBase):
         
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
-            return self.auth_NA()
-        
+            return self.auth_NA()        
         
         if self.multilink==False:
             station_id_status = False
             if len(station_id)==17:
-                """
-                MAC - PPPOE
-                """
+                """MAC - PPPOE"""
                 station_id_status = ((str(ipn_mac_address) == station_id) or (ipn_mac_address == ''))
             else:
-                """
-                IP - PPTP
-                """
+                """IP - PPTP"""
                 station_id_status = ((str(ipn_ip_address) == station_id) or (ipn_ip_address == '0.0.0.0'))
             
             if not station_id_status:
@@ -486,7 +479,7 @@ class HandleSAuth(HandleSBase):
                 return self.auth_NA()
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        #Проверка на то, указан ли сервер доступа
+        #?????????�?????� ???� ?�??, ?????�?�?�?? ?�?? ???�?????�?? ???????�?????�
         if int(nas_id)!=int(self.nas_id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA()
@@ -503,17 +496,15 @@ class HandleSAuth(HandleSBase):
         allow_dial = self.inTimePeriods.get(tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
-        
         if self.packetobject['User-Name'][0]==user_name and allow_dial and tarif_status==True:
             self.replypacket.code=2
-            self.replypacket.username=str(user_name) #Нельзя юникод
-            self.replypacket.password=str(password) #Нельзя юникод
+            self.replypacket.username=str(user_name) #???�?�???�?? ????????????
+            self.replypacket.password=str(password) #???�?�???�?? ????????????
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
             #account_speed_limit_cache
             self.create_speed(tarif_id, account_id=acct_row[0], speed=speed)
-            #print "Setting Speed For User" , self.speed
         else:
             return self.auth_NA()
         return self.secret, self.replypacket
@@ -522,24 +513,17 @@ class HandleSAuth(HandleSBase):
 class HandleSDHCP(HandleSBase):
     __slots__ = () + ('secret', 'nas_id', 'nas_type','atCache_mac')
     def __init__(self,  packetobject):
-        #self.nasip = packetobject['NAS-IP-Address'][0]
         self.packetobject = packetobject
         self.secret = ""
-
         logger.debugfun('%s', show_packet, packetobject)
 
-        #self.cur = dbCur
-
     def auth_NA(self):
-        """
-        Deny access
-        """
+        """Deny access"""
         self.packetobject.code=3
         return self.secret, self.packetobject
     
             
     def handle(self):
-        #row=self.get_nas_info()
         row = self.nasCache.get(self.nasip)
         
         if row==None:
@@ -551,8 +535,6 @@ class HandleSDHCP(HandleSBase):
         
         self.replypacket=packet.Packet(secret=self.secret,dict=dict)
         
-        #row = get_account_data_by_username_dhcp(self.cur, self.packetobject['User-Name'][0])
-
         acct_row = self.atCache_mac.get(self.packetobject['User-Name'][0])
         
         if acct_row==None:
@@ -565,7 +547,6 @@ class HandleSDHCP(HandleSBase):
         if int(nas_id)!=int(self.nas_id):
             return self.auth_NA()
 
-        #print 4
         self.replypacket.code=2
         self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
         self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
@@ -575,11 +556,10 @@ class HandleSDHCP(HandleSBase):
 
 #acct class
 class HandleSAcct(HandleSBase):
+    """process account information after connection"""
+    
     __slots__ = () + ('cur', 'access_type', 'acctCache_unIdx')
-    """
-    process account information after connection
-    """
-
+    
     def __init__(self, packetobject, nasip, dbCur):
         self.packetobject=packetobject
         self.nasip=packetobject['NAS-IP-Address'][0]
@@ -600,9 +580,7 @@ class HandleSAcct(HandleSBase):
         return (bytes_in, bytes_out)
 
     def acct_NA(self):
-        """
-        Deny access
-        """
+        """Deny access"""
         # Access denided
         self.replypacket.code=3
         return self.replypacket
@@ -610,25 +588,13 @@ class HandleSAcct(HandleSBase):
     def handle(self):
         #self.cur.execute("""SELECT secret from nas_nas WHERE ipaddress=%s;""", (self.nasip,))
         row = self.nasCache.get(self.nasip)
-        #print 1
-        if row==None:
-            return None
+        if row==None: return None
         
         n_secret = row[1]        
         self.replypacket.secret=str(n_secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
-        """
-        Раз в десять запросов обновлять информацию о аккаунте
-        """
+        """?�?�?� ?? ???�?????�?? ?�?�???????????? ???�???????�???�?? ?????�???????�?�???? ?? ?�?????�?????�?�"""
         userName = self.packetobject['User-Name'][0]
-        
-        '''self.cur.execute(
-        """
-        SELECT account.id, tariff.time_access_service_id FROM billservice_account as account
-        JOIN billservice_tariff as tariff ON tariff.id=(SELECT tarif_id FROM billservice_accounttarif where account_id=account.id and datetime<now() ORDER BY id DESC LIMIT 1)
-        WHERE account.username=%s;
-        """, (self.packetobject['User-Name'][0],)
-        )'''
 
         acct_row = self.acctCache_unIdx.get(userName)
 
@@ -643,9 +609,9 @@ class HandleSAcct(HandleSBase):
         self.replypacket.code=5
         now = datetime.datetime.now()
 
-        #print 3
+
         if self.packetobject['Acct-Status-Type']==['Start']:
-            #Проверяем нет ли такой сессии в базе
+            #?????????�?????�?? ???�?� ?�?? ?�?�?????? ???�???????? ?? ?�?�?�?�
             self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
@@ -919,9 +885,7 @@ class pfMemoize(object):
 def setpriority(pid=None,priority=1):
     """ Set The Priority of a Windows Process.  Priority is a value between 0-5 where
         2 is normal priority.  Default sets the priority of the current
-        python process but can take any valid process ID. """
-
-    
+        python process but can take any valid process ID. """    
 
     priorityclasses = [win32process.IDLE_PRIORITY_CLASS,
                        win32process.BELOW_NORMAL_PRIORITY_CLASS,
@@ -935,7 +899,7 @@ def setpriority(pid=None,priority=1):
     win32process.SetPriorityClass(handle, priorityclasses[priority])
 
 
-def SIGUSR1_handler(signum, frame):
+def SIGTERM_handler(signum, frame):
     graceful_save()
 
 def graceful_save():
@@ -963,8 +927,8 @@ def main():
     server_auth = AsyncAuthServ("0.0.0.0", 1812)
     server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
     try:
-        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
-    except: logger.lprint('NO SIGUSR1 - windows!')
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
     
     while 1: 
         asyncore.poll(0.01)
@@ -994,7 +958,6 @@ if __name__ == "__main__":
     
     
     suicideCondition = {}
-    #curCachesDate = datetime.datetime(3333, 1, 1)
     curCachesDate = None
     curCachesLock = Lock()
     fMem = pfMemoize()

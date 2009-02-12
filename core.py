@@ -421,7 +421,7 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
                                             while chk_date < now:                                                
-                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))                                                
+                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
                                                 #psycopg2._psycopg.cursor.c
@@ -472,7 +472,7 @@ class periodical_service_bill(Thread):
                                             chk_date = last_checkout + delta
                                             summ_prev=ps_cost
                                             while chk_date <= now:
-                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += delta
                                             connection.commit() 
@@ -524,7 +524,7 @@ class periodical_service_bill(Thread):
                                                 #now or (now - delta)???
                                                 summ_prev=ps_cost
                                                 while chk_date <= (now - delta):
-                                                    cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, null_ballance_checkout))
+                                                    cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                     connection.commit()
                                                     chk_date += delta
 
