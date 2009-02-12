@@ -34,10 +34,10 @@ class cdDrawer(object):
     cdchartoptdict = {\
         "nfs_user_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -46,10 +46,10 @@ class cdDrawer(object):
                                          'addlinelayer_tr':(0xFF0000, "TRANSIT"), 'setlinewidth_tr':1.3},\
          "nfs_user_speed": \
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -68,28 +68,28 @@ class cdDrawer(object):
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_users_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_users_speed":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_traf_bydir":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -98,10 +98,10 @@ class cdDrawer(object):
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
         "nfs_total_speed_bydir":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -110,28 +110,28 @@ class cdDrawer(object):
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
         "nfs_total_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_speed":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':2},\
         "nfs_port_speed": \
                                         {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по %s порту:", "fonts/LiberationMono-Regular.ttf", 18], \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(50, 30, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по %s порту:", "fonts/LiberationSerif-Regular.ttf", 18], \
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -140,10 +140,10 @@ class cdDrawer(object):
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3}, \
         "nfs_multi_classes_speed": \
                                         {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(50, 30, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по классу %s :", "fonts/LiberationMono-Regular.ttf", 18], \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(50, 30, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по классу %s :", "fonts/LiberationSerif-Regular.ttf", 18], \
+                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -152,10 +152,10 @@ class cdDrawer(object):
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3}, \
         "nfs_nas_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'outfill': True, \
                                          'antialias': False, \
@@ -164,40 +164,40 @@ class cdDrawer(object):
                                          'addlinelayer_tr':(0xFF0000, "TRANSIT"), 'setlinewidth_tr':1.3},\
         "nfs_total_nass_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_classes_speed":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(30, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationMono-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationMono-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                         'addlegend':(30, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "userstrafpie":     \
-                                        {'piechart':(600, 280), 'setpiesize': (300, 120, 110), 'addtitle': ('', "fonts/LiberationMono-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationMono-Regular.ttf",)}, \
+                                        {'piechart':(600, 280), 'setpiesize': (300, 120, 110), 'addtitle': ('', "fonts/LiberationSerif-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationSerif-Regular.ttf",)}, \
         "sessions":  \
-                                        {'xychart':(800, 280), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(120, 40, 620, 220, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",),'yaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', \
+                                        {'xychart':(800, 280), 'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), 'setplotarea':(120, 40, 620, 220, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",),'yaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', \
                                          'settickoffset':0.5, 'addboxwhiskersess':(None, None, None, 0x366e97, pychartdir.SameAsMainColor, pychartdir.SameAsMainColor), 'dashlinecolor':(0xff0000, DashLine)}, \
         "trans_deb": \
-                                        {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xa2c5de, 0xa2c5de), \
-                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                        {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xa2c5de, 0xa2c5de), \
+                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
                                          'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', 'yaxissetlabelformat':'{value}', 'currency':''}, \
         "trans_crd":  \
-                                        {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
-                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
-                                         'xaxissetlabelstyle':("fonts/LiberationMono-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationMono-Regular.ttf",), \
+                                        {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
+                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_trans': (0x0000FF,), 'addscatterlayer': ("Sum", pychartdir.DiamondSymbol, 13, 0x0000FF),  'setlinewidth_trans':2, \
@@ -924,10 +924,7 @@ class cdDrawer(object):
             selstr = selstrdict['sessions'] % (', '.join([str(intt) for intt in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '))
         except Exception, ex:
             raise ex
-        print "predata:"
         data = bpbl.get_sessions(selstr)
-        print "postdata"
-        #print data
         if not data: print "Dataset is empty"; data = ([], [], [], [], [])
         (t_start, t_end, sessid, username, protocol) = data
         kwargs['return']['data'] = [(username[i], sessid[i], t_start[i], t_end[i], protocol[i]) for i in range(len(sessid))]
@@ -955,14 +952,11 @@ class cdDrawer(object):
             tIndexes.append(nindex[uuname])
         t_start = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_start]
         t_end   = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_end]
-        #labels  = [username[i] + ' | ' + sessid[i] for i in range(len(sessid))]
         labels = unames
         startDate = chartTime(args[0].year, args[0].month, args[0].day, args[0].hour, args[0].minute, args[0].second)
         endDate   = chartTime(args[1].year, args[1].month, args[1].day, args[1].hour, args[1].minute, args[1].second)
 
-
         optdict = self.cdchartoptdict['sessions']
-        #if len(labels) > 12:
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
         if len(labels) >= 1:
@@ -970,7 +964,6 @@ class cdDrawer(object):
             spa[3] = xyc[1] - 60
             
         retlist = []
-        #c = XYChart(*optdict['xychart'])
         c = XYChart(*xyc)
 
         # Add a title to the chart using 15 points Times Bold Itatic font, with white
@@ -1000,7 +993,6 @@ class cdDrawer(object):
         # Add a box-whisker layer showing the box only.
         layer = c.addBoxWhiskerLayer(t_start, t_end, *optdict['addboxwhiskersess'])
         layer.setXData(tIndexes)
-        #layer.setDataWidth(int(spa[3]*0.4/len(labels)))
         layer.setDataWidth(8)
         #return data
         if optdict['yaxissetlabelformat']:
@@ -1013,11 +1005,9 @@ class cdDrawer(object):
                 delim = optdict['yaxissetlabelformat'][ddLoc + 2]
     
             c.yAxis().setFormatCondition("align", 2592000)
-            c.yAxis().setLabelFormat("{value|mm" + delim + "yy}")
-    
+            c.yAxis().setLabelFormat("{value|mm" + delim + "yy}")    
             c.yAxis().setFormatCondition("align", 86400)
-            c.yAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
-    
+            c.yAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")    
             c.yAxis().setFormatCondition("else")
             c.yAxis().setLabelFormat(optdict['yaxissetlabelformat'])
         # output the chart
@@ -1043,13 +1033,15 @@ class cdDrawer(object):
         c = XYChart(*optdict['xychart'])
         # Add a title to the chart using 15 points Times Bold Itatic font, with white
         # (ffffff) text on a deep blue (000080) background	
-        if not optdict['antialias']:
+        antialias = (kwargs['options'].has_key('antialias') and kwargs['options']['antialias']) or optdict['antialias']
+        if not antialias:
             c.setAntiAlias(0)
         c.setPlotArea(*optdict['setplotarea'])
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
-        if not optdict['autoticks']:
+        autoticks = (kwargs['options'].has_key('autoticks') and kwargs['options']['autoticks']) or optdict['autoticks']
+        if not autoticks:
             xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
             yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
             c.xAxis().setTickDensity(yplen / 5, yplen / 25)
@@ -1092,13 +1084,15 @@ class cdDrawer(object):
         c = XYChart(*optdict['xychart'])
         # Add a title to the chart using 15 points Times Bold Itatic font, with white
         # (ffffff) text on a deep blue (000080) background	
-        if not optdict['antialias']:
+        antialias = (kwargs['options'].has_key('antialias') and kwargs['options']['antialias']) or optdict['antialias']
+        if not antialias:
             c.setAntiAlias(0)
         c.setPlotArea(*optdict['setplotarea'])
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
-        if not optdict['autoticks']:
+        autoticks = (kwargs['options'].has_key('autoticks') and kwargs['options']['autoticks']) or optdict['autoticks']
+        if not autoticks:
             xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
             yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
             c.xAxis().setTickDensity(yplen / 5, yplen / 25)
@@ -1174,18 +1168,18 @@ class cdDrawer(object):
 
         return mname
     def format_chart_nfs_ut(self, c, optdict, bstr, ptitle='', kwargs={}, spa=None):
-        if not optdict['antialias']:
+        antialias = (kwargs['options'].has_key('antialias') and kwargs['options']['antialias']) or optdict['antialias']
+        if not antialias:
             c.setAntiAlias(0)
-        if spa:
-            c.setPlotArea(*spa)
-        else:
-            c.setPlotArea(*optdict['setplotarea'])
+        if not spa: spa = optdict['setplotarea']
+        c.setPlotArea(*spa)
+
         c.setColors(optdict['setcolors'])
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
+        autoticks = (kwargs['options'].has_key('autoticks') and kwargs['options']['autoticks']) or optdict['autoticks']
+        if not autoticks:
+            xplen = spa[2] - spa[0]
+            yplen = spa[3] - spa[1]
             c.xAxis().setTickDensity(yplen / 5, yplen / 25)
             c.yAxis().setTickDensity(yplen / 5, yplen / 25)
 
