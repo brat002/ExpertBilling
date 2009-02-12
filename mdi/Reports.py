@@ -10,6 +10,8 @@ from helpers import HeaderUtil
 from helpers import humanable_bytes
 from ebsWindow import ebsTableWindow
 from ebsWindow import ebsTabs_n_TablesWindow
+import itertools
+from itertools import count, izip
 import datetime
 import socket 
 from reports.bpreportedit import bpReportEdit
@@ -24,34 +26,19 @@ reppath  = "reports/genhtml"
 _querydict = {\
               "get_nas"      : "SELECT name, type, ipaddress, id FROM nas_nas ORDER BY name;", \
 	      "get_usernames": "SELECT username, id FROM billservice_account ORDER BY username;", \
-              "get_classes"  : "SELECT name, weight, id FROM nas_trafficclass ORDER BY name;"
-             }
-_charthidetabs = {\
-             "nfs_user_traf"  : ("portsTab",),\
-             "nfs_u_traf"  : ("portsTab",),\
-             "nfs_user_speed" : ("portsTab",),\
-             "nfs_total_users_traf" : ("portsTab",),\
-             "nfs_total_users_speed" : ("portsTab",),\
-             "nfs_total_traf" : ("portsTab", "usersTab"),\
-             "nfs_total_speed" : ("portsTab", "usersTab"),\
-             "nfs_total_traf_bydir" : ("portsTab", "usersTab"),\
-             "nfs_total_speed_bydir" : ("portsTab", "usersTab"),\
-             "nfs_port_speed" : ("usersTab", "serversTab", "classesTab"),\
-             "nfs_n_traf" : ("usersTab", "classesTab", "portsTab"),\
-             "nfs_nas_traf" : ("usersTab", "classesTab", "portsTab"),\
-             "nfs_total_nass_traf" : ("usersTab", "classesTab", "portsTab"),\
-             "nfs_total_classes_speed" : ("usersTab", "portsTab"),\
-             "userstrafpie" : ("serversTab", "portsTab"),\
-             "nfs_multi_classes_speed" : ("usersTab", "portsTab"),\
-             "sessions" : ("serversTab", "classesTab", "portsTab"),\
-             "trans_deb" : ("usersTab", "serversTab", "classesTab", "portsTab"),\
-             "trans_crd" : ("usersTab", "serversTab", "classesTab", "portsTab")
+              "get_classes"  : "SELECT name, weight, id FROM nas_trafficclass ORDER BY name;", \
+              "get_groups"   : "SELECT name, id FROM billservice_group ORDER BY name;"}
+
+_chartopts = {\
+             "gstat_multi"  : [("portsTab",'groupsTab'), ('ggb_groups_checkBox',), {}],\
+             "pie_gmulti"  : [("portsTab",'groupsTab'),('ggb_groups_checkBox',), {'pie':True}],\
+             "gstat_globals"  : [("portsTab","classesTab", 'groupsTab'),('ggb_groups_checkBox','ggb_classes_checkBox'), {'ttype':'stat'}],\
+             "groups"  : [("portsTab","classesTab", "serversTab"),('ggb_classes_checkBox', 'ggb_nas_checkBox','traffic_groupBox'), {'ttype':'group'}],\
+             "sessions" : [("serversTab", "classesTab", "portsTab", 'groupsTab'), ('traffic_groupBox', 'data_groupBox', 'groupby_groupBox'), {}],\
+             "trans_deb" : [("usersTab", "serversTab", "classesTab", "portsTab", 'groupsTab'), ('traffic_groupBox', 'data_groupBox', 'groupby_groupBox'), {'trtype':'deb'}],\
+             "trans_crd" : [("usersTab", "serversTab", "classesTab", "portsTab", 'groupsTab'), ('traffic_groupBox', 'data_groupBox', 'groupby_groupBox'), {'trtype':'crd'}]
             }
-_restrictions = {\
-                 "one_user"  :[],\
-                 "one_server":[],\
-                 "one_class" :[]\
-                }
+
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
 class TransactionsReportEbs(ebsTableWindow):
@@ -1020,7 +1007,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
                     clflow.class_color = getattr(classdict.get(cls, {}),'class_color', '')
                     clflows.append(clflow)
             else:
-                clflows.appemd(clflow)
+                clflows.append(clflow)
             
             for flow in clflows:
                 icount += 1                   
@@ -1567,12 +1554,12 @@ class StatReport(QtGui.QMainWindow):
     def refresh(self):
         kwargs = {}
         kwargs['options'] = {}
-        if self.child.antialiasing_checkBox.checkState() == 0:
+        if self.child.lgb_antialias_checkBox.checkState() == 0:
             kwargs['options']['antialias'] = False
         else:
             kwargs['options']['antialias'] = True
             
-        if self.child.grid_checkBox.checkState() == 0:
+        if self.child.lgb_grid_checkBox.checkState() == 0:
             kwargs['options']['autoticks'] = True
         else:
             kwargs['options']['autoticks'] = False
@@ -1585,10 +1572,15 @@ class StatReport(QtGui.QMainWindow):
             
         if self.child.servers:
             kwargs['servers'] = self.child.servers
+        if self.child.groups:
+            kwargs['groups']   = self.child.groups
         if self.child.ports:
             kwargs['ports']   = self.child.ports
         
-        #print kwargs
+        kwargs['type'] = self.chartinfo[1][0]
+        chOpts = _chartopts[kwargs['type']]
+        kwargs.update(chOpts[2])
+        kwargs.update(self.child.opts)
         brep = bpReportEdit()
         editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
@@ -1598,37 +1590,15 @@ class StatReport(QtGui.QMainWindow):
         f = open(fname, "wb")
         f.write(editor.document().toHtml("utf-8").toUtf8())
         f.close()
-        if self.child.read_only_checkBox.checkState() == 2:
-            editor.setReadOnly(True)
-        #self.textedit.setDocument(editor.document())
-        #sht = editor.document().toHtml()
         webv = QtWebKit.QWebView()
         #webv.setHtml(sht)
         lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(fname))
         print lfurl.toString()
         webv.load(lfurl)
-        #self.setCentralWidget(editor)
+
         self.setCentralWidget(webv)
-        #print editor.physicalDpiX()
-        #print editor.logicalDpiX()
-        #ec = self.centralWidget().cursor()
-        #ec.setShape(QtCore.Qt.ArrowCursor)
-        #self.centralWidget().setCursor(ec)
-        #print ec.shape()
-        #print self.centralWidget().cursor().shape()
-        
-        #self.show()
-        #self.update()
-        #self.show()
-        if self.child.send_to_printer_checkBox.checkState() == 2:
-            pass
-            #self.printThread.run(self.centralWidget().document())
-            #self.print_report(self.centralWidget().document(), 1)
-            #thread.start_new_thread(print_report, (self.centralWidget().document(), 1))
             
     def printDocument(self):
-        #print self.centralWidget().physicalDpiX()
-        #print self.centralWidget().logicalDpiX()
         document = self.centralWidget()
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setPageSize(QtGui.QPrinter.A4)
@@ -1637,9 +1607,6 @@ class StatReport(QtGui.QMainWindow):
         if dialog.exec_() != QtGui.QDialog.Accepted:
             return
         printer.setFullPage(True)
-        #printer.setResolution(120)
-        #printer.setOutputFileName("lol.pdf")
-        #print printer.resolution()
         document.print_(printer)
         
 
@@ -1653,89 +1620,137 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.users   = []
         self.classes = []
         self.servers = []
+        self.groups  = []
         self.ports   = []
+        self.opts    = {}
         self.start_date = datetime.datetime.now()
         self.end_date   = datetime.datetime.now()
-        self.one_user   = False
-        self.one_server = False
-        self.one_class  = False
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,442,535).size()).expandedTo(self.minimumSizeHint()))
-
+        self.resize(475, 605)
+        self.gridLayout_4 = QtGui.QGridLayout(self)
+        self.gridLayout_4.setObjectName("gridLayout_4")
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(270,490,160,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(0,10,441,471))
+        self.tabWidget.setObjectName("tabWidget")
         self.tabWidget.setTabPosition(QtGui.QTabWidget.North)
         self.tabWidget.setTabShape(QtGui.QTabWidget.Rounded)
-        self.tabWidget.setObjectName("tabWidget")
-        
         self.mainTab = QtGui.QWidget()
         self.mainTab.setObjectName("mainTab")
-        print self.datetimeFormat
-        self.intervals_groupBox = QtGui.QGroupBox(self.mainTab)
-        self.intervals_groupBox.setGeometry(QtCore.QRect(10,10,411,101))
-        self.intervals_groupBox.setFlat(False)
-        self.intervals_groupBox.setCheckable(False)
-        self.intervals_groupBox.setChecked(False)
-        self.intervals_groupBox.setObjectName("intervals_groupBox")
-        
-        
-        self.date_end_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
-        self.date_end_dateTimeEdit.setGeometry(QtCore.QRect(120,60,194,23))
-        self.date_end_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
+        self.gridLayout_3 = QtGui.QGridLayout(self.mainTab)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.inter_groupBox = QtGui.QGroupBox(self.mainTab)
+        self.inter_groupBox.setMaximumSize(QtCore.QSize(16777215, 100))
+        self.inter_groupBox.setObjectName("inter_groupBox")
+        self.gridLayout_2 = QtGui.QGridLayout(self.inter_groupBox)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.from_label = QtGui.QLabel(self.inter_groupBox)
+        self.from_label.setObjectName("from_label")
+        self.gridLayout_2.addWidget(self.from_label, 0, 0, 1, 1)        
+        self.to_label = QtGui.QLabel(self.inter_groupBox)
+        self.to_label.setObjectName("to_label")
+        self.gridLayout_2.addWidget(self.to_label, 1, 0, 1, 1)
+        self.from_dateTimeEdit = QtGui.QDateTimeEdit(self.inter_groupBox)
+        self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
+        self.from_dateTimeEdit.setCalendarPopup(True)
+        self.from_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
         dt_now = datetime.datetime.now()
-        self.date_end_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
-        self.date_end_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
-        self.date_end_dateTimeEdit.setCalendarPopup(True)
-        self.date_end_dateTimeEdit.setObjectName("date_end_dateTimeEdit")
-        
+        self.from_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
+        self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
+        self.gridLayout_2.addWidget(self.from_dateTimeEdit, 0, 1, 1, 1)
+        self.to_dateTimeEdit = QtGui.QDateTimeEdit(self.inter_groupBox)
+        self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
+        self.to_dateTimeEdit.setCalendarPopup(True)
+        self.to_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
+        self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
+        self.gridLayout_2.addWidget(self.to_dateTimeEdit, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.inter_groupBox, 0, 0, 1, 2)
 
-        self.date_start_label = QtGui.QLabel(self.intervals_groupBox)
-        self.date_start_label.setGeometry(QtCore.QRect(20,30,91,18))
-        self.date_start_label.setObjectName("date_start_label")
-
-        self.date_start_dateTimeEdit = QtGui.QDateTimeEdit(self.intervals_groupBox)
-        self.date_start_dateTimeEdit.setGeometry(QtCore.QRect(120,30,194,23))
-        self.date_start_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
-        self.date_start_dateTimeEdit.setCalendarPopup(True)
-        self.date_start_dateTimeEdit.setObjectName("date_start_dateTimeEdit")
-        
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start_dateTimeEdit.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end_dateTimeEdit.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.from_dateTimeEdit.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.to_dateTimeEdit.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Chart reports settings error: ", ex
         
-        self.date_end_label = QtGui.QLabel(self.intervals_groupBox)
-        self.date_end_label.setGeometry(QtCore.QRect(20,60,91,18))
-        self.date_end_label.setObjectName("date_end_label")
+        self.data_groupBox = QtGui.QGroupBox(self.mainTab)
+        self.data_groupBox.setMaximumSize(QtCore.QSize(1000, 120))
+        self.data_groupBox.setObjectName("data_groupBox")
+        self.gridLayout_6 = QtGui.QGridLayout(self.data_groupBox)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.dgb_traffic_radioButton = QtGui.QRadioButton(self.data_groupBox)
+        self.dgb_traffic_radioButton.setObjectName("dgb_traffic_radioButton")
+        self.dgb_traffic_radioButton.setChecked(True)
+        self.gridLayout_6.addWidget(self.dgb_traffic_radioButton, 0, 0, 1, 1)
+        self.dgb_speed_radioButton = QtGui.QRadioButton(self.data_groupBox)
+        self.dgb_speed_radioButton.setObjectName("dgb_speed_radioButton")
+        self.gridLayout_6.addWidget(self.dgb_speed_radioButton, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.data_groupBox, 1, 0, 1, 1)
+        self.layout_groupBox = QtGui.QGroupBox(self.mainTab)
+        self.layout_groupBox.setMaximumSize(QtCore.QSize(1000, 120))
+        self.layout_groupBox.setObjectName("layout_groupBox")
+        self.gridLayout_5 = QtGui.QGridLayout(self.layout_groupBox)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.lgb_grid_checkBox = QtGui.QCheckBox(self.layout_groupBox)
+        self.lgb_grid_checkBox.setObjectName("lgb_grid_checkBox")
+        self.gridLayout_5.addWidget(self.lgb_grid_checkBox, 0, 0, 1, 1)
+        self.lgb_antialias_checkBox = QtGui.QCheckBox(self.layout_groupBox)
+        self.lgb_antialias_checkBox.setObjectName("lgb_antialias_checkBox")
+        self.gridLayout_5.addWidget(self.lgb_antialias_checkBox, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.layout_groupBox, 1, 1, 1, 1)
+        self.groupby_groupBox = QtGui.QGroupBox(self.mainTab)
+        self.groupby_groupBox.setMaximumSize(QtCore.QSize(1000, 200))
+        self.groupby_groupBox.setObjectName("groupby_groupBox")
+        self.gridLayout_8 = QtGui.QGridLayout(self.groupby_groupBox)
+        self.gridLayout_8.setObjectName("gridLayout_8")
+        self.ggb_accounts_checkBox = QtGui.QCheckBox(self.groupby_groupBox)
+        self.ggb_accounts_checkBox.setObjectName("ggb_accounts_checkBox")
+        self.gridLayout_8.addWidget(self.ggb_accounts_checkBox, 0, 0, 1, 1)
+        self.ggb_groups_checkBox = QtGui.QCheckBox(self.groupby_groupBox)
+        self.ggb_groups_checkBox.setObjectName("ggb_groups_checkBox")
+        self.gridLayout_8.addWidget(self.ggb_groups_checkBox, 1, 0, 1, 1)
+        self.ggb_nas_checkBox = QtGui.QCheckBox(self.groupby_groupBox)
+        self.ggb_nas_checkBox.setObjectName("ggb_nas_checkBox")
+        self.gridLayout_8.addWidget(self.ggb_nas_checkBox, 2, 0, 1, 1)
+        self.ggb_classes_checkBox = QtGui.QCheckBox(self.groupby_groupBox)
+        self.ggb_classes_checkBox.setObjectName("ggb_classes_checkBox")
+        self.gridLayout_8.addWidget(self.ggb_classes_checkBox, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupby_groupBox, 2, 0, 1, 1)
+        self.traffic_groupBox = QtGui.QGroupBox(self.mainTab)
+        self.traffic_groupBox.setMaximumSize(QtCore.QSize(16777215, 200))
+        self.traffic_groupBox.setObjectName("traffic_groupBox")
+        self.gridLayout_7 = QtGui.QGridLayout(self.traffic_groupBox)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.gbt_input_radioButton = QtGui.QRadioButton(self.traffic_groupBox)
+        self.gbt_input_radioButton.setObjectName("gbt_input_radioButton")
+        self.gridLayout_7.addWidget(self.gbt_input_radioButton, 0, 0, 1, 1)
+        self.tgb_output_radioButton = QtGui.QRadioButton(self.traffic_groupBox)
+        self.tgb_output_radioButton.setObjectName("tgb_output_radioButton")
+        self.gridLayout_7.addWidget(self.tgb_output_radioButton, 1, 0, 1, 1)
+        self.tgb_sum_radioButton = QtGui.QRadioButton(self.traffic_groupBox)
+        self.tgb_sum_radioButton.setObjectName("tgb_sum_radioButton")
+        self.tgb_sum_radioButton.setChecked(True)
+        self.gridLayout_7.addWidget(self.tgb_sum_radioButton, 2, 0, 1, 1)
+        self.tgb_max_radioButton = QtGui.QRadioButton(self.traffic_groupBox)
+        self.tgb_max_radioButton.setObjectName("tgb_max_radioButton")
+        self.gridLayout_7.addWidget(self.tgb_max_radioButton, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.traffic_groupBox, 2, 1, 1, 1)
+        self.gridLayout_3.addLayout(self.gridLayout, 1, 0, 1, 1)
+        self.tmp_groupBox_2 = QtGui.QGroupBox(self.mainTab)
+        self.tmp_groupBox_2.setVisible(False)
+        self.tmp_groupBox_2.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.tmp_groupBox_2.setObjectName("tmp_groupBox_2")
+        self.gridLayout_3.addWidget(self.tmp_groupBox_2, 3, 0, 1, 1)
+        self.tmp_groupBox_3 = QtGui.QGroupBox(self.mainTab)
+        self.tmp_groupBox_3.setVisible(False)
+        self.tmp_groupBox_3.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.tmp_groupBox_3.setObjectName("tmp_groupBox_3")
+        self.gridLayout_3.addWidget(self.tmp_groupBox_3, 0, 0, 1, 1)
 
-        self.settings_groupBox = QtGui.QGroupBox(self.mainTab)
-        self.settings_groupBox.setGeometry(QtCore.QRect(10,120,411,151))
-        self.settings_groupBox.setObjectName("settings_groupBox")
-
-        self.grid_checkBox = QtGui.QCheckBox(self.settings_groupBox)
-        self.grid_checkBox.setGeometry(QtCore.QRect(20,20,191,21))
-        self.grid_checkBox.setObjectName("grid_checkBox")
-
-        self.antialiasing_checkBox = QtGui.QCheckBox(self.settings_groupBox)
-        self.antialiasing_checkBox.setGeometry(QtCore.QRect(20,50,191,21))
-        self.antialiasing_checkBox.setObjectName("antialiasing_checkBox")
-
-        self.read_only_checkBox = QtGui.QCheckBox(self.settings_groupBox)
-        self.read_only_checkBox.setGeometry(QtCore.QRect(20,80,191,21))
-        self.read_only_checkBox.setObjectName("read_only_checkBox")
-
-        self.send_to_printer_checkBox = QtGui.QCheckBox(self.settings_groupBox)
-        self.send_to_printer_checkBox.setGeometry(QtCore.QRect(20,110,261,21))
-        self.send_to_printer_checkBox.setObjectName("send_to_printer_checkBox")
-        self.send_to_printer_checkBox.setVisible(False)
         self.tabWidget.addTab(self.mainTab,"")
 
         self.usersTab = QtGui.QWidget()
@@ -1833,6 +1848,39 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.selected_classes_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.selected_classes_listWidget.setSelectionRectVisible(True)
         self.tabWidget.addTab(self.classesTab,"")
+        
+        
+        self.groupsTab = QtGui.QWidget()
+        self.groupsTab.setObjectName("groupsTab")
+
+        self.all_groups_label = QtGui.QLabel(self.groupsTab)
+        self.all_groups_label.setGeometry(QtCore.QRect(10,10,151,18))
+        self.all_groups_label.setObjectName("all_groups_label")
+
+        self.all_groups_listWidget = QtGui.QListWidget(self.groupsTab)
+        self.all_groups_listWidget.setGeometry(QtCore.QRect(10,30,181,401))
+        self.all_groups_listWidget.setObjectName("all_groups_listWidget")
+        self.all_groups_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.all_groups_listWidget.setSelectionRectVisible(True)
+
+        self.del_group_toolButton = QtGui.QToolButton(self.groupsTab)
+        self.del_group_toolButton.setGeometry(QtCore.QRect(200,200,27,23))
+        self.del_group_toolButton.setObjectName("del_group_toolButton")
+
+        self.add_group_toolButton = QtGui.QToolButton(self.groupsTab)
+        self.add_group_toolButton.setGeometry(QtCore.QRect(200,160,27,23))
+        self.add_group_toolButton.setObjectName("add_group_toolButton")
+
+        self.selected_groups_label = QtGui.QLabel(self.groupsTab)
+        self.selected_groups_label.setGeometry(QtCore.QRect(240,10,191,18))
+        self.selected_groups_label.setObjectName("selected_groups_label")
+
+        self.selected_groups_listWidget = QtGui.QListWidget(self.groupsTab)
+        self.selected_groups_listWidget.setGeometry(QtCore.QRect(240,30,191,401))
+        self.selected_groups_listWidget.setObjectName("selected_groups_listWidget")
+        self.selected_groups_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.selected_groups_listWidget.setSelectionRectVisible(True)
+        self.tabWidget.addTab(self.groupsTab,"")
 
         self.portsTab = QtGui.QWidget()
         self.portsTab.setObjectName("portsTab")
@@ -1859,8 +1907,12 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.extra_ports_label.setGeometry(QtCore.QRect(10,380,287,18))
         self.extra_ports_label.setObjectName("extra_ports_label")
         self.tabWidget.addTab(self.portsTab,"")
-        self.date_start_label.setBuddy(self.date_start_dateTimeEdit)
-        self.date_end_label.setBuddy(self.date_end_dateTimeEdit)
+        self.to_label.setBuddy(self.to_dateTimeEdit)
+        self.from_label.setBuddy(self.from_dateTimeEdit)
+        
+        self.gridLayout_4.addWidget(self.tabWidget, 0, 0, 1, 1)
+
+        self.gridLayout_4.addWidget(self.buttonBox, 1, 0, 1, 1)
 
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
@@ -1880,19 +1932,39 @@ class ReportOptionsDialog(QtGui.QDialog):
         QtCore.QObject.connect(self.all_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
         QtCore.QObject.connect(self.selected_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
         
+        QtCore.QObject.connect(self.add_group_toolButton, QtCore.SIGNAL("clicked()"), self.addGroup)
+        QtCore.QObject.connect(self.del_group_toolButton, QtCore.SIGNAL("clicked()"), self.delGroup)
+        
+        QtCore.QObject.connect(self.all_groups_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addGroup)
+        QtCore.QObject.connect(self.selected_groups_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delGroup)
+        
         QtCore.QObject.connect(self.add_server_toolButton, QtCore.SIGNAL("clicked()"), self.addServer)
         QtCore.QObject.connect(self.del_server_toolButton, QtCore.SIGNAL("clicked()"), self.delServer)
         
         QtCore.QObject.connect(self.all_servers_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addServer)
         QtCore.QObject.connect(self.selected_servers_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delServer)
+        
+        self.chkButtons = [self.ggb_accounts_checkBox, self.ggb_groups_checkBox, self.ggb_nas_checkBox, self.ggb_classes_checkBox]
+        self.chkLambdas = [lambda bl: self.chbToggled(bl, 0), lambda bl: self.chbToggled(bl,1), lambda bl: self.chbToggled(bl,2), lambda bl: self.chbToggled(bl, 3)]
+        counter = itertools.count()
+        for btn in self.chkButtons:
+            QtCore.QObject.connect(btn, QtCore.SIGNAL("clicked(bool)"), self.chkLambdas[counter.next()])
         if 1:
-            self.setTabOrder(self.tabWidget,self.date_start_dateTimeEdit)
-            self.setTabOrder(self.date_start_dateTimeEdit,self.date_end_dateTimeEdit)
-            self.setTabOrder(self.date_end_dateTimeEdit,self.grid_checkBox)
-            self.setTabOrder(self.grid_checkBox,self.antialiasing_checkBox)
-            self.setTabOrder(self.antialiasing_checkBox,self.read_only_checkBox)
-            self.setTabOrder(self.read_only_checkBox,self.send_to_printer_checkBox)
-            self.setTabOrder(self.send_to_printer_checkBox,self.all_users_listWidget)
+            self.setTabOrder(self.tabWidget, self.from_dateTimeEdit)
+            self.setTabOrder(self.from_dateTimeEdit, self.to_dateTimeEdit)
+            self.setTabOrder(self.to_dateTimeEdit, self.dgb_traffic_radioButton)
+            self.setTabOrder(self.dgb_traffic_radioButton, self.dgb_speed_radioButton)
+            self.setTabOrder(self.dgb_speed_radioButton, self.lgb_grid_checkBox)
+            self.setTabOrder(self.lgb_grid_checkBox, self.lgb_antialias_checkBox)
+            self.setTabOrder(self.lgb_antialias_checkBox, self.ggb_accounts_checkBox)
+            self.setTabOrder(self.ggb_accounts_checkBox, self.ggb_groups_checkBox)
+            self.setTabOrder(self.ggb_groups_checkBox, self.ggb_nas_checkBox)
+            self.setTabOrder(self.ggb_nas_checkBox, self.ggb_classes_checkBox)
+            self.setTabOrder(self.ggb_classes_checkBox, self.gbt_input_radioButton)
+            self.setTabOrder(self.gbt_input_radioButton, self.tgb_output_radioButton)
+            self.setTabOrder(self.tgb_output_radioButton, self.tgb_sum_radioButton)
+            self.setTabOrder(self.tgb_sum_radioButton, self.tgb_max_radioButton)
+            self.setTabOrder(self.tgb_max_radioButton, self.add_user_toolButton)
             self.setTabOrder(self.all_users_listWidget,self.add_user_toolButton)
             self.setTabOrder(self.add_user_toolButton,self.del_user_toolButton)
             self.setTabOrder(self.del_user_toolButton,self.selected_users_listWidget)
@@ -1904,23 +1976,38 @@ class ReportOptionsDialog(QtGui.QDialog):
             self.setTabOrder(self.all_classes_listWidget,self.add_class_toolButton)
             self.setTabOrder(self.add_class_toolButton,self.del_class_toolButton)
             self.setTabOrder(self.del_class_toolButton,self.selected_classes_listWidget)
-            self.setTabOrder(self.selected_classes_listWidget,self.ports_listWidget)
+            self.setTabOrder(self.selected_classes_listWidget,self.all_groups_listWidget)
+            self.setTabOrder(self.all_groups_listWidget,self.add_group_toolButton)
+            self.setTabOrder(self.add_group_toolButton,self.del_group_toolButton)
+            self.setTabOrder(self.del_group_toolButton,self.selected_groups_listWidget)
+            self.setTabOrder(self.selected_groups_listWidget,self.ports_listWidget)
             self.setTabOrder(self.ports_listWidget,self.extra_ports_lineEdit)
             self.setTabOrder(self.extra_ports_lineEdit,self.buttonBox)
         self.fixtures()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
-        self.intervals_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Интервал дат", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_end_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_start_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
-        self.settings_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.grid_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сетка", None, QtGui.QApplication.UnicodeUTF8))
-        self.antialiasing_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сглаживание", None, QtGui.QApplication.UnicodeUTF8))
-        self.read_only_checkBox.setText(QtGui.QApplication.translate("Dialog", "Запретить редактирование", None, QtGui.QApplication.UnicodeUTF8))
-        self.send_to_printer_checkBox.setText(QtGui.QApplication.translate("Dialog", "Отправить на печать после создания", None, QtGui.QApplication.UnicodeUTF8))
+        self.data_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Данные", None, QtGui.QApplication.UnicodeUTF8))
+        self.dgb_traffic_radioButton.setText(QtGui.QApplication.translate("Dialog", "Трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.dgb_speed_radioButton.setText(QtGui.QApplication.translate("Dialog", "Скорость", None, QtGui.QApplication.UnicodeUTF8))
+        self.layout_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Внешний вид", None, QtGui.QApplication.UnicodeUTF8))
+        self.lgb_grid_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сетка", None, QtGui.QApplication.UnicodeUTF8))
+        self.lgb_antialias_checkBox.setText(QtGui.QApplication.translate("Dialog", "Сглаживание", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupby_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Группировать по...", None, QtGui.QApplication.UnicodeUTF8))
+        self.ggb_accounts_checkBox.setText(QtGui.QApplication.translate("Dialog", "Клиенты", None, QtGui.QApplication.UnicodeUTF8))
+        self.ggb_groups_checkBox.setText(QtGui.QApplication.translate("Dialog", "Группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.ggb_nas_checkBox.setText(QtGui.QApplication.translate("Dialog", "NAS", None, QtGui.QApplication.UnicodeUTF8))
+        self.ggb_classes_checkBox.setText(QtGui.QApplication.translate("Dialog", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.traffic_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.gbt_input_radioButton.setText(QtGui.QApplication.translate("Dialog", "Только входящий", None, QtGui.QApplication.UnicodeUTF8))
+        self.tgb_output_radioButton.setText(QtGui.QApplication.translate("Dialog", "Только исходящий", None, QtGui.QApplication.UnicodeUTF8))
+        self.tgb_sum_radioButton.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
+        self.tgb_max_radioButton.setText(QtGui.QApplication.translate("Dialog", "Наибольший", None, QtGui.QApplication.UnicodeUTF8))
+        self.inter_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Интервал", None, QtGui.QApplication.UnicodeUTF8))
+        self.from_label.setText(QtGui.QApplication.translate("Dialog", "Начало:", None, QtGui.QApplication.UnicodeUTF8))
+        self.from_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.to_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "yyyy-MM-dd H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.to_label.setText(QtGui.QApplication.translate("Dialog", "Конец:", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.mainTab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.add_user_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.del_user_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
@@ -1937,41 +2024,30 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.add_class_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные направления", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.classesTab), QtGui.QApplication.translate("Dialog", "Направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.groupsTab), QtGui.QApplication.translate("Dialog", "Группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_groups_label.setText(QtGui.QApplication.translate("Dialog", "Доступные направления", None, QtGui.QApplication.UnicodeUTF8))
+        self.del_group_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_group_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_groups_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные направления", None, QtGui.QApplication.UnicodeUTF8))
         self.ports_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Выберите порты", None, QtGui.QApplication.UnicodeUTF8))
         self.ports_description_label.setText(QtGui.QApplication.translate("Dialog", "Отметьте флажками нужные порты", None, QtGui.QApplication.UnicodeUTF8))
         self.extra_ports_label.setText(QtGui.QApplication.translate("Dialog", "Введите дополнительные порты через запятую:", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.portsTab), QtGui.QApplication.translate("Dialog", "Порты", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        '''import random
-        i = random.randint(2, 22)
-        objj = getattr(self, "date_start_dateTimeEdit", None)
-        obj2 = getattr(self, "classesTab", None)
-        print "zomg"
-        objj.hide()
-        self.tabWidget.removeTab(self.tabWidget.indexOf(obj2))
-        print self.date_end_dateTimeEdit.isVisible()
-        print self.date_start_dateTimeEdit.isVisible()
-        for x in xrange(0, self.selected_classes_listWidget.count()):
-            self.classes.append(self.selected_classes_listWidget.item(x).id)
-        print self.classes'''
         
-        if self.chartclass in _restrictions['one_user']:
-            self.one_user = True
-            
-        if self.chartclass in _restrictions['one_server']:
-            self.one_server = True
-            
-        if self.chartclass in _restrictions['one_class']:
-            self.one_class = True
-        
-        
-        hidetabs = _charthidetabs[self.chartclass]
-        
+        chOpts = _chartopts[self.chartclass]
+        hidetabs  = chOpts[0]
+        hideelems = chOpts[1]
+        #self.data_groupBox.setEnabled(False)
         for hidetab in hidetabs:
             htObj = getattr(self, hidetab, None)
-            print hidetab
             self.tabWidget.removeTab(self.tabWidget.indexOf(htObj))
+            
+        for hideelem in hideelems:
+            heObj = getattr(self, hideelem, None)
+            if heObj:
+                heObj.setEnabled(False)
             
             
         if "usersTab" not in hidetabs:
@@ -2001,6 +2077,14 @@ class ReportOptionsDialog(QtGui.QDialog):
                 item.id = serv.id
                 self.all_servers_listWidget.addItem(item)
                 
+        if "groupsTab" not in hidetabs:
+            groups = self.connection.sql(_querydict['get_groups'])
+            for grp in groups:
+                item = QtGui.QListWidgetItem()
+                item.setText(grp.name)
+                item.id = grp.id
+                self.all_groups_listWidget.addItem(item)
+                
         if "portsTab" not in hidetabs:  
             for port in _ports:
                 item = QtGui.QListWidgetItem()
@@ -2010,16 +2094,6 @@ class ReportOptionsDialog(QtGui.QDialog):
                 self.ports_listWidget.addItem(item)
         
     def addUser(self):
-        if self.one_user:
-            if self.selected_users_listWidget.count() == 1:
-                return
-            else:
-                selected_items = self.all_users_listWidget.selectedItems()
-                if selected_items:
-                    self.all_users_listWidget.takeItem(self.all_users_listWidget.row(selected_items[0]))
-                    self.selected_users_listWidget.addItem(selected_items[0])
-                    return
-                
         selected_items = self.all_users_listWidget.selectedItems()        
         for item in selected_items:
             self.all_users_listWidget.takeItem(self.all_users_listWidget.row(item))
@@ -2035,16 +2109,6 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.all_users_listWidget.sortItems()
         
     def addServer(self):
-        if self.one_server:
-            if self.selected_servers_listWidget.count() == 1:
-                return
-            else:
-                selected_items = self.all_servers_listWidget.selectedItems()
-                if selected_items:
-                    self.all_servers_listWidget.takeItem(self.all_servers_listWidget.row(selected_items[0]))
-                    self.selected_servers_listWidget.addItem(selected_items[0])
-                    return
-        
         selected_items = self.all_servers_listWidget.selectedItems()        
         for item in selected_items:
             self.all_servers_listWidget.takeItem(self.all_servers_listWidget.row(item))
@@ -2059,17 +2123,7 @@ class ReportOptionsDialog(QtGui.QDialog):
             self.all_servers_listWidget.addItem(item)
         self.all_servers_listWidget.sortItems()
         
-    def addClass(self):
-        if self.one_class:
-            if self.selected_classes_listWidget.count() == 1:
-                return
-            else:
-                selected_items = self.all_classes_listWidget.selectedItems()
-                if selected_items:
-                    self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(selected_items[0]))
-                    self.selected_classes_listWidget.addItem(selected_items[0])
-                    return        
-        
+    def addClass(self):       
         selected_items = self.all_classes_listWidget.selectedItems()
         for item in selected_items:
             self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
@@ -2083,11 +2137,45 @@ class ReportOptionsDialog(QtGui.QDialog):
             self.all_classes_listWidget.addItem(item)
         self.all_classes_listWidget.sortItems()
         
+    def addGroup(self):                
+        selected_items = self.all_groups_listWidget.selectedItems()        
+        for item in selected_items:
+            self.all_groups_listWidget.takeItem(self.all_groups_listWidget.row(item))
+            self.selected_groups_listWidget.addItem(item)            
+        self.selected_groups_listWidget.sortItems()      
+        
+    def delGroup(self):
+        selected_items = self.selected_groups_listWidget.selectedItems()        
+        for item in selected_items:
+            self.selected_groups_listWidget.takeItem(self.selected_groups_listWidget.row(item))
+            self.all_groups_listWidget.addItem(item)
+        self.all_groups_listWidget.sortItems()
+        
+    def chbToggled(self, toggled, btn_id):
+        if toggled:
+            for counter, btn in izip(count(), self.chkButtons):
+                if btn.isChecked() and (btn_id != counter):
+                    btn.setChecked(False)
+                    
     def accept(self):
+        #check the buttons!
         self.users   = []
         self.classes = []
         self.servers = []
         self.ports   = []
+        self.groups  = []
+        self.opts    = {}
+        
+        buttons ={'speed' :{self.dgb_traffic_radioButton:False, self.dgb_speed_radioButton:True}, \
+                  'by_col':{self.ggb_accounts_checkBox:'users', self.ggb_groups_checkBox:'groups', self.ggb_nas_checkBox:'servers', self.ggb_classes_checkBox:'classes'}, \
+                  'gtype' :{self.gbt_input_radioButton:1, self.tgb_output_radioButton:2, self.tgb_sum_radioButton:3, self.tgb_max_radioButton:4}}
+        
+        for ckey, vdct in buttons.iteritems():
+            for bkey, bval in vdct.iteritems():
+                if bkey.isChecked():
+                    self.opts[ckey] = bval
+                    break
+
         for x in xrange(0, self.selected_users_listWidget.count()):
             self.users.append(self.selected_users_listWidget.item(x).id)
             
@@ -2096,6 +2184,9 @@ class ReportOptionsDialog(QtGui.QDialog):
             
         for x in xrange(0, self.selected_servers_listWidget.count()):
             self.servers.append(self.selected_servers_listWidget.item(x).id)
+            
+        for x in xrange(0, self.selected_groups_listWidget.count()):
+            self.groups.append(self.selected_groups_listWidget.item(x).id)
             
         for x in xrange(0, self.ports_listWidget.count()):
             if self.ports_listWidget.item(x).checkState() == 2:
@@ -2114,17 +2205,18 @@ class ReportOptionsDialog(QtGui.QDialog):
                     print ex
             for eport in extra_ports:
                 if eport not in self.ports: self.ports.append(eport)
+                
             
                     
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            settings.setValue("chrep_date_start", QtCore.QVariant(self.date_start_dateTimeEdit.dateTime()))
-            settings.setValue("chrep_date_end", QtCore.QVariant(self.date_end_dateTimeEdit.dateTime()))
+            settings.setValue("chrep_date_start", QtCore.QVariant(self.from_dateTimeEdit.dateTime()))
+            settings.setValue("chrep_date_end", QtCore.QVariant(self.to_dateTimeEdit.dateTime()))
         except Exception, ex:
             print "Chart reports settings save error: ", ex
             
-        self.start_date = self.date_start_dateTimeEdit.dateTime().toPyDateTime()
-        self.end_date   = self.date_end_dateTimeEdit.dateTime().toPyDateTime()
+        self.start_date = self.from_dateTimeEdit.dateTime().toPyDateTime()
+        self.end_date   = self.to_dateTimeEdit.dateTime().toPyDateTime()
 
         QtGui.QDialog.accept(self)
         

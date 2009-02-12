@@ -38,10 +38,6 @@ class Picker(object):
 
     def add_summ(self, account, tarif, summ):
         self.data[(account, tarif)] += summ
-        '''if self.data.has_key((account, tarif)):
-            self.data[account]['summ']+=summ
-        else:
-            self.data[account]={'tarif':tarif, 'summ':summ}'''
 
     def get_list(self):
         while len(self.data) > 0:
@@ -125,6 +121,7 @@ class groupDequeThread(Thread):
                 if writeProf:
                     a = time.clock()
                 groupLock.acquire()
+                gqueue = 1
                 #check whether double aggregation time passed - updates are rather costly
                 if groupDeque[0][1] + groupAggrTime*2 < time.time():
                     gkey = groupDeque.popleft()[0]
@@ -133,6 +130,7 @@ class groupDequeThread(Thread):
                     groupLock.release()
                     time.sleep(30)
                     continue
+                gqueue = 0
                 #get data
                 groupData = groupAggrDict.pop(gkey)
                 groupInfo = groupData[1]
@@ -165,10 +163,8 @@ class groupDequeThread(Thread):
                 elif groupInfo[2] == 1:
                     #get class octets, calculate sum with direction method
                     for class_, gdict in groupData[0].iteritems():
-                        #classes.append(class_)
                         octs = gop(gdict)
                         octets += octs
-
                     cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s, %s, %s, %s);""" , (groupInfo[0], account_id, octets, gdate, classes, octlist, max_class))
                     connection.commit()
                 else:
@@ -182,8 +178,9 @@ class groupDequeThread(Thread):
                         logger.info("NFGroupdeque thread name: %s run time(10): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
             except IndexError, ierr:
-                groupLock.release()
-                time.sleep(30)
+                if gqueue:
+                    groupLock.release()
+                    time.sleep(30)
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
                 continue
             except KeyError, kerr:
@@ -335,8 +332,6 @@ class NetFlowRoutine(Thread):
         return cost
 
 
-
-
     
     def run(self):
         connection = persist.connection()
@@ -355,8 +350,6 @@ class NetFlowRoutine(Thread):
         global gPicker, pickerLock, pickerTime
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
-        #sumPick = Picker()
-        #pstartD = time.time()
         oldAcct = defaultdict(list)
         cur = connection.cursor()
         icount = 0
@@ -404,11 +397,11 @@ class NetFlowRoutine(Thread):
                     
                 #if deadlocks arise add locks
                 #pop flows
-                try:
-                    flows = loads(nfIncomingQueue.popleft())
-                except IndexError, ierr:
-                    time.sleep(2)
-                    continue
+                fqueue = 1
+                fpacket = nfIncomingQueue.popleft()
+                flows = loads(fpacket)
+                fqueue = 0
+
                 #print flows
                 #iterate through them
                 for flow in flows:
@@ -443,8 +436,7 @@ class NetFlowRoutine(Thread):
                     tarif_id = acct[4]
                     #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
                     if (tarif_id == None) or (not (acct[11] or store_na_tarif)) or (not (acct[13] or store_na_account)):
-                        continue
-                    
+                        continue                    
                     
                     octets = flow[6]
                     flow_classes, flow_dir = flow[22:24]                    
@@ -477,8 +469,7 @@ class NetFlowRoutine(Thread):
                 
                             except Exception, ex:
                                 logger.info('%s groupstat exception: %s', (self.getName(), repr(ex)))
-                                traceback.print_exc(file=sys.stderr)
-                    
+                                traceback.print_exc(file=sys.stderr)                    
                                 
                     #global statistics calculation
                     stime = ftime - (ftime % statAggrTime)
@@ -510,14 +501,12 @@ class NetFlowRoutine(Thread):
                     #write statistics without billing it
                     if not (tarif_mode and acct[11] and acct[13]):
                         #cur = connection.cursor()
-                        cur.execute("""
-                                    INSERT INTO billservice_netflowstream(
+                        cur.execute("""INSERT INTO billservice_netflowstream(
                                     nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                     dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                     VALUES (%s, %s, %s, %s, %s, %s, %s,
                                     %s, %s, %s, %s, %s, %s, %s);
-                                    """, (nas_id, account_id, tarif_id, flow[23], stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,)
-                                    )
+                                    """, (nas_id, account_id, tarif_id, flow[23], stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,))
                         connection.commit()
                         #cur.close()
                         continue
@@ -557,16 +546,19 @@ class NetFlowRoutine(Thread):
                             """
                             #direction
                             
-                            if flow_dir=="INPUT":
+                            '''if flow_dir=="INPUT":
                                 d = 2
                             elif flow_dir=="OUTPUT":
                                 d = 3
                             else:
+                                d = 3'''
+                            if flow_dir=="INPUT":
+                                d = 2
+                            else:
                                 d = 3
                             #get a record from prepays cache
                             #keys: traffic_transmit_service_id, accounttarif.id, trafficclass
-                            prepInf =  c_prepaysCache.get((tts_id, acct[12],tclass))
-                            
+                            prepInf =  c_prepaysCache.get((tts_id, acct[12],tclass))                            
                             
                             if prepInf:
                                 #d = 5: checks whether in_direction is True; d = 6: whether out_direction
@@ -581,11 +573,9 @@ class NetFlowRoutine(Thread):
                                         elif octets>=prepaid:
                                             octets=octets-prepaid
                                             prepaid=abs(prepaid-octets)
-        
-                                        #cur = connection.cursor()
+                                            
                                         cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
                                         connection.commit()
-
             
                             summ=(trafic_cost*octets)/(1024000)
         
@@ -594,20 +584,14 @@ class NetFlowRoutine(Thread):
                                 pickerLock.acquire()
                                 gPicker.add_summ(flow[20], acct[4], summ)
                                 pickerLock.release()
-                                    
-                                #insert statistics
-                    #cur = connection.cursor()
-                    cur.execute(
-                                """
-                                INSERT INTO billservice_netflowstream(
+
+                    cur.execute("""INSERT INTO billservice_netflowstream(
                                 nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                 dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                 VALUES (%s, %s, %s, %s, %s, %s, %s,
                                 %s, %s, %s, %s, %s, %s, %s);
-                                """, (nas_id, account_id, tarif_id, flow_dir, stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,)
-                                )
+                                """, (nas_id, account_id, tarif_id, flow_dir, stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,))
                     connection.commit()
-                    #cur.close()
                  
                 if writeProf:
                     icount += 1
@@ -615,11 +599,23 @@ class NetFlowRoutine(Thread):
                     if icount == 100:                        
                         logger.info("NFRoutine thread name: %s run time: %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
+                        
+            except IndexError, ierr:
+                if fqueue: time.sleep(3)                
+                continue               
+            except psycopg2.OperationalError, p2oerr:
+                time.sleep(1)
+                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
+            except psycopg2.ProgrammingError, p2perr:
+                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
+            except psycopg2.InterfaceError, p2ierr:
+                time.sleep(1)
+                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
+                try: cur = connection.cursor()
+                except: pass
             except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), str(ex)))
-                else:
-                    logger.error("%s : exception: %s", (self.getName(), str(ex)))
+                time.sleep(1)
+                logger.error("%s : exception: %s", (self.getName(), repr(ex)))
                     
 
 #periodical function memoize class
@@ -857,7 +853,7 @@ class NfAsyncUDPServer(asyncore.dispatcher):
 def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
 
-def SIGUSR1_handler(signum, frame):
+def SIGTERM_handler(signum, frame):
     graceful_save()
 
 def graceful_save():
@@ -938,8 +934,8 @@ def main():
         
     time.sleep(30)
     try:
-        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
-    except: logger.lprint('NO SIGUSR1 - windows!')
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
     #asyncore.
     NfAsyncUDPServer(coreAddr)            
     while 1: 

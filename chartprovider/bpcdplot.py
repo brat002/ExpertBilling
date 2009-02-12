@@ -1,9 +1,10 @@
 #-*-coding=utf-8-*-
 import pychartdir
 from pychartdir import *
-from bpbl import bpbl, selstrdict
+from bpbl import dataProvider
 import sys, copy
 from collections import defaultdict
+from itertools import izip
 
 portdict = {\
     '1'    : 'tcpmux', '5': 'rje', '7': 'echo', '9': 'discard', '11': 'systat', '13': 'daytime', '15': 'netstat', '17': 'qotd', '18': 'send/rwp', '19': 'chargen', '20': 'ftp-data', '21': 'ftp', '22': 'ssh, pcAnywhere',\
@@ -13,7 +14,7 @@ portdict = {\
     '123'  : 'NTP', '124': 'SecureID', '129': 'PWDGEN', '133': 'statsrv', '135': 'loc-srv/epmap', '137': 'netbios-ns', '138': 'netbios-dgm (UDP)', '139': 'NetBIOS', '143': 'IMAP', '144': 'NewS', '152': 'BFTP', '153': 'SGMP', \
     '161'  : 'SNMP', '175': 'vmnet', '177': 'XDMCP', '178': 'NextStep', '179': 'BGP', '180': 'SLmail', '199': 'smux', '210': 'Z39.50', '218': 'MPP', '220': 'IMAP3', '259': 'ESRO', '264': 'FW1_topo', '311': 'Apple WA', \
     '350'  : 'MATIP type A', '351': 'MATIP type B', '363': 'RSVP tunnel', '366': 'ODMR)', '387': 'AURP', '389': 'LDAP', '407': 'Timbuktu', '412': 'DCC', '434': 'Mobile IP', '443': 'ssl/HTTPS', '444': 'snpp', '445': 'SMB', '458': 'QuickTime TV/C', \
-    '468'  : 'Photuris', '500': 'ISAKMP, pluto', '512': 'biff, rexec', '513': 'who, rlogin', '514': 'syslog, rsh', '515': 'lp, lpr, line printer', '517': 'talk', '520': 'RIP', '521': 'RIPng', '522': 'ULS', '530': 'RPC', '531': 'IRC', '540': 'UUCP',\
+    '468'  : 'Photuris', '500': 'ISAKMP, pluto', '512': 'biff, rexec', '513': 'who, rlogin', '514': 'syslog, rsh', '515': 'lp, lpr, line er', '517': 'talk', '520': 'RIP', '521': 'RIPng', '522': 'ULS', '530': 'RPC', '531': 'IRC', '540': 'UUCP',\
     '543'  : 'KLogin, ASoIP', '545': 'QuickTime', '546': 'DHCPv6 cli', '547': 'DHCPv6 ser', '548': 'AFP', '554': 'RTSP', '555': 'phAse Zero', '563': 'NNTP over SSL', '575': 'VEMMI', '581': 'BDP', '593': 'MS-RPC', '608': 'SIFT/UFT', '626': 'Apple ASIA', '631': 'IPP', \
     '635'  : 'mountd', '636': 'sldap', '642': 'EMSD', '648': 'RRP ', '655': 'tinc', '660': 'Apple MacOS SA', '666': 'Doom', '674': 'ACAP', '687': 'AS IPReg', '700': 'buddyphone', '705': 'AgentX for SNMP', '901': 'swat, realsecure', \
     '993'  : 's-imap', '995': 's-pop', '1062': 'Veracity', '1080': 'SOCKS', '1085': 'WebObjects', '1227': 'DNS2Go', '1243': 'SubSeven', '1338': 'Millennium Worm', '1352': 'Lotus Notes', '1381': 'ANLM', '1417': 'Timbuktu', '1418': 'Timbuktu', '1419': 'Timbuktu', \
@@ -55,6 +56,16 @@ class cdDrawer(object):
                                          'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
                                          'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
+        "nfs_total":\
+                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
+                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
+                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'yaxissettitlespeed':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18),\
+                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
+                                         'autoticks': False, \
+                                         'antialias': False, \
+                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
         "nfs_total_users_traf":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationMono-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationMono-Regular.ttf", 18), \
@@ -194,36 +205,32 @@ class cdDrawer(object):
                                 }
 
 
-
     def __init__(self):
         pychartdir.setLicenseCode("ME7YWN3DBFQU2C7MB3971677")
         #self.defoptdict = copy.deepcopy(self.cdchartoptdict)
     def cddraw(self, *args, **kwargs):
         '''Plotting methods' handler
 	@args[0] - method identifier'''
-        methodName = self.translate_args(*args, **kwargs)
-        print args
-        print methodName
-        print kwargs
-        method = getattr(self, "cddraw_" + methodName, None)
-        print "postmet"
+        
+        #methodName = self.translate_args(*args, **kwargs)
+        #method = getattr(self, "cddraw_" + methodName, None)
+        type = args[0]
+        method = self.dispatchdict.get(type, None)
         if callable(method):
-            self.set_options(methodName, kwargs['options'])
+            #self.set_options(methodName, kwargs['options'])
+            
             args = args[1:]
+            data = dataProvider.get_data(type, *args, **kwargs)            
             try:
-                res =  method(*args, **kwargs)
+                res =  method(self, type, data, *args, **kwargs)
             except Exception, ex:
-                print "Exception %s in method %s" % (str(ex), methodName)
+                print "cddraw Exception %s in method %s \n %s \n %s" % (repr(ex), type, args, kwargs)
             res.append(kwargs['return'])
             return res
         else:
             raise Exception("Plotting method #" + args[0] + "# does not exist!" )
         
-    def ret_nas_str(self, kwargs):
-        return (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' '))
-    def ret_nasclass_str(self, kwargs):
-        return (((kwargs.has_key('classes')) and (" AND (traffic_class_id && ARRAY[%s])" % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))
-        
+
     def cddraw_nfs_user_traf(self, *args, **kwargs):
         try:
 
@@ -231,12 +238,10 @@ class cdDrawer(object):
             selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % kwargs['users'][0], args[0].isoformat(' '), args[1].isoformat(' '), \
                                           self.ret_nas_str(kwargs) + \
                                           self.ret_nasclass_str(kwargs))
-            print selstr
         except Exception, ex:
             raise ex
         data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	
         if not data:
-            print "Dataset is empty"
             data = ([], [], [], [], '', 1)
         (times, y_in, y_out, y_tr, bstr, sec) = data 
         kwargs['return']['sec'] = sec
@@ -245,59 +250,11 @@ class cdDrawer(object):
 
         retlist = []
         c = XYChart(*optdict['xychart'])
-        try:
-            if not optdict['antialias']:
-                c.setAntiAlias(0)
-            c.setPlotArea(*optdict['setplotarea'])
-            c.setColors(optdict['setcolors'])
-            c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-    
-            if not optdict['autoticks']:
-                xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-                yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-                c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-                c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-    
-            # Add a title to the chart 
-            c.addTitle(*optdict['addtitle'])        
-            # Add a title to the y axis 
-            c.yAxis().setTitle(*optdict['yaxissettitle'])        
-            # Set the y axis line width 
-            c.yAxis().setWidth(optdict['yaxissetwidth'])        
-            # Add a title to the x axis 
-            c.xAxis().setTitle(*optdict['xaxissettitle'])        
-            # Set the x axis line width
-            c.xAxis().setWidth(optdict['xaxissetwidth'])
-    
-            c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-            c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-            c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-            if optdict['xaxissetlabelformat']:
-                self.update_tick_dates(c, optdict)
-            # Add in line layer 
-            layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
-            layer_in.setXData(times)        
-            # Set the line width 
-            layer_in.setLineWidth(optdict['setlinewidth_in'])        
-    
-            # Add out line layer
-            layer_out = c.addAreaLayer(y_out, *optdict['addlinelayer_out'])
-            layer_out.setXData(times)     
-            layer_out.setLineWidth(optdict['setlinewidth_out'])
-            layer_out.setBorderColor(optdict['addlinelayer_out'][0])
-            
-        except Exception, ex:
-            print repr(ex)
-        '''# Add tr line layer
-	layer_tr = c.addLineLayer(y_tr, *optdict['addlinelayer_tr'])
-        layer_tr.setXData(times)        
-        # Set the line width
-        layer_tr.setLineWidth(optdict['setlinewidth_tr'])'''
+        format_chart_nfs_ut(c, optdict, bstr) 
+        format_chart_add_ll(c, optdict,times, y_in, y_out)
 
-        # output the chart
-        try:
-            retlist.append(c.makeChart2(0))
-        except: pass
+        # output the chart        
+        retlist.append(c.makeChart2(0))
         return retlist
 
     def cddraw_nfs_user_speed(self, *args, **kwargs):
@@ -315,50 +272,9 @@ class cdDrawer(object):
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_user_speed']
         retlist = []
-        c = XYChart(*optdict['xychart']) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-        # Add out line layer
-        layer_out = c.addAreaLayer(y_out, *optdict['addlinelayer_out'])
-        layer_out.setXData(times)     
-        layer_out.setLineWidth(optdict['setlinewidth_out'])
-        layer_out.setBorderColor(optdict['addlinelayer_out'][0])
-
-        '''# Add tr line layer
-	layer_tr = c.addLineLayer(y_tr, *optdict['addlinelayer_tr'])
-        layer_tr.setXData(times)        
-        # Set the line width
-        layer_tr.setLineWidth(optdict['setlinewidth_tr'])'''
+        c = XYChart(*optdict['xychart'])        
+        format_chart_nfs_ut(c, optdict, bstr)
+        format_chart_add_ll(c, optdict,times, y_in, y_out)
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
@@ -378,43 +294,10 @@ class cdDrawer(object):
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_traf_bydir']
         retlist = []
-        c = XYChart(*optdict['xychart']) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 10)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-        # Add out line layer
-        layer_out = c.addLineLayer(y_out, *optdict['addlinelayer_out'])
-        layer_out.setXData(times)     
-        layer_out.setLineWidth(optdict['setlinewidth_out'])
+        c = XYChart(*optdict['xychart'])
+        
+        format_chart_nfs_ut(c, optdict, bstr)   
+        format_chart_add_ll(c, optdict,times, y_in, y_out)
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
@@ -436,53 +319,49 @@ class cdDrawer(object):
         optdict = self.cdchartoptdict['nfs_total_speed_bydir']
         retlist = []
         c = XYChart(*optdict['xychart'])
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
+        
+        format_chart_nfs_ut(c, optdict, bstr)   
+        format_chart_add_ll(c, optdict,times, y_in, y_out)
 
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 10)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 10)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-        # Add out line layer
-        layer_out = c.addLineLayer(y_out, *optdict['addlinelayer_out'])
-        layer_out.setXData(times)     
-        layer_out.setLineWidth(optdict['setlinewidth_out'])
-
-        '''# Add tr line layer
-	layer_tr = c.addLineLayer(y_tr, *optdict['addlinelayer_tr'])
-        layer_tr.setXData(times)        
-        # Set the line width
-        layer_tr.setLineWidth(optdict['setlinewidth_tr'])'''
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
 
 
+    
+    def cddraw_nfs_total(self, type, data, *args, **kwargs):
+        if not data: print "Dataset is empty"; data = ([], [], '', 1)
+        (times, y_total_u, bstr, sec) = data
+        kwargs['return']['sec'] = sec
+        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
+        optdict = self.cdchartoptdict['nfs_total']
+        if (kwargs.has_key('by_col')) and (kwargs['by_col']):
+            col_data = dataProvider.get_data(kwargs['by_col']+'name', *args, **kwargs)
+        else:
+            col_data = [('Total', 0)]            
+        if not col_data: print "Dataset is empty"; return []
+            
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(col_data) >= 1:
+            addHeight = self.get_legend_length(len(data), 6, 25)
+            xyc[1] = xyc[1] + addHeight
+            spa[1] = spa[1] + addHeight
+        retlist = []
+        c = XYChart(*xyc)        
+        self.format_chart_nfs_ut(c, optdict, bstr, spa=spa, kwargs=kwargs)
+        # Add in line layer 
+        for dtuple in col_data:
+            try:
+                layer = c.addLineLayer(y_total_u[str(dtuple[1])], -1, dtuple[0].encode('utf-8'))
+                layer.setXData(times)        	
+                layer.setLineWidth(optdict['setlinewidth_total'])
+            except Exception, ex:
+                print repr(ex) 
+
+        # output the chart
+        retlist.append(c.makeChart2(0))	
+        return retlist
     def cddraw_nfs_total_users_traf(self, *args, **kwargs):
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
@@ -491,7 +370,7 @@ class cdDrawer(object):
                                           self.ret_nasclass_str(kwargs))
         except Exception, ex:
             print "Query exception!"
-            print ex
+            print repr(ex)
             raise ex
         data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
         if not data: print "Dataset is empty"; data = ([], [], '', 1)
@@ -499,66 +378,33 @@ class cdDrawer(object):
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_users_traf']
-        print "postoptdict"
         try:
             #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
             selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['users']]))
         except Exception, ex:
             raise ex
         data = bpbl.get_usernames(selstr)
-        print "postdata"
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
-        print "data", len(data)
         if len(data) >= 1:
             addHeight = self.get_legend_length(len(data), 6, 25)
             xyc[1] = xyc[1] + addHeight
             spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*xyc) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*spa)
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
+        c = XYChart(*xyc)
+        
+        format_chart_nfs_ut(c, optdict, bstr, spa)   
 
         if not data: print "Dataset is empty"; return []
-
-        #for key in y_total_u.iterkeys():
-            #layer = c.addLineLayer(y_total_u[key], -1, key)
-            #layer.setXData(times)        
-            ## Set the line width	
-            #layer.setLineWidth(optdict['setlinewidth_total'])
+        
         # Add in line layer 
         for tuple in data:
             try:
                 layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        
-                # Set the line width	
+                layer.setXData(times)        	
                 layer.setLineWidth(optdict['setlinewidth_total'])
             except Exception, ex:
-                print ex 
+                print repr(ex) 
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -594,49 +440,18 @@ class cdDrawer(object):
             spa[1] = spa[1] + addHeight
         retlist = []
         c = XYChart(*xyc) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*spa)
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
+        format_chart_nfs_ut(c, optdict, bstr, spa)   
 
         if not data: print "Dataset is empty"; return []
 
-        #for key in y_total_u.iterkeys():
-            #layer = c.addLineLayer(y_total_u[key], -1, key)
-            #layer.setXData(times)        
-            ## Set the line width	
-            #layer.setLineWidth(optdict['setlinewidth_total'])
         # Add in line layer 
         for tuple in data:
             try:
                 layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
                 layer.setXData(times)        
-                # Set the line width	
                 layer.setLineWidth(optdict['setlinewidth_total'])
             except Exception, ex:
-                print ex    
+                print repr(ex)    
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -658,38 +473,10 @@ class cdDrawer(object):
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_traf']
         retlist = []
-        c = XYChart(*optdict['xychart']) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_total, *optdict['addlinelayer_total'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_total'])        
+        c = XYChart(*optdict['xychart'])
+        
+        format_chart_nfs_ut(c, optdict, bstr)   
+        format_chart_add_ll(c, optdict, times, y_total)        
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -710,132 +497,15 @@ class cdDrawer(object):
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
         optdict = self.cdchartoptdict['nfs_total_speed']
         retlist = []
-        c = XYChart(*optdict['xychart']) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_total, *optdict['addlinelayer_total'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_total'])        
+        c = XYChart(*optdict['xychart'])
+        
+        format_chart_nfs_ut(c, optdict, bstr) 
+        format_chart_add_ll(c, optdict,times, y_total)        
 
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
 
-
-    """def cddraw_nfs_port_speed(self, *args, **kwargs):
-        try:
-            pts = ', '.join(str(pint) for pint in kwargs['ports'])
-            selstr = selstrdict['nfs_port_speed'] % (pts, pts, args[0].isoformat(' '), args[1].isoformat(' '))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_port_speed(selstr, kwargs['ports'], kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], {'0':[{'input': [], 'output': [], 'transit': []}]}, '', 1)
-        (times, y_ps, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_port_speed']
-        retlist = []
-
-        for ykey in y_ps.iterkeys():
-            c = XYChart(*optdict['xychart']) 
-            if not optdict['antialias']:
-                c.setAntiAlias(0)
-            c.setPlotArea(*optdict['setplotarea'])
-            c.setColors(optdict['setcolors'])
-            c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-            if not optdict['autoticks']:
-                xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-                yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-                c.xAxis().setTickDensity(yplen / 5, yplen / 10)
-                c.yAxis().setTickDensity(yplen / 5, yplen / 10)
-            # Add a title to the chart 
-            #titlelist = optdict['addtitle']
-            titlestr  =  optdict['addtitle'][0] % ((portdict.has_key(ykey) and (ykey + ' (' + portdict[ykey] + ')')) or ykey)
-            c.addTitle(titlestr, *optdict['addtitle'][1:])        
-            # Add a title to the y axis 
-            c.yAxis().setTitle(*optdict['yaxissettitle'])        
-            # Set the y axis line width 
-            c.yAxis().setWidth(optdict['yaxissetwidth'])        
-            # Add a title to the x axis 
-            c.xAxis().setTitle(*optdict['xaxissettitle'])        
-            # Set the x axis line width
-            c.xAxis().setWidth(optdict['xaxissetwidth'])
-            #-----------------
-            c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-            c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-            #-----------------
-            c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr[ykey])
-            #-----------------
-            if optdict['xaxissetlabelformat']:
-                self.update_tick_dates(c, optdict)
-            #------------------
-            # Add in line layer 
-            '''layer_ins = c.addLineLayer(y_ps[ykey]['input'], *optdict['addlinelayer_ins'])
-	    layer_ins.setXData(times)        
-	    # Set the line width 
-	    layer_ins.setLineWidth(optdict['setlinewidth_ins'])  
-	    # Add out line layer
-	    layer_outs = c.addLineLayer(y_ps[ykey][0]['output'], *optdict['addlinelayer_outs'])
-	    layer_outs.setXData(times)     
-	    layer_outs.setLineWidth(optdict['setlinewidth_outs'])	    
-	    # Add in line layer 
-	    layer_ind = c.addLineLayer(y_ps[ykey][1]['input'], *optdict['addlinelayer_ind'])
-	    layer_ind.setXData(times)        
-	    # Set the line width 
-	    layer_ind.setLineWidth(optdict['setlinewidth_ind'])	    
-	    # Add out line layer
-	    layer_outd = c.addLineLayer(y_ps[ykey][1]['output'], *optdict['addlinelayer_outd'])
-	    layer_outd.setXData(times)     
-	    layer_outd.setLineWidth(optdict['setlinewidth_outd'])'''
-
-            # Add in line layer 
-            layer_in = c.addLineLayer(y_ps[ykey][0]['input'], *optdict['addlinelayer_in'])
-            layer_in.setXData(times)        
-            # Set the line width 
-            layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-            # Add out line layer
-            layer_out = c.addAreaLayer(y_ps[ykey][0]['output'], *optdict['addlinelayer_out'])
-            layer_out.setXData(times)     
-            layer_out.setLineWidth(optdict['setlinewidth_out'])
-            layer_out.setBorderColor(optdict['addlinelayer_out'][0])
-
-            # Add tr line layer
-            '''layer_tr = c.addLineLayer(y_ps[ykey][0]['output'], *optdict['addlinelayer_tr'])
-	    layer_tr.setXData(times)        
-	    # Set the line width
-	    layer_tr.setLineWidth(optdict['setlinewidth_tr'])'''
-            #-----------------
-            retlist.append(c.makeChart2(0))
-
-        return retlist"""
     
     def cddraw_nfs_port_speed(self, *args, **kwargs):
         try:
@@ -853,45 +523,10 @@ class cdDrawer(object):
 
         for ykey in y_ps.iterkeys():
             try:
-                c = XYChart(*optdict['xychart']) 
-                if not optdict['antialias']:
-                    c.setAntiAlias(0)
-                c.setPlotArea(*optdict['setplotarea'])
-                c.setColors(optdict['setcolors'])
-                c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-    
-                if not optdict['autoticks']:
-                    xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-                    yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-                    c.xAxis().setTickDensity(yplen / 5, yplen / 10)
-                    c.yAxis().setTickDensity(yplen / 5, yplen / 10)
-                # Add a title to the chart 
-    
+                c = XYChart(*optdict['xychart'])
                 titlestr  =  optdict['addtitle'][0] % ((portdict.has_key(ykey) and (ykey + ' (' + portdict[ykey] + ')')) or ykey)
-                c.addTitle(titlestr, *optdict['addtitle'][1:])        
-                c.yAxis().setTitle(*optdict['yaxissettitle'])        
-                c.yAxis().setWidth(optdict['yaxissetwidth'])        
-                c.xAxis().setTitle(*optdict['xaxissettitle'])        
-                c.xAxis().setWidth(optdict['xaxissetwidth'])
-                #-----------------
-                c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-                c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-                #-----------------
-                c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr[ykey])
-                #-----------------
-                if optdict['xaxissetlabelformat']:
-                    self.update_tick_dates(c, optdict)
-    
-                # Add in line layer 
-                layer_in = c.addLineLayer(y_ps[ykey][0]['input'], *optdict['addlinelayer_in'])
-                layer_in.setXData(times)        
-                # Set the line width 
-                layer_in.setLineWidth(optdict['setlinewidth_in'])        
-    
-                layer_out = c.addAreaLayer(y_ps[ykey][0]['output'], *optdict['addlinelayer_out'])
-                layer_out.setXData(times)     
-                layer_out.setLineWidth(optdict['setlinewidth_out'])
-                layer_out.setBorderColor(optdict['addlinelayer_out'][0])
+                format_chart_nfs_ut(c, optdict, bstr[ykey], ptitle=titlestr)                
+                format_chart_add_ll(c, optdict,times, y_ps[ykey][0]['input'], y_ps[ykey][0]['output'])
             except Exception, ex:
                 print "nfs_port_speed makechart exception: ", repr(ex)
             retlist.append(c.makeChart2(0))
@@ -923,48 +558,11 @@ class cdDrawer(object):
             cldict = dict(clnames)
         #global vlint
         for ykey in y_ps.iterkeys():
-            print "ykey", repr(ykey)
             c = XYChart(*optdict['xychart']) 
-            if not optdict['antialias']:
-                c.setAntiAlias(0)
-            c.setPlotArea(*optdict['setplotarea'])
-            c.setColors(optdict['setcolors'])
-            c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
 
-            if not optdict['autoticks']:
-                xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-                yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-                c.xAxis().setTickDensity(yplen / 5, yplen / 10)
-                c.yAxis().setTickDensity(yplen / 5, yplen / 10)
-            # Add a title to the chart 
-            #iykey = int(ykey)
             titlestr  =  optdict['addtitle'][0] % (cldict[int(ykey)].encode('utf-8'))
-            print "postoptd"
-            c.addTitle(titlestr, *optdict['addtitle'][1:])        
-            c.yAxis().setTitle(*optdict['yaxissettitle'])        
-            c.yAxis().setWidth(optdict['yaxissetwidth'])        
-            c.xAxis().setTitle(*optdict['xaxissettitle'])        
-            c.xAxis().setWidth(optdict['xaxissetwidth'])
-            #-----------------
-            c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-            c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-            #-----------------
-            c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr[ykey])
-            #-----------------
-            if optdict['xaxissetlabelformat']:
-                self.update_tick_dates(c, optdict)
-
-            # Add in line layer 
-            layer_in = c.addLineLayer(y_ps[ykey][0]['input'], *optdict['addlinelayer_in'])
-            layer_in.setXData(times)        
-            # Set the line width 
-            layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-            layer_out = c.addAreaLayer(y_ps[ykey][0]['output'], *optdict['addlinelayer_out'])
-            layer_out.setXData(times)     
-            layer_out.setLineWidth(optdict['setlinewidth_out'])
-            layer_out.setBorderColor(optdict['addlinelayer_out'][0])
-
+            format_chart_nfs_ut(c, optdict, bstr[ykey], ptitle=titlestr)
+            format_chart_add_ll(c, optdict,times, y_ps[ykey][0]['input'], y_ps[ykey][0]['output'])
             retlist.append(c.makeChart2(0))
 
         return retlist
@@ -991,51 +589,8 @@ class cdDrawer(object):
         retlist = []
         c = XYChart(*optdict['xychart'])
 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*optdict['setplotarea'])
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        #if optdict['outfill']:
-            # Add out line layer
-            #layer_out = c.addDataLayer(y_out, *optdict['addlinelayer_out'])
-            #layer_out.setXData(times)     
-            #layer_out.setLineWidth(optdict['setlinewidth_out'])
-
-        # Add in line layer 
-        layer_in = c.addLineLayer(y_in, *optdict['addlinelayer_in'])
-        layer_in.setXData(times)        
-        # Set the line width 
-        layer_in.setLineWidth(optdict['setlinewidth_in'])        
-
-        # Add out line layer
-        layer_out = c.addAreaLayer(y_out, *optdict['addlinelayer_out'])
-        layer_out.setXData(times)     
-        layer_out.setLineWidth(optdict['setlinewidth_out'])
-        layer_out.setBorderColor(optdict['addlinelayer_out'][0])
+        format_chart_nfs_ut(c, optdict, bstr) 
+        format_chart_add_ll(c, optdict,times, y_in, y_out)
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -1068,44 +623,18 @@ class cdDrawer(object):
             xyc[1] = xyc[1] + addHeight
             spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*xyc) 
-        if not optdict['antialias']:
-            c.setAntiAlias(0)
-        c.setPlotArea(*spa)
-        c.setColors(optdict['setcolors'])
-        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
-
-        if not optdict['autoticks']:
-            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
-            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
-            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
-            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
-        # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        # Add a title to the y axis 
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        # Set the y axis line width 
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        # Add a title to the x axis 
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        # Set the x axis line width
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
-        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
-        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        print "----------------------------"
+        c = XYChart(*xyc)
+        
+        format_chart_nfs_ut(c, optdict, bstr, spa=spa) 
         if not data: print "Dataset is empty"; return [] 
 
         for tuple in data:
             try:
                 layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        
-                # Set the line width	
+                layer.setXData(times)        	
                 layer.setLineWidth(optdict['setlinewidth_total'])
             except Exception, ex:
-                print ex     
+                print repr(ex)     
 
         # output the chart
         retlist.append(c.makeChart2(0))	
@@ -1120,7 +649,6 @@ class cdDrawer(object):
         except Exception, ex:
             raise ex
         data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        print "----------------------------"
         if not data: print "Dataset is empty"; data = ([], [], '', 1)
         (times, y_total_n, bstr, sec) = data
         kwargs['return']['sec'] = sec
@@ -1139,7 +667,181 @@ class cdDrawer(object):
             xyc[1] = xyc[1] + addHeight
             spa[1] = spa[1] + addHeight
         retlist = []
-        c = XYChart(*optdict['xychart']) 
+        #c = XYChart(*optdict['xychart'])
+        c = XYChart(*xyc)
+        format_chart_nfs_ut(c, optdict, bstr, spa=spa) 
+        if not data: print "Dataset is empty"; return [] 
+
+        for tuple in data:
+            try:
+                layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
+                layer.setXData(times)        
+                layer.setLineWidth(optdict['setlinewidth_total'])
+            except Exception, ex:
+                print repr(ex)     
+
+        # output the chart
+        retlist.append(c.makeChart2(0))	
+        return retlist
+
+    def cddraw_pie(self, type, data, *args, **kwargs):
+        '''Plots pie chart of traffic values on
+	@axes - axes,
+	@args[0:2] - with values bounded by dates @date_start, @date_end for users @(users)
+	###@args[3:4] return data values###'''
+
+        if not data: print "Dataset is empty"; data = ([], [], '', 1)
+        (times, y_total_u, bstr, sec) = data
+        optdict = self.cdchartoptdict['userstrafpie']
+        retlist = []
+        if (kwargs.has_key('by_col')) and (kwargs['by_col']):
+            col_data = dataProvider.get_data(kwargs['by_col']+'name', *args, **kwargs)
+        else:
+            col_data = [('Total', 0)]            
+        if not col_data: print "Dataset is empty"; return []
+        c = PieChart(*optdict['piechart'])
+        # Set the center of the pie  and the radius
+        c.setPieSize(*optdict['setpiesize'])
+        c.setLabelStyle(*optdict['setlabelstyle'])
+        c.setLabelLayout(SideLayout)
+        # Add a title to the pie chart
+        c.addTitle(*optdict['addtitle'])	
+        # Draw the pie in 3D
+        c.set3D()	
+        # Set the pie data and the pie labels
+        x = []; labels = []
+        for dtuple in col_data:
+            try:
+                x.append(y_total_u[str(dtuple[1])][0])
+                labels.append(dtuple[0].encode('utf-8'))
+            except Exception, ex:
+                pass
+        c.setData(x, labels)	
+        img = c.makeChart2(0)
+        formstr = "%.2f " + bstr
+        x = [formstr % numx for numx in x]
+        lpairs = izip(labels, x)
+        labels = [lbl.lower() for lbl in labels]
+        labels.sort()
+        kwargs['return']['data'] = [lpr for lpr in lpairs for slbl in labels if slbl == lpr[0].lower()]
+        # output the chart
+        retlist.append(img)	
+        return retlist
+
+    def cddraw_sess(self, type, data, *args, **kwargs):	
+        '''Plots bar chart of sessions/time on
+	@axes - axes,
+	@args[0:2] - for user = @account_id, with values bounded by dates @date_start, @date_end'''
+        if not data: print "Dataset is empty"; data = ([], [], [], [], [])
+        (t_start, t_end, sessid, username, protocol) = data
+        kwargs['return']['data'] = [(username[i], sessid[i], t_start[i], t_end[i], protocol[i]) for i in range(len(sessid))]
+        try:
+            mins = min([date for date in t_start if date])
+            maxe = max([date for date in t_end if date])
+            for i in xrange(len(t_start)):
+                if not t_start[i]: t_start[i] = mins
+                if not t_end[i]: t_end[i] = maxe
+        except Exception, ex:
+            print "Session exception: ", ex
+        # if username.count(username[0]) == len(username)
+        ucount = defaultdict(int)
+        for usr in username:
+            ucount[usr] += 1
+        unames = [key.lower() for key in ucount.iterkeys()]
+        unames.sort()
+        unames = [key for uname in unames for key in ucount.iterkeys() if key.lower() == uname]
+        nindex = {}
+        for i in xrange(len(unames)):
+            nindex[unames[i]] = i
+        tIndexes = []
+        i = 0
+        for uuname in username:
+            tIndexes.append(nindex[uuname])
+        t_start = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_start]
+        t_end   = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_end]
+        #labels  = [username[i] + ' | ' + sessid[i] for i in range(len(sessid))]
+        labels = unames
+        startDate = chartTime(args[0].year, args[0].month, args[0].day, args[0].hour, args[0].minute, args[0].second)
+        endDate   = chartTime(args[1].year, args[1].month, args[1].day, args[1].hour, args[1].minute, args[1].second)
+
+
+        optdict = self.cdchartoptdict['sessions']
+        #if len(labels) > 12:
+        xyc = list(optdict['xychart'])
+        spa = list(optdict['setplotarea'])
+        if len(labels) >= 1:
+            xyc[1] = 60 + 14*len(labels)
+            spa[3] = xyc[1] - 60
+            
+        retlist = []
+        #c = XYChart(*optdict['xychart'])
+        c = XYChart(*xyc)
+
+        # Add a title to the chart using 15 points Times Bold Itatic font, with white
+        # (ffffff) text on a deep blue (000080) background
+        c.addTitle(*optdict['addtitle'])
+        c.setPlotArea(*spa)	
+        # swap the x and y axes to create a horziontal box-whisker chart
+        c.swapXY()	
+        #----
+        c.yAxis().addMark(startDate, c.dashLineColor(*optdict['dashlinecolor']))
+        c.yAxis().addMark(endDate, c.dashLineColor(*optdict['dashlinecolor']))
+        #----
+        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
+        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
+
+        # Set the y-axis to shown on the top (right + swapXY = top)
+        c.setYAxisOnRight()
+
+        # Set the labels on the x axis
+        labels = [label.encode('utf-8') for label in labels]
+        c.xAxis().setLabels(labels)
+
+        # Reverse the x-axis scale so that it points downwards.
+        c.xAxis().setReverse()	
+        # Set the horizontal ticks and grid lines to be between the bars
+        c.xAxis().setTickOffset(optdict['settickoffset'])	
+        # Add a box-whisker layer showing the box only.
+        layer = c.addBoxWhiskerLayer(t_start, t_end, *optdict['addboxwhiskersess'])
+        layer.setXData(tIndexes)
+        #layer.setDataWidth(int(spa[3]*0.4/len(labels)))
+        layer.setDataWidth(8)
+        #return data
+        if optdict['yaxissetlabelformat']:
+            c.yAxis().setFormatCondition("align", 31104000)	    
+            c.yAxis().setLabelFormat("{value|yy}")
+    
+            delim = "."
+            ddLoc = optdict['yaxissetlabelformat'].find("dd")	    
+            if ddLoc != -1:
+                delim = optdict['yaxissetlabelformat'][ddLoc + 2]
+    
+            c.yAxis().setFormatCondition("align", 2592000)
+            c.yAxis().setLabelFormat("{value|mm" + delim + "yy}")
+    
+            c.yAxis().setFormatCondition("align", 86400)
+            c.yAxis().setLabelFormat("{value|dd" + delim + "mm" + delim + "yy}")
+    
+            c.yAxis().setFormatCondition("else")
+            c.yAxis().setLabelFormat(optdict['yaxissetlabelformat'])
+        # output the chart
+        retlist.append(c.makeChart2(0))	
+        return retlist
+
+
+    def cddraw_trans(self, type, data, *args, **kwargs):
+        '''Plots bar chart of debit transactions/time on
+	@axes - axes,
+	@args[0:1] - for all users, with values bounded by dates @date_start, @date_end'''
+        if not data: print "Dataset is empty"; data = ([], [], '', 1)
+        (times, summ, bstr, sec) = data
+        kwargs['return']['sec'] = sec
+        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
+        optdict = self.cdchartoptdict['trans_deb']
+        retlist = []
+        c = XYChart(*optdict['xychart'])
+        # Add a title to the chart using 15 points Times Bold Itatic font, with white
+        # (ffffff) text on a deep blue (000080) background	
         if not optdict['antialias']:
             c.setAntiAlias(0)
         c.setPlotArea(*optdict['setplotarea'])
@@ -1152,32 +854,26 @@ class cdDrawer(object):
             c.xAxis().setTickDensity(yplen / 5, yplen / 25)
             c.yAxis().setTickDensity(yplen / 5, yplen / 25)
         # Add a title to the chart 
-        c.addTitle(*optdict['addtitle'])        
-        c.yAxis().setTitle(*optdict['yaxissettitle'])        
-        c.yAxis().setWidth(optdict['yaxissetwidth'])        
-        c.xAxis().setTitle(*optdict['xaxissettitle'])        
-        c.xAxis().setWidth(optdict['xaxissetwidth'])
+        c.addTitle(*optdict['addtitle']) 
+
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
-        if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
-        print "----------------------------"
-        if not data: print "Dataset is empty"; return [] 
 
-        for tuple in data:
-            try:
-                layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        
-                print "tuple###----------------------------------"
-                layer.setLineWidth(optdict['setlinewidth_total'])
-            except Exception, ex:
-                print ex     
 
+        #print times
+        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+optdict['currency'])	
+
+        c.addScatterLayer(times, summ, *optdict['addscatterlayer'])
+        layer_tr = c.addLineLayer(summ, *optdict['addlinelayer_trans'])
+        layer_tr.setXData(times)        
+        # Set the line width 
+        layer_tr.setLineWidth(optdict['setlinewidth_trans']) 
+        #c.xAxis().setTickOffset(optdict['settickoffset'])	
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
 
+    
     def cddraw_userstrafpie(self, *args, **kwargs):
         '''Plots pie chart of traffic values on
 	@axes - axes,
@@ -1206,11 +902,6 @@ class cdDrawer(object):
         # Set the pie data and the pie labels
         labels = [label.encode('utf-8') for label in labels]
         c.setData(x, labels)	
-        '''try:
-	    args[3] = x
-	    args[4] = labels
-	except:
-	    pass'''
         img = c.makeChart2(0)
         formstr = "%.2f " + bstr
         x = [formstr % numx for numx in x]
@@ -1221,8 +912,6 @@ class cdDrawer(object):
         labels.sort()
 
         kwargs['return']['data'] = [(lpr[0], lpr[1]) for slbl in labels for lpr in lpairs if slbl == lpr[0].lower()]
-        # Explode the 1st sector (index = 0)
-        #c.setExplode(0)
         # output the chart
         retlist.append(img)	
         return retlist
@@ -1262,11 +951,6 @@ class cdDrawer(object):
             nindex[unames[i]] = i
         tIndexes = []
         i = 0
-        ''' for uname in unames:
-            for j in range(ucount[uname]):
-                tIndexes.append(i)
-            i += 1
-        print tIndexes'''
         for uuname in username:
             tIndexes.append(nindex[uuname])
         t_start = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in t_start]
@@ -1284,7 +968,6 @@ class cdDrawer(object):
         if len(labels) >= 1:
             xyc[1] = 60 + 14*len(labels)
             spa[3] = xyc[1] - 60
-
             
         retlist = []
         #c = XYChart(*optdict['xychart'])
@@ -1376,19 +1059,11 @@ class cdDrawer(object):
 
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        # Set the plotarea and size of pixels. Use alternative
-        # white/grey background. Enable both horizontal and vertical grids by setting their
-        # colors to grey (c0c0c0). Set vertical major grid (represents month boundaries) 2
-        # pixels in width
-        print summ
+
+
         #print times
-        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+optdict['currency'])
-        #layer = c.addBarLayer(summ, *optdict['addbarlayer'])
-        #c.xAxis().setLabels2(times)
-        #layer.setXData(times)	
-        print "-----------------------------------------"
-        print len(summ)
-        print sec
+        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+optdict['currency'])	
+
         c.addScatterLayer(times, summ, *optdict['addscatterlayer'])
         layer_tr = c.addLineLayer(summ, *optdict['addlinelayer_trans'])
         layer_tr.setXData(times)        
@@ -1433,19 +1108,8 @@ class cdDrawer(object):
 
         c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
-        # Set the plotarea and size of pixels. Use alternative
-        # white/grey background. Enable both horizontal and vertical grids by setting their
-        # colors to grey (c0c0c0). Set vertical major grid (represents month boundaries) 2
-        # pixels in width
-        print summ
-        #print times
+
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+optdict['currency'])
-        #layer = c.addBarLayer(summ, *optdict['addbarlayer'])
-        #c.xAxis().setLabels2(times)
-        #layer.setXData(times)	
-        print "-----------------------------------------"
-        print len(summ)
-        print sec
         c.addScatterLayer(times, summ, *optdict['addscatterlayer'])
         layer_tr = c.addLineLayer(summ, *optdict['addlinelayer_trans'])
         layer_tr.setXData(times)        
@@ -1509,3 +1173,62 @@ class cdDrawer(object):
             mname = args[0]
 
         return mname
+    def format_chart_nfs_ut(self, c, optdict, bstr, ptitle='', kwargs={}, spa=None):
+        if not optdict['antialias']:
+            c.setAntiAlias(0)
+        if spa:
+            c.setPlotArea(*spa)
+        else:
+            c.setPlotArea(*optdict['setplotarea'])
+        c.setColors(optdict['setcolors'])
+        c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
+
+        if not optdict['autoticks']:
+            xplen = optdict['setplotarea'][2] - optdict['setplotarea'][0]
+            yplen = optdict['setplotarea'][3] - optdict['setplotarea'][1]
+            c.xAxis().setTickDensity(yplen / 5, yplen / 25)
+            c.yAxis().setTickDensity(yplen / 5, yplen / 25)
+
+        # Add a title to the chart
+        if ptitle:
+            c.addTitle(ptitle, *optdict['addtitle'][1:]) 
+        else:
+            c.addTitle(*optdict['addtitle'])        
+        # Add a title to the y axis 
+        if kwargs.has_key('speed') and kwargs['speed']:
+            c.yAxis().setTitle(*optdict['yaxissettitlespeed'])
+        else:
+            c.yAxis().setTitle(*optdict['yaxissettitle'])        
+        # Set the y axis line width 
+        c.yAxis().setWidth(optdict['yaxissetwidth'])        
+        # Add a title to the x axis 
+        c.xAxis().setTitle(*optdict['xaxissettitle'])        
+        # Set the x axis line width
+        c.xAxis().setWidth(optdict['xaxissetwidth'])
+
+        c.xAxis().setLabelStyle(*optdict['xaxissetlabelstyle'])
+        c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
+        c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
+        if optdict['xaxissetlabelformat']:
+            self.update_tick_dates(c, optdict)
+    
+    
+    addLLArgs = {2:['_total'], 3:['_in', '_out']}
+    dispatchdict = {'groups':cddraw_nfs_total, 'gstat_multi':cddraw_nfs_total, 'gstat_globals':cddraw_nfs_total, \
+                    'pie_gmulti':cddraw_pie, 'trans_deb':cddraw_trans, 'trans_crd':cddraw_trans, 'sessions':cddraw_sess}
+    
+    
+    def format_chart_add_ll(self, c, optdict, *args):
+        layer_args = addLLArgs[len(args)]
+        i_args = 1
+        for l_arg in layer_args:
+            layer = c.addLineLayer(args[i_args], *optdict['addlinelayer'+l_arg])
+            layer.setXData(args[0])        
+            layer.setLineWidth(optdict['setlinewidth'+l_arg])
+            i_args += 1
+        #layer_out.setBorderColor(optdict['addlinelayer_out'][0])
+        
+
+            
+        
+        

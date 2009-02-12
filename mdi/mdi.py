@@ -37,7 +37,7 @@ from CustomForms import TemplatesWindow
 #загрузка канала
 #общий трафик/загрузка
 #использование канала пользователями
-_reportsdict = [#['report3_total.xml', ['nfs_total_traf'], 'Общий трафик'], \
+'''_reportsdict = [#['report3_total.xml', ['nfs_total_traf'], 'Общий трафик'], \
                 ['report3_total_cl.xml', ['nfs_total_traf_bydir'], 'Общий трафик по типам'],\
                 ['report3_users.xml', ['nfs_u_traf'], 'Трафик пользователей'], \
                 ['report3_pie.xml', ['userstrafpie'], 'Трафик пользователей (пирог)'], \
@@ -46,9 +46,11 @@ _reportsdict = [#['report3_total.xml', ['nfs_total_traf'], 'Общий траф�
                 ['report3_multcl.xml', ['nfs_multi_classes_speed'], 'Скорость по направлениям2'],\
                 ['report3_port.xml', ['nfs_port_speed'], 'Скорость по портам'], \
                 ['report3_sess.xml', ['sessions'], 'Сессии пользователей'], \
-                ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли'] \
-                
-            ]
+                ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]'''
+
+_reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
+                ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
+                ['Другие отчёты',[['report3_sess.xml', ['sessions'], 'Сессии пользователей'], ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]]]
 
 #разделитель для дат по умолчанию
 dateDelim = "."
@@ -96,28 +98,22 @@ class MainWindow(QtGui.QMainWindow):
         
 
         child =  AccountsMdiChild(connection=connection, parent=self)
-        #child.setIcon( QPixmap("images/icon.ico") )
-
-        
+        #child.setIcon( QPixmap("images/icon.ico") )        
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
                 return
         self.workspace.addWindow(child)
-        #self.wsp.addSubWindow(child)
-        
+        #self.wsp.addSubWindow(child)        
         child.show()
     
 
     @connlogin
     def templates(self):
-        self.workspace.windowList()
-        
+        self.workspace.windowList()  
 
         child =  TemplatesWindow(connection=connection)
-        #child.setIcon( QPixmap("images/icon.ico") )
-
-        
+        #child.setIcon( QPixmap("images/icon.ico") )        
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -130,30 +126,23 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def dealers(self):
         self.workspace.windowList()
-        
-
         child =  DealerMdiChild(parent=self, connection=connection)
         #child.setIcon( QPixmap("images/icon.ico") )
-        #child.
 
-        
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
                 return
-        self.workspace.addWindow(child)
-        
+        self.workspace.addWindow(child)        
         child.show()        
 
     @connlogin
     def open(self):
-        #child = NasMdiChild(connection=connection)
         child = NasEbs(connection=connection)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
-                return
-            
+                return            
         self.workspace.addWindow(child)
         child.show()
         #return child
@@ -161,17 +150,13 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def save(self):
         child=SettlementPeriodChild(connection=connection)
-        #child = NasMdiChild(connection=connection)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
-                return
-            
+                return            
         self.workspace.addWindow(child)
         child.show()
 
-        #if self.activeMdiChild().save():
-        #    self.statusBar().showMessage(self.tr("File saved"), 2000)
 
     @connlogin
     def saveAs(self):
@@ -180,8 +165,7 @@ class MainWindow(QtGui.QMainWindow):
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
-                return
-            
+                return            
         self.workspace.addWindow(child)
         child.show()
 
@@ -240,7 +224,6 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def netflowReport(self):
         child = NetFlowReport(connection = connection)
-
         self.workspace.addWindow(child)
         child.show()
 
@@ -277,15 +260,12 @@ class MainWindow(QtGui.QMainWindow):
         self.windowMenu.addAction(self.separatorAct)
 
         windows = self.workspace.windowList()
-
         self.separatorAct.setVisible(len(windows) != 0)
 
         i = 0
 
         for child in windows:
-
             i += 1
-
             action = self.windowMenu.addAction(child.windowTitle())
             action.setCheckable(True)
             action.setChecked(child == self.activeMdiChild())
@@ -307,18 +287,13 @@ class MainWindow(QtGui.QMainWindow):
         #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
         self.dealerAct.setStatusTip(u"Дилеры")
         self.connect(self.dealerAct, QtCore.SIGNAL("triggered()"), self.dealers)
-        
-
-
-        self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
-                                     u"&Серверы доступа", self)
+        self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"), u"&Серверы доступа", self)
         
         #self.openAct.setShortcut(self.tr("Ctrl+N"))
         self.openAct.setStatusTip(u'Серверы доступа')
         self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
 
-        self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"),
-                                     u'Расчётные периоды', self)
+        self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
         #self.saveAct.setShortcut(self.tr("Ctrl+S"))
         self.saveAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
@@ -376,12 +351,16 @@ class MainWindow(QtGui.QMainWindow):
         self.reportActs = []
         i = 0
         
-        for item in _reportsdict:
-            rAct = QtGui.QAction(self.trUtf8(item[2]), self)
-            rAct.setStatusTip(self.tr("Report"))
-            rAct.setData(QtCore.QVariant(i))
-            self.connect(rAct, QtCore.SIGNAL("triggered()"), self.reportsMenu)
-            self.reportActs.append(rAct)
+        for branch in _reportsdict:
+            j=0
+            self.reportActs.append([branch[0],[]])
+            for leaf in branch[1]:
+                rAct = QtGui.QAction(self.trUtf8(leaf[2]), self)
+                rAct.setStatusTip(self.tr("Report"))
+                rAct.setData(QtCore.QVariant('_'.join((str(i), str(j)))))
+                self.connect(rAct, QtCore.SIGNAL("triggered()"), self.reportsMenu)
+                self.reportActs[-1][1].append(rAct)
+                j+=1
             i += 1
 
         self.closeAct = QtGui.QAction(self.tr("Cl&ose"), self)
@@ -464,8 +443,10 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),
                      self.updateWindowMenu)
         self.reportsMenu = self.menuBar().addMenu(self.tr("&Reports"))
-        for act in self.reportActs:
-            self.reportsMenu.addAction(act)
+        for menuName, branch in self.reportActs:
+            branchMenu = self.reportsMenu.addMenu(self.trUtf8(menuName))
+            for leaf in branch:
+                branchMenu.addAction(leaf)
 
         self.menuBar().addSeparator()
 
@@ -477,7 +458,8 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def reportsMenu(self):
         #print self.sender().data().toInt()
-        child=StatReport(connection=connection, chartinfo=_reportsdict[self.sender().data().toInt()[0]])
+        i,j = [int(vstr) for vstr in str(self.sender().data().toString()).split('_')]
+        child=StatReport(connection=connection, chartinfo=_reportsdict[i][1][j])
         self.workspace.addWindow(child)
         child.show()
 

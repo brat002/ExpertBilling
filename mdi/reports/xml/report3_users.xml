@@ -10,7 +10,7 @@
 		<image path="images/reports/header.png" />
 		<frame name="uprblockfr" format="new" fname="ubff" setHeight="50" setWidth="840" padding="4" setBackground="#323232">
 			<insertblock blockformat="centerbf" />
-			<inserttext text="Отчёт по классам траффика с выбором пользователя" textformat="whitetf10" />
+			<inserttext text="Отчёт" textformat="whitetf10" />
 			<insertblock />
 		</frame>
 		<frame name="cframe" type="existing" format="new" setWidth="840" fname="cff">

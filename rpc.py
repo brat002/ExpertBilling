@@ -134,25 +134,10 @@ def authentconn(func):
         try:
             if args[0].getLocalStorage().caller:
                 caller = args[0].getLocalStorage().caller
-                if args[0].getLocalStorage().caller.utoken:                
-                    '''if func.__name__ == "flush":
-                        caller.cur.close()
-                        caller.db_connection.close()
-                        caller.db_connection = pool.connection()
-                        caller.db_connection._con._con.set_client_encoding('UTF8')
-                        caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)'''
-                    #print args
-                    #print kwargs
-                    
+                if args[0].getLocalStorage().caller.utoken:
                     kwargs['connection'] = caller.db_connection
                     kwargs['cur'] = caller.cur
                     res =  func(*args, **kwargs)
-                    #if func.__name__ == "commit":
-                    #    caller.cur.close()
-                    #    caller.db_connection.close()
-                    #    caller.db_connection = pool.connection()
-                    #    caller.db_connection._con._con.set_client_encoding('UTF8')
-                    #    caller.cur = caller.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                     return res
                 else:
                     return None

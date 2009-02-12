@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from bpplotadapter import bpplotAdapter
+from itertools import islice, izip
 import copy
 import time
+import itertools
 #dictionary with query strings
 selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
@@ -14,9 +16,150 @@ selstrdict = {\
     'usernames'     : "SELECT username, id FROM billservice_account WHERE (id %s) ORDER BY username;", \
     'classes'       : "SELECT name, id FROM nas_trafficclass WHERE (id %s) ORDER BY name;",\
     'rvclasses'     : "SELECT id, name FROM nas_trafficclass WHERE (id %s) ORDER BY name;",\
-    'prepaidtraffic': "SELECT accountprepaystrafic.* FROM billservice_accountprepaystrafic as accountprepaystrafic JOIN billservice_accounttarif as accounttarif ON accounttarif.id=accountprepaystrafic.account_tarif_id WHERE accounttarif.account_id=%s;"}
+    'groupnames'    : "SELECT name, id FROM billservice_group WHERE (id %s) ORDER BY name;", \
+    'prepaidtraffic': "SELECT accountprepaystrafic.* FROM billservice_accountprepaystrafic as accountprepaystrafic JOIN billservice_accounttarif as accounttarif ON accounttarif.id=accountprepaystrafic.account_tarif_id WHERE accounttarif.account_id=%s;",\
+    'groups'        : "SELECT datetime, bytes%s FROM billservice_groupstat WHERE %s (datetime BETWEEN '%s' AND '%s') %s ORDER BY datetime;",\
+    'gstat'         : "SELECT datetime%s FROM billservice_globalstat WHERE %s (datetime BETWEEN '%s' AND '%s') %s ORDER BY datetime;"}
 
-class bpbl(object):
+#dict - selstrdict key + function
+
+
+
+
+def selstrGroups(type, *args, **kwargs):
+    by_col=kwargs.get('by_col')
+    if by_col == 'users':
+        selstr = selstrdict['groups'] % (', account_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs))
+    elif by_col == 'groups':
+        selstr = selstrdict['groups'] % (', group_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs))
+    elif (by_col == None)  or (by_col == ''):
+        selstr = selstrdict['groups'] % (', 0 ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs))
+    else:
+        raise Exception('Unknown column - %s' % by_col)
+    return selstr
+        
+
+def selstrGstat_globals(type, *args, **kwargs):
+    bytes_str = ', bytes_in, bytes_out '
+    by_col=kwargs.get('by_col')
+    if by_col == 'users':
+        selstr = selstrdict['gstat'] % (bytes_str + ', account_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif by_col == 'groups':
+        selstr = selstrdict['gstat'] % (bytes_str + ', group_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif by_col == 'nas':
+        selstr = selstrdict['gstat'] % (bytes_str + ', nas_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif (by_col == None)  or (by_col == ''):
+        selstr = selstrdict['gstat'] % (bytes_str + ', 0 ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    else:
+        raise Exception('Unknown column - %s' % by_col)
+    return selstr
+    
+
+    
+def selstrGstat_multi(type, *args, **kwargs):
+    bytes_str = ', classes, classbytes, bytes_in, bytes_out '
+    by_col=kwargs.get('by_col')
+    if by_col == 'users':
+        selstr = selstrdict['gstat'] % (bytes_str + ', account_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif by_col == 'groups':
+        selstr = selstrdict['gstat'] % (bytes_str + ', group_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif by_col == 'classes':
+        selstr = selstrdict['gstat'] % (bytes_str, '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif by_col == 'nas':
+        selstr = selstrdict['gstat'] % (bytes_str + ', nas_id ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+    elif (by_col == None) or (by_col == ''):
+        selstr = selstrdict['gstat'] % (bytes_str + ', 0 ', '', args[0].isoformat(' '), args[1].isoformat(' '), \
+                                         ret_grp_str(kwargs) + ret_acc_str(kwargs) + ret_nas_str(kwargs) + ret_statclass_str(kwargs))
+
+    else:
+        raise Exception('Unknown column - %s' % by_col)
+    return selstr
+    
+def selstrMisc(type, *args, **kwargs):
+    if type == 'trans_deb':
+        selstr = selstrdict['trans'] % ('< 0', args[0].isoformat(' '), args[1].isoformat(' '))
+    elif type == 'trans_crd':
+        selstr = selstrdict['trans'] % ('> 0', args[0].isoformat(' '), args[1].isoformat(' '))
+    elif type == 'sessions':
+        selstr = selstrdict['sessions'] % (', '.join([str(intt) for intt in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '))
+    elif type == 'usersname':
+        selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['users']]))
+    elif type == 'nasname':
+        selstr = selstrdict['nas'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['servers']]))
+    elif type == 'rvclassesname':
+        selstr = selstrdict['rvclasses'] % ''.join("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['classes']]))
+    elif type == 'classesname':
+        selstr = selstrdict['classes'] % ''.join("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['classes']]))
+    elif type == 'groupsname':
+        selstr = selstrdict['groupnames'] % ''.join("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['groups']]))
+    else:
+        raise Exception('Unknown type - %s!' % type)
+    return selstr
+    
+def ret_acc_str(kwargs):
+    return (((kwargs.has_key('users'))   and (" AND (account_id IN (%s)) " % ', '.join([str(vlint) for vlint in kwargs['users']]))) or  ((not kwargs.has_key('users')) and ' '))
+def ret_grp_str(kwargs):
+    return (((kwargs.has_key('groups'))  and (" AND (group_id IN (%s)) " % ', '.join([str(vlint) for vlint in kwargs['groups']]))) or  ((not kwargs.has_key('groups')) and ' '))
+def ret_nas_str(kwargs):
+    return (((kwargs.has_key('servers')) and (" AND (nas_id IN (%s)) " % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' '))
+def ret_nasclass_str(kwargs):
+    return (((kwargs.has_key('classes')) and (" AND (traffic_class_id && ARRAY[%s]) " % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))
+def ret_statclass_str(kwargs):
+    return (((kwargs.has_key('classes')) and (" AND (classes && ARRAY[%s]) " % ', '.join([str(vlint) for vlint in kwargs['classes']]))) or  ((not kwargs.has_key('classes')) and ' '))
+    
+selstrFmt = {'groups': (selstrGroups, 'total_multi'), 'gstat_globals': (selstrGstat_globals, 'total_multi'),\
+             'gstat_multi': (selstrGstat_multi, 'total_multistat'), 'pie_gmulti': (selstrGstat_multi, 'total_multistat'),\
+             'nasname':(selstrMisc, 'names'), 'usersname':(selstrMisc, 'names'), 'groupsname':(selstrMisc, 'names'), \
+             'classesname':(selstrMisc, 'names'), 'rvclassesname':(selstrMisc, 'names'),\
+             'trans_deb':(selstrMisc, 'trans'), 'trans_crd':(selstrMisc, 'trans'), \
+             'sessions':(selstrMisc, 'sessions')}
+gops = {1: lambda xlst: xlst[0], 2: lambda xlst: xlst[1] , 3: lambda xlst: xlst[1] + xlst[0], 4: lambda xlst: max(xlst[0], xlst[1])}
+
+methodDefs = {'total_multi':{'sec':0, 'speed':False, 'ttype':'stat', 'gtype':3, 'by_col':''},'total_multistat': {'by_col':'', 'sec':0, 'speed':False, 'gtype':3, 'pie':False},\
+              'total': {'sec':0, 'speed':False, 'by_col':''}, 'trans':{'trtype':'crd', 'sec':0}, 'sessions':{}}
+
+class dataProvider(object):
+    @staticmethod
+    def get_data(type, *args, **kwargs):
+        selsProc, proc = selstrFmt.get(type, (None, None))
+        if not proc:
+            raise Exception("No such data retrieval method #%s#!", type)
+
+        method = getattr(dataProvider, "get_" + proc, None)
+        if callable(method):
+            defs = methodDefs.get(proc, {})
+            for key, val in defs.iteritems():
+                if not kwargs.has_key(key): kwargs[key] = val
+            try:
+                selstr = selsProc(type, *args, **kwargs)
+            except Exception, ex: 
+                print "Exception %s for selstr with type %s, %s, %s" % (repr(ex), type, args, kwargs) 
+                return None
+            try:
+                data = bpplotAdapter.getdata(selstr)
+                tm = data[0]
+            except Exception, ex:
+                print "dataProvider Data retrieval exception %s in method %s SQL %s with type %s, %s, %s" % (repr(ex), proc, selstr, type, args, kwargs)
+                return None
+            try:
+                res =  method(type, proc, data, *args, **kwargs)
+            except Exception, ex:
+                print "dataProvider Method evaluation exception %s in method %s with type %s, %s, %s" % (repr(ex), proc, type, args, kwargs)
+                return None
+            return res
+        else:
+            raise Exception("Data retrieval method #%s#!", type)
     #get data methods
     @staticmethod
     def get_traf(selstr, sec=0, norm_y=True):
@@ -41,7 +184,7 @@ class bpbl(object):
         try:
             tm = data[0][0]
         except Exception, ex:
-            print ex
+            print repr(ex)
             return 0
         # calculate #sec# span and half span
         if not sec:
@@ -57,7 +200,7 @@ class bpbl(object):
             iters +=1
         tnum = 0
         #one-time iteration through the data values and aggregate traffic values of diffeent classes by time periods
-        for i in range(iters):
+        for i in xrange(iters):
             ins, outs, trs = 0, 0, 0
             tm = tm + tmd
             times.append(tm - htmd)
@@ -69,7 +212,6 @@ class bpbl(object):
                     elif data[tnum][2] == 'OUTPUT':
                         outs += data[tnum][1]
                     else:
-                        #trs  += data[tnum][1]
                         pass
                     tnum +=1
                     sleeper += 1
@@ -82,29 +224,28 @@ class bpbl(object):
                 pass
             y_in.append(ins)
             y_out.append(outs)
-            #y_tr.append(trs)
         y_tr = [0]
         bstr = 'b'
         #normalize values
         if (norm_y):
             try:
-                m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
-            except: 
-                m1, m2, m3 = 0, 0, 0
-            y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	    
+                m1, m2 = max(y_in), max(y_out)
+            except:
+                m1, m2 = 0, 0
+            y_max = m1 if m1 > m2 else m2
             if y_max < 3000:
                 bstr = 'B'
             elif y_max < 3000000:
                 nf = lambda y: float(y) / 1024
-                y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+                y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
                 bstr  = 'KB'
             elif y_max < 3000000000:
                 nf = lambda y: float (y) / 1048576
-                y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+                y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
                 bstr  = 'MB'
             else:
                 nf = lambda y: float (y) / 1073741824
-                y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+                y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
                 bstr  = 'GB'
         return (times, y_in, y_out, y_tr, bstr, sec)
 
@@ -119,32 +260,151 @@ class bpbl(object):
         if not data: return 0
         (times, y_in, y_out, y_tr, bstr, sec) = data
         try:
-            m1, m2, m3 = max(y_in), max(y_out), max(y_tr)
+            m1, m2 = max(y_in), max(y_out)
         except:
-            m1, m2, m3 = 0, 0, 0
-        y_max = m1 if m1 > m2 else (m2 if m2 > m3 else m3)	
+            m1, m2 = 0, 0
+        y_max = m1 if m1 > m2 else (m2)	
         y_max /= sec
         #calculate speed and normalize
         if y_max < 8000:
             nf = lambda y: float (y) * 8/ sec
-            y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+            y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
             bstr  = 'b\\s'
         elif y_max < 8000000:
             nf = lambda y: float (y) * 8/ (1024*sec)
-            y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+            y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
             bstr  = 'Kb\\s'
         elif y_max < 8000000000:
             nf = lambda y: float (y) * 8/ (1048576*sec)
-            y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+            y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
             bstr  = 'Mb\\s'
         else:
             nf = lambda y: float (y) * 8/ (1073741824*sec)
-            y_in, y_out, y_tr = [ map(nf, yval) for yval in (y_in, y_out, y_tr)]
+            y_in, y_out = [ map(nf, yval) for yval in (y_in, y_out)]
             bstr  = 'Gb\\s'
         return (times, y_in, y_out, y_tr, bstr, sec)
 
     @staticmethod
-    def get_total_users_traf(selstr, sec=0, norm_y=True):
+    def get_total_multi(type, proc, data, *args, **kwargs):
+        '''Get traffic with traffic classes combined
+	for multiple users
+	@selstr - query string
+	@sec - seconds for aggregation'''
+        times     = []; y_total_u = {}; zeros = []
+        
+        by_col = kwargs['by_col']; speed = kwargs['speed']
+        sec = kwargs['sec']; gtype = kwargs['gtype']
+        try:
+            tm = data[0][0]
+        except Exception, ex:
+            print repr(ex)
+            return 0
+        if not sec: sec = dataProvider.calc_seconds(data[0][0], data[-1][0])
+        grp = 0 if kwargs['ttype']=='stat' else 1
+        tmd = timedelta(days = sec / 86400, seconds=sec % 86400)
+        htmd = tmd // 2
+        tmdall = data[-1][0] - data[0][0]        
+        iters = (tmdall.days*86400 + tmdall.seconds) / sec
+        if ((tmdall.days*86400 + tmdall.seconds) % sec) != 0:
+            iters +=1
+        tnum = 0
+        gop = gops[gtype]
+        ddata = data
+        for i in xrange(iters):
+            tm = tm + tmd
+            times.append(tm - htmd)
+            zeros.append(0)
+            for item in y_total_u.itervalues():
+                item.append(0)
+            for dval in ddata:
+                if dval[0] > tm: break
+                if grp:
+                    dkey = str(dval[2])
+                    try: 
+                        y_total_u[dkey][-1] += dval[1]
+                    except KeyError, kerr:
+                        y_total_u[dkey] = zeros[:]
+                        y_total_u[dkey][-1] += dval[1]
+                else:
+                    dkey = str(dval[3])
+                    try: 
+                        y_total_u[dkey][-1] += gop(dval[1:3])
+                    except KeyError, kerr:
+                        y_total_u[dkey] = zeros[:]
+                        y_total_u[dkey][-1] += gop(dval[1:3])
+                tnum +=1
+            ddata = itertools.islice(data, tnum, None)
+        bstr = ''
+        y_total_u, bstr = dataProvider.norm_ys(proc, speed, y_total_u, bstr, sec)
+        return (times, y_total_u, bstr, sec)
+        
+    @staticmethod
+    def get_total_multistat(type, proc, data, *args, **kwargs):
+        '''Get traffic with traffic classes combined
+	for multiple users
+	@selstr - query string
+	@sec - seconds for aggregation'''
+        times     = []
+        y_total_u = {}
+        zeros     = []
+        #classes = set(classes_)
+        cls = 1 if kwargs['by_col'] == 'classes' else 0
+        pie = kwargs['pie']; speed = kwargs['speed']
+        sec = kwargs['sec']; gtype = kwargs['gtype']
+        classes = (kwargs.has_key('classes') and kwargs['classes']) or []
+        try:
+            tm = data[0][0]
+        except Exception, ex:
+            print repr(ex)
+            return 0
+
+        if not sec:
+            sec = dataProvider.calc_seconds(data[0][0], data[-1][0])
+        tmd = timedelta(days = sec / 86400, seconds=sec % 86400)
+        htmd = tmd // 2
+        tmdall = data[-1][0] - data[0][0]        
+        iters = (tmdall.days*86400 + tmdall.seconds) / sec
+        if ((tmdall.days*86400 + tmdall.seconds) % sec) != 0:
+            iters +=1
+        tnum = 0
+        gop = gops[gtype]
+        ddata = data
+        if pie: zeros.append(0)
+        for i in xrange(iters):
+            tm = tm + tmd
+            times.append(tm - htmd)
+            if not pie:
+                zeros.append(0)
+                for item in y_total_u.itervalues():
+                    item.append(0)
+            for dval in ddata:
+                if dval[0] > tm: break
+                if classes:
+                    cdct = dict(zip(dval[1], dval[2]))
+                    for class_ in classes:
+                        cdlst = cdct.get(class_)
+                        if cdlst:
+                            dkey = str(class_) if cls else str(dval[5])
+                            try: 
+                                y_total_u[dkey][-1] += gop(cdlst)
+                            except KeyError, kerr:
+                                y_total_u[dkey] = zeros[:]
+                                y_total_u[dkey][-1] += gop(cdlst)
+                else:
+                    dkey = str(dval[5])
+                    try: 
+                        y_total_u[dkey][-1] += gop(dval[3:5])
+                    except KeyError, kerr:
+                        y_total_u[dkey] = zeros[:]
+                        y_total_u[dkey][-1] += gop(dval[3:5])                    
+                tnum +=1
+            ddata = itertools.islice(data, tnum, None)       
+        bstr = ''
+        y_total_u, bstr = dataProvider.norm_ys(proc, speed, y_total_u, bstr, sec)
+        return (times, y_total_u, bstr, sec)
+    
+    @staticmethod
+    def get_total_multi_traf(selstr, sec=0, norm_y=True):
         '''Get traffic with traffic classes combined
 	for multiple users
 	@selstr - query string
@@ -157,7 +417,7 @@ class bpbl(object):
             tm = data[0][0]
         except Exception, ex:
             print "GUTF: exception"
-            print ex
+            print repr(ex)
             return 0
 
         if not sec:
@@ -200,16 +460,13 @@ class bpbl(object):
                 y_max = max([max(lst) for lst in y_total_u.itervalues()])
             except:
                 y_max = 0
-            #print y_max
             if y_max < 8000:
                 bstr = 'B'
             elif y_max < 8000000:
-                #y_total = map(lambda y: float(y) / 1024, y_total)
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) / 1024 for y in y_total_u[y_total]]
                 bstr  = 'KB'
             elif y_max < 8000000000:
-                #y_total = map(lambda y: float(y) / 1048576, y_total)
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) / 1048576 for y in y_total_u[y_total]]
                 bstr  = 'MB'
@@ -220,12 +477,11 @@ class bpbl(object):
         return (times, y_total_u, bstr, sec)
 
     @staticmethod
-    def get_total_users_speed(selstr, sec=0):
+    def get_total_multi_speed(selstr, sec=0):
         '''Gets speed from traffic data
 	@selstr - query string
 	@sec - seconds for aggregation'''
-        #get traffic data
-        print "GUTS: start"
+        
         norm_y=False
         data = bpbl.get_total_users_traf(selstr, sec, norm_y)
         if not data:
@@ -238,9 +494,6 @@ class bpbl(object):
         y_max /= sec
         #calculate speed and normalize
         if y_max < 8000:
-            '''y_in  = [float(y) / sec for y in y_in]
-	    y_out = [float(y) / sec for y in y_out]
-	    y_tr  = [float(y) / sec for y in y_tr]'''
             for y_total in y_total_u.iterkeys():
                 y_total_u[y_total]  = [float(y) * 8 / sec for y in y_total_u[y_total]]
             bstr  = 'b\\s'
@@ -260,7 +513,36 @@ class bpbl(object):
                 y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
             bstr  = 'Gb\\s'
         return (times, y_total_u, bstr, sec)
+    
+    @staticmethod
+    def get_total(type, proc, data, *args, **kwargs):
 
+        by_col = kwargs['by_col']; speed = kwargs['speed']; sec = kwargs['sec']
+        if not sec:
+            sec = bpbl.calc_seconds(data[0][0], data[-1][0])
+        tmd = timedelta(days = sec / 86400, seconds=sec % 86400)
+        htmd = tmd // 2
+        tmdall = data[-1][0] - data[0][0]        
+        iters = (tmdall.days*86400 + tmdall.seconds) / sec
+        if ((tmdall.days*86400 + tmdall.seconds) % sec) != 0:
+            iters +=1
+        tnum = 0
+        ddata = data
+        for i in xrange(iters):
+            totals = 0
+            tm = tm + tmd
+            times.append(tm - htmd)
+            for dval in ddata:
+                if dval[0] > tm: break
+                totals  += data[tnum][1]
+                tnum +=1
+            ddata = itertools.islice(data, tnum, None)
+            y_total.append(totals)
+        bstr = ''
+        y_total, bstr = dataProvider.norm_ys(proc, speed, y_total, bstr)
+        return (times, y_total, bstr, sec)
+        
+    
     @staticmethod
     def get_total_traf(selstr, sec=0, norm_y=True):
         '''Get traffic with traffic classes combined
@@ -272,7 +554,7 @@ class bpbl(object):
         try:
             tm = data[0][0]
         except Exception, ex:
-            print ex
+            print repr(ex)
             return 0
 
         if not sec:
@@ -293,10 +575,6 @@ class bpbl(object):
                     totals  += data[tnum][1]
                     tnum +=1
                     sleeper += 1
-                    if sleeper == 500:
-                        sleeper = 0
-                        time.sleep(0.01)
-                time.sleep(0.1)
             except:
                 pass
             y_total.append(totals)
@@ -309,17 +587,13 @@ class bpbl(object):
             if y_max < 8000:
                 bstr = 'B'
             elif y_max < 8000000:
-                #y_total = map(lambda y: float(y) / 1024, y_total)
                 y_total  = [float(y) / 1024 for y in y_total]
                 bstr  = 'KB'
-            elif y_max < 8000000000:
-                #y_total = map(lambda y: float(y) / 1048576, y_total)
                 y_total  = [float(y) / 1048576 for y in y_total]
                 bstr  = 'MB'
             else:
                 y_total  = [float(y) / 1073741824 for y in y_total]
                 bstr  = 'GB'
-        print y_total
         return (times, y_total, bstr, sec)
 
     @staticmethod
@@ -364,7 +638,7 @@ class bpbl(object):
         try:
             tm = data[0][0]
         except Exception, ex:
-            print ex
+            print repr(ex)
             return 0
         if not sec:
             sec = bpbl.calc_seconds(data[0][0], data[-1][0])
@@ -453,7 +727,7 @@ class bpbl(object):
         data = bpplotAdapter.getdata(selstr)
         try: tmpx = data[0][0]
         except Exception, ex: 
-            print ex
+            print repr(ex)
             return 0
         '''x      = [tuple[1] for tuple in data]
 	labels = [tuple[0] for tuple in data]'''
@@ -477,26 +751,24 @@ class bpbl(object):
         return (x, labels, bstr)
 
     @staticmethod
-    def get_trans(selstr, trtype, sec=0):
+    def get_trans(type, proc, data, *args, **kwargs):
         '''Gets transactions data
 	@selstr - query string
 	@sec - seconds for aggregation
 	@trtype - transaction type 'crd'- for credit, 'dbt' - for debit'''
-        data  = bpplotAdapter.getdata(selstr)
+
         times = []
-        summ  = []
+        summ  = []        
+        sec = kwargs['sec']; trtype = kwargs['trtype']
+        if not sec:
+            sec = dataProvider.calc_seconds(data[0][0], data[-1][0])
+            
         try:
             tm = data[0][0]
         except Exception, ex:
-            print ex
+            print repr(ex)
             return 0
-
-        if not sec:
-            sec = bpbl.calc_seconds(data[0][0], data[-1][0])
-        #-------------------------------
-
         sec = sec * 20
-        #-------------------------------
         tmd = timedelta(days = sec / 86400, seconds=sec % 86400)
         htmd = tmd // 2
         tmdall = data[-1][0] - data[0][0]        
@@ -504,7 +776,6 @@ class bpbl(object):
         if ((tmdall.days*86400 + tmdall.seconds) % sec) != 0:
             iters +=1
         tnum = 0
-        print iters
         for i in range(iters):
             smv = 0
             tm = tm + tmd
@@ -534,43 +805,15 @@ class bpbl(object):
         return (times, summ, bstr, sec)
 
     @staticmethod
-    def get_sessions(selstr):
+    def get_sessions(type, proc, data, *args, **kwargs):
         '''Gets sessions data
 	@selstr - query string'''
-
-        data = bpplotAdapter.getdata(selstr)
-        try:
-            datetm = data[0][0]
-        except Exception, ex:
-            print ex
-            return 0
-        '''t_start  = [tuple[1] for tuple in data]
-	t_end    = [tuple[2] for tuple in data]
-	sessid   = [tuple[0] for tuple in data]
-	username = [tuple[3] for tuple in data]
-	protocol = [tuple[4] for tuple in data]'''
         t_start = []; t_end = []; sessid = []; username = []; protocol = []
         [(t_start.append(tuple[1]), t_end.append(tuple[2]), sessid.append(tuple[0]), username.append(tuple[3]), protocol.append(tuple[4])) for tuple in data]
         return (t_start, t_end, sessid, username, protocol)
 
     @staticmethod
-    def get_nas(selstr):
-        data = bpplotAdapter.getdata(selstr)
-        try:
-            datetm = data[0][0]
-        except Exception, ex:
-            print ex
-            return 0
-        return data
-
-    @staticmethod
-    def get_usernames(selstr):
-        data = bpplotAdapter.getdata(selstr)
-        try:
-            datetm = data[0][0]
-        except Exception, ex:
-            print ex
-            return 0
+    def get_names(type, proc, data, *args, **kwargs):
         return data
 
     @staticmethod
@@ -581,4 +824,103 @@ class bpbl(object):
         else: return seconds / 360
 
 
-
+    @staticmethod
+    def norm_ys(type, speed, *args):
+        if type == 'total':
+            return dataProvider.norm_total(speed, *args)
+        elif type in ('total_multi', 'total_multistat'):
+            return dataProvider.norm_total_multi(speed, *args)
+        else:
+            raise Exception("Norm_ys: Unknown type: %s" % type) 
+    @staticmethod
+    def norm_total(speed, *args):
+        y_total = args[0]
+        bstr = args[1]
+        sec  = args[2]
+        if speed:
+            try:
+                y_max = max(y_total)*8 / sec
+            except:
+                y_max = 0
+            if y_max < 8000:
+                y_total  = [float(y) * 8/ sec for y in y_total]
+                bstr = 'B\\s'
+            elif y_max < 8000000:
+                y_total  = [float(y) * 8/ (1024*sec) for y in y_total]
+                bstr  = 'Kb\\s'
+            elif y_max < 8000000000:
+                y_total  = [float(y) * 8/ (1048576*sec) for y in y_total]
+                bstr  = 'Mb\\s'
+            else:
+                y_total  = [float(y) * 8/ (1073741824*sec) for y in y_total]
+                bstr  = 'Gb\\s'
+        else:
+            try:
+                y_max = max(y_total)
+            except:
+                y_max = 0
+            if y_max < 8000:
+                bstr = 'B'
+            elif y_max < 8000000:
+                y_total  = [float(y) / 1024 for y in y_total]
+                bstr  = 'KB'
+                y_total  = [float(y) / 1048576 for y in y_total]
+                bstr  = 'MB'
+            else:
+                y_total  = [float(y) / 1073741824 for y in y_total]
+                bstr  = 'GB'
+                
+        return (y_total, bstr)
+    
+    @staticmethod
+    def norm_total_multi(speed, *args):
+        y_total_u = args[0]
+        bstr = args[1]
+        sec  = args[2]
+        if speed:
+            try:
+                y_max = max([max(lst) for lst in y_total_u.itervalues()]) * 8
+            except:
+                y_max = 0
+            y_max /= sec
+            #calculate speed and normalize
+            if y_max < 8000:
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) * 8 / sec for y in y_total_u[y_total]]
+                bstr  = 'b\\s'
+            elif y_max < 8000000:
+                norm = 1024*sec
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) * 8/ norm for y in y_total_u[y_total]]
+                bstr  = 'Kb\\s'
+            elif y_max < 8000000000:
+                norm = 1048576*sec
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
+                bstr  = 'Mb\\s'
+            else:
+                norm = 1073741824*sec
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
+                bstr  = 'Gb\\s'
+        else:
+            try:
+                y_max = max([max(lst) for lst in y_total_u.itervalues()])
+            except:
+                y_max = 0
+            if y_max < 8000:
+                bstr = 'B'
+            elif y_max < 8000000:
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) / 1024 for y in y_total_u[y_total]]
+                bstr  = 'KB'
+            elif y_max < 8000000000:
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) / 1048576 for y in y_total_u[y_total]]
+                bstr  = 'MB'
+            else:
+                for y_total in y_total_u.iterkeys():
+                    y_total_u[y_total]  = [float(y) / 1073741824 for y in y_total_u[y_total]]
+                bstr  = 'GB'
+                
+        return (y_total_u, bstr)

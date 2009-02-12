@@ -48,7 +48,7 @@ class Dispatcher(object):
         mname = prefix + name.capitalize()
         dname = 'default' + prefix.capitalize()
         method = getattr(self, mname, None)
-        print name
+        #print name
         if callable(method): args = ()
         else:
             method = getattr(self, dname, None)
@@ -109,7 +109,7 @@ class reportConstructor(Dispatcher, ContentHandler):
     def startFrame(self, attrs):
         if attrs.has_key('datasource'):
             self.curdata = self.objdict['data'][attrs['datasource']]	
-        print attrs['name']
+        #print attrs['name']
         if attrs['format'] == 'currentnew':
             tmpframe  = self.cursor.currentFrame()
             tmpformat = tmpframe.frameFormat()
@@ -236,9 +236,9 @@ class reportConstructor(Dispatcher, ContentHandler):
     def startImage(self, attrs):
         imgpath = attrs['path']
         try:
-            print imgpath
+            #print imgpath
             imp2 = os.path.normpath(imgpath)
-            print os.path.abspath(imgpath)
+            #print os.path.abspath(imgpath)
             #qimg = QtGui.QImage(os.path.normpath(imgpath), 'png')
             ifstat = os.stat(imp2)
             qipath = os.path.normpath(os.path.normpath(imgcachepath) + "/" + str(ifstat.st_mtime)+ os.path.basename(imp2))
@@ -289,7 +289,7 @@ class reportConstructor(Dispatcher, ContentHandler):
         except: self.cursor.insertBlock()
 
     def startChart(self, attrs):
-        print attrs['name']
+        #print attrs['name']
         cname = attrs['name']
 
         self.objdict['curchart']['type'] = attrs['type']
@@ -300,9 +300,11 @@ class reportConstructor(Dispatcher, ContentHandler):
         if self.chkwargs[self.chcount].has_key('options'):
             self.drawer.set_options(attrs['type'], self.chkwargs[self.chcount]['options'])
 
-        qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
+        #qimgs = self.drawer.bpdraw(attrs['type'], *self.chargs[self.chcount], **self.chkwargs[self.chcount])
+        type = self.chkwargs[self.chcount].pop('type')
+        qimgs = self.drawer.bpdraw(type, *self.chargs[self.chcount], **self.chkwargs[self.chcount])
         #print kwargs['return']['sec']
-        print self.chkwargs[self.chcount]
+        #print self.chkwargs[self.chcount]
         try   : self.objdict['data'][attrs['name'] + "_return"] = self.chkwargs[self.chcount]['return']['data']
         except Exception, ex: 
             self.objdict['data'][attrs['name'] + "_return"] = None
@@ -312,8 +314,6 @@ class reportConstructor(Dispatcher, ContentHandler):
         for qimg in qimgs:
             imname = os.path.normpath(imgpath + "/chart_" + str(time.time()) + ".png")
             imwrpath = os.path.normpath(os.path.normpath(reppath)+ "/" + imname)
-            print imname
-            print imwrpath
             f = open(imwrpath, "wb")
             f.write(qimg)
             f.close()
@@ -371,7 +371,7 @@ class reportConstructor(Dispatcher, ContentHandler):
                 tformat.setColumnWidthConstraints([QtGui.QTextLength(ctype, int(constr)) for constr in attrs['colConstraints'].split(", ")])
                 #------------------------------todo
             except Exception, ex:
-                print ex
+                print repr(ex)
     def startStable(self, attrs):
         cframepos = self.cursor.position()
         if attrs['ftype'] == 'new':
@@ -464,7 +464,7 @@ class reportConstructor(Dispatcher, ContentHandler):
             ibase  = int(attrs['ibase'])
             #imerge = int(attrs['imerge'])
             self.curdata = [list(tuple) for tuple in self.curdata]
-            print len(mergedata)
+            #print len(mergedata)
             '''for m_el in mergedata:
 		i = 0
 		for c_el in self.curdata:
@@ -488,14 +488,11 @@ class reportConstructor(Dispatcher, ContentHandler):
                 for m_el in mergedata:
                     if m_el[0] == self.curdata[i][ibase]:
                         self.curdata[i].insert(self.objdict['curtable']['colcount'] - 1, *m_el[1:])
-                        print m_el
-                        print m_el[1:]
                         break
                     j += 1
                 if j >= len(mergedata):
                     try:
                         self.curdata[i].insert(self.objdict['curtable']['colcount'] - 1, dummy[1])
-                        print repr(dummy[1])
                     except:
                         self.curdata[i].insert(self.objdict['curtable']['colcount'] - 1, [])
 
@@ -534,29 +531,24 @@ class reportConstructor(Dispatcher, ContentHandler):
                         if rowdata[colcnt]:
                             self.cursor.insertText(rowdata[colcnt].strftime(self.strftimeFormat), celltf)
                     elif self.objdict['curtable']['coltypes'][colcnt] == 'table':
-                        print rowdata[colcnt]
                         if not rowdata[colcnt]:
                             continue
                         stcols = len(rowdata[colcnt][0].split(' | '))
                         strows = len(rowdata[colcnt])
                         curpos = self.cursor.position()
-                        print strows, stcols
                         if self.objdict['curtable']['formats'].has_key(str(colcnt)):
                             subtable = self.cursor.insertTable(strows, stcols, self.objdict['curtable']['formats'][str(colcnt)])
                         else:
                             subtable = self.cursor.insertTable(strows, stcols)
                         for i in range(strows):
                             strow = rowdata[colcnt][i].split(' | ')
-                            print strow
                             j = 0
                             for val in strow:
-                                print i,j, val
                                 self.cursor = subtable.cellAt(i, j).firstCursorPosition()
                                 self.cursor.insertText(QtCore.QString.fromUtf8(val), celltf)
                                 j += 1
                         self.cursor.setPosition(curpos)
                     elif self.objdict['curtable']['coltypes'][colcnt] == 'lines':
-                        print rowdata[colcnt]
                         for val in rowdata[colcnt]:
                             self.cursor.insertText(QtCore.QString.fromUtf8(val), celltf)
                             self.cursor.insertBlock()
@@ -713,7 +705,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -721,7 +713,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_tarifs':
             selstr = dssdict[queryname] % (args[0].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '), "AND (account_id = %s)" % str(kwargs['users'][0]) )
@@ -746,7 +738,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -754,7 +746,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_tarifs':
             selstr = dssdict[queryname] % (args[0].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '), "AND (account_id = %s)" % str(kwargs['users'][0]) )
@@ -775,7 +767,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -783,7 +775,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
 
@@ -794,7 +786,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -802,7 +794,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
 
@@ -813,7 +805,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
 
@@ -824,7 +816,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
 
@@ -832,17 +824,20 @@ class getData(object):
 
     def getdata_nfs_total_users_traf(self,  queryname, *args, **kwargs):
         if queryname == 'get_accounts':
-            selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in kwargs['users']])
-            data   = self.connection.get_list(selstr)
-            print data
-            return data
+            try:
+                selstr = dssdict[queryname] % 'IN (%s)' % ', '.join([str(aint) for aint in kwargs['users']])
+                data   = self.connection.get_list(selstr)
+                return data
+            except Exception, ex:
+                print repr(ex)
+                return None
         if queryname == 'get_nas':
             try:
                 selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['servers']])
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -850,21 +845,25 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_tarifs':
-            selstr = dssdict[queryname] % (args[0].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '), "AND (account_id IN (%s))" % ', '.join([str(aint) for aint in kwargs['users']]))
-            data   = self.connection.get_list(selstr)
-            data   = [list(tuple) for tuple in data]
-            selstr = dssdict["get_usernames"] % 'IN (%s)' % ', '.join([str(aint) for aint in kwargs['users']])
-            users   = self.connection.get_list(selstr)
-            if not data: data = [['', []]]
-            for i in range(len(data)):		
-                for valtup in users:
-                    if data[i][0] == valtup[1]:
-                        data[i][0] = valtup[0]
-                        break
-            return data
+            try:
+                selstr = dssdict[queryname] % (args[0].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '), "AND (account_id IN (%s))" % ', '.join([str(aint) for aint in kwargs['users']]))
+                data   = self.connection.get_list(selstr)
+                data   = [list(tuple) for tuple in data]
+                selstr = dssdict["get_usernames"] % 'IN (%s)' % ', '.join([str(aint) for aint in kwargs['users']])
+                users   = self.connection.get_list(selstr)
+                if not data: data = [['', []]]
+                for i in range(len(data)):		
+                    for valtup in users:
+                        if data[i][0] == valtup[1]:
+                            data[i][0] = valtup[0]
+                            break
+                return data
+            except Exception, ex:
+                print repr(ex)
+                return [['', []]]
         return None
 
     def getdata_nfs_total_users_speed(self,  queryname, *args, **kwargs):
@@ -878,7 +877,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_classes':
             try:
@@ -886,7 +885,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_tarifs':
             selstr = dssdict[queryname] % (args[0].isoformat(' '), args[0].isoformat(' '), args[1].isoformat(' '), "AND (account_id IN (%s))" % ', '.join([str(aint) for aint in kwargs['users']]))
@@ -909,7 +908,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
     def getdata_nfs_total_nass_traf(self, queryname, *args, **kwargs):
@@ -919,21 +918,17 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
 
     def getdata_nfs_total_classes_speed(self, queryname, *args, **kwargs):
         if queryname == 'get_classes':
             try:
-                print "^^^^^^^^^^^^^^^^^^^^^^^^"
                 selstr = dssdict[queryname] % ', '.join([str(aint) for aint in kwargs['classes']])
-                print "^^^^^^^^^^^^^^^^^^^^^^^^"
-                print selstr
                 data   = self.connection.get_list(selstr)
-                return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         if queryname == 'get_nas':
             try:
@@ -941,7 +936,7 @@ class getData(object):
                 data   = self.connection.get_list(selstr)
                 return data
             except Exception, ex:
-                print ex
+                print repr(ex)
                 return None
         return None
     def getdata_usertrafpie(self, queryname, *args, **kwargs):
