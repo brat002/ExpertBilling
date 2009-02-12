@@ -3009,6 +3009,8 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_house_bulk.setText(unicode(self.model.house_bulk))
             self.lineEdit_entrance.setText(unicode(self.model.entrance))
             self.lineEdit_room.setText(unicode(self.model.room))
+            self.lineEdit_phone_h.setText(unicode(self.model.phone_h))
+            self.lineEdit_phone_m.setText(unicode(self.model.phone_m))
             
             #passport
             self.lineEdit_passport_n.setText(u"%s" % self.model.passport)
@@ -3123,7 +3125,8 @@ class AccountWindow(QtGui.QMainWindow):
             model.house_bulk = unicode(self.lineEdit_house_bulk.text())
             model.entrance = unicode(self.lineEdit_entrance.text())
             model.room = unicode(self.lineEdit_room.text())
-            
+            model.phone_h = unicode(self.lineEdit_phone_h.text())
+            model.phone_m = unicode(self.lineEdit_phone_m.text())
             #passport
             model.passport = unicode(self.lineEdit_passport_n.text())
             model.passport_given = unicode(self.lineEdit_passport_given.text())
