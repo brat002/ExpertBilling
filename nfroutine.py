@@ -374,8 +374,7 @@ class NetFlowRoutine(Thread):
                         
                         c_TRTRNodesCache = copy(TRTRNodesCache)
                         c_tpnInPeriod    = copy(tpnInPeriod)
-                        c_prepaysCache   = copy(prepaysCache)
-                        
+                        c_prepaysCache   = copy(prepaysCache)                        
                         oldAcct = defaultdict(list)
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
