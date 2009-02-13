@@ -680,6 +680,7 @@ class CardsChildEbs(ebsTableWindow):
         
     def ebsInterInit(self, initargs):        
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.setIconSize(QtCore.QSize(18, 18))
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setMovable(False)
