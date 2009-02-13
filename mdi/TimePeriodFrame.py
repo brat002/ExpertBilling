@@ -475,10 +475,6 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             period_id = widget.id
             
         self.tableWidget.clearContents()
-
-
-        #model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id = %d" % period_id)
-
         
         nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
         WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)""" % period_id)

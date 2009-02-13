@@ -51,13 +51,16 @@ class ebsTableWindow(QtGui.QMainWindow):
         else: self.firsttime = False
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        #self.connect(tableHeader, QtCore.SIGNAL("geometriesChanged()"), self.saveHeader)
+        #self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.optpr2)
+        #self.connect(tableHeader, QtCore.SIGNAL("sectionAutoResize (int,QHeaderView::ResizeMode)"), self.optpr3)
         
         self.createFindToolbar()
         #self.connect(self.lineEdit_search_text, QtCore.SIGNAL("textEdited (const QString&)"), self.tableFind)
         self.connect(self.pushButton_find, QtCore.SIGNAL("clicked()"), self.tableFind)
         
         self.ebsPostInit(initargs)
-        
+
     def retranslateUI(self, initargs):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", initargs["wintitle"], None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.clear()
@@ -139,7 +142,7 @@ class ebsTableWindow(QtGui.QMainWindow):
             HeaderUtil.saveHeader(self.setname, self.tableWidget)
             
     def delNodeLocalAction(self, actList):
-        if self.tableWidget.currentRow()==-1:
+        if (self.tableWidget.currentRow()==-1) and (len(self.tableWidget.selectedIndexes()) == 0):
             for actObj in actList:
                 actObj.setDisabled(True)
         else:

@@ -148,7 +148,7 @@ class HeaderUtil(object):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue(name, QtCore.QVariant(table.horizontalHeader().saveState()))
-            #print "save header"
+            #print "save header", name
         except Exception, ex:
             print "HeaderUtil settings save error: ", ex
             
