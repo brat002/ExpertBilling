@@ -675,7 +675,7 @@ class AddCards(QtGui.QDialog):
 class CardsChildEbs(ebsTableWindow):
     def __init__(self, connection):
         columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
-        initargs = {"setname":"cards_frame_period", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
+        initargs = {"setname":"cards_frame", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
         super(CardsChildEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):        
@@ -749,8 +749,9 @@ class CardsChildEbs(ebsTableWindow):
     def ebsPostInit(self, initargs):
         self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+        #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
         self.fixtures()        
         self.filterActions()
         self.delNodeLocalAction()
@@ -894,7 +895,7 @@ class CardsChildEbs(ebsTableWindow):
         if self.checkBox_filter.checkState()==2:
             start_date = self.date_start.dateTime().toPyDateTime()
             end_date = self.date_end.dateTime().toPyDateTime()
-            sql+=" WHERE id>0 "
+            sql+=" WHERE "
             if unicode(self.comboBox_nominal.currentText())!="":
                 sql+=" AND nominal = '%s'" % unicode(self.comboBox_nominal.currentText())
                 
@@ -909,6 +910,8 @@ class CardsChildEbs(ebsTableWindow):
         else:
             sql+=" WHERE sold is Null"
             
+        sql += " ORDER BY id;"
+            
         self.tableWidget.setSortingEnabled(False)
 
             
@@ -917,11 +920,9 @@ class CardsChildEbs(ebsTableWindow):
         nodes = self.connection.sql(sql)
         self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
-        sql+=" ORDER BY id ASC"
         i=0        
         
         for node in nodes:
-
             self.addrow(node.id, i,0, status = node.disabled, activated=node.activated)
             self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
             self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
@@ -930,12 +931,11 @@ class CardsChildEbs(ebsTableWindow):
             self.addrow(node.activated, i,5, status = node.disabled, activated=node.activated)
             self.addrow(node.start_date.strftime(self.strftimeFormat), i,6, status = node.disabled, activated=node.activated)
             self.addrow(node.end_date.strftime(self.strftimeFormat), i,7, status = node.disabled, activated=node.activated)
-            #self.tableWidget.setRowHeight(i, 17)
             i+=1
             
         self.tableWidget.setColumnHidden(0, False)
         #self.tableWidget.resizeColumnsToContents()
-        HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
+        HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.delNodeLocalAction()
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -948,7 +948,6 @@ class CardsChildEbs(ebsTableWindow):
     def addrow(self, value, x, y, status, activated):
         headerItem = QtGui.QTableWidgetItem()
         
-        #print 'activated',activated
         if value == None:
             value = ""
         

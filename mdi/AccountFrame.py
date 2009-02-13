@@ -3738,14 +3738,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 id=self.getTarifId()
             except:
                 return
-            
-        #print "tarif_id=",id
-        #print k
 
-        #self.connection.commit()
-        #tarif = self.connection.foselect("billservice_tariff", id)
-        
-        #self.connection.commit()
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
         self.connection.commit()
         #self.connection.commit()
