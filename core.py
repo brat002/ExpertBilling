@@ -373,7 +373,7 @@ class periodical_service_bill(Thread):
                     rows_ps = cachePerSetp.get(tariff_id,[])
                     #debit every account for tarif on every periodical service
                     for row_ps in rows_ps:
-                        ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id, ps_condition_type = row_ps
+                        ps_id, ps_name, ps_cost, ps_cash_method, name_sp, time_start_ps, length_ps, length_in_sp, autostart_sp, tmtarif_id, ps_condition_type, ps_created = row_ps
                         for account in accounts:
                             #print account
                             try:
@@ -395,8 +395,11 @@ class periodical_service_bill(Thread):
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)                                    
-                                    if last_checkout is None:
+                                    if last_checkout is None and ps_created==None:
                                         last_checkout=account_datetime
+                                    elif last_checkout is None and ps_created!=None:
+                                        last_checkout=ps_created
+                                        
                                     #print "last checkout", last_checkout
                                     if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
                                         #print "GRADUAL"
@@ -446,6 +449,7 @@ class periodical_service_bill(Thread):
                                         last_checkout=now
                                     else:
                                         first_time=False
+                                        
                                     #print first_time==True or last_checkout<period_start
                                     if first_time==True or last_checkout<period_start:
     
@@ -467,6 +471,9 @@ class periodical_service_bill(Thread):
                                             chk_date = last_checkout + delta
                                             summ_prev=ps_cost
                                             while chk_date <= now:
+                                                if ps_created!=None:
+                                                    if ps_created>=chk_date:
+                                                        cash_summ=0
                                                 cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += delta
@@ -477,7 +484,7 @@ class periodical_service_bill(Thread):
                                             summ = summ * susp_per_mlt
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                                cash_summ = 0
+                                                summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
                                                                      summ = summ, description=description,
                                                                      created = now)
@@ -496,6 +503,7 @@ class periodical_service_bill(Thread):
                                         last_checkout=now
                                     else:
                                         first_time=False
+                                        
                                     # Здесь нужно проверить сколько раз прошёл расчётный период    
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -516,22 +524,22 @@ class periodical_service_bill(Thread):
                                             descr=ps_name
                                             if nums>1:
                                                 chk_date = last_checkout + delta
-                                                #now or (now - delta)???
                                                 summ_prev=ps_cost
-                                                while chk_date <= (now - delta):
+                                                while chk_date <= now:
+                                                    if ps_created!=None:
+                                                        if ps_created>chk_date:
+                                                            cash_summ=0
                                                     cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                     connection.commit()
                                                     chk_date += delta
-
-                                            if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
-                                                #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                                cash_summ = 0
                                         else:
                                             summ=0
                                             descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
                                             
-                                        #TODO: MAKE ACID!!!
                                         summ = summ * susp_per_mlt
+                                        if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
+                                            #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                                            summ = 0
                                         transaction_id = transaction(cursor=cur, account=account_id,approved=True,
                                                                      type='PS_AT_END', tarif = tariff_id,summ=summ,
                                                                      description=descr, created = now)
@@ -1487,7 +1495,7 @@ class AccountServiceThread(Thread):
                                  WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
                 perTarTp = cur.fetchall()
                 cur.execute("""SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start,
-                                     c.length, c.length_in, c.autostart, b.tarif_id, b.condition
+                                     c.length, c.length_in, c.autostart, b.tarif_id, b.condition, b.created
                                      FROM billservice_periodicalservice as b 
                                      JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id;""")
                 #b.condition 0 - При любом балансе. 1- Только при положительном балансе. 2 - только при орицательном балансе
