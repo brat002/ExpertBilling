@@ -223,10 +223,10 @@ class SaleCards(QtGui.QDialog):
                 f.write("</card>")
             f.write("</xml>")
             f.close()
-            QtGui.QMessageBox.information(self, u"Р”Р°РЅРЅС‹Рµ СЃРѕС…СЂР°РЅРµРЅС‹", unicode(u"Р”Р°РЅРЅС‹Рµ СЃРѕС…СЂР°РЅРµРЅС‹ СѓСЃРїРµС€РЅРѕ."))
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операций произведена успешно."))
         except Exception, e:
             print e
-            QtGui.QMessageBox.warning(self, u"Р”Р°РЅРЅС‹Рµ РЅРµ СЃРѕС…СЂР°РЅРµРЅС‹", unicode(u"Р’Рѕ РІСЂРµРјСЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРёР·РѕС€Р»Рё РѕС€РёР±РєРё."))
+            QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
             
     def printCards(self):
         

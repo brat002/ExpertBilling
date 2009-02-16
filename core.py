@@ -4,8 +4,6 @@ import IPy
 import hmac
 import zlib
 import signal
-import hashlib
-import asyncore
 import isdlogger
 import threading
 import dictionary
@@ -14,18 +12,16 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 
 
-from IPy import intToIp
-from hashlib import md5
+
 from decimal import Decimal
 from constants import rules
 from copy import copy, deepcopy
 from db import Object as Object
 from daemonize import daemonize
-from marshal import dumps, loads
 from encodings import idna, ascii
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
-from collections import deque, defaultdict
+from collections import defaultdict
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
@@ -428,7 +424,7 @@ class periodical_service_bill(Thread):
                                         else:
                                             #make an approved transaction
                                             cash_summ = cash_summ * susp_per_mlt
-                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                            if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = now)
@@ -480,7 +476,7 @@ class periodical_service_bill(Thread):
 
                                             #TODO: MAKE ACID!!!
                                             summ = summ * susp_per_mlt
-                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                            if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
@@ -528,7 +524,7 @@ class periodical_service_bill(Thread):
                                                     connection.commit()
                                                     chk_date += delta
 
-                                            if (ps_condition_type==1 and account_ballance<0) or (ps_condition_type==2 and account_ballance>0):
+                                            if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
                                         else:
@@ -953,11 +949,12 @@ class settlement_period_service_dog(Thread):
                         #!!! ASK ABOUT period_end!!!
                         #acct[9] - reset_tarif_cost
                         if acct[9] and period_end:
+                            #Считаем сколько было списано по услугам
                             cur.execute(
                                 """
                                 SELECT sum(summ)
                                 FROM billservice_transaction
-                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s;
+                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
                                 """, (period_start, period_end, account_id, tarif_id,))
                             summ=cur.fetchone()[0]
                             if summ==None:
