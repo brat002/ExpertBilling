@@ -42,7 +42,7 @@ limit_actions = [CashType(0, u"Заблокировать пользовател
 
 la_list = [u"Заблокировать пользователя", u"Изменить скорость"]
 
-ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном балансе"), CashType(2,u"При отрицательном балансе")]
+ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
 ps_list = [u"При любом балансе", u"При положительном балансе", u"При отрицательном балансе"]
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection,ttype, account=None, model=None):
