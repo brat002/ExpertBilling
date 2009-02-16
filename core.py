@@ -220,16 +220,15 @@ class check_vpn_access(Thread):
                         if acstatus and c_tp_asInPeriod[tarif_id]:
                             #chech whether speed has changed
                             vpn_speed = acct[24]
+
                             if vpn_speed=='':
-                                
+                                account_limit_speed = get_limit_speed(cur, row[1])
+                                connection.commit()
                                 speed=self.create_speed(list(cacheDefSp.get(tarif_id,[])), cacheNewSp.get(tarif_id, []), dateAT)
+                                speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
                                 speed=parse_custom_speed_lst(vpn_speed)
-                            
-                            account_limit_speed = get_limit_speed(cur, row[1])
-                            connection.commit()
-                            speed = get_corrected_speed(speed[:6], account_limit_speed)
-                            
+
                             newspeed=''
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                                 
@@ -1284,17 +1283,19 @@ class ipn_service(Thread):
                     account_ipn_speed = acct[23]
                     
                     #print account_id
-                    account_limit_speed = get_limit_speed(cur, account_id)
-                    connection.commit()
-                    print "account_limit_speed", account_limit_speed
+
+                    #print "account_limit_speed", account_limit_speed
                     if account_ipn_speed=='' or account_ipn_speed==None:    
+                        account_limit_speed = get_limit_speed(cur, account_id)
+                        connection.commit()
                         speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
+                        speed = get_corrected_speed(speed[:6], account_limit_speed)
                     else:
                         speed = parse_custom_speed_lst(account_ipn_speed)
                     #print "speed",speed
                     #print "corrected_speed=", 
                     
-                    speed = get_corrected_speed(speed[:6], account_limit_speed)
+                    
                     
                     newspeed=''
                     newspeed = ''.join([unicode(spi) for spi in speed[:6]])
