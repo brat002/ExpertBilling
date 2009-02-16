@@ -965,7 +965,14 @@ class TarifFrame(QtGui.QDialog):
         current_row = self.periodical_tableWidget.rowCount()
         self.periodical_tableWidget.insertRow(current_row)
         self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 5)
+        if QtGui.QMessageBox.question(self, u"Внимание!!!" , 
+                                            u'''Вы хотите, чтобы по новой периодической услуге были поизведены списания с начала текущего расчётного периода?''', \
+                                            QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
+            self.periodical_tableWidget.item(current_row,0).created='now()'
+        else:
+            self.periodical_tableWidget.item(current_row,0).created=None
         self.periodical_tableWidget.item(current_row,5).selected_id=0
+        
         
     def delPeriodicalRow(self):
         current_row = self.periodical_tableWidget.currentRow()
@@ -1576,6 +1583,7 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, node.cost,i, 4)
                     self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 5)
                     self.periodical_tableWidget.item(i, 5).selected_id = node.condition
+                    self.periodical_tableWidget.item(i, 0).created = node.created
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
             
@@ -1962,6 +1970,7 @@ class TarifFrame(QtGui.QDialog):
                     periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
                     periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
                     periodical_service.condition = self.periodical_tableWidget.item(i,5).selected_id
+                    periodical_service.created = self.periodical_tableWidget.item(i,0).created
                     
                     self.connection.save(periodical_service, "billservice_periodicalservice")    
                       

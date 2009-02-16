@@ -52,8 +52,10 @@ class Object(object):
         fields=[]
         for field in self.__dict__:
             if type(field)!=InstanceType:
-                # and self.__dict__[field]!=None
+                if self.__dict__[field]=='now()':
+                    self.__dict__[field] = datetime.datetime.now()
                 fields.append(field)
+
         try:
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
