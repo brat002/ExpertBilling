@@ -29,33 +29,11 @@ portdict = {\
     '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'\
     }
 
+tmpChart = XYChart(800,300)
+#tmpChart.gradientColor(0, 300, 0, 800, 0xa2c1e6, 0xe7f1fe)
 
 class cdDrawer(object):
     cdchartoptdict = {\
-        "nfs_user_traf":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in':(0x0000FF, "INPUT"), 'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"), 'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr':(0xFF0000, "TRANSIT"), 'setlinewidth_tr':1.3},\
-         "nfs_user_speed": \
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
         "nfs_total":\
                                         {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
@@ -66,66 +44,20 @@ class cdDrawer(object):
                                          'autoticks': False, \
                                          'antialias': False, \
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
-        "nfs_total_users_traf":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
+                                         
+        "nfs_web":\
+                                        {'xychart':(440, 170, metalColor(0xa2c1e6,0), 0x000000, 1), 'setplotarea':(80, 30, 340, 115, 0xFF000000L, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.transparentPalette, \
+                                         'additional': lambda c: c.setRoundedFrame(), \
+                                         'addlegend':(50, 0, 0, "fonts/LiberationSerif-Regular.ttf", 8), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 8), \
+                                         'yaxissettitle':("", "fonts/LiberationSerif-Regular.ttf", 8), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
+                                         'yaxissettitlespeed':("", "fonts/LiberationSerif-Regular.ttf", 8),\
+                                         'xaxissettitle':("", "fonts/LiberationSerif-Regular.ttf", 6), 'xaxissetwidth':2, 'xaxissetlabelformat':'def{value|dd}',\
                                          'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
+                                         'set3d':False,\
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
-        "nfs_total_users_speed":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'antialias': False, \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
-        "nfs_total_traf_bydir":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
-        "nfs_total_speed_bydir":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3},\
-        "nfs_total_traf":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'antialias': False, \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
-        "nfs_total_speed":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'antialias': False, \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':2},\
+
         "nfs_port_speed": \
                                         {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
                                          'addlegend':(50, 30, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по %s порту:", "fonts/LiberationSerif-Regular.ttf", 18], \
@@ -138,48 +70,7 @@ class cdDrawer(object):
                                          'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
                                          'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
                                          'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3}, \
-        "nfs_multi_classes_speed": \
-                                        {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(50, 30, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по классу %s :", "fonts/LiberationSerif-Regular.ttf", 18], \
-                                         'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in': (0x0000FF, "INPUT"),   'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"),  'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr': (0xFF0000, "TRANSIT"),'setlinewidth_tr':1.3}, \
-        "nfs_nas_traf":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat': '{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2,  'xaxissetlabelformat': '{value|dd.mm.yy\nhh:nn:ss}', \
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'outfill': True, \
-                                         'antialias': False, \
-                                         'addlinelayer_in':(0x0000FF, "INPUT"), 'setlinewidth_in':1.3, \
-                                         'addlinelayer_out':(0x00cc00, "OUTPUT"), 'setlinewidth_out':1.3, \
-                                         'addlinelayer_tr':(0xFF0000, "TRANSIT"), 'setlinewidth_tr':1.3},\
-        "nfs_total_nass_traf":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'antialias': False, \
-                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
-        "nfs_total_classes_speed":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
-                                         'addlegend':(30, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
-                                         'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
-                                         'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
-                                         'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
-                                         'autoticks': False, \
-                                         'antialias': False, \
-                                         'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
+
         "userstrafpie":     \
                                         {'piechart':(600, 280), 'setpiesize': (300, 120, 110), 'addtitle': ('', "fonts/LiberationSerif-Regular.ttf", 14), 'setlabelstyle':("fonts/LiberationSerif-Regular.ttf",)}, \
         "sessions":  \
@@ -231,116 +122,20 @@ class cdDrawer(object):
             raise Exception("Plotting method #" + args[0] + "# does not exist!" )
         
 
-    def cddraw_nfs_user_traf(self, *args, **kwargs):
-        try:
-
-            #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % kwargs['users'][0], args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	
-        if not data:
-            data = ([], [], [], [], '', 1)
-        (times, y_in, y_out, y_tr, bstr, sec) = data 
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_user_traf']
-
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-        format_chart_nfs_ut(c, optdict, bstr) 
-        format_chart_add_ll(c, optdict,times, y_in, y_out)
-
-        # output the chart        
-        retlist.append(c.makeChart2(0))
-        return retlist
-
-    def cddraw_nfs_user_speed(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', direction', '(account_id=%d) AND' % kwargs['users'][0], args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
-        (times, y_in, y_out, y_tr, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_user_speed']
-        retlist = []
-        c = XYChart(*optdict['xychart'])        
-        format_chart_nfs_ut(c, optdict, bstr)
-        format_chart_add_ll(c, optdict,times, y_in, y_out)
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-    def cddraw_nfs_total_traf_bydir(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', direction', '',  args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
-        (times, y_in, y_out, y_tr, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_traf_bydir']
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-        
-        format_chart_nfs_ut(c, optdict, bstr)   
-        format_chart_add_ll(c, optdict,times, y_in, y_out)
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-
-    def cddraw_nfs_total_speed_bydir(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', direction', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
-        (times, y_in, y_out, y_tr, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_speed_bydir']
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-        
-        format_chart_nfs_ut(c, optdict, bstr)   
-        format_chart_add_ll(c, optdict,times, y_in, y_out)
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-
-    
     def cddraw_nfs_total(self, type, data, *args, **kwargs):
         if not data: print "Dataset is empty"; data = ([], [], '', 1)
         (times, y_total_u, bstr, sec) = data
         kwargs['return']['sec'] = sec
         times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total']
+        dcname = 'nfs_total' if not kwargs.has_key('dcname') else kwargs['dcname']
+        optdict = self.cdchartoptdict[dcname]
         if (kwargs.has_key('by_col')) and (kwargs['by_col']):
             col_data = dataProvider.get_data(kwargs['by_col']+'name', *args, **kwargs)
         else:
             col_data = [('Total', 0)]            
         if not col_data: print "Dataset is empty"; return []
             
+        set3d = True if (optdict.has_key('set3d') and optdict['set3d']) else False
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
         if len(col_data) >= 1:
@@ -354,6 +149,8 @@ class cdDrawer(object):
         for dtuple in col_data:
             try:
                 layer = c.addLineLayer(y_total_u[str(dtuple[1])], -1, dtuple[0].encode('utf-8'))
+                if set3d:
+                    layer.set3D()
                 layer.setXData(times)        	
                 layer.setLineWidth(optdict['setlinewidth_total'])
             except Exception, ex:
@@ -362,328 +159,6 @@ class cdDrawer(object):
         # output the chart
         retlist.append(c.makeChart2(0))	
         return retlist
-    def cddraw_nfs_total_users_traf(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(vlint) for vlint in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            print "Query exception!"
-            print repr(ex)
-            raise ex
-        data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total_u, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_users_traf']
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['users']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
-        xyc = list(optdict['xychart'])
-        spa = list(optdict['setplotarea'])
-        if len(data) >= 1:
-            addHeight = self.get_legend_length(len(data), 6, 25)
-            xyc[1] = xyc[1] + addHeight
-            spa[1] = spa[1] + addHeight
-        retlist = []
-        c = XYChart(*xyc)
-        
-        format_chart_nfs_ut(c, optdict, bstr, spa)   
-
-        if not data: print "Dataset is empty"; return []
-        
-        # Add in line layer 
-        for tuple in data:
-            try:
-                layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        	
-                layer.setLineWidth(optdict['setlinewidth_total'])
-            except Exception, ex:
-                print repr(ex) 
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-
-    def cddraw_nfs_total_users_speed(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', account_id', "(account_id IN (%s)) AND" % ', '.join([str(vlint) for vlint in kwargs['users']]), args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total_u, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_users_speed']
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['usernames'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['users']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
-        
-        xyc = list(optdict['xychart'])
-        spa = list(optdict['setplotarea'])
-        if len(data) >= 1:
-            addHeight = self.get_legend_length(len(data), 6, 25)
-            xyc[1] = xyc[1] + addHeight
-            spa[1] = spa[1] + addHeight
-        retlist = []
-        c = XYChart(*xyc) 
-        format_chart_nfs_ut(c, optdict, bstr, spa)   
-
-        if not data: print "Dataset is empty"; return []
-
-        # Add in line layer 
-        for tuple in data:
-            try:
-                layer = c.addLineLayer(y_total_u[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        
-                layer.setLineWidth(optdict['setlinewidth_total'])
-            except Exception, ex:
-                print repr(ex)    
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-
-    def cddraw_nfs_total_traf(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % ('', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_total_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_traf']
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-        
-        format_chart_nfs_ut(c, optdict, bstr)   
-        format_chart_add_ll(c, optdict, times, y_total)        
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-    def cddraw_nfs_total_speed(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % ('', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_total_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total, bstr, sec) = data 
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_speed']
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-        
-        format_chart_nfs_ut(c, optdict, bstr) 
-        format_chart_add_ll(c, optdict,times, y_total)        
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-    
-    def cddraw_nfs_port_speed(self, *args, **kwargs):
-        try:
-            pts = ', '.join(str(pint) for pint in kwargs['ports'])
-            selstr = selstrdict['nfs_port_speed'] % (pts, pts, args[0].isoformat(' '), args[1].isoformat(' '))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_multi_speed(selstr, kwargs['ports'], 2, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], {0:[{'input': [], 'output': [], 'transit': []}]}, '', 1)
-        (times, y_ps, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_port_speed']
-        retlist = []
-
-        for ykey in y_ps.iterkeys():
-            try:
-                c = XYChart(*optdict['xychart'])
-                titlestr  =  optdict['addtitle'][0] % ((portdict.has_key(ykey) and (ykey + ' (' + portdict[ykey] + ')')) or ykey)
-                format_chart_nfs_ut(c, optdict, bstr[ykey], ptitle=titlestr)                
-                format_chart_add_ll(c, optdict,times, y_ps[ykey][0]['input'], y_ps[ykey][0]['output'])
-            except Exception, ex:
-                print "nfs_port_speed makechart exception: ", repr(ex)
-            retlist.append(c.makeChart2(0))
-
-        return retlist
-    
-    def cddraw_nfs_multi_classes_speed(self, *args, **kwargs):
-        try:
-            clss = ', '.join(str(cint) for cint in kwargs['classes'])
-            selstr = selstrdict['nfs_mcl_speed'] % (clss, args[0].isoformat(' '), args[1].isoformat(' '), (((kwargs.has_key('servers')) and ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']]))) or  ((not kwargs.has_key('servers')) and ' ')))
-        except Exception, ex:
-            raise ex
-        print selstr
-        data = bpbl.get_multi_speed(selstr, kwargs['classes'], 1, kwargs.has_key('sec') and kwargs['sec'], arr=1)
-        if not data: print "Dataset is empty"; data = ([], {'0':[{'input': [], 'output': [], 'transit': []}]}, '', 1)
-        (times, y_ps, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_multi_classes_speed']
-        retlist = []
-        
-        try:
-            clselstr = selstrdict['rvclasses'] % ''.join((" IN (", clss,") "))
-        except Exception, ex:
-            raise ex
-        clnames = bpbl.get_nas(clselstr)
-        cldict = {}
-        if clnames:
-            cldict = dict(clnames)
-        #global vlint
-        for ykey in y_ps.iterkeys():
-            c = XYChart(*optdict['xychart']) 
-
-            titlestr  =  optdict['addtitle'][0] % (cldict[int(ykey)].encode('utf-8'))
-            format_chart_nfs_ut(c, optdict, bstr[ykey], ptitle=titlestr)
-            format_chart_add_ll(c, optdict,times, y_ps[ykey][0]['input'], y_ps[ykey][0]['output'])
-            retlist.append(c.makeChart2(0))
-
-        return retlist
-
-    def cddraw_nfs_n_traf(self, *args, **kwargs):
-        if len(kwargs['servers']) == 1:
-            return self.cddraw_nfs_nas_traf(*args, **kwargs)
-        else:
-            return self.cddraw_nfs_total_nass_traf(*args, **kwargs)
-
-    def cddraw_nfs_nas_traf(self, *args, **kwargs):
-        try:	    
-            #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', direction', '', args[0].isoformat(' '), args[1].isoformat(' '), "AND (nas_id=%d)" % kwargs['servers'][0])
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])	
-        if not data: print "Dataset is empty"; data = ([], [], [], [], '', 1)
-        (times, y_in, y_out, y_tr, bstr, sec) = data 
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_nas_traf']
-
-        retlist = []
-        c = XYChart(*optdict['xychart'])
-
-        format_chart_nfs_ut(c, optdict, bstr) 
-        format_chart_add_ll(c, optdict,times, y_in, y_out)
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-    def cddraw_nfs_total_nass_traf(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', nas_id', '', args[0].isoformat(' '), args[1].isoformat(' '), ("AND (nas_id IN (%s))" % ', '.join([str(vlint) for vlint in kwargs['servers']])))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_total_users_traf(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        print "----------------------------"
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total_n, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_nass_traf']
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nas'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['servers']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_nas(selstr)
-        
-        xyc = list(optdict['xychart'])
-        spa = list(optdict['setplotarea'])
-        if len(data) >= 1:
-            addHeight = self.get_legend_length(len(data), 4, 25)
-            xyc[1] = xyc[1] + addHeight
-            spa[1] = spa[1] + addHeight
-        retlist = []
-        c = XYChart(*xyc)
-        
-        format_chart_nfs_ut(c, optdict, bstr, spa=spa) 
-        if not data: print "Dataset is empty"; return [] 
-
-        for tuple in data:
-            try:
-                layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        	
-                layer.setLineWidth(optdict['setlinewidth_total'])
-            except Exception, ex:
-                print repr(ex)     
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
-    def cddraw_nfs_total_classes_speed(self, *args, **kwargs):
-        try:
-            #get a string from #selstrdict# dictionary wit a key based on the method name and compute a query string from it 
-            selstr = selstrdict['nfs'] % (', traffic_class_id', '', args[0].isoformat(' '), args[1].isoformat(' '), \
-                                          self.ret_nas_str(kwargs) + \
-                                          self.ret_nasclass_str(kwargs))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_total_users_speed(selstr, kwargs.has_key('sec') and kwargs['sec'])
-        if not data: print "Dataset is empty"; data = ([], [], '', 1)
-        (times, y_total_n, bstr, sec) = data
-        kwargs['return']['sec'] = sec
-        times = [chartTime(tm.year, tm.month, tm.day, tm.hour, tm.minute, tm.second) for tm in times]
-        optdict = self.cdchartoptdict['nfs_total_classes_speed']
-        try:
-            #get a string from #selstrdict# dictionary with a key based on the method name and compute a query string from it 
-            selstr = selstrdict['classes'] % ("IN (%s)" % ', '.join([str(vlint) for vlint in kwargs['classes']]))
-        except Exception, ex:
-            raise ex
-        data = bpbl.get_usernames(selstr)
-        xyc = list(optdict['xychart'])
-        spa = list(optdict['setplotarea'])
-        if len(data) >= 1:
-            addHeight = self.get_legend_length(len(data), 8, 25)
-            xyc[1] = xyc[1] + addHeight
-            spa[1] = spa[1] + addHeight
-        retlist = []
-        #c = XYChart(*optdict['xychart'])
-        c = XYChart(*xyc)
-        format_chart_nfs_ut(c, optdict, bstr, spa=spa) 
-        if not data: print "Dataset is empty"; return [] 
-
-        for tuple in data:
-            try:
-                layer = c.addLineLayer(y_total_n[str(tuple[1])], -1, tuple[0].encode('utf-8'))
-                layer.setXData(times)        
-                layer.setLineWidth(optdict['setlinewidth_total'])
-            except Exception, ex:
-                print repr(ex)     
-
-        # output the chart
-        retlist.append(c.makeChart2(0))	
-        return retlist
-
     def cddraw_pie(self, type, data, *args, **kwargs):
         '''Plots pie chart of traffic values on
 	@axes - axes,
@@ -1168,13 +643,16 @@ class cdDrawer(object):
 
         return mname
     def format_chart_nfs_ut(self, c, optdict, bstr, ptitle='', kwargs={}, spa=None):
+        #c.setColors(optdict['setcolors'])
+        if optdict.has_key('additional'):
+            optdict['additional'](c)
         antialias = (kwargs['options'].has_key('antialias') and kwargs['options']['antialias']) or optdict['antialias']
         if not antialias:
             c.setAntiAlias(0)
         if not spa: spa = optdict['setplotarea']
         c.setPlotArea(*spa)
 
-        c.setColors(optdict['setcolors'])
+        #
         c.addLegend(*optdict['addlegend']).setBackground(optdict['legendbackground'])
         autoticks = (kwargs['options'].has_key('autoticks') and kwargs['options']['autoticks']) or optdict['autoticks']
         if not autoticks:
@@ -1204,7 +682,10 @@ class cdDrawer(object):
         c.yAxis().setLabelStyle(*optdict['yaxissetlabelstyle'])
         c.yAxis().setLabelFormat(optdict['yaxissetlabelformat']+' '+bstr)
         if optdict['xaxissetlabelformat']:
-            self.update_tick_dates(c, optdict)
+            if optdict['xaxissetlabelformat'][0:3] == 'def':
+                c.xAxis().setLabelFormat(optdict['xaxissetlabelformat'][3:])
+            else:
+                self.update_tick_dates(c, optdict)
     
     
     addLLArgs = {2:['_total'], 3:['_in', '_out']}

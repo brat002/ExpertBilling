@@ -74,6 +74,8 @@ class isdlogger(object):
     def setNewLevel(self, level):
         if self.loggingLevel != level:
             self.loggingLevel = level
+            '''if self.ltype == 'logging':
+                logging.root.setLevel(self.levels[level])'''
         
     def debug(self, message, vars):
         self.log(0, message, vars)
