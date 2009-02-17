@@ -755,8 +755,6 @@ class AccountServiceThread(Thread):
                 TRTRNodesCache = trafnodesTmp
                 curAT_date  = tmpDate
                 curAT_lock.release()
-                #del accts, tmpacIdx, tmptfIdx, tmpspC, tmpttsC, tmpnasC, tmpdsC, tmpnsC, tmpDate
-                #del ttssTp, spsTp, nasTp, defspTmp, nspTmp
                 
                 #clear memoize cache
                 fMem.periodCache = {}

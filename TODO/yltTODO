@@ -1,3 +1,16 @@
+!try autocommit on testsuite
+
+python db2-api autocommit
+write an nf generator based on classes, ports, hops, etc
+get from the db info
+construct packets
+ nfs packet generator
+rad packet generator
+testerov na adminku
+grepper
+testsuite
+etc
+code cleanup
 !rewrite nf 
   10:26:11 PM yolta_ku: locale module
   10:27:18 PM yolta_ku: gettext module

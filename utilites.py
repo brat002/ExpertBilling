@@ -9,9 +9,10 @@ import packet
 import socket
 import cPickle
 import paramiko
+import logging
 import datetime, calendar
 import os, sys, time, md5, binascii, socket, select
-
+paramiko.common.logging.root.setLevel(logging.INFO)
 
 class IPNAccount(object):
     def __init__(self):

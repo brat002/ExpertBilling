@@ -291,7 +291,6 @@ class FlowDequeThread(Thread):
                 iqueue = 0                
                 #if aggregation time was still not reached -> sleep
                 wtime = time.time() - aggrTime - stime
-                #logger.info('fdqThread wtime: %s', wtime)
                 if wtime < 0: time.sleep(abs(wtime))
                 
                 #TO-DO: переделать на execute_many
@@ -645,10 +644,6 @@ class ServiceThread(Thread):
                 groups_ = {}
                 for group in groups:
                     if not group[1]: continue
-                    #direction = group[2]
-                    #g_id   = group[0]
-                    #g_type = group[3]
-                    #classes_ = group[1]
                     lgroup = list(group)
                     #lgroup[1] = set(lgroup[1])
                     groups_[group[0]] = lgroup

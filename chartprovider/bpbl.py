@@ -844,16 +844,16 @@ class dataProvider(object):
                 y_max = 0
             if y_max < 8000:
                 y_total  = [float(y) * 8/ sec for y in y_total]
-                bstr = 'B\\s'
+                bstr = 'bps'
             elif y_max < 8000000:
                 y_total  = [float(y) * 8/ (1024*sec) for y in y_total]
-                bstr  = 'Kb\\s'
+                bstr  = 'kbps'
             elif y_max < 8000000000:
                 y_total  = [float(y) * 8/ (1048576*sec) for y in y_total]
-                bstr  = 'Mb\\s'
+                bstr  = 'Mbps'
             else:
                 y_total  = [float(y) * 8/ (1073741824*sec) for y in y_total]
-                bstr  = 'Gb\\s'
+                bstr  = 'Gbps'
         else:
             try:
                 y_max = max(y_total)
@@ -887,22 +887,22 @@ class dataProvider(object):
             if y_max < 8000:
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) * 8 / sec for y in y_total_u[y_total]]
-                bstr  = 'b\\s'
+                bstr  = 'bps'
             elif y_max < 8000000:
                 norm = 1024*sec
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) * 8/ norm for y in y_total_u[y_total]]
-                bstr  = 'Kb\\s'
+                bstr  = 'kbps'
             elif y_max < 8000000000:
                 norm = 1048576*sec
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
-                bstr  = 'Mb\\s'
+                bstr  = 'Mbps'
             else:
                 norm = 1073741824*sec
                 for y_total in y_total_u.iterkeys():
                     y_total_u[y_total]  = [float(y) * 8 / norm for y in y_total_u[y_total]]
-                bstr  = 'Gb\\s'
+                bstr  = 'Gbps'
         else:
             try:
                 y_max = max([max(lst) for lst in y_total_u.itervalues()])
