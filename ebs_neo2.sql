@@ -8619,6 +8619,9 @@ ALTER TABLE ONLY billservice_accountprepaystrafic
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_pkey PRIMARY KEY (id);
 
+ALTER TABLE billservice_accounttarif
+   ADD CONSTRAINT billservice_accounttarif_acc_dt_uq_key UNIQUE(account_id, datetime);
+
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_pkey PRIMARY KEY (id);
 
