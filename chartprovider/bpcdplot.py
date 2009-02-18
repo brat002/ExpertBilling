@@ -32,6 +32,9 @@ portdict = {\
 tmpChart = XYChart(800,300)
 #tmpChart.gradientColor(0, 300, 0, 800, 0xa2c1e6, 0xe7f1fe)
 
+#pychartdir.defaultPalette = pychartdir.transparentPalette
+pychartdir.BackgroundColor = 0xFF000000L
+#metalColor(0xa2c1e6,0)
 class cdDrawer(object):
     cdchartoptdict = {\
         "nfs_total":\
@@ -47,7 +50,7 @@ class cdDrawer(object):
                                          
         "nfs_web":\
                                         {'xychart':(440, 170, metalColor(0xa2c1e6,0), 0x000000, 1), 'setplotarea':(80, 30, 340, 115, 0xFF000000L, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.transparentPalette, \
-                                         'additional': lambda c: c.setRoundedFrame(), \
+                                         'additional': lambda c: None, \
                                          'addlegend':(50, 0, 0, "fonts/LiberationSerif-Regular.ttf", 8), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 8), \
                                          'yaxissettitle':("", "fonts/LiberationSerif-Regular.ttf", 8), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
                                          'yaxissettitlespeed':("", "fonts/LiberationSerif-Regular.ttf", 8),\
@@ -646,6 +649,7 @@ class cdDrawer(object):
         #c.setColors(optdict['setcolors'])
         if optdict.has_key('additional'):
             optdict['additional'](c)
+            c.setTransparentColor(0xffffff)
         antialias = (kwargs['options'].has_key('antialias') and kwargs['options']['antialias']) or optdict['antialias']
         if not antialias:
             c.setAntiAlias(0)
