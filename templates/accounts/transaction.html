@@ -1,45 +1,43 @@
-{% extends 'base.html' %}
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
 {% load custom_filters %}
 
 {% block content %}
 {% if transactions %}
-<table class="table_border" cellpadding="0" cellspacing="0">
-    <tr>
-       <th class="first_row">Дата</th>
-       <th>Сумма</th>
-       <th>Описание</th>
-       <th>Документ</th>
-       <th>Комментарий</th>
-    </tr>
-    {% for transaction in transactions %}
-       <tr>
-           <td class="first_row">{{ transaction.created|date_with_offset:"%d %b %Y %H.%m" }}</td>
-           <td align="right">{{ transaction.summ }}</td>
-           <td>{{ transaction.description }}&nbsp;</td>
-           <td>{{ transaction.bill }}&nbsp;</td>
-           <td>{{ transaction.comment }}&nbsp;</td>
-       </tr>
-    {% endfor%}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">ИНФОРМАЦИЯ ОБ ОПЕРАЦИЯХ С БАЛАНСОМ</th>
+	</tr>
+	<tr>
+		<td class="">
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+    			<tr>
+       				<th>Дата</th>
+       				<th>Сумма</th>
+       				<th>Описание</th>
+       				<th>Документ</th>
+       				<th>Комментарий</th>
+    			</tr>
+    			{% for transaction in transactions %}
+       				<tr>
+           				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{{ transaction.summ }}</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.description }}&nbsp;</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.bill }}&nbsp;</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.comment }}&nbsp;</td>
+       				</tr>
+    			{% endfor%}
+			</table>
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
 </table>
-{% include 'paginator.html' %}
+
 {% else %}
- <h1>Данных на данный момент нет</h1>
+ <h2 align="center">Данных нет</h2>
 {% endif %}
 {% endblock %}
 
-{% block menu_option %}
-            <ul style="list-style-type: none">
-              <li><a href="/index/">Главная</a></li>
-			  <li><a href="/prepaid/">Остаток предоплаченного трафика</a></li>
-              <li><a href="/transaction/">Биллинговая информация</a></li>
-              <li><a href="/card/activation/">Активация карточек</a></li>
-              <!--<li><a href="/traffic/info/">Статистика по трафику</a></li>-->
-              <li><a href="/session/info/">Статистика по сессиям</a></li>
-			  <li><a href="/traffic/limit/">Лимиты трафика</a></li>
-              <li><a href="/password/change/">Сменить пароль</a></li>
-              <li><a href="/accounts/logout/">Выйти</a></li>          
-           </ul>
-{% endblock%}
 
 {% block title %}
     Биллинговая информация

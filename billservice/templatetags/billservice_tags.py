@@ -87,7 +87,7 @@ def time_format(s):
                 }
         
 @register.inclusion_tag('accounts/tags/traffic_limit_coll.html')
-def traffic_limit_coll(trafficlimit, user):
+def traffic_limit_coll(trafficlimit, user, iter_nom, last=False):
     settlement_period = trafficlimit.settlement_period
     cursor = connection.cursor()
     if settlement_period.autostart==True:
@@ -109,7 +109,7 @@ def traffic_limit_coll(trafficlimit, user):
                         """, (trafficlimit.group_id, user.id, settlement_period_start,  settlement_period_end))
     summ = cursor.fetchone()
     try:
-        summ = summ[0]//1024000
+        summ = summ[0]/1024000
     except:
         summ = 0 
     try:
@@ -122,9 +122,18 @@ def traffic_limit_coll(trafficlimit, user):
             'settlement_period_end': settlement_period_end,
             'summ':summ,
             'stay':stay,
+            'iter_nom':iter_nom,
+            'last':last,
             }
     
     
+@register.filter(name='coll_bg')
+def coll_bg(value):
+    row_class = ''
+    if value%2 == 0:
+        row_class = u'with_bg'
+    return row_class
+
     
     
     

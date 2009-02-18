@@ -1,97 +1,183 @@
-﻿{% extends 'base.html' %}
+﻿{% extends 'base_extended.html' %}
 {% load custom_filters %}
 {% load billservice_tags %}
 
 {% block content %}
-  {% if account %}
-  <!-- остаток предоплаченного трафика -->
-{% if prepaidtraffic %}
-	<div class="prepaid_table">
-		<div style="height:38px;">
-			<div class="prepaid_table_top_left"></div>
-			<div class="prepaid_table_top_right"></div>
-			<div style="clear:both; margin-bottom:5px;"></div>
-			Остаток предоплаченного трафика
-		</div>
-	<table cellspacing="0">
-		<tr>
-			<th>Тип трафика</th>
-			<th>Исходящий</th>
-			<th>Входящий</th>
-			<th>Количество</th>
-		</tr>
-	{% for traffic in prepaidtraffic %}
-		{% for class in traffic.traffic_class.all %}
-			<tr>
-				<td class="border_right" {% if forloop.last %}style="padding:24px 24px 0 0;"{% endif %}>{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
-				<td class="border_right prepaid_table_td_padding">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
-				<td class="border_right prepaid_table_td_padding">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
-				<td {% if forloop.last %}style="padding:24px 0 0 0;"{% endif %}>{% traffic_size traffic account_tarif %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
-			</tr>
-		{% endfor %}
-	</table>
-	{% endfor %}
-	</div>
+<script>
+	function activate_car() {
+		var pin=document.getElementById("id_pin");
+		var series=document.getElementById("id_series");
+		var message=document.getElementById("message");
+	 	jQuery.ajax({
+        	type: "POST",
+        	cache: false,
+        	url: '/card/activation/',
+        	data: { 'series': series.value, 'pin': pin.value},
+        	timeout: 15000,
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        	//beforeSend: function(XMLHttpRequest){},
+        	success: function(data, status){
+				var ret = eval('('+data+')');
+				if (typeof ret['redirect'] != 'undefined') {
+					window.location.href = ret['redirect'];
+				} 
+				message.innerHTML = ret['error_message'];
+				pin.value='';
+				series.value='';
+			},
+        	error: function(data, status){
+				var ret = eval('('+data+')'); 
+				message.innerHTML = ret['error_message'];
+				pin.value='';
+				series.value=''; 
+			 },
+        	complete: function(data, status){  }
+    	});
+	}
+</script>
+ {% if user %}
+ <div class="f-left" style="width:100%">
+<table class="wide main_table" cellpadding="0" cellspacing="0" >
+	<!--- Мои данный/Загрузка канала - загаловки --->
+	<tr>
+		<td style="width:50%" class="blue_caption white s-11 bold main_table_left_border">МОИ ДАННЫЕ</td>
+		<td style="width:50%" class="green_caption white s-11 bold right_border main_table_left_border">ЗАГРУЗКА КАНАЛА</td>
+	</tr>
+	<!--- Мои данный/Загрузка канала - данные --->
+	<tr>
+		<td class="account_information main_table_left_border user_info">
+			<div class="user_block">
+				{% if user.city or user.postcode or user.region or user.street or user.house or user.house_bulk or user.entrance or user.room %}
+					<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %}г. {{ user.city }}{% endif %} {% if user.region %}обл. {{ user.region }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %}д. {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
+				{% endif %}
+				{% if user.email %}
+					<div><span class="bold">E-mail : {{ user.email }}</div>
+				{% endif %}
+				<div><span class="bold">Cетевой IP адрес :</span> {{ user.ipn_ip_address }}</div>
+				<div><span class="bold">VPN IP адрес :</span> {{ user.vpn_ip_address }}</div>
+				<div><span class="bold">Тарифный план :</span> {{ tarif }}</div>
+				<div><span class="bold">Баланс :</span> {{ ballance }}</div>
+				<div><span class="bold">Размер кредита :</span> {{ user.credit }}</div>
+				<div><span class="bold">Дата подключенияs :</span> {{ user.created|date_with_offset:"%d.%m.%Y в %m:%H" }}</div>
+			</div>
+		</td>
+		<td class="right_border main_table_left_border diagram_bg" align="center" valign="center">
+			<div>
+  				<img src="/client/">
+  			</div>
+		</td>
+	</tr>
+	<!--- Предыдущие тарифные планы/активация карточек - загаловки --->
+	<tr>
+		<td class="blue_caption white s-11 bold main_table_left_border">ПРЕДЫДУЩИЕ ТАРИФНЫЕ ПЛАНЫ</td>
+		<td class="green_caption white s-11 bold right_border main_table_left_border">АКТИВАЦИЯ КАРТОЧЕК</td>
+	</tr>
+	<!--- Предыдущие тарифные планы/активация карточек - данные --->
+	<tr>
+		<td class="main_table_left_border" valign="top">
+			{% if tarifs %}
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th class="bold a-left">Название</th>
+						<th class="bold" align="right">Начало действия</th>
+					</tr>
+						{% for previous_tarif in tarifs %}
+		      				{% ifnotequal tarif previous_tarif %}
+								<tr>
+		      						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">
+			     						{{ previous_tarif.tarif }}
+			  						</td>
+									<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} a-right">
+										{{ previous_tarif.datetime|date_with_offset:"%d.%m.%Y %H:%m" }}
+									</td>
+								</tr>
+			  				{% endifnotequal %}
+		   				{% endfor %}
+				</table>
+			{% else %}
+				<h2 align="center">Нет Данных!</h2>
+			{% endif %}
+		</td>
+		<td class="right_border main_table_left_border">
+			<form method="post" onsubmit="return false;">
+				<table class="card_activation f-left">
+					{{ form }}
+				</table>
+				<div id="message" class="s-11"></div>
+				<div class="wide f-left">
+					<input type="image" src="{{ MEDIA_URL }}img/design/send_button.gif" value="Активировать" class="button" onclick="activate_car()">
+				</div>
+			</form>
+			<div class="card_text f-left">
+				<span>Для активации карточек необходимо выполнить следующие действия:</span>
+				<ol type="1">
+					<li>Ввести в поля «пин» и «серия» пин и серию, которые указаны на Вашей карточке;</li>
+					<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически в карточке на указанную сумму;</li>
+					<li>Если Администратор заблокировал данную услугу, то будет выведено сообщение об ошибке.</li>
+				</ol>
+			</div>
+		</td>
+	</tr>
+	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - загаловки --->
+	<tr>
+		<td class="blue_caption white s-11 bold main_table_left_border">ОСТАТОК ПРЕДОПЛАЧЕННОГО ТРАФИКА</td>
+		<td class="blue_caption white s-11 bold right_border main_table_left_border">ОСТАТОК ТРАФИКА ПО ЛИМИТАМ</td>
+	</tr>
+	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - данные --->
+	<tr>
+		<td class="bottom_border main_table_left_border" valign="top">
+			{% if prepaidtraffic %}
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>Тип трафика</th>
+					<th>Исходящий</th>
+					<th>Входящий</th>
+					<th>Количество</th>
+				</tr>
+				{% for traffic in prepaidtraffic %}
+					{% for class in traffic.traffic_class.all %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tarif %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
+						</tr>
+					{% endfor %}
+				{% endfor %}
+			</table>
+			{% else %}
+				<h2 align="center">Нет Данных!</h2>
+			{% endif %}
+		</td>
+		{% spaceless %}
+		<td class="right_border bottom_border main_table_left_border" valign="top">
+				{% if trafficlimit %}
+					<table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
+    					<tr>
+	   						<th class="first_row">Название лимита</th>
+	   						<th>Начало действия</th>
+	   						<th>Окончание действия</th>
+	   						<th>Израсходовано</th>
+	   						<th>Лимит</th>
+						</tr>
+						{% for traffic_limit in trafficlimit %}
+							{% traffic_limit_coll traffic_limit user forloop.counter forloop.last %}
+						{% endfor %}
+					</table>
+				{% else %}
+					<h2 align="center">Нет Данных!</h2>
+				{% endif %}
+		</td>
+		{% endspaceless %}
+	</tr>
+</table>
+</div>
+{% else %}
+    <h2 align="center">Вход не удался</h2>
 {% endif %}
-<!-- end -->
-	<div style="float:left">
-    {% if account.balance_blocked %}
-	   Ваш баланс превышен 
-	{% endif %}
-	{% if account.disabled_by_limit %}
-       Ваш лимит превышен 
-    {% endif %}
-    <h1>{% if account.fullname %}{{account.fullname}}{% else %}{{account.username}}{% endif %} {% if not status %}<img src="{{ MEDIA_URL }}img/design/enable.png" />{% else %}<img src="{{ MEDIA_URL }}img/design/disable.png" />{% endif %}</h1>
-	{% if account.city or account.postcode or account.region or account.street or account.house or account.house_bulk or account.entrance or account.room %}
-	<div><span class="label">Ваш Адрес</span> : <span class="bold">{{ account.postcode }} {%if account.city %}г. {{ account.city }}{% endif %} {% if account.region %}обл. {{ account.region }}{% endif %} {% if account.street %}ул. {{ account.street }}{% endif %} {% if account.house %}д. {{ account.house }}{% endif %} {% if account.house_bulk %}корп. {{ account.house_bulk }}{% endif %} {% if account.room  %}кв. {{ account.room }}{% endif %}</span></div>
-	{% endif %}
-	{% if account.email %}
-		<div><span class="label">E-mail</span> : <span class="bold">{{ account.email }}</span></div>
-	{% endif %}
-	<div><span class="label">Cетевой IP адрес</span> : <span class="bold">{{ account.ipn_ip_address }}</span></div>
-	<div><span class="label">VPN IP адрес</span> : <span class="bold">{{ account.vpn_ip_address }}</span></div>
-	<div><span class="label">Тарифный план</span> : <span class="bold">{{ tarif }}</span></div>
-	<div><span class="label">Баланс</span><span> : <span class="bold">{{ ballance }}</div>
-	<div><span class="label">Размер кредита</span> : <span class="bold">{{ account.credit }}</span></div>
-	<div><span class="label">Дата подключения</span> : <span class="bold">{{ account.created|date_with_offset:"%d %b %Y в %m:%H" }}</span></div>
-	<div style="margin:15px 0;">
-  		<img src="/client/">
-  	</div>
-	
-	{% if tarif_flag %}
-	<div style="padding-top:30px;">
-	   <span class="label">Предыдущие тарифы пользователя :</span><br>
-	   <div>
-	       {% for previous_tarif in tarifs %}
-		      {% ifnotequal tarif previous_tarif %}
-		      <div class="bold">
-			     {{ previous_tarif.tarif }}
-			  </div>
-			  {% endifnotequal %}
-		   {% endfor %}
-	   </div>
-	</div>
-	{% endif %}
-  </div>
-  {% else %}
-    <h1>Вход не удался</h1>
-  {% endif %}
+
+
 {% endblock %}
 
-{% block menu_option %}
-            <ul style="list-style-type: none">
-              <li><a href="/index/">Главная</a></li>
-			  <li><a href="/prepaid/">Остаток предоплаченного трафика</a></li>
-              <li><a href="/transaction/">Биллинговая информация</a></li>
-              <li><a href="/card/activation/">Активация карточек</a></li>
-              <!--<li><a href="/traffic/info/">Статистика по трафику</a></li>-->
-              <li><a href="/session/info/">Статистика по сессиям</a></li>
-			  <li><a href="/traffic/limit/">Лимиты трафика</a></li>
-              <li><a href="/password/change/">Сменить пароль</a></li>
-              <li><a href="/accounts/logout/">Выйти</a></li>          
-           </ul>
-{% endblock%}
 
-{% block title %}
-    Главная
-{% endblock %}
+

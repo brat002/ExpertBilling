@@ -1,5 +1,5 @@
 {% ifnotequal paginator.pages 1 %}
-<div id="pagination">
+<div id="pagination" class="s-11">
 <table class="wide">
 <tr>
 <td class="bold">
@@ -10,11 +10,11 @@
 		{% if paginator.has_n %}
 		    <a href="{{ paginator.n_link }}">&#8594;</a>&nbsp;
 		{% endif %}
-</td><td style="text-align: right" class="bold">
+</td><td style="text-align: right" class="bold" height="20px">
 		{% for group in paginator.windowed_page_links %}
 		{% for p in group %}
 		{% if not p.current %}
-		<a href="{{ p.link }}">{{ p.page }}</a>&nbsp;
+			<a href="{{ p.link }}">{{ p.page }}</a>&nbsp;
 		{% else %}
 		<span class="pagination_current bold">{{ p.page }}</span>&nbsp;
 		{% endif %}

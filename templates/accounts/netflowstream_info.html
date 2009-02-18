@@ -1,50 +1,47 @@
-{% extends 'base.html' %}
+{% extends 'base_extended.html' %}
 {% load billservice_tags %}
 {% load custom_filters %}
 
 {% block content %}
 {% if net_flow_streams %}
-<table class="table_border" cellpadding="0" cellspacing="0">
-    <tr>
-	   <th class="first_row">Дата</th>
-	   <th>IP источника</th>
-	   <th>Порт источника</th>
-	   <th>IP получателя</th>
-	   <th>Порт получателя</th>
-	   <th>Протокол</th>
-	   <th>Передано</th>
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">СЕТЕВАЯ СТАТИСТИКА</th>
 	</tr>
-	{% for net_flow_stream in net_flow_streams%}
-	   <tr>
-	       <td class="first_row">{{ net_flow_stream.date_start|date_with_offset:"%d %b %Y  %m:%H" }}</td>
-		   <td>{{ net_flow_stream.src_addr }}</td>
-		   <td align="center">{{ net_flow_stream.src_port }}</td>
-		   <td>{{ net_flow_stream.dst_addr }}</td>
-		   <td align="center">{{ net_flow_stream.dst_port }}</td>
-		   <td align="center">{{ net_flow_stream.get_protocol }}</td>
-		   <td align="right">{% trafic_format net_flow_stream.octets %}</td>
-	   </tr>
-	{% endfor%}
+	<tr>
+		<td>
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+    			<tr>
+	   				<th>Дата</th>
+	   				<th>IP источника</th>
+	   				<th>Порт источника</th>
+	   				<th>IP получателя</th>
+	   				<th>Порт получателя</th>
+	   				<th>Протокол</th>
+	   				<th>Передано</th>
+				</tr>
+				{% for net_flow_stream in net_flow_streams%}
+	   				<tr>
+	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.date_start|date_with_offset:"%d.%m.%Y  %m:%H" }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.src_addr }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.src_port }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.dst_addr }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.dst_port }}</td>
+		   				<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.get_protocol }}</td>
+		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% trafic_format net_flow_stream.octets %}</td>
+	   				</tr>
+				{% endfor%}
+			</table>
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
 </table>
-{% include 'paginator.html' %}
+
 {% else %}
- <h1>Данных на данный момент нет</h1>
+ <h2 align="center">Данных нет!</h2>
 {% endif %}
 {% endblock %}
 
-{% block menu_option %}
-            <ul style="list-style-type: none">
-              <li><a href="/index/">Главная</a></li>
-			  <li><a href="/prepaid/">Остаток предоплаченного трафика</a></li>
-              <li><a href="/transaction/">Биллинговая информация</a></li>
-              <li><a href="/card/activation/">Активация карточек</a></li>
-              <!--<li><a href="/traffic/info/">Статистика по трафику</a></li>-->
-              <li><a href="/session/info/">Статистика по сессиям</a></li>
-			  <li><a href="/traffic/limit/">Лимиты трафика</a></li>
-              <li><a href="/password/change/">Сменить пароль</a></li>
-              <li><a href="/accounts/logout/">Выйти</a></li>          
-           </ul>
-{% endblock%}
 
 {% block title %}
     Статистика по трафику
