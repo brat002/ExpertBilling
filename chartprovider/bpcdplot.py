@@ -142,7 +142,7 @@ class cdDrawer(object):
         xyc = list(optdict['xychart'])
         spa = list(optdict['setplotarea'])
         if len(col_data) >= 1:
-            addHeight = self.get_legend_length(len(data), 6, 25)
+            addHeight = self.get_legend_length(len(col_data), 6, 25)
             xyc[1] = xyc[1] + addHeight
             spa[1] = spa[1] + addHeight
         retlist = []
