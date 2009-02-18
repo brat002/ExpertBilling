@@ -16,8 +16,9 @@ from billservice.models import Account, AccountTarif, NetFlowStream, Transaction
 from billservice.forms import LoginForm, PasswordForm, CardForm
 from radius.models import ActiveSession  
 from billservice.utility import is_login_user
+from nas.models import TrafficClass
 
-from lib.decorators import render_to
+from lib.decorators import render_to, ajax_request
 
 
 
@@ -57,21 +58,21 @@ def login(request):
                     return HttpResponseRedirect('/index/')
                 else:
                     form = LoginForm(initial={'username': form.cleaned_data['username']})
-                    error_message = u'Проверьте пароль'
+                    error_message = u'Проверьте введенные данные'
                     return {
                             'error_message':error_message,
                             'form':form,
                             }
             except:
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = u'Пользователя с таким логином и паролем не существует'
+                error_message = u'Проверьте введенные данные'
                 return {
                         'error_message':error_message,
                         'form':form,
                         }
         else:
             form = LoginForm(initial={'username': request.POST.get('username', None)})
-            error_message = u'Не введен логин или пароль'
+            error_message = u'Проверьте введенные данные'
             return {
                     'error_message':error_message,
                     'form':form,
@@ -114,14 +115,26 @@ def index(request):
         tarif_flag = True 
     ballance = u'%.2f' % user.ballance 
     #find prepare trafick
+    
+    #cursor = connection.cursor()
+    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+    tarif = cursor.fetchone()
+    tarif = tarif[0]
+    try:
+        tarif = Tariff.objects.get(name=tarif)
+        traffic = TrafficLimit.objects.filter(tarif=tarif) 
+    except:
+        traffic = None
        
     return {
-            'account':user,
+            #'account':user,
             'ballance':ballance,
             'tarif':tarif,
             'tarifs':tarifs,
             'status': bool(cache_user['blocked']),
             'tarif_flag':tarif_flag,
+            'trafficlimit':traffic,
+            'form':  CardForm(),
             }
     
 @render_to('accounts/netflowstream_info.html')
@@ -129,7 +142,7 @@ def netflowstream_info(request):
     if not request.session.has_key('user'):
         return is_login_user(request)
     from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']), 500, 'page')
+    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start'), 500, 'page')
     return {
             'net_flow_streams':paginator.get_page_items(),
             'paginator': paginator,
@@ -141,7 +154,7 @@ def transaction(request):
     if not request.session.has_key('user'):
         return is_login_user(request)
     from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, Transaction.objects.filter(account=request.session['user']), 100, 'page')
+    paginator = SimplePaginator(request, Transaction.objects.filter(account=request.session['user']).order_by('-created'), 100, 'page')
     return {
             'transactions':paginator.get_page_items(),
             'paginator': paginator,
@@ -153,14 +166,22 @@ def vpn_session(request):
         return is_login_user(request)
     from lib.paginator import SimplePaginator
     user = request.session['user']
-    paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user), 50, 'page')
+    paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user).order_by('-date_start'), 50, 'page')
     return {
             'sessions':paginator.get_page_items(),
             'paginator': paginator,
             'user': user,
             }
-
+    
 @render_to('accounts/change_password.html')
+def card_form(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    return {
+            'form':PasswordForm()
+            }
+
+@ajax_request
 def change_password(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
@@ -173,37 +194,46 @@ def change_password(request):
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
                     user.password = form.cleaned_data['new_password']
                     user.save()
-                    return HttpResponseRedirect('/index/')
+                    return {
+                            'error_message': u'Пароль успешно изменен',
+                            'ok':'ok',
+                            }
                 else:
                     return {
                             'error_message': u'Проверьте пароль',
-                            'form':form,
                             }
             except:
-                form = PasswordForm()
                 return {
-                        'error_message': u'Пользователь не существует',
-                        'form':form,
+                        'error_message': u'Проверьте пароль',
                         }
+        else:
+            return {
+                    'error_message': u'Проверьте введенные данные',
+                    }
     else:
-        form = PasswordForm()
         return {
-                'form': form,
+                'error_message': u'Не предвиденная ошибка',
                 }
         
-@render_to('accounts/card_acvation.html')
+@ajax_request
 def card_acvation(request):
     if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
+        return {
+                'redirect':'/',
+               }
+                #HttpResponseRedirect('/')
     if not request.session.has_key('express_pay'):
         return HttpResponseRedirect('/index/')
     user = request.session['user']
     if not user.allow_expresscards:
         return {
-                'error_message': u"Вам не доступна услуга активации карт экспресс оплаты!",
+                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
                 }
     if not cache.get(user.id):
-        return HttpResponseRedirect('/')
+        return {
+                'redirect':'/',
+               }
+        #HttpResponseRedirect('/')
     cache_user = cache.get(user.id)
     if int(cache_user['count']) > settings.ACTIVATION_COUNT and not bool(cache_user['blocked']):
         cache.delete(user.id)
@@ -214,12 +244,16 @@ def card_acvation(request):
             cache.delete(user.id)
             cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
         else:
-            return HttpResponseRedirect('/index/')
+            return {
+                    'redirect':'/index/',
+                   }
+            #HttpResponseRedirect('/index/')
     if request.method == 'POST':
         form = CardForm(request.POST)
         if form.is_valid():
             try:
                 card = Card.objects.get(series=form.cleaned_data['series'], pin=form.cleaned_data['pin'], sold__isnull=False, start_date__lte=datetime.datetime.now(), end_date__gte=datetime.datetime.now(), activated__isnull=True)
+                
                 card.activated=datetime.datetime.now()
                 card.activated_by = user
                 card.save()
@@ -233,15 +267,16 @@ def card_acvation(request):
                 transaction.save()
                 cache.delete(user.id)
                 cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
-                return HttpResponseRedirect('/index/')
+                #return HttpResponseRedirect('/index/')
             except: 
                 if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
                     cache.delete(user.id)
-                    cache.set(user.id, {'count':count+1,'last_date':cache_user['date'],'blocked':False,}, 86400*365)
+                    count = int(int(cache_user['count']))
+                    cache.set(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
                 form = CardForm(request.POST)
                 return {
-                        'error_message':u"Ваша карточка уже активирована или она не может быть активирована!",
-                        'form': form,
+                        'error_message':u"Ваша карточка не может быть активирована!",
+                        #'form': form,
                         }
         else:
             count = int(cache_user['count'])
@@ -250,12 +285,13 @@ def card_acvation(request):
                 cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
             return {
                     'error_message': u"Проверьте заполнение формы",
-                    'form': form,
+                    #'form': form,
                     }            
     else:
-        form = CardForm()
+        #form = CardForm()
         return {
-                'form':form,
+                'error_message': u"Ошибка активации карточки",
+                #'form':form,
                 }
 
 @render_to('accounts/account_prepays_traffic.html')
@@ -298,38 +334,27 @@ def client(request):
         md1.hexdigest()
        
         password = str(md1.hexdigest())
-        #f = open('tmp', 'wb')
-        #f.write(child.password.toHex())
         connection._setNewConnectionValidator(antiMungeValidator())
         print connection._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
         connection.test()
-
-        #return connection
-
     except Exception, e:
-        #print "login connection error"
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
             error_message = u"Отказано в авторизации."
         else:
             error_message  = u"Невозможно подключиться к серверу."
     # create image
-    date_end = datetime.datetime.now()
-    day = datetime.timedelta(seconds=86400)
-    date_start = date_end-day
-    args = ('nfs_user_traf', date_start, date_end)
-    kwargs = {}
-    kwargs['return'] ={}
-    kwargs['options'] ={}
-    kwargs['users'] = [user.id]
-    kwargs['autoticks'] = True
-    kwargs['antialias'] = True
-    imgs = connection.makeChart(*args, **kwargs)
-    img = imgs[0] 
     from django.http import HttpResponse
-    response = HttpResponse(img, content_type='image/png')
-
+    t1 = datetime.timedelta(days = 30)
+    a1 = datetime.datetime.now() - t1
+    a2 = datetime.datetime.now()
+    cargs = ('gstat_multi', a1, a2)
+    #for traffic_class in TrafficClass.objects.all().order_by('weight'):
+    #    min_weight = traffic_class
+    ckwargs = {'return':{}, 'options':{'autoticks':False, 'antialias':True}, 'dcname': 'nfs_web', 'speed':True, 'by_col':'classes', 'users':[user.id], 'classes':[i.id for i in TrafficClass.objects.all()]}
+    imgs = connection.makeChart(*cargs, **ckwargs)
+    response = HttpResponse(imgs, content_type='image/png')
     return response
-        
+            
 
 @render_to('accounts/traffic_limit.html')        
 def traffic_limit(request):
@@ -350,3 +375,23 @@ def traffic_limit(request):
             'user':user,
             } 
             
+            
+@render_to('accounts/statistics.html')
+def statistics(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    user = request.session['user']
+    net_flow_streams = NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start')[:8]
+    net_flow_streams
+    transaction = Transaction.objects.filter(account=request.session['user']).order_by('-created')[:8]
+    active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
+    return {
+            'net_flow_stream':net_flow_streams,
+            'transactions':transaction,
+            'active_session':active_session,
+            }
+
+
+
+
+

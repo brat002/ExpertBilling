@@ -6,34 +6,37 @@
 {% block context_extra %}
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 {% endblock %}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/design.css">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/new_design.css">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/thickbox.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}js/thickbox-compressed.js"></script>
+
+{% block extra_head %}
+{% endblock %}
+
 </head>
 
 <body>
 
-  
-    <div class="header" style="float: left; width: 100%">
-	   <div style="float: right"><img src="{{ MEDIA_URL }}img/design/header_right_image.gif" alt="1"></div>
-	   <div style="float: left"><img src="{{ MEDIA_URL }}img/design/header_left_image.jpg" alt="2"></div>
+<div class="content_align">
+    <div class="header">
+	   <div style="float: right">
+	   	{% block account_control %}
+		{% endblock %}
+	   </div>
+	   <div style="float: left; {% block logo_style %}{% endblock %}"><img src="{{ MEDIA_URL }}img/design/logo.gif"></div>
 	</div>
 	<div style="clear: both"></div>
-	<div>
-
-	   <div style="width:30%; float:left; max-width:260px" class="meny_items">
-
-		   {% block menu_option %}{% endblock%}
-        </div>
-		
-		<div style="padding-left:60px;">
-			{% block login %}
-			{% endblock %}
-		</div>
-        <div style=" float:left; padding-left:60px; width:60%;">
-	       {% block content %}
-	       {% endblock%}
-	   </div>
-		        
-	</div>
-	
-  </body>
+</div>
+	{% block main_meny %}
+	{% endblock %}
+<div class="content_align">
+	{% block name %}
+	{% endblock %}
+	{% block login %}
+	{% endblock %}
+	{% block content %}
+	{% endblock%}
+</div>
+</body>
 </html>

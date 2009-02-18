@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block account_control %}
+	{% include 'meny\account_meny.html' %}
+{% endblock %}
+
+{% block main_meny %}
+<div class="main_meny_bg">
+	<div class="content_align">
+		{% include 'meny\main_meny.html' %}
+	</div>
+</div>
+{% endblock %}
+
+{% block name %}
+	<div class="user">
+		<div class="f-right status">{% if status %}<div class="user_is_blocked bold s-11">Вы заблокированы</div>{% endif %}</div>
+		<div class="f-left user_name bold">{% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %} </div>
+	</div>
+	<div style="clear:both"></div>
+{% endblock %}

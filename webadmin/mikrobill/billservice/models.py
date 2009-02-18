@@ -411,7 +411,7 @@ class TrafficLimit(models.Model):
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
     group             = models.ForeignKey("Group")
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
-    action            = models.IntegerField()
+    #action            = models.IntegerField()
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -474,7 +474,7 @@ class Account(models.Model):
     
     address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
     city = models.CharField(max_length=255)
-    postcode = models.IntegerField()
+    postcode = models.CharField(max_length=255, blank=True, null=True)
     region = models.CharField(max_length=255)
     street = models.CharField(max_length=255)
     house = models.CharField(max_length=255)
@@ -537,12 +537,18 @@ class Account(models.Model):
     class Meta:
         verbose_name = u"Аккаунт"
         verbose_name_plural = u"Аккаунты"
+        
+    @models.permalink
+    def change_password_url_ajax(self):
+        print '-----------------'
+        print 123456789
+        print '-----------------'
+        return ('billservice.views.change_password', (), {})
 
-    def save(self):
+    def save(self, *args, **kwargs):
         id=self.id
         #if self.assign_ip_from_dhcp and ipn_ip_address!='':
-
-        super(Account, self).save()
+        super(Account, self).save(*args, **kwargs)
         if not id and self.status=='Active':
             cost=0
             for ots in self.tarif.onetime_servies.all():
