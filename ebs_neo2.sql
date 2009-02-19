@@ -771,6 +771,21 @@ CREATE TABLE billservice_dealerpay
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_dealerpay OWNER TO ebs;
 
+CREATE TABLE billservice_organization
+(
+  id serial NOT NULL,
+  account_id integer NOT NULL,
+  "name" character varying(255) DEFAULT ''::character varying,
+  uraddress character varying(255) DEFAULT ''::character varying,
+  okpo character varying(255) DEFAULT ''::character varying,
+  unp character varying(255) DEFAULT ''::character varying,
+  bank_id integer NOT NULL,
+  phone character varying(255) DEFAULT ''::character varying,
+  fax character varying(255) DEFAULT ''::character varying
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_organization OWNER TO mikrobill;
+
 CREATE TABLE billservice_salecard
 (
   id bigint NOT NULL,
@@ -1273,6 +1288,16 @@ CREATE SEQUENCE billservice_dealerpay_id_seq
 ALTER TABLE billservice_dealerpay_id_seq OWNER TO ebs;
 ALTER SEQUENCE billservice_dealerpay_id_seq OWNED BY billservice_dealerpay.id;
 SELECT pg_catalog.setval('billservice_dealerpay_id_seq', 1, false);
+
+CREATE SEQUENCE billservice_organization_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE public.billservice_organization_id_seq OWNER TO ebs;
+ALTER SEQUENCE billservice_organization_id_seq OWNED BY billservice_organization.id;
+SELECT pg_catalog.setval('billservice_organization_id_seq', 1, false);
 
 CREATE SEQUENCE billservice_salecard_id_seq
   INCREMENT 1
@@ -1798,6 +1823,7 @@ ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservic
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
 ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
 ALTER TABLE billservice_dealerpay ALTER COLUMN id SET DEFAULT nextval('billservice_dealerpay_id_seq'::regclass);
+ALTER TABLE billservice_organization ALTER COLUMN id SET DEFAULT nextval('billservice_organization_id_seq'::regclass);
 ALTER TABLE billservice_salecard ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_id_seq'::regclass);
 ALTER TABLE billservice_salecard_cards ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_cards_id_seq'::regclass);
 ALTER TABLE nas_trafficnode ALTER COLUMN id SET DEFAULT nextval('nas_trafficnode_id_seq'::regclass);
@@ -8631,6 +8657,9 @@ ALTER TABLE billservice_dealer
 ALTER TABLE billservice_dealerpay
   ADD CONSTRAINT billservice_dealerpay_pkey PRIMARY KEY(id);
   
+ALTER TABLE billservice_organization
+  ADD CONSTRAINT billservice_organization_pkey PRIMARY KEY(id);
+  
 ALTER TABLE billservice_salecard
   ADD CONSTRAINT billservice_salecard_pkey PRIMARY KEY(id);
   
@@ -9019,6 +9048,11 @@ ALTER TABLE billservice_dealerpay
 ALTER TABLE billservice_dealerpay
   ADD CONSTRAINT billservice_dealerpay_salecard_id_fkey FOREIGN KEY (salecard_id)
       REFERENCES billservice_salecard (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+ALTER TABLE billservice_organization
+  ADD CONSTRAINT billservice_organization_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
 ALTER TABLE billservice_salecard
