@@ -27,7 +27,6 @@ from utilites import graceful_loader, graceful_saver
 try:    import mx.DateTime
 except: pass
 
-
 class reception_server(asyncore.dispatcher):
     '''
     Asynchronous server that recieves datagrams with NetFlow packets
@@ -67,7 +66,6 @@ class nfDequeThread(Thread):
             #TODO: add locks if deadlocking issues arise
             try:
                 data, addrport = nfQueue.popleft()        
-
                 nfPacketHandle(data, addrport, nfFlowCache)
             except IndexError, ierr:
                 time.sleep(3); continue    
@@ -321,20 +319,22 @@ class FlowDequeThread(Thread):
                         for nnode in nnodes:
                             if (((flow[0] & nnode[1]) == nnode[0]) and ((flow[2] & nnode[3]) == nnode[2]) and ((flow[3] == nnode[4]) or (not nnode[4])) and ((flow[9] == nnode[5]) or (not nnode[5])) and ((flow[10] == nnode[6]) or (not nnode[6])) and ((flow[13] == nnode[7]) or (not nnode[7]))):
                                 if not classLst:
-                                    direction = nnode[9]
+                                    #direction = nnode[9]
                                     fnode = nnode
+                                elif nnode[9] != fnode[9]:
+                                    continue
                                 classLst.append(nclass)
                                 if not nnode[8]:
                                     passthr = False
                                 break
                         #found passthrough=false
                         if not passthr:
-                            self.add_classes_groups(flow, classLst, nnode, acctf_id, has_groups, tarifGroups)
+                            self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
                             break                   
                     #if traversed all the nodes
                     else:
                         if classLst:
-                            self.add_classes_groups(flow, classLst, node, acctf_id, has_groups, tarifGroups)
+                            self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
                         else: continue
                         
                     #construct a list
