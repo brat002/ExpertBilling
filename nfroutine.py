@@ -895,6 +895,7 @@ def main():
     graceful_recover()
     global curAT_date, suicideCondition
     global threads, cacheThr, NfAsyncUDPServer
+    #thread_list = [['routinethreads', NetFlowRoutine, 'NetFlowRoutine'],]
     threads=[]
     for i in xrange(int(config.get("nfroutine", "routinethreads"))):
         newNfr = NetFlowRoutine()
