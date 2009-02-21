@@ -43,7 +43,7 @@ limit_actions = [CashType(0, u"Заблокировать пользовател
 la_list = [u"Заблокировать пользователя", u"Изменить скорость"]
 
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
-ps_list = [u"При любом балансе", u"При положительном балансе", u"При отрицательном балансе"]
+ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе"]
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection,ttype, account=None, model=None):
         super(AddAccountTarif, self).__init__()
@@ -1411,7 +1411,9 @@ class TarifFrame(QtGui.QDialog):
             child = ComboBoxDialog(items=ps_conditions, selected_item = default_text )
             self.connection.commit()
             if child.exec_()==1:
-                self.addrow(self.periodical_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
+                self.periodical_tableWidget.item(y,x).setText(child.comboBox.currentText())
+                self.periodical_tableWidget.item(y,x).selected_id=child.selected_id
+            #print "created=", self.periodical_tableWidget.item(y,x).selected_id
 
     def getIdFromtable(self, tablewidget, row=0):
         tmp=tablewidget.item(row, 0)
@@ -1584,6 +1586,7 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 5)
                     self.periodical_tableWidget.item(i, 5).selected_id = node.condition
                     self.periodical_tableWidget.item(i, 5).created = node.created
+                    print "node created", node.created
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
             
@@ -3271,7 +3274,7 @@ class AccountWindow(QtGui.QMainWindow):
                 accounttarif = Object()
                 accounttarif.account_id=model.id
                 accounttarif.tarif_id=self.tarif_id
-                accounttarif.datetime = datetime.datetime.now()
+                accounttarif.datetime = "now()"
                 self.connection.save(accounttarif,"billservice_accounttarif")
 
             if self.groupBox_urdata.isChecked():

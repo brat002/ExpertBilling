@@ -364,12 +364,12 @@ class HandleSAuth(HandleSBase):
                 minimal_period = minimal_period[:6]
             else:
                 minimal_period = ["0/0","0/0","0/0","0/0","8","0/0"]
-            print "minimal_period",minimal_period
+            #print "minimal_period",minimal_period
 
             for k in xrange(0, 6):
                 s=minimal_period[k]
-                #print s
-                if s=='0/0' or s=='/':
+                #print 's', s
+                if s=='0/0' or s=='/' or s=='':
                     res=defaults[k]
                 else:
                     res=s
@@ -377,7 +377,7 @@ class HandleSAuth(HandleSBase):
                 result.append(res)
             
             #print account_id
-            #print result
+            #print "result", result
             #print account_speed_limit_cache
             #print minimal_period[:6]
             correction = account_speed_limit_cache.get(account_id)
@@ -385,7 +385,7 @@ class HandleSAuth(HandleSBase):
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
-            #print result
+            #print "corrected", result
             if result==[]:
                 result=defaults
             if result==[]:
@@ -395,6 +395,7 @@ class HandleSAuth(HandleSBase):
             result_params=create_speed_string(result)
             self.speed=result_params
             #print "params=", result_params
+            #print 'result_params', result_params
 
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
