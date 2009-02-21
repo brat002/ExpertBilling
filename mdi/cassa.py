@@ -290,10 +290,11 @@ class CassaEbs(ebsTableWindow):
         account_id = self.getSelectedId()
         tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
         if account_id and tarif_id and QtGui.QMessageBox.question(self, u"Произвести перевод пользователя на нвоый тарифный план?" , u"Вы уверены, что хотите перевести пользователя на выбранный тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            datetime = self.dateTime.dateTime().toPyDateTime()
-            self.connection.createAccountTarif(account_id, tarif_id, datetime)
+            dtime = self.dateTime.dateTime().toPyDateTime()
+            self.connection.createAccountTarif(account_id, tarif_id, dtime)
             self.connection.commit()
             self.refreshTable()
+            self.dateTime.setDateTime(datetime.datetime.now())
         
 
     def cheque_print(self):
@@ -319,9 +320,7 @@ class CassaEbs(ebsTableWindow):
             file.close()
             a=CardPreviewDialog(url="templates/tmp/temp.html", printer=self.printer)
             a.exec_()
-            
 
-    
     def getPrinter(self):
         printer = QtGui.QPrinter()
         dialog = QtGui.QPrintDialog(printer, self)

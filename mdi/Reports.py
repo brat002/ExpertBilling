@@ -191,7 +191,7 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(transaction.bill, i, 3)
             self.addrow(transaction.transaction_type_name, i, 4)
             self.addrow(transaction.tariff_name, i, 5)
-            self.addrow(transaction.summ, i, 6)
+            self.addrow(transaction.summ*(-1), i, 6)
             self.addrow(transaction.description, i, 7)
             i+=1
         self.tableWidget.setColumnHidden(0, True)

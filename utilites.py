@@ -182,6 +182,10 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
 
 def in_period(time_start, length, repeat_after, now=None):
         """
+        @param time_start: Дата и время начала действия расчётного периода
+        @param length: Длина расчётного периода
+        @param repeat_after: Период повторения расчётного периода
+        @param now: Текущая дата    
         Если повторение-год = проверяем месяц, число, время
         Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
         Если повтроение - квартал   = (текущий месяц - начальный месяц по модулю)/3=1, совпадает число, время
@@ -217,25 +221,27 @@ def in_period(time_start, length, repeat_after, now=None):
             delta_days = now - time_start
             
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
+            nums,ost = divmod(delta_days.days*86400+delta_days.seconds, 86400*7)
             tnc=time_start+relativedelta(weeks=nums)
-            tkc=tnc+relativedelta(weeks=1)
+            tkc=tnc+datetime.timedelta(seconds=length)
 
-            #print time_start, delta_days.seconds
+            #print tnc, tkc
             if now>=tnc and now<=tkc:
                 #print "WEEK TRUE"
                 return True
             return False
         elif repeat_after=='MONTH':
             #Февраль!
-            tnc=datetime.datetime(now.year, now.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
+            rdelta = relativedelta(now, time_start)
+            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
             tkc=tnc+datetime.timedelta(seconds=length)
             if now>=tnc and now<=tkc:
                 return True
             return False
         elif repeat_after=='YEAR':
             #Февраль!
-            tnc=datetime.datetime(now.year, time_start.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
+            rdelta = relativedelta(now, time_start)
+            tnc=time_start+relativedelta(years = rdelta.years)
             tkc=tnc+datetime.timedelta(seconds=length)
             if now>=tnc and now<=tkc:
                 return True
@@ -264,7 +270,7 @@ def in_period_info(time_start, length, repeat_after, now=None):
              ок
         иначе
              вышел за рамки
-
+        @return: время начала периода, время окончания периода, время в секундах от текущей даты до начала периода, попала ли дата в период
         """
         result=False
 
@@ -288,24 +294,26 @@ def in_period_info(time_start, length, repeat_after, now=None):
         elif repeat_after=='WEEK':
             delta_days=now - time_start
             #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
+            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400*7)
             tnc=time_start+relativedelta(weeks=nums)
-            tkc=tnc+relativedelta(weeks=1)
+            tkc=tnc+datetime.timedelta(seconds=length)
 
             if now>=tnc and now<=tkc:
                 result=True
 
         elif repeat_after=='MONTH':
             #Февраль!
-            tnc=datetime.datetime(now.year, now.month, time_start.day,time_start.hour,time_start.minute, time_start.second)
+            rdelta = relativedelta(now, time_start)
+            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
             tkc=tnc+datetime.timedelta(seconds=length)
             if now>=tnc and now<=tkc:
                 result=True
 
         elif repeat_after=='YEAR':
             #Февраль!            
-            tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
-            tkc=tnc+relativedelta(years=1)
+            rdelta = relativedelta(now, time_start)
+            tnc=time_start+relativedelta(years = rdelta.years)
+            tkc=tnc+datetime.timedelta(seconds=length)
             
             if now>=tnc and now<=tkc:
                 result=True
@@ -324,6 +332,11 @@ def in_period_info(time_start, length, repeat_after, now=None):
 def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False):
         """
         Функция возвращает дату начала и дату конца текущего периода
+        @param time_start: время начала расчётного периода
+        @param repeat_after: период повторения в константах
+        @param repeat_after_seconds: период повторения в секундах
+        @param now: текущая дата
+        @param prev: получить данные о прошлом расчётном периоде     
         """
         
         #print time_start, repeat_after, repeat_after_seconds,  now
@@ -375,11 +388,11 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
             return (tnc, tkc, length)
         elif repeat_after=='MONTH':
             if prev==False:
-                months=relativedelta(now,time_start).months
+                rdelta = relativedelta(now, time_start)
             else:
-                months=relativedelta(now-relativedelta(months=1),time_start).months
-                
-            tnc=time_start+relativedelta(months=months)
+                rdelta=relativedelta(now-relativedelta(months=1),time_start)
+            #print "time_start, rdelta=", time_start, rdelta
+            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
             tkc=tnc+relativedelta(months=1)
             delta=tkc-tnc
 
@@ -391,10 +404,14 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
 
             tkc=tnc+relativedelta(years=1)
             delta=tkc-tnc
-            return (tnc, tkc, delta.seconds)
+            return (tnc, tkc, delta.days*86400+delta.seconds)
 
         
-def command_string_parser(command_string='', command_dict={}):    
+
+def command_string_parser(command_string='', command_dict={}):
+    """
+    
+    """    
     import re
     if len(command_string) == 0 or len(command_dict) == 0:
         return ''

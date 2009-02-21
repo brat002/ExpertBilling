@@ -57,10 +57,13 @@ class check_vpn_access(Thread):
         min_from_start=0
         f_speed = None
         for speed in speeds:
+            #if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
+
             tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
             if result==True and (from_start<min_from_start or min_from_start==0):
                 min_from_start=from_start
-                f_speed=speed               
+                f_speed=speed
+        #print "f_speed=", f_speed                
         if f_speed != None:
             for i in range(6):
                 speedi = f_speed[i]
@@ -69,7 +72,10 @@ class check_vpn_access(Thread):
         return defaults
     
     def remove_sessions(self, cur, connection):
-        cur.execute("""SELECT id, name, "type", ipaddress, secret, "login", "password", reset_action FROM nas_nas;""")
+
+        cur.execute("""
+            SELECT id, name, "type", ipaddress, secret, "login", "password", reset_action FROM nas_nas;
+            """)
         nasses=cur.fetchall()
 
         #ASK 100%
@@ -175,9 +181,29 @@ class check_vpn_access(Thread):
                 for row in rows:
                     try:
                         result=None
-                        nasRec = cacheNas.get(str(row[5]))
+                        nasRec = cacheNas[str(row[5])]
                         acct = cacheAT.get(row[1])
-                        if (not acct) or (not nasRec): continue
+                        '''
+                        [0]  - id, 
+                        [1]  - type, 
+                        [2]  - name, 
+                        [3]  - ipaddress, 
+                        [4]  - secret, 
+                        [5]  - login, 
+                        [6]  - password, 
+                        [7]  - allow_pptp, 
+                        [8]  - allow_pppoe, 
+                        [9]  - allow_ipn, 
+                        [10] - user_add_action, 
+                        [11] - user_enable_action, 
+                        [12] - user_disable_action, 
+                        [13] - user_delete_action, 
+                        [14] - vpn_speed_action, 
+                        [15] - ipn_speed_action, 
+                        [16] - reset_action, 
+                        [17] - confstring, 
+                        [18] - multilink
+                        '''
                         acc_status, allow_vpn_null,allow_vpn_block = acct[29:32]
                         disabled_by_limit, balance_blocked = acct[15:17]
                         acstatus = (((not allow_vpn_null) and (acct[1]+acct[2] >0) or (allow_vpn_null)) \
@@ -227,7 +253,8 @@ class check_vpn_access(Thread):
                                                         speed=speed[:6])                           
         
                                 if coa_result==True:
-                                    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
+                                    cur.execute("""UPDATE radius_activesession
+                                                   SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, row[0],))
                                     connection.commit()
                         else:
@@ -245,7 +272,8 @@ class check_vpn_access(Thread):
                                          nas_login=str(nasRec[5]), 
                                          nas_password=nasRec[6], 
                                          session_id=str(row[2]), 
-                                         format_string=str(nasRec[16]))
+                                         format_string=str(nasRec[16])
+                                     )
         
                         if result==True:
                             disconnect_result='ACK'
@@ -326,6 +354,30 @@ class periodical_service_bill(Thread):
                     except: pass
                     time.sleep(1)
                     continue
+                print 1
+                import json
+                a=json.write(cacheAT)
+                print a
+                k = open("accountTarifs.csh", "w")
+                k.write(cacheAT.__repr__())
+                k.close()
+
+                k = open("cachePerTarif.csh", "w")
+                k.write(cachePerTarif.__repr__())
+                k.close()
+
+                k = open("cachePerSetp.csh", "w")
+                k.write(cachePerSetp.__repr__())
+                k.close()
+                
+                k = open("cacheSuspP.csh", "w")
+                k.write(cacheSuspP.__repr__())
+                k.close()
+
+                k = open("dateAT.csh", "w")
+                k.write(dateAT.__repr__())
+                k.close()
+                print 2
                 
                 cur = connection.cursor()
                 #transactions per day
@@ -386,7 +438,7 @@ class periodical_service_bill(Thread):
                                         cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                         lc=now - last_checkout
                                         nums, ost=divmod(lc.seconds+lc.days*86400,n)
-                                        description=name_sp                                      
+                                        description=ps_name
                                         if nums>1:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
@@ -394,6 +446,7 @@ class periodical_service_bill(Thread):
                                                 cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
+                                                #psycopg2._psycopg.cursor.c
                                         else:
                                             #make an approved transaction
                                             cash_summ = cash_summ * susp_per_mlt
@@ -422,13 +475,14 @@ class periodical_service_bill(Thread):
                                         first_time=False
                                         
                                     #print first_time==True or last_checkout<period_start
-                                    if first_time==True or last_checkout<period_start:    
+                                    if first_time==True or last_checkout<period_start:
+    
                                         lc=period_start-last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
                                         nums, ost=divmod(lc.seconds+lc.days*86400, delta)
-                                        if (account_ballance<=0 and null_ballance_checkout==True) or account_ballance>0:
-                                            summ=ps_cost
+
                                         description=ps_name
+                                        cash_summ=ps_cost
                                         if nums>1:
                                             #Временно отключено,т.к. нигде не хранится чётких отметок с какого до какого момента у пользователя небыло денег
                                             #и с каколго до какого момента у пользователя стояла отметка "не списывать деньги по период.услугам"
@@ -438,19 +492,19 @@ class periodical_service_bill(Thread):
                                             """
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + delta
-                                            summ_prev=ps_cost
                                             while chk_date <= now:
                                                 if ps_created!=None:
                                                     if ps_created>=chk_date:
                                                         cash_summ=0
                                                 cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                
                                                 connection.commit()
                                                 chk_date += delta
                                             connection.commit() 
                                         else:
 
                                             #TODO: MAKE ACID!!!
-                                            summ = summ * susp_per_mlt
+                                            summ = cash_summ * susp_per_mlt
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
@@ -465,7 +519,7 @@ class periodical_service_bill(Thread):
                                     Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
-                                    last_checkout=get_last_checkout(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id)
+                                    last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)
                                     connection.commit()
                                     if last_checkout is None:
                                         first_time=True
@@ -480,9 +534,12 @@ class periodical_service_bill(Thread):
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
 
                                     summ=0
-                                    if period_start>last_checkout or first_time==True:    
+                                    if period_start>last_checkout or first_time==True: 
+    
                                         if first_time==False:
-                                            lc = period_start-last_checkout
+                                            lc=period_start-last_checkout
+                                            #rem
+                                            #nums, ost=divmod((period_end-last_checkout).seconds+(period_end-last_checkout).days*86400, delta)
                                             le = period_end-last_checkout
                                             nums, ost=divmod(le.seconds+le.days*86400, delta)
     
@@ -490,7 +547,7 @@ class periodical_service_bill(Thread):
                                             descr=ps_name
                                             if nums>1:
                                                 chk_date = last_checkout + delta
-                                                summ_prev=ps_cost
+                                                cash_summ=ps_cost
                                                 while chk_date <= now:
                                                     if ps_created!=None:
                                                         if ps_created>chk_date:
@@ -499,13 +556,13 @@ class periodical_service_bill(Thread):
                                                     connection.commit()
                                                     chk_date += delta
                                         else:
-                                            summ=0
+                                            cash_summ=0
                                             descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"                                        
                                             
-                                        summ = summ * susp_per_mlt
+                                        summ = cash_summ * susp_per_mlt
                                         if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                            summ = 0
+                                            cash_summ = 0
                                         transaction_id = transaction(cursor=cur, account=account_id,approved=True,
                                                                      type='PS_AT_END', tarif = tariff_id,summ=summ,
                                                                      description=descr, created = now)
@@ -590,18 +647,24 @@ class TimeAccessBill(Thread):
                     execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time=True
                                ORDER BY interrim_update DESC LIMIT 1
                             """, (session_id,))
-                    try:    old_time=cur.fetchone()[0]
-                    except: old_time=0
+                    try:
+                        old_time=cur.fetchone()[0]
+                    except:
+                        old_time=0
                     
                     total_time=session_time-old_time
     
-                    cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
-                                """, (accountt_tarif_id,))
+                    cur.execute(
+                        """
+                        SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s
+                        """, (accountt_tarif_id,))
                     
-                    try:    prepaid_id,    prepaid=cur.fetchone()
-                    except: prepaid_id=-1; prepaid=0
+                    try:
+                        prepaid_id, prepaid=cur.fetchone()
+                    except:
+                        prepaid=0
+                        prepaid_id=-1
                     connection.commit()
-                    
                     if prepaid>0:
                         if prepaid>=total_time:
                             total_time=0
@@ -621,17 +684,15 @@ class TimeAccessBill(Thread):
                         for period_node in period_nodes_data:
                             period_id, period_name =period_node[0:2]
                             period_start, period_length, repeat_after = period_node[2:5]
+                            #if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
                             if fMem.in_period_(period_start,period_length,repeat_after, dateAT)[3]:
                                 summ=(float(total_time)/60.000)*period_cost
                                 if summ>0:
-                                    try:
-                                        transaction(cursor=cur, type='TIME_ACCESS', account=account_id,
-                                                    approved=True, tarif=tarif_id, summ=summ,
-                                                    description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
-                                                    created=now)
-                                        connection.commit()
-                                    except Exception, ex:
-                                        logger.error("%s : transaction exception: %s", (self.getName(), repr(ex)))
+                                    transaction(cursor=cur, type='TIME_ACCESS', account=account_id,
+                                        approved=True, tarif=tarif_id, summ=summ,
+                                        description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
+                                        created=now)
+                                    connection.commit()
 
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
                                    WHERE sessionid=%s AND account_id=%s AND interrim_update=%s
@@ -698,7 +759,7 @@ class limit_checker(Thread):
                 for acct in cacheAT:
                     account_id = acct[0]
                     tarif_id = acct[4]
-                    limitRecs = cacheTLimit.get(tarif_id, [])
+                    limitRecs = cacheTLimit.get(tarif_id)
                     disabled_by_limit = acct[15]
                     if not limitRecs:
                         if disabled_by_limit:
@@ -720,10 +781,10 @@ class limit_checker(Thread):
                             то больше для него лимиты не проверяем
                             """
                             continue
+                        #print 1
                         #get settlement period record
-                        spRec = cacheSP.get(limitRec[3])
-                        
-                        if not spRec: continue
+                        spRec = cacheSP[limitRec[3]]
+
                         #if autostart - start time = acct.datetime
                         if spRec[4]:
                             sp_start = acct[3]
@@ -738,49 +799,54 @@ class limit_checker(Thread):
                             settlement_period_start=now-datetime.timedelta(seconds=delta)
                             settlement_period_end=now
                         
-                        connection.commit()        
-                        cur.execute("""SELECT sum(bytes) as size FROM billservice_groupstat 
-                                         WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s
-                                    """ , (limitRec[5], account_id, settlement_period_start, settlement_period_end,))
+                        connection.commit()
+
+        
+                        cur.execute("""
+                        SELECT sum(bytes) as size FROM billservice_groupstat
+                        WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s
+                        """ , (limitRec[5], account_id, settlement_period_start, settlement_period_end,))
                         
                         tsize=0
                         sizes=cur.fetchone()
                         connection.commit()
     
                         #print "sizes", sizes
-                        if sizes[0] is not None:
+                        if sizes[0]!=None:
                             tsize=sizes[0]
                         #limitRec[4] - limit_size
-                        limit_size = Decimal("%s" % limitRec[4])
-                        if tsize>limit_size and limit_action==0:
+                        if tsize>Decimal("%s" % limitRec[4]) and limit_action==0:
                             block=True
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                             connection.commit()
                             #print "block client"
-                        elif tsize>limit_size and limit_action==1:
-                            try:
-                                #Меняем скорость
-                                cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
-                                cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
-                                #print "Change speed"
-                                connection.commit()
-                                speed_changed=True
-                                block = False
-                            except Exception, ex:
-                                logger.error("%s : insert exception: %s", (self.getName(), repr(ex)))
+                        elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
+                            #Меняем скорость
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
+                            cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
+                            #print "Change speed"
+                            connection.commit()
+                            speed_changed=True
+                            block = False
                         #print settlement_period_start, settlement_period_end, limitRec[5], account_id, tsize, Decimal("%s" % limitRec[4]), limit_action
                         #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
                         #account_id
                         oldid=account_id
                         #acct[15] - disabled_by_limit
                         if disabled_by_limit!=block:
-                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;
-                                        """ , (block, account_id,))
+                            cur.execute(
+                                """
+                                UPDATE billservice_account
+                                SET disabled_by_limit=%s
+                                WHERE id=%s;
+                                """ , (block, account_id,))
                             connection.commit()
                             logger.info("set user %s new limit %s state %s", (account_id, limitRec[0], block))
     
                 connection.commit()
-                cur.close()                
+                #print self.getName() + " threadend"
+                cur.close()
+                
                 logger.info("Limit thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -788,6 +854,7 @@ class limit_checker(Thread):
                 else:
                     logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             
+            #self.connection.close()
             gc.collect()
             time.sleep(110)          
 
@@ -806,10 +873,22 @@ class settlement_period_service_dog(Thread):
     3. Если сумма меньше цены тарифного плана-делаем транзакцию, в которой снимаем деньги.
     """
     def __init__ (self):
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_client_encoding('UTF8')
+        #self.cur = self.connection.cursor()
         Thread.__init__(self)
 
+
+    def stop(self):
+        """
+        Stop the thread
+        """
+
+
     def run(self):
-        """Сделать привязку к пользователю через billservice_accounttarif"""         
+        """
+        Сделать привязку к пользователю через billservice_accounttarif
+        """         
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         global curATCache, curShedLogCache, curSPCache, curTimeAccSrvCache, curTTSCache
@@ -826,7 +905,7 @@ class settlement_period_service_dog(Thread):
                     if curAT_date > dateAT:
                         curAT_lock.acquire()
                         cacheAT = copy(curATCache)
-                        #account-tarif cache indexed by account_id
+                        #account-tarif cach indexed by account_id
                         #cacheAT = deepcopy(curAT_acctIdx)
                         #settlement_period cache
                         cacheSetP = copy(curSPCache)
@@ -855,7 +934,7 @@ class settlement_period_service_dog(Thread):
                     prepaid_traffic_reset, prepaid_traffic_accrued, accounttarif_id_shedulelog = (None, None, None)
                     prepaid_time_reset, prepaid_time_accrued = (None, None)
                     shedlRec = cacheShedLog.get(account_id)
-                    
+
                     if shedlRec==None:
                         shedulelog_id=-1
                     else:
@@ -865,7 +944,7 @@ class settlement_period_service_dog(Thread):
                         prepaid_time_reset, prepaid_time_accrued       = shedlRec[5:7]
                         balance_blocked            = shedlRec[7]
                         accounttarif_id_shedulelog = shedlRec[8]
-                        
+
                     acct_datetime = acct[3]
                     period_end = None
                     time_start = None
@@ -876,7 +955,7 @@ class settlement_period_service_dog(Thread):
                         setpRec = cacheSetP.get(setper_id)
                         #if autostart:
                         if setpRec[4]:
-                            time_start = acct_datetime
+                            time_start=acct_datetime
                         else:
                             time_start = setpRec[1]
                         #time_start, length_in, length
@@ -885,80 +964,100 @@ class settlement_period_service_dog(Thread):
                         time_start = acct_datetime
                         period_start = acct_datetime
                         delta = 86400*365*365
-                        
+
                     tarif_id = acct[4]
                     accounttarif_id = acct[12]
+                    cost = acct[8]
+                    account_balance_blocked = acct[16]
                     #нужно производить в конце расчётного периода
                     if ballance_checkout==None: ballance_checkout = acct_datetime
-                    if ballance_checkout<period_start:
+                    #print "time_start", time_start, setpRec[3], setpRec[2]
+                    if ballance_checkout<period_start and acct[9]==True and period_end and cost>0:
                         #Снять сумму до стоимости тарифного плана
                         #!!! ASK ABOUT period_end!!!
                         #acct[9] - reset_tarif_cost
-                        if acct[9] and period_end:
-                            #Считаем сколько было списано по услугам
-                            cur.execute("""SELECT sum(summ) FROM billservice_transaction 
-                                           WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
-                                        """, (period_start, period_end, account_id, tarif_id,))
-                            summ=cur.fetchone()[0]
-                            if summ==None:
-                                summ=0
-                            try:
-                                if cost>summ:
-                                    s=cost-summ
-                                    transaction(cursor=cur,type='END_PS_MONEY_RESET',account=account_id, 
-                                                approved=True,tarif=tarif_id,summ=s,
-                                                description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
-                                                created=now)
-                                    
-                                cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
-                                shedulelog_id =cur.fetchone()
-                                if shedulelog_id==None:
-                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, %s);
-                                                """, (account_id, accounttarif_id, now))
-                            except Exception, ex:
-                                logger.error("%s : END_PS_MONEY_RESET exception: %s", (self.getName(), repr(ex)))
+                        #print "acct[9] and period_end", acct[9], period_end                        
+                        #Считаем сколько было списано по услугам                        
+               
+                    
+                        tnc, tkc, delta = settlement_period_info(time_start, setpRec[3], setpRec[2], dateAT, prev=True)
+                        #Считаем сколько было списано по услугам
+                        cur.execute(
+                            """
+                            SELECT sum(summ)
+                            FROM billservice_transaction
+                            WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
+                            """, (tnc, tkc, account_id, tarif_id,))
+                        summ=cur.fetchone()[0]
+                        if summ==None:
+                            summ=0
 
-                    connection.commit()
-                    account_balance = acct[1] + acct[2]
-                    cost, account_balance_blocked = acct[8], acct[16]
+                        if cost>summ:
+                            s=cost-summ
+                            transaction(
+                                cursor=cur,
+                                type='END_PS_MONEY_RESET',
+                                account=account_id,
+                                approved=True,
+                                tarif=tarif_id,
+                                summ=s,
+                                description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
+                                created=now
+                            )
+                        cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
+                        shedulelog_id =cur.fetchone()
+                        if shedulelog_id==None:
+                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, %s);""", (account_id, accounttarif_id, now,))
+                                        
+                    account_balance = acct[1] + acct[2]    
                     #Если балланса не хватает - отключить пользователя
                     if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
                         #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                         cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
-                                    """, (account_id, cost,))    
-                        cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
-                                    """, (now, account_id,))    
-                        if cur.fetchone()==None:
-                            try:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
-                                            """, (account_id, accounttarif_id, now,))
-                            except Exception, ex:
-                                    logger.error("%s : block #1 exception: %s", (self.getName(), repr(ex)))
-                    if account_balance_blocked==True and account_balance>=cost:
-                        """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
-                        cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (account_id,))                            
+                                    """, (account_id, cost,))
     
-                    connection.commit()
+    
+                        cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
+                                    """, (now, account_id,))
+    
+                        if cur.fetchone()==None:
+                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
+                                        """, (account_id, accounttarif_id, now,))
+                    if account_balance_blocked==True and account_balance>=cost:
+                        """
+                        Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
+                        """
+                        #print "balance blocked2"
+                        cur.execute(
+                            """
+                            UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
+                            """, (account_id,))                            
+    
+                        connection.commit()
                     
+
                     traffic_transmit_service_id = acct[7]
                     reset_traffic = None
-                    if traffic_transmit_service_id is not None:
-                        ttsRec = cacheTTS.get(traffic_transmit_service_id)
-                        reset_traffic = ttsRec[1]                    
+                    if traffic_transmit_service_id != None:
+                        ttsRec= cacheTTS.get(traffic_transmit_service_id)
+                        reset_traffic = ttsRec[1]
+                    
                     
                     if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
-                    if (prepaid_traffic_reset<period_start and reset_traffic==True) or traffic_transmit_service_id is None or accounttarif_id!=accounttarif_id_shedulelog:
-                        """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
+                    if (reset_traffic==True or traffic_transmit_service_id==None) and (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):
+                        #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
+                        #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
+                        
+                        """
+                        (Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план
+                        """
                         cur.execute("""DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
                                     """ % accounttarif_id)
     
                         cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
                         if cur.fetchone()==None:
-                            try:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, %s) ;
-                                            """, (account_id, accounttarif_id, now,))
-                            except Exception, ex:
-                                logger.error("%s : prepaid_traffic_reset exception: %s", (self.getName(), repr(ex)))
+                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, %s) ;
+                                        """, (account_id, accounttarif_id, now,))    
                     connection.commit()
     
                     if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
@@ -976,79 +1075,72 @@ class settlement_period_service_dog(Thread):
                                            WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
                                         """, (size, now, accounttarif_id, prepaid_traffic_id,))
                             if cur.fetchone() is None:
-                                try:
-                                    cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
-                                                   VALUES(%s, %s, %f*1024000, '%s');
-                                                """ % (accounttarif_id, prepaid_traffic_id, size, now,))
-                                except Exception, ex:
-                                    logger.error("%s : prepays exception: %s", (self.getName(), repr(ex)))
+                                cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
+                                               VALUES(%s, %s, %f*1024000, '%s');
+                                            """ % (accounttarif_id, prepaid_traffic_id, size, now,))
                             connection.commit()
                             
                         if u==True:
                             cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
                             if cur.fetchone()==None:
-                                try:
-                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, %s) ;
-                                                """, (account_id, accounttarif_id, now,))
-                                except Exception, ex:
-                                    logger.error("%s : shedulelog prepays exception: %s", (self.getName(), repr(ex)))
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, %s) ;
+                                            """, (account_id, accounttarif_id, now,))  
                     connection.commit() 
-                    
+                    #print "account_id", acct[0], "time_service_id", acct[6]
                     time_access_service_id = acct[6]
                     reset_time = None
                     prepaid_time = 0
                     if time_access_service_id:
                         taccsRec = cacheTAccS.get(time_access_service_id)
-                        prepaid_time, reset_time    = taccsRec[1], taccsRec[2]
+                        reset_time    = taccsRec[2]
+                        prepaid_time  = taccsRec[1]
                         
-                    if (prepaid_time_reset is None or prepaid_time_reset<period_start) and time_access_service_id  or accounttarif_id!=accounttarif_id_shedulelog:
-                        #снять время и начислить новое
-                        if reset_time:
-                            cur.execute("""DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=%s;
-                                        """, (accounttarif_id,))    
-                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
-                            if cur.fetchone()==None:
-                                try:
-                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) values(%s, %s, %s) ;
-                                                """, (account_id, accounttarif_id,now,))
-                                except Exception, ex:
-                                    logger.error("%s : shedulelog prepaid_time_reset exception: %s", (self.getName(), repr(ex)))
-
-                    connection.commit()    
-    
+                    if (reset_time==True or time_access_service_id==None) and (prepaid_time_reset is None or prepaid_time_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):                        
+                        #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
+                        #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
+                        cur.execute("""DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=%s;""", (accounttarif_id,))                            
+                        cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))                        
+                        if cur.fetchone()==None:                            
+                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) values(%s, %s, %s) ;""", (account_id, accounttarif_id,now,))                                
+                        connection.commit()        
                     if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
-                        try:
-                            cur.execute("""UPDATE billservice_accountprepaystime
-                                           SET size=size+%s,datetime=%s WHERE account_tarif_id=%s RETURNING id;
-                                        """, (prepaid_time,now, accounttarif_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id) VALUES(%s, %s, %s, %s);
-                                            """, (accounttarif_id, prepaid_time, now, time_access_service_id,))    
-                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, %s) ;
-                                            """, (account_id, accounttarif_id,now))
-                        except Exception, ex:
-                                    logger.error("%s : prepaid_time_accrued exception: %s", (self.getName(), repr(ex)))
-
+    
+                        cur.execute("""UPDATE billservice_accountprepaystime
+                                       SET size=size+%s,datetime=%s WHERE account_tarif_id=%s RETURNING id;
+                                    """, (prepaid_time,now, accounttarif_id,))
+                        if cur.fetchone()==None:
+                            cur.execute("""INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id) VALUES(%s, %s, %s, %s);
+                                        """, (accounttarif_id, prepaid_time, now, time_access_service_id,))    
+                        cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
+                        if cur.fetchone()==None:
+                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, %s) ;
+                                        """, (account_id, accounttarif_id,now))
                     
                     if account_balance > 0:
                         onetimesvs = cacheOTSrv.get(tarif_id, [])
                         for ots in onetimesvs:
                             ots_id = ots[0]
                             if not cacheOTSHist.has_key((accounttarif_id, ots_id)):
-                                try:
-                                    transaction_id = transaction(cursor=cur,type='ONETIME_SERVICE',account=account_id,
-                                                                 approved=True,tarif=tarif_id,summ=ots[2],
-                                                                 description=u"Снятие денег по разовой услуге %s" % ots[1],
-                                                                 created=now)
-                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
-                                    connection.commit()
-                                except Exception, ex:
-                                    logger.error("%s : onetimeservice exception: %s", (self.getName(), repr(ex)))
+                                transaction_id = transaction(
+                                                             cursor=cur,
+                                                             type='ONETIME_SERVICE',
+                                                             account=account_id,
+                                                             approved=True,
+                                                             tarif=tarif_id,
+                                                             summ=ots[2],
+                                                             description=u"Снятие денег по разовой услуге %s" % ots[1],
+                                                             created=now
+                                                             )
+                                cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
+                                connection.commit()
                                 cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
                         
                 connection.commit()
+                #Делаем проводки по разовым услугам тем, кому их ещё не делали
+                #to select good accounttarifs:
+                #select distinct order by datetime and datetime < dateAT
+                #onetimeservice??
+
                 logger.info("Settlement period thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -1074,7 +1166,7 @@ class ipn_service(Thread):
             if in_period(row['time_start'], row['length'], row['repeat_after'])==True:
                 return True
         return False
-    
+
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
         speeds = spRec
@@ -1103,7 +1195,6 @@ class ipn_service(Thread):
         global curAT_date,curAT_lock
         cacheAT = None
         dateAT = datetime.datetime(2000, 1, 1)
-        cur = connection.cursor()
         while True:             
             try:
                 if suicideCondition[self.__class__.__name__]: break
@@ -1120,7 +1211,8 @@ class ipn_service(Thread):
                         cacheAccp = copy(curAccParCache)
                         #current speed cache
                         cacheDefSp = copy(curDefSpCache)
-                        cacheNewSp = copy(curNewSpCache)                        
+                        cacheNewSp = copy(curNewSpCache)
+                        
                         c_tp_asInPeriod = copy(tp_asInPeriod)
                         #date of renewal
                         dateAT = deepcopy(curAT_date)
@@ -1130,7 +1222,7 @@ class ipn_service(Thread):
                         continue
                 except Exception, ex:
                     print "Ipn speed thread exception: ", repr(ex)
-                
+                cur = connection.cursor()
                 cur.execute("""SELECT id, account_id, speed, state, static, datetime FROM billservice_accountipnspeed;""")
                 
                 ipnspTp=cur.fetchall()
@@ -1140,10 +1232,12 @@ class ipn_service(Thread):
                     """
                     Индексируем параметры скорости по Acount_id
                     """
-                    acc_ipn_sps[ipns[1]] = ipns
+                    acc_ipn_sps[ipns[1]] = ipns                  
                 
                 #for row in rows:
                 for acct in cacheAT:
+                    #print acct
+                    #print "acct", acct
                     #if tariff not active
                     if not acct[11]:
                         continue
@@ -1164,11 +1258,12 @@ class ipn_service(Thread):
                     recreate_speed = False
                     tarif_id= acct[4]
                     account_id = acct[0]
-                    account_name, account_password = acct[32:34]
+                    account_password = acct[33]
                     account_ballance = acct[1]+acct[2]                    
                     account_disabled_by_limit, account_balance_blocked = acct[15:17]
                     account_ipn_status = acct[22]
-                    account_status = acct[29]         
+                    account_status = acct[29]
+                    account_name = acct[32]                    
                     period = c_tp_asInPeriod[tarif_id]# True/False
                     nasRec = cacheNas[acct[17]]
                     nas_ipaddress = nasRec[3]
@@ -1225,6 +1320,8 @@ class ipn_service(Thread):
                         speed = get_corrected_speed(speed[:6], account_limit_speed)
                     else:
                         speed = parse_custom_speed_lst(account_ipn_speed)
+                    #print "speed",speed
+                    #print "corrected_speed=", 
                     
                     
                     
@@ -1240,6 +1337,8 @@ class ipn_service(Thread):
                     
                     nas_type,nas_name = nasRec[1:3]
                     nas_ipn_speed = nasRec[15]
+                    #print newspeed, row['ipn_speed'],row['ipn_state']
+                    #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
 
                     if newspeed!=ipn_speed or ipn_state==False or recreate_speed==True:
                         #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
@@ -1252,17 +1351,16 @@ class ipn_service(Thread):
                                                     format_string=nas_ipn_speed, access_type=access_type,\
                                                     speed=speed[:6])
                         data_for_save=''
+                        #print speed
+                        #print "speed sended=", sended_speed
                         cur.execute("UPDATE billservice_accountipnspeed SET speed=%s, state=%s WHERE account_id=%s RETURNING id;", (newspeed, sended_speed, account_id,))
                         id = cur.fetchone()
                         #print 'id=', id
                         if id==None:
-                            try:
-                                connection.commit()
-                                cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s, %s);", (account_id, unicode(newspeed), sended_speed, now,))
-                            except psycopg2.ProgrammingError, ex:
-                                logger.error("%s : exception: %s", (self.getName(), repr(ex)))
+                            cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s, %s);", (account_id, unicode(newspeed), sended_speed, now,))
     
                 connection.commit()
+                cur.close()
                 logger.info("IPN thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -1299,6 +1397,9 @@ class pfMemoize(object):
             self.settlementCache[(time_start, length, repeat_after, stream_date)] = res
         return res
   
+
+
+
 '''
 acct structure
 [0]  - ba.id, 
@@ -1352,7 +1453,7 @@ class AccountServiceThread(Thread):
         global curPerTarifCache, curPersSetpCache
         global curTimeAccNCache, curTimePerNCache, curTimeAccSrvCache
         global curOneTimeSrvCache, curAccParCache, curIPNSpCache, curOTSHistCache
-        global tp_asInPeriod, logger
+        global tp_asInPeriod
         i_fMem = 0
         while True:
             if suicideCondition[self.__class__.__name__]: break
@@ -1573,6 +1674,8 @@ class AccountServiceThread(Thread):
                 tp_asInPeriod = tmpPerAPTP
                 curAT_date  = tmpDate
                 curAT_lock.release()
+                #del accts, tmpacIdx, tmptfIdx, tmpspC, tmpttsC, tmpnasC, tmpdsC, tmpnsC, tmpDate
+                #del ttssTp, spsTp, nasTp, defspTmp, nspTmp
                 #every cacheRenewalTime*3
                 i_fMem += 1
                 if i_fMem == 3:                  
@@ -1582,7 +1685,8 @@ class AccountServiceThread(Thread):
                     fMem.periodCache = {}
                     #reread runtime options
                     config.read("ebs_config_runtime.ini")
-                    logger.setNewLevel(int(config.get("core", "log_level")))                    
+                    logger.setNewLevel(int(config.get("core", "log_level")))
+                    
                 logger.info("ast time : %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
