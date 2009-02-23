@@ -12,7 +12,7 @@ import paramiko
 import logging
 import datetime, calendar
 import os, sys, time, md5, binascii, socket, select
-paramiko.common.logging.root.setLevel(logging.INFO)
+paramiko.common.logging.root.setLevel(logging.WARNING)
 
 class IPNAccount(object):
     def __init__(self):
