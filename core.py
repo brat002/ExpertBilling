@@ -327,6 +327,7 @@ class periodical_service_bill(Thread):
         global fMem, suicideCondition, transaction_number
         dateAT = datetime.datetime(2000, 1, 1)
         while True:
+            a = time.clock()
             try:
                 if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
@@ -558,7 +559,7 @@ class periodical_service_bill(Thread):
                 else:
                     logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             gc.collect()
-            time.sleep(180)
+            time.sleep(180-(time.clock()-a))
             
 class TimeAccessBill(Thread):
     """
