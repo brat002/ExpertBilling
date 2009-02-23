@@ -337,11 +337,13 @@ class periodical_service_bill(Thread):
                         #cacheAT = deepcopy(curATCache)
                         #account-tarif cach indexed by account_id
                         cacheAT = copy(curAT_tfIdx)
+                        #print dict(cacheAT)
                         #settlement_period cache
+                        #(tarif_id, settlement_period_id)
                         cachePerTarif  = copy(curPerTarifCache)
                         #traffic_transmit_service
                         cachePerSetp = copy(curPersSetpCache)
-                        #date of renewal    
+                        #date of renewal
                         cacheSuspP = copy(curSuspPerCache)
                         dateAT = deepcopy(curAT_date)
                         curAT_lock.release()
@@ -354,31 +356,6 @@ class periodical_service_bill(Thread):
                     except: pass
                     time.sleep(1)
                     continue
-                print 1
-                import json
-                a=json.write(cacheAT)
-                print a
-                k = open("accountTarifs.csh", "w")
-                k.write(cacheAT.__repr__())
-                k.close()
-
-                k = open("cachePerTarif.csh", "w")
-                k.write(cachePerTarif.__repr__())
-                k.close()
-
-                k = open("cachePerSetp.csh", "w")
-                k.write(cachePerSetp.__repr__())
-                k.close()
-                
-                k = open("cacheSuspP.csh", "w")
-                k.write(cacheSuspP.__repr__())
-                k.close()
-
-                k = open("dateAT.csh", "w")
-                k.write(dateAT.__repr__())
-                k.close()
-                print 2
-                
                 cur = connection.cursor()
                 #transactions per day
                 #TODO: toconfig!                
@@ -1510,7 +1487,7 @@ class AccountServiceThread(Thread):
                     JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id;""")
                 nspTmp = cur.fetchall()
                 #connection.commit()
-                cur.execute("""SELECT id, settlement_period_id, ps_null_ballance_checkout  
+                cur.execute("""SELECT id, settlement_period_id  
                                  FROM billservice_tariff  as tarif
                                  WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
                 perTarTp = cur.fetchall()
