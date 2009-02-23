@@ -367,7 +367,7 @@ class periodical_service_bill(Thread):
                 #loop through tarifs
                 now=datetime.datetime.now()
                 for row in rows:
-                    tariff_id, settlement_period_id, null_ballance_checkout=row
+                    tariff_id, settlement_period_id = row
                     #get accounts for tarif
                     accounts = cacheAT.get(tariff_id, [])
                     #get periodical services data
