@@ -432,12 +432,12 @@ def humanable_bytes(a):
         try:
             a=float(a)
             #res = a/1024
-            if a>1024 and a<(1024*1000):
+            if a>1024 and a<(1048576):
                 return u"%.5s KB" % unicode(a/(1024))
-            elif a>=(1024*1000) and a<=(1024*1000*1000):
-                return u"%.5s МB" % unicode(a/(1024*1000))
-            elif a>(1024*1000*1000):
-                return u"%.5s GB" % unicode(a/(1024*1000*1000))
+            elif a>=(1048576) and a<=(1024*1024*1024):
+                return u"%.5s МB" % unicode(a/(1048576))
+            elif a>(1024*1024*1024):
+                return u"%.5s GB" % unicode(a/(1024*1024*1024))
             elif a<1024:
                 return u"%s B" % unicode(int(a)) 
         except Exception, e:
