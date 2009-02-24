@@ -1054,7 +1054,7 @@ class settlement_period_service_dog(Thread):
                                         """, (size, now, accounttarif_id, prepaid_traffic_id,))
                             if cur.fetchone() is None:
                                 cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
-                                               VALUES(%s, %s, %f*1024000, '%s');
+                                               VALUES(%s, %s, %f*1048576, '%s');
                                             """ % (accounttarif_id, prepaid_traffic_id, size, now,))
                             connection.commit()
                             

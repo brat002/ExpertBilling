@@ -576,7 +576,7 @@ class NetFlowRoutine(Thread):
                                         cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
                                         connection.commit()
             
-                            summ=(trafic_cost*octets)/(1024000)
+                            summ=(trafic_cost*octets)/(1048576)
         
                             if summ>0:
                                 #account_id, tariff_id, summ
