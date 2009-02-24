@@ -40,7 +40,8 @@ class reception_server(asyncore.dispatcher):
         pass    
     
     def handle_read(self):        
-        data, addrport = self.recvfrom(8192)        
+        data, addrport = self.recvfrom(8192) 
+        print 'gotone ', addrport
         try:
             assert len(data)<=8192
             nfQueue.append((data, addrport))
@@ -154,10 +155,13 @@ def nfPacketHandle(data, addrport, flowCache):
         hdr = hdr_class(data[:headerLENGTH])
         #======
         #runs through flows
+        #print hdr[1]
         for n in xrange(hdr[1]):
             offset = headerLENGTH + (flowLENGTH * n)
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
+            #print flow
+            #print IP(flow[0]) , '   ', IP(flow[1])
             #look for account for ip address
             acc_acct_tf = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
             if acc_acct_tf:
@@ -435,7 +439,7 @@ class NfUDPSenderThread(Thread):
                         dfile = open(fname, 'ab')
                         logger.info('NFUDPSenderThread open a new file: %s', fname)
                     except Exception, ex:
-                        logger.error("NFUDPSenderThread file creation exception: ", repr(ex))
+                        logger.error("NFUDPSenderThread file creation exception: %s", repr(ex))
                         continue
                     
                 try:   
@@ -637,7 +641,7 @@ class ServiceThread(Thread):
                 if ndTmp[0][0]:
                     nodesCache = ndTmp
                 del ndTmp       
-
+                #print nodesCache
                 #id, trafficclass, in_direction, out_direction, type
                 gpcTmp = defaultdict(set)
                 groups_ = {}
