@@ -1,84 +1,127 @@
-import os,sys, random
+import os,sys,copy,time,random,struct,socket
 import psycopg2
 from IPy import IP, IPint, parseAddress
-from DBUtils.PooledDB import PooledDB
-import ConfigParser
+import random
+from random import random, randint
+from struct import pack
+from copy import copy, deepcopy
+from datetime import datetime
+#("!LLLHHIIIIHHBBBBHHBBH")
 
-def main():
-    connection = pool.connection()
-    connection._con._con.set_client_encoding('UTF8')
-    
-    
-    cur = connection.cursor()
-    a = time.clock()
-    
-    ptime =  time.time()
-    ptime = ptime - (ptime % 20)
-    tmpDate = datetime.datetime.fromtimestamp(ptime)
-    cur.execute("""SELECT ba.id,  CASE WHEN (bap.access_type='IPN' OR bap.ipn_for_vpn) THEN ba.ipn_ip_address ELSE ba.vpn_ip_address END AS ips
-        FROM billservice_account as ba
-        JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
-        JOIN billservice_tariff AS bt ON bt.id=act.tarif_id JOIN billservice_accessparameters AS bap ON bap.id=bt.access_parameters_id;""", (tmpDate,))
-    acctf = cur.fetchall()
-    cur.execute("SELECT ip, ipaddress FROM nas_nas;")                
-    nasvals = cur.fetchall()
-    cur.execute("SELECT traffic_class_id, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
-    nnodes = cur.fetchall()
-    connection.commit()
-    cur.close()
-    
-    #nas cache creation
-    nascache = dict(nasvals)
-    del nasvals  
-    
-    accscache = dict(acctf)
-    
-    
-    #forms a class->nodes structure                
-    ndTmp = [[0, []]]
-    tc_id = nnodes[0][0]
-    for nnode in nnodes:
-        if nnode[0] != tc_id:
-            ndTmp.append([0, []])
-        nclTmp = ndTmp[-1]
-        nclTmp[0] = nnode[0]
-        tc_id = nnode[0]
-        nlist = []
-        n_hp = parseAddress(nnode[3])[0]
-        d_ip = IPint(nnode[2])
-        s_ip = IPint(nnode[1])
-        nlist.append(s_ip.int())
-        nlist.append(s_ip.broadcast())
-        nlist.append(d_ip.int())
-        nlist.append(d_ip.broadcast())
-        nlist.append(n_hp)
-        nclTmp[1].append(tuple(nlist))
-    if ndTmp[0][0]:
-        nodesCache = ndTmp
-    del ndTmp
-    inum = 1000
-    accounts = accscache.keys()
-    
-    for i in xrange(inum):
-        acct = 
+def runTests(tests, sock, addrport, output):
+    testCount = 0
+    now  = datetime.now
+    for test in tests:
+        tdct, tpairs = test
+        writeIP    = tdct['write_ip']
+        testByPair = tdct['by_pair']
+        sleepTime  = tdct['sleep'] 
+        totalOctets = tdct['octets']        
+        flowPrePack = [777L, 777L, tdct['next_hop'],0,0,0, 777, 0,0, tdct['src_port'], tdct['dst_port'],0,0, tdct['protocol'],0,0,0,0,0,0]
+        headPrePack = [5, 777, 0,0,0,0,0,0,0]
+        if testByPair:
+            output.write('%s Running test #%s opts %s \n' % (now(), testCount, tdct))
+            for pair in tpairs:
+                sentOctets = 0
+                breakCond = False
+                flowCount = 0
+                flows = ''
+                inp_src, inp_dst = pair
+                if inp_src.netmask() != 0xffffffffL:
+                    src_gtr = lambda: randint(inp_src.int(), inp_src.broadcast())
+                else:
+                    src_gtr = lambda: inp_src.int()
+                if inp_dst.netmask() != 0xffffffffL:
+                    dst_gtr = lambda: randint(inp_dst.int(), inp_dst.broadcast())
+                else:
+                    dst_gtr = lambda: inp_dst.int()
+                header = headPrePack
+                packetCount = 0
+                while True:
+                    octets = randint(100, 50000)
+                    if octets + sentOctets >= totalOctets:
+                        octets = totalOctets - sentOctets
+                        breakCond = True
+                    else: 
+                        sentOctets += octets
+                    flow = flowPrePack
+                    flow[6] = octets
+                    flow[0] = src_gtr()
+                    flow[1] = dst_gtr()
+                    if writeIP:
+                        output.write('%s %s->%s | %s \n' % (now(), IPint(flow[0]).strNormal(), IPint(flow[1]).strNormal(), flow[6]))
+                    else:
+                        output.write('%s %X->%X | %s \n' % (now(), flow[0], flow[1], flow[6]))
+                    flows += pack("!LLLHHIIIIHHBBBBHHBBH", *flow)
+                    flowCount += 1
+                    if flowCount == 63 or breakCond:
+                        header[1] = flowCount
+                        flows = pack("!HHIIIIBBH", *header) + flows
+                        sock.sendto(flows, addrport)
+                        packetCount += 1
+                        flowCount = 0
+                        flows = ''
+                        output.write('%s Packet #%s sent\n' % (now(), packetCount))
+                    if breakCond: break
+                    time.sleep(sleepTime)
+            output.flush()
+                    
+            
+        else: pass
+        testCount += 1
+        output.flush()
             
 
+def parseFile(filename):
+    #nas = 10.10.1.1
+    tf = open(filename, 'rb')
+    tlist = []
+    tdct = {'octets':0,'sleep':0,'by_pair':1, 'write_ip':0, 'next_hop':0L, 'nas':168427777L, 'src_port':80, 'dst_port':80, 'protocol':0, 'num':0}
+    for tline in tf:
+        if tline.startswith('test|'):
+            ndct = deepcopy(tdct)
+            psline = tline[5:].strip().split(' ')
+            for token in psline:
+                try:
+                    tkey, tval = token.split(':')
+                    if tkey == 'octets':
+                        if tval[-1] == 'M': tval = int(tval[:-1])*1048576
+                        elif tval[-1] == 'k': tval = int(tval[:-1])*1024
+                        else: tval = int(tval)
+                    elif tkey == 'next_hop' or tkey == 'nas':
+                        tval = parseAddress(tval)[0]
+                    elif tkey == 'sleep':
+                        tval = float(tval)
+                    else:
+                        tval = int(tval)
+                    ndct[tkey] = tval
+                except Exception, ex:
+                    print 'test line tokens parsing exception %s || %s\n' % (token,repr(ex))
             
+            tlist.append([ndct, []])
+        else:
+            try:
+                src_ip, dst_ip = tline.strip().split('->')
+                tlist[-1][1].append((IPint(src_ip), IPint(dst_ip)))
+            except Exception, ex:
+                    print 'ip line parsing exception %s || %s \n' (tline, repr(ex))
+    tf.close()               
+    return tlist
+            
+            
+    
             
 if __name__=='__main__':
-      
-
-    config = ConfigParser.ConfigParser()
-
     #binary strings lengthes
-    flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
-    headerLENGTH = struct.calcsize("!HHIIIIBBH")
+ 
     
-    config.read("ebs_config.ini")
-
-    pool = PooledDB(
-        mincached=1,  maxcached=9,
-        blocking=True,creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                               config.get("db", "host"), config.get("db", "password")))
+    tests_ = parseFile(sys.argv[1])
+    sock_ = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    sock_.settimeout(10)
+    host, port = sys.argv[2].split(':')
+    addrport_ = (host, int(port))
+    output_ = open(sys.argv[3], 'wb')
+    runTests(tests_, sock_, addrport_, output_)
+    sock_.close()
+    output_.close()
     
