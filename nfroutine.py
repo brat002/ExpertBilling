@@ -19,9 +19,9 @@ from copy import copy, deepcopy
 from DBUtils.PooledDB import PooledDB
 from DBUtils.PersistentDB import PersistentDB
 from collections import deque, defaultdict
-from utilites import in_period_info
+from period_utilities import in_period_info
 from db import delete_transaction, dbRoutine
-from utilites import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
+from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
 try:    import mx.DateTime
@@ -224,6 +224,7 @@ class statDequeThread(Thread):
                 #check whether double aggregation time passed - updates are rather costly
                 statLock.acquire()
                 #if statDeque[0][1]:
+                #if statDeque[0][1] + statAggrTime*2 < time.time():
                 if statDeque[0][1] + statAggrTime*2 < time.time():
                     #get a key                
                     skey = statDeque.popleft()[0]
