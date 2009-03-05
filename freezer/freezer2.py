@@ -377,7 +377,7 @@ def _find_mods( modsnames, modules ):
 
 # Returns loaded modules
 def _get_mods():
-	mf = modulefinder.ModuleFinder( '..\\', 0, sys.path )
+	mf = modulefinder.ModuleFinder( [ _flags[ 'SEARCH_PATH' ] ], 0, sys.path )
 	missing = []
 	for modname, filename in _flags[ 'ADDITIONAL_MODULES' ].iteritems():
 		if not filename: missing.append( modname )
