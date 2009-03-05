@@ -1,0 +1,396 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>475</width>
+    <height>605</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Настройки отчёта</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_4" >
+   <item row="0" column="0" >
+    <widget class="QTabWidget" name="tabWidget" >
+     <property name="currentIndex" >
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="general_tab" >
+      <attribute name="title" >
+       <string>Общие настройки</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3" >
+       <item row="1" column="0" >
+        <layout class="QGridLayout" name="gridLayout" >
+         <item row="0" column="0" colspan="2" >
+          <widget class="QGroupBox" name="inter_groupBox" >
+           <property name="maximumSize" >
+            <size>
+             <width>16777215</width>
+             <height>100</height>
+            </size>
+           </property>
+           <property name="title" >
+            <string>Интервал</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2" >
+            <item row="0" column="0" >
+             <widget class="QLabel" name="from_label" >
+              <property name="text" >
+               <string>Начало:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" >
+             <widget class="QLabel" name="to_label" >
+              <property name="text" >
+               <string>Конец:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" >
+             <widget class="QDateTimeEdit" name="from_dateTimeEdit" >
+              <property name="minimumDate" >
+               <date>
+                <year>2008</year>
+                <month>1</month>
+                <day>1</day>
+               </date>
+              </property>
+              <property name="displayFormat" >
+               <string>yyyy-MM-dd H:mm:ss</string>
+              </property>
+              <property name="calendarPopup" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" >
+             <widget class="QDateTimeEdit" name="to_dateTimeEdit" >
+              <property name="minimumDate" >
+               <date>
+                <year>2008</year>
+                <month>1</month>
+                <day>1</day>
+               </date>
+              </property>
+              <property name="displayFormat" >
+               <string>yyyy-MM-dd H:mm:ss</string>
+              </property>
+              <property name="calendarPopup" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="1" column="0" >
+          <widget class="QGroupBox" name="data_groupBox" >
+           <property name="maximumSize" >
+            <size>
+             <width>1000</width>
+             <height>120</height>
+            </size>
+           </property>
+           <property name="title" >
+            <string>Данные</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_6" >
+            <item row="0" column="0" >
+             <widget class="QRadioButton" name="dgb_traffic_radioButton" >
+              <property name="text" >
+               <string>Трафик</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" >
+             <widget class="QRadioButton" name="dgb_speed_radioButton" >
+              <property name="text" >
+               <string>Скорость</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="1" column="1" >
+          <widget class="QGroupBox" name="layout_groupBox" >
+           <property name="maximumSize" >
+            <size>
+             <width>1000</width>
+             <height>120</height>
+            </size>
+           </property>
+           <property name="title" >
+            <string>Внешний вид</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5" >
+            <item row="0" column="0" >
+             <widget class="QCheckBox" name="lgb_grid_checkBox" >
+              <property name="text" >
+               <string>Сетка</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" >
+             <widget class="QCheckBox" name="lgb_antialias_checkBox" >
+              <property name="text" >
+               <string>Сглаживание</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="2" column="0" >
+          <widget class="QGroupBox" name="groupby_groupBox" >
+           <property name="maximumSize" >
+            <size>
+             <width>1000</width>
+             <height>200</height>
+            </size>
+           </property>
+           <property name="title" >
+            <string>Группировать по...</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_8" >
+            <item row="0" column="0" >
+             <widget class="QCheckBox" name="ggb_accounts_checkBox" >
+              <property name="text" >
+               <string>Клиенты</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" >
+             <widget class="QCheckBox" name="ggb_groups_checkBox" >
+              <property name="text" >
+               <string>Группы</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" >
+             <widget class="QCheckBox" name="ggb_nas_checkBox" >
+              <property name="text" >
+               <string>NAS</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" >
+             <widget class="QCheckBox" name="ggb_classes_checkBox" >
+              <property name="text" >
+               <string>Классы</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="2" column="1" >
+          <widget class="QGroupBox" name="traffic_groupBox" >
+           <property name="maximumSize" >
+            <size>
+             <width>16777215</width>
+             <height>200</height>
+            </size>
+           </property>
+           <property name="title" >
+            <string>Трафик</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_7" >
+            <item row="0" column="0" >
+             <widget class="QRadioButton" name="gbt_input_radioButton" >
+              <property name="text" >
+               <string>Только входящий</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" >
+             <widget class="QRadioButton" name="tgb_output_radioButton" >
+              <property name="text" >
+               <string>Только исходящий</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" >
+             <widget class="QRadioButton" name="tgb_sum_radioButton" >
+              <property name="text" >
+               <string>Сумма</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" >
+             <widget class="QRadioButton" name="tgb_max_radioButton" >
+              <property name="text" >
+               <string>Наибольший</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QGroupBox" name="tmp_groupBox_2" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>tmp_groupBox_2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="tmp_groupBox_3" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>tmp_groupBox_1</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="classes_tab" >
+      <attribute name="title" >
+       <string>Классы трафика</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_9" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="all_classes_label" >
+         <property name="text" >
+          <string>Доступные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" >
+        <widget class="QLabel" name="selected_classes_label" >
+         <property name="text" >
+          <string>Выбранные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QListWidget" name="all_classes_listWidget" >
+         <property name="selectionMode" >
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionRectVisible" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <layout class="QVBoxLayout" name="verticalLayout" >
+         <item>
+          <widget class="QToolButton" name="select_class_toolButton" >
+           <property name="text" >
+            <string>></string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="remove_class_toolButton" >
+           <property name="text" >
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="2" >
+        <widget class="QListWidget" name="selected_classes_listWidget" >
+         <property name="selectionMode" >
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="1" column="0" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>dgb_traffic_radioButton</tabstop>
+  <tabstop>dgb_speed_radioButton</tabstop>
+  <tabstop>lgb_grid_checkBox</tabstop>
+  <tabstop>lgb_antialias_checkBox</tabstop>
+  <tabstop>ggb_accounts_checkBox</tabstop>
+  <tabstop>ggb_groups_checkBox</tabstop>
+  <tabstop>ggb_nas_checkBox</tabstop>
+  <tabstop>ggb_classes_checkBox</tabstop>
+  <tabstop>gbt_input_radioButton</tabstop>
+  <tabstop>tgb_output_radioButton</tabstop>
+  <tabstop>tgb_sum_radioButton</tabstop>
+  <tabstop>tgb_max_radioButton</tabstop>
+  <tabstop>buttonBox</tabstop>
+  <tabstop>all_classes_listWidget</tabstop>
+  <tabstop>selected_classes_listWidget</tabstop>
+  <tabstop>select_class_toolButton</tabstop>
+  <tabstop>remove_class_toolButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>clicked(QAbstractButton*)</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>252</x>
+     <y>374</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>22</x>
+     <y>372</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>clicked(QAbstractButton*)</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>344</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>8</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

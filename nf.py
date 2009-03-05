@@ -21,7 +21,7 @@ from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
-from utilites import graceful_loader, graceful_saver
+from saver import graceful_loader, graceful_saver, allowedUsersChecker
 
 try:    import mx.DateTime
 except: pass
@@ -40,8 +40,7 @@ class reception_server(asyncore.dispatcher):
         pass    
     
     def handle_read(self):        
-        data, addrport = self.recvfrom(8192) 
-        print 'gotone ', addrport
+        data, addrport = self.recvfrom(8192)
         try:
             assert len(data)<=8192
             nfQueue.append((data, addrport))
@@ -155,13 +154,10 @@ def nfPacketHandle(data, addrport, flowCache):
         hdr = hdr_class(data[:headerLENGTH])
         #======
         #runs through flows
-        #print hdr[1]
         for n in xrange(hdr[1]):
             offset = headerLENGTH + (flowLENGTH * n)
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
-            #print flow
-            #print IP(flow[0]) , '   ', IP(flow[1])
             #look for account for ip address
             acc_acct_tf = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
             if acc_acct_tf:
@@ -195,6 +191,17 @@ class FlowCache(object):
         method = getattr(self, "addflow" + str(version), None)
         return method(flow)
 
+    def reset(self):
+        if ((self.stime + 60.0) < time.time()) and self.keylist:
+            #appends keylist to flowQueue
+            fqueueLock.acquire()
+            flowQueue.append((self.keylist, time.time()))
+            fqueueLock.release()
+            #-----------------
+            #nullifies keylist
+            self.keylist = []
+            self.stime = time.time()
+            
     def addflow5(self, flow):
         global ipncache, vpncache, nascache
         #key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
@@ -252,7 +259,8 @@ class FlowDequeThread(Thread):
     def add_classes_groups(self, flow, classLst, nnode, acctf_id, has_groups, tarifGroups):
         ptime =  time.time()
         ptime = ptime - (ptime % 20)
-        flow.append(ptime)
+        #flow.append(ptime)
+        flow.append(test_now)
         flow.append(tuple(classLst))
         flow.append(nnode[9])
         flow.append(nnode[10])
@@ -582,10 +590,12 @@ class ServiceThread(Thread):
         global nascache, ipncache, vpncache, cachesRead
         global nodesCache, groupsCache
         global class_groupsCache, tarif_groupsCache
+        global nfFlowCache
         while True:
             if suicideCondition[self.tname]: break
             cur = connection.cursor()
             a = time.clock()
+            nfFlowCache.reset()
             try:
                 cur.execute("SELECT ipaddress, id from nas_nas;")                
                 nasvals = cur.fetchall()
@@ -595,7 +605,8 @@ class ServiceThread(Thread):
                 nnodes = cur.fetchall()
                 cur.execute("SELECT id, ARRAY(SELECT trafficclass_id from billservice_group_trafficclass as bgtc WHERE bgtc.group_id = bsg.id) AS trafficclass, direction, type FROM billservice_group AS bsg;")
                 groups = cur.fetchall()
-                cur.execute("SELECT tarif_id, int_array_aggregate(group_id) AS group_ids FROM (SELECT tarif_id, group_id FROM billservice_trafficlimit UNION SELECT bt.id, btn.group_id FROM billservice_tariff AS bt JOIN billservice_traffictransmitnodes AS btn ON bt.traffic_transmit_service_id=btn.traffic_transmit_service_id WHERE btn.group_id IS NOT NULL) AS tarif_group GROUP BY tarif_id;")
+                #cur.execute("SELECT tarif_id, int_array_aggregate(group_id) AS group_ids FROM (SELECT tarif_id, group_id FROM billservice_trafficlimit UNION SELECT bt.id, btn.group_id FROM billservice_tariff AS bt JOIN billservice_traffictransmitnodes AS btn ON bt.traffic_transmit_service_id=btn.traffic_transmit_service_id WHERE btn.group_id IS NOT NULL) AS tarif_group GROUP BY tarif_id;")
+                cur.execute("SELECT id, ARRAY(SELECT id FROM billservice_group) FROM billservice_tariff;")
                 tarif_groups = cur.fetchall()
                 connection.commit()
                 cur.close()
@@ -660,9 +671,9 @@ class ServiceThread(Thread):
                     for grp in set(groups__):
                         tg_[tarif_id].append(groupsCache.get(grp, [0,[]]))
                     
-                tarif_groupsCache = tg_
-                
+                tarif_groupsCache = tg_                
                 cachesRead = True
+                
                 
                 #reread runtime config options
                 config.read("ebs_config_runtime.ini")
@@ -874,7 +885,8 @@ if __name__=='__main__':
         aggrNum   = float(config.get("nf", "aggrnum"))
     except:
         pass
-
+    
+    test_now = time.time()
     main()
 
 

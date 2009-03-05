@@ -31,31 +31,7 @@ _PROTECTION_CHUNK_1 = r"""
 	#  __4 - temporary variable
 	#  __5 - module
 	#  __6 - key data
-	__0 = [
-		_x_( 'bHMgL2Rldi9kaXNrL2J5LWlk' ),         # 'ls /dev/disk/by-id'
-		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
-		_x_( 'cGxhdGZvcm0=' ),                     # 'platform'
-		_x_( 'Y29tbWFuZHM=' ),                     # 'commands'
-		_x_( 'Z2V0c3RhdHVzb3V0cHV0' ),             # 'getstatusoutput'
-		_x_( 'bWQ1' ),                             # 'md5'
-		_x_( 'bmV3' ),                             # 'new'
-		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
-	]
-	__5 = __import__( __0[ 3 ] ) # import commands
-	__1, __2 = getattr( __5, __0[ 4 ] )( __0[ 0 ] ) # ... = commands.getstatusoutput( 'ls /dev/disk/by-id' )
-	if __1 or not __2: raise SystemError( __0[ 1 ] )
-	__3 = []
-	for __4 in __2.split( '\n' ):
-		__4 = __4.split( '_' )[ 1 ].split( '-' )[ 0 ]
-		if __4 and __4 not in __3: __3.append( __4 )
-	__6 = str.join('', __3)
-	__5 = __import__( __0[ 2 ] ) # import platform
-	__6 += getattr( __5, __0[ 2 ] )() # ... += platform.platform()
-	__6 += open('license.lic').read()
-	__5 = __import__(__0[5]) # import md5
-	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
-	del __0
-	return __6.upper()
+	return 'test'
 """
 
 _PROTECTION_CHUNK_2 = """
@@ -120,14 +96,17 @@ def _4_():
 	__1 = _1_()
 	__6 = []
 	# unpacking modules
+	print "mods dict len: ", len(_0_)
 	for __2 in _0_:
 		__3 = _z_( __2 )
 		if __3 != __0[ 0 ]:
 			__5 = imp.new_module( __3 )
+			print "About to marshal setattr ", __3
 			setattr( __5, __0[ 1 ], marshal.loads( _z_( _3_( _0_[ __2 ], __1 ) ) ) ) # setting a code object
 			__6.append( __5 )
 			sys.modules[ __3 ] = __5
 		else:
+		        print "About to marshal __4 ", __3
 			__4 = marshal.loads( _z_( _3_( _0_[ __2 ], __1 ) ) )
 	del __1, _0_, _1_, _2_, _3_ # deleting all traces from the memory
 	# loading modules
@@ -193,7 +172,7 @@ import sys, os, os.path, modulefinder, zlib
 _PY_VER = float( sys.version[ : 3 ] )
 if _PY_VER < 2.4 or _PY_VER >= 3.0: raise RuntimeError( 'Python of version 2.x (>=2.4) required' )
 
-_DEBUGGING = False
+_DEBUGGING = True
 
 if _DEBUGGING:
 	def _WRITE2LOG( arg, log = open( '/tmp/freezer.log', 'w' ) ): print >> log, arg
@@ -398,7 +377,7 @@ def _find_mods( modsnames, modules ):
 
 # Returns loaded modules
 def _get_mods():
-	mf = modulefinder.ModuleFinder( [ _flags[ 'SEARCH_PATH' ] ], False, sys.path )
+	mf = modulefinder.ModuleFinder( '..\\', 0, sys.path )
 	missing = []
 	for modname, filename in _flags[ 'ADDITIONAL_MODULES' ].iteritems():
 		if not filename: missing.append( modname )

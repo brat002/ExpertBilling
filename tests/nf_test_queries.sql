@@ -1,0 +1,3 @@
+SELECT (CASE WHEN acc.ipn_ip_address!='0.0.0.0' THEN acc.ipn_ip_address ELSE acc.vpn_ip_address END) AS ip_addr, sum(nf.octets) / 1048576, tc.name FROM billservice_netflowstream nf JOIN billservice_account acc ON nf.account_id=acc.id JOIN nas_trafficclass tc ON ARRAY[tc.id] && nf.traffic_class_id GROUP BY ip_addr, tc.name ORDER BY ip_addr;
+
+SELECT account_id, group_id, sum(bytes)::float / 1048576.0 from billservice_groupstat GROUP BY account_id, group_id ORDER BY account_id, group_id
