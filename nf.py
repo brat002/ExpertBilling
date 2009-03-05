@@ -259,8 +259,8 @@ class FlowDequeThread(Thread):
     def add_classes_groups(self, flow, classLst, nnode, acctf_id, has_groups, tarifGroups):
         ptime =  time.time()
         ptime = ptime - (ptime % 20)
-        #flow.append(ptime)
-        flow.append(test_now)
+        flow.append(ptime)
+        #flow.append(test_now)
         flow.append(tuple(classLst))
         flow.append(nnode[9])
         flow.append(nnode[10])
