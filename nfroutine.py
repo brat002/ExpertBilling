@@ -539,11 +539,7 @@ class NetFlowRoutine(Thread):
                             #acct[7] - traffic_transmit_service_id
                             #flow[23] - direction
                             trafic_cost=self.get_actual_cost(tts_id, tclass, flow_dir, octets_summ, stream_date, c_TRTRNodesCache)
-                            """
-                            Использован т.н. дифференциальный подход к начислению денег за трафик
-                            Тарифный план позволяет указать по какой цене считать трафик
-                            в зависимости от того сколько этого трафика уже накачал пользователь за расчётный период
-                            """
+
                             #direction
                             
                             '''if flow_dir=="INPUT":

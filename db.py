@@ -138,7 +138,7 @@ def get_limit_speed(cursor, account_id):
     
 def get_nas_by_ip(cursor, ip):
 
-    cursor.execute("""SELECT id, secret, type, multilink from nas_nas WHERE ipaddress=%s;""" , (ip,))
+    cursor.execute("""SELECT id, secret, type, multilink from nas_nas WHERE ipaddress=%s LIMIT 1;""" , (ip,))
     return cursor.fetchone()
 
 def set_account_deleted(cursor, account_id):

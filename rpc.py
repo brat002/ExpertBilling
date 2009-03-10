@@ -429,6 +429,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def delete(self, model, table, cur=None, connection=None):
         sql = model.delete(table)
+        print sql
         cur.execute(sql)
         #connection.commit()
         del sql
@@ -436,8 +437,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def iddelete(self, id, table, cur=None, connection=None):
-
-        cur.execute("DELETE FROM %s where id=%d" % (table, id))
+        sql = "DELETE FROM %s where id=%d" % (table, id)
+        print sql
+        cur.execute(sql)
         del table
         del id
         #connection.commit()
@@ -509,7 +511,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
         #print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
-        cur.execute("SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id))
+        sql = "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
+        print sql
+        cur.execute(sql)
         result=[]
         result = map(Object, cur.fetchall())
         return result[0]
@@ -528,7 +532,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def get_operator(self, cur=None, connection=None):
         cur.execute("SELECT * FROM billservice_operator LIMIT 1;")
-        result = Object(cur.fetchone())
+        result = map(Object,cur.fetchall())
         return result
     
     @authentconn
@@ -609,7 +613,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def save(self, model, table, cur=None, connection=None):
         sql = model.save(table)
-        #print sql
+        print sql
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id

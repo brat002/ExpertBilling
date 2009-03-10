@@ -20,6 +20,7 @@ from SettlementPeriodFrame import SettlementPeriodEbs as SettlementPeriodChild
 from TimePeriodFrame import TimePeriodChildEbs as TimePeriodChild
 from ClassFrame import ClassChildEbs as ClassChild
 from MonitorFrame import MonitorEbs as MonitorFrame
+from PoolFrame import PoolEbs as PoolFrame
 #from SystemUser import SystemUserChild
 from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
@@ -122,7 +123,23 @@ class MainWindow(QtGui.QMainWindow):
         #self.wsp.addSubWindow(child)
         
         child.show()
+ 
+
+    @connlogin
+    def pool(self):
+        self.workspace.windowList()  
+
+        child =  PoolFrame(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
         
+        child.show()
+               
     @connlogin
     def dealers(self):
         self.workspace.windowList()
@@ -302,11 +319,17 @@ class MainWindow(QtGui.QMainWindow):
         self.saveAsAct.setStatusTip(u"Системные администраторы")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
 
+        self.poolAct = QtGui.QAction(u'IP пулы', self)
+        self.poolAct.setStatusTip(u"Системные администраторы")
+        self.connect(self.poolAct, QtCore.SIGNAL("triggered()"), self.pool)
+
+
         self.exitAct = QtGui.QAction(u"Выход", self)
         self.exitAct.setShortcut(self.tr("Ctrl+Q"))
         self.exitAct.setStatusTip(u"Выход из программы")
         self.connect(self.exitAct, QtCore.SIGNAL("triggered()"), self.close)
-
+        
+        
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
                                     u'Периоды тарификации', self)
         #self.cutAct.setShortcut(self.tr("Ctrl+T"))
@@ -429,6 +452,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.cutAct)
         self.fileMenu.addAction(self.copyAct)
         self.fileMenu.addAction(self.pasteAct)
+        
+        self.fileMenu.addAction(self.poolAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addAction(self.dealerAct)

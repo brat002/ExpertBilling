@@ -140,6 +140,7 @@ class AddTimePeriod(QtGui.QDialog):
         self.start_date_edit = QtGui.QDateTimeEdit(self.widget)
         self.start_date_edit.setCalendarPopup(True)
         self.start_date_edit.setObjectName("start_date_edit")
+        self.start_date_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridlayout.addWidget(self.start_date_edit,1,1,1,1)
 
         self.end_label = QtGui.QLabel(self.widget)
@@ -149,6 +150,7 @@ class AddTimePeriod(QtGui.QDialog):
         self.end_date_edit = QtGui.QDateTimeEdit(self.widget)
         self.end_date_edit.setCalendarPopup(True)
         self.end_date_edit.setObjectName("end_date_edit")
+        self.end_date_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridlayout.addWidget(self.end_date_edit,2,1,1,1)
 
         self.repeat_label = QtGui.QLabel(self.widget)

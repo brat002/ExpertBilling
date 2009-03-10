@@ -441,9 +441,9 @@ class AddCards(QtGui.QDialog):
         self.connection = connection
         self.last_series=last_series
         self.connection.commit()
-        self.resize(337, 426)
         self.op_model   = Object()
         self.bank_model = Object()
+        self.resize(505, 380)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -455,74 +455,131 @@ class AddCards(QtGui.QDialog):
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtGui.QWidget()
         self.tab.setObjectName("tab")
+        self.gridLayout_2 = QtGui.QGridLayout(self.tab)
+        self.gridLayout_2.setObjectName("gridLayout_2")
         self.params_groupBox = QtGui.QGroupBox(self.tab)
-        self.params_groupBox.setGeometry(QtCore.QRect(10, 10, 291, 171))
         self.params_groupBox.setObjectName("params_groupBox")
-        self.nominal_lineEdit = QtGui.QLineEdit(self.params_groupBox)
-        self.nominal_lineEdit.setGeometry(QtCore.QRect(110, 50, 171, 20))
-        self.nominal_lineEdit.setObjectName("nominal_lineEdit")
-        self.nominal_lineEdit.setValidator(QtGui.QDoubleValidator(self.nominal_lineEdit))
-        self.count_label = QtGui.QLabel(self.params_groupBox)
-        self.count_label.setGeometry(QtCore.QRect(10, 80, 80, 21))
-        self.count_label.setObjectName("count_label")
-        self.pin_label = QtGui.QLabel(self.params_groupBox)
-        self.pin_label.setGeometry(QtCore.QRect(10, 110, 59, 21))
-        self.pin_label.setObjectName("pin_label")
+        self.gridLayout_3 = QtGui.QGridLayout(self.params_groupBox)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.radioButton_prepaid = QtGui.QRadioButton(self.params_groupBox)
+        self.radioButton_prepaid.setChecked(False)
+        self.radioButton_prepaid.setObjectName("radioButton_prepaid")
+        self.gridLayout_3.addWidget(self.radioButton_prepaid, 1, 0, 1, 5)
         self.series_label = QtGui.QLabel(self.params_groupBox)
-        self.series_label.setGeometry(QtCore.QRect(10, 20, 46, 21))
         self.series_label.setObjectName("series_label")
+        self.gridLayout_3.addWidget(self.series_label, 3, 0, 1, 1)
         self.nominal_label = QtGui.QLabel(self.params_groupBox)
-        self.nominal_label.setGeometry(QtCore.QRect(10, 50, 46, 21))
         self.nominal_label.setObjectName("nominal_label")
-        self.pin_spinBox = QtGui.QSpinBox(self.params_groupBox)
-        self.pin_spinBox.setGeometry(QtCore.QRect(110, 110, 101, 21))
-        self.pin_spinBox.setMaximum(32)
-        self.pin_spinBox.setObjectName("pin_spinBox")
-        self.l_checkBox = QtGui.QCheckBox(self.params_groupBox)
-        self.l_checkBox.setGeometry(QtCore.QRect(110, 140, 91, 21))
-        self.l_checkBox.setObjectName("l_checkBox")
-        self.numbers_checkBox = QtGui.QCheckBox(self.params_groupBox)
-        self.numbers_checkBox.setGeometry(QtCore.QRect(200, 140, 81, 21))
-        self.numbers_checkBox.setObjectName("numbers_checkBox")
+        self.gridLayout_3.addWidget(self.nominal_label, 4, 0, 1, 1)
+        self.spinBox_nominal = QtGui.QSpinBox(self.params_groupBox)
+        self.spinBox_nominal.setFrame(True)
+        self.spinBox_nominal.setButtonSymbols(QtGui.QAbstractSpinBox.UpDownArrows)
+        self.spinBox_nominal.setAccelerated(True)
+        self.spinBox_nominal.setMaximum(999999999)
+        self.spinBox_nominal.setObjectName("spinBox_nominal")
+        self.gridLayout_3.addWidget(self.spinBox_nominal, 4, 1, 1, 3)
+        self.count_label = QtGui.QLabel(self.params_groupBox)
+        self.count_label.setObjectName("count_label")
+        self.gridLayout_3.addWidget(self.count_label, 5, 0, 1, 1)
         self.count_spinBox = QtGui.QSpinBox(self.params_groupBox)
-        self.count_spinBox.setGeometry(QtCore.QRect(110, 80, 171, 21))
         self.count_spinBox.setFrame(True)
         self.count_spinBox.setButtonSymbols(QtGui.QAbstractSpinBox.UpDownArrows)
         self.count_spinBox.setAccelerated(True)
         self.count_spinBox.setMaximum(999999999)
         self.count_spinBox.setObjectName("count_spinBox")
+        self.gridLayout_3.addWidget(self.count_spinBox, 5, 1, 1, 3)
+        self.label_tarif = QtGui.QLabel(self.params_groupBox)
+        self.label_tarif.setObjectName("label_tarif")
+        self.gridLayout_3.addWidget(self.label_tarif, 6, 0, 1, 1)
+        self.comboBox_tarif = QtGui.QComboBox(self.params_groupBox)
+        self.comboBox_tarif.setObjectName("comboBox_tarif")
+        self.gridLayout_3.addWidget(self.comboBox_tarif, 6, 1, 1, 3)
+        self.label_login = QtGui.QLabel(self.params_groupBox)
+        self.label_login.setObjectName("label_login")
+        self.gridLayout_3.addWidget(self.label_login, 7, 0, 1, 1)
         self.series_spinBox = QtGui.QSpinBox(self.params_groupBox)
-        self.series_spinBox.setGeometry(QtCore.QRect(110, 20, 171, 22))
         self.series_spinBox.setMaximum(999999999)
         self.series_spinBox.setObjectName("series_spinBox")
+        self.gridLayout_3.addWidget(self.series_spinBox, 3, 1, 1, 3)
+        self.spinBox_login = QtGui.QSpinBox(self.params_groupBox)
+        self.spinBox_login.setProperty("text", QtCore.QVariant(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8)))
+        self.spinBox_login.setMaximum(32)
+        self.spinBox_login.setValue(10)
+        self.spinBox_login.setObjectName("spinBox_login")
+        self.gridLayout_3.addWidget(self.spinBox_login, 7, 1, 1, 3)
+        self.pin_spinBox = QtGui.QSpinBox(self.params_groupBox)
+        self.pin_spinBox.setProperty("text", QtCore.QVariant(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8)))
+        self.pin_spinBox.setMaximum(32)
+        self.pin_spinBox.setObjectName("pin_spinBox")
+        self.gridLayout_3.addWidget(self.pin_spinBox, 9, 1, 1, 3)
+        self.pin_label = QtGui.QLabel(self.params_groupBox)
+        self.pin_label.setObjectName("pin_label")
+        self.gridLayout_3.addWidget(self.pin_label, 9, 0, 1, 1)
+        self.l_checkBox_login = QtGui.QCheckBox(self.params_groupBox)
+        self.l_checkBox_login.setChecked(True)
+        self.l_checkBox_login.setObjectName("l_checkBox_login")
+        self.gridLayout_3.addWidget(self.l_checkBox_login, 8, 1, 1, 1)
+        self.numbers_checkBox_login = QtGui.QCheckBox(self.params_groupBox)
+        self.numbers_checkBox_login.setChecked(True)
+        self.numbers_checkBox_login.setObjectName("numbers_checkBox_login")
+        self.gridLayout_3.addWidget(self.numbers_checkBox_login, 8, 2, 1, 1)
+        self.l_checkBox_pin = QtGui.QCheckBox(self.params_groupBox)
+        self.l_checkBox_pin.setChecked(True)
+        self.l_checkBox_pin.setObjectName("l_checkBox_pin")
+        self.gridLayout_3.addWidget(self.l_checkBox_pin, 10, 1, 1, 1)
+        self.numbers_checkBox_pin = QtGui.QCheckBox(self.params_groupBox)
+        self.numbers_checkBox_pin.setChecked(True)
+        self.numbers_checkBox_pin.setObjectName("numbers_checkBox_pin")
+        self.gridLayout_3.addWidget(self.numbers_checkBox_pin, 10, 2, 1, 1)
+        self.radioButton_access = QtGui.QRadioButton(self.params_groupBox)
+        self.radioButton_access.setChecked(True)
+        self.radioButton_access.setObjectName("radioButton_access")
+        self.gridLayout_3.addWidget(self.radioButton_access, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.params_groupBox, 0, 0, 3, 1)
         self.period_groupBox = QtGui.QGroupBox(self.tab)
-        self.period_groupBox.setGeometry(QtCore.QRect(10, 190, 291, 91))
         self.period_groupBox.setObjectName("period_groupBox")
+        self.gridLayout_4 = QtGui.QGridLayout(self.period_groupBox)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.start_label = QtGui.QLabel(self.period_groupBox)
+        self.start_label.setObjectName("start_label")
+        self.gridLayout_4.addWidget(self.start_label, 0, 0, 1, 1)
+        self.start_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
+        self.start_dateTimeEdit.setCalendarPopup(True)
+        self.start_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.start_dateTimeEdit.setObjectName("start_dateTimeEdit")
+        self.gridLayout_4.addWidget(self.start_dateTimeEdit, 0, 1, 1, 1)
+        self.end_label = QtGui.QLabel(self.period_groupBox)
+        self.end_label.setObjectName("end_label")
+        self.gridLayout_4.addWidget(self.end_label, 1, 0, 1, 1)
         self.end_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
-        self.end_dateTimeEdit.setGeometry(QtCore.QRect(70, 50, 194, 22))
         self.end_dateTimeEdit.setCalendarPopup(True)
         self.end_dateTimeEdit.setObjectName("end_dateTimeEdit")
-        self.start_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
-        self.start_dateTimeEdit.setGeometry(QtCore.QRect(70, 20, 194, 22))
-        self.start_dateTimeEdit.setCalendarPopup(True)
-        self.start_dateTimeEdit.setObjectName("start_dateTimeEdit")
-        self.start_label = QtGui.QLabel(self.period_groupBox)
-        self.start_label.setGeometry(QtCore.QRect(10, 20, 46, 21))
-        self.start_label.setObjectName("start_label")
-        self.end_label = QtGui.QLabel(self.period_groupBox)
-        self.end_label.setGeometry(QtCore.QRect(10, 50, 46, 16))
-        self.end_label.setObjectName("end_label")
+        self.end_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.end_dateTimeEdit.setDateTime(datetime.datetime.now()+datetime.timedelta(days=365))
+        self.gridLayout_4.addWidget(self.end_dateTimeEdit, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.period_groupBox, 0, 1, 1, 1)
         self.groupBox_template = QtGui.QGroupBox(self.tab)
-        self.groupBox_template.setGeometry(QtCore.QRect(10, 290, 291, 51))
         self.groupBox_template.setObjectName("groupBox_template")
+        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_template)
+        self.gridLayout_5.setObjectName("gridLayout_5")
         self.comboBox_templates = QtGui.QComboBox(self.groupBox_template)
-        self.comboBox_templates.setGeometry(QtCore.QRect(100, 20, 181, 22))
         self.comboBox_templates.setObjectName("comboBox_templates")
+        self.gridLayout_5.addWidget(self.comboBox_templates, 0, 0, 1, 2)
         self.toolButton_preview = QtGui.QToolButton(self.groupBox_template)
-        self.toolButton_preview.setGeometry(QtCore.QRect(10, 20, 81, 20))
         self.toolButton_preview.setObjectName("toolButton_preview")
+        self.gridLayout_5.addWidget(self.toolButton_preview, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_template, 1, 1, 1, 1)
+        self.groupBox_info = QtGui.QGroupBox(self.tab)
+        self.groupBox_info.setObjectName("groupBox_info")
+        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_info)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.label_info = QtGui.QLabel(self.groupBox_info)
+        self.label_info.setObjectName("label_info")
+        self.gridLayout_6.addWidget(self.label_info, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_info, 2, 1, 1, 1)
         self.tabWidget.addTab(self.tab, "")
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+
 
         
 
@@ -530,35 +587,59 @@ class AddCards(QtGui.QDialog):
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         self.connect(self.toolButton_preview,QtCore.SIGNAL("clicked()"),self.preView)
+        self.connect(self.radioButton_access, QtCore.SIGNAL("clicked()"), self.check_card_type)
+        self.connect(self.radioButton_prepaid, QtCore.SIGNAL("clicked()"), self.check_card_type)
         self.fixtures()
-
+        self.check_card_type()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры серии", None, QtGui.QApplication.UnicodeUTF8))
         self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры генерации карточки", None, QtGui.QApplication.UnicodeUTF8))
-        self.count_label.setText(QtGui.QApplication.translate("Dialog", "Количество", None, QtGui.QApplication.UnicodeUTF8))
-        self.pin_label.setText(QtGui.QApplication.translate("Dialog", "Длина пина", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_prepaid.setText(QtGui.QApplication.translate("Dialog", "Карты предоплаты", None, QtGui.QApplication.UnicodeUTF8))
         self.series_label.setText(QtGui.QApplication.translate("Dialog", "Серия", None, QtGui.QApplication.UnicodeUTF8))
         self.nominal_label.setText(QtGui.QApplication.translate("Dialog", "Номинал", None, QtGui.QApplication.UnicodeUTF8))
-        self.l_checkBox.setText(QtGui.QApplication.translate("Dialog", "Буквы (a-Z)", None, QtGui.QApplication.UnicodeUTF8))
-        self.numbers_checkBox.setText(QtGui.QApplication.translate("Dialog", "Цифры (0-9)", None, QtGui.QApplication.UnicodeUTF8))
+        self.count_label.setText(QtGui.QApplication.translate("Dialog", "Количество", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_tarif.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_login.setText(QtGui.QApplication.translate("Dialog", "Длина логина", None, QtGui.QApplication.UnicodeUTF8))
+        self.pin_label.setText(QtGui.QApplication.translate("Dialog", "Длина пина", None, QtGui.QApplication.UnicodeUTF8))
+        self.l_checkBox_login.setText(QtGui.QApplication.translate("Dialog", "a-Z", None, QtGui.QApplication.UnicodeUTF8))
+        self.numbers_checkBox_login.setText(QtGui.QApplication.translate("Dialog", "0-9", None, QtGui.QApplication.UnicodeUTF8))
+        self.l_checkBox_pin.setText(QtGui.QApplication.translate("Dialog", "a-Z", None, QtGui.QApplication.UnicodeUTF8))
+        self.numbers_checkBox_pin.setText(QtGui.QApplication.translate("Dialog", "0-9", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_access.setText(QtGui.QApplication.translate("Dialog", "Карты доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.period_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Период действия", None, QtGui.QApplication.UnicodeUTF8))
         self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
         self.end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_template.setTitle(QtGui.QApplication.translate("Dialog", "Шаблон для печати", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_preview.setText(QtGui.QApplication.translate("Dialog", "Предросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_info.setTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_info.setText(QtGui.QApplication.translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">Внимание!</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">Перед активацией карт они</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">должны быть переданы дилеру.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
 
+    def check_card_type(self):
+        if self.radioButton_access.isChecked()==True:
+            self.comboBox_tarif.setDisabled(False)
+            self.spinBox_login.setDisabled(False)
+        else:
+            self.comboBox_tarif.setDisabled(True)
+            self.spinBox_login.setDisabled(True)
+            
     def accept(self):
         """
         понаставить проверок
         """
         try:
-            if self.l_checkBox.checkState()==0 and self.numbers_checkBox.checkState()==0:
+            if self.l_checkBox_pin.checkState()==0 and self.numbers_checkBox.checkState()==0:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не выбрали состав PIN-кода"))
                 return
             
-            if self.nominal_lineEdit.text().toInt()[0]==0:
+            if self.spinBox_nominal.text().toInt()[0]==0:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан номинал"))
                 return
             
@@ -572,22 +653,32 @@ class AddCards(QtGui.QDialog):
             
             
             
-            mask=[]
-            if self.l_checkBox.checkState()==2:
-                mask+=string.letters
-            if self.numbers_checkBox.checkState()==2:
-                mask+=string.digits
+            pin_mask = ''
+            if self.l_checkBox_pin.checkState()==2:
+                pin_mask+=string.letters
+            if self.numbers_checkBox_pin.checkState()==2:
+                pin_mask+=string.digits
+            login_mask = ''
+            if self.l_checkBox_login.checkState()==2:
+                login_mask+=string.letters
+            if self.numbers_checkBox_login.checkState()==2:
+                login_mask+=string.digits
                 
             dnow = datetime.datetime.now()
+            tarif_id = self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
+            template_id = self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
             for x in xrange(0, self.count_spinBox.text().toInt()[0]):
                 model = Object()
                 #model.card_group_id = self.group
                 model.series = unicode(self.series_spinBox.text())
-                model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=mask)
-                model.nominal = unicode(self.nominal_lineEdit.text())
+                model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
+                if self.radioButton_access.isChecked()==True:
+                    model.login = "%s-%s" % (model.series, GenPasswd2(length=self.spinBox_login.text().toInt()[0]-1,chars=login_mask))
+                    model.tarif_id = tarif_id
+                model.nominal = unicode(self.spinBox_nominal.text())
                 model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
                 model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
-                model.template = str(self.comboBox_templates.currentText())
+                model.template = template_id
                 model.created = dnow
                 #model.sold=False
                 #model.activated=False
@@ -614,40 +705,66 @@ class AddCards(QtGui.QDialog):
         self.end_dateTimeEdit.setMinimumDate(start)
         self.count_spinBox.setValue(100)
         self.pin_spinBox.setValue(15)
-        self.updateTemplates()
-        self.numbers_checkBox.setChecked(True)
-        self.l_checkBox.setChecked(True)
+        #self.updateTemplates()
         
-        try:
-            self.op_model =self.connection.get_operator()
-            
-        except Exception, e:
-            print ''.join(Pyro.util.getPyroTraceback(e))
 
-        try:
-            self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
-        except Exception, e:
-            print e
             
-
+        tarifs = self.connection.get_models("billservice_tariff")
+        self.connection.commit()
+        self.comboBox_tarif.clear()
+        i=0
+        #print tarifs
+        for tarif in tarifs:
+            self.comboBox_tarif.addItem(tarif.name)
+            self.comboBox_tarif.setItemData(i, QtCore.QVariant(tarif.id))
+            i+=1
+            
+        templates = self.connection.sql("SELECT * FROM billservice_template WHERE type_id=7 ORDER BY name ASC")
+        self.connection.commit()
+        i=0
+        for templ in templates:
+            self.comboBox_templates.addItem(templ.name)
+            self.comboBox_templates.setItemData(i, QtCore.QVariant(templ.id))
+            i+=1
+            
     def preView(self):
+        try:
+            operator =self.connection.get_operator()
+            
+        except Exception, e:
+            QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
+            return
+
+        try:
+            bank =self.connection.get_bank_for_operator(operator.id)
+        except Exception, e:
+            QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
+            return
+        self.connection.commit()
+        
         tmplt = str(self.comboBox_templates.currentText())
         if not tmplt:
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Вы не выбрали шаблон!")
             return
-        mask=[]
-        if self.l_checkBox.checkState()==2:
-            mask+=string.letters
-        if self.numbers_checkBox.checkState()==2:
-            mask+=string.digits
-        card = {}
-        card["pin"] = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=mask)
-        card["nominal"] = unicode(self.nominal_lineEdit.text())
-        card["start_date"] = self.start_dateTimeEdit.dateTime().toPyDateTime()
-        card["end_date"] = self.end_dateTimeEdit.dateTime().toPyDateTime()
-        card["series"] = unicode(self.series_spinBox.value())
-        operator=self.op_model.__dict__
-        bank = self.bank_model.__dict__
+        pin_mask = ''
+        if self.l_checkBox_pin.checkState()==2:
+            pin_mask+=string.letters
+        if self.numbers_checkBox_pin.checkState()==2:
+            pin_mask+=string.digits
+        login_mask = ''
+        if self.l_checkBox_login.checkState()==2:
+            login_mask+=string.letters
+        if self.numbers_checkBox_login.checkState()==2:
+            login_mask+=string.digits
+        card = Object()
+        card.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
+        card.login = GenPasswd2(length=self.spinBox_login.text().toInt()[0],chars=login_mask)
+        card.nominal = unicode(self.spinBox_nominal.text())
+        card.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
+        card.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
+        card.series = unicode(self.series_spinBox.value())
+        #operator=self.op_model.__dict__
+        #bank = self.bank_model.__dict__
         
         data="""
         <html>
@@ -656,9 +773,12 @@ class AddCards(QtGui.QDialog):
         </head>
         <body>
         """;
-        
+        #print "====", self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
 
-        templ = Template(filename="templates/cards/%s" % tmplt, input_encoding='utf-8')
+        
+        template = self.connection.get_model(self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0], "billservice_template")
+        print template.body
+        templ = Template(template.body, input_encoding='utf-8')
         data+=templ.render_unicode(card=card, operator=operator, bank=bank)
 
         
@@ -669,8 +789,8 @@ class AddCards(QtGui.QDialog):
         a=CardPreviewDialog(url="templates/cards/cards.html")
         a.exec_()        
         
-    def updateTemplates(self):
-        self.comboBox_templates.addItems([unicode(tmplt) for tmplt in os.listdir(templatedir) if ((tmplt.find("_printandum_") == -1) and os.path.isfile(''.join((templatedir, '/',tmplt))))])
+    #def updateTemplates(self):
+    #    self.comboBox_templates.addItems([unicode(tmplt) for tmplt in os.listdir(templatedir) if ((tmplt.find("_printandum_") == -1) and os.path.isfile(''.join((templatedir, '/',tmplt))))])
 
 class CardsChildEbs(ebsTableWindow):
     def __init__(self, connection):
@@ -704,12 +824,14 @@ class CardsChildEbs(ebsTableWindow):
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
+        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.date_end = QtGui.QDateTimeEdit(self)
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
+        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.label_date_start = QtGui.QLabel(self)
         self.label_date_start.setMargin(10)
@@ -895,7 +1017,7 @@ class CardsChildEbs(ebsTableWindow):
         if self.checkBox_filter.checkState()==2:
             start_date = self.date_start.dateTime().toPyDateTime()
             end_date = self.date_end.dateTime().toPyDateTime()
-            sql+=" WHERE "
+            sql+=" WHERE id>0"
             if unicode(self.comboBox_nominal.currentText())!="":
                 sql+=" AND nominal = '%s'" % unicode(self.comboBox_nominal.currentText())
                 
@@ -971,418 +1093,3 @@ class CardsChildEbs(ebsTableWindow):
     def delNodeLocalAction(self):
         super(CardsChildEbs, self).delNodeLocalAction([self.actionDelete_Cards, self.actionEnable_Card, self.actionDisable_Card, self.actionSell_Card])
 
-class CardsChild(QtGui.QMainWindow):
-    sequenceNumber = 1
-
-    def __init__(self, connection):
-        bhdr = HeaderUtil.getBinaryHeader("cards_frame_header")
-        self.splname = "cards_frame_splitter"
-        bspltr = SplitterUtil.getBinarySplitter(self.splname)
-        super(CardsChild, self).__init__()
-        
-        self.connection = connection
-        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-        
-        self.setObjectName("CardsMDI")
-        self.resize(947, 619)
-        #self.resize(QtCore.QSize(QtCore.QRect(0,0,967, 639).size()).expandedTo(self.minimumSizeHint()))
-        self.setIconSize(QtCore.QSize(18, 18))
-        self.centralwidget = QtGui.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        
-        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget = tableFormat(self.tableWidget)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
-        self.setCentralWidget(self.centralwidget)
-        #self.statusbar = QtGui.QStatusBar(self)
-        #self.statusbar.setObjectName("statusbar")
-        #self.setStatusBar(self.statusbar)
-        self.toolBar = QtGui.QToolBar(self)
-        self.toolBar.setMovable(False)
-        self.toolBar.setIconSize(QtCore.QSize(18, 18))
-        self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.toolBar.setFloatable(False)
-        self.toolBar.setObjectName("toolBar")
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        
-        self.toolBar_filter = QtGui.QToolBar(self)
-        self.toolBar_filter.setMovable(False)
-        self.toolBar_filter.setAllowedAreas(QtCore.Qt.BottomToolBarArea)
-        #self.toolBar_filter.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.toolBar_filter.setFloatable(False)
-        self.toolBar_filter.setObjectName("toolBar_filter")
-        ###################### Filter
-        self.comboBox_nominal = QtGui.QComboBox(self)
-        
-        self.comboBox_nominal.setGeometry(QtCore.QRect(0,0,60,20))
-        #self.comboBox_nominal.setValidator(QtGui.QIntValidator)
-        self.comboBox_nominal.setEditable(True)
-        
-        self.date_start = QtGui.QDateTimeEdit(self)
-        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
-        self.date_start.setObjectName("date_start")
-
-        self.date_end = QtGui.QDateTimeEdit(self)
-        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
-        self.date_end.setObjectName("date_end")
-
-        self.label_date_start = QtGui.QLabel(self)
-        self.label_date_start.setMargin(10)
-        self.label_date_start.setObjectName("date_start_label")
-
-        self.label_date_end = QtGui.QLabel(self)
-        self.label_date_end.setMargin(10)
-        self.label_date_end.setObjectName("date_end_label")
-        
-        self.label_nominal = QtGui.QLabel(self)
-        self.label_nominal.setMargin(10)
-        
-        self.label_filter = QtGui.QLabel(self)
-        self.label_filter.setMargin(10)
-        
-        self.checkBox_sold = QtGui.QCheckBox(self)
-        self.checkBox_activated = QtGui.QCheckBox(self)
-        
-        self.checkBox_filter = QtGui.QCheckBox(self)
-        
-        self.pushButton_go = QtGui.QPushButton(self)
-        
-        self.toolBar_filter.addWidget(self.checkBox_filter)
-        self.toolBar_filter.addWidget(self.label_nominal)
-        self.toolBar_filter.addWidget(self.comboBox_nominal)
-        self.toolBar_filter.addWidget(self.checkBox_sold)
-        self.toolBar_filter.addWidget(self.checkBox_activated)
-        self.toolBar_filter.addWidget(self.label_date_start)
-        self.toolBar_filter.addWidget(self.date_start)
-        self.toolBar_filter.addWidget(self.label_date_end)
-        self.toolBar_filter.addWidget(self.date_end)
-
-        self.toolBar_filter.addWidget(self.pushButton_go)
-
-        ######################
-        
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
-        self.insertToolBarBreak(self.toolBar_filter)
-        
-        self.actionGenerate_Cards = QtGui.QAction(self)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionGenerate_Cards.setIcon(icon)
-        self.actionGenerate_Cards.setObjectName("actionGenerate_Cards")
-
-        self.actionDelete_Cards = QtGui.QAction(self)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/del.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionDelete_Cards.setIcon(icon)
-        self.actionDelete_Cards.setObjectName("actionDelete_Cards")
-        
-        self.actionEnable_Card = QtGui.QAction(self)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("images/enable.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionEnable_Card.setIcon(icon1)
-        self.actionEnable_Card.setObjectName("actionEnable_Card")
-        self.actionDisable_Card = QtGui.QAction(self)
-        
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("images/disable.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionDisable_Card.setIcon(icon2)
-        self.actionDisable_Card.setObjectName("actionDisable_Card")
-        self.actionSell_Card = QtGui.QAction(self)
-        
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("images/dollar.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionSell_Card.setIcon(icon3)
-        self.actionSell_Card.setObjectName("actionSell_Card")
-        
-        self.toolBar.addAction(self.actionGenerate_Cards)
-        self.toolBar.addAction(self.actionDelete_Cards)
-        self.toolBar.addAction(self.actionEnable_Card)
-        self.toolBar.addAction(self.actionDisable_Card)
-        self.toolBar.addAction(self.actionSell_Card)        
-        
-        tableHeader = self.tableWidget.horizontalHeader()
-        
-        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
-        self.connect(self.actionGenerate_Cards, QtCore.SIGNAL("triggered()"),  self.generateCards)
-        self.connect(self.actionDelete_Cards, QtCore.SIGNAL("triggered()"),  self.deleteCards)
-        self.connect(self.actionEnable_Card, QtCore.SIGNAL("triggered()"),  self.enableCard)
-        self.connect(self.actionDisable_Card, QtCore.SIGNAL("triggered()"),  self.disableCard)
-        self.connect(self.actionSell_Card, QtCore.SIGNAL("triggered()"),  self.saleCard )
-        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
-        self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
-        
-        self.retranslateUi()
-        
-        #HeaderUtil.nullifySaved("cards_frame_header")
-        
-        self.filterActions()
-        self.fixtures()
-        if not bhdr.isEmpty():
-            HeaderUtil.setBinaryHeader("cards_frame_header", bhdr)
-            HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
-        
-        try:
-            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start.setDateTime(settings.value("cards_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end.setDateTime(settings.value("cards_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-        except Exception, ex:
-            print "Transactions settings error: ", ex
-        #===============================================================================
-
-        
-    def retranslateUi(self):
-
-        self.tableWidget.clear()
-        
-        columns=['#', u'Серия', u'Номинал', u'PIN', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
-        makeHeaders(columns, self.tableWidget)
-        
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Система карт оплаты", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar_filter.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Filter", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionGenerate_Cards.setText(QtGui.QApplication.translate("MainWindow", "Сгенерировать партию", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionDelete_Cards.setText(QtGui.QApplication.translate("MainWindow", "Удалить карты", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionEnable_Card.setText(QtGui.QApplication.translate("MainWindow", "Активна", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionDisable_Card.setText(QtGui.QApplication.translate("MainWindow", "Неактивна", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSell_Card.setText(QtGui.QApplication.translate("MainWindow", "Продать", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_nominal.setText(QtGui.QApplication.translate("MainWindow", "Номинал", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_filter.setText(QtGui.QApplication.translate("MainWindow", "Фильтр", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_date_start.setText(QtGui.QApplication.translate("MainWindow", "С", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_date_end.setText(QtGui.QApplication.translate("MainWindow", "По", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_sold.setText(QtGui.QApplication.translate("MainWindow", "Проданные", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_activated.setText(QtGui.QApplication.translate("MainWindow", "Активированные", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_go.setText(QtGui.QApplication.translate("MainWindow", "Фильтровать", None, QtGui.QApplication.UnicodeUTF8))
-
-        self.tableWidget.setColumnHidden(0, True)
-
-    def saleCard(self):
-        
-        items = self.tableWidget.selectedIndexes()
-        cards = []
-        for item in items:
-            if item.column()>0:
-                continue
-            cards.append(unicode(self.tableWidget.item(item.row(), 0).text()))
-        
-        child = SaleCards(connection=self.connection, cards = cards)
-        if child.exec_()==1:
-            self.refresh()
-        
-    def fixtures(self):
-        nominals = self.connection.get_cards_nominal()
-        self.connection.commit()
-        self.comboBox_nominal.clear()
-        for nom in nominals:
-            
-            self.comboBox_nominal.addItem(unicode(nom.nominal))
-            
-    def filterActions(self):
-        if self.checkBox_filter.checkState()==2:
-            self.label_nominal.setDisabled(False)
-            self.comboBox_nominal.setDisabled(False)
-            self.label_date_start.setDisabled(False)
-            self.date_start.setDisabled(False)
-            self.label_date_end.setDisabled(False)
-            self.date_end.setDisabled(False)
-            self.checkBox_sold.setDisabled(False)
-            self.checkBox_activated.setDisabled(False)
-            self.pushButton_go.setDisabled(False)
-        else:
-            self.label_nominal.setDisabled(True)
-            self.comboBox_nominal.setDisabled(True)
-            self.label_date_start.setDisabled(True)
-            self.date_start.setDisabled(True)
-            self.label_date_end.setDisabled(True)
-            self.date_end.setDisabled(True)
-            self.checkBox_sold.setDisabled(True)
-            self.checkBox_activated.setDisabled(True)
-            self.pushButton_go.setDisabled(True)
-            self.refresh()
-            
-    def enableCard(self):
-        for index in self.tableWidget.selectedIndexes():
-            if index.column()>1:
-                continue
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            #print i
-            try:
-                #ids.append()
-                model=self.connection.get_model(int(i),"billservice_card")
-                model.disabled=False
-                self.connection.save(model,"billservice_card")
-                self.connection.commit()
- 
-            except Exception, e:
-                pass   
-        
-        self.refresh()
-    
-    def disableCard(self):
-        ids=[]
-        for index in self.tableWidget.selectedIndexes():
-            #print index.column()
-            if index.column()>1:
-                continue
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            #print i
-            
-            try:
-                #ids.append()
-                model=self.connection.get_model(int(i),"billservice_card")
-                model.disabled=True
-                self.connection.save(model,"billservice_card")
-                self.connection.commit()
-
-            except Exception, e:
-                pass        
-        
-        self.refresh()
-        
-    def deleteCards(self):
-        """
-        """
-        ids=[]
-        for index in self.tableWidget.selectedIndexes():
-            #print index.column()
-            if index.column()>1:
-                continue
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            #print i
-            
-            try:
-                #ids.append()
-                self.connection.delete_card(i)
-            except Exception, e:
-                pass  
-            
-        self.connection.commit()    
-        self.refresh()     
-
-    def generateCards(self):
-
-        #print model.id
-        
-        last_series = self.connection.get_next_cardseries()
-        child=AddCards(connection=self.connection, last_series=last_series)
-        if child.exec_()==1:
-            self.refresh()
-            self.fixtures()
-        
-        
-    def refresh(self, widget=None):
-        
-        sql = """SELECT * FROM billservice_card"""
-        if self.checkBox_filter.checkState()==2:
-            start_date = self.date_start.dateTime().toPyDateTime()
-            end_date = self.date_end.dateTime().toPyDateTime()
-            sql+=" WHERE id>0 "
-            if unicode(self.comboBox_nominal.currentText())!="":
-                sql+=" AND nominal = '%s'" % unicode(self.comboBox_nominal.currentText())
-                
-            if self.checkBox_activated.checkState() == 2:
-                sql+=" AND activated>'%s' and activated<'%s'" % (start_date, end_date)
-            
-            if self.checkBox_sold.checkState() == 2:
-                sql+=" AND sold>'%s' and sold<'%s'" % (start_date, end_date)
-                
-            if self.checkBox_sold.checkState() == 0 and self.checkBox_activated.checkState() == 0:
-                sql+=" AND start_date>'%s' and end_date<'%s'" % (start_date, end_date)
-        else:
-            sql+=" WHERE sold is Null"
-            
-        self.tableWidget.setSortingEnabled(False)
-
-            
-        self.tableWidget.clearContents()
-
-        nodes = self.connection.sql(sql)
-        self.connection.commit()
-        self.tableWidget.setRowCount(len(nodes))
-        sql+=" ORDER BY id ASC"
-        i=0        
-        
-        for node in nodes:
-
-            self.addrow(node.id, i,0, status = node.disabled, activated=node.activated)
-            self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
-            self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
-            self.addrow(node.pin, i,3, status = node.disabled, activated=node.activated)
-            self.addrow(node.sold, i,4, status = node.disabled, activated=node.activated)
-            self.addrow(node.activated, i,5, status = node.disabled, activated=node.activated)
-            self.addrow(node.start_date.strftime(self.strftimeFormat), i,6, status = node.disabled, activated=node.activated)
-            self.addrow(node.end_date.strftime(self.strftimeFormat), i,7, status = node.disabled, activated=node.activated)
-            #self.tableWidget.setRowHeight(i, 17)
-            i+=1
-            
-        self.tableWidget.setColumnHidden(0, False)
-        #self.tableWidget.resizeColumnsToContents()
-        HeaderUtil.getHeader("cards_frame_header", self.tableWidget)
-        #self.tableWidget.setSortingEnabled(True)
-        try:
-            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.dateTime()))
-            settings.setValue("cards_date_end", QtCore.QVariant(self.date_end.dateTime()))
-        except Exception, ex:
-            print "Transactions settings save error: ", ex
-
-
-    def saveHeader(self, *args):
-        if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader("cards_frame_header", self.tableWidget)
-            
-        
-    def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
-    
-
-    def addrow(self, value, x, y, status, activated):
-        headerItem = QtGui.QTableWidgetItem()        
-        #print 'activated',activated
-        if value == None:
-            value = ""
-        
-        headerItem.setText(unicode(value))
-        
-        if status==True:
-            headerItem.setTextColor(QtGui.QColor('#FF0100'))
-        
-        if y==5:
-            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
-        if activated == None and y==0:
-            headerItem.setIcon(QtGui.QIcon("images/ok.png"))
-        elif activated!=None and y==0:
-            headerItem.setIcon(QtGui.QIcon("images/false.png"))
-    
-        self.tableWidget.setItem(x,y,headerItem)
-        
-
-        
-    def delNodeLocalAction(self):
-        if self.tableWidget.currentRow()==-1:
-            self.delConsAction.setDisabled(True)
-        else:
-            self.delConsAction.setDisabled(False)
-
-
-    def addNodeLocalAction(self):
-        if self.treeWidget.currentItem() is None:
-            self.addConsAction.setDisabled(True)
-            self.delConsAction.setDisabled(True)
-            self.delPeriodAction.setDisabled(True)
-        else:
-            self.addConsAction.setDisabled(False)
-            self.delConsAction.setDisabled(False)
-            self.delPeriodAction.setDisabled(False)
-            
-
-
-
-        
