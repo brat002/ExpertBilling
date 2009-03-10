@@ -74,8 +74,11 @@ class ebsTableWindow(QtGui.QMainWindow):
         self.toolBar_find.setMovable(False)
         self.toolBar_find.setFloatable(False)
         self.lineEdit_search_text = QtGui.QLineEdit(self)
+        self.lineEdit_search_text.setMaximumHeight(20)
+        self.lineEdit_search_text.setContentsMargins(0,0,0,0)
         self.pushButton_find = QtGui.QToolButton(self)
         self.pushButton_find.setIcon(QtGui.QIcon("images/search.png"))
+        self.pushButton_find.setMaximumHeight(20)
         
         self.toolBar_find.addWidget(self.lineEdit_search_text)
         self.toolBar_find.addWidget(self.pushButton_find)

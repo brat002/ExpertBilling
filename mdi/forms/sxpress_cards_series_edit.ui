@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>337</width>
-    <height>426</height>
+    <width>505</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -32,263 +32,284 @@
       <attribute name="title" >
        <string>Параметры</string>
       </attribute>
-      <widget class="QGroupBox" name="params_groupBox" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>291</width>
-         <height>171</height>
-        </rect>
-       </property>
-       <property name="title" >
-        <string>Параметры генерации карточки</string>
-       </property>
-       <widget class="QLineEdit" name="nominal_lineEdit" >
-        <property name="geometry" >
-         <rect>
-          <x>110</x>
-          <y>50</y>
-          <width>171</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="count_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>60</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Количество</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="pin_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>59</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Длина пина</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="series_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>46</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Серия</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="nominal_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>46</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Номинал</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="pin_spinBox" >
-        <property name="geometry" >
-         <rect>
-          <x>110</x>
-          <y>110</y>
-          <width>101</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="maximum" >
-         <number>32</number>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="l_checkBox" >
-        <property name="geometry" >
-         <rect>
-          <x>110</x>
-          <y>140</y>
-          <width>91</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Буквы (a-Z)</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="numbers_checkBox" >
-        <property name="geometry" >
-         <rect>
-          <x>200</x>
-          <y>140</y>
-          <width>81</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Цифры (0-9)</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="count_spinBox" >
-        <property name="geometry" >
-         <rect>
-          <x>110</x>
-          <y>80</y>
-          <width>171</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="frame" >
-         <bool>true</bool>
-        </property>
-        <property name="buttonSymbols" >
-         <enum>QAbstractSpinBox::UpDownArrows</enum>
-        </property>
-        <property name="accelerated" >
-         <bool>true</bool>
-        </property>
-        <property name="maximum" >
-         <number>999999999</number>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="series_spinBox" >
-        <property name="geometry" >
-         <rect>
-          <x>110</x>
-          <y>20</y>
-          <width>171</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="maximum" >
-         <number>999999999</number>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="period_groupBox" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>190</y>
-         <width>291</width>
-         <height>91</height>
-        </rect>
-       </property>
-       <property name="title" >
-        <string>Период действия</string>
-       </property>
-       <widget class="QDateTimeEdit" name="end_dateTimeEdit" >
-        <property name="geometry" >
-         <rect>
-          <x>70</x>
-          <y>50</y>
-          <width>194</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="calendarPopup" >
-         <bool>true</bool>
-        </property>
-       </widget>
-       <widget class="QDateTimeEdit" name="start_dateTimeEdit" >
-        <property name="geometry" >
-         <rect>
-          <x>70</x>
-          <y>20</y>
-          <width>194</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="calendarPopup" >
-         <bool>true</bool>
-        </property>
-       </widget>
-       <widget class="QLabel" name="start_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>46</width>
-          <height>21</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Начало</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="end_label" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>46</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Конец</string>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_template" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>290</y>
-         <width>291</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <property name="title" >
-        <string>Шаблон для печати</string>
-       </property>
-       <widget class="QComboBox" name="comboBox_templates" >
-        <property name="geometry" >
-         <rect>
-          <x>100</x>
-          <y>20</y>
-          <width>181</width>
-          <height>22</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QToolButton" name="toolButton_preview" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>81</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="text" >
-         <string>Предросмотр</string>
-        </property>
-       </widget>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout_2" >
+       <item rowspan="3" row="0" column="0" >
+        <widget class="QGroupBox" name="params_groupBox" >
+         <property name="title" >
+          <string>Параметры генерации карточки</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3" >
+          <item row="1" column="0" colspan="5" >
+           <widget class="QRadioButton" name="radioButton_prepaid" >
+            <property name="text" >
+             <string>Карты предоплаты</string>
+            </property>
+            <property name="checked" >
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" >
+           <widget class="QLabel" name="series_label" >
+            <property name="text" >
+             <string>Серия</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" >
+           <widget class="QLabel" name="nominal_label" >
+            <property name="text" >
+             <string>Номинал</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" colspan="3" >
+           <widget class="QSpinBox" name="spinBox_nominal" >
+            <property name="frame" >
+             <bool>true</bool>
+            </property>
+            <property name="buttonSymbols" >
+             <enum>QAbstractSpinBox::UpDownArrows</enum>
+            </property>
+            <property name="accelerated" >
+             <bool>true</bool>
+            </property>
+            <property name="maximum" >
+             <number>999999999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" >
+           <widget class="QLabel" name="count_label" >
+            <property name="text" >
+             <string>Количество</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1" colspan="3" >
+           <widget class="QSpinBox" name="count_spinBox" >
+            <property name="frame" >
+             <bool>true</bool>
+            </property>
+            <property name="buttonSymbols" >
+             <enum>QAbstractSpinBox::UpDownArrows</enum>
+            </property>
+            <property name="accelerated" >
+             <bool>true</bool>
+            </property>
+            <property name="maximum" >
+             <number>999999999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" >
+           <widget class="QLabel" name="label_tarif" >
+            <property name="text" >
+             <string>Тарифный план</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1" colspan="3" >
+           <widget class="QComboBox" name="comboBox_tarif" />
+          </item>
+          <item row="7" column="0" >
+           <widget class="QLabel" name="label_login" >
+            <property name="text" >
+             <string>Длина логина</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1" colspan="3" >
+           <widget class="QSpinBox" name="series_spinBox" >
+            <property name="maximum" >
+             <number>999999999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1" colspan="3" >
+           <widget class="QSpinBox" name="spinBox_login" >
+            <property name="text" stdset="0" >
+             <string>0</string>
+            </property>
+            <property name="maximum" >
+             <number>32</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1" colspan="3" >
+           <widget class="QSpinBox" name="pin_spinBox" >
+            <property name="text" stdset="0" >
+             <string>0</string>
+            </property>
+            <property name="maximum" >
+             <number>32</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" >
+           <widget class="QLabel" name="pin_label" >
+            <property name="text" >
+             <string>Длина пина</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1" >
+           <widget class="QCheckBox" name="l_checkBox_login" >
+            <property name="text" >
+             <string>a-Z</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2" >
+           <widget class="QCheckBox" name="numbers_checkBox_login" >
+            <property name="text" >
+             <string>0-9</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1" >
+           <widget class="QCheckBox" name="l_checkBox_pin" >
+            <property name="text" >
+             <string>a-Z</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2" >
+           <widget class="QCheckBox" name="numbers_checkBox_pin" >
+            <property name="text" >
+             <string>0-9</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QRadioButton" name="radioButton_access" >
+            <property name="text" >
+             <string>Карты доступа</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+         <zorder>nominal_lineEdit</zorder>
+         <zorder>count_label</zorder>
+         <zorder>series_label</zorder>
+         <zorder>nominal_label</zorder>
+         <zorder>count_spinBox</zorder>
+         <zorder>pin_label_2</zorder>
+         <zorder>groupBox</zorder>
+         <zorder>radioButton_prepaid</zorder>
+         <zorder>spinBox_nominal</zorder>
+         <zorder>comboBox_tarif</zorder>
+         <zorder>label_tarif</zorder>
+         <zorder>label_login</zorder>
+         <zorder>series_spinBox</zorder>
+         <zorder>spinBox_login</zorder>
+         <zorder>pin_spinBox</zorder>
+         <zorder>pin_label</zorder>
+         <zorder>l_checkBox_login</zorder>
+         <zorder>numbers_checkBox_login</zorder>
+         <zorder>l_checkBox_pin</zorder>
+         <zorder>numbers_checkBox_pin</zorder>
+         <zorder>radioButton_access</zorder>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QGroupBox" name="period_groupBox" >
+         <property name="title" >
+          <string>Период действия</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4" >
+          <item row="0" column="0" >
+           <widget class="QLabel" name="start_label" >
+            <property name="text" >
+             <string>Начало</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QDateTimeEdit" name="start_dateTimeEdit" >
+            <property name="calendarPopup" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="end_label" >
+            <property name="text" >
+             <string>Конец</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QDateTimeEdit" name="end_dateTimeEdit" >
+            <property name="calendarPopup" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QGroupBox" name="groupBox_template" >
+         <property name="title" >
+          <string>Шаблон для печати</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5" >
+          <item row="0" column="0" colspan="2" >
+           <widget class="QComboBox" name="comboBox_templates" />
+          </item>
+          <item row="1" column="1" >
+           <widget class="QToolButton" name="toolButton_preview" >
+            <property name="text" >
+             <string>Предросмотр</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QGroupBox" name="groupBox_info" >
+         <property name="title" >
+          <string>Информация</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6" >
+          <item row="0" column="0" >
+           <widget class="QLabel" name="label_info" >
+            <property name="text" >
+             <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;">Внимание!&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;">Перед активацией карт они&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;">должны быть переданы дилеру.&lt;/p>&lt;/body>&lt;/html></string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
   </layout>
-  <zorder>buttonBox</zorder>
-  <zorder>groupBox_2</zorder>
-  <zorder>tabWidget</zorder>
  </widget>
  <resources/>
  <connections>

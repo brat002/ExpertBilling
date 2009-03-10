@@ -59,6 +59,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
+        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.date_end = QtGui.QDateTimeEdit(self)
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
@@ -66,6 +67,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
+        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -253,6 +255,7 @@ class TransactionsReport(QtGui.QMainWindow):
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
+        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
 
         self.date_end = QtGui.QDateTimeEdit(self)
@@ -260,6 +263,7 @@ class TransactionsReport(QtGui.QMainWindow):
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
+        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -471,6 +475,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.to_dateTimeEdit.setCalendarPopup(True)
         self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
+        self.to_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.all_users_listWidget = QtGui.QListWidget(self.general_tab)
         self.all_users_listWidget.setGeometry(QtCore.QRect(10,120,161,192))
@@ -488,6 +493,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
         self.from_dateTimeEdit.setCalendarPopup(True)
         self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
+        self.from_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.from_label = QtGui.QLabel(self.general_tab)
         self.from_label.setGeometry(QtCore.QRect(10,10,82,20))
@@ -1659,6 +1665,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
         self.from_dateTimeEdit.setCalendarPopup(True)
         self.from_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
+        self.from_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         dt_now = datetime.datetime.now()
         self.from_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
         self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
@@ -1668,6 +1675,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.to_dateTimeEdit.setCalendarPopup(True)
         self.to_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
         self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
+        self.to_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridLayout_2.addWidget(self.to_dateTimeEdit, 1, 1, 1, 1)
         self.gridLayout.addWidget(self.inter_groupBox, 0, 0, 1, 2)
 

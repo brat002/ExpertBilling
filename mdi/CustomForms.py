@@ -765,16 +765,19 @@ class OperatorDialog(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Operator", "Данные о организации", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
+        self.op_model = self.connection.get_model(1, "billservice_operator")
+#        try:
+#            self.op_model =self.connection.get_operator()
+#        except Exception, e:
+#            print e
+#            return
+        print 1
         try:
-            self.op_model =self.connection.get_operator()
+            self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
         except Exception, e:
             print e
             return
-        try:
-            self.bank_model=self.connection.get_bank_for_operator(self.op_model)
-        except Exception, e:
-            print e
-            return
+        print 2
         self.connection.commit()
         self.lineEdit_organization.setText(self.op_model.organization)
         self.lineEdit_okpo.setText(self.op_model.okpo)
@@ -809,14 +812,15 @@ class OperatorDialog(QtGui.QDialog):
         bank_model.currency = unicode(self.lineEdit_currency.text())
 
         try:
-            self.bank_model.id = self.connection.save(bank_model,"billservice_bankdata")
+            bank_model.id = self.connection.save(bank_model,"billservice_bankdata")
+            self.bank_model = bank_model
         except Exception, e:
             print e
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка!",
                                 u"Невозможно сохранить данные!")
             return
-        print "bank_id", self.bank_model.id
+        #print "bank_id", self.bank_model.id
         
         op_model.organization = unicode(self.lineEdit_organization.text())
         op_model.okpo = unicode(self.lineEdit_okpo.text())
@@ -1037,6 +1041,15 @@ class TemplatesWindow(QtGui.QMainWindow):
         sz.setHeight(hght)
         tree_header.setSizeHint(0,sz)
 
+        self.titles = ['',u'Договор на подключение для физ. лиц',
+                  u'Договор на подключение для юр. лиц',
+                  u'Счет-фактура',
+                  u'Акт выполненных работ',
+                  u'Кассовый чек',
+                  u'Накладная на карты экспресс оплаты',
+                  u'Карты экспресс-оплаты',
+                  ]
+        
         self.gridLayout.addWidget(self.treeWidget, 0, 0, 2, 1)
         self.label = QtGui.QLabel(self.centralwidget)
         self.label.setObjectName("label")
@@ -1097,6 +1110,9 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.connect(self.treeWidget, QtCore.SIGNAL("currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)"), self.editTemplate)
         self.connect(self.actionSave, QtCore.SIGNAL("triggered()"), self.saveTemplate)
         self.connect(self.actionPreview, QtCore.SIGNAL("triggered()"), self.preview)
+        self.connect(self.actionAddTemplate, QtCore.SIGNAL("triggered()"), self.addCardTemplate)
+        self.connect(self.actionDeleteTemplate, QtCore.SIGNAL("triggered()"), self.delCardTemplate)
+        
         self.retranslateUi()
         self.refresh()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -1104,14 +1120,6 @@ class TemplatesWindow(QtGui.QMainWindow):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Шаблоны", None, QtGui.QApplication.UnicodeUTF8))
         self.treeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Шаблоны", None, QtGui.QApplication.UnicodeUTF8))
-        #__sortingEnabled = self.treeWidget.isSortingEnabled()
-        #self.treeWidget.setSortingEnabled(False)
-        #self.treeWidget.topLevelItem(2).setText(0, QtGui.QApplication.translate("MainWindow", "Счет-фактура", None, QtGui.QApplication.UnicodeUTF8))
-        #self.treeWidget.topLevelItem(3).setText(0, QtGui.QApplication.translate("MainWindow", "Акт выполненных работ", None, QtGui.QApplication.UnicodeUTF8))
-        #self.treeWidget.topLevelItem(1).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для юр. лиц", None, QtGui.QApplication.UnicodeUTF8))
-        #self.treeWidget.topLevelItem(0).setText(0, QtGui.QApplication.translate("MainWindow", "Договор на подключение для физ. лиц", None, QtGui.QApplication.UnicodeUTF8))
-        #self.treeWidget.topLevelItem(4).setText(0, QtGui.QApplication.translate("MainWindow", "Карты экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
-        #self.treeWidget.setSortingEnabled(__sortingEnabled)
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Название шаблона", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAddTemplate.setText(QtGui.QApplication.translate("MainWindow", "Добавить шаблон", None, QtGui.QApplication.UnicodeUTF8))
@@ -1120,22 +1128,43 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.actionPreview.setText(QtGui.QApplication.translate("MainWindow", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
         
         
+    def addCardTemplate(self):
+        model = Object()
+        model.type_id = 7
+        item = QtGui.QTreeWidgetItem(self.treeWidget)
+        item.model = model
+        self.lineEdit_name.clear()
+        self.textBrowser_remplate_body.clear()
+        self.treeWidget.setCurrentItem(item)
+
+    def delCardTemplate(self):
+        model = self.treeWidget.currentItem().model
+        if model.type_id==7:
+            self.connection.iddelete(model.id, "billservice_template")
+            self.connection.commit()
+            self.refresh()
+            self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(0))
+    
     def editTemplate(self, item1, item2):
-        id = self.treeWidget.currentItem().id
         
-        if id==7:
-            self.actionSave.setDisabled(True)
-        else:
-            self.actionSave.setDisabled(False)
-        
-        template = self.connection.get("SELECT * FROM billservice_template WHERE type_id=%s" % id)
+        try:
+            model = self.treeWidget.currentItem().model
+            id = model.id
+        except:
+            return
+        self.textBrowser_remplate_body.clear()
+
+
+        template = self.connection.get_model(model.id, "billservice_template")
         self.connection.commit()
-        self.treeWidget.currentItem().model_id = None
+        
+        self.treeWidget.currentItem().model = template
         if template:
             self.lineEdit_name.setText(unicode(template.name))
             self.textBrowser_remplate_body.setPlainText(template.body)
-            self.treeWidget.currentItem().model_id = template.id
-        else:
+            
+
+        elif template.type_id!=7 and not template:
             self.lineEdit_name.setText(unicode(''))
             self.textBrowser_remplate_body.setPlainText("""<html>
             <head>
@@ -1145,20 +1174,32 @@ class TemplatesWindow(QtGui.QMainWindow):
             
             
             
-            
             </body>
             </html>""")
+        elif id==7 and not template:
+            self.lineEdit_name.setText(unicode(''))
+            self.textBrowser_remplate_body.setPlainText("""<br />""")            
+ 
+
             
     
     def saveTemplate(self):
-        model = Object()
-        if self.treeWidget.currentItem().model_id:
-            model.id = self.treeWidget.currentItem().model_id
-        model.type_id = self.treeWidget.currentItem().id
+        if self.treeWidget.currentItem().model:
+            model = self.treeWidget.currentItem().model
+        else:
+            model = Object()
+
         model.name = unicode(self.lineEdit_name.text())
         model.body = unicode(self.textBrowser_remplate_body.toPlainText())
-        self.connection.save(model, "billservice_template")
+ 
+        for x in model.__dict__:
+            print x, model.__dict__[x]
+
+        model.id = self.connection.save(model, "billservice_template")
+        self.treeWidget.currentItem().model = model
+        
         self.connection.commit()
+        self.refresh()
         
     def refresh(self):
         """
@@ -1170,23 +1211,21 @@ class TemplatesWindow(QtGui.QMainWindow):
         6;"Накладная на карты экспресс оплаты"
         7;"Карты экспресс-оплаты"
         """
-        titles = {'1':u'Договор на подключение для физ. лиц',
-                  '2':u'Договор на подключение для юр. лиц',
-                  '3':u'Счет-фактура',
-                  '4':u'Акт выполненных работ',
-                  '5':u'Кассовый чек',
-                  '6':u'Накладная на карты экспресс оплаты',
-                  '7':u'Карты экспресс-оплаты',
-                  }
-        
-        i=1
+        ind = self.treeWidget.currentItem()
         self.treeWidget.clear()
-        for key in titles:
+        card_templates = self.connection.sql("""SELECT * FROM billservice_template as template ORDER BY type_id ASC""")
+        self.connection.commit()
+        
+        for ct in card_templates:
             item = QtGui.QTreeWidgetItem(self.treeWidget)
-            item.id=i
-            item.setText(0, titles['%s' % i])
-            
-            i+=1
+            item.model=ct
+            item.setText(0, ct.name)
+            try:
+                if ind.model.id==ct.id:
+                    self.treeWidget.setCurrentItem(item)
+            except:
+                pass
+
             
     def preview(self):
         id = self.treeWidget.currentItem().id
@@ -1222,6 +1261,7 @@ class TemplatesWindow(QtGui.QMainWindow):
 
         if id==6:
             data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
+        
         if id in (3,4):
             data=u"Preview for this type of documents unavailable. Please still waiting for next version of ExpertBilling"
                                 
@@ -1260,6 +1300,7 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.dateTimeEdit_start_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2008, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_start_date.setCalendarPopup(True)
         self.dateTimeEdit_start_date.setObjectName("dateTimeEdit_start_date")
+        self.dateTimeEdit_start_date.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridLayout_2.addWidget(self.dateTimeEdit_start_date, 0, 1, 1, 1)
         self.label_end_date = QtGui.QLabel(self.groupBox)
         self.label_end_date.setObjectName("label_end_date")
@@ -1271,6 +1312,7 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.dateTimeEdit_end_date.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2008, 9, 14), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_end_date.setCalendarPopup(True)
         self.dateTimeEdit_end_date.setObjectName("dateTimeEdit_end_date")
+        self.dateTimeEdit_end_date.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridLayout_2.addWidget(self.dateTimeEdit_end_date, 0, 3, 1, 1)
         self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)

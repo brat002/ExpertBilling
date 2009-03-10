@@ -36,6 +36,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         self.datetime_edit.setCurrentSection(QtGui.QDateTimeEdit.DaySection)
         self.datetime_edit.setCalendarPopup(True)
         self.datetime_edit.setObjectName("datetime_edit")
+        self.datetime_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         self.length_seconds_edit = QtGui.QLineEdit(self)
         self.length_seconds_edit.setGeometry(QtCore.QRect(227,93,133,20))

@@ -115,23 +115,30 @@ def get_accesstype(packetobject):
     """
     Returns access type name by which a user connects to the NAS
     """
+
     try:
+    #print packetobject.keys()
+    #print 'haskey', packetobject.has_key('Mikrotik-Host-IP')
         nas_port_type = packetobject['NAS-Port-Type'][0]
-        if nas_port_type == 'Virtual':
+        if nas_port_type == 'Virtual' and packetobject['Service-Type'][0]=='Framed-User':
             return 'PPTP'
-        elif nas_port_type == 'Ethernet':
-            if packetobject.has_key('Service-Type'):
-                return 'PPPOE'
-            else:
-                return 'DHCP'
+        elif nas_port_type == 'Ethernet' and packetobject.has_key('Service-Type') and packetobject['Service-Type'][0]=='Framed-User': 
+            return 'PPPOE'
+        elif packetobject.has_key('Mikrotik-Host-IP'):
+            return 'HotSpot'
+        elif packetobject['Service-Type'][0]=='Framed-User' and not packetobject.has_key('Service-Type'):
+            return 'DHCP'
     except:
         print show_packet(packetobject)
     return
     
 class AsyncAuthServ(AsyncUDPServer):
-    def __init__(self, host, port):
+    def __init__(self, host, port, dbpool):
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
+        self.dbconn = dbpool
+        self.dbconn._con._con.set_isolation_level(0)
+        self.dbconn._con._con.set_client_encoding('UTF8')
         self.dateCache = datetime.datetime(2000, 1, 1)       
 
     def handle_readfrom(self, data, addrport):
@@ -158,7 +165,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 #date of renewal
                 self.dateCache = deepcopy(curCachesDate)
                 curCachesLock.release()
-
+    
                         
             t = clock()
             returndata=''
@@ -168,7 +175,8 @@ class AsyncAuthServ(AsyncUDPServer):
             #print "BEFORE AUTH:%.20f" % (clock()-t)
             
             packetobject=packet.Packet(dict=dict,packet=data)
-            
+            #print show_packet(packetobject)
+            #print addrport
             nas_ip = str(packetobject['NAS-IP-Address'][0])
             access_type = get_accesstype(packetobject)
             
@@ -180,14 +188,28 @@ class AsyncAuthServ(AsyncUDPServer):
                 coreconnect.nasCache = self.cacheNas; coreconnect.inTimePeriods = self.in_periods
                 coreconnect.fMem = fMem; coreconnect.atCache_uidx = self.cacheAT
                 coreconnect.defSpeed = self.cacheDefSpeed; coreconnect.newSpeed = self.cacheNewSpeed
-                secret, packetfromcore=coreconnect.handle()
+                authobject, packetfromcore=coreconnect.handle()
                 
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(packetobject['NAS-IP-Address'][0])); return
     
-                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret=secret, access_type=access_type)
-                logger.info("Password check: %s", authobject.AccessAccept)
-                returndata=authobject.ReturnPacket() 
+                #authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username=packetfromcore.username, password = packetfromcore.password,  secret=secret, access_type=access_type)
+                logger.info("Password check: %s", authobject.code)
+                returndata=authobject.ReturnPacket(packetfromcore) 
+    
+            elif access_type in ['HotSpot']:
+                logger.info("Auth Type %s", access_type)
+                coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
+                coreconnect.nasip = nas_ip
+                coreconnect.nasCache = self.cacheNas; coreconnect.inTimePeriods = self.in_periods
+                coreconnect.fMem = fMem; coreconnect.atCache_uidx = self.cacheAT
+                coreconnect.defSpeed = self.cacheDefSpeed; coreconnect.newSpeed = self.cacheNewSpeed
+                authobject, packetfromcore=coreconnect.handle()
                 
+                if packetfromcore is None: logger.info("Unknown NAS %s", str(packetobject['NAS-IP-Address'][0])); return
+    
+                #authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username=packetfromcore.username, password = packetfromcore.password, secret=secret, access_type=access_type)
+                logger.info("Password check: %s", authobject.code)
+                returndata=authobject.ReturnPacket(packetfromcore) 
             elif access_type in ['DHCP'] :
                 #-----
                 coreconnect = HandleSDHCP(packetobject=packetobject)
@@ -195,7 +217,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 coreconnect.nasip = nas_ip; coreconnect.nasCache = self.cacheNas
                 secret, packetfromcore=coreconnect.handle()
                 if packetfromcore is None: return
-                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, secret = secret, access_type=access_type)
+                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username='', password = '', secret = secret, access_type=access_type)
                 returndata=authobject.ReturnPacket()
             else:
                 #-----
@@ -213,7 +235,7 @@ class AsyncAuthServ(AsyncUDPServer):
             del packetfromcore
             del coreconnect
             logger.info("ACC: %s", (clock()-t))
-            
+                
         except Exception, ex:
             logger.error("Auth Server readfrom exception: %s", repr(ex))
 
@@ -315,17 +337,16 @@ class HandleSAuth(HandleSBase):
         
         logger.debugfun('%s', show_packet, (packetobject,))
         
+        
 
         #self.cur = dbCur
 
-    def auth_NA(self):
+    def auth_NA(self, authobject):
         """
         Deny access
         """
-        self.packetobject.username=None
-        self.packetobject.password=None
-        self.packetobject.code=3
-        return self.secret, self.packetobject
+        authobject.set_code(3)
+        return authobject, self.packetobject
     
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
@@ -426,10 +447,22 @@ class HandleSAuth(HandleSBase):
 
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         acct_row = self.atCache_uidx.get(user_name)
-
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(self.secret), access_type=self.access_type)
+        
         if acct_row is None:
             logger.warning("Unknown User %s", user_name)
-            return self.auth_NA()
+            return self.auth_NA(authobject)  
+        
+        authobject.plainusername=str(acct_row[1])
+        authobject.plainpassword = str(acct_row[4])
+        #print "pass", str(acct_row[4])
+        if authobject.check_auth()==False:
+            logger.warning("Bad User/Password %s", user_name)
+            return self.auth_NA(authobject)         
+        
+        
+        
+
         '''
 [0]  - ba.id, 
 [1]  - ba.username, 
@@ -459,7 +492,7 @@ class HandleSAuth(HandleSBase):
         #print common_vpn,access_type,self.access_type
         if (common_vpn == "False") and ((access_type is None) or (access_type != self.access_type)):
             logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, access_type, self.access_type))
-            return self.auth_NA()
+            return self.auth_NA(authobject)
         
         acstatus = (((not allow_vpn_null) and (ballance >0) or (allow_vpn_null)) \
                     and \
@@ -467,7 +500,8 @@ class HandleSAuth(HandleSBase):
         
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
-            return self.auth_NA()        
+            return self.auth_NA(authobject)      
+        
         if self.multilink==False:
             station_id_status = False
             if len(station_id)==17:
@@ -479,13 +513,12 @@ class HandleSAuth(HandleSBase):
             
             if not station_id_status:
                 logger.warning("Unallowed NAS for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s ", (user_name, station_id, ipn_ip_address, ipn_mac_address))
-                return self.auth_NA()
+                return self.auth_NA(authobject) 
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        #?????????µ?????° ???° ?‚??, ?????°?·?°?? ?»?? ???µ?????µ?? ???????‚?????°
         if int(nas_id)!=int(self.nas_id):
             logger.warning("Unallowed NAS for user %s", user_name)
-            return self.auth_NA()
+            return self.auth_NA(authobject) 
 
 
         #TimeAccess
@@ -500,7 +533,8 @@ class HandleSAuth(HandleSBase):
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, status, ballance, disabled_by_limit, balance_blocked, tarif_status))
         if self.packetobject['User-Name'][0]==user_name and allow_dial and tarif_status==True:
-            self.replypacket.code=2
+            authobject.set_code(2)
+
             self.replypacket.username=str(user_name) #Нельзя юникод
             self.replypacket.password=str(password) #Нельзя юникод
 
@@ -511,9 +545,168 @@ class HandleSAuth(HandleSBase):
             #account_speed_limit_cache
             self.create_speed(tarif_id, account_id=acct_row[0], speed=speed)
             #print "Setting Speed For User" , self.speed
+            return authobject, self.replypacket
         else:
-            return self.auth_NA()
-        return self.secret, self.replypacket
+            return self.auth_NA(authobject)
+        
+
+#HotSpot_class
+#auth_class
+class HandleHotSpotAuth(HandleSBase):
+    __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'fMem', 'atCache_uidx', 'inTimePeriods', 'defSpeed', 'newSpeed', 'cur')
+    def __init__(self,  packetobject, access_type, dbCur):
+        #self.nasip = str(packetobject['NAS-IP-Address'][0])
+        self.packetobject = packetobject
+        self.access_type=access_type
+        self.secret = ''
+        self.cur = dbCur
+        
+        logger.debugfun('%s', show_packet, (packetobject,))
+        
+    def auth_NA(self, authobject):
+        """
+        Deny access
+        """
+        authobject.set_code(3)
+        return authobject, self.packetobject
+    
+    def create_speed(self, tarif_id, account_id, speed=''):
+        result_params=speed
+
+        if speed=='':
+
+            defaults = self.defSpeed.get(tarif_id)
+            speeds = self.newSpeed.get(tarif_id, [])
+
+            if defaults is None:
+                defaults = ["0/0","0/0","0/0","0/0","8","0/0"]
+            else:
+                defaults = defaults[:6]
+            result=[]
+
+            min_delta=-1
+            minimal_period=[]
+            now=datetime.datetime.now()
+            for speed in speeds:
+                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
+                if res==True and (delta<min_delta or min_delta==-1):
+                    minimal_period=speed
+                    min_delta=delta
+
+            if minimal_period:
+                minimal_period = minimal_period[:6]
+            else:
+                minimal_period = ["0/0","0/0","0/0","0/0","8","0/0"]
+
+            for k in xrange(0, 6):
+                s=minimal_period[k]
+                if s=='0/0' or s=='/' or s=='':
+                    res=defaults[k]
+                else:
+                    res=s
+                result.append(res)
+            
+
+            correction = account_speed_limit_cache.get(account_id)
+
+            #Проводим корректировку скорости в соответствии с лимитом
+
+            result = get_corrected_speed(result, correction)
+            #print "corrected", result
+            if result==[]:
+                result=defaults
+            if result==[]:
+                result=["0/0","0/0","0/0","0/0","8","0/0"]
+                
+            
+            result_params=create_speed_string(result)
+            self.speed=result_params
+
+
+        if self.nas_type[:8]==u'mikrotik' and result_params!='':
+            self.replypacket.AddAttribute((14988,8),result_params)
+
+
+    def handle(self):
+
+        row = self.nasCache.get(self.nasip)
+        if row==None:
+            self.cur.close()
+            return '',None
+        
+        self.nas_id=str(row[0])
+        self.nas_type=row[2]
+        self.secret = str(row[1])
+        self.replypacket=packet.Packet(secret=str(row[1]),dict=dict)
+
+        user_name = str(self.packetobject['User-Name'][0])
+
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(self.secret), access_type=self.access_type)
+        self.cur.execute("SELECT pin FROM billservice_card WHERE sold is not Null and login = %s and now() between start_date and end_date;", (user_name,))
+        pin = self.cur.fetchone()
+        
+        if pin == None:
+            self.cur.close()
+            return self.auth_NA(authobject)
+        else:
+            pin = pin[0]
+
+        authobject.plainusername = str(user_name)
+        authobject.plainpassword = str(pin)
+
+        if authobject.check_auth()==False:
+            logger.warning("Bad User/Password %s", user_name)
+            self.cur.close()
+            return self.auth_NA(authobject)   
+        
+
+        self.cur.execute("""
+        SELECT * FROM card_activate_fn(%s, %s, %s, %s::inet) AS 
+        A(account_id int, "password" character varying, nas_id int, tarif_id int, account_status boolean, 
+        balance_blocked boolean, ballance double precision, disabled_by_limit boolean, tariff_active boolean)
+        """, (user_name, pin, self.nas_id, str(self.packetobject['Mikrotik-Host-IP'][0]))
+        )
+
+        acct_row = self.cur.fetchone()
+        self.cur.connection.commit()
+        self.cur.close()
+
+        
+        if acct_row is None:
+            logger.warning("Unknown User %s", user_name)
+            return self.auth_NA(authobject)
+
+        account_id, password, nas_id, tarif_id, acc_status, balance_blocked, ballance, disabled_by_limit, tarif_status = acct_row
+
+        acstatus = ballance >0 and not balance_blocked and not disabled_by_limit and acc_status
+        
+        if not acstatus:
+            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
+            return self.auth_NA(authobject)       
+        
+       
+        #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
+        if int(nas_id)!=int(self.nas_id):
+            logger.warning("Unallowed NAS for user %s", user_name)
+            return self.auth_NA(authobject)
+
+
+        allow_dial = self.inTimePeriods.get(tarif_id, False)
+
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc_status, ballance, disabled_by_limit, balance_blocked, tarif_status))
+        if self.packetobject['User-Name'][0]==user_name and allow_dial and tarif_status==True:
+            authobject.set_code(2)
+            #self.replypacket.AddAttribute('Service-Type', 1)
+            #self.replypacket.AddAttribute('Framed-Protocol', 1)
+            self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
+            #account_speed_limit_cache
+            self.create_speed(tarif_id, account_id=account_id, speed='')
+            #print "Setting Speed For User" , self.speed
+            return authobject, self.replypacket
+        else:
+            return self.auth_NA(authobject)
+
 
 #auth_class
 class HandleSDHCP(HandleSBase):
@@ -563,14 +756,16 @@ class HandleSDHCP(HandleSBase):
 #acct class
 class HandleSAcct(HandleSBase):
     """process account information after connection"""
-    
-    __slots__ = () + ('cur', 'access_type', 'acctCache_unIdx')
+    """ Если это аккаунтинг хотспот-сервиса, при поступлении Accounting-Start пишем в профиль пользователя IP адрес, который ему выдал микротик"""
+    __slots__ = () + ('cur', 'access_type', 'acctCache_unIdx', 'access_type')
     
     def __init__(self, packetobject, nasip, dbCur):
+        super(HandleSAcct, self).__init__()
         self.packetobject=packetobject
         self.nasip=packetobject['NAS-IP-Address'][0]
         self.replypacket=packetobject.CreateReply()
-        self.access_type=get_accesstype(self.packetobject)
+        self.access_type=get_accesstype(packetobject)
+        #print self.access_type
         self.cur = dbCur
 
     def get_bytes(self):
@@ -599,7 +794,6 @@ class HandleSAcct(HandleSBase):
         n_secret = row[1]        
         self.replypacket.secret=str(n_secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
-        """? ?°?· ?? ???µ?????‚?? ?·?°???????????? ???±???????»???‚?? ?????„???????°?†???? ?? ?°?????°?????‚?µ"""
         userName = self.packetobject['User-Name'][0]
 
         acct_row = self.acctCache_unIdx.get(userName)
@@ -615,9 +809,12 @@ class HandleSAcct(HandleSBase):
         self.replypacket.code=5
         now = datetime.datetime.now()
 
-
+        #print 'access_type', self.access_type
+        #print get_accesstype(self.packetobject)
+        #print self.packetobject.keys()
+        #print 123
         if self.packetobject['Acct-Status-Type']==['Start']:
-            #?????????µ?????µ?? ???µ?‚ ?»?? ?‚?°?????? ???µ???????? ?? ?±?°?·?µ
+
             self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
@@ -727,6 +924,7 @@ class CacheRoutine(Thread):
         Thread.__init__(self)
         
     def run(self):
+
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         
@@ -930,7 +1128,7 @@ def main():
         if not cacheThr.isAlive:
             sys.exit()
     
-    server_auth = AsyncAuthServ("0.0.0.0", 1812)
+    server_auth = AsyncAuthServ("0.0.0.0", 1812, pool.connection())
     server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)

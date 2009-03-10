@@ -6,6 +6,7 @@ import Pyro.errors
 import datetime
 import os
 import time
+import string
 dateDelim = "."
 connectDBName = "exbillusers"
 tableHeight = 17
@@ -557,4 +558,14 @@ def check_speed(speed):
         speed[2]>=speed[0] and speed[3]>=speed[1] and \
         ((speed[4]>=speed[9] and speed[5]>=speed[10]) and speed[2] not in ('', 0) and speed[3] not in ('', 0) and speed[6] not in ('', 0) and speed[7] not in ('', 0)) and speed[4]<=speed[2] and speed[5]<=speed[3] and speed[4]<=speed[0] and speed[5]<=speed[1]
     return False
+
+def transip (ipstr):
+    hv = hex (string.atol (ipstr))[2:-1]
+    p1 = string.atoi (hv[-2:]  , 16)
+    p2 = string.atoi (hv[-4:-2], 16)
+    p3 = string.atoi (hv[-6:-4], 16)
+    p4 = string.atoi (hv[:-6]  , 16)
+    return `p4`+'.'+`p3`+'.'+`p2`+'.'+`p1`
+
+
     

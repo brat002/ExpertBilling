@@ -398,9 +398,12 @@ class periodical_service_bill(Thread):
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)                                    
                                     if last_checkout is None and ps_created==None:
-                                        last_checkout=account_datetime
+                                        last_checkout=time_start_ps
                                     elif last_checkout is None and ps_created!=None:
-                                        last_checkout=ps_created
+                                        if ps_created<time_start_ps:
+                                            last_checkout=time_start_ps
+                                        else:
+                                            last_checkout=ps_created
                                         
                                     #print "last checkout", last_checkout
                                     if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
@@ -420,7 +423,7 @@ class periodical_service_bill(Thread):
                                         if nums>1:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             chk_date = last_checkout + n_delta
-                                            while chk_date < now:                                                
+                                            while chk_date <= now:                                                
                                                 cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
@@ -559,8 +562,7 @@ class periodical_service_bill(Thread):
                 else:
                     logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             gc.collect()
-            time.sleep(180-(time.clock()-a_))
-            
+            time.sleep(180-(time.clock()-a_))            
 class TimeAccessBill(Thread):
     """
     Услуга применима только для VPN доступа, когда точно известна дата авторизации

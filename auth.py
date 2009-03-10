@@ -18,42 +18,39 @@ class Auth:
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """
 
-    def __init__(self, packetobject, packetfromcore, secret, access_type):
+    def __init__(self, packetobject, username, password, secret, access_type):
         self.packet=packetobject
-        self.code=packetfromcore.code
         self.secret = secret
         self.access_type = access_type
         self.typeauth=self._DetectTypeAuth()
-        try:
-            ##Убрать это говно отсюда! Сделано в тестовых целях
-            self.plainusername=packetfromcore.username
-            self.plainpassword=packetfromcore.password
-        except Exception, e:
-            pass
+
+        self.plainusername=username
+        self.plainpassword=password
+
 
         self.ident=''
-        self.AccessAccept=False
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-        if self.access_type!='DHCP':
-            self.AccessAccept = self._CheckAuth()
-        else:
-            self.AccessAccept = True
-        self.attrs=packetfromcore._PktEncodeAttributes()
+
+        self.attrs = None
 
         
-    def ReturnPacket(self):
-            self.Reply=self.packet.CreateReply()
-            self.Reply.secret = self.secret
-            if self.AccessAccept:
-                self.Reply.code=self.code
-                if (self.typeauth=='MSCHAP2') and (self.code!=3):
-                      self.Reply.AddAttribute((311,26),self._MSchapSuccess())
-                return self.Reply.ReplyPacket(self.attrs)
-            else:
-                self.Reply.code=3
-                return self.Reply.ReplyPacket()
+
+        
+    def ReturnPacket(self, packetfromcore):
+        self.attrs=packetfromcore._PktEncodeAttributes()
+        
+        self.Reply=self.packet.CreateReply()
+        self.Reply.secret = self.secret
+        if self._CheckAuth(code = self.code):
+            self.Reply.code=self.code
+            if (self.typeauth=='MSCHAP2') and (self.code!=3):
+                  self.Reply.AddAttribute((311,26),self._MSchapSuccess())
+            return self.Reply.ReplyPacket(self.attrs)
+        else:
+            self.Reply.code=3
+            return self.Reply.ReplyPacket()
         
     def _DetectTypeAuth(self):
         if self.packet.has_key('User-Password'):
@@ -64,16 +61,22 @@ class Auth:
             return 'MSCHAP2'
         else:
             return 'UNKNOWN'
-        
+
+    def set_code(self, code):
+        self.code = code
     
-    def _CheckAuth(self):
+    def check_auth(self):
+        return self._CheckAuth()
+    
+    def _CheckAuth(self, code=1):
         """
         Функция, в зависимости от типа авторизации, вызывает разные методы для определения правильности
         логина и пароля.
         To Do: Если ядро ответило: доступ запретить-пропускаем.
         """
-        #print "r", self.code
-        if self.code!=3:
+        if self.access_type=='DHCP':
+            return True
+        if code!=3:
             if self.typeauth=='PAP':
                 #print self._PwDecrypt()
                 if self._PwDecrypt():
@@ -83,6 +86,7 @@ class Auth:
                 if self._CHAPDecrypt():
                     return True
             elif self.typeauth=='MSCHAP2':
+                #print "mschap2"
                 if self._MSCHAP2Decrypt():
                     return True
         return False

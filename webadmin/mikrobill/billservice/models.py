@@ -902,3 +902,17 @@ class AccountSpeedLimit(models.Model):
     account = models.ForeignKey(Account)
     speedlimit = models.ForeignKey(SpeedLimit)
 
+class IPPool(models.Model):
+    name = models.CharField(max_length=255)
+    #0 - VPN, 1-IPN
+    type = models.IntegerField()
+    start_ip = models.IPAddressField()
+    end_ip = models.IPAddressField()
+    
+class IPInUse(models.Model):
+    pool = models.ForeignKey(IPPool)
+    ip = models.CharField(max_length=255)
+    datetime = models.DateTimeField()
+    
+
+    
