@@ -32,12 +32,12 @@ td {
 	margin-bottom:15px;
 }
 
-.meny_items {
+.menu_items {
 	position:relative;
 	z-index:5;
 }
 
-.meny_items li {
+.menu_items li {
     background: url('../img/design/marker.gif') 12px 12px;
     background-repeat: no-repeat;
     border: 1px solid #0A688C;
@@ -49,7 +49,7 @@ td {
 	margin-bottom:10px;
 }
 
-.meny_items li a {
+.menu_items li a {
     text-decoration:none;
 	color:#000;
 	font-weight:900;

@@ -46,13 +46,13 @@ h2 {
 	font-size:11px;
 }
 
-.account_meny div {
+.account_menu div {
 	margin-left:20px;
 	margin-top:5px;
 	padding-top:3px;
 }
 
-.account_meny div a {
+.account_menu div a {
 	text-decoration:none;
 	color:#fff;
 }
@@ -69,15 +69,15 @@ h2 {
 	height:20px;
 }
 
-.main_meny_bg {
-	background:url('../img/design/main_meny_bg.gif') repeat-x;
+.main_menu_bg {
+	background:url('../img/design/main_menu_bg.gif') repeat-x;
 	width:100%;
 	margin:0;
 	height:32px;
 	margin-top:9px;
 }
 
-.main_meny_bg .content_align div a {
+.main_menu_bg .content_align div a {
 	display:block;
 	color:#0b4060;
 	margin-left:10px;
