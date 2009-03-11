@@ -592,7 +592,7 @@ def login():
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
             #waitchild.hide()
-            del waitchild
+            #del waitchild
         else:
             return None
 
