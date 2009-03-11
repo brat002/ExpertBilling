@@ -27,7 +27,7 @@ from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted, get_limit_speed
-
+import random
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -330,7 +330,7 @@ class periodical_service_bill(Thread):
             a_ = time.clock()
             try:
                 if suicideCondition[self.__class__.__name__]: break
-                a = time.clock()
+                #a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
                     if curAT_date > dateAT:
@@ -418,7 +418,8 @@ class periodical_service_bill(Thread):
                                         # Смотрим сколько раз уже должны были снять деньги
                                         cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                         lc=now - last_checkout
-                                        nums, ost=divmod(lc.seconds+lc.days*86400,n)
+                                        last_checkout_seconds = lc.seconds+lc.days*86400
+                                        nums, ost=divmod(last_checkout_seconds,n)
                                         description=ps_name
                                         if nums>1:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
@@ -434,8 +435,8 @@ class periodical_service_bill(Thread):
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
-                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = now)
-                                            ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
+                                            transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = last_checkout+n_delta)
+                                            ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=last_checkout+n_delta)
                                     connection.commit()
                                 if ps_cash_method=="AT_START":
                                     """
@@ -491,8 +492,8 @@ class periodical_service_bill(Thread):
                                                 summ = 0
                                             transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
                                                                      summ = summ, description=description,
-                                                                     created = now)
-                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
+                                                                     created = last_checkout+datetime.timedelta(seconds=delta))
+                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=last_checkout+datetime.timedelta(seconds=delta))
                                     connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
@@ -546,8 +547,8 @@ class periodical_service_bill(Thread):
                                             cash_summ = 0
                                         transaction_id = transaction(cursor=cur, account=account_id,approved=True,
                                                                      type='PS_AT_END', tarif = tariff_id,summ=summ,
-                                                                     description=descr, created = now)
-                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=now)
+                                                                     description=descr, created = last_checkout+datetime.timedelta(seconds=delta))
+                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=last_checkout+datetime.timedelta(seconds=delta))
                                     connection.commit()
                             except Exception, ex:
                                 if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
@@ -562,7 +563,7 @@ class periodical_service_bill(Thread):
                 else:
                     logger.error("%s : exception: %s", (self.getName(), repr(ex)))
             gc.collect()
-            time.sleep(180-(time.clock()-a_))            
+            time.sleep(180-(time.clock()-a_)-random.randint(10, 120))            
 class TimeAccessBill(Thread):
     """
     Услуга применима только для VPN доступа, когда точно известна дата авторизации

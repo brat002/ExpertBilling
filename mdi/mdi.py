@@ -564,15 +564,24 @@ def login():
     while True:
 
         if child.exec_()==1:
-            waitchild = ConnectionWaiting()
-            waitchild.show()
+            #waitchild = ConnectionWaiting()
+            #waitchild.show()
+            global splash
+            pixmap = QtGui.QPixmap("splash.png")
+            splash = QtGui.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
+            splash.setMask(pixmap.mask()) # this is usefull if the splashscreen is not a regular ractangle...
+            splash.show()
+            splash.showMessage(u'Starting...', QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom,QtCore.Qt.yellow)
+            # make sure Qt really display the splash screen
+            global app
+            app.processEvents()
             try:
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 password = unicode(child.password.toHex())
                 connection._setNewConnectionValidator(antiMungeValidator())
                 connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
                 connection.test()
-                waitchild.hide()
+                #waitchild.hide()
                 return connection
 
             except Exception, e:
@@ -582,22 +591,29 @@ def login():
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            waitchild.hide()
+            #waitchild.hide()
             del waitchild
         else:
             return None
 
 if __name__ == "__main__":
+    global app
     app = QtGui.QApplication(sys.argv)
     global connection
     connection = login() 
+
+
+
+
     
+        
     if connection is None:
         sys.exit()
     connection.commit()
     try:
         global mainwindow
         mainwindow = MainWindow()
+        splash.finish(mainwindow) 
         mainwindow.show()
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
