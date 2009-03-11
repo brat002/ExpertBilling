@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% if user %}
+
 {% block account_control %}
 	{% include 'menu/account_menu.html' %}
 {% endblock %}
@@ -19,3 +21,5 @@
 	</div>
 	<div style="clear:both"></div>
 {% endblock %}
+
+{% endif %}
