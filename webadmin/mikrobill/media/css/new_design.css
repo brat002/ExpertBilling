@@ -57,6 +57,14 @@ h2 {
 	color:#fff;
 }
 
+.header {
+	*margin-top:9px;
+}
+
+.logo_ie {
+	*width:600px;
+}
+
 .exit {
 	background:url('../img/design/exit.gif') no-repeat 0 2px;
 	padding-left:23px;
@@ -75,6 +83,7 @@ h2 {
 	margin:0;
 	height:32px;
 	margin-top:9px;
+	*margin-top:0;
 }
 
 .main_menu_bg .content_align div a {
