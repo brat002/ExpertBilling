@@ -24,7 +24,8 @@ def notices(request):
                 'user': user,
                 }
     else:
-        return {
-                'user': None,
-                'status': True,
-                }
+        return HttpResponseRedirect('/login/')
+        #return {
+        #        'user': None,
+        #        'status': True,
+        #        }

@@ -125,7 +125,6 @@ def index(request):
         traffic = TrafficLimit.objects.filter(tarif=tarif) 
     except:
         traffic = None
-       
     return {
             #'account':user,
             'ballance':ballance,
