@@ -330,7 +330,7 @@ class periodical_service_bill(Thread):
             a_ = time.clock()
             try:
                 if suicideCondition[self.__class__.__name__]: break
-                #a = time.clock()
+                a = time.clock()
                 try:
                     #if caches were renewed, renew local copies
                     if curAT_date > dateAT:
