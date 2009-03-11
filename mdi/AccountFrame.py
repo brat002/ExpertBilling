@@ -3216,6 +3216,8 @@ class AccountWindow(QtGui.QMainWindow):
                 model.ipn_status = False
                 model.ipn_added = False
                 model.disabled_by_limit = False
+                model.vpn_ipinuse_id = None
+                model.ipn_ipinuse_id = None
                 
             model.username = unicode(self.lineEdit_username.text())
             #print 1
@@ -3272,7 +3274,7 @@ class AccountWindow(QtGui.QMainWindow):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на IPN тарифном плане. \n IPN IP должен быть введён до конца."))
                 return
             else:
-                model.ipn_ip_address = '0.0.0.0'
+                model.ipn_ip_address = u'0.0.0.0'
             
                     
             if self.lineEdit_vpn_ip_address.text():
@@ -3295,7 +3297,7 @@ class AccountWindow(QtGui.QMainWindow):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на VPN тарифном плане. \n VPN IP должен быть введён до конца."))
                 return
             else:
-                model.vpn_ip_address = '0.0.0.0'
+                model.vpn_ip_address = u'0.0.0.0'
                 
 
 
@@ -3332,7 +3334,7 @@ class AccountWindow(QtGui.QMainWindow):
                     self.connection.rollback()
                     return
             else:
-                model.ipn_mac_address=""
+                model.ipn_mac_address=u""
 
             model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
             model.vlan = unicode(self.lineEdit_vlan.text()) or 0
