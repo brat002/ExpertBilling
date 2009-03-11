@@ -55,7 +55,7 @@ def login(request):
                     if tarif:
                         request.session['express_pay']=True
                     request.session.modified = True
-                    return HttpResponseRedirect('/index/')
+                    return HttpResponseRedirect('/')
                 else:
                     form = LoginForm(initial={'username': form.cleaned_data['username']})
                     error_message = u'Проверьте введенные данные'
@@ -219,11 +219,13 @@ def change_password(request):
 def card_acvation(request):
     if not request.session.has_key('user'):
         return {
-                'redirect':'/',
+                'redirect':'/login/',
                }
                 #HttpResponseRedirect('/')
     if not request.session.has_key('express_pay'):
-        return HttpResponseRedirect('/index/')
+        return {
+                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
+               }
     user = request.session['user']
     if not user.allow_expresscards:
         return {
@@ -231,7 +233,7 @@ def card_acvation(request):
                 }
     if not cache.get(user.id):
         return {
-                'redirect':'/',
+                'redirect':'/login/',
                }
         #HttpResponseRedirect('/')
     cache_user = cache.get(user.id)
@@ -245,7 +247,7 @@ def card_acvation(request):
             cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
         else:
             return {
-                    'redirect':'/index/',
+                    'redirect':'/',
                    }
             #HttpResponseRedirect('/index/')
     if request.method == 'POST':
