@@ -224,7 +224,7 @@ class SaleCards(QtGui.QDialog):
                 f.write("</card>")
             f.write("</xml>")
             f.close()
-            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операций произведена успешно."))
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))

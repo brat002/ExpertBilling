@@ -433,13 +433,13 @@ class AddDealerFrame(QtGui.QMainWindow):
         for item in items:
             if item.column()>0:
                 continue
-            cards.append(unicode(self.tableWidget_not_activated.item(item.row(), 0).text()))
+            cards.append(int(unicode(self.tableWidget_not_activated.item(item.row(), 0).text())))
             
             
         for card_id in cards:
-            d = Object()
-            d.card_id = card_id
-            self.connection.delete(d, "billservice_salecard_cards")
+            #d = Object()
+            #d.card_id = card_id
+            self.connection.iddelete(card_id, "billservice_salecard_cards")
             d = Object()
             d.id = card_id
             d.sold = None
