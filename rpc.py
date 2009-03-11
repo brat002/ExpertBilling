@@ -437,7 +437,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def iddelete(self, id, table, cur=None, connection=None):
-        sql = "DELETE FROM %s where id=%d" % (table, id)
+        sql = u"DELETE FROM %s where id=%d" % (table, id)
         #print sql
         cur.execute(sql)
         del table
@@ -511,7 +511,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
         #print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
-        sql = "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
+        sql = u"SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
         #print sql
         cur.execute(sql)
         result=[]
@@ -613,7 +613,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def save(self, model, table, cur=None, connection=None):
         sql = model.save(table)
-        print sql
+        #print sql
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id
