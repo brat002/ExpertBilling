@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-from mikrobill.billservice.models import Account
+from ebscab.billservice.models import Account
 SERVICE_TYPES=(
         (u"PPTP",u"PPTP"),
         (u"PPPOE",u"PPPOE"),
