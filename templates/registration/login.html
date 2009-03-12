@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block logo_style %}margin-top:9px;{% endblock %}
+
+{% block login %}
+
+
+
+
+<div class="reg_margin">
+	{% if error_message %}
+    <h2 align="center">{{ error_message }}</h2>
+{% endif %}
+<!--
+<div class="registration">
+<form method="post" action="/">
+<table cellpadding="5px;">
+<tr><td><label for="id_username">{{ form.username.label }}</label></td><td>{{ form.username }}</td></tr>
+<tr><td><label for="id_password">{{ form.password.label }}</label></td><td>{{ form.password }}</td></tr>
+</table>
+
+<button type="submit" class="button">OK</button>
+
+<input type="submit" value="OK" class="button"/>
+
+<input type="hidden" name="next" value="{{ next }}" />
+</form>
+</div>
+
+-->
+
+<table class="pass_table wide" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="blue_caption white s-11 bold main_table_left_border right_border">
+			ВХОД В СИСТЕМУ
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<form method="post" action="/login/">
+				<table cellpadding="5px;" class="enter_table">
+    					{{ form }}
+				</table>
+				<input type="submit" class="pass_button button_margin" value="Вход"/>
+			</form>
+		</td>
+	</tr>
+</table>
+</div>
+{% endblock %}
+
+{% block title %}
+    Вход
+{% endblock %}

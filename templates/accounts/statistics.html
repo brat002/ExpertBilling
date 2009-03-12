@@ -1,0 +1,110 @@
+{% extends 'base_extended.html' %}
+{% load custom_filters %}
+{% load billservice_tags %}
+
+{% block content %}
+{% if net_flow_stream or transactions or active_session %}
+	<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+		{% if transactions %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-right statistics_link white"><a href="/transaction/">Показать всю статистику</a></div>
+				<div class="f-left">ИНФОРМАЦИЯ ОБ ОПЕРАЦИЯХ С БАЛАНСОМ</div>
+			</th>
+		</tr>
+		<tr>
+			<td class="">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Дата</th>
+						<th>Сумма</th>
+						<th>Описание</th>
+						<th>Документ</th>
+						<th>Комментарий</th>
+					</tr>
+					{% for transaction in transactions %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.description }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.bill }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.comment }}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+		{% if net_flow_stream %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-right statistics_link white"><a href="/traffic/info/">Показать всю статистику</a></div>
+				<div class="f-left">СЕТЕВАЯ СТАТИСТИКА</div>
+			</th>
+		</tr>
+		<tr>
+			<td class="">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Дата</th>
+	   					<th>IP источника</th>
+	   					<th>Порт источника</th>
+	   					<th>IP получателя</th>
+	   					<th>Порт получателя</th>
+	   					<th>Протокол</th>
+	   					<th>Передано</th>
+					</tr>
+					{% for stream in net_flow_stream %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.date_start|date_with_offset:"%d.%m.%Y  %m:%H" }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_addr }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_port }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_addr }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_port }}</td>
+							<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.get_protocol }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% trafic_format stream.octets %}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+		{% if active_session %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-right statistics_link white"><a href="/session/info/">Показать всю статистику</a></div>
+				<div class="f-left">СТАТИСТИКА VPN-ПОДКЛЮЧЕНИЙ</div>
+			</th>
+		</tr>
+		<tr>
+			<td class="">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Начало</th>
+						<th>Окончание</th>
+						<th>IP-адрес</th>
+						<th>Передано / Принято</th>
+						<th>Время</th>
+						<th>За трафик</th>
+						<th>За время</th>
+					</tr>
+					{% for session in active_session %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% trafic_format session.bytes_out %} / {% trafic_format session.bytes_in %}{% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_off_trafic session user %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_off_time session user %}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+	</table>
+{% else %}
+	<h2 align="center">На данный момент информации нет</h2>
+{% endif %}
+{% endblock %}

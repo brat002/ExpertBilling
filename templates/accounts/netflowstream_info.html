@@ -1,0 +1,48 @@
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if net_flow_streams %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">СЕТЕВАЯ СТАТИСТИКА</th>
+	</tr>
+	<tr>
+		<td>
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+    			<tr>
+	   				<th>Дата</th>
+	   				<th>IP источника</th>
+	   				<th>Порт источника</th>
+	   				<th>IP получателя</th>
+	   				<th>Порт получателя</th>
+	   				<th>Протокол</th>
+	   				<th>Передано</th>
+				</tr>
+				{% for net_flow_stream in net_flow_streams%}
+	   				<tr>
+	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.date_start|date_with_offset:"%d.%m.%Y  %m:%H" }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.src_addr }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.src_port }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.dst_addr }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.dst_port }}</td>
+		   				<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.get_protocol }}</td>
+		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% trafic_format net_flow_stream.octets %}</td>
+	   				</tr>
+				{% endfor%}
+			</table>
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
+</table>
+
+{% else %}
+ <h2 align="center">Данных нет!</h2>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    Статистика по трафику
+{% endblock %}
