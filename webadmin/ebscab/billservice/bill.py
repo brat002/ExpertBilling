@@ -5,8 +5,8 @@ from IPy import IP
 
 ip
 sys.path.append(os.path.abspath('../../'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mikrobill.settings'
-from mikrobill.billing.models import Account, Pay, Bonus, Tarif, Transaction
+os.environ['DJANGO_SETTINGS_MODULE'] = 'ebscab.settings'
+from ebscab.billing.models import Account, Pay, Bonus, Tarif, Transaction
 
 from django.conf import settings
 import settings
