@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-#from mikrobill.billservice.models import Account, Tariff
+#from ebscab.billservice.models import Account, Tariff
 
 # Create your models here.
 

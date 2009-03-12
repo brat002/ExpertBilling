@@ -1,5 +1,5 @@
 
-# Django settings for mikrobill project.
+# Django settings for ebscab project.
 import os, sys
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -30,7 +30,7 @@ TIME_ZONE = 'Europe/Minsk'
 LANGUAGE_CODE = 'ru-Ru'
 #AUTHENTICATION_BACKENDS=(
 #    'django.contrib.auth.backends.ModelBackend',
-#    'mikrobill.authbackend.ModelBackend',
+#    'ebscab.authbackend.ModelBackend',
 #)
 
 #LOGIN_REDIRECT_URL='/account/'
@@ -80,7 +80,7 @@ MIDDLEWARE_CLASSES = (
 
 )
 
-ROOT_URLCONF = 'mikrobill.urls'
+ROOT_URLCONF = 'ebscab.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -94,7 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-#    'mikrobill.billing',
+#    'ebscab.billing',
     'radius',
     'nas',
     'billservice',
