@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from mikrobill.nas.models import Nas, TrafficClass, TrafficClass
+from ebscab.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
 import datetime, time
 
