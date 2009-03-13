@@ -3,16 +3,22 @@
 from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
 
+
 import re
 import glob
 import packet
 import socket
 import cPickle
-import paramiko
 import logging
 import datetime, calendar
 import os, sys, time, md5, binascii, socket, select
-paramiko.common.logging.root.setLevel(logging.WARNING)
+
+try: 
+    from ssh_utilities import SSHClient
+except:
+    print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
+    from ssh_paramiko import SSHClient
+
 
 class IPNAccount(object):
     def __init__(self):
@@ -85,7 +91,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
                 #print 'ssh connected'
                 res=sshclient.send_command(command_string)
-                sshclient.close_chanel()
+                sshclient.close_channel()
                 print 'POD SSH'
                 return True
             except Exception, e:
@@ -152,7 +158,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
             res=sshclient.send_command(command_string)
-            sshclient.close_chanel()
+            sshclient.close_channel()
             return True
         except Exception, e:
             print e
@@ -174,7 +180,7 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
             sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
             print 'ssh connected'
             res=sshclient.send_command(command_string)
-            sshclient.close_chanel()
+            sshclient.close_channel()
             return True
         except Exception, e:
             print e
@@ -426,23 +432,6 @@ def command_string_parser(command_string='', command_dict={}):
             command_string = s.sub(str(command_dict[p]),command_string)
     #print command_string
     return command_string
-
-class SSHClient(paramiko.SSHClient):
-    def __init__(self, host, port, username, password):
-        paramiko.SSHClient.__init__(self)
-        self.load_system_host_keys()
-        self.set_missing_host_key_policy(policy=paramiko.AutoAddPolicy())
-        self.connect(hostname=host,port=port, username=username,password=password)
-        #self._transport.get_pty('vt100', 60, 80)
-
-    def send_command(self, text):
-        stdin, stdout, stderr = self.exec_command(text)
-        #print stderr.readlines()==[]
-        return stdout, stderr
-
-    def close_chanel(self):
-        self.close()
-
 
 
 def create_nulls(param):
@@ -715,7 +704,7 @@ def get_sessions_for_nas(nas):
         #print response
         if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
             sessions=ActiveSessionsParser(response).parse()
-        ssh.close_chanel()
+        ssh.close_channel()
         
     elif nas['type']==u'mikrotik3':
         #Use ROS API for fetching sessions
