@@ -131,7 +131,7 @@ class ConfigureDialog(QtGui.QDialog):
         self.timeEdit_interim_update.setCurrentSection(QtGui.QDateTimeEdit.SecondSection)
         self.timeEdit_interim_update.setCalendarPopup(False)
         self.timeEdit_interim_update.setObjectName("timeEdit_interim_update")
-        self.timeEdit_interim_update.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.timeEdit_interim_update.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.label_interim = QtGui.QLabel(self.groupBox_radius)
         self.label_interim.setGeometry(QtCore.QRect(11, 71, 289, 16))
         self.label_interim.setObjectName("label_interim")

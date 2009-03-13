@@ -732,7 +732,7 @@ class TarifFrame(QtGui.QDialog):
         self.checkBoxAllowExpressPay.setText(QtGui.QApplication.translate("Dialog", "Разрешить активацию карт экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
         
         self.speed_table.clear()
-        columns=[u'#',u'Время', u'Макс', u'Гарант.', u'Пик', u'Средняя для пика', u'Время для пика', u'Приоритет']
+        columns=[u'#',u'Время', u'MAX', u'MIN', u'Burst', u'Burst Treshold', u'Burst Time', u'Priority']
         
         makeHeaders(columns, self.speed_table) 
         
@@ -753,7 +753,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'#', u'От МБ', u'До МБ', u'Классы', u'Вх', u'Исх', u'Время', u'Цена за МБ']
+        columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
         self.trafficcost_tableWidget.setColumnHidden(1, True)     
@@ -868,8 +868,8 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget.insertRow(current_row)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 1)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 2)
-        self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
-        self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
+        #self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
+        #self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
         
     
@@ -1289,22 +1289,25 @@ class TarifFrame(QtGui.QDialog):
     def trafficCostCellEdit(self,y,x):
         
         #Стоимость за трафик
-
+        [u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         if x==3:
+            item = self.trafficcost_tableWidget.item(y,x)
             try:
-                models = self.trafficcost_tableWidget.item(y,x).models
-            except Exception, e:
-                print e
-                models = []
-            #print models
-            child = CheckBoxDialog(all_items=self.connection.get_models("nas_trafficclass"), selected_items = models)
-            if child.exec_()==1:
-                self.trafficcost_tableWidget.setItem(y,x, CustomWidget(parent=self.trafficcost_tableWidget, models=child.selected_items))
-                self.trafficcost_tableWidget.resizeColumnsToContents()
-                self.trafficcost_tableWidget.resizeRowsToContents()
+                default_id = item.id
+            except:
+                default_id=-1
+            child = GroupsDialog(self.connection, default_id)
+            
+            if child.exec_()==1 and child.selected_group!=-1:
+                group = self.connection.get_model(child.selected_group, "billservice_group")
+                self.addrow(self.trafficcost_tableWidget, group.name, y,x, id=group.id)
+                if child.selected_group>0:
+                    #self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+                    self.trafficcost_tableWidget.resizeColumnsToContents()
+                    self.trafficcost_tableWidget.resizeRowsToContents()
                     
                 
-        if x==6:
+        if x==4:
             try:
                 models = self.trafficcost_tableWidget.item(y,x).models
             except:
@@ -1315,7 +1318,7 @@ class TarifFrame(QtGui.QDialog):
                 self.trafficcost_tableWidget.resizeColumnsToContents()
                 self.trafficcost_tableWidget.resizeRowsToContents()
 
-        if x==7:
+        if x==5:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -1336,6 +1339,7 @@ class TarifFrame(QtGui.QDialog):
             text = QtGui.QInputDialog.getDouble(self, u"От (МБ):", u"Укажите нижнюю границу в МБ, после которой настройки цены будут актуальны", default_text)        
            
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+        
         if x==2:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
@@ -1698,11 +1702,9 @@ class TarifFrame(QtGui.QDialog):
                     self.trafficcost_tableWidget.setRowCount(len(nodes))
                     i = 0
                     for node in nodes:
-                        traffic_classes = self.connection.sql(""" 
-                        SELECT trafficclass.* FROM nas_trafficclass as trafficclass
-                        JOIN billservice_traffictransmitnodes_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
-                        WHERE ttc.traffictransmitnodes_id=%d
-                        """ % node.id)           
+                        group = self.connection.sql(""" 
+                        SELECT name FROM billservice_group WHERE id=%d
+                        """ % node.group_id)[0]
               
                         
                         
@@ -1716,12 +1718,9 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
                         self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
-                        self.trafficcost_tableWidget.setItem(i,3, CustomWidget(parent=self.trafficcost_tableWidget, models=traffic_classes))
-                        self.addrow(self.trafficcost_tableWidget, node.in_direction, i, 4, item_type='checkbox')
-                        self.addrow(self.trafficcost_tableWidget, node.out_direction, i, 5, item_type='checkbox')
-                        #self.addrow(self.trafficcost_tableWidget, node.transit_direction, i, 6, item_type='checkbox')
-                        self.trafficcost_tableWidget.setItem(i,6, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
-                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 7)
+                        self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
+                        self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
+                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 5)
                         i+=1
                         
                     self.trafficcost_tableWidget.resizeRowsToContents()
@@ -2041,7 +2040,7 @@ class TarifFrame(QtGui.QDialog):
                     #print 'traffic_transmit_service2'
                     traffic_transmit_service = Object()
                 
-                traffic_transmit_service.period_check='SP_START'
+                #traffic_transmit_service.period_check='SP_START'
                 traffic_transmit_service.reset_traffic=self.reset_traffic_edit.checkState()==2
                 traffic_transmit_service.id = self.connection.save(traffic_transmit_service, "billservice_traffictransmitservice")
                 
@@ -2050,20 +2049,11 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.trafficcost_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.trafficcost_tableWidget, i)
                     
-                    if self.trafficcost_tableWidget.item(i, 1)==None or self.trafficcost_tableWidget.item(i, 2)==None or self.trafficcost_tableWidget.item(i, 3)==None or self.trafficcost_tableWidget.item(i, 6)==None or self.trafficcost_tableWidget.item(i, 7)==None:
+                    if self.trafficcost_tableWidget.item(i, 1)==None or self.trafficcost_tableWidget.item(i, 2)==None or self.trafficcost_tableWidget.item(i, 3)==None or self.trafficcost_tableWidget.item(i, 4)==None or self.trafficcost_tableWidget.item(i, 5)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
                         self.connection.rollback()
                         return
-                    elif self.trafficcost_tableWidget.item(i, 3)!=None:
-                        if self.trafficcost_tableWidget.item(i, 3)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
-                            self.connection.rollback()
-                            return    
-                    elif self.trafficcost_tableWidget.item(i, 6)!=None:
-                        if self.trafficcost_tableWidget.item(i, 6)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для оплаты за трафик")
-                            self.connection.rollback()
-                            return
+              
                                                    
                     if id!=-1:
                         transmit_node = self.connection.get_model(id, "billservice_traffictransmitnodes")
@@ -2074,45 +2064,17 @@ class TarifFrame(QtGui.QDialog):
                     transmit_node.traffic_transmit_service_id = traffic_transmit_service.id
                     transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
                     transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
-                    transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
-                    transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
+                    transmit_node.group_id = self.trafficcost_tableWidget.item(i,3).id
+                    #transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
+                    #transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
                     #transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
-                    transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,7).text())
+                    transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,5).text())
                     
-                    
-                    
-                    traffic_class_models = self.trafficcost_tableWidget.item(i, 3).models
-                    
-                    traffic_class_models = [x.id for x in traffic_class_models]
-                    
-                    if len(traffic_class_models)==0:
-                        return
                     
                     transmit_node.id = self.connection.save(transmit_node, "billservice_traffictransmitnodes")
                     
-                        
-                    traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
-                    
-                    JOIN billservice_traffictransmitnodes_traffic_class as tc ON tc.trafficclass_id =  trafficclass.id
-                    WHERE tc.traffictransmitnodes_id=%d""" % transmit_node.id)
-                    
-                    traffic_classes = [x.id for x in traffic_classes_for_node]
-                    for cl in traffic_class_models:
-                        if cl not in traffic_classes:
-                            tc = Object()
-                            tc.traffictransmitnodes_id = transmit_node.id
-                            tc.trafficclass_id = cl
-                            self.connection.save(tc, "billservice_traffictransmitnodes_traffic_class")
-    
-                    for cl in traffic_classes:
-                        if cl not in traffic_class_models:
-                            d = Object()
-                            d.traffictransmitnodes_id = transmit_node.id
-                            d.trafficclass_id = cl
-                            self.connection.delete(d, "billservice_traffictransmitnodes_traffic_class")
-
                             
-                    time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 6).models]
+                    time_period_models = [x.id for x in self.trafficcost_tableWidget.item(i, 4).models]
                     if len(time_period_models)==0:
                         return
                     
