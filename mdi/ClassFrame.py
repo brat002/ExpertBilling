@@ -51,7 +51,7 @@ class ClassEdit(QtGui.QDialog):
         self.store_edit = QtGui.QCheckBox(self.params_groupBox)
         self.store_edit.setGeometry(QtCore.QRect(60,80,271,18))
         self.store_edit.setObjectName("store_edit")
-        self.store_edit.setDisabled(True)
+        #self.store_edit.setDisabled(True)
         
         self.passthrough_checkBox = QtGui.QCheckBox(self.params_groupBox)
         self.passthrough_checkBox.setGeometry(QtCore.QRect(60,100,271,19))
@@ -106,7 +106,7 @@ class ClassEdit(QtGui.QDialog):
             self.store_edit.setCheckState(self.model.store == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.passthrough_checkBox.setCheckState(self.model.passthrough == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
-            #self.store_editself.pptp_edit.checkState()==2
+            self.store_editself.pptp_edit.checkState()==2
         
     def accept(self):
         if unicode(self.name_edit.text())=="":
@@ -279,7 +279,7 @@ class ClassNodeFrame(QtGui.QDialog):
         self.next_hop_label.setText(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Протокол", None, QtGui.QApplication.UnicodeUTF8))
-        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Группа", None, QtGui.QApplication.UnicodeUTF8))
+        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
         
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
         self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))

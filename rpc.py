@@ -613,7 +613,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def save(self, model, table, cur=None, connection=None):
         sql = model.save(table)
-        print sql
+        #print sql
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id

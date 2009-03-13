@@ -586,14 +586,15 @@ def login():
 
             except Exception, e:
                 #print "login connection error"
-                waitchild.hide()
+                splash.hide()
                 if isinstance(e, Pyro.errors.ConnectionDeniedError):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            #waitchild.hide()
+            #splash.hide()
             #del waitchild
         else:
+            splash.hide()
             return None
 
 if __name__ == "__main__":
