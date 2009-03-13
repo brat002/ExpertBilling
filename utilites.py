@@ -13,8 +13,10 @@ import logging
 import datetime, calendar
 import os, sys, time, md5, binascii, socket, select
 
+ssh_exec = False
 try: 
-    from ssh_utilities import SSHClient
+    from ssh_utilities import SSHClient, ssh_execute
+    ssh_exec = True
 except:
     print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
     from ssh_paramiko import SSHClient
@@ -88,10 +90,15 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
             return True
         else:
             try:
-                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                #print 'ssh connected'
-                res=sshclient.send_command(command_string)
-                sshclient.close_channel()
+                if ssh_exec:
+                    sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                    print sshclient
+                else:
+                    sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                    print 'ssh connected'
+                    res=sshclient.send_command(command_string)
+                    sshclient.close_channel()
+                
                 print 'POD SSH'
                 return True
             except Exception, e:
@@ -155,10 +162,14 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         
         print "command_string=", command_string
         try:
-            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-            print 'ssh connected'
-            res=sshclient.send_command(command_string)
-            sshclient.close_channel()
+            if ssh_exec:
+                    sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                    print sshclient
+            else:
+                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                print 'ssh connected'
+                res=sshclient.send_command(command_string)
+                sshclient.close_channel()
             return True
         except Exception, e:
             print e
@@ -177,10 +188,14 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         #print command_string
         try:
-            sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-            print 'ssh connected'
-            res=sshclient.send_command(command_string)
-            sshclient.close_channel()
+            if ssh_exec:
+                sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                print sshclient
+            else:
+                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                print 'ssh connected'
+                res=sshclient.send_command(command_string)
+                sshclient.close_channel()
             return True
         except Exception, e:
             print e
@@ -692,19 +707,30 @@ def get_sessions_for_nas(nas):
     sessions = []
     if nas['type'] in ['mikrotik2.8', 'mikrotik2.9']:
         #Use SSH For fetching sessions
-        try:            
-            ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
-            response=ssh.send_command("/ppp active print terse without-paging")[0]
-            response = response.readlines()
+        if ssh_exec:
+            try:
+                sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+            except Exception, e:
+                print e
+                return []
+                
+            print sshclient
+            if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
+                sessions=ActiveSessionsParser(sshclient.split(':')[1]).parse()
+        else:
+            try:            
+                ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
+                response=ssh.send_command("/ppp active print terse without-paging")[0]
+                response = response.readlines()
+                #print response
+            except Exception, e:
+                print e
+                return []
+                
             #print response
-        except Exception, e:
-            print e
-            return []
-            
-        #print response
-        if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
-            sessions=ActiveSessionsParser(response).parse()
-        ssh.close_channel()
+            if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
+                sessions=ActiveSessionsParser(response).parse()
+            ssh.close_channel()
         
     elif nas['type']==u'mikrotik3':
         #Use ROS API for fetching sessions

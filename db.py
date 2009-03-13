@@ -269,7 +269,7 @@ def transaction(cursor, account, approved, type, summ, description, created=None
                     INSERT INTO billservice_transaction(bill,
                     account_id, approved, type_id, tarif_id, summ, description, created)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-                    """ , (bill, account, approved, type, tarif , summ, description, created,))
+                    """ , (bill, account, approved, type, tarif , summ, description, created))
 
     tr_id=cursor.fetchone()[0]
     #print tr_id

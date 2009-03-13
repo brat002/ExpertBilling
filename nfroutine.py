@@ -343,7 +343,7 @@ class NetFlowRoutine(Thread):
         global curAT_date,curAT_lock
         global nfIncomingQueue
         global tpnInPeriod, curSPCache, curTTSCache
-        global prepaysCache, TRTRNodesCache
+        global prepaysCache, TRTRNodesCache, ClassesStore
         global store_na_tarif, store_na_account
         global groupAggrDict, statAggrDict
         global groupAggrTime, statAggrTime
@@ -372,6 +372,7 @@ class NetFlowRoutine(Thread):
                         cacheSP  = copy(curSPCache)
                         #traffic_transmit_service
                         cacheTTS = copy(curTTSCache)
+                        classesStore = copy(ClassesStore)
                         
                         c_TRTRNodesCache = copy(TRTRNodesCache)
                         c_tpnInPeriod    = copy(tpnInPeriod)
@@ -497,16 +498,17 @@ class NetFlowRoutine(Thread):
                     if tts_id:
                         tarif_mode = c_tpnInPeriod[tts_id]
                         
+                    store_classes = list(classesStore.intersection(flow_classes))
                     #if tarif_mode is False or tarif.active = False
                     #write statistics without billing it
-                    if not (tarif_mode and acct[11] and acct[13]):
+                    if store_classes and ( not (tarif_mode and acct[11] and acct[13])):
                         #cur = connection.cursor()
                         cur.execute("""INSERT INTO billservice_netflowstream(
                                     nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                     dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                     VALUES (%s, %s, %s, %s, %s, %s, %s,
                                     %s, %s, %s, %s, %s, %s, %s);
-                                    """, (nas_id, account_id, tarif_id, flow[23], stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,))
+                                    """, (nas_id, account_id, tarif_id, flow[23], stream_date,intToIp(flow[0],4), store_classes, intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,))
                         connection.commit()
                         #cur.close()
                         continue
@@ -580,14 +582,14 @@ class NetFlowRoutine(Thread):
                                 pickerLock.acquire()
                                 gPicker.add_summ(flow[20], acct[4], summ)
                                 pickerLock.release()
-
-                    cur.execute("""INSERT INTO billservice_netflowstream(
+                    if store_classes:
+                        cur.execute("""INSERT INTO billservice_netflowstream(
                                 nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                 dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                 VALUES (%s, %s, %s, %s, %s, %s, %s,
                                 %s, %s, %s, %s, %s, %s, %s);
-                                """, (nas_id, account_id, tarif_id, flow_dir, stream_date,intToIp(flow[0],4), list(flow_classes), intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,))
-                    connection.commit()
+                                """, (nas_id, account_id, tarif_id, flow_dir, stream_date,intToIp(flow[0],4), store_classes, intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,))
+                        connection.commit()
                  
                 if writeProf:
                     icount += 1
@@ -659,7 +661,7 @@ class AccountServiceThread(Thread):
         global curAT_acIdx
         global curAT_date, curAT_lock
         global curSPCache, curTTSCache
-        global tpnInPeriod, prepaysCache, TRTRNodesCache
+        global tpnInPeriod, prepaysCache, TRTRNodesCache, ClassesStore
         while True:
             a = time.clock()
             try:
@@ -705,6 +707,8 @@ class AccountServiceThread(Thread):
                                (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));
                             """)
                 trtrnodsTp = cur.fetchall()
+                cur.execute("""SELECT int_array_aggregate(id) FROM nas_trafficclass WHERE store=TRUE""")
+                clsstoreTp = cur.fetchall()
                 connection.commit()
                 cur.close()
                 
@@ -741,6 +745,9 @@ class AccountServiceThread(Thread):
                 for sps in spsTp:
                     tmpspC[sps[0]] = sps
                 
+                    
+                clsstore = set(clsstoreTp[0][0])
+                
                 #renew global cache links
                 curAT_lock.acquire()
                 curAT_acIdx   = tmpacIdx
@@ -750,6 +757,7 @@ class AccountServiceThread(Thread):
                 tpnInPeriod = tmpPerTP
                 prepaysCache = prepaysTmp
                 TRTRNodesCache = trafnodesTmp
+                ClassesStore = clsstore
                 curAT_date  = tmpDate
                 curAT_lock.release()
                 

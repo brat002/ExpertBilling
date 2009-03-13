@@ -15,7 +15,7 @@ def ssh_execute(user, host, password, command):
             return 'ERROR:' + ssession.before + ':' + ssession.after      
     ssession.sendline(password)
     ssession.expect(pexpect.EOF)
-    return 'OK:' + ssession.before + ':' + ssession.after 
+    return 'OK:' + str(ssession.before) + ':' + str(ssession.after)
 
 class SSHClient(pxssh):
     def __init__(self, host, port, username, password):

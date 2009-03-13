@@ -200,7 +200,9 @@ CREATE TABLE billservice_card (
     activated_by_id integer,
     start_date timestamp without time zone,
     end_date timestamp without time zone,
-    disabled boolean DEFAULT false
+    disabled boolean DEFAULT false,
+    tarif_id integer,
+    account_id integer
 );
 
 
@@ -8889,6 +8891,10 @@ CREATE INDEX billservice_card_activated_by_id ON billservice_card USING btree (a
 
 CREATE INDEX billservice_card_card_group_id ON billservice_card USING btree (card_group_id);
 
+CREATE INDEX fki_billservice_card_account_fkey ON billservice_card(account_id);
+
+CREATE INDEX fki_billservice_card_tarif_fkey ON billservice_card(tarif_id);
+
 CREATE INDEX billservice_netflowstream_account_id ON billservice_netflowstream USING btree (account_id);
 
 CREATE INDEX billservice_netflowstream_nas_id ON billservice_netflowstream USING btree (nas_id);
@@ -9011,6 +9017,14 @@ ALTER TABLE ONLY billservice_accounttarif
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_activated_by_id_fkey FOREIGN KEY (activated_by_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
+   
+ALTER TABLE billservice_card ADD CONSTRAINT billservice_card_account_fkey FOREIGN KEY (account_id) REFERENCES billservice_account (id)
+   ON UPDATE NO ACTION ON DELETE CASCADE
+   DEFERRABLE;
+   
+ALTER TABLE billservice_card ADD CONSTRAINT billservice_card_tarif_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff (id)
+   ON UPDATE NO ACTION ON DELETE CASCADE
+   DEFERRABLE;
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
