@@ -1,3 +1,11 @@
+!!! nfroutine - check connections! if there\re database errors - save data into files!
+
+
+
+
+
+
+
 !try autocommit on testsuite
 
 python db2-api autocommit
