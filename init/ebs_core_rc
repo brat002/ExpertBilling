@@ -1,0 +1,44 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          core
+# Short-Description: Start the EBS core daemon.
+### END INIT INFO
+trap '' 1 2 3 15
+
+
+DAEMON=/ebs/core/data/core
+NAME=core
+DESC="ebs billing core daemon"
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/ebs_$NAME
+ERR_LOG=/ebs/core/data/log/log.txt
+EXEC_DIR=/ebs/core/data
+
+test -x $DAEMON || exit 0
+
+case "$1" in
+start)
+        
+         echo "Starting ebs core"
+			$DAEMON -D > $ERR_LOG 2>1& &
+
+		;;
+stop)
+        echo "Stopping utm5_core"
+	if [ `uname` = 'SunOS' ]
+	then
+	    pkill -SIGUSR1 -x $NAME
+	    sleep 20
+	    pkill -9 -x utm5_core
+	else
+            killall -SIGUSR1 utm5_core
+            sleep 5
+            kill -9 `ps ax | grep utm5_core | grep -v stop | grep safe | awk '{print $1}'` 2>/dev/null
+            killall -9 utm5_core
+	fi
+        ;;
+*)
+        echo "Usage: `basename $0` {start|stop}" >&2
+        exit 64
+        ;;
+esac

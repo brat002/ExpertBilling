@@ -1,0 +1,29 @@
+#!/bin/sh
+# chkconfig: 2345 90 10
+# description: UTM Billing System radius server
+trap '' 1 2 3 15
+
+utm_exec=safe_utm5_radius
+err_log=/netup/utm5/log/utm5_radius.log
+exec_dir=/netup/utm5/bin
+
+
+case "$1" in
+start)
+        if [ -x $exec_dir/$utm_exec ]; 
+		then
+            echo "Starting utm5_radius"
+			$exec_dir/$utm_exec start >> /netup/utm5/log/utm5_radius.log 2>&1 &
+		else
+			echo $exec_dir/$utm_exec no such file
+        fi
+		;;
+stop)
+        echo "Stopping utm5_radius"
+			$exec_dir/$utm_exec stop >> /netup/utm5/log/utm5_radius.log 2>&1 &
+        ;;
+*)
+        echo "Usage: `basename $0` {start|stop}" >&2
+        exit 64
+        ;;
+esac
