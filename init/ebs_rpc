@@ -1,63 +1,66 @@
-#! /bin/sh
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          rpc
+# Short-Description: Start the EBS rpc daemon.
+### END INIT INFO
+trap '' 1 2 3 15
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
 DAEMON=/opt/ebs/data/rpc
+NAME=rpc
+DESC="ebs billing rpc daemon"
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/ebs_$NAME
+ERR_LOG=/opt/ebs/data/log/log.txt
+EXEC_DIR=/opt/ebs/data/
 
-NAME=ebs_rpc
-DESC="EBS Core daemon"
-
-test -f $DAEMON || exit 0
-
-set -e
+test -x $DAEMON || exit 0
 
 case "$1" in
-  start)
-	echo -n "Starting $DESC: "
-	start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-		--exec $DAEMON
-	echo "$NAME."
-	;;
-  stop)
-	echo -n "Stopping $DESC: "
-	#start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid
-	killall -9 rpc
-	# \	--exec $DAEMON
-	echo "$NAME."
-	;;
-  #reload)
-	#
-	#	If the daemon can reload its config files on the fly
-	#	for example by sending it SIGHUP, do it here.
-	#
-	#	If the daemon responds to changes in its config file
-	#	directly anyway, make this a do-nothing entry.
-	#
-	# echo "Reloading $DESC configuration files."
-	# start-stop-daemon --stop --signal 1 --quiet --pidfile \
-	#	/var/run/$NAME.pid --exec $DAEMON
-  #;;
-  restart|force-reload)
-	#
-	#	If the "reload" option is implemented, move the "force-reload"
-	#	option to the "reload" entry above. If not, "force-reload" is
-	#	just the same as "restart".
-	#
-	echo -n "Restarting $DESC: "
-	start-stop-daemon --stop --quiet --pidfile \
-		/var/run/$NAME.pid
-		# --exec $DAEMON
-	sleep 1
-	start-stop-daemon --start --quiet --pidfile \
-		/var/run/$NAME.pid --exec $DAEMON
-	echo "$NAME."
-	;;
-  *)
-	N=/etc/init.d/$NAME
-	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
-	echo "Usage: $N {start|stop|restart|force-reload}" >&2
-	exit 1
-	;;
+start)
+        
+         echo "Starting ebs rpc"
+			$DAEMON &
+
+		;;
+stop)
+        echo "Stopping ebs rpc"
+	if [ `uname` = 'SunOS' ]
+	then
+	    pkill -SIGTERM -x $NAME
+	    sleep 5
+	    pkill -9 -x $DAEMON
+	else
+        killall -SIGTERM $NAME
+        sleep 5
+        killall -9 $NAME
+	fi
+        ;;
+stop-force)
+        echo "Stopping ebs rpc"
+    if [ `uname` = 'SunOS' ]
+    then
+        pkill -9 -x $NAME
+    else
+        killall -9 $NAME
+    fi
+        ;;
+restart)
+        echo "Restarting ebs rpc"
+    $0 stop
+    $0 start
+        ;;
+reload)
+        echo "Reloading ebs rpc configuration"
+    if [ `uname` = 'SunOS' ]
+    then
+        pkill -SIGHUP -x $NAME
+    else
+        killall -SIGHUP $NAME
+    fi
+        ;;
+*)
+        echo "Usage: `basename $0` {start|stop|stop-force|reload}" >&2
+        exit 64
+        ;;
 esac
-
-exit 0
-

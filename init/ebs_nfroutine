@@ -1,43 +1,43 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          core
-# Short-Description: Start the EBS core daemon.
+# Provides:          nfroutine
+# Short-Description: Start the EBS nfroutine daemon.
 ### END INIT INFO
 trap '' 1 2 3 15
 
 
-DAEMON=/ebs/core/data/core
-NAME=core
-DESC="ebs billing core daemon"
+DAEMON=/opt/ebs/data/nfroutine
+NAME=nfroutine
+DESC="ebs billing nfroutine daemon"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/ebs_$NAME
-ERR_LOG=/ebs/core/data/log/log.txt
-EXEC_DIR=/ebs/core/data
+ERR_LOG=/opt/ebs/data/log/log.txt
+EXEC_DIR=/opt/ebs/data/
 
 test -x $DAEMON || exit 0
 
 case "$1" in
 start)
         
-         echo "Starting ebs core"
+         echo "Starting ebs nfroutine"
 			$DAEMON &
 
 		;;
 stop)
-        echo "Stopping ebs core"
+        echo "Stopping ebs nfroutine"
 	if [ `uname` = 'SunOS' ]
 	then
 	    pkill -SIGTERM -x $NAME
-	    sleep 25
+	    sleep 15
 	    pkill -9 -x $DAEMON
 	else
         killall -SIGTERM $NAME
-        sleep 25
+        sleep 15
         killall -9 $NAME
 	fi
         ;;
 stop-force)
-        echo "Stopping ebs core"
+        echo "Stopping ebs nfroutine"
     if [ `uname` = 'SunOS' ]
     then
         pkill -9 -x $NAME
@@ -46,12 +46,12 @@ stop-force)
     fi
         ;;
 restart)
-        echo "Restarting ebs core"
+        echo "Restarting ebs nfroutine"
     $0 stop
     $0 start
         ;;
 reload)
-        echo "Reloading ebs core configuration"
+        echo "Reloading ebs nfroutine configuration"
     if [ `uname` = 'SunOS' ]
     then
         pkill -SIGHUP -x $NAME

@@ -2,7 +2,8 @@
 
 from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
-
+from log_adapter import log_debug, log_info, log_warning, log_error
+from period_utilities import in_period, in_period_info, settlement_period_info
 
 import re
 import glob
@@ -49,12 +50,12 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     @param session_id: ID of VPN session
     @param format_string: format string       
     """
-    #print account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string
+    #log_debug('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         
-        print "Send PoD"
+        log_debug("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
@@ -72,7 +73,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe']:
         #ssh
-        print 'POD ROS'
+        log_debug('POD ROS')
         command_string=command_string_parser(command_string=format_string, command_dict=
                             {'access_type': access_type, 'username': account_name,'user_id': account_id,
                              'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
@@ -85,24 +86,24 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
             """
             ДОбавить проверку что вернул сервер доступа
             """
-            print 'POD ROS3'
+            log_debug('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
             return True
         else:
             try:
                 if ssh_exec:
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                    print sshclient
+                    log_debug('PoD ssh %s' % sshclient)
                 else:
                     sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                    print 'ssh connected'
+                    log_debug('ssh connected')
                     res=sshclient.send_command(command_string)
                     sshclient.close_channel()
                 
-                print 'POD SSH'
+                log_debug('POD SSH')
                 return True
             except Exception, e:
-                print e
+                log_error('PoD SSH exception: %s' % repr(e))
                 return False
 
 def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
@@ -111,12 +112,11 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
     print access_type
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         #Send CoA
-        print "send coa"
         
         #speed_string= create_speed_string(speed, coa=True)
         speed_string= create_speed_string(speed)
         #print speed_string
-        print 'send CoA'
+        log_debug('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
@@ -143,7 +143,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
-        print 'SetSpeed Via SSH'
+        log_debug('SetSpeed Via SSH')
         command_dict={
                              'access_type':access_type,
                              'username': account_name,
@@ -160,19 +160,19 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        print "command_string=", command_string
+        log_debug("Change Speedcommand_string= %s" % command_string)
         try:
             if ssh_exec:
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                    print sshclient
+                    log_debug('Change speed SSH reply: %s' % sshclient)
             else:
                 sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                print 'ssh connected'
+                log_debug('ssh connected')
                 res=sshclient.send_command(command_string)
                 sshclient.close_channel()
             return True
         except Exception, e:
-            print e
+            log_error('Change Speed ssh exception %s' % repr(e))
             return False
     return False
 
@@ -190,245 +190,18 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
         try:
             if ssh_exec:
                 sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                print sshclient
+                log_debug('CRED ssh reply: %s' % sshclient)
             else:
                 sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                print 'ssh connected'
+                log_debug('CRED ssh connected')
                 res=sshclient.send_command(command_string)
                 sshclient.close_channel()
             return True
         except Exception, e:
-            print e
+            log_error('CRED ssh error: %s' % repr(e))
             return False
 
-def in_period(time_start, length, repeat_after, now=None):
-        """
-        @param time_start: Дата и время начала действия расчётного периода
-        @param length: Длина расчётного периода
-        @param repeat_after: Период повторения расчётного периода
-        @param now: Текущая дата    
-        Если повторение-год = проверяем месяц, число, время
-        Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
-        Если повтроение - квартал   = (текущий месяц - начальный месяц по модулю)/3=1, совпадает число, время
-        Если повторение месяц - смотрим совпадает ли дата, время
-        Если повторение неделя - смотрим совпадает ли день недели, время
-        если повторение день - смотрим совпадает ли время
-        =
-        а=Текущее время - начальное время
-        текущее_начальное_время_нач=начальное время+таймдельта(а[год],а[месяц],a[день])
-        текущее_конечное_время =текущее_начальное_время_нач+таймдельта(length)
-        если текущее время >текущее_начальное_время_нач И текущее время < текущее_конечное_время
-             ок
-        иначе
-             вышел за рамки
-
-        """
-        #print time_start, length, repeat_after
-        if not now:
-            now=datetime.datetime.now()
-        #time_start=time_start.replace(tzinfo='UTC')
-        if repeat_after=='DAY':
-            delta_days=now - time_start
-
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif repeat_after=='WEEK':
-            delta_days = now - time_start
-            
-            #Когда будет начало в текущем периоде.
-            nums,ost = divmod(delta_days.days*86400+delta_days.seconds, 86400*7)
-            tnc=time_start+relativedelta(weeks=nums)
-            tkc=tnc+datetime.timedelta(seconds=length)
-
-            #print tnc, tkc
-            if now>=tnc and now<=tkc:
-                #print "WEEK TRUE"
-                return True
-            return False
-        elif repeat_after=='MONTH':
-            #Февраль!
-            rdelta = relativedelta(now, time_start)
-            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
-            tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif repeat_after=='YEAR':
-            #Февраль!
-            rdelta = relativedelta(now, time_start)
-            tnc=time_start+relativedelta(years = rdelta.years)
-            tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                return True
-            return False
-        elif repeat_after=='DONT_REPEAT':
-            delta_days=now - time_start
-
-            tkc=time_start+datetime.timedelta(seconds=length)
-            if now>=time_start and now<=tkc:
-                return True
-            return False
-
-def in_period_info(time_start, length, repeat_after, now=None):
-        """
-        Если повторение-год = проверяем месяц, число, время
-        Если повтроение - полугодие = текущий месяц-начальный месяц по-модулю равно 6, совпадает число, время
-        Если повтроение - квартал   = (текущий месяц - начальный месяц по модулю)/3=1, совпадает число, время
-        Если повторение месяц - смотрим совпадает ли дата, время
-        Если повторение неделя - смотрим совпадает ли день недели, время
-        если повторение день - смотрим совпадает ли время
-        =
-        а=Текущее время - начальное время
-        текущее_начальное_время_нач=начальное время+таймдельта(а[год],а[месяц],a[день])
-        текущее_конечное_время =текущее_начальное_время_нач+таймдельта(length)
-        если текущее время >текущее_начальное_время_нач И текущее время < текущее_конечное_время
-             ок
-        иначе
-             вышел за рамки
-        @return: время начала периода, время окончания периода, время в секундах от текущей даты до начала периода, попала ли дата в период
-        """
-        result=False
-
-        if not now:
-            now=datetime.datetime.now()
-        tnc=now
-        tkc=now
-
-        #time_start=time_start.replace(tzinfo='UTC')
-        if repeat_after=='DAY':
-            delta_days=now - time_start
-
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                result=True
-
-        elif repeat_after=='WEEK':
-            delta_days=now - time_start
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400*7)
-            tnc=time_start+relativedelta(weeks=nums)
-            tkc=tnc+datetime.timedelta(seconds=length)
-
-            if now>=tnc and now<=tkc:
-                result=True
-
-        elif repeat_after=='MONTH':
-            #Февраль!
-            rdelta = relativedelta(now, time_start)
-            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
-            tkc=tnc+datetime.timedelta(seconds=length)
-            if now>=tnc and now<=tkc:
-                result=True
-
-        elif repeat_after=='YEAR':
-            #Февраль!            
-            rdelta = relativedelta(now, time_start)
-            tnc=time_start+relativedelta(years = rdelta.years)
-            tkc=tnc+datetime.timedelta(seconds=length)
-            
-            if now>=tnc and now<=tkc:
-                result=True
-
-        elif repeat_after=='DONT_REPEAT':
-            delta_days=now - time_start
-
-            tkc=time_start+datetime.timedelta(seconds=length)
-            if now>=time_start and now<=tkc:
-                result=True
-        return (tnc, tkc, (now-tnc).seconds+(now-tnc).days*86400, result)
-
-
-
-
-def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False):
-        """
-        Функция возвращает дату начала и дату конца текущего периода
-        @param time_start: время начала расчётного периода
-        @param repeat_after: период повторения в константах
-        @param repeat_after_seconds: период повторения в секундах
-        @param now: текущая дата
-        @param prev: получить данные о прошлом расчётном периоде     
-        """
-        
-        #print time_start, repeat_after, repeat_after_seconds,  now
-        
-        if not now:
-            now=datetime.datetime.now()
-        #time_start=time_start.replace(tzinfo='UTC')
-        #print "repeat_after_seconds=",repeat_after_seconds
-        if repeat_after_seconds>0:
-            #print 1
-            if prev==False:
-                delta_days=now - time_start
-            else:
-                delta_days=now-datetime.timedelta(seconds=repeat_after_seconds) - time_start
-            length=repeat_after_seconds
-            if repeat_after!='DONT_REPEAT':
-                #Когда будет начало в текущем периоде.
-                nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-                tnc=now-datetime.timedelta(seconds=ost)
-                #Когда это закончится
-                tkc=tnc+datetime.timedelta(seconds=length)
-                return (tnc, tkc, length)
-            else:
-                return (time_start,time_start+datetime.timedelta(seconds=repeat_after_seconds), repeat_after_seconds)
-        elif repeat_after=='DAY':
-            if prev==False:
-                delta_days=now - time_start
-            else:
-                delta_days=now-datetime.timedelta(seconds=86400) - time_start
-            length=86400
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=now-datetime.timedelta(seconds=ost)
-            #Когда это закончится
-            tkc=tnc+datetime.timedelta(seconds=length)
-            return (tnc, tkc, length)
-
-        elif repeat_after=='WEEK':
-            if prev==False:
-                delta_days=now - time_start
-            else:
-                delta_days=now-datetime.timedelta(seconds=604800) - time_start
-            length=604800
-            #Когда будет начало в текущем периоде.
-            nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
-            tnc=time_start+relativedelta(weeks=nums)
-            tkc=tnc+relativedelta(weeks=1)
-
-            return (tnc, tkc, length)
-        elif repeat_after=='MONTH':
-            if prev==False:
-                rdelta = relativedelta(now, time_start)
-            else:
-                rdelta=relativedelta(now-relativedelta(months=1),time_start)
-            #print "time_start, rdelta=", time_start, rdelta
-            tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
-            tkc=tnc+relativedelta(months=1)
-            delta=tkc-tnc
-
-            return (tnc, tkc, delta.days*86400+delta.seconds)
-        elif repeat_after=='YEAR':
-            #Февраль!
-            #To-DO: Добавить проверку на prev 
-            tnc=time_start+relativedelta(years=relativedelta(now, time_start).years)
-
-            tkc=tnc+relativedelta(years=1)
-            delta=tkc-tnc
-            return (tnc, tkc, delta.days*86400+delta.seconds)
-
-        
-
+cs_pattern = re.compile('\$[_\w]+')
 def command_string_parser(command_string='', command_dict={}):
     """
     
@@ -436,15 +209,15 @@ def command_string_parser(command_string='', command_dict={}):
     import re
     if len(command_string) == 0 or len(command_dict) == 0:
         return ''
-    pattern = re.compile('\$[_\w]+')
-    match = pattern.finditer(command_string)
+    
+    match = cs_pattern.finditer(command_string)
     if match is None:
         return ''
     params = [m.group()[1:] for m in match]
     for p in params :
         if p in command_dict.keys() :
-            s = re.compile( '\$%s' % p)
-            command_string = s.sub(str(command_dict[p]),command_string)
+            cs_str = re.compile( '\$%s' % p)
+            command_string = cs_str.sub(str(command_dict[p]),command_string)
     #print command_string
     return command_string
 
@@ -709,22 +482,22 @@ def get_sessions_for_nas(nas):
         #Use SSH For fetching sessions
         if ssh_exec:
             try:
-                sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                sshclient = ssh_execute(nas_login, nas_ip, nas_password, "/ppp active print terse without-paging")
             except Exception, e:
-                print e
+                log_error('Get sessions for nas SSH sshexec error: %s' % repr(e))
                 return []
                 
-            print sshclient
+            log_info('Get sessions for nas SSH sshexec reply: %s' % sshclient)
             if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
-                sessions=ActiveSessionsParser(sshclient.split(':')[1]).parse()
+                sessions=ActiveSessionsParser(sshclient.split(':')[1].strip()).parse()
         else:
             try:            
                 ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
                 response=ssh.send_command("/ppp active print terse without-paging")[0]
                 response = response.readlines()
-                #print response
+                log_info('Get sessions for nas SSH sshclient reply: %s' % response)
             except Exception, e:
-                print e
+                log_error('Get sessions for nas SSH error: %s' % repr(e))
                 return []
                 
             #print response
@@ -737,7 +510,7 @@ def get_sessions_for_nas(nas):
         try:
             sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
         except Exception, e:
-            print e
+            log_error('Get sessions for nas SSH rosapi error: %s' % repr(e))
 
     return sessions
 
@@ -824,65 +597,6 @@ def parse_custom_speed_lst(speed_string):
     trm = match_obj.group('trm') or -1
     return [formatator(rxrate, txrate), formatator(rxbrate, txbrate), formatator(rbthr, tbthr), formatator(rbtm, tbtm), prt, formatator(rrm, trm)]
 
-def setAllowedUsers(dbconnection, filepath):
-    def transformByte(lbyte):
-        ldict = {'A': 50, 'B': 250, 'C': 500, 'D': 800, 'E': 1000, 'F': ((1 << 63) - 1)}
-        return ldict.get(lbyte, 0)
-    #global allowedUsers
-    allowedUsers = lambda: 0
-    try:
-        lfile = open(filepath, 'rb')
-    except Exception,e:
-        print e
-        print "License not found"
-        sys.exit()
-        
-    lfile.seek(-1, 2)
-    allowed = str(transformByte(lfile.read(1)))
-    allowedUsers = lambda: int(allowed)
-    lfile.close()
-    cur = dbconnection.cursor()
-    cur.callproc('crt_allowed_checker', (allowedUsers(),))
-    dbconnection.commit()
-    cur.close()
-    dbconnection.close()
-    return allowedUsers
-    
-def allowedUsersChecker(allowed, current):
-    if current() > allowed():
-        print stderr >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
-        sys.exit()
-
-def graceful_saver(objlists, globals_, moduleName, saveDir):
-    for objlist in objlists:
-        if len(globals_[objlist[0]]) > 0:
-            for objname in objlist:
-                if objname[-1] == '_': objname = objname[:-1]
-                f = open(saveDir + '/' + moduleName + objname + '.dmp', 'wb')
-                cPickle.dump(globals_[objname], f)
-                f.close()
-                
-def graceful_loader(objnames, globals_, moduleName, saveDir):
-    fllist = glob.glob(saveDir + '/' + moduleName + '*' + '.dmp')
-    dumpedObjs = []
-    for objname in objnames:
-        i = 0
-        for fname in fllist:
-            if fname.find(objname) != -1:
-                f = open(fname, 'rb')
-                try:
-                    globals_[objname] = cPickle.load(f)
-                except Exception, ex:
-                    print >> sys.stderr, 'Problems with unpickling file %s: %s' % (fname, repr(ex))
-                finally:
-                    f.close()
-                    os.unlink(fname)
-                break
-            i += 1
-        if i < len(fllist):
-            fllist.pop(i)
-                
-        
 def split_speed(speed):
     return speed.split("/")
 
