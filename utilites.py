@@ -171,7 +171,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #print speed
         speed = speed_list_to_dict(speed)
         command_dict.update(speed)
-        #print 'command_dict=', command_dict
+        print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
         log_debug_("Change Speedcommand_string= %s" % command_string)

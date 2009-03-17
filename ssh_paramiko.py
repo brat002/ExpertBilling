@@ -12,7 +12,7 @@ class SSHClient(paramiko.SSHClient):
 
     def send_command(self, text):
         stdin, stdout, stderr = self.exec_command(text)
-        #print stderr.readlines()==[]
+        print stderr.readlines()
         return stdout, stderr
 
     def close_channel(self):

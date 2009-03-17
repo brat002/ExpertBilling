@@ -3388,8 +3388,17 @@ class AccountWindow(QtGui.QMainWindow):
                         ipn_ip_model = Object()
                 
                     pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
+                    
                     if pool_id!=0:
+                        pool = self.connection.get_model(pool_id, "billservice_ippool")
+                        start_ip = IPy.IP(pool.start_ip).int()
+                        end_ip = IPy.IP(pool.end_ip).int()
+                        ip = IPy.IP(unicode(self.lineEdit_ipn_ip_address.text())).int()
+
+                        if ip < start_ip or ip>end_ip: raise Exception
+                        
                         ipn_ip_model.pool_id = pool_id
+                        
                         ipn_ip_model.ip = unicode(self.lineEdit_ipn_ip_address.text())
                         ipn_ip_model.datetime = "now()"
                         ipn_ip_model.id = self.connection.save(ipn_ip_model, "billservice_ipinuse")
@@ -3399,7 +3408,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
                     self.connection.save(model, "billservice_account")
             except:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IP адресов. Возможно выбранный IP адрес уже используется в пуле."))
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
                     self.connection.rollback()
                     return 
 
@@ -3419,6 +3428,14 @@ class AccountWindow(QtGui.QMainWindow):
                 
                     pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
                     if pool_id!=0:
+                        pool = self.connection.get_model(pool_id, "billservice_ippool")
+                        start_ip = IPy.IP(pool.start_ip).int()
+                        end_ip = IPy.IP(pool.end_ip).int()
+                        ip = IPy.IP(unicode(self.lineEdit_vpn_ip_address.text())).int()
+
+                        if ip < start_ip or ip>end_ip: raise Exception
+                        
+                        ipn_ip_model.pool_id = pool_id
                         vpn_ip_model.pool_id = pool_id
                         vpn_ip_model.ip = unicode(self.lineEdit_vpn_ip_address.text())
                         vpn_ip_model.datetime = "now()"
@@ -3429,7 +3446,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
                     self.connection.save(model, "billservice_account")
             except:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IP адресов. Возможно выбранный IP адрес уже используется в пуле."))
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
                     self.connection.rollback()
                     return 
                              
