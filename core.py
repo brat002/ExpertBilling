@@ -394,6 +394,10 @@ class periodical_service_bill(Thread):
                                     time_start_ps=account_datetime
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, dateAT)
+                                
+                                # Проверка на расчётный период без повторения
+                                if period_end<now: continue
+                                
                                 s_delta = datetime.timedelta(seconds=delta)
                                 if ps_cash_method=="GRADUAL":
                                     """

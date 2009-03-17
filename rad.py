@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+#-*-coding: utf-8 -*-
 
 import gc
 import os
@@ -130,7 +130,7 @@ def get_accesstype(packetobject):
             return 'PPPOE'
         elif packetobject.has_key('Mikrotik-Host-IP'):
             return 'HotSpot'
-        elif packetobject['Service-Type'][0]=='Framed-User' and not packetobject.has_key('Service-Type'):
+        elif nas_port_type == 'Ethernet' and not packetobject.has_key('Service-Type'):
             return 'DHCP'
     except:
         print show_packet(packetobject)
@@ -219,10 +219,10 @@ class AsyncAuthServ(AsyncUDPServer):
                 coreconnect = HandleSDHCP(packetobject=packetobject)
                 coreconnect.atCache_mac = self.cacheAT_mac
                 coreconnect.nasip = nas_ip; coreconnect.nasCache = self.cacheNas
-                secret, packetfromcore=coreconnect.handle()
-                if packetfromcore is None: return
-                authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username='', password = '', secret = secret, access_type=access_type)
-                returndata=authobject.ReturnPacket()
+                authobject, packetfromcore = coreconnect.handle()
+                if packetfromcore is None: logger.info("Unknown NAS %s", str(packetobject['NAS-IP-Address'][0])); return
+                #authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username='', password = '', secret = secret, access_type=access_type)
+                returndata=authobject.ReturnPacket(packetfromcore)
             else:
                 #-----
                 coreconnect = HandleSNA(packetobject)
@@ -435,7 +435,7 @@ class HandleSAuth(HandleSBase):
         if row==None:
             #self.cur.close()
             return '',None
-        
+
         self.nas_id=str(row[0])
         self.nas_type=row[2]
         self.multilink = row[3]
@@ -489,6 +489,8 @@ class HandleSAuth(HandleSBase):
 [18] - ba.ipn_ip_address, 
 [19] - ba.netmask, 
 [20] - ba.ipn_speed 
+[21] - ba.allow_dhcp_null
+[22] - ba.allow_dhcp_block
 '''
         password = acct_row[4]
         ipn_mac_address = acct_row[2]
@@ -716,21 +718,25 @@ class HandleHotSpotAuth(HandleSBase):
 class HandleSDHCP(HandleSBase):
     __slots__ = () + ('secret', 'nas_id', 'nas_type','atCache_mac')
     def __init__(self,  packetobject):
+        super(HandleSDHCP, self).__init__()
+        
         self.packetobject = packetobject
         self.secret = ""
-        logger.debugfun('%s', show_packet, packetobject)
+        logger.debugfun('%s', show_packet, (packetobject,))
 
-    def auth_NA(self):
-        """Deny access"""
-        self.packetobject.code=3
-        return self.secret, self.packetobject
+    def auth_NA(self, authobject):
+        """
+        Deny access
+        """
+        authobject.set_code(3)
+        return authobject, self.packetobject
     
             
     def handle(self):
         row = self.nasCache.get(self.nasip)
         
         if row==None:
-            return self.auth_NA()
+            return '', None
 
         self.nas_id=str(row[0])
         self.nas_type=row[2]
@@ -739,23 +745,38 @@ class HandleSDHCP(HandleSBase):
         self.replypacket=packet.Packet(secret=self.secret,dict=dict)
         
         acct_row = self.atCache_mac.get(self.packetobject['User-Name'][0])
-        
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(self.secret), access_type='DHCP')
         if acct_row==None:
-            return self.auth_NA()
+            return self.auth_NA(authobject)
 
+        user_name = acct_row[1]
         mac_address = acct_row[2]
         nas_id = acct_row[5]
-        ipaddress, netmask, speed = row[18:21]
-
+        ipaddress, netmask, speed, allow_dhcp_null, allow_dhcp_block = acct_row[18:23]
+        balance_blocked = acct_row[10]
+        disabled_by_limit = acct_row[12]
+        ballance = acct_row[11]
+        tarif_status = acct_row[14]
+        acc_status = acct_row[17]
         if int(nas_id)!=int(self.nas_id):
-            return self.auth_NA()
+            return self.auth_NA(authobject)
 
-        self.replypacket.code=2
-        self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
-        self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
-        self.replypacket.AddAttribute('Session-Timeout', session_timeout)
-        #self.create_speed(tarif_id, speed=speed)
-        return self.secret, self.replypacket
+        acstatus = (allow_dhcp_null==True or ballance>0) and (allow_dhcp_block==True or (balance_blocked==False and disabled_by_limit==False and acc_status==True))
+        
+        
+        if not acstatus:
+            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
+            return self.auth_NA(authobject)
+        
+        if tarif_status==True:
+            authobject.set_code(2)
+            self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
+            self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
+            self.replypacket.AddAttribute('Session-Timeout', session_timeout)
+            #self.create_speed(tarif_id, speed=speed)
+            return authobject, self.replypacket
+        else:
+            return self.auth_NA(authobject)
 
 #acct class
 class HandleSAcct(HandleSBase):
@@ -923,6 +944,8 @@ class CacheRoutine(Thread):
     [18] - ba.ipn_ip_address, 
     [19] - ba.netmask, 
     [20] - ba.ipn_speed 
+    [21] - ba.allow_dhcp_null
+    [22] - ba.allow_dhcp_block
     '''
     def __init__(self):
         Thread.__init__(self)
@@ -950,7 +973,7 @@ class CacheRoutine(Thread):
                     ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
                     ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                     ba.disabled_by_limit, ba.vpn_speed, bt.active, 
-                    ba.allow_vpn_null, ba.allow_vpn_block, ba.status, ba.ipn_ip_address, ba.netmask, ba.ipn_speed 
+                    ba.allow_vpn_null, ba.allow_vpn_block, ba.status, ba.ipn_ip_address, ba.netmask, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block
                     FROM billservice_account as ba
                     JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     JOIN billservice_tariff AS bt ON bt.id=act.tarif_id

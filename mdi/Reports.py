@@ -859,7 +859,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             self.addRowSummary(u'', i, 4, color=flow.color)
             i+=1
 
-  
+
         if sql_acc!="":
             if len(self.child.users)>0:
                 sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
