@@ -15,7 +15,7 @@ import ConfigParser
 import psycopg2, psycopg2.extras
 
 import isdlogger
-import log_adapter
+import saver, utilites
 
 from auth import Auth
 from time import clock
@@ -1159,7 +1159,8 @@ if __name__ == "__main__":
     
     
     logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file")) 
-    log_adapter.log_adapt = logger.log_adapt
+    utilites.log_adapt = logger.log_adapt
+    saver.log_adapt    = logger.log_adapt
     logger.lprint('Radius start')
     
     try:

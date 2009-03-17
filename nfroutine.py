@@ -10,7 +10,7 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 
 import isdlogger
-import log_adapter
+import saver
 
 from IPy import intToIp
 from marshal import dumps, loads
@@ -966,7 +966,7 @@ if __name__ == "__main__":
 
         
     logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file")) 
-    log_adapter.log_adapt = logger.log_adapt
+    saver.log_adapt = logger.log_adapt
     logger.lprint('Nfroutine start')
     try:
         
