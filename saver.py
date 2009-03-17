@@ -1,5 +1,5 @@
 import os, sys, cPickle, glob
-from log_adapter import log_debug, log_info, log_warning, log_error
+from log_adapter import log_error_
 
 def setAllowedUsers(dbconnection, filepath):
     def transformByte(lbyte):
@@ -10,8 +10,8 @@ def setAllowedUsers(dbconnection, filepath):
     try:
         lfile = open(filepath, 'rb')
     except Exception,e:
-        log_error(repr(e))
-        log_error("License not found")
+        log_error_(repr(e))
+        log_error_("License not found")
         print "License not found"
         sys.exit()
         
@@ -28,7 +28,7 @@ def setAllowedUsers(dbconnection, filepath):
 
 def allowedUsersChecker(allowed, current):
     if current() > allowed():
-        log_error("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed())))
+        log_error_("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed())))
         print stderr >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
         sys.exit()
 

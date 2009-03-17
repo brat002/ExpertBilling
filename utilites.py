@@ -2,7 +2,7 @@
 
 from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
-from log_adapter import log_debug, log_info, log_warning, log_error
+from log_adapter import log_debug_, log_info_, log_warning_, log_error_
 from period_utilities import in_period, in_period_info, settlement_period_info
 
 import re
@@ -50,12 +50,12 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     @param session_id: ID of VPN session
     @param format_string: format string       
     """
-    #log_debug('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
+    #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
     if format_string=='' and access_type in ['pptp', 'pppoe']:
         
-        log_debug("Send PoD")
+        log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
@@ -73,7 +73,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe']:
         #ssh
-        log_debug('POD ROS')
+        log_debug_('POD ROS')
         command_string=command_string_parser(command_string=format_string, command_dict=
                             {'access_type': access_type, 'username': account_name,'user_id': account_id,
                              'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
@@ -86,24 +86,24 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
             """
             ДОбавить проверку что вернул сервер доступа
             """
-            log_debug('POD ROS3')
+            log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
             return True
         else:
             try:
                 if ssh_exec:
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                    log_debug('PoD ssh %s' % sshclient)
+                    log_debug_('PoD ssh %s' % sshclient)
                 else:
                     sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                    log_debug('ssh connected')
+                    log_debug_('ssh connected')
                     res=sshclient.send_command(command_string)
                     sshclient.close_channel()
                 
-                log_debug('POD SSH')
+                log_debug_('POD SSH')
                 return True
             except Exception, e:
-                log_error('PoD SSH exception: %s' % repr(e))
+                log_error_('PoD SSH exception: %s' % repr(e))
                 return False
 
 def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
@@ -116,7 +116,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #speed_string= create_speed_string(speed, coa=True)
         speed_string= create_speed_string(speed)
         #print speed_string
-        log_debug('send CoA')
+        log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
@@ -143,7 +143,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
-        log_debug('SetSpeed Via SSH')
+        log_debug_('SetSpeed Via SSH')
         command_dict={
                              'access_type':access_type,
                              'username': account_name,
@@ -160,19 +160,19 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         
-        log_debug("Change Speedcommand_string= %s" % command_string)
+        log_debug_("Change Speedcommand_string= %s" % command_string)
         try:
             if ssh_exec:
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                    log_debug('Change speed SSH reply: %s' % sshclient)
+                    log_debug_('Change speed SSH reply: %s' % sshclient)
             else:
                 sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                log_debug('ssh connected')
+                log_debug_('ssh connected')
                 res=sshclient.send_command(command_string)
                 sshclient.close_channel()
             return True
         except Exception, e:
-            log_error('Change Speed ssh exception %s' % repr(e))
+            log_error_('Change Speed ssh exception %s' % repr(e))
             return False
     return False
 
@@ -190,15 +190,15 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
         try:
             if ssh_exec:
                 sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
-                log_debug('CRED ssh reply: %s' % sshclient)
+                log_debug_('CRED ssh reply: %s' % sshclient)
             else:
                 sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
-                log_debug('CRED ssh connected')
+                log_debug_('CRED ssh connected')
                 res=sshclient.send_command(command_string)
                 sshclient.close_channel()
             return True
         except Exception, e:
-            log_error('CRED ssh error: %s' % repr(e))
+            log_error_('CRED ssh error: %s' % repr(e))
             return False
 
 cs_pattern = re.compile('\$[_\w]+')
@@ -484,10 +484,10 @@ def get_sessions_for_nas(nas):
             try:
                 sshclient = ssh_execute(nas_login, nas_ip, nas_password, "/ppp active print terse without-paging")
             except Exception, e:
-                log_error('Get sessions for nas SSH sshexec error: %s' % repr(e))
+                log_error_('Get sessions for nas SSH sshexec error: %s' % repr(e))
                 return []
                 
-            log_info('Get sessions for nas SSH sshexec reply: %s' % sshclient)
+            log_info_('Get sessions for nas SSH sshexec reply: %s' % sshclient)
             if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
                 sessions=ActiveSessionsParser(sshclient.split(':')[1].strip()).parse()
         else:
@@ -495,9 +495,9 @@ def get_sessions_for_nas(nas):
                 ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
                 response=ssh.send_command("/ppp active print terse without-paging")[0]
                 response = response.readlines()
-                log_info('Get sessions for nas SSH sshclient reply: %s' % response)
+                log_info_('Get sessions for nas SSH sshclient reply: %s' % response)
             except Exception, e:
-                log_error('Get sessions for nas SSH error: %s' % repr(e))
+                log_error_('Get sessions for nas SSH error: %s' % repr(e))
                 return []
                 
             #print response
@@ -510,7 +510,7 @@ def get_sessions_for_nas(nas):
         try:
             sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
         except Exception, e:
-            log_error('Get sessions for nas SSH rosapi error: %s' % repr(e))
+            log_error_('Get sessions for nas SSH rosapi error: %s' % repr(e))
 
     return sessions
 
