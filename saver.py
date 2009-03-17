@@ -1,5 +1,10 @@
 import os, sys, cPickle, glob
-from log_adapter import log_error_
+    
+def log_error_(lstr, level=3):
+    log_adapt(lstr, level)
+    
+def log_adapt(lstr, level):
+    print lstr
 
 def setAllowedUsers(dbconnection, filepath):
     def transformByte(lbyte):
@@ -52,7 +57,7 @@ def graceful_loader(objnames, globals_, moduleName, saveDir):
                 try:
                     globals_[objname] = cPickle.load(f)
                 except Exception, ex:
-                    log.error('Problems with unpickling file %s: %s' % (fname, repr(ex)))
+                    log_error_('Problems with unpickling file %s: %s' % (fname, repr(ex)))
                     print >> sys.stderr, 'Problems with unpickling file %s: %s' % (fname, repr(ex))
                 finally:
                     f.close()

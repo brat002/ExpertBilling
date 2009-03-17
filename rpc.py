@@ -13,7 +13,7 @@ import time, datetime, os, sys, gc, traceback
 import Pyro.core, Pyro.protocol, Pyro.constants
 
 import isdlogger
-import log_adapter
+import saver, utilites
 
 from IPy import intToIp
 from hashlib import md5
@@ -714,7 +714,8 @@ if __name__ == "__main__":
      
     config.read("ebs_config.ini")
     logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
-    log_adapter.log_adapt = logger.log_adapt
+    utilites.log_adapt = logger.log_adapt
+    saver.log_adapt    = logger.log_adapt
     logger.lprint('Ebs RPC start')
     
     try:

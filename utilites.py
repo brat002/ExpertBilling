@@ -2,7 +2,7 @@
 
 from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
-from log_adapter import log_debug_, log_info_, log_warning_, log_error_
+#from log_adapter import log_debug_, log_info_, log_warning_, log_error_
 from period_utilities import in_period, in_period_info, settlement_period_info
 
 import re
@@ -22,7 +22,21 @@ except:
     print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
     from ssh_paramiko import SSHClient
 
-
+def log_info_(lstr, level=1):
+    log_adapt(lstr, level)
+    
+def log_debug_(lstr, level=0):
+    log_adapt(lstr, level)
+    
+def log_warning_(lstr, level=2):
+    log_adapt(lstr, level)
+    
+def log_error_(lstr, level=3):
+    log_adapt(lstr, level)
+    
+def log_adapt(lstr, level):
+    print lstr
+    
 class IPNAccount(object):
     def __init__(self):
         nas_ip=''

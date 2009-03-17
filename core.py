@@ -12,7 +12,7 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 
 import isdlogger
-import log_adapter
+import utilites, saver
 
 from decimal import Decimal
 from copy import copy, deepcopy
@@ -1764,7 +1764,8 @@ if __name__ == "__main__":
     #create logger
     logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file")) 
     
-    log_adapter.log_adapt = logger.log_adapt
+    utilites.log_adapt = logger.log_adapt
+    saver.log_adapt    = logger.log_adapt
     logger.lprint('core start')
     
     try:

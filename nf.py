@@ -15,7 +15,7 @@ import ConfigParser
 import socket, select, struct, datetime, time
 
 import isdlogger
-import log_adapter
+import saver
 
 
 from threading import Thread
@@ -803,7 +803,7 @@ if __name__=='__main__':
 
 
     logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
-    log_adapter.log_adapt = logger.log_adapt
+    saver.log_adapt = logger.log_adapt
     logger.lprint('Nf start')
     
     try:
