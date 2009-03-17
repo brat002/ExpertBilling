@@ -58,6 +58,10 @@ class isdlogger(object):
         if 1 >= self.loggingLevel:
             self.log_(self.levels[1], message)
             
+    '''for log adapter'''
+    def log_adapt(self, message, level):
+        if level >= self.loggingLevel:
+            self.log_(self.levels[level], message)        
             
     '''syslog log method'''
     def syslogLog(self, level, message):

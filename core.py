@@ -4,17 +4,17 @@ import IPy
 import hmac
 import zlib
 import signal
-import isdlogger
+import random
 import threading
 import dictionary
 import ConfigParser
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 
-
+import isdlogger
+import log_adapter
 
 from decimal import Decimal
-from constants import rules
 from copy import copy, deepcopy
 from db import Object as Object
 from daemonize import daemonize
@@ -22,12 +22,17 @@ from encodings import idna, ascii
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
 from collections import defaultdict
-from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
+
+
+from constants import rules
+from saver import allowedUsersChecker, setAllowedUsers
+from utilites import parse_custom_speed, parse_custom_speed_lst, cred
 from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
-from utilites import parse_custom_speed, parse_custom_speed_lst, cred, allowedUsersChecker, setAllowedUsers
+
+from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted, get_limit_speed
-import random
+
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -1445,7 +1450,7 @@ class AccountServiceThread(Thread):
         global curPerTarifCache, curPersSetpCache
         global curTimeAccNCache, curTimePerNCache, curTimeAccSrvCache
         global curOneTimeSrvCache, curAccParCache, curIPNSpCache, curOTSHistCache
-        global tp_asInPeriod
+        global tp_asInPeriod, allowedUsers
         i_fMem = 0
         while True:
             if suicideCondition[self.__class__.__name__]: break
@@ -1735,6 +1740,7 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
+    print "ebs: core: started"
     #main thread should not exit!
     while True:
         time.sleep(300)
@@ -1749,38 +1755,46 @@ if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha'
     sys.exit(1)
     
 if __name__ == "__main__":
-    if "-D" not in sys.argv:
+    if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
         
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-    
-    transaction_number = int(config.get("core", 'transaction_number'))
 
     #create logger
     logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file")) 
     
+    log_adapter.log_adapt = logger.log_adapt
     logger.lprint('core start')
-    pool = PooledDB(
-        mincached=7,  maxcached=20,
-        blocking=True,creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
-                                                               config.get("db", "host"),config.get("db", "password")))
     
-    #last cache renewal date
-    curAT_date  = None
-    #lock for cache operations
-    curAT_lock  = Lock()
-    
-    suicideCondition = {}
-    #function that returns number of allowed users
-    #create allowedUsers
-    allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
-    
-    logger.info("Allowed users: %s", (allowedUsers(),))
-    
-    fMem = pfMemoize()    
-    
-    #--------------------------------------------------
-    main()
+    try:
+        transaction_number = int(config.get("core", 'transaction_number'))
+        pool = PooledDB(
+            mincached=7,  maxcached=20,
+            blocking=True,creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
+                                                                   config.get("db", "host"),config.get("db", "password")))
+        
+        #last cache renewal date
+        curAT_date  = None
+        #lock for cache operations
+        curAT_lock  = Lock()
+        
+        suicideCondition = {}
+        #function that returns number of allowed users
+        #create allowedUsers
+        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
+        
+        logger.info("Allowed users: %s", (allowedUsers(),))
+        
+        fMem = pfMemoize()    
+        
+        #--------------------------------------------------
+        
+        print "ebs: core: configs read, about to start"
+        main()
+        
+    except Exception, ex:
+        print 'Exception in core, exiting: ', repr(ex)
+        logger.error('Exception in core, exiting: %s', repr(ex))
 

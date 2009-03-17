@@ -11,9 +11,11 @@ import asyncore
 import datetime
 import traceback
 import dictionary
-import isdlogger
 import ConfigParser
 import psycopg2, psycopg2.extras
+
+import isdlogger
+import log_adapter
 
 from auth import Auth
 from time import clock
@@ -22,6 +24,8 @@ from daemonize import daemonize
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
 from collections import deque, defaultdict
+
+from saver import allowedUsersChecker, setAllowedUsers
 from utilites import in_period,in_period_info, create_speed_string, get_corrected_speed
 from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
@@ -928,7 +932,7 @@ class CacheRoutine(Thread):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         
-        global curCachesDate, curCachesLock
+        global curCachesDate, curCachesLock, allowedUsers
         global curNasCache, curATCache_userIdx, curATCache_macIdx        
         global tp_asInPeriod, curDefSpCache, curNewSpCache, account_speed_limit_cache
         
@@ -953,6 +957,7 @@ class CacheRoutine(Thread):
                     LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id ;""", (tmpDate,))
                 connection.commit()                
                 accts = cur.fetchall()
+                allowedUsersChecker(allowedUsers, lambda: len(accts))
                 
                 cur.execute("""SELECT id, secret, type, multilink, ipaddress FROM nas_nas;""")
                 connection.commit()
@@ -1134,6 +1139,7 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
+    print "ebs: rad: started"
     while 1: 
         asyncore.poll(0.01)
         
@@ -1142,40 +1148,55 @@ if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'xubuntu', 'ken
     sys.exit(1)
 
 if __name__ == "__main__":
-    if "-D" not in sys.argv:
+    if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
+        
     config = ConfigParser.ConfigParser()
     if os.name=='nt' and w32Import:
         setpriority(priority=4)
     config.read("ebs_config.ini")        
     dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
     
+    
     logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file")) 
-    #write profiling info?
-    writeProf = logger.writeInfoP()         
+    log_adapter.log_adapt = logger.log_adapt
     logger.lprint('Radius start')
-    pool = PooledDB(
-        mincached=3, maxcached=10,
-        blocking=True, creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                               config.get("db", "host"), config.get("db", "password")))
     
+    try:
+        #write profiling info?
+        writeProf = logger.writeInfoP()         
+        
+        pool = PooledDB(
+            mincached=3, maxcached=10,
+            blocking=True, creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                   config.get("db", "host"), config.get("db", "password")))
+        
+        
+        suicideCondition = {}
+        curCachesDate = None
+        curCachesLock = Lock()
+        fMem = pfMemoize()
     
-    suicideCondition = {}
-    curCachesDate = None
-    curCachesLock = Lock()
-    fMem = pfMemoize()
-
-    try:
-        common_vpn = config.get("radius", "common_vpn")
-    except Exception, e: common_vpn=False
-
-    try:
-        debug_mode = int(config.get("radius", "debug_mode"))
-    except Exception, e: debug_mode=0
-
-    try:
-        session_timeout = int(config.get("dhcp", "session_timeout"))
-    except Exception, e: session_timeout=86400
+        try:
+            common_vpn = config.get("radius", "common_vpn")
+        except Exception, e: common_vpn=False
     
-    main()
+        try:
+            debug_mode = int(config.get("radius", "debug_mode"))
+        except Exception, e: debug_mode=0
+    
+        try:
+            session_timeout = int(config.get("dhcp", "session_timeout"))
+        except Exception, e: session_timeout=86400
+        
+        
+        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        allowedUsers()
+        #-------------------
+        print "ebs: rad: configs read, about to start"
+        main()
+    except Exception, ex:
+        print 'Exception in rpc, exiting: ', repr(ex)
+        logger.error('Exception in rpc, exiting: %s', repr(ex))
+        

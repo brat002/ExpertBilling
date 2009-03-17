@@ -9,11 +9,13 @@ import os, sys
 import marshal
 import asyncore
 import psycopg2
-import isdlogger
 import threading
 import traceback
 import ConfigParser
 import socket, select, struct, datetime, time
+
+import isdlogger
+import log_adapter
 
 
 from threading import Thread
@@ -21,7 +23,7 @@ from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
-from saver import graceful_loader, graceful_saver, allowedUsersChecker
+from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 try:    import mx.DateTime
 except: pass
@@ -48,7 +50,7 @@ class reception_server(asyncore.dispatcher):
             logger.error("NF server exception: %s",(repr(ex),))
         
     def writable(self):
-        return (0)
+        return 0
     
 class nfDequeThread(Thread):
     '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
@@ -590,7 +592,7 @@ class ServiceThread(Thread):
         global nascache, ipncache, vpncache, cachesRead
         global nodesCache, groupsCache
         global class_groupsCache, tarif_groupsCache
-        global nfFlowCache
+        global nfFlowCache, allowedUsers
         while True:
             if suicideCondition[self.tname]: break
             cur = connection.cursor()
@@ -610,7 +612,7 @@ class ServiceThread(Thread):
                 tarif_groups = cur.fetchall()
                 connection.commit()
                 cur.close()
-                
+                allowedUsersChecker(allowedUsers, lambda: len(accts))
                 #nas cache creation
                 nascache = dict(nasvals)
                 del nasvals            
@@ -774,7 +776,9 @@ def main ():
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')    
-    reception_server(config.get("nf", "host"), int(config.get("nf", "port")))            
+    reception_server(config.get("nf", "host"), int(config.get("nf", "port"))) 
+    
+    print "ebs: nf: started"
     while 1: 
         asyncore.poll(0.010)
 
@@ -785,7 +789,7 @@ if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa'
     sys.exit(1)
 
 if __name__=='__main__':
-    if "-D" not in sys.argv:
+    if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
         
 
@@ -797,97 +801,110 @@ if __name__=='__main__':
     
     config.read("ebs_config.ini")
 
-    pool = PooledDB(
+
+    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
+    log_adapter.log_adapt = logger.log_adapt
+    logger.lprint('Nf start')
+    
+    try:
+        #write profiling info predicate
+        writeProf = logger.writeInfoP()
+        
+        pool = PooledDB(
         mincached=1,  maxcached=9,
         blocking=True,creator=psycopg2,
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                config.get("db", "host"), config.get("db", "password")))
     
-    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
-    logger.lprint('Nf start')
-    #write profiling info predicate
-    writeProf = logger.writeInfoP()
-    #get socket parameters. AF_UNIX support
-    if config.get("nfroutine_nf", "usock") == '0':
-        coreHost = config.get("nfroutine_nf_inet", "host")
-        corePort = int(config.get("nfroutine_nf_inet", "port"))
-        coreAddr = (coreHost, corePort)
+            
+        #get socket parameters. AF_UNIX support
+        if config.get("nfroutine_nf", "usock") == '0':
+            coreHost = config.get("nfroutine_nf_inet", "host")
+            corePort = int(config.get("nfroutine_nf_inet", "port"))
+            coreAddr = (coreHost, corePort)
+            
+        elif config.get("nfroutine_nf", "usock") == '1':
+            coreHost = config.get("nfroutine_nf_unix", "host")
+            corePort = 0
+            coreAddr = (coreHost,)
+        else:
+            raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         
-    elif config.get("nfroutine_nf", "usock") == '1':
-        coreHost = config.get("nfroutine_nf_unix", "host")
-        corePort = 0
-        coreAddr = (coreHost,)
-    else:
-        raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
+        sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
+        recover    = (config.get("nfroutine_nf", "recover") == '1')
+        recoverAtt = (config.get("nfroutine_nf", "recoverAttempted") == '1')
+        saveDir = config.get("nf", "save_dir")
+        
+        checkClasses = (config.get("nf", "checkclasses") == '1')
+        #get a dump' directrory string and check whethet it's writable
+        dumpDir = config.get("nfroutine_nf", "dump_dir")
+        try:
+            tfname = ''.join((dumpDir,'/','nf_', str(time.time()), '.dmp'))
+            dfile = open(tfname, 'wb')
+            dfile.write("testtesttesttesttest")
+            dfile.close()
+            os.remove(tfname)
+        except Exception, ex:
+            raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
     
-    sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
-    recover    = (config.get("nfroutine_nf", "recover") == '1')
-    recoverAtt = (config.get("nfroutine_nf", "recoverAttempted") == '1')
-    saveDir = config.get("nf", "save_dir")
-    
-    checkClasses = (config.get("nf", "checkclasses") == '1')
-    #get a dump' directrory string and check whethet it's writable
-    dumpDir = config.get("nfroutine_nf", "dump_dir")
-    try:
-        tfname = ''.join((dumpDir,'/','nf_', str(time.time()), '.dmp'))
-        dfile = open(tfname, 'wb')
-        dfile.write("testtesttesttesttest")
-        dfile.close()
-        os.remove(tfname)
+        suicideCondition = {}
+        cachesRead = False
+        #aggregation cache
+        dcache   = {}
+        #caches for Nas data, account IPN, VPN address indexes
+        nascache = {}
+        ipncache = {}
+        vpncache = {}
+        
+        #cache for groups data
+        groupsCache = {}
+        #cache for group->classes
+        class_groupsCache = defaultdict(set)
+        #cache for tarif->groups
+        tarif_groupsCache = {}
+        #locks
+        dcacheLock = threading.Lock()
+        fqueueLock = threading.Lock()
+        dbLock = threading.Lock()
+        
+        nfFlowCache = None
+        packetCount = None
+        #queues
+        flowQueue = deque()
+        databaseQueue = deque()
+        fnameQueue = deque()
+        fnameLock = threading.Lock()
+        
+        #cache for class->nodes
+        nodesCache = []
+        nfQueue = deque()
+        nfqLock = threading.Lock()
+        
+        nfFLOW_TYPES = {
+            5 : (header5, flow5),
+          }
+        
+        #numeric values
+        sleepTime = 291.0
+        aggrTime = 120.0
+        #aggrTime = 60.0
+        aggrNum = 667
+        try:
+            sleepTime = float(config.get("nf", "sleeptime"))
+            aggrTime  = float(config.get("nf", "aggrtime"))
+            aggrNum   = float(config.get("nf", "aggrnum"))
+        except:
+            pass
+        
+        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        allowedUsers()
+        test_now = time.time()
+        #-------------------
+        print "ebs: nf: configs read, about to start"
+        main()
     except Exception, ex:
-        raise Exception("Dump directory '"+ dumpDir+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
-
-    suicideCondition = {}
-    cachesRead = False
-    #aggregation cache
-    dcache   = {}
-    #caches for Nas data, account IPN, VPN address indexes
-    nascache = {}
-    ipncache = {}
-    vpncache = {}
+        print 'Exception in nf, exiting: ', repr(ex)
+        logger.error('Exception in nf, exiting: %s', repr(ex))
     
-    #cache for groups data
-    groupsCache = {}
-    #cache for group->classes
-    class_groupsCache = defaultdict(set)
-    #cache for tarif->groups
-    tarif_groupsCache = {}
-    #locks
-    dcacheLock = threading.Lock()
-    fqueueLock = threading.Lock()
-    dbLock = threading.Lock()
     
-    nfFlowCache = None
-    packetCount = None
-    #queues
-    flowQueue = deque()
-    databaseQueue = deque()
-    fnameQueue = deque()
-    fnameLock = threading.Lock()
     
-    #cache for class->nodes
-    nodesCache = []
-    nfQueue = deque()
-    nfqLock = threading.Lock()
-    
-    nfFLOW_TYPES = {
-        5 : (header5, flow5),
-      }
-    
-    #numeric values
-    sleepTime = 291.0
-    aggrTime = 120.0
-    #aggrTime = 60.0
-    aggrNum = 667
-    try:
-        sleepTime = float(config.get("nf", "sleeptime"))
-        aggrTime  = float(config.get("nf", "aggrtime"))
-        aggrNum   = float(config.get("nf", "aggrnum"))
-    except:
-        pass
-    
-    test_now = time.time()
-    main()
-
-
-

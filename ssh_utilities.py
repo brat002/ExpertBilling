@@ -6,13 +6,13 @@ def ssh_execute(user, host, password, command):
     ssession = pexpect.spawn('ssh -l %s %s %s'%(user, host, command))
     reply = ssession.expect([pexpect.TIMEOUT, ssh_answer, 'password: '])
     if reply == 0: # Timeout
-        return 'ERROR:' + str(ssession.before) + ':' + str(ssession.after)  
+        raise ExceptionPxssh('ERROR:' + str(ssession.before) + ':' + str(ssession.after))
     if reply == 1: # SSH does not have the public key. Just accept it.
         ssession.sendline ('yes')
         ssession.expect ('password: ')
         reply = ssession.expect([pexpect.TIMEOUT, 'password: '])
         if reply == 0: # Timeout
-            return 'ERROR:' + str(ssession.before) + ':' + str(ssession.after)      
+            ExceptionPxssh('ERROR:' + str(ssession.before) + ':' + str(ssession.after))
     ssession.sendline(password)
     ssession.expect(pexpect.EOF)
     return 'OK:' + str(ssession.before) + ':' + str(ssession.after)

@@ -4,12 +4,13 @@
 import cPickle
 import signal
 import asyncore
-import isdlogger
 import threading
 import ConfigParser
-
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
+
+import isdlogger
+import log_adapter
 
 from IPy import intToIp
 from marshal import dumps, loads
@@ -43,6 +44,8 @@ class Picker(object):
         while len(self.data) > 0:
             #yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
             yield self.data.popitem()
+    def get_data(self):
+        return self.data.items()
 
 #maybe save if database errors???
 class DepickerThread(Thread):
@@ -70,14 +73,17 @@ class DepickerThread(Thread):
                 a = time.clock()
                 now = datetime.datetime.now()
                 icount = 0
-                ilist = picker.get_list()
-                ilen = len(picker.data)
+                
+                #ilist = picker.get_list()
+                #ilen = len(picker.data)
+                ilist = picker
+                ilen = len(picker)
                 for acc_tf_id, summ in ilist:
                     #debit accounts
                     transaction(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
                                 tarif=acc_tf_id[1], summ=summ, description=u"", created=now)
                     icount += 1
-                connection.commit()
+                    connection.commit()
                 if writeProf:
                     logger.info("%s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
             except IndexError, ierr:
@@ -88,6 +94,8 @@ class DepickerThread(Thread):
                 continue             
             except psycopg2.OperationalError, p2oerr:
                 logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
+                try: cur = connection.cursor()
+                except: pass
             except psycopg2.ProgrammingError, p2perr:
                 logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
             except psycopg2.InterfaceError, p2ierr:
@@ -391,7 +399,8 @@ class NetFlowRoutine(Thread):
                 if (time.time() > pickerTime + 300.0):
                     #add picker to a depicker queue
                     pickerLock.acquire()
-                    depickerQueue.append(gPicker)                    
+                    depickerQueue.append(gPicker.get_data())
+                    del gPicker
                     gPicker = Picker()
                     pickerTime = time.time()
                     pickerLock.release()
@@ -544,12 +553,6 @@ class NetFlowRoutine(Thread):
 
                             #direction
                             
-                            '''if flow_dir=="INPUT":
-                                d = 2
-                            elif flow_dir=="OUTPUT":
-                                d = 3
-                            else:
-                                d = 3'''
                             if flow_dir=="INPUT":
                                 d = 2
                             else:
@@ -604,6 +607,8 @@ class NetFlowRoutine(Thread):
             except psycopg2.OperationalError, p2oerr:
                 time.sleep(1)
                 logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
+                try: cur = connection.cursor()
+                except: pass
             except psycopg2.ProgrammingError, p2perr:
                 logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
             except psycopg2.InterfaceError, p2ierr:
@@ -940,7 +945,9 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     #asyncore.
-    NfAsyncUDPServer(coreAddr)            
+    NfAsyncUDPServer(coreAddr)
+    
+    print "ebs: nfroutine: started"
     while 1: 
         asyncore.poll(0.010)
 #===============================================================================
@@ -951,97 +958,106 @@ if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha'
     sys.exit(1)
     
 if __name__ == "__main__":
-    if "-D" not in sys.argv:
+    if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
         
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-    if config.get("nfroutine_nf", "usock") == '0':
-        coreHost = config.get("nfroutine_nf_inet", "host")
-        corePort = int(config.get("nfroutine_nf_inet", "port"))
-        coreAddr = (coreHost, corePort)
-    elif config.get("nfroutine_nf", "usock") == '1':
-        coreHost = config.get("nfroutine_nf_unix", "host")
-        corePort = 0
-        coreAddr = (coreHost,)
-    else:
-        raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
-    #temp save on restart or graceful stop
-    saveDir = config.get("nfroutine", "save_dir")
-    #store stat. for old tarifs and accounts?
-    store_na_tarif   = False
-    store_na_account = False
-    if (config.get("nfroutine", "store_na_tarif")  =='True') or (config.get("nfroutine", "store_na_tarif")  =='1'):
-        store_na_tarif   = True
-    if (config.get("nfroutine", "store_na_account")=='True') or (config.get("nfroutine", "store_na_account")=='1'):
-        store_na_account = True
+
         
     logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file")) 
-    #write profiling info?
-    writeProf = logger.writeInfoP()         
+    log_adapter.log_adapt = logger.log_adapt
     logger.lprint('Nfroutine start')
+    try:
+        
+        if config.get("nfroutine_nf", "usock") == '0':
+            coreHost = config.get("nfroutine_nf_inet", "host")
+            corePort = int(config.get("nfroutine_nf_inet", "port"))
+            coreAddr = (coreHost, corePort)
+        elif config.get("nfroutine_nf", "usock") == '1':
+            coreHost = config.get("nfroutine_nf_unix", "host")
+            corePort = 0
+            coreAddr = (coreHost,)
+        else:
+            raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
+        #temp save on restart or graceful stop
+        saveDir = config.get("nfroutine", "save_dir")
+        #store stat. for old tarifs and accounts?
+        store_na_tarif   = False
+        store_na_account = False
+        if (config.get("nfroutine", "store_na_tarif")  =='True') or (config.get("nfroutine", "store_na_tarif")  =='1'):
+            store_na_tarif   = True
+        if (config.get("nfroutine", "store_na_account")=='True') or (config.get("nfroutine", "store_na_account")=='1'):
+            store_na_account = True
+        
+        #write profiling info?
+        writeProf = logger.writeInfoP()  
+        
+        pool = PooledDB(
+            mincached=4,  maxcached=20,
+            blocking=True,creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                   config.get("db", "host"), config.get("db", "password")))
+        persist = PersistentDB(
+            setsession=["SET synchronous_commit TO OFF;"],
+            creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
+                                                                   config.get("db", "host"), config.get("db", "password")))
     
-    pool = PooledDB(
-        mincached=4,  maxcached=20,
-        blocking=True,creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                               config.get("db", "host"), config.get("db", "password")))
-    persist = PersistentDB(
-        setsession=["SET synchronous_commit TO OFF;"],
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
-                                                               config.get("db", "host"), config.get("db", "password")))
-
-    #--------------------------------------------------------
-    
-    suicideCondition = {}
-    #queue for Incoming packet lists
-    nfIncomingQueue = deque()
-    #lock for nfIncomingQueue operations
-    nfQueueLock = Lock()
-    
-    #last cache renewal date
-    curAT_date  = None
-    #lock for cache operations
-    curAT_lock  = Lock()
-    
-    #sendflag prefix
-    sendFlag = ''
-    
-    
-    #group statistinc an global statistics objects    
-    #key = account, group id , time
-    #[(1,2,3)][0][4]['INPUT']
-    #[(1,2, )][1] = group info
-    #lambda: [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), None])
-    groupAggrDict = {}   
-    #key - account_id, time
-    #[(1,2,3)][0][4]['INPUT']
-    #[(1,2, )][1] = nas etc
-    statAggrDict = {}   
-    
-    groupAggrTime = 300    
-    statAggrTime  = 1800
-    
-    groupDeque = deque()
-    statDeque  = deque()    
-    groupLock = Lock()
-    statLock  = Lock()    
-    
-    depickerQueue = deque()
-    depickerLock  = Lock()
-    
-    gPicker = Picker()
-    pickerLock = Lock()
-    pickerTime = time.time() + 5
-    
-    #function that returns number of allowed users
-    #create allowedUsers
-    allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
-    
-    allowedUsers()
-    
-    fMem = pfMemoize()    
+        #--------------------------------------------------------
+        
+        suicideCondition = {}
+        #queue for Incoming packet lists
+        nfIncomingQueue = deque()
+        #lock for nfIncomingQueue operations
+        nfQueueLock = Lock()
+        
+        #last cache renewal date
+        curAT_date  = None
+        #lock for cache operations
+        curAT_lock  = Lock()
+        
+        #sendflag prefix
+        sendFlag = ''
+        
+        
+        #group statistinc an global statistics objects    
+        #key = account, group id , time
+        #[(1,2,3)][0][4]['INPUT']
+        #[(1,2, )][1] = group info
+        #lambda: [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), None])
+        groupAggrDict = {}   
+        #key - account_id, time
+        #[(1,2,3)][0][4]['INPUT']
+        #[(1,2, )][1] = nas etc
+        statAggrDict = {}   
+        
+        groupAggrTime = 300    
+        statAggrTime  = 1800
+        
+        groupDeque = deque()
+        statDeque  = deque()    
+        groupLock = Lock()
+        statLock  = Lock()    
+        
+        depickerQueue = deque()
+        depickerLock  = Lock()
+        
+        gPicker = Picker()
+        pickerLock = Lock()
+        pickerTime = time.time() + 5
+        
+        #function that returns number of allowed users
+        #create allowedUsers
+        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        allowedUsers()
+        
+        fMem = pfMemoize()    
     
     
-    main()
+        #-------------------
+        print "ebs: nfroutine: configs read, about to start"
+        main()
+    except Exception, ex:
+        print 'Exception in nfroutine, exiting: ', repr(ex)
+        logger.error('Exception in nfroutine, exiting: %s', repr(ex))

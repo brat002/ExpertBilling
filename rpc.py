@@ -5,12 +5,15 @@ import zlib
 import signal
 import hashlib
 import asyncore
-import isdlogger
+
 import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import Pyro.core, Pyro.protocol, Pyro.constants
+
+import isdlogger
+import log_adapter
 
 from IPy import intToIp
 from hashlib import md5
@@ -701,28 +704,38 @@ def main():
     except: logger.lprint('NO SIGTERM!')
     
     #main thread should not exit!
+    print "ebs: rpc: started"
     while True:
         time.sleep(300)
         
 if __name__ == "__main__":
-    if "-D" not in sys.argv:
+    if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
      
     config.read("ebs_config.ini")
     logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
-             
-    maxUsers = int(config.get("rpc", "max_users"))
+    log_adapter.log_adapt = logger.log_adapt
     logger.lprint('Ebs RPC start')
-    pool = PooledDB(
-        mincached=1,
-        maxcached=10,
-        blocking=True,
-        #maxusage=20,
-        setsession=["SET statement_timeout = 6000000;"],
-        creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                               config.get("db", "username"),
-                                                               config.get("db", "host"),
-                                                               config.get("db", "password")))
     
-    main()
+    try:
+        maxUsers = int(config.get("rpc", "max_users"))
+    
+
+        pool = PooledDB(
+            mincached=1,
+            maxcached=10,
+            blocking=True,
+            #maxusage=20,
+            setsession=["SET statement_timeout = 6000000;"],
+            creator=psycopg2,
+            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
+                                                                   config.get("db", "username"),
+                                                                   config.get("db", "host"),
+                                                                   config.get("db", "password")))
+        
+        #-------------------
+        print "ebs: rpc: configs read, about to start"
+        main()
+    except Exception, ex:
+        print 'Exception in rpc, exiting: ', repr(ex)
+        logger.error('Exception in rpc , exiting: %s', repr(ex))

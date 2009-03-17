@@ -58,10 +58,8 @@ class Object(object):
 
         try:
             self.__dict__['id']
-            print "has_id"
             sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except:
-            print "without id"
             sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
             sql = sql.replace("'None'", 'Null')
             sql = sql.replace("'Null'", 'Null')
@@ -213,20 +211,20 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
     #print "!!!", common_vpn, at
     
     sql=u"""
-    SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
-    bsat.tarif_id, accessparameters.access_type, account.status, 
-    account.balance_blocked, (account.ballance+account.credit) as ballance, 
-    account.disabled_by_limit, account.vpn_speed,
-    tariff.active
-    FROM billservice_account as account
-    JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
-    JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
-    JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
-    WHERE %s bsat.datetime<now() and account.username='%s' %s AND 
-    (((account.allow_vpn_null=False and account.ballance+account.credit>0) or (account.allow_vpn_null=True)) 
-    AND
-    ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
-    ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)
+            SELECT account.username, account.password, account.nas_id, account.vpn_ip_address,
+            bsat.tarif_id, accessparameters.access_type, account.status, 
+            account.balance_blocked, (account.ballance+account.credit) as ballance, 
+            account.disabled_by_limit, account.vpn_speed,
+            tariff.active
+            FROM billservice_account as account
+            JOIN billservice_accounttarif as bsat ON bsat.account_id=account.id
+            JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
+            JOIN billservice_accessparameters as accessparameters on accessparameters.id = tariff.access_parameters_id 
+            WHERE %s bsat.datetime<now() and account.username='%s' %s AND 
+            (((account.allow_vpn_null=False and account.ballance+account.credit>0) or (account.allow_vpn_null=True)) 
+            AND
+            ((account.allow_vpn_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_vpn_null=True)))=True 
+            ORDER BY bsat.datetime DESC LIMIT 1""" % (at, username, ins)
     #print sql
     cursor.execute(sql)
 
@@ -272,11 +270,6 @@ def transaction(cursor, account, approved, type, summ, description, created=None
                     """ , (bill, account, approved, type, tarif , summ, description, created))
 
     tr_id=cursor.fetchone()[0]
-    #print tr_id
-
-    #cursor.execute("""""" % ())
-
-    #print "transaction_id=", cursor.fetchall()
     return tr_id
 
 def transaction_noret(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):

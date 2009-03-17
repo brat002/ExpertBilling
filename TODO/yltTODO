@@ -1,18 +1,23 @@
 !!! nfroutine - check connections! if there\re database errors - save data into files!
+!!!nf - if database errors - save data
+-- save method - if exception - put data back into queue
+monitor queues - length too big - send SLP!
+add try/exc to ServiceThreads
+add an option - save if no DB connection - use old caches etc
+add a DumperThread which would dump data and be called if connection is restored
+!!!periodicalservice tp - sqlfuns
+!!!refactor ebs.sql
+!!!grepper - blabla
+!!!cache creator based on __slots__classes
+!!!nf - nfroutine workflow article
+!!!rewrite cache reread on SIGHUP
+
+#python 2.6 check named tuples????? marshalable??
 
 
 
-
-
-
-
-!try autocommit on testsuite
-
-python db2-api autocommit
 write an nf generator based on classes, ports, hops, etc
 get from the db info
-construct packets
- nfs packet generator
 rad packet generator
 testerov na adminku
 grepper
@@ -44,8 +49,6 @@ class Cacher(object):
 store in file, calc start/end date, calc length - process
 for paged reports - also! - select 2-4 pages!
 
-SELECT * from temp_classinf where ARRAY[5] <@ (clinf).classes;
-SELECT (clinf).classes, (clinf).octets from temp_classinf;
 
 
 TUNNEL PYRO THROUGH SSH! ?? for every client? hmmmm
