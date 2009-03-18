@@ -67,6 +67,7 @@ TEMPLATE_LOADERS = (
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.media',
+    'notification.context_processors.footer',
     'notification.context_processors.notices',
 )
 

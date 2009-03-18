@@ -2,6 +2,8 @@
 from dateutil.relativedelta import relativedelta
 import datetime
 from django.http import HttpResponse
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 from django import template
 from django.conf import settings
 from billservice.forms import LoginForm
@@ -80,9 +82,10 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         
 def is_login_user(request):         
    form = LoginForm()
-   context = template.Context({
-                               'MEDIA_URL':settings.MEDIA_URL,
-                               'form':form,
-                               })
-   content = template.loader.get_template('registration/login.html').render(context)
-   return HttpResponse(content)
+   context = {
+               'MEDIA_URL':settings.MEDIA_URL,
+               'form':form,
+               }
+   return render_to_response('registration/login.html',
+                              context,
+                              context_instance=RequestContext(request))

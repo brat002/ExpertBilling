@@ -2,6 +2,16 @@
 import datetime
 from django.core.cache import cache
 from django.conf import settings
+from django.http import HttpResponseRedirect
+from billservice.models import Operator 
+
+
+
+def footer(request):
+    operator = Operator.objects.all()[:1]
+    return {
+            'operator':operator,
+            }
 
 def notices(request):
     if request.session.has_key('user'):
