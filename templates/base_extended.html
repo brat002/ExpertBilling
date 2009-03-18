@@ -23,3 +23,20 @@
 {% endblock %}
 
 {% endif %}
+
+
+{% block footer %}
+{% if operator %}
+<div class="footer_bg">
+	<div class="content_align s-11">
+		<div class="footer_ebs_site f-right bold"><a href="http://www.expertbilling.ru/">www.expertbilling.ru</a></div>
+		<div class="footer operator s-11 bold f-left">
+			{% for oper in operator %}
+				<div><span class="bold">Информация о провайдере:</span> {{ oper.organization }}, {{ oper.postaddress }}, тел. {{ oper.phone }}, факс {{ oper.fax }}</div>
+				<div><span class="bold">E-mail:</span> {{ oper.email }}</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}

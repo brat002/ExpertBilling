@@ -317,3 +317,36 @@ table.statistic_table {
 .trafficlimit_margin {
 	margin-top:-20px;
 }
+
+
+.wrapper {
+	min-height: 635px;
+	height: auto !important;
+	height: 635px;
+}
+
+.footer_bg {
+	background:url(../img/design/bg_footer.gif) repeat-x;
+	height:38px;
+	padding-top:11px;
+}
+
+.footer {
+	background:url(../img/design/info_logo.gif) no-repeat;
+	padding-left:30px;
+}
+
+.operator span, .footer_ebs_site a {
+	color:#2f4d6d;
+}
+
+.footer_ebs_site {
+	margin-top:5px;
+	background:url(../img/design/ebs_img.gif) no-repeat;
+	padding-left:20px;
+	height:20px;
+}
+
+.footer_ebs_site a {
+	text-decoration:none;
+}
