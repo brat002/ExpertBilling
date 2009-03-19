@@ -87,7 +87,7 @@ def _4_():
 	#  __4 - main module code
 	#  __5 - module
 	#  __6 - list of modules
-	global _0_, _1_, _2_, _3_
+	global _0_, _1_, _2_, _3_, _0om_
 	__0 = [
 		_x_( 'X19tYWluX18=' ), # '__main__'
 		_x_( 'X19jb2RlX18=' ), # '__code__'
@@ -95,6 +95,7 @@ def _4_():
 	import imp, marshal
 	__1 = _1_()
 	__6 = []
+	__od = {}
 	# unpacking modules
 	print "mods dict len: ", len(_0_)
 	for __2 in _0_:
@@ -103,7 +104,11 @@ def _4_():
 			__5 = imp.new_module( __3 )
 			print "About to marshal setattr ", __3
 			setattr( __5, __0[ 1 ], marshal.loads( _z_( _3_( _0_[ __2 ], __1 ) ) ) ) # setting a code object
-			__6.append( __5 )
+			if __2 in _0om_:
+			    print 'module in olist: ', __3
+			    __od[__2] = __5
+			else:
+			    __6.append( __5 )
 			sys.modules[ __3 ] = __5
 		else:
 		        print "About to marshal __4 ", __3
@@ -111,6 +116,9 @@ def _4_():
 	del __1, _0_, _1_, _2_, _3_ # deleting all traces from the memory
 	# loading modules
 	for __5 in __6: exec getattr( __5, __0[ 1 ] ) in __5.__dict__
+	for __omk in _0om_:
+	    __5 = __od[__omk]
+	    exec getattr( __5, __0[ 1 ] ) in __5.__dict__
 	exec __4 in globals() # running main module
 
 # main()
@@ -189,6 +197,7 @@ def _reset_flags():
 			_DEFAULT_PROT_KEY,    # protection key for encryption
 		'IGNORE_MISSING': False,   # ignore missing modules
 		'SEARCH_PATH': None,       # path to search local modules
+		'INIT_ORDER': [],          #impose some order on modules initialization
 		'ADDITIONAL_MODULES': {    # additional modules that will be freezed
 			'os': None,
 			'commands': None,
@@ -224,6 +233,8 @@ Options:
                          --amods='pkg.io:io.py,data:data.py')
   --nloc=NAMES           separated by commas list of names of
                          modules that must not be frozen
+  --order=NAMES          separated by commas ordered list of names of
+                         modules that must be initialized in that order
   -i                     ignore missing modules
  Without any arguments freezer attempts to locate and
  execute a file 'Freezefile' in the current directory.
@@ -408,6 +419,7 @@ def _get_mods():
 		if m.__file__.startswith( _flags[ 'SEARCH_PATH' ] ):
 			if not m.__code__: raise FreezerError( "can not freeze binary module '%s' in '%s'" % ( m.__name__, m.__file__ ) )
 			result.append( m )
+			print 'module appended: ', m.__name__
 	print '=================================================='
 	print 'Selecting modules for freezing:'
 	for m in result:
@@ -422,18 +434,14 @@ def _create_proj():
 	for m in _get_mods():
 		print "Dumping '%s'" % m.__name__
 		mods[ zlib.compress( m.__name__, 9 ) ] = _encrypt_str( _pack_code( _dump_code( m.__code__ ) ), _flags[ 'PROTECTION_KEY' ] )
-	if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY:
-		protbc = _encrypt_str( _dump_code( compile(
-			'_0_ = ' + `mods` + _PROTECTION_CHUNK_0 + _PROTECTION_CHUNK_1 + _PROTECTION_CHUNK_3,
-			'',
-			'exec'
-		) ) )
-	else:
-		protbc = _encrypt_str( _dump_code( compile(
-			'_0_ = ' + `mods` + _PROTECTION_CHUNK_0 + _PROTECTION_CHUNK_2 + _PROTECTION_CHUNK_3,
-			'',
-			'exec'
-		) ) )
+	
+	print "Ordered modules: ", repr(_flags[ 'INIT_ORDER' ]) 
+	ordered_mods = [zlib.compress( m_name.strip(), 9 ) for m_name in  _flags[ 'INIT_ORDER' ]]
+	_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1 if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY else _PROTECTION_CHUNK_2
+	protbc = _encrypt_str( _dump_code( compile(
+	'_0_ = ' + `mods` + '\n' + '_0om_ = ' + `ordered_mods` + '\n' + _PROTECTION_CHUNK_0 + _KEY_PROTECTION_CHUNK + _PROTECTION_CHUNK_3,
+	'',
+	'exec') ) )
 	_write2file( f, protbc, '__prot__' );
 	f.write( _CODE_CHUNK_0 )
 	f.write( '\t{ "__main__", __prot__, %d },\n' % len( protbc ) )
@@ -575,7 +583,7 @@ def _parse_cmd():
 	opts, args = getopt.getopt(
 		sys.argv[ 1 : ],
 		'hk:i',
-		[ 'help', 'key=', 'nloc=', 'amods=' ]
+		[ 'help', 'key=', 'nloc=', 'amods=', 'order=']
 	)
 	for o in opts:
 		if   o[ 0 ] == '-h' or o[ 0 ] == '--help' :
@@ -591,6 +599,8 @@ def _parse_cmd():
 				else: _flags[ 'ADDITIONAL_MODULES' ][ modname ] = None
 		elif o[ 0 ] == '--nloc':
 			_flags[ 'NONLOCAL' ].extend( o[ 1 ].split( ',' ) )
+		elif o[ 0 ] == '--order':
+			_flags[ 'INIT_ORDER' ].extend( o[ 1 ].split( ',' ) )
 	if args:
 		_flags[ 'PY_FILE' ] = args[ 0 ]
 		if len( args ) == 2: _flags[ 'C_FILE' ] = args[ 1 ]

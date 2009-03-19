@@ -29,7 +29,7 @@ portdict = {\
     '32773': 'rpc.ttdbserverd', '32776': 'rpc.spray', '32777': 'rpc.walld', '32779': 'rpc.cmsd', '38036': 'timestep', '40193': 'Novell', '41524': 'arcserve', '45000': 'Cisco NetRanger'\
     }
 
-tmpChart = XYChart(800,300)
+
 #tmpChart.gradientColor(0, 300, 0, 800, 0xa2c1e6, 0xe7f1fe)
 
 #pychartdir.defaultPalette = pychartdir.transparentPalette

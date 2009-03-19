@@ -4,6 +4,28 @@ from itertools import islice, izip
 import copy
 import time
 import itertools
+
+#dirty dirty dirty
+"""
+class bpplotAdapter(object): 
+    '''Adapter class for DB connection'''
+    
+    rCursor = None
+    
+    @staticmethod
+    def getdata(selstr):
+        '''Connects to the database using #cstr# and executes 
+        @selstr - query (SELECT) string, returns selected data'''
+        #print "query: " + selstr 
+        curs = bpplotAdapter.rCursor
+        try:
+            curs.execute(selstr)
+        except psycopg2.ProgrammingError, perr:
+            raise perr 
+        retval = curs.fetchall()
+        curs.connection.commit()
+        return retval
+"""
 #dictionary with query strings
 selstrdict = {\
     'nfs'           : "SELECT date_start, octets%s FROM billservice_netflowstream WHERE %s (date_start BETWEEN '%s' AND '%s') %s ORDER BY date_start;", \
