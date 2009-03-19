@@ -350,3 +350,15 @@ table.statistic_table {
 .footer_ebs_site a {
 	text-decoration:none;
 }
+
+#set_link {
+	text-align:center;
+}
+
+#set_link a{
+	color:#2f4d6d;
+}
+
+.cursor {
+	cursor:pointer;
+}
