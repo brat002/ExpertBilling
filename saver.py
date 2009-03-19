@@ -7,9 +7,10 @@ def log_adapt(lstr, level):
     print lstr
 
 def setAllowedUsers(dbconnection, filepath):
-    def transformByte(lbyte):
-        ldict = {'A': 50, 'B': 250, 'C': 500, 'D': 800, 'E': 1000, 'F': ((1 << 63) - 1)}
-        return ldict.get(lbyte, 0)
+    def transformByte(lbytes):
+        indef = lambda x: x == 'FFFF'
+        if indef(lbytes): return (1 << 63) - 1
+        else: return int(lbytes, 16)
     #global allowedUsers
     allowedUsers = lambda: 0
     try:
@@ -19,11 +20,20 @@ def setAllowedUsers(dbconnection, filepath):
         log_error_("License not found")
         print "License not found"
         sys.exit()
-        
-    lfile.seek(-1, 2)
-    allowed = str(transformByte(lfile.read(1)))
-    allowedUsers = lambda: int(allowed)
-    lfile.close()
+      
+    try:
+        lfile.seek(0,0)
+        fhf = lfile.read(2)        
+        lfile.seek(-2, 2)
+        shf = lfile.read(2) 
+        allowed = str(transformByte(fhf + shf))
+        allowedUsers = lambda: int(allowed)
+        lfile.close()
+    except Exception, ex:
+        log_error_("License file format error!")
+        print "License file format error!"
+        sys.exit()
+    #print allowed
     cur = dbconnection.cursor()
     cur.callproc('crt_allowed_checker', (allowedUsers(),))
     dbconnection.commit()

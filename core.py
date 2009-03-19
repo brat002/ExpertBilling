@@ -1706,9 +1706,11 @@ def graceful_save():
     global cacheThr, threads, suicideCondition
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
+    logger.lprint("Core - about to exit gracefully.")
     time.sleep(20)
     pool.close()
     time.sleep(2)
+    logger.lprint("Core - exiting gracefully.")
     sys.exit()
     
 def main():
