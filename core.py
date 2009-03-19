@@ -645,7 +645,7 @@ class TimeAccessBill(Thread):
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
 
-                    execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time=True
+                    cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time=True
                                ORDER BY interrim_update DESC LIMIT 1
                             """, (session_id,))
                     try:
