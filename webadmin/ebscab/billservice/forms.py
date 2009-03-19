@@ -3,7 +3,9 @@ from django import forms
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
-    password = forms.CharField(label=u"пароль", required = True, widget=forms.PasswordInput )
+    user = forms.CharField(label=u"user", required = False)
+    password = forms.CharField(label=u"пароль", widget=forms.PasswordInput, required = False)
+    pin = forms.CharField(label=u"пин", widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
     
 class PasswordForm(forms.Form):
     old_password = forms.CharField(label=u"Старый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
