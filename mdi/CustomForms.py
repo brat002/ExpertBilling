@@ -74,7 +74,7 @@ class CheckBoxDialog(QtGui.QDialog):
             if self.listWidget.item(x).checkState()==QtCore.Qt.Checked:
                 self.selected_items.append(self.all_items[x])
         
-        print self.selected_items
+        #print self.selected_items
         QtGui.QDialog.accept(self)        
         
             
@@ -1228,7 +1228,7 @@ class TemplatesWindow(QtGui.QMainWindow):
 
             
     def preview(self):
-        id = self.treeWidget.currentItem().id
+        id = self.treeWidget.currentItem().model.type_id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
         if id==1:
 
@@ -1265,7 +1265,43 @@ class TemplatesWindow(QtGui.QMainWindow):
         if id in (3,4):
             data=u"Preview for this type of documents unavailable. Please still waiting for next version of ExpertBilling"
                                 
-
+        if id ==7:
+            try:
+                operator =self.connection.get_operator()[0]
+                
+            except Exception, e:
+                print e
+                QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
+                return
+    
+            try:
+                bank =self.connection.get_bank_for_operator(operator.id)
+            except Exception, e:
+                print e
+                QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
+                return
+            
+            card = Object()
+            card.pin = '12345678901234'
+            card.login = 'user'
+            card.nominal = 10000
+            card.start_date = datetime.datetime.now().strftime(strftimeFormat)
+            card.end_date = datetime.datetime.now().strftime(strftimeFormat)
+            card.series = 64
+            card.tarif = 'Тестовый тариф'
+            data="""
+            <html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body>
+            """;
+            try:
+                data+=templ.render_unicode(operator = operator, bank=bank, card=card)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+            data+="</body></html>"
+                        
         self.connection.commit()
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))

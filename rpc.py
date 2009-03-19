@@ -439,6 +439,15 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return
 
     @authentconn
+    def activate_card(self, login, pin, table, cur=None, connection=None):
+        sql = model.delete(table)
+        #print sql
+        cur.execute(sql)
+        #connection.commit()
+        del sql
+        return
+
+    @authentconn
     def iddelete(self, id, table, cur=None, connection=None):
         sql = u"DELETE FROM %s where id=%d" % (table, id)
         #print sql

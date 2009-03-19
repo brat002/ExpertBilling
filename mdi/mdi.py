@@ -359,7 +359,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.netflowReportAct=QtGui.QAction(QtGui.QIcon("images/nfstat.png"), u"Сетевая статистика", self)
 
-        self.netflowReportAct.setStatusTip(self.tr("Net Flow отчёт "))
+        self.netflowReportAct.setStatusTip(u"Сетевая статистика")
 
         self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
 
@@ -464,10 +464,10 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
-        self.windowMenu = self.menuBar().addMenu(self.tr("&Window"))
+        self.windowMenu = self.menuBar().addMenu(u"&Окна")
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),
                      self.updateWindowMenu)
-        self.reportsMenu = self.menuBar().addMenu(self.tr("&Reports"))
+        self.reportsMenu = self.menuBar().addMenu(u"&Отчёты")
         for menuName, branch in self.reportActs:
             branchMenu = self.reportsMenu.addMenu(self.trUtf8(menuName))
             for leaf in branch:
@@ -475,10 +475,11 @@ class MainWindow(QtGui.QMainWindow):
 
         self.menuBar().addSeparator()
 
-        self.helpMenu = self.menuBar().addMenu(self.tr("&Help"))
-        self.helpMenu.addAction(self.aboutAct)
+        self.helpMenu = self.menuBar().addMenu(u"&Справка")
+        
         self.helpMenu.addAction(self.aboutOperAct)
-        self.helpMenu.addAction(self.aboutQtAct)
+        self.helpMenu.addAction(self.aboutAct)
+        #self.helpMenu.addAction(self.aboutQtAct)
 
     @connlogin
     def reportsMenu(self):
