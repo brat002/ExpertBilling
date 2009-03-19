@@ -26,6 +26,28 @@ from lib.decorators import render_to, ajax_request
 def login(request):
     error_message = True
     if request.method == 'POST':
+        pin=request.POST.get('pin','')
+        if pin!='':
+            try:
+                connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
+                import hashlib
+                md1 = hashlib.md5(settings.RPC_PASSWORD)
+                md1.hexdigest()
+               
+                password = str(md1.hexdigest())
+                connection_server._setNewConnectionValidator(antiMungeValidator())
+                print connection_server._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
+                connection_server.test()
+            except Exception, e:
+                if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                    error_message = u"Отказано в авторизации."
+                else:
+                    error_message  = u"Невозможно подключиться к серверу."
+            #connection_server.makeChart(*cargs, **ckwargs)
+            form = LoginForm()
+            return {
+                    'form':form,
+                    }
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
@@ -46,8 +68,7 @@ def login(request):
                         if cache_user['blocked']:
                             cache.set(user.id, {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
                         else:
-                            cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)
-                          
+                            cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)    
                     cursor = connection.cursor()
                     cursor.execute("""SELECT name, allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
                     tarif = cursor.fetchone()
