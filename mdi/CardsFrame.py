@@ -210,17 +210,27 @@ class SaleCards(QtGui.QDialog):
         if fileName=="":
             return
         try:
+            
             f = open(fileName, "w")
             f.write("<xml>")
             for x in xrange(self.tableWidget.rowCount()):
                 #card = unicode(self.tableWidget.item(x,0).text())
+                card = self.connection.sql("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
+                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
+                WHERE card.id=%s
+                """ % unicode(self.tableWidget.item(x,0).text()))[0]
+                self.connection.commit()
                 f.write("<card>")
-                f.write("<id>%s</id>" % unicode(self.tableWidget.item(x,0).text()))
-                f.write("<series>%s</series>" % unicode(self.tableWidget.item(x,1).text()))
-                f.write("<nominal>%s</nominal>" % unicode(self.tableWidget.item(x,2).text()))
-                f.write("<pin>%s</pin>" % unicode(self.tableWidget.item(x,3).text()))
-                f.write("<date_start>%s</date_start>" % unicode(self.tableWidget.item(x,4).text()))
-                f.write("<date_end>%s</date_end>" % unicode(self.tableWidget.item(x,5).text()))
+                f.write("<id>%s</id>" % card.id)
+                f.write("<tarif>%s</tarif>" % card.tarif_name)
+                f.write("<series>%s</series>" % card.series)
+                f.write("<nominal>%s</nominal>" % card.nominal)
+                f.write("<pin>%s</pin>" % card.pin)
+                f.write("<login>%s</login>" % card.login)
+                f.write("<template>%s</template>" % card.template_id)
+                f.write("<date_start>%s</date_start>" % card.start_date)
+                f.write("<date_end>%s</date_end>" % card.end_date)
+                
                 f.write("</card>")
             f.write("</xml>")
             f.close()
@@ -237,6 +247,11 @@ class SaleCards(QtGui.QDialog):
             crd = "(0)" 
         
         cards = self.connection.get_notsold_cards(self.cards)
+        templates = self.connection.get_models("billservice_template")
+        t=[]
+        for templ in templates:
+            t[templ.id] = templ.body
+            
         self.connection.commit()
         
         data="""
@@ -247,8 +262,10 @@ class SaleCards(QtGui.QDialog):
         <body>
         """;
         
+
         for card in cards:
-            templ = Template(filename="templates/cards/%s" % card.template, input_encoding='utf-8')
+            
+            templ = Template(t[card.template_id], input_encoding='utf-8')
             data+=templ.render_unicode(card=card)
 
         
@@ -648,7 +665,7 @@ class AddCards(QtGui.QDialog):
         понаставить проверок
         """
         try:
-            if self.l_checkBox_pin.checkState()==0 and self.numbers_checkBox.checkState()==0:
+            if self.l_checkBox_pin.checkState()==0 and self.numbers_checkBox_pin.checkState()==0:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не выбрали состав PIN-кода"))
                 return
             
@@ -663,7 +680,7 @@ class AddCards(QtGui.QDialog):
             if self.pin_spinBox.text().toInt()[0]==0:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
                 return        
-            
+
             def get_addreses_from_pool():
                 pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
 
@@ -719,7 +736,7 @@ class AddCards(QtGui.QDialog):
                 model.nominal = unicode(self.spinBox_nominal.text())
                 model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
                 model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
-                model.template = template_id
+                model.template_id = template_id
                 model.created = dnow
                 #model.sold=False
                 #model.activated=False
@@ -779,20 +796,22 @@ class AddCards(QtGui.QDialog):
 
     def preView(self):
         try:
-            operator =self.connection.get_operator()
+            operator =self.connection.get_operator()[0]
             
         except Exception, e:
+            print e
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
             return
 
         try:
             bank =self.connection.get_bank_for_operator(operator.id)
         except Exception, e:
+            print e
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
             return
         self.connection.commit()
         
-        tmplt = str(self.comboBox_templates.currentText())
+        tmplt = self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
         if not tmplt:
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Вы не выбрали шаблон!")
             return
@@ -813,6 +832,7 @@ class AddCards(QtGui.QDialog):
         card.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
         card.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
         card.series = unicode(self.series_spinBox.value())
+        card.tarif = unicode(self.comboBox_tarif.currentText())
         #operator=self.op_model.__dict__
         #bank = self.bank_model.__dict__
         
@@ -866,40 +886,40 @@ class CardsChildEbs(ebsTableWindow):
         self.toolBar_filter.setFloatable(False)
         self.toolBar_filter.setObjectName("toolBar_filter")
         ###################### Filter
-        self.comboBox_nominal = QtGui.QComboBox(self)        
+        self.comboBox_nominal = QtGui.QComboBox()        
         self.comboBox_nominal.setGeometry(QtCore.QRect(0,0,60,20))
         self.comboBox_nominal.setEditable(True)
         
-        self.date_start = QtGui.QDateTimeEdit(self)
+        self.date_start = QtGui.QDateTimeEdit()
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
         self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-        self.date_end = QtGui.QDateTimeEdit(self)
+ 
+        self.date_end = QtGui.QDateTimeEdit()
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
         self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-        self.label_date_start = QtGui.QLabel(self)
+ 
+        self.label_date_start = QtGui.QLabel()
         self.label_date_start.setMargin(10)
         self.label_date_start.setObjectName("date_start_label")
-
-        self.label_date_end = QtGui.QLabel(self)
+ 
+        self.label_date_end = QtGui.QLabel()
         self.label_date_end.setMargin(10)
         self.label_date_end.setObjectName("date_end_label")
         
-        self.label_nominal = QtGui.QLabel(self)
+        self.label_nominal = QtGui.QLabel()
         self.label_nominal.setMargin(10)        
-        self.label_filter = QtGui.QLabel(self)
+        self.label_filter = QtGui.QLabel()
         self.label_filter.setMargin(10)
         
-        self.checkBox_sold = QtGui.QCheckBox(self)
-        self.checkBox_activated = QtGui.QCheckBox(self)        
-        self.checkBox_filter = QtGui.QCheckBox(self)        
-        self.pushButton_go = QtGui.QPushButton(self)
+        self.checkBox_sold = QtGui.QCheckBox()
+        self.checkBox_activated = QtGui.QCheckBox()        
+        self.checkBox_filter = QtGui.QCheckBox()        
+        self.pushButton_go = QtGui.QPushButton()
         
         self.toolBar_filter.addWidget(self.checkBox_filter)
         self.toolBar_filter.addWidget(self.label_nominal)
@@ -911,17 +931,18 @@ class CardsChildEbs(ebsTableWindow):
         self.toolBar_filter.addWidget(self.label_date_end)
         self.toolBar_filter.addWidget(self.date_end)
         self.toolBar_filter.addWidget(self.pushButton_go)
-        ######################        
+        #####################        
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
         self.insertToolBarBreak(self.toolBar_filter)
-        actList=[("actionGenerate_Cards", "Сгенерировать партию", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard)]
+
+        actList=[("actionGenerate_Cards", "Сгенерировать", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard)]
         objDict = {self.tableWidget:["actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card"]}
         self.actionCreator(actList, objDict)
         
     def ebsPostInit(self, initargs):
         self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
-        #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
         self.fixtures()        
@@ -930,8 +951,8 @@ class CardsChildEbs(ebsTableWindow):
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start.setDateTime(settings.value("cards_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end.setDateTime(settings.value("cards_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_start.setDateTime(settings.value("cards_date_start", QtCore.QVariant(QtCore.QDateTime(2009,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("cards_date_end", QtCore.QVariant(QtCore.QDateTime(2020,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Transactions settings error: ", ex
             
@@ -1062,6 +1083,7 @@ class CardsChildEbs(ebsTableWindow):
         
         
     def refresh(self, widget=None):
+        
         
         sql = """SELECT * FROM billservice_card"""
         if self.checkBox_filter.checkState()==2:
