@@ -51,9 +51,9 @@ _PROTECTION_CHUNK_1 = r"""
 	__6 = str.join('', __3)
 	__5 = __import__( __0[ 2 ] ) # import platform
 	__6 += getattr( __5, __0[ 2 ] )() # ... += platform.platform()
-	__6 += open('license.lic').read()
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 += open('license.lic').read()
 	del __0
 	return __6.upper()
 """
