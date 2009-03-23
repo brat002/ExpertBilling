@@ -48,5 +48,5 @@ done
 find $1 -name '.svn' -type d | xargs rm -rf
 
 if [ $SUDO_USER ]; then
-	chown -hR $SUDO_USER $1
+	chown -hR $SUDO_USER: $1
 fi
