@@ -160,6 +160,7 @@ def nfPacketHandle(data, addrport, flowCache):
             offset = headerLENGTH + (flowLENGTH * n)
             flow_data = data[offset:offset + flowLENGTH]
             flow=flow_class(flow_data)
+            #print 'ips: ', IPint(flow[0]).strNormal(), IPint(flow[1]).strNormal()
             #look for account for ip address
             acc_acct_tf = (vpncache.has_key(flow[0]) and vpncache[flow[0]]) or (vpncache.has_key(flow[1]) and vpncache[flow[1]]) or (ipncache.has_key(flow[0]) and ipncache[flow[0]]) or (ipncache.has_key(flow[1]) and ipncache[flow[1]])
             if acc_acct_tf:
@@ -280,7 +281,7 @@ class FlowDequeThread(Thread):
             groupLst = []
             fcset = set(classLst)
             for tgrp in tarifGroups:
-                if (tgrp[2] == dr) or (tgrp[0] == 0):
+                if (not tgrp[1]) or (tgrp[2] == dr):
                     continue
                 group_cls = fcset.intersection(tgrp[1])
                 if group_cls:
@@ -299,7 +300,8 @@ class FlowDequeThread(Thread):
                 #get keylist and time
                 keylist, stime = flowQueue.popleft()
                 fqueueLock.release()
-                iqueue = 0                
+                iqueue = 0
+                
                 #if aggregation time was still not reached -> sleep
                 wtime = time.time() - aggrTime - stime
                 if wtime < 0: time.sleep(abs(wtime))
@@ -368,6 +370,7 @@ class FlowDequeThread(Thread):
                     flst = []
                 del keylist
             except IndexError, ierr:
+                logger.debug("fdqThread indexerror exception: %s", repr(ierr))
                 if iqueue:
                     fqueueLock.release()
                     time.sleep(5)
@@ -400,6 +403,8 @@ class NfUDPSenderThread(Thread):
                     if errflag: dfile.close(); fnameQueue.append(fname)
                     break
                 #get a bunch of packets
+                
+                #use 'with' statement
                 dbLock.acquire()
                 dqueue  = 1            
                 fpacket = databaseQueue.popleft()
@@ -629,6 +634,8 @@ class ServiceThread(Thread):
 
                 ipncache = icTmp           
                 vpncache = vcTmp
+                #print ipncache
+                #print vpncache
                 del icTmp, vcTmp
                 
                 #forms a class->nodes structure                
@@ -671,9 +678,10 @@ class ServiceThread(Thread):
                 tg_ = defaultdict(list)
                 for tarif_id, groups__ in tarif_groups:
                     for grp in set(groups__):
-                        tg_[tarif_id].append(groupsCache.get(grp, [0,[]]))
+                        tg_[tarif_id].append(groupsCache.get(grp, [-1,[], None, None]))
                     
-                tarif_groupsCache = tg_                
+                tarif_groupsCache = tg_
+                #print tarif_groupsCache
                 cachesRead = True
                 
                 
