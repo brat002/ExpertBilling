@@ -683,7 +683,8 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
 class NetFlowReportEbs(ebsTabs_n_TablesWindow):
     def __init__(self, connection):
-        columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
+        #columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
+        columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Передано', u'Получено',u'Дата']
         columns_t1=[u'Класс', u'Принято',u'Передано', u'Сумма',''] 
         initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Сетевая статистика"}
         tabargs= [["tab0", columns_t0, "Детальная статистика"], ["tab1", columns_t1, "Сводная статистика"]]
@@ -823,23 +824,21 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         return x+y
                 
     def refresh_summary(self):            
-        sql_acc=''
+        sql_acc = ""
         if len(self.child.users)>0:
-            sql_acc= """ AND account_id IN (%s) """ % ','.join(map(str, self.child.users))
+            sql_acc= """ AND bgs.account_id IN (%s) """ % ','.join(map(str, self.child.users))
             
-        sql="""
-        SELECT class.name, class.color, 
-        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id @> ARRAY[class.id] %s and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
-        (SELECT sum(octets) FROM billservice_netflowstream WHERE traffic_class_id @> ARRAY[class.id] %s and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
-        FROM nas_trafficnode as node
-        JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
-        """ % (sql_acc, self.child.start_date, self.child.end_date, sql_acc, self.child.start_date, self.child.end_date)
+        sql="""SELECT class.name AS class_name, class.color AS class_color, 
+                      SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
+                      FROM billservice_globalstat AS bgs
+                      JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0)
+                      WHERE bgs.datetime BETWEEN '%s' AND '%s' %s
+            """ % (self.child.start_date, self.child.end_date, sql_acc)
 
         if len(self.child.classes)>0:
-            sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
-            
+            sql+=""" AND class.id IN (%s) """  % ','.join(map(str, self.child.classes))            
                     
-        sql+="GROUP BY class.id, class.name,class.color"
+        sql+="GROUP BY class.name,class.color;"
         
         #print sql
         data = self.connection.sql(sql)
@@ -860,24 +859,22 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             i+=1
 
 
-        if sql_acc!="":
+        if sql_acc:
             if len(self.child.users)>0:
                 sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
 
-            sql="""
-            SELECT account.username, class.name, class.color, 
-            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id @> ARRAY[class.id] and direction='INPUT' and date_start between '%s' and '%s') as input_summ,
-            (SELECT sum(octets) FROM billservice_netflowstream WHERE account_id=account.id and traffic_class_id @> ARRAY[class.id] and direction='OUTPUT' and date_start between '%s' and '%s') as output_summ
-            FROM nas_trafficnode as node
-            JOIN nas_trafficclass as class ON class.id=node.traffic_class_id
-            JOIN billservice_account as account ON account.id IN %s
-            """ % (self.child.start_date, self.child.end_date, self.child.start_date, self.child.end_date, sql_acc)
+            sql="""SELECT account.username, class.name, class.color, 
+                          SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
+                          FROM billservice_globalstat AS bgs 
+                          JOIN billservice_account as account ON account.id IN %s 
+                          JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
+                          WHERE bgs.datetime BETWEEN '%s' AND '%s' %s             
+               """ % (sql_acc, self.child.start_date, self.child.end_date)
     
             if len(self.child.classes)>0:
-                sql+="""WHERE class.id in (%s) """  % ','.join(map(str, self.child.classes))
-                
+                sql+=""" AND class.id in (%s) """  % ','.join(map(str, self.child.classes))              
                         
-            sql+="GROUP BY account.id, account.username,class.id, class.name,class.color ORDER BY account.id,class.name"
+            sql+="GROUP BY account.id, account.username, class.name, class.color ORDER BY account.id,class.name;"
             
             #print sql
             data = self.connection.sql(sql)
@@ -914,18 +911,8 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         udict     = {}
         portdict  = {}
         classdict = {}
-        
+        '''
         if self.child.with_grouping_checkBox.checkState()==0:
-            '''sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
-            netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets,  
-            account.username as account_username, class.name as class_name, class.color as class_color, ports.name as port_name, 
-            ports.description as port_description, ports1.name as port_name1, ports1.description as port_description1
-            FROM billservice_netflowstream as netflowstream
-            LEFT JOIN billservice_ports as ports ON ports.protocol = netflowstream.protocol and netflowstream.src_port = ports.port
-            LEFT JOIN billservice_ports as ports1 ON ports1.protocol = netflowstream.protocol and netflowstream.dst_port = ports1.port
-            JOIN billservice_account as account ON account.id = netflowstream.account_id
-            JOIN nas_trafficclass as class ON ARRAY[class.id] <@ netflowstream.traffic_class_id
-            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date)'''
             sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
             netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, 
             netflowstream.account_id, netflowstream.traffic_class_id
@@ -967,30 +954,48 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             sql+=" LIMIT 100"
         else:            
             sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
-        #a = open('tmpf', 'wb')
-        #a.write(sql)
-        #a.close()
-        #sys.exit()
+        '''
+        
+            
+        groupP = False if  not self.child.with_grouping_checkBox.checkState() else True
+        if groupP:
+            sql = """SELECT account.username AS account_username, class.name AS class_name, class.color AS class_color, 
+                            bgs.classbytes[bgs.classes#class.id][1] AS bytes_in, bgs.classbytes[bgs.classes#class.id][2] AS bytes_out 
+                            FROM billservice_globalstat AS bgs 
+                            JOIN billservice_account as account ON account.id = bgs.account_id 
+                            JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
+                            WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
+        else:
+            sql = """SELECT account.username AS account_username, bgs.bytes_in AS bytes_in, bgs.classbytesbytes_out AS bytes_out 
+                            FROM billservice_globalstat AS bgs 
+                            JOIN billservice_account as account ON account.id = bgs.account_id 
+                            WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
+
+        if len(self.child.users)>0 or len(self.child.classes)>0:
+            sql+=" AND " 
+        
+        if len(self.child.users)>0:
+            sql+= """ bgs.account_id IN (%s) """ % ','.join(map(str, self.child.users))
+            
+        if len(self.child.users)>0 and len(self.child.classes)>0:
+            sql+=""" AND """
+        
+        if len(self.child.classes)>0:
+            sql+=""" bgs.traffic_class_id && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
+            
+        if self.child.order_by_desc.checkState()==0:
+            sql+="ORDER BY bgs.datetime ASC"
+        elif self.child.order_by_desc.checkState()==2:
+            sql+="ORDER BY bgs.datetime DESC"
+            
+        if self.current_page==0:
+            sql+=" LIMIT 100"
+        else:            
+            sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
+            
         flows = self.connection.sql(sql)
         self.connection.commit()
-        if not groupP:
-            if flows:
-                for flow in flows:
-                    userss.add(flow.account_id)
-                    portss.add(flow.src_port)
-                    portss.add(flow.dst_port)
-                    classess = classess.union(flow.traffic_class_id)
-    
-                users_   = self.connection.sql("SELECT id, username AS account_username FROM billservice_account WHERE id IN (%s);" % ','.join([str(accid) for accid in userss]))
-                ports_   = self.connection.sql("SELECT port, protocol, name as port_name, description as port_description FROM billservice_ports WHERE port IN (%s);" % ','.join([str(prt) for prt in portss]))
-                classes_ = self.connection.sql("SELECT id, name as class_name, color as class_color FROM nas_trafficclass WHERE id IN (%s);" % ','.join([str(cls) for cls in classess]))
-                self.connection.commit()
-                for usr in users_:
-                    udict[usr.id] = usr
-                for prt in ports_:
-                    portdict[(prt.port, prt.protocol)] = prt
-                for cls in classes_:
-                    classdict[cls.id] = cls
+
         i=0
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
@@ -998,75 +1003,20 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         octets_out_summ=0
         c=self.current_page*500
         icount = 0
-        #['id',  u'Аккаунт', u'Дата', u'Класс', u'Направление', u'Протокол', u'IP источника', u'IP получателя', u'Порт источника', u'Порт получателя', u'Передано байт']
-        for clflow in flows:
-            clflows = []
-            if not groupP:
-                if icount == 100:
-                    break
-                clflow.account_username = getattr(udict.get(clflow.account_id, {}),'account_username', '')
-                clflow.port_name = getattr(portdict.get((clflow.src_port, clflow.protocol), {}),'port_name', None)
-                clflow.port_description = getattr(portdict.get((clflow.src_port, clflow.protocol), {}),'port_description', None)
-                clflow.port_name1 = getattr(portdict.get((clflow.dst_port, clflow.protocol), {}),'port_name', None)
-                clflow.port_description1 = getattr(portdict.get((clflow.dst_port, clflow.protocol), {}),'port_description', None)
-                for cls in clflow.traffic_class_id:
-                    clflow.class_name  = getattr(classdict.get(cls, {}),'class_name', '')
-                    clflow.class_color = getattr(classdict.get(cls, {}),'class_color', '')
-                    clflows.append(clflow)
-            else:
-                clflows.append(clflow)
-            
-            for flow in clflows:
-                icount += 1                   
-                        
-                self.addrow(c, i, 0)
-                if self.child.with_grouping_checkBox.checkState()==0:
-                    if flow.direction=='INPUT':
-                        octets_in_summ+=int(flow.octets)
-                    elif flow.direction=='OUTPUT':
-                        octets_out_summ+=int(flow.octets)
-                    
-                    if flow.direction=="INPUT" or (flow.direction=="INPUT" and flow.port_name1==None):                
-                        if flow.port_name==None and flow.port_name1!=None:
-                            flow.port_name=flow.port_name1
-                            flow.port_description=flow.port_description1
-                        elif flow.port_name==None:
-                            flow.port_description=''    
-                            
-                        if flow.port_name!='' and flow.port_name is not None:
-                            self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name), i, 3)
-                        else:
-                            self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
-                        self.tableWidget.item(i,3).setToolTip(flow.port_description)                
-                     
-                    elif flow.direction=="OUTPUT" or (flow.direction=="OUTPUT" and flow.port_name==None):                
-                        if flow.port_name1==None and flow.port_name!=None:
-                            flow.port_name1 = flow.port_name
-                            flow.port_description1 = flow.port_description
-                        elif flow.port_name1==None: 
-                            flow.port_name1=""    
-                            flow.port_description1 = ""   
-                        if flow.port_name1!='' and flow.port_name1 is not None:
-                            self.addrow("%s (%s)" % (self.getProtocol(flow.protocol), flow.port_name1), i, 3)
-                        else:
-                            self.addrow("%s" % (self.getProtocol(flow.protocol), ), i, 3)
-                        self.tableWidget.item(i,3).setToolTip(flow.port_description1)       
-                    else:
-                        self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
-    
-    
-                    self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 7)
-                    self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 4)
         
-                    self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 5)
-                else:
-                    self.addrow("%s" % (self.getProtocol(flow.protocol)), i, 3)
-                    self.addrow(flow.src_addr, i, 4)
-                    self.addrow(flow.dst_addr, i, 5)
+        #['#', u'Аккаунт', u'Класс трафика', u'Передано', u'Получено',u'Дата']
+        for flow in flows:                   
+                        
+            self.addrow(c, i, 0)
+            if groupP:
+                self.addrow("%s" % (flow.class_name), i, 2, color=flow.class_color)
+
                 
+            #else:                
             self.addrow(flow.account_username, i, 1)            
-            self.addrow(humanable_bytes(flow.octets), i, 6)
-            self.addrow("%s %s" % (flow.class_name, flow.direction), i, 2, color=flow.class_color)
+            self.addrow(humanable_bytes(flow.bytes_in), i, 3)
+            self.addrow(humanable_bytes(flow.bytes_out), i, 4)
+            self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 5)
             
             #self.tableWidget.setRowHeight(i, 16)            
             i+=1

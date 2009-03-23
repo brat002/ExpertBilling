@@ -1758,7 +1758,7 @@ import socket
 if socket.gethostname() not in ['dmitry-desktop','dolphinik','sserv.net','sasha', 'iserver','kenny','billing', 'medusa', 'Billing.NemirovOnline']:
     import sys
     print "License key error. Exit from application."
-    sys.exit(1)
+    #sys.exit(1)
     
 if __name__ == "__main__":
     if "-D" in sys.argv:
