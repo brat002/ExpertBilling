@@ -828,7 +828,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         if len(self.child.users)>0:
             sql_acc= """ AND bgs.account_id IN (%s) """ % ','.join(map(str, self.child.users))
             
-        sql="""SELECT class.name AS class_name, class.color AS class_color, 
+        sql="""SELECT class.name AS name, class.color AS color, 
                       SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
                       FROM billservice_globalstat AS bgs
                       JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0)
@@ -863,21 +863,22 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             if len(self.child.users)>0:
                 sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
 
-            sql="""SELECT account.username, class.name, class.color, 
+            sql="""SELECT account.username AS username , class.name AS name, class.color AS color, 
                           SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
                           FROM billservice_globalstat AS bgs 
-                          JOIN billservice_account as account ON account.id IN %s 
+                          JOIN billservice_account as account ON bgs.account_id = account.id
                           JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
-                          WHERE bgs.datetime BETWEEN '%s' AND '%s' %s             
-               """ % (sql_acc, self.child.start_date, self.child.end_date)
+                          WHERE (bgs.datetime BETWEEN '%s' AND '%s') AND (account.id IN %s)             
+               """ % (self.child.start_date, self.child.end_date, sql_acc)
     
             if len(self.child.classes)>0:
                 sql+=""" AND class.id in (%s) """  % ','.join(map(str, self.child.classes))              
                         
             sql+="GROUP BY account.id, account.username, class.name, class.color ORDER BY account.id,class.name;"
             
-            #print sql
+            
             data = self.connection.sql(sql)
+            self.connection.commit()
             #i=0
             self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
             oldusername = ''
@@ -897,7 +898,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
                 self.addRowSummary(u'', i, 4, color=flow.color)
                 oldusername=flow.username
                 i+=1 
-        self.connection.commit()
+        
         HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_summary)
 
                     
@@ -957,16 +958,16 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         '''
         
             
-        groupP = False if  not self.child.with_grouping_checkBox.checkState() else True
+        groupP = False if  self.child.with_grouping_checkBox.checkState() else True
         if groupP:
-            sql = """SELECT account.username AS account_username, class.name AS class_name, class.color AS class_color, 
+            sql = """SELECT account.username AS account_username, class.name AS class_name, class.color AS class_color, bgs.datetime,  
                             bgs.classbytes[bgs.classes#class.id][1] AS bytes_in, bgs.classbytes[bgs.classes#class.id][2] AS bytes_out 
                             FROM billservice_globalstat AS bgs 
                             JOIN billservice_account as account ON account.id = bgs.account_id 
                             JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
                             WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
         else:
-            sql = """SELECT account.username AS account_username, bgs.bytes_in AS bytes_in, bgs.classbytesbytes_out AS bytes_out 
+            sql = """SELECT account.username AS account_username,bgs.datetime, bgs.bytes_in AS bytes_in, bgs.bytes_out AS bytes_out 
                             FROM billservice_globalstat AS bgs 
                             JOIN billservice_account as account ON account.id = bgs.account_id 
                             WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
@@ -981,7 +982,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             sql+=""" AND """
         
         if len(self.child.classes)>0:
-            sql+=""" bgs.traffic_class_id && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
+            sql+=""" bgs.classes && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
             
         if self.child.order_by_desc.checkState()==0:
             sql+="ORDER BY bgs.datetime ASC"
@@ -1001,7 +1002,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         self.tableWidget.setRowCount(len(flows))
         octets_in_summ=0
         octets_out_summ=0
-        c=self.current_page*500
+        c=self.current_page*100
         icount = 0
         
         #['#', u'Аккаунт', u'Класс трафика', u'Передано', u'Получено',u'Дата']
@@ -1016,7 +1017,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             self.addrow(flow.account_username, i, 1)            
             self.addrow(humanable_bytes(flow.bytes_in), i, 3)
             self.addrow(humanable_bytes(flow.bytes_out), i, 4)
-            self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 5)
+            self.addrow(flow.datetime.strftime(self.strftimeFormat), i, 5)
             
             #self.tableWidget.setRowHeight(i, 16)            
             i+=1
