@@ -27,16 +27,17 @@ done
 python freezer/freezer.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $3 rpc.py > $1.rpc.buildlog;
 
 cp license.lic $1/license.lic
-cp license.old.lic license.lic
-cp ebs_config.ini 1/ebs_config.ini 
-cp ebs_config_runtime.ini 1/ebs_config_runtime.ini 
+cp license.lic.old license.lic
+cp ebs_config.ini $1/ebs_config.ini 
+cp ebs_config_runtime.ini $1/ebs_config_runtime.ini 
 cp -rf modules $1
-mkdir $1/nf_temp
+mkdir $1/nf_dump
 mkdir $1/log
 mkdir $1/init.d
-cp -rf $1/dicts
-cp -rf $1/fonts
-cp pychartdir.pyc pychartdir25.pyd libchartdir.so $1/modules/chartprovider
+cp -rf dicts $1/dicts
+cp -rf fonts $1/fonts
+cp -rf $1/modules/chartprovider
+cp pychartdir.pyc pychartdir25.pyd pychartdir25.so libchartdir.so $1/modules
 
 for bldd in $total_build; do
 	cp $bldd $1
@@ -45,3 +46,7 @@ for bldd in $total_build; do
 done
 
 find $1 -name '.svn' -type d | xargs rm -rf
+
+if [ $SUDO_USER ]; then
+	chown -hR $SUDO_USER $1
+fi
