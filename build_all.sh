@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 #$1 - project name $2 users $3 key 
 
 python lic_generator.py $1 $2
