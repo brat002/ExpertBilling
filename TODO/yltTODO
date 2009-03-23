@@ -1,3 +1,6 @@
+!!!!rewrite all silent try/except with DEBUG
+
+
 !!! nfroutine - check connections! if there\re database errors - save data into files!
 !!!nf - if database errors - save data
 -- save method - if exception - put data back into queue

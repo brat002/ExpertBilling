@@ -23,7 +23,7 @@ from collections import deque, defaultdict
 from period_utilities import in_period_info
 from db import delete_transaction, dbRoutine
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
+from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -80,7 +80,7 @@ class DepickerThread(Thread):
                 ilen = len(picker)
                 for acc_tf_id, summ in ilist:
                     #debit accounts
-                    transaction(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
+                    transaction_noret(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
                                 tarif=acc_tf_id[1], summ=summ, description=u"", created=now)
                     icount += 1
                     connection.commit()
