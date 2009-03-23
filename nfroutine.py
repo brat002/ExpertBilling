@@ -47,7 +47,7 @@ class Picker(object):
     def get_data(self):
         return self.data.items()
 
-#maybe save if database errors???
+#try to save data - ticket 31
 class DepickerThread(Thread):
     '''Thread that takes a Picker object and executes transactions'''
     def __init__ (self):
@@ -92,17 +92,10 @@ class DepickerThread(Thread):
                 time.sleep(60)
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
                 continue             
-            except psycopg2.OperationalError, p2oerr:
-                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
-                try: cur = connection.cursor()
-                except: pass
-            except psycopg2.ProgrammingError, p2perr:
-                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
-            except psycopg2.InterfaceError, p2ierr:
-                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
-                try: cur = connection.cursor()
-                except: pass
             except Exception, ex:
+                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                    try: cur = connection.cursor()
+                    except: pass
                 logger.error("%s : exception: %s", (self.getName(), repr(ex)))    
   
 class groupDequeThread(Thread):
