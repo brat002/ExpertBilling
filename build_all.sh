@@ -3,6 +3,10 @@
 
 python lic_generator.py $1 $2
 
+reskey=$3`cat license.lic`
+
+echo $reskey
+
 rm -rf modules
 rm -rf $1
 
@@ -21,10 +25,10 @@ cp license.lic license.lic.old
 cp license_$1.lic license.lic
 
 for bld in $simple_build; do
-	python freezer/freezer.py  -i $karg $3 $bld.py > $1.$bld.buildlog;
+	python freezer/freezer.py  -i $karg $reskey $bld.py > $1.$bld.buildlog;
 done
 
-python freezer/freezer.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $3 rpc.py > $1.rpc.buildlog;
+python freezer/freezer.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $reskey rpc.py > $1.rpc.buildlog;
 
 cp license.lic $1/license.lic
 cp license.lic.old license.lic
