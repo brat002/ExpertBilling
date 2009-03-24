@@ -123,8 +123,10 @@ class groupDequeThread(Thread):
                     a = time.clock()
                 groupLock.acquire()
                 gqueue = 1
+                
+
                 #check whether double aggregation time passed - updates are rather costly
-                if groupDeque[0][1] + groupAggrTime*2 < time.time():
+                if groupDeque and (groupDeque[0][1] + groupAggrTime*2 < time.time()):
                     gkey = groupDeque.popleft()[0]
                     groupLock.release()
                 else:
@@ -226,7 +228,7 @@ class statDequeThread(Thread):
                 statLock.acquire()
                 #if statDeque[0][1]:
                 #if statDeque[0][1] + statAggrTime*2 < time.time():
-                if statDeque[0][1] + statAggrTime*2 < time.time():
+                if statDeque and (statDeque[0][1] + statAggrTime*2 < time.time()):
                     #get a key                
                     skey = statDeque.popleft()[0]
                     statLock.release()

@@ -595,7 +595,7 @@ def login():
             #splash.hide()
             #del waitchild
         else:
-            splash.hide()
+            #splash.hide()
             return None
 
 if __name__ == "__main__":
@@ -603,12 +603,7 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     global connection
     connection = login() 
-
-
-
-
-    
-        
+       
     if connection is None:
         sys.exit()
     connection.commit()

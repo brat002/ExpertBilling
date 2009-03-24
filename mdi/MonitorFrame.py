@@ -92,15 +92,13 @@ class MonitorEbs(ebsTableWindow):
         self.thread.terminate()
         event.accept()
             
-    def addrow(self, widget, value, x, y, color=False):
+    def addrow(self, widget, value, x, y, color=False, id=None, sessionid=None):
         
         item_type = QtGui.QTableWidgetItem()
         if value==None:
             value=''
-        if y==0:
-            text, item_type.sessionid = value
-        else:
-            text=value
+
+        text=value
             
         if widget.item(x,y):
             widget.item(x,y).setText(unicode(text))
@@ -110,7 +108,11 @@ class MonitorEbs(ebsTableWindow):
         if y==1:
             item_type.setIcon(QtGui.QIcon("images/user.png"))
         
-
+        if id:
+            item_type.id = id
+            
+        if sessionid:
+            item_type.sessionid = sessionid
             
         if color:
             if value=='ACTIVE':
@@ -127,7 +129,7 @@ class MonitorEbs(ebsTableWindow):
         sessionid = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).sessionid)
         self.connection.pod(session=sessionid)
         d = Object()
-        d.id = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
+        d.id = int(unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).id))
         d.sessionid = sessionid
         d.session_status='ACK'
         self.connection.save(d, "radius_activesession")
@@ -139,21 +141,26 @@ class MonitorEbs(ebsTableWindow):
         self.tableWidget.clearContents()
         self.tableWidget.setSortingEnabled(False)
         if self.allTimeCheckbox.checkState()==2:
-            sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
+            sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
             
-                  JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
-                  JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id WHERE billservice_account.id>0    
+                  JOIN billservice_account ON billservice_account.id=session.account_id
+                  JOIN nas_nas ON nas_nas.ipaddress = session.nas_id 
+                  WHERE billservice_account.id>0  
+                  ORDER BY session.id DESC 
                  """
         elif self.allTimeCheckbox.checkState()==0:
-            sql="""SELECT *,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession
-                  JOIN billservice_account ON billservice_account.id=radius_activesession.account_id
-                  JOIN nas_nas ON nas_nas.ipaddress = radius_activesession.nas_id
-                  WHERE radius_activesession.session_status='ACTIVE'"""
+            sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
+                  JOIN billservice_account ON billservice_account.id=session.account_id
+                  JOIN nas_nas ON nas_nas.ipaddress = session.nas_id
+                  WHERE session.session_status='ACTIVE'
+                  ORDER BY session.id DESC
+                  """
         
         if user==None:
             user=unicode(self.userCombobox.currentText())                                      
         
-        if user!="---":
+        #print user
+        if user!="---" and user:
             sql+=" AND billservice_account.username='%s'" % unicode(user)
           
         sessions = self.connection.sql(sql)  
@@ -165,8 +172,8 @@ class MonitorEbs(ebsTableWindow):
                 date_end=""
             else:
                 date_end = session.date_end.strftime(self.strftimeFormat)
-                
-            self.addrow(self.tableWidget, (i, session.sessionid), i, 0)
+            #print session.id
+            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.caller_id, i, 2)
             self.addrow(self.tableWidget, session.framed_ip_address, i, 3)

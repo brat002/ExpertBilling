@@ -1192,8 +1192,8 @@ class TemplatesWindow(QtGui.QMainWindow):
         model.name = unicode(self.lineEdit_name.text())
         model.body = unicode(self.textBrowser_remplate_body.toPlainText())
  
-        for x in model.__dict__:
-            print x, model.__dict__[x]
+        #for x in model.__dict__:
+        #    print x, model.__dict__[x]
 
         model.id = self.connection.save(model, "billservice_template")
         self.treeWidget.currentItem().model = model
