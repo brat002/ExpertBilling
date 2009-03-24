@@ -764,7 +764,7 @@ class TarifFrame(QtGui.QDialog):
         self.add_traffic_cost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         
         self.prepaid_tableWidget.clear()
-        columns=[u'#', u'Направления', u'Вх', u'Исх',  u'МБ']
+        columns=[u'#', u'Группа',  u'МБ']
         
         makeHeaders(columns, self.prepaid_tableWidget)                
                 
@@ -932,8 +932,9 @@ class TarifFrame(QtGui.QDialog):
         current_row = self.prepaid_tableWidget.rowCount()
         self.prepaid_tableWidget.insertRow(current_row)
         
-        self.addrow(self.prepaid_tableWidget, True, current_row, 2, item_type='checkbox')
-        self.addrow(self.prepaid_tableWidget, True, current_row, 3, item_type='checkbox')
+        #self.addrow(self.prepaid_tableWidget, True, current_row, 2, item_type='checkbox')
+        #self.addrow(self.prepaid_tableWidget, True, current_row, 3, item_type='checkbox')
+        
         #self.addrow(self.prepaid_tableWidget, True, current_row, 4, item_type='checkbox')
     
     def delPrepaidTrafficRow(self):
@@ -941,9 +942,9 @@ class TarifFrame(QtGui.QDialog):
         id = self.getIdFromtable(self.prepaid_tableWidget, current_row)
         
         if id!=-1:
-            d = Object()
-            d.prepaidtraffic_id = id
-            self.connection.delete(d, "billservice_prepaidtraffic_traffic_class")
+            #d = Object()
+            #d.prepaidtraffic_id = id
+            #self.connection.delete(d, "billservice_prepaidtraffic_traffic_class")
             self.connection.iddelete(id, "billservice_prepaidtraffic")
             #PrepaidTraffic.objects.get(id=id).delete()
      
@@ -1074,20 +1075,22 @@ class TarifFrame(QtGui.QDialog):
     #-----------------------------Обработка редактирования таблиц
     def prepaidTrafficEdit(self,y,x):
         if x==1:
+            item = self.prepaid_tableWidget.item(y,x)
             try:
-                models = self.prepaid_tableWidget.item(y,x).models
+                default_id = item.id
             except:
-                models = []
+                default_id=-1
+            child = GroupsDialog(self.connection, default_id)
             
-            child = CheckBoxDialog(all_items=self.connection.get_models("nas_trafficclass"), selected_items = models)
-            if child.exec_()==1:
-                self.prepaid_tableWidget.setItem(y,x, CustomWidget(parent=self.prepaid_tableWidget, models=child.selected_items))
-                if len(child.selected_items)>0:
-                    #self.prepaid_tableWidget.setRowHeight(y, len(child.selected_items)*25)
+            if child.exec_()==1 and child.selected_group!=-1:
+                group = self.connection.get_model(child.selected_group, "billservice_group")
+                self.addrow(self.prepaid_tableWidget, group.name, y,x, id=group.id)
+                if child.selected_group>0:
+                    #self.limit_tableWidget.setRowHeight(y, len(child.selected_items)*25)
                     self.prepaid_tableWidget.resizeColumnsToContents()
                     self.prepaid_tableWidget.resizeRowsToContents()
         
-        if x==4:
+        if x==2:
             item = self.prepaid_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -1658,7 +1661,7 @@ class TarifFrame(QtGui.QDialog):
             #Prepaid Traffic
             if not self.model.isnull('traffic_transmit_service_id'):
                 self.transmit_service_checkbox.setChecked(True)
-                prepaid_traffic = self.connection.sql("""SELECT * FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
+                prepaid_traffic = self.connection.sql("""SELECT prepaidtraffic.*, (SELECT name FROM billservice_group WHERE id=prepaidtraffic.group_id) as group_name FROM billservice_prepaidtraffic as prepaidtraffic WHERE prepaidtraffic.traffic_transmit_service_id=%d""" % self.model.traffic_transmit_service_id)
                 #print 'self.model.traffic_transmit_service_id', self.model.traffic_transmit_service_id
                 if len(prepaid_traffic)>0:
                     nodes = prepaid_traffic
@@ -1667,20 +1670,16 @@ class TarifFrame(QtGui.QDialog):
                     self.prepaid_tableWidget.setRowCount(len(nodes))
                     i=0
                     for node in nodes:
-                        traffic_classes = self.connection.sql(""" 
-                        SELECT trafficclass.* FROM nas_trafficclass as trafficclass
-                        JOIN billservice_prepaidtraffic_traffic_class as ttc ON ttc.trafficclass_id=trafficclass.id
-                        WHERE ttc.prepaidtraffic_id=%d
-                        """ % node.id)
               
                         self.addrow(self.prepaid_tableWidget, node.id,i, 0)
-                        self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=traffic_classes))
+                        self.addrow(self.prepaid_tableWidget, node.group_name,i, 1, id=node.group_id)
+                        #self.prepaid_tableWidget.setItem(i,1, CustomWidget(parent=self.prepaid_tableWidget, models=traffic_classes))
 
-                        self.addrow(self.prepaid_tableWidget, node.in_direction, i, 2, item_type='checkbox')
-                        self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
+                        #self.addrow(self.prepaid_tableWidget, node.in_direction, i, 2, item_type='checkbox')
+                        #self.addrow(self.prepaid_tableWidget, node.out_direction, i, 3, item_type='checkbox')
                         #self.addrow(self.prepaid_tableWidget, node.transit_direction, i, 4, item_type='checkbox')
                         
-                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1048576),i, 4)
+                        self.addrow(self.prepaid_tableWidget, float(node.size)/(1048576),i, 2)
                         i+=1       
                     
                     self.prepaid_tableWidget.resizeRowsToContents() 
@@ -2104,15 +2103,11 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(self.prepaid_tableWidget.rowCount()):
                     id = self.getIdFromtable(self.prepaid_tableWidget, i)
                     
-                    if self.prepaid_tableWidget.item(i, 1)==None or self.prepaid_tableWidget.item(i, 4)==None:
+                    if self.prepaid_tableWidget.item(i, 1)==None or self.prepaid_tableWidget.item(i, 2)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для предоплаченного трафика")
                         self.connection.rollback()
                         return
-                    elif self.prepaid_tableWidget.item(i, 1)!=None:
-                        if self.prepaid_tableWidget.item(i, 1)==[]:
-                            QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки для предоплаченного трафика")
-                            self.connection.rollback()
-                            return    
+
                         
                     if id!=-1:
                         #print "prepaid_id=", id
@@ -2123,43 +2118,18 @@ class TarifFrame(QtGui.QDialog):
                     #print "i=", self.prepaid_tableWidget.item(i,2)
 
                     prepaid_node.traffic_transmit_service_id = traffic_transmit_service.id
-                    prepaid_node.in_direction = self.prepaid_tableWidget.cellWidget(i,2).checkState()==2
-                    prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
+                    prepaid_node.group_id = self.prepaid_tableWidget.item(i,1).id
+                    #prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
                     #prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,4).text())*1048576)
+                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,2).text())*1048576)
 
 
-                    traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
-                    if len(traffic_class_models)==0:
-                        return
+                    #traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
+                    #if len(traffic_class_models)==0:
+                    #    return
 
                     prepaid_node.id = self.connection.save(prepaid_node,"billservice_prepaidtraffic")
 
-                    traffic_classes_for_node = self.connection.sql("""SELECT trafficclass.* FROM nas_trafficclass as trafficclass 
-
-                    JOIN billservice_prepaidtraffic_traffic_class as tc ON tc.trafficclass_id = trafficclass.id
-                    WHERE tc.prepaidtraffic_id=%s""" % prepaid_node.id)
-
-                    if traffic_classes_for_node==None:
-                        traffic_classes_for_node=[]
-                    traffic_classes_for_node = [x.id for x in traffic_classes_for_node]
-
-                    for cl in traffic_class_models:
-                        if cl not in traffic_classes_for_node:
-                            tc = Object()
-                            tc.prepaidtraffic_id = prepaid_node.id
-                            tc.trafficclass_id = cl
-                            self.connection.save(tc, "billservice_prepaidtraffic_traffic_class")
-
-                    if traffic_classes_for_node==None:
-                        traffic_classes_for_node=[]
-                           
-                    for cl in traffic_classes_for_node:
-                        if cl not in traffic_class_models:
-                            d = Object()
-                            d.prepaidtraffic_id = prepaid_node.id
-                            d.trafficclass_id = cl
-                            self.connection.delete(d, "billservice_prepaidtraffic_traffic_class")
 
     
             elif (self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0) and not model.isnull("traffic_transmit_service_id"):
@@ -3233,7 +3203,7 @@ class AccountWindow(QtGui.QMainWindow):
                 model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text())
                 
             elif self.ttype == 'IPN':
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на IPN тарифном плане. \n IPN IP должен быть введён до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте IPN IP."))
                 return
             else:
                 model.ipn_ip_address = u'0.0.0.0'
@@ -3256,7 +3226,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
                 model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text())
             elif self.ttype == 'VPN':
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь создан на VPN тарифном плане. \n VPN IP должен быть введён до конца."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте заполнение VPN IP."))
                 return
             else:
                 model.vpn_ip_address = u'0.0.0.0'
