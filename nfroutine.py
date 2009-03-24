@@ -534,7 +534,8 @@ class NetFlowRoutine(Thread):
                         else:
                             octets_summ=0
                             #loop throungh classes in 'classes' tuple
-                        for tgroup in groups:
+                        for group in groups:
+                            tgroup = group[0]
                             #acct[7] - traffic_transmit_service_id
                             #flow[23] - direction
                             trafic_cost=self.get_actual_cost(tts_id, tgroup, octets_summ, stream_date, c_TRTRNodesCache)
