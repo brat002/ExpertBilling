@@ -455,7 +455,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
             #if card['activated'] or card['start_date']>datetime.datetime.now() or card['end_date']<datetime.datetime.now(): return status_card_was_activated
             
-            cur.execute("SELECT * FROM billservice_ippool WHERE id=%s", (card['pool_id'],))
+            cur.execute("SELECT * FROM billservice_ippool WHERE id=(SELECT pool_id FROM billservice_ipinuse WHERE id=%s);", (card['ipinuse_id'],))
             pool = cur.fetchone()
             
             # 0 -VPN, 1 - IPN
