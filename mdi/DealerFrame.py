@@ -337,12 +337,12 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.label_bankcode.setText(QtGui.QApplication.translate("MainWindow", "Код банка", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_info), QtGui.QApplication.translate("MainWindow", "Данные о дилере", None, QtGui.QApplication.UnicodeUTF8))
         
-        columns = ["#", u"Серия", u"PIN", u"Номинальная стоимость", u"Дата начала", u"Дата конца"]
+        columns = ["#", u"Серия", u"Тариф", u"NAS", u"PIN", u"Номинальная стоимость", u"Дата начала", u"Дата конца"]
         makeHeaders(columns, self.tableWidget_not_activated)
         
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_not_activated), QtGui.QApplication.translate("MainWindow", "Карточки в наличии", None, QtGui.QApplication.UnicodeUTF8))
 
-        columns = ["#", u"Серия", u"PIN", u"Номинальная стоимость", u"Дата начала", u"Дата конца", u"Дата активации"]
+        columns = ["#", u"Серия", u"Тариф", u"NAS", u"PIN", u"Номинальная стоимость", u"Дата начала", u"Дата конца", u"Дата активации"]
         makeHeaders(columns, self.tableWidget_activated)
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_activated), QtGui.QApplication.translate("MainWindow", "Активированные карточки", None, QtGui.QApplication.UnicodeUTF8))
@@ -538,30 +538,49 @@ class AddDealerFrame(QtGui.QMainWindow):
             
             ###END Info
             not_activated = self.connection.sql("SELECT * FROM billservice_card WHERE activated is Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+
+            tariffs = self.connection.get_models("billservice_tariff")
+            t={}
+            for tar in tariffs:
+                t['%s' % tar.id] = tar.name
+    
+            nasses = self.connection.get_models("nas_nas")
+            n = {}
+            for nas in nasses:
+                n['%s' % nas.id] = nas.name            
+                
             self.connection.commit()
             self.tableWidget_not_activated.setRowCount(len(not_activated))
             i=0
             for d in not_activated:
                 self.addrow(self.tableWidget_not_activated, d.id, i,0)
                 self.addrow(self.tableWidget_not_activated, d.series, i,1)
-                self.addrow(self.tableWidget_not_activated, d.pin, i,2)
-                self.addrow(self.tableWidget_not_activated, d.nominal, i,3)
-                self.addrow(self.tableWidget_not_activated, d.start_date.strftime(strftimeFormat), i,4)
-                self.addrow(self.tableWidget_not_activated, d.end_date.strftime(strftimeFormat), i,5)
+                self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id), i,2)
+                self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id), i,3)
+                
+                self.addrow(self.tableWidget_not_activated, d.pin, i,4)
+                self.addrow(self.tableWidget_not_activated, d.nominal, i,5)
+                self.addrow(self.tableWidget_not_activated, d.start_date.strftime(strftimeFormat), i,6)
+                self.addrow(self.tableWidget_not_activated, d.end_date.strftime(strftimeFormat), i,7)
                 i+=1
 
             activated = self.connection.sql("SELECT id, series, pin, nominal, start_date, end_date, activated FROM billservice_card WHERE activated is not Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+ 
+           
+            
             self.connection.commit()
             self.tableWidget_activated.setRowCount(len(activated))
             i=0
             for d in activated:
                 self.addrow(self.tableWidget_activated, d.id, i,0)
                 self.addrow(self.tableWidget_activated, d.series, i,1)
-                self.addrow(self.tableWidget_activated, d.pin, i,2)
-                self.addrow(self.tableWidget_activated, d.nominal, i,3)
-                self.addrow(self.tableWidget_activated, d.start_date.strftime(strftimeFormat), i,4)
-                self.addrow(self.tableWidget_activated, d.end_date.strftime(strftimeFormat), i,5)
-                self.addrow(self.tableWidget_activated, d.activated.strftime(strftimeFormat), i,6)
+                self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id), i,2)
+                self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id), i,3)
+                self.addrow(self.tableWidget_activated, d.pin, i,4)
+                self.addrow(self.tableWidget_activated, d.nominal, i,5)
+                self.addrow(self.tableWidget_activated, d.start_date.strftime(strftimeFormat), i,6)
+                self.addrow(self.tableWidget_activated, d.end_date.strftime(strftimeFormat), i,7)
+                self.addrow(self.tableWidget_activated, d.activated.strftime(strftimeFormat), i,8)
                 i+=1
 
             #self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )

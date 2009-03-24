@@ -106,7 +106,7 @@ class ClassEdit(QtGui.QDialog):
             self.store_edit.setCheckState(self.model.store == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.passthrough_checkBox.setCheckState(self.model.passthrough == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
-            self.store_editself.pptp_edit.checkState()==2
+            #self.store_edit.checkState()==2
         
     def accept(self):
         if unicode(self.name_edit.text())=="":

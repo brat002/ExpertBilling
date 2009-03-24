@@ -1,10 +1,12 @@
-#-*-coding=utf-8-*-
+# -*- coding=utf-8 -*-
+
 import IPy
 import hmac
 import zlib
 import signal
 import hashlib
 import asyncore
+import datetime
 
 import threading
 import ConfigParser
@@ -439,12 +441,48 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return
 
     @authentconn
-    def activate_card(self, login, pin, table, cur=None, connection=None):
-        sql = model.delete(table)
-        #print sql
-        cur.execute(sql)
+    def activate_card(self, login, pin, cur=None, connection=None):
+        status_ok = 1
+        status_bad_userpassword = 2
+        status_card_was_activated =3
+        now = datetime.datetime.now()
+        if login and pin:
+            cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null;",  (login, pin, ))
+            card = cur.fetchone()
+            if not card: return status_bad_userpassword
+            
+            if card['activated'] or card['start_date']>now or card['end_date']<now: return status_card_was_activated
+            
+            #if card['activated'] or card['start_date']>datetime.datetime.now() or card['end_date']<datetime.datetime.now(): return status_card_was_activated
+            
+            cur.execute("SELECT * FROM billservice_ippool WHERE id=%s", (card['pool_id'],))
+            pool = cur.fetchone()
+            
+            # 0 -VPN, 1 - IPN
+            if pool['type']==1:
+                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
+                VALUES(%s, %s, %s, %s, False, True, now(), False, True, True, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+            else:
+                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
+                VALUES(%s, %s, %s, %s, False, True, now(), False, True, True, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                
+            account_id = cur.fetchone()['id']
+    
+            cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
+            
+            cur.execute(u"""
+            INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
+            VALUES('Активация карты доступа', %s, 'ACCESS_CARD', True, %s, %s*(-1),'', %s);
+            """, (account_id, card["tarif_id"], card['nominal'], now))
+    
+            cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
+            connection.commit()
+            return  status_ok
+    
+                            
+        #cur.execute(sql)
         #connection.commit()
-        del sql
+        #del sql
         return
 
     @authentconn
@@ -589,7 +627,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     
     @authentconn  
     def delete_card(self, id, cur=None, connection=None):
-        cur.execute("DELETE FROM billservice_card WHERE sold is Null and id=%s", (id,))
+        cur.execute("DELETE FROM billservice_card WHERE id=%s", (id,))
         return
     
     @authentconn  
@@ -624,6 +662,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def save(self, model, table, cur=None, connection=None):
+        #print model
         sql = model.save(table)
         #print sql
         cur.execute(sql)
