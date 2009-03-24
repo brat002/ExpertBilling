@@ -291,18 +291,10 @@ class NetFlowRoutine(Thread):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
         
-    def get_actual_cost(self, trafic_transmit_service_id, group_id, direction, octets_summ, stream_date, cTRTRNodesCache):
+    def get_actual_cost(self, trafic_transmit_service_id, group_id, octets_summ, stream_date, cTRTRNodesCache):
         """
         Метод возвращает актуальную цену для направления трафика для пользователя:
         """
-        if direction=="INPUT":
-            #d = "in_direction=True"
-            d = 9
-        elif direction=="OUTPUT":
-            #d = "out_direction=True"
-            d = 10
-        else:
-            return 0
         #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
         #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
         #trafic_transmit_nodes=self.cur.fetchall()
@@ -312,26 +304,26 @@ class NetFlowRoutine(Thread):
         # [0] - ttsn.id, [1] - ttsn.cost, [2] - ttsn.edge_start, [3] - ttsn.edge_end, [4] - tpn.time_start, [5] - tpn.length, [6] - tpn.repeat_after
         for node in trafic_transmit_nodes:
             #'d': '9' - in_direction, '10' - out_direction
-            if node[d]:
-                trafic_transmit_node_id=node[0]
-                trafic_cost=node[1]
-                trafic_edge_start, trafic_edge_end=node[2:4]    
-                period_start, period_length, repeat_after=node[4:7]
+            #if node[d]:
+            trafic_transmit_node_id=node[0]
+            trafic_cost=node[1]
+            trafic_edge_start, trafic_edge_end=node[2:4]    
+            period_start, period_length, repeat_after=node[4:7]
 
-                #tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
-                tnc, tkc, from_start,result=fMem.in_period_(period_start,period_length, repeat_after, stream_date)
-                if result:
-                    """
-                    Зачем здесь было это делать:
-                    Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
-                    но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
-                    который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
-                    значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
-                    у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
-                    """
-                    if from_start<min_from_start or min_from_start==0:
-                        min_from_start=from_start
-                        cost=trafic_cost
+            #tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
+            tnc, tkc, from_start,result=fMem.in_period_(period_start,period_length, repeat_after, stream_date)
+            if result:
+                """
+                Зачем здесь было это делать:
+                Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
+                но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
+                который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
+                значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
+                у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
+                """
+                if from_start<min_from_start or min_from_start==0:
+                    min_from_start=from_start
+                    cost=trafic_cost
         #del trafic_transmit_nodes
         return cost
 
@@ -545,34 +537,28 @@ class NetFlowRoutine(Thread):
                         for tgroup in groups:
                             #acct[7] - traffic_transmit_service_id
                             #flow[23] - direction
-                            trafic_cost=self.get_actual_cost(tts_id, tgroup, flow_dir, octets_summ, stream_date, c_TRTRNodesCache)
+                            trafic_cost=self.get_actual_cost(tts_id, tgroup, octets_summ, stream_date, c_TRTRNodesCache)
 
-                            #direction
-                            
-                            if flow_dir=="INPUT":
-                                d = 2
-                            else:
-                                d = 3
                             #get a record from prepays cache
                             #keys: traffic_transmit_service_id, accounttarif.id, trafficclass
                             prepInf =  c_prepaysCache.get((tts_id, acct[12], tgroup))                            
                             
                             if prepInf:
                                 #d = 5: checks whether in_direction is True; d = 6: whether out_direction
-                                if prepInf[d]:
-                                    #[0] - prepais.id, [1] - prepais.size
-                                    prepaid_id, prepaid = prepInf[0:2]
-                                    prepHnd = prepaid
-                                    if prepaid>0:                            
-                                        if prepaid>=octets:
-                                            prepaid=prepaid-octets
-                                            octets=0
-                                        elif octets>=prepaid:
-                                            octets=octets-prepaid
-                                            prepaid=abs(prepaid-octets)
-                                            
-                                        cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
-                                        connection.commit()
+                                #if prepInf[d]:
+                                #[0] - prepais.id, [1] - prepais.size
+                                prepaid_id, prepaid = prepInf[0:2]
+                                prepHnd = prepaid
+                                if prepaid>0:                            
+                                    if prepaid>=octets:
+                                        prepaid=prepaid-octets
+                                        octets=0
+                                    elif octets>=prepaid:
+                                        octets=octets-prepaid
+                                        prepaid=abs(prepaid-octets)
+                                        
+                                    cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
+                                    connection.commit()
             
                             summ=(trafic_cost*octets)/(1048576)
         
@@ -701,7 +687,7 @@ class AccountServiceThread(Thread):
                              JOIN billservice_prepaidtraffic_traffic_class AS prept_tc ON prept_tc.prepaidtraffic_id=prepaidtraffic.id
                              WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""", (tmpDate,))
                              '''
-                cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id, prepaidtraffic.in_direction, prepaidtraffic.out_direction
+                cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                              FROM billservice_accountprepaystrafic as prepais
                              JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
                              WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""", (tmpDate,))
@@ -714,7 +700,7 @@ class AccountServiceThread(Thread):
                                (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));
                             """)'''
                 cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
-                               ttsn.group_id, ttsn.traffic_transmit_service_id, ttsn.in_direction, ttsn.out_direction
+                               ttsn.group_id, ttsn.traffic_transmit_service_id 
                                FROM billservice_traffictransmitnodes as ttsn
                                JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
                                (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
@@ -740,7 +726,7 @@ class AccountServiceThread(Thread):
                 if prepTp:                    
                     #keys: traffic_transmit_service_id, accounttarif.id, group_id
                     for prep in prepTp:
-                        prepaysTmp[(prep[4],prep[2],prep[3])] = [prep[0], prep[1], prep[5], prep[6]]
+                        prepaysTmp[(prep[4],prep[2],prep[3])] = [prep[0], prep[1]]
                     prepaysCache = prepaysTmp
                     
                 trafnodesTmp = defaultdict(list)
