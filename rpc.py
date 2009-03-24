@@ -192,8 +192,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         try:
             #print host, login, password
             a=SSHClient(host, 22,login, password)
-            a.send_command("\n")
-            #a.close()
+            a.close()
         except Exception, e:
             print e
             return False
