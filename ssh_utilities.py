@@ -17,6 +17,8 @@ def ssh_execute(user, host, password, command):
     ssession.expect(pexpect.EOF)
     return 'OK:' + str(ssession.before) + ':' + str(ssession.after)
 
+
+
 class SSHClient(object):
     def __init__(self, host, port, username, password):
         #pxssh.__init__(self)
@@ -24,7 +26,7 @@ class SSHClient(object):
         self.port = port
         self.username = username
         self.password = password
-        self.force_password = True
+        #self.force_password = True
         #self.login(host, username,password=password, port=port)
 
     def send_command(self, text):
@@ -36,5 +38,19 @@ class SSHClient(object):
     def close_channel(self):
         #self.logout()
         pass
+        
+class SSHClient_(pxssh):
+    def __init__(self, host, port, username, password):
+        pxssh.__init__(self)
+        self.force_password = True
+        self.login(host, username,password=password, port=port)
+
+    def send_command(self, text):
+        self.sendline(text)
+        self.prompt()
+        return self.before
+
+    def close_channel(self):
+        self.logout()
 
 
