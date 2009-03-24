@@ -943,7 +943,7 @@ def main():
         logger.info("NFR %s start", th.getName())
         time.sleep(0.1)
         
-    time.sleep(30)
+    time.sleep(5)
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
