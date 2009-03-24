@@ -9,8 +9,11 @@
 
 <div class="reg_margin">
 	{% if error_message %}
-    <h2 align="center">{{ error_message }}</h2>
-{% endif %}
+    	<h2 align="center">{{ error_message }}</h2>
+	{% endif %}
+	{% if message %}
+		<h2 align="center">{{ message|safe }}</h2>
+	{% endif %}
 <!--
 <div class="registration">
 <form method="post" action="/">
