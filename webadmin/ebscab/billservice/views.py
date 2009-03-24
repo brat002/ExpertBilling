@@ -27,26 +27,36 @@ def login(request):
     error_message = True
     if request.method == 'POST':
         pin=request.POST.get('pin','')
+        user = request.POST.get('user','')
         if pin!='':
-            try:
-                connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
-                import hashlib
-                md1 = hashlib.md5(settings.RPC_PASSWORD)
-                md1.hexdigest()
-               
-                password = str(md1.hexdigest())
-                connection_server._setNewConnectionValidator(antiMungeValidator())
-                print connection_server._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
-                connection_server.test()
-            except Exception, e:
-                if isinstance(e, Pyro.errors.ConnectionDeniedError):
-                    error_message = u"Отказано в авторизации."
-                else:
-                    error_message  = u"Невозможно подключиться к серверу."
-            #connection_server.makeChart(*cargs, **ckwargs)
+            if user!='':
+                message=None
+                try:
+                    connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
+                    import hashlib
+                    md1 = hashlib.md5(settings.RPC_PASSWORD)
+                    md1.hexdigest()
+                   
+                    password = str(md1.hexdigest())
+                    connection_server._setNewConnectionValidator(antiMungeValidator())
+                    print connection_server._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
+                    connection_server.test()
+                except Exception, e:
+                    if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                        error_message = u"Отказано в авторизации."
+                    else:
+                        error_message  = u"Невозможно подключиться к серверу."
+                message_type = connection_server.activate_card(user, pin)
+                if message_type == 1:
+                    message = u'Карточка успешно активирована. <br>  Выш логин %s <br> ваш пароль %s' % (user, pin)
+                if message_type == 2:
+                    message = u'Не верно введен логин или пароль'
+                if message_type == 3:
+                    message = u'Карточка уже была активирована' 
             form = LoginForm()
             return {
                     'form':form,
+                    'message':message,
                     }
         form = LoginForm(request.POST)
         if form.is_valid():
