@@ -3,7 +3,7 @@
 
 python lic_generator.py $1 $2
 
-reskey=$3`cat license.lic`
+reskey=$3`cat license_$1.lic`
 
 echo $reskey
 
