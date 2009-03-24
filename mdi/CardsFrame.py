@@ -756,15 +756,15 @@ class AddCards(QtGui.QDialog):
                     model.ip = ips[x]
                     model.nas_id = nas_id
                     ipinuse_model = Object()
-                    ipinuse_model.ip =model.ip
+                    ipinuse_model.ip = model.ip
                     ipinuse_model.pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
                     ipinuse_model.datetime = "now()"
-                    self.connection.save(ipinuse_model, "billservice_ipinuse")
+                    ipinuse_model.id = self.connection.save(ipinuse_model, "billservice_ipinuse")
                 model.nominal = unicode(self.spinBox_nominal.text())
                 model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
                 model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
                 model.template_id = template_id
-                model.pool_id = pool_id
+                model.ipinuse_id = ipinuse_model.id
                 model.created = dnow
 
                 self.connection.save(model,"billservice_card")
