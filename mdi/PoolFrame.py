@@ -128,6 +128,8 @@ class AddPoolFrame(QtGui.QDialog):
         pools = self.connection.get_models("billservice_ippool")
         self.connection.commit()
         for pool in pools:
+            if model.isnull('id')==False:
+                if model.id==pool.id:continue
             if not (IPy.IP(pool.end_ip)<IPy.IP(model.start_ip) or (IPy.IP(model.end_ip)<IPy.IP(pool.start_ip))):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Новый диапазон уже входит в пул адресов %s" % pool.name))
                 return
@@ -215,7 +217,7 @@ class PoolEbs(ebsTableWindow):
     def refresh(self):
 
         self.tableWidget.clearContents()
-        pools = self.connection.sql("SELECT ippool.*, (SELECT count(*) FROM billservice_ipinuse as ipinuse WHERE ipinuse.pool_id=ippool.id) as count_used FROM billservice_ippool as ippool")
+        pools = self.connection.sql("SELECT ippool.*, (SELECT count(*) FROM billservice_ipinuse as ipinuse WHERE ipinuse.pool_id=ippool.id) as count_used FROM billservice_ippool as ippool ORDER BY ippool.name ASC")
         self.connection.commit()
         self.tableWidget.setRowCount(len(pools))
         i=0
