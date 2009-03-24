@@ -18,7 +18,7 @@ if __name__ == '__main__':
     for i in xrange(12):
         main_str += choice(let_seq)
         
-    main_str = hex_users[0:2] + main_str + hex_users[2:4]
+    main_str = (hex_users[0:2] + main_str + hex_users[2:4]).upper()
     
     f = open('license_' + proj_name + '.lic', 'wb')
     

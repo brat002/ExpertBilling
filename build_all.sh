@@ -37,7 +37,7 @@ mkdir $1/init.d
 cp -rf dicts $1/dicts
 cp -rf fonts $1/fonts
 rm -rf $1/modules/chartprovider
-cp pychartdir.pyc pychartdir25.pyd pychartdir25.so libchartdir.so $1/modules
+cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so $1/modules
 
 for bldd in $total_build; do
 	cp $bldd $1
