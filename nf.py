@@ -791,11 +791,6 @@ def main ():
         asyncore.poll(0.010)
 
 
-if socket.gethostname() not in ['dolphinik','kenny','sserv.net','sasha','medusa', 'kail','billing', 'Billing.NemirovOnline', 'iserver']:
-    import sys
-    print "License key error. Exit from application."
-    sys.exit(1)
-
 if __name__=='__main__':
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
