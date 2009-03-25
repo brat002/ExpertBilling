@@ -408,13 +408,13 @@ class periodical_service_bill(Thread):
                                     """
                                     last_checkout=get_last_checkout(cursor=cur, ps_id = ps_id, accounttarif = accounttarif_id)                                    
                                     if last_checkout is None and ps_created==None:
-                                        last_checkout=time_start_ps
+                                        last_checkout=period_start
                                     elif last_checkout is None and ps_created!=None:
-                                        if ps_created<time_start_ps:
-                                            last_checkout=time_start_ps
+                                        if ps_created<period_start:
+                                            last_checkout=period_start
                                         else:
                                             last_checkout=ps_created
-                                        
+
                                     #print "last checkout", last_checkout
                                     if (now-last_checkout).seconds+(now-last_checkout).days*86400>=n:
                                         #print "GRADUAL"
