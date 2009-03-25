@@ -6,8 +6,10 @@
 trap '' 1 2 3 15
 
 
-DAEMON=/opt/ebs/data/nf
 NAME=nf
+DPATH=/opt/ebs/data/
+DAEMON=$DPATH$NAME
+
 DESC="ebs billing nf daemon"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/ebs_$NAME
@@ -19,8 +21,11 @@ test -x $DAEMON || exit 0
 case "$1" in
 start)
         
-         echo "Starting ebs nf"
-			$DAEMON &
+        echo "Starting ebs nf"
+		olddir=`pwd`
+        cd $DPATH
+        $DAEMON &
+        cd $olddir
 
 		;;
 stop)
