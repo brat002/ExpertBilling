@@ -1166,10 +1166,6 @@ def main():
     while 1: 
         asyncore.poll(0.01)
         
-if socket.gethostname() not in ['dolphinik','sserv.net','sasha', 'xubuntu', 'kenny','billing','medusa', 'Billing.NemirovOnline', 'iserver']:
-    print >> sys.stderr, "License key error. Exit from application."
-    sys.exit(1)
-
 if __name__ == "__main__":
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
