@@ -15,12 +15,12 @@ import datetime, calendar
 import os, sys, time, md5, binascii, socket, select
 
 ssh_exec = False
-try: 
-    from ssh_utilities import SSHClient, ssh_execute
-    ssh_exec = True
-except:
-    print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
-    from ssh_paramiko import SSHClient
+#try: 
+#    from ssh_utilities import SSHClient, ssh_execute
+#    ssh_exec = True
+#except:
+#    print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
+from ssh_paramiko import SSHClient
 
 def log_info_(lstr, level=1):
     log_adapt(lstr, level)
