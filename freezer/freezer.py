@@ -32,22 +32,18 @@ _PROTECTION_CHUNK_1 = r"""
 	#  __5 - module
 	#  __6 - key data
 	__0 = [
-		_x_( 'bHMgL2Rldi9kaXNrL2J5LWlk' ),         # 'ls /dev/disk/by-id'
+		_x_( 'L2Rldi9kaXNrL2J5LWlk' ),             # '/dev/disk/by-id'
 		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
-		_x_( 'cGxhdGZvcm0=' ),                     # 'platform'
-		_x_( 'Y29tbWFuZHM=' ),                     # 'commands'
-		_x_( 'Z2V0c3RhdHVzb3V0cHV0' ),             # 'getstatusoutput'
+		_x_( 'cGFydA==' ),                         # 'part'
+		_x_( 'b3M=' ),                             # 'os'
+		_x_( 'bGlzdGRpcg==' ),                     # 'listdir'
 		_x_( 'bWQ1' ),                             # 'md5'
 		_x_( 'bmV3' ),                             # 'new'
 		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
 	]
-	__5 = __import__( __0[ 3 ] ) # import commands
-	__1, __2 = getattr( __5, __0[ 4 ] )( __0[ 0 ] ) # ... = commands.getstatusoutput( 'ls /dev/disk/by-id' )
-	if __1 or not __2: raise SystemError( __0[ 1 ] )
-	__3 = []
-	for __4 in __2.split( '\n' ):
-		__4 = __4.split( '_' )[ 1 ].split( '-' )[ 0 ]
-		if __4 and __4 not in __3: __3.append( __4 )
+	__5 = __import__( __0[ 3 ] ) # import os
+	__3 = [_i_ for _i_ in getattr( __5, __0[4] )( __0[0] ) if ( not __0[2] in _i_)] #descr in keygetter
+	if  not __3: raise SystemError( __0[ 1 ] )
 	__6 = str.join('', __3)
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
