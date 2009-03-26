@@ -1013,17 +1013,18 @@ class settlement_period_service_dog(Thread):
                     account_balance = acct[1] + acct[2]    
                     #Если балланса не хватает - отключить пользователя
                     if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
+                        cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
+                        pstart_balance = cur.fetchone()[0]
+                        if cost > pstart_balance:
                         #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
-                        cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
-                                    """, (account_id, cost,))
-    
-    
-                        cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
-                                    """, (now, account_id,))
-    
-                        if cur.fetchone()==None:
-                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
-                                        """, (account_id, accounttarif_id, now,))
+                            cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
+                                        """, (account_id, cost,))
+                            cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
+                                        """, (now, account_id,))
+                            if cur.fetchone()==None:
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
+                                            """, (account_id, accounttarif_id, now,))
+                        connection.commit()
                     if account_balance_blocked==True and account_balance>=cost:
                         """
                         Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
