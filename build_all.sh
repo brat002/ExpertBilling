@@ -3,20 +3,28 @@
 
 python lic_generator.py $1 $2
 
-reskey=$3`cat license_$1.lic`
+reskey=""
+karg=""
 
-echo $reskey
+if [ $3 ]; then
+	karg="-k"
+	reskey=$3`cat license_$1.lic`
+fi
+
+if [ $reskey ]; then
+	echo $reskey;
+else
+    echo "No key entered - test drive";
+fi
 
 rm -rf modules
 rm -rf $1
 
 mkdir $1
 
-karg=""
 
-if [ $3 ]; then
-	karg="-k"
-fi
+
+
 
 simple_build="core rad nf nfroutine"
 total_build="$simple_build rpc"
