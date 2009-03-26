@@ -1,6 +1,4 @@
-     
-    
-CREATE FUNCTION transaction_fn(bill_ character varying, account_id_ integer, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, ps_id_ integer, acctf_id_ integer, ps_condition_type_ integer) RETURNS void
+CREATE OR REPLACE FUNCTION transaction_fn(bill_ character varying, account_id_ integer, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, ps_id_ integer, acctf_id_ integer, ps_condition_type_ integer) RETURNS void
     AS $$
 DECLARE
     new_summ_ double precision;
@@ -20,7 +18,7 @@ END;
 $$
     LANGUAGE plpgsql;
     
-CREATE FUNCTION nfs_crt_prev_ins(datetx date) RETURNS void
+CREATE OR REPLACE FUNCTION nfs_crt_prev_ins(datetx date) RETURNS void
     AS $$
 DECLARE
 
