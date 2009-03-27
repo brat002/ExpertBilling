@@ -930,213 +930,216 @@ class settlement_period_service_dog(Thread):
                     continue
                 cur = connection.cursor()
                 for acct in cacheAT:
-                    account_id = acct[0]
-                    ballance_checkout, balance_blocked = (None, None)
-                    prepaid_traffic_reset, prepaid_traffic_accrued, accounttarif_id_shedulelog = (None, None, None)
-                    prepaid_time_reset, prepaid_time_accrued = (None, None)
-                    shedlRec = cacheShedLog.get(account_id)
-
-                    if shedlRec==None:
-                        shedulelog_id=-1
-                    else:
-                        shedulelog_id    = shedlRec[0]
-                        ballance_checkout = shedlRec[2]                        
-                        prepaid_traffic_reset, prepaid_traffic_accrued = shedlRec[3:5]                        
-                        prepaid_time_reset, prepaid_time_accrued       = shedlRec[5:7]
-                        balance_blocked            = shedlRec[7]
-                        accounttarif_id_shedulelog = shedlRec[8]
-
-                    acct_datetime = acct[3]
-                    period_end = None
-                    time_start = None
-                    now = datetime.datetime.now()
-                    #if tariff has settlement_period_id
-                    setper_id = acct[10]
-                    if setper_id:
-                        setpRec = cacheSetP.get(setper_id)
-                        #if autostart:
-                        if setpRec[4]:
-                            time_start=acct_datetime
+                    try:
+                        account_id = acct[0]
+                        ballance_checkout, balance_blocked = (None, None)
+                        prepaid_traffic_reset, prepaid_traffic_accrued, accounttarif_id_shedulelog = (None, None, None)
+                        prepaid_time_reset, prepaid_time_accrued = (None, None)
+                        shedlRec = cacheShedLog.get(account_id)
+    
+                        if shedlRec==None:
+                            shedulelog_id=-1
                         else:
-                            time_start = setpRec[1]
-                        #time_start, length_in, length
-                        period_start, period_end, delta = fMem.settlement_period_(time_start, setpRec[3], setpRec[2], dateAT)
-                    else:
-                        time_start = acct_datetime
-                        period_start = acct_datetime
-                        delta = 86400*365*365
-
-                    tarif_id = acct[4]
-                    accounttarif_id = acct[12]
-                    cost = acct[8]
-                    account_balance_blocked = acct[16]
-                    #нужно производить в конце расчётного периода
-                    if ballance_checkout==None: ballance_checkout = acct_datetime
-                    #print "time_start", time_start, setpRec[3], setpRec[2]
-                    if ballance_checkout<period_start and acct[9]==True and period_end and cost>0:
-                        #Снять сумму до стоимости тарифного плана
-                        #!!! ASK ABOUT period_end!!!
-                        #acct[9] - reset_tarif_cost
-                        #print "acct[9] and period_end", acct[9], period_end                        
-                        #Считаем сколько было списано по услугам                        
-               
-                    
-                        tnc, tkc, delta = settlement_period_info(time_start, setpRec[3], setpRec[2], dateAT, prev=True)
-                        #Считаем сколько было списано по услугам
-                        cur.execute(
-                            """
-                            SELECT sum(summ)
-                            FROM billservice_transaction
-                            WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
-                            """, (tnc, tkc, account_id, tarif_id,))
-                        summ=cur.fetchone()[0]
-                        if summ==None:
-                            summ=0
-
-                        if cost>summ:
-                            s=cost-summ
-                            transaction(
-                                cursor=cur,
-                                type='END_PS_MONEY_RESET',
-                                account=account_id,
-                                approved=True,
-                                tarif=tarif_id,
-                                summ=s,
-                                description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
-                                created=now
-                            )
-                        cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
-                        shedulelog_id =cur.fetchone()
-                        if shedulelog_id==None:
-                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, %s);""", (account_id, accounttarif_id, now,))
-                                        
-                    account_balance = acct[1] + acct[2]    
-                    #Если балланса не хватает - отключить пользователя
-                    if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
-                        cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
-                        pstart_balance = cur.fetchone()[0]
-                        if cost > pstart_balance:
-                        #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
-                            cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
-                                        """, (account_id, cost,))
-                            cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
-                                        """, (now, account_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
-                                            """, (account_id, accounttarif_id, now,))
-                        connection.commit()
-                    if account_balance_blocked==True and account_balance>=cost:
-                        """
-                        Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
-                        """
-                        #print "balance blocked2"
-                        cur.execute(
-                            """
-                            UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
-                            """, (account_id,))                            
+                            shedulelog_id    = shedlRec[0]
+                            ballance_checkout = shedlRec[2]                        
+                            prepaid_traffic_reset, prepaid_traffic_accrued = shedlRec[3:5]                        
+                            prepaid_time_reset, prepaid_time_accrued       = shedlRec[5:7]
+                            balance_blocked            = shedlRec[7]
+                            accounttarif_id_shedulelog = shedlRec[8]
     
-                        connection.commit()
-                    
-
-                    traffic_transmit_service_id = acct[7]
-                    reset_traffic = None
-                    if traffic_transmit_service_id != None:
-                        ttsRec= cacheTTS.get(traffic_transmit_service_id)
-                        reset_traffic = ttsRec[1]
-                    
-                    
-                    if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
-                    if (reset_traffic==True or traffic_transmit_service_id==None) and (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):
-                        #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
-                        #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
+                        acct_datetime = acct[3]
+                        period_end = None
+                        time_start = None
+                        now = datetime.datetime.now()
+                        #if tariff has settlement_period_id
+                        setper_id = acct[10]
+                        if setper_id:
+                            setpRec = cacheSetP.get(setper_id)
+                            #if autostart:
+                            if setpRec[4]:
+                                time_start=acct_datetime
+                            else:
+                                time_start = setpRec[1]
+                            #time_start, length_in, length
+                            period_start, period_end, delta = fMem.settlement_period_(time_start, setpRec[3], setpRec[2], dateAT)
+                        else:
+                            time_start = acct_datetime
+                            period_start = acct_datetime
+                            delta = 86400*365*365
+    
+                        tarif_id = acct[4]
+                        accounttarif_id = acct[12]
+                        cost = acct[8]
+                        account_balance_blocked = acct[16]
+                        #нужно производить в конце расчётного периода
+                        if ballance_checkout==None: ballance_checkout = acct_datetime
+                        #print "time_start", time_start, setpRec[3], setpRec[2]
+                        if ballance_checkout<period_start and acct[9]==True and period_end and cost>0:
+                            #Снять сумму до стоимости тарифного плана
+                            #!!! ASK ABOUT period_end!!!
+                            #acct[9] - reset_tarif_cost
+                            #print "acct[9] and period_end", acct[9], period_end                        
+                            #Считаем сколько было списано по услугам                        
+                   
                         
-                        """
-                        (Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план
-                        """
-                        cur.execute("""DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
-                                    """ % accounttarif_id)
+                            tnc, tkc, delta = settlement_period_info(time_start, setpRec[3], setpRec[2], dateAT, prev=True)
+                            #Считаем сколько было списано по услугам
+                            cur.execute(
+                                """
+                                SELECT sum(summ)
+                                FROM billservice_transaction
+                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
+                                """, (tnc, tkc, account_id, tarif_id,))
+                            summ=cur.fetchone()[0]
+                            if summ==None:
+                                summ=0
     
-                        cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
-                        if cur.fetchone()==None:
-                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, %s) ;
-                                        """, (account_id, accounttarif_id, now,))    
-                    connection.commit()
-    
-                    if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
-                        #Начислить новый предоплаченный трафик
-                        cur.execute("""SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%s;
-                                    """, (traffic_transmit_service_id,))
-    
-                        prepais=cur.fetchall()
-                        connection.commit()
-                        u=False
-                        for prepaid_traffic_id, size in prepais:
-                            u=True
-                            #print "SET PREPAID TRAFIC"
-                            cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=%s
-                                           WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
-                                        """, (size, now, accounttarif_id, prepaid_traffic_id,))
-                            if cur.fetchone() is None:
-                                cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
-                                               VALUES(%s, %s, %f*1048576, '%s');
-                                            """ % (accounttarif_id, prepaid_traffic_id, size, now,))
+                            if cost>summ:
+                                s=cost-summ
+                                transaction(
+                                    cursor=cur,
+                                    type='END_PS_MONEY_RESET',
+                                    account=account_id,
+                                    approved=True,
+                                    tarif=tarif_id,
+                                    summ=s,
+                                    description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
+                                    created=now
+                                )
+                            cur.execute("UPDATE billservice_shedulelog SET ballance_checkout=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
+                            shedulelog_id =cur.fetchone()
+                            if shedulelog_id==None:
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, %s);""", (account_id, accounttarif_id, now,))
+                                            
+                        account_balance = acct[1] + acct[2]    
+                        #Если балланса не хватает - отключить пользователя
+                        if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
+                            #cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
+                            cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
+                            pstart_balance = cur.fetchone()[0] + account_balance
+                            if cost > pstart_balance:
+                            #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
+                                cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
+                                            """, (account_id, cost,))
+                                cur.execute("""UPDATE billservice_shedulelog SET balance_blocked = %s WHERE account_id=%s RETURNING id;
+                                            """, (now, account_id,))
+                                if cur.fetchone()==None:
+                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
+                                                """, (account_id, accounttarif_id, now,))
                             connection.commit()
-                            
-                        if u==True:
-                            cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, %s) ;
-                                            """, (account_id, accounttarif_id, now,))  
-                    connection.commit() 
-                    #print "account_id", acct[0], "time_service_id", acct[6]
-                    time_access_service_id = acct[6]
-                    reset_time = None
-                    prepaid_time = 0
-                    if time_access_service_id:
-                        taccsRec = cacheTAccS.get(time_access_service_id)
-                        reset_time    = taccsRec[2]
-                        prepaid_time  = taccsRec[1]
+                        if account_balance_blocked==True and account_balance>=cost:
+                            """
+                            Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
+                            """
+                            #print "balance blocked2"
+                            cur.execute(
+                                """
+                                UPDATE billservice_account SET balance_blocked=False WHERE id=%s;
+                                """, (account_id,))                            
+        
+                            connection.commit()
                         
-                    if (reset_time==True or time_access_service_id==None) and (prepaid_time_reset is None or prepaid_time_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):                        
-                        #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
-                        #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
-                        cur.execute("""DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=%s;""", (accounttarif_id,))                            
-                        cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))                        
-                        if cur.fetchone()==None:                            
-                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) values(%s, %s, %s) ;""", (account_id, accounttarif_id,now,))                                
-                        connection.commit()        
-                    if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
     
-                        cur.execute("""UPDATE billservice_accountprepaystime
-                                       SET size=size+%s,datetime=%s WHERE account_tarif_id=%s RETURNING id;
-                                    """, (prepaid_time,now, accounttarif_id,))
-                        if cur.fetchone()==None:
-                            cur.execute("""INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id) VALUES(%s, %s, %s, %s);
-                                        """, (accounttarif_id, prepaid_time, now, time_access_service_id,))    
-                        cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
-                        if cur.fetchone()==None:
-                            cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, %s) ;
-                                        """, (account_id, accounttarif_id,now))
-                    
-                    if account_balance > 0:
-                        onetimesvs = cacheOTSrv.get(tarif_id, [])
-                        for ots in onetimesvs:
-                            ots_id = ots[0]
-                            if not cacheOTSHist.has_key((accounttarif_id, ots_id)):
-                                transaction_id = transaction(
-                                                             cursor=cur,
-                                                             type='ONETIME_SERVICE',
-                                                             account=account_id,
-                                                             approved=True,
-                                                             tarif=tarif_id,
-                                                             summ=ots[2],
-                                                             description=u"Снятие денег по разовой услуге %s" % ots[1],
-                                                             created=now
-                                                             )
-                                cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
-                                connection.commit()
-                                cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
+                        traffic_transmit_service_id = acct[7]
+                        reset_traffic = None
+                        if traffic_transmit_service_id != None:
+                            ttsRec= cacheTTS.get(traffic_transmit_service_id)
+                            reset_traffic = ttsRec[1]
                         
+                        
+                        if prepaid_traffic_reset is None: prepaid_traffic_reset = acct_datetime
+                        if (reset_traffic==True or traffic_transmit_service_id==None) and (prepaid_traffic_reset is None or prepaid_traffic_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):
+                            #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
+                            #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
+                            
+                            """
+                            (Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план
+                            """
+                            cur.execute("""DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=%s;
+                                        """ % accounttarif_id)
+        
+                            cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
+                            if cur.fetchone()==None:
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) values(%s, %s, %s) ;
+                                            """, (account_id, accounttarif_id, now,))    
+                        connection.commit()
+        
+                        if (prepaid_traffic_accrued is None or prepaid_traffic_accrued<period_start) and traffic_transmit_service_id:                          
+                            #Начислить новый предоплаченный трафик
+                            cur.execute("""SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%s;
+                                        """, (traffic_transmit_service_id,))
+        
+                            prepais=cur.fetchall()
+                            connection.commit()
+                            u=False
+                            for prepaid_traffic_id, size in prepais:
+                                u=True
+                                #print "SET PREPAID TRAFIC"
+                                cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=%s
+                                               WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
+                                            """, (size, now, accounttarif_id, prepaid_traffic_id,))
+                                if cur.fetchone() is None:
+                                    cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
+                                                   VALUES(%s, %s, %f*1048576, '%s');
+                                                """ % (accounttarif_id, prepaid_traffic_id, size, now,))
+                                connection.commit()
+                                
+                            if u==True:
+                                cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
+                                if cur.fetchone()==None:
+                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, %s) ;
+                                                """, (account_id, accounttarif_id, now,))  
+                        connection.commit() 
+                        #print "account_id", acct[0], "time_service_id", acct[6]
+                        time_access_service_id = acct[6]
+                        reset_time = None
+                        prepaid_time = 0
+                        if time_access_service_id:
+                            taccsRec = cacheTAccS.get(time_access_service_id)
+                            reset_time    = taccsRec[2]
+                            prepaid_time  = taccsRec[1]
+                            
+                        if (reset_time==True or time_access_service_id==None) and (prepaid_time_reset is None or prepaid_time_reset<period_start or accounttarif_id!=accounttarif_id_shedulelog):                        
+                            #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
+                            #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
+                            cur.execute("""DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=%s;""", (accounttarif_id,))                            
+                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_reset=%s WHERE account_id=%s RETURNING id;", (now, account_id,))                        
+                            if cur.fetchone()==None:                            
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) values(%s, %s, %s) ;""", (account_id, accounttarif_id,now,))                                
+                            connection.commit()        
+                        if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
+        
+                            cur.execute("""UPDATE billservice_accountprepaystime
+                                           SET size=size+%s,datetime=%s WHERE account_tarif_id=%s RETURNING id;
+                                        """, (prepaid_time,now, accounttarif_id,))
+                            if cur.fetchone()==None:
+                                cur.execute("""INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id) VALUES(%s, %s, %s, %s);
+                                            """, (accounttarif_id, prepaid_time, now, time_access_service_id,))    
+                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
+                            if cur.fetchone()==None:
+                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, %s) ;
+                                            """, (account_id, accounttarif_id,now))
+                        
+                        if account_balance > 0:
+                            onetimesvs = cacheOTSrv.get(tarif_id, [])
+                            for ots in onetimesvs:
+                                ots_id = ots[0]
+                                if not cacheOTSHist.has_key((accounttarif_id, ots_id)):
+                                    transaction_id = transaction(
+                                                                 cursor=cur,
+                                                                 type='ONETIME_SERVICE',
+                                                                 account=account_id,
+                                                                 approved=True,
+                                                                 tarif=tarif_id,
+                                                                 summ=ots[2],
+                                                                 description=u"Снятие денег по разовой услуге %s" % ots[1],
+                                                                 created=now
+                                                                 )
+                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
+                                    connection.commit()
+                                    cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
+                    except Exception, ex:
+                        logger.error("%s : internal exception: %s", (self.getName(), repr(ex)))
                 connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 #to select good accounttarifs:
