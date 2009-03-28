@@ -13,6 +13,10 @@ ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO ebs;
 
 SET search_path = public, pg_catalog;
 
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
 
 CREATE TYPE intbig_gkey;
 
@@ -97,14 +101,14 @@ ALTER TYPE public.targetinfo OWNER TO postgres;
 
 
 CREATE TYPE var AS (
-	name text,
-	varclass character(1),
-	linenumber integer,
-	isunique boolean,
-	isconst boolean,
-	isnotnull boolean,
-	dtype oid,
-	value text
+    name text,
+    varclass character(1),
+    linenumber integer,
+    isunique boolean,
+    isconst boolean,
+    isnotnull boolean,
+    dtype oid,
+    value text
 );
 
 
@@ -216,7 +220,7 @@ ALTER FUNCTION public.account_transaction_trg_fn() OWNER TO mikrobill;
 CREATE FUNCTION block_balance(account_id integer) RETURNS void
     AS $$
 BEGIN
-	UPDATE billservice_account SET balance_blocked=TRUE WHERE id=account_id;
+    UPDATE billservice_account SET balance_blocked=TRUE WHERE id=account_id;
 RETURN;
 END;
 $$
@@ -252,7 +256,7 @@ DECLARE
 BEGIN
     SELECT id, sold, activated, activated_by_id, nominal, tarif_id INTO card_data_ FROM billservice_card WHERE "login"=login_ and pin=pin_ and sold is not Null and now() between start_date and end_date;
     IF card_data_ is NULL THEN
-	RETURN tmp;
+    RETURN tmp;
     ELSIF card_data_.activated_by_id IS NULL and card_data_.sold is not NULL THEN
         INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
         VALUES(login_, pin_, nas_id_, account_ip_, False, True, now(), False, True, True, False) RETURNING id INTO account_id_;
@@ -299,15 +303,15 @@ ALTER FUNCTION public.card_activate_fn(login_ character varying, pin_ character 
 
 CREATE FUNCTION check_allowed_users_trg_fn() RETURNS trigger
     AS $$ DECLARE counted_num_ int; 
-                         allowed_num_ int := 0; 
-			 BEGIN 
-				SELECT count(*) INTO counted_num_ FROM billservice_account;
-				IF counted_num_ + 1 > allowed_num_ THEN
-				    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
-				ELSE 
-				    RETURN NEW;
-				END IF; 
-				END; $$
+             allowed_num_ int := 0; 
+             BEGIN 
+                SELECT count(*) INTO counted_num_ FROM billservice_account;
+                IF counted_num_ + 1 > allowed_num_ THEN
+                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
+                ELSE 
+                    RETURN NEW;
+                END IF; 
+                END; $$
     LANGUAGE plpgsql;
 
 
@@ -317,7 +321,7 @@ ALTER FUNCTION public.check_allowed_users_trg_fn() OWNER TO mikrobill;
 CREATE FUNCTION credit_account(account_id integer, sum double precision) RETURNS void
     AS $$
 BEGIN
-	UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
+    UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
 RETURN;
 END;
 $$
@@ -354,10 +358,9 @@ DECLARE
     fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
     exception_ text := 'Amount of users[% + 1] will exceed allowed[%] for the license file!';
-BEGIN	
-        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
-	RETURN;
-
+BEGIN    
+    EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
+    RETURN;
 END;
 $$
     LANGUAGE plpgsql;
@@ -393,9 +396,9 @@ DECLARE
     fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
     exception_ text := 'Amount of users[% + 1] will exceed allowed[%] for the license file!';
-BEGIN	
-        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
-	RETURN;
+BEGIN    
+    EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
+    RETURN;
 
 END;
 $$
@@ -408,7 +411,7 @@ ALTER FUNCTION public.crt_allowed_checker(allowed bigint) OWNER TO mikrobill;
 CREATE FUNCTION debit_account(account_id integer, sum double precision) RETURNS void
     AS $$
 BEGIN
-	UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
+    UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
 RETURN;
 END;
 $$
@@ -442,7 +445,7 @@ BEGIN
 
 IF (TG_OP = 'UPDATE') THEN
     IF (NEW.vpn_ipinuse_id is Null and OLD.vpn_ipinuse_id is not Null) THEN
-	DELETE FROM billservice_ipinuse WHERE id=OLD.vpn_ipinuse_id;
+        DELETE FROM billservice_ipinuse WHERE id=OLD.vpn_ipinuse_id;
     END IF;
     
     IF (NEW.ipn_ipinuse_id is Null and OLD.ipn_ipinuse_id is not Null) THEN
@@ -452,7 +455,7 @@ IF (TG_OP = 'UPDATE') THEN
 
 ELSIF (TG_OP = 'DELETE') THEN
     IF (OLD.ipn_ipinuse_id is not Null) THEN
-	DELETE FROM billservice_ipinuse WHERE id=OLD.ipn_ipinuse_id;
+        DELETE FROM billservice_ipinuse WHERE id=OLD.ipn_ipinuse_id;
     END IF;
 
     IF (OLD.vpn_ipinuse_id is not Null) THEN
@@ -654,7 +657,7 @@ begin
 SELECT bsap.access_type INTO ttype
   FROM billservice_accessparameters AS bsap, billservice_tariff AS bstf WHERE (bsap.id=bstf.access_parameters_id) AND (bstf.id=tarif_id) ORDER BY bsap.id LIMIT 1;
 IF ttype <> 'IPN' THEN
-	ttype := 'VPN';
+    ttype := 'VPN';
 END IF;
 RETURN ttype;
 END;
@@ -1241,17 +1244,17 @@ DECLARE
 
 
 
-	dt_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION nfs_cur_dt() RETURNS date AS ';
-	
+    dt_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION nfs_cur_dt() RETURNS date AS ';
+    
     oneday_ text := '1 day';
     query_ text;
     
     prevdate_ date;
     
-BEGIN	
+BEGIN    
 
 
-	
+    
         query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
 
         EXECUTE query_;
@@ -1270,7 +1273,7 @@ BEGIN
         EXECUTE query_;
 
         
-	RETURN;
+    RETURN;
 
 END;
 $$
@@ -1315,21 +1318,21 @@ DECLARE
     at_query_  text;
 
 
-BEGIN	
-	seq_query_ := replace(seq_tx1_, '#rpdate#', datetx_);
-	EXECUTE seq_query_;
-	qt_dtx_    := quote_literal(datetx_);
-	qt_dtx_e_  := quote_literal(datetx_e_);
-	chk_       := replace(chk_tx1_, '#stdtx#', qt_dtx_ );
-	chk_       := replace(chk_, '#eddtx#', qt_dtx_e_ );
-	ct_query_  := replace(ct_tx1_, '#rpdate#', datetx_);
-	ct_query_  := replace(ct_query_, '#chk#', chk_);
-	EXECUTE ct_query_;
-	seqn_        := replace(seqname_tx1_, '#rpdate#', datetx_);
-	at_query_    := replace(at_tx1_, '#rpdate#', datetx_);
-	at_query_    := replace(at_query_, '#qseqname#', quote_literal(seqn_));
-	EXECUTE at_query_;
-	RETURN 0;
+BEGIN    
+    seq_query_ := replace(seq_tx1_, '#rpdate#', datetx_);
+    EXECUTE seq_query_;
+    qt_dtx_    := quote_literal(datetx_);
+    qt_dtx_e_  := quote_literal(datetx_e_);
+    chk_       := replace(chk_tx1_, '#stdtx#', qt_dtx_ );
+    chk_       := replace(chk_, '#eddtx#', qt_dtx_e_ );
+    ct_query_  := replace(ct_tx1_, '#rpdate#', datetx_);
+    ct_query_  := replace(ct_query_, '#chk#', chk_);
+    EXECUTE ct_query_;
+    seqn_        := replace(seqname_tx1_, '#rpdate#', datetx_);
+    at_query_    := replace(at_tx1_, '#rpdate#', datetx_);
+    at_query_    := replace(at_query_, '#qseqname#', quote_literal(seqn_));
+    EXECUTE at_query_;
+    RETURN 0;
 
 END;
 $$
@@ -2405,7 +2408,7 @@ ALTER FUNCTION public.transaction_tarif(bill_ character varying, type_id_ charac
 CREATE FUNCTION unblock_balance(account_id integer) RETURNS void
     AS $$
 BEGIN
-	UPDATE billservice_account SET balance_blocked=FALSE WHERE id=account_id;
+    UPDATE billservice_account SET balance_blocked=FALSE WHERE id=account_id;
 RETURN;
 END;
 $$
@@ -2693,44 +2696,24 @@ CREATE SEQUENCE auth_group_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
-ALTER TABLE public.auth_group_id_seq OWNER TO mikrobill;
-
-
+ALTER TABLE public.auth_group_id_seq OWNER TO ebs;
 ALTER SEQUENCE auth_group_id_seq OWNED BY auth_group.id;
-
-
-
 SELECT pg_catalog.setval('auth_group_id_seq', 1, false);
-
-
 
 CREATE TABLE auth_group_permissions (
     id integer NOT NULL,
     group_id integer NOT NULL,
     permission_id integer NOT NULL
 );
-
-
-ALTER TABLE public.auth_group_permissions OWNER TO mikrobill;
-
-
+ALTER TABLE public.auth_group_permissions OWNER TO ebs;
 CREATE SEQUENCE auth_group_permissions_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_group_permissions_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_group_permissions_id_seq OWNED BY auth_group_permissions.id;
-
-
-
 SELECT pg_catalog.setval('auth_group_permissions_id_seq', 1, false);
 
 
@@ -2743,23 +2726,14 @@ CREATE TABLE auth_message (
 
 
 ALTER TABLE public.auth_message OWNER TO mikrobill;
-
-
 CREATE SEQUENCE auth_message_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_message_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_message_id_seq OWNED BY auth_message.id;
-
-
-
 SELECT pg_catalog.setval('auth_message_id_seq', 1, false);
 
 
@@ -2773,22 +2747,13 @@ CREATE TABLE auth_permission (
 
 
 ALTER TABLE public.auth_permission OWNER TO mikrobill;
-
-
 CREATE SEQUENCE auth_permission_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_permission_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_permission_id_seq OWNED BY auth_permission.id;
-
-
-
 SELECT pg_catalog.setval('auth_permission_id_seq', 141, true);
 
 
@@ -2819,25 +2784,15 @@ CREATE TABLE auth_user_groups (
 
 
 ALTER TABLE public.auth_user_groups OWNER TO mikrobill;
-
-
 CREATE SEQUENCE auth_user_groups_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_user_groups_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_user_groups_id_seq OWNED BY auth_user_groups.id;
-
-
-
 SELECT pg_catalog.setval('auth_user_groups_id_seq', 1, false);
-
 
 
 CREATE SEQUENCE auth_user_id_seq
@@ -2846,18 +2801,9 @@ CREATE SEQUENCE auth_user_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_user_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_user_id_seq OWNED BY auth_user.id;
-
-
-
 SELECT pg_catalog.setval('auth_user_id_seq', 1, false);
-
-
 
 CREATE TABLE auth_user_user_permissions (
     id integer NOT NULL,
@@ -2867,25 +2813,15 @@ CREATE TABLE auth_user_user_permissions (
 
 
 ALTER TABLE public.auth_user_user_permissions OWNER TO mikrobill;
-
-
 CREATE SEQUENCE auth_user_user_permissions_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE auth_user_user_permissions_id_seq OWNED BY auth_user_user_permissions.id;
-
-
-
 SELECT pg_catalog.setval('auth_user_user_permissions_id_seq', 1, false);
-
 
 
 CREATE TABLE billservice_accessparameters (
@@ -2945,7 +2881,7 @@ CREATE TABLE billservice_account (
     balance_blocked boolean DEFAULT false,
     ipn_speed character varying(96) DEFAULT ''::character varying,
     vpn_speed character varying(96) DEFAULT ''::character varying,
-    netmask inet DEFAULT '0.0.0.0'::inet,
+    netmask inet DEFAULT '0.0.0.0/0'::inet,
     ipn_added boolean DEFAULT false,
     city character varying(255) DEFAULT ''::character varying,
     postcode character varying(255) DEFAULT ''::character varying,
@@ -2973,24 +2909,14 @@ CREATE TABLE billservice_account (
 
 
 ALTER TABLE public.billservice_account OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_account_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_account_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_account_id_seq OWNED BY billservice_account.id;
-
-
-
 SELECT pg_catalog.setval('billservice_account_id_seq', 222, true);
-
 
 
 CREATE TABLE billservice_accountipnspeed (
@@ -3002,26 +2928,15 @@ CREATE TABLE billservice_accountipnspeed (
     datetime timestamp without time zone DEFAULT now()
 );
 
-
 ALTER TABLE public.billservice_accountipnspeed OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_accountipnspeed_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_accountipnspeed_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_accountipnspeed_id_seq OWNED BY billservice_accountipnspeed.id;
-
-
-
 SELECT pg_catalog.setval('billservice_accountipnspeed_id_seq', 32, true);
-
 
 
 CREATE TABLE billservice_accountprepaystime (
@@ -3034,25 +2949,14 @@ CREATE TABLE billservice_accountprepaystime (
 
 
 ALTER TABLE public.billservice_accountprepaystime OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_accountprepaystime_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_accountprepaystime_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_accountprepaystime_id_seq OWNED BY billservice_accountprepaystime.id;
-
-
-
 SELECT pg_catalog.setval('billservice_accountprepaystime_id_seq', 19, true);
-
-
 
 CREATE TABLE billservice_accountprepaystrafic (
     id integer NOT NULL,
@@ -3064,22 +2968,13 @@ CREATE TABLE billservice_accountprepaystrafic (
 
 
 ALTER TABLE public.billservice_accountprepaystrafic OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_accountprepaystrafic_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_accountprepaystrafic_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_accountprepaystrafic_id_seq OWNED BY billservice_accountprepaystrafic.id;
-
-
-
 SELECT pg_catalog.setval('billservice_accountprepaystrafic_id_seq', 51, true);
 
 
@@ -3092,24 +2987,14 @@ CREATE TABLE billservice_accountspeedlimit (
 
 
 ALTER TABLE public.billservice_accountspeedlimit OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_accountspeedlimit_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_accountspeedlimit_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_accountspeedlimit_id_seq OWNED BY billservice_accountspeedlimit.id;
-
-
-
 SELECT pg_catalog.setval('billservice_accountspeedlimit_id_seq', 26, true);
-
 
 
 CREATE TABLE billservice_accounttarif (
@@ -3121,24 +3006,14 @@ CREATE TABLE billservice_accounttarif (
 
 
 ALTER TABLE public.billservice_accounttarif OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_accounttarif_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_accounttarif_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_accounttarif_id_seq OWNED BY billservice_accounttarif.id;
-
-
-
 SELECT pg_catalog.setval('billservice_accounttarif_id_seq', 231, true);
-
 
 
 CREATE TABLE billservice_bankdata (
@@ -3149,26 +3024,15 @@ CREATE TABLE billservice_bankdata (
     currency character varying(40) NOT NULL
 );
 
-
 ALTER TABLE public.billservice_bankdata OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_bankdata_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_bankdata_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_bankdata_id_seq OWNED BY billservice_bankdata.id;
-
-
-
 SELECT pg_catalog.setval('billservice_bankdata_id_seq', 24, true);
-
 
 
 CREATE TABLE billservice_card (
@@ -3192,27 +3056,15 @@ CREATE TABLE billservice_card (
     ipinuse_id integer
 );
 
-
 ALTER TABLE public.billservice_card OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_card_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_card_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_card_id_seq OWNED BY billservice_card.id;
-
-
-
 SELECT pg_catalog.setval('billservice_card_id_seq', 113, true);
-
-
 
 CREATE TABLE billservice_dealer (
     id integer NOT NULL,
@@ -3236,24 +3088,14 @@ CREATE TABLE billservice_dealer (
 
 
 ALTER TABLE public.billservice_dealer OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_dealer_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_dealer_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_dealer_id_seq OWNED BY billservice_dealer.id;
-
-
-
 SELECT pg_catalog.setval('billservice_dealer_id_seq', 7, true);
-
 
 
 CREATE TABLE billservice_dealerpay (
@@ -3264,26 +3106,15 @@ CREATE TABLE billservice_dealerpay (
     created timestamp with time zone NOT NULL
 );
 
-
 ALTER TABLE public.billservice_dealerpay OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_dealerpay_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_dealerpay_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_dealerpay_id_seq OWNED BY billservice_dealerpay.id;
-
-
-
 SELECT pg_catalog.setval('billservice_dealerpay_id_seq', 7, true);
-
 
 
 CREATE TABLE billservice_document (
@@ -3293,55 +3124,32 @@ CREATE TABLE billservice_document (
     body text NOT NULL
 );
 
-
 ALTER TABLE public.billservice_document OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_document_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_document_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_document_id_seq OWNED BY billservice_document.id;
-
-
-
 SELECT pg_catalog.setval('billservice_document_id_seq', 1, false);
-
 
 
 CREATE TABLE billservice_documenttype (
     id integer NOT NULL,
     name character varying(255) NOT NULL
 );
-
-
 ALTER TABLE public.billservice_documenttype OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_documenttype_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_documenttype_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_documenttype_id_seq OWNED BY billservice_documenttype.id;
-
-
-
 SELECT pg_catalog.setval('billservice_documenttype_id_seq', 1, false);
-
 
 
 CREATE TABLE billservice_globalstat (
@@ -3355,9 +3163,7 @@ CREATE TABLE billservice_globalstat (
     classbytes bigint[]
 );
 
-
 ALTER TABLE public.billservice_globalstat OWNER TO mikrobill;
-
 
 CREATE SEQUENCE billservice_globalstat_id_seq
     INCREMENT BY 1
@@ -3365,17 +3171,9 @@ CREATE SEQUENCE billservice_globalstat_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_globalstat_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_globalstat_id_seq OWNED BY billservice_globalstat.id;
-
-
-
 SELECT pg_catalog.setval('billservice_globalstat_id_seq', 64, true);
-
-
 
 CREATE TABLE billservice_group (
     id integer NOT NULL,
@@ -3384,26 +3182,15 @@ CREATE TABLE billservice_group (
     type integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_group OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_group_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_group_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_group_id_seq OWNED BY billservice_group.id;
-
-
-
 SELECT pg_catalog.setval('billservice_group_id_seq', 7, true);
-
 
 
 CREATE TABLE billservice_group_trafficclass (
@@ -3412,44 +3199,24 @@ CREATE TABLE billservice_group_trafficclass (
     trafficclass_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_group_trafficclass OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_group_trafficclass_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_group_trafficclass_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_group_trafficclass_id_seq OWNED BY billservice_group_trafficclass.id;
-
-
-
 SELECT pg_catalog.setval('billservice_group_trafficclass_id_seq', 15, true);
-
-
 
 CREATE SEQUENCE billservice_groupstat_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_groupstat_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_groupstat_id_seq OWNED BY billservice_groupstat.id;
-
-
-
 SELECT pg_catalog.setval('billservice_groupstat_id_seq', 1302, true);
-
 
 
 CREATE TABLE billservice_ipinuse (
@@ -3459,27 +3226,15 @@ CREATE TABLE billservice_ipinuse (
     datetime timestamp with time zone NOT NULL
 );
 
-
 ALTER TABLE public.billservice_ipinuse OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_ipinuse_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_ipinuse_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_ipinuse_id_seq OWNED BY billservice_ipinuse.id;
-
-
-
 SELECT pg_catalog.setval('billservice_ipinuse_id_seq', 192, true);
-
-
 
 CREATE TABLE billservice_ippool (
     id integer NOT NULL,
@@ -3489,44 +3244,24 @@ CREATE TABLE billservice_ippool (
     end_ip inet NOT NULL
 );
 
-
 ALTER TABLE public.billservice_ippool OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_ippool_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_ippool_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_ippool_id_seq OWNED BY billservice_ippool.id;
-
-
-
 SELECT pg_catalog.setval('billservice_ippool_id_seq', 4, true);
-
-
 
 CREATE SEQUENCE billservice_netflowstream_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_netflowstream_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_netflowstream_id_seq OWNED BY billservice_netflowstream.id;
-
-
-
 SELECT pg_catalog.setval('billservice_netflowstream_id_seq', 76940, true);
-
 
 
 CREATE TABLE billservice_onetimeservice (
@@ -3538,24 +3273,14 @@ CREATE TABLE billservice_onetimeservice (
 
 
 ALTER TABLE public.billservice_onetimeservice OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_onetimeservice_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_onetimeservice_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_onetimeservice_id_seq OWNED BY billservice_onetimeservice.id;
-
-
-
 SELECT pg_catalog.setval('billservice_onetimeservice_id_seq', 4, true);
-
 
 
 CREATE TABLE billservice_onetimeservicehistory (
@@ -3568,24 +3293,14 @@ CREATE TABLE billservice_onetimeservicehistory (
 
 
 ALTER TABLE public.billservice_onetimeservicehistory OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_onetimeservicehistory_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_onetimeservicehistory_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_onetimeservicehistory_id_seq OWNED BY billservice_onetimeservicehistory.id;
-
-
-
 SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 47, true);
-
 
 
 CREATE TABLE billservice_operator (
@@ -3603,26 +3318,15 @@ CREATE TABLE billservice_operator (
     bank_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_operator OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_operator_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_operator_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_operator_id_seq OWNED BY billservice_operator.id;
-
-
-
 SELECT pg_catalog.setval('billservice_operator_id_seq', 1, true);
-
 
 
 CREATE TABLE billservice_organization (
@@ -3637,26 +3341,15 @@ CREATE TABLE billservice_organization (
     fax character varying(255) DEFAULT ''::character varying
 );
 
-
 ALTER TABLE public.billservice_organization OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_organization_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_organization_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_organization_id_seq OWNED BY billservice_organization.id;
-
-
-
 SELECT pg_catalog.setval('billservice_organization_id_seq', 2, true);
-
 
 
 CREATE TABLE billservice_periodicalservice (
@@ -3670,26 +3363,15 @@ CREATE TABLE billservice_periodicalservice (
     created timestamp without time zone
 );
 
-
 ALTER TABLE public.billservice_periodicalservice OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_periodicalservice_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_periodicalservice_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_periodicalservice_id_seq OWNED BY billservice_periodicalservice.id;
-
-
-
 SELECT pg_catalog.setval('billservice_periodicalservice_id_seq', 25, true);
-
 
 
 CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
@@ -3697,18 +3379,9 @@ CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_periodicalservicehistory_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_periodicalservicehistory_id_seq OWNED BY billservice_periodicalservicehistory.id;
-
-
-
 SELECT pg_catalog.setval('billservice_periodicalservicehistory_id_seq', 20937, true);
-
-
 
 CREATE TABLE billservice_ports (
     id integer NOT NULL,
@@ -3718,27 +3391,16 @@ CREATE TABLE billservice_ports (
     description character varying(255) DEFAULT ''::character varying
 );
 
-
 ALTER TABLE public.billservice_ports OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_ports_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_ports_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_ports_id_seq OWNED BY billservice_ports.id;
-
-
-
 SELECT pg_catalog.setval('billservice_ports_id_seq', 1, false);
-
 
 
 CREATE TABLE billservice_prepaidtraffic (
@@ -3748,75 +3410,15 @@ CREATE TABLE billservice_prepaidtraffic (
     group_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_prepaidtraffic OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_prepaidtraffic_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_prepaidtraffic_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_prepaidtraffic_id_seq OWNED BY billservice_prepaidtraffic.id;
-
-
-
 SELECT pg_catalog.setval('billservice_prepaidtraffic_id_seq', 9, true);
-
-
-
-CREATE TABLE billservice_rawnetflowstream (
-    id integer NOT NULL,
-    nas_id integer NOT NULL,
-    date_start timestamp without time zone NOT NULL,
-    src_addr inet NOT NULL,
-    traffic_class_id integer,
-    direction character varying(32) NOT NULL,
-    dst_addr inet NOT NULL,
-    next_hop inet NOT NULL,
-    in_index integer NOT NULL,
-    out_index integer NOT NULL,
-    packets bigint NOT NULL,
-    octets bigint NOT NULL,
-    src_port integer NOT NULL,
-    dst_port integer NOT NULL,
-    tcp_flags integer NOT NULL,
-    protocol integer NOT NULL,
-    tos integer NOT NULL,
-    source_as integer NOT NULL,
-    dst_as integer NOT NULL,
-    src_netmask_length integer NOT NULL,
-    dst_netmask_length integer NOT NULL,
-    fetched boolean DEFAULT false,
-    account_id integer NOT NULL,
-    store boolean DEFAULT false
-);
-
-
-ALTER TABLE public.billservice_rawnetflowstream OWNER TO mikrobill;
-
-
-CREATE SEQUENCE billservice_rawnetflowstream_id_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.billservice_rawnetflowstream_id_seq OWNER TO mikrobill;
-
-
-ALTER SEQUENCE billservice_rawnetflowstream_id_seq OWNED BY billservice_rawnetflowstream.id;
-
-
-
-SELECT pg_catalog.setval('billservice_rawnetflowstream_id_seq', 347057, true);
-
 
 
 CREATE TABLE billservice_salecard (
@@ -3891,22 +3493,13 @@ CREATE TABLE billservice_settlementperiod (
 
 
 ALTER TABLE public.billservice_settlementperiod OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_settlementperiod_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_settlementperiod_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_settlementperiod_id_seq OWNED BY billservice_settlementperiod.id;
-
-
-
 SELECT pg_catalog.setval('billservice_settlementperiod_id_seq', 13, true);
 
 
@@ -3925,24 +3518,14 @@ CREATE TABLE billservice_shedulelog (
 
 
 ALTER TABLE public.billservice_shedulelog OWNER TO postgres;
-
-
 CREATE SEQUENCE billservice_shedulelog_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_shedulelog_id_seq OWNER TO postgres;
-
-
 ALTER SEQUENCE billservice_shedulelog_id_seq OWNED BY billservice_shedulelog.id;
-
-
-
 SELECT pg_catalog.setval('billservice_shedulelog_id_seq', 77, true);
-
 
 
 CREATE TABLE billservice_speedlimit (
@@ -3961,26 +3544,16 @@ CREATE TABLE billservice_speedlimit (
     priority integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_speedlimit OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_speedlimit_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_speedlimit_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_speedlimit_id_seq OWNED BY billservice_speedlimit.id;
-
-
-
 SELECT pg_catalog.setval('billservice_speedlimit_id_seq', 25, true);
-
 
 
 CREATE TABLE billservice_suspendedperiod (
@@ -3990,27 +3563,15 @@ CREATE TABLE billservice_suspendedperiod (
     end_date timestamp with time zone NOT NULL
 );
 
-
 ALTER TABLE public.billservice_suspendedperiod OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_suspendedperiod_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_suspendedperiod_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_suspendedperiod_id_seq OWNED BY billservice_suspendedperiod.id;
-
-
-
 SELECT pg_catalog.setval('billservice_suspendedperiod_id_seq', 2, true);
-
-
 
 CREATE TABLE billservice_systemuser (
     id integer NOT NULL,
@@ -4026,24 +3587,14 @@ CREATE TABLE billservice_systemuser (
 
 
 ALTER TABLE public.billservice_systemuser OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_systemuser_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_systemuser_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_systemuser_id_seq OWNED BY billservice_systemuser.id;
-
-
-
 SELECT pg_catalog.setval('billservice_systemuser_id_seq', 2, true);
-
 
 
 CREATE SEQUENCE billservice_tariff_id_seq
@@ -4051,17 +3602,9 @@ CREATE SEQUENCE billservice_tariff_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_tariff_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_tariff_id_seq OWNED BY billservice_tariff.id;
-
-
-
 SELECT pg_catalog.setval('billservice_tariff_id_seq', 36, true);
-
 
 
 CREATE TABLE billservice_template (
@@ -4074,23 +3617,14 @@ CREATE TABLE billservice_template (
 
 ALTER TABLE public.billservice_template OWNER TO mikrobill;
 
-
 CREATE SEQUENCE billservice_template_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_template_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_template_id_seq OWNED BY billservice_template.id;
-
-
-
 SELECT pg_catalog.setval('billservice_template_id_seq', 11, true);
-
 
 
 CREATE TABLE billservice_timeaccessnode (
@@ -4100,26 +3634,15 @@ CREATE TABLE billservice_timeaccessnode (
     cost double precision DEFAULT 0
 );
 
-
 ALTER TABLE public.billservice_timeaccessnode OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timeaccessnode_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timeaccessnode_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timeaccessnode_id_seq OWNED BY billservice_timeaccessnode.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timeaccessnode_id_seq', 5, true);
-
 
 
 CREATE TABLE billservice_timeaccessservice (
@@ -4128,26 +3651,15 @@ CREATE TABLE billservice_timeaccessservice (
     reset_time boolean DEFAULT false
 );
 
-
 ALTER TABLE public.billservice_timeaccessservice OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timeaccessservice_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timeaccessservice_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timeaccessservice_id_seq OWNED BY billservice_timeaccessservice.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timeaccessservice_id_seq', 5, true);
-
 
 
 CREATE TABLE billservice_timeperiod (
@@ -4157,22 +3669,13 @@ CREATE TABLE billservice_timeperiod (
 
 
 ALTER TABLE public.billservice_timeperiod OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timeperiod_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timeperiod_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timeperiod_id_seq OWNED BY billservice_timeperiod.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timeperiod_id_seq', 15, true);
 
 
@@ -4183,26 +3686,15 @@ CREATE TABLE billservice_timeperiod_time_period_nodes (
     timeperiodnode_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timeperiod_time_period_nodes_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timeperiod_time_period_nodes_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timeperiod_time_period_nodes_id_seq OWNED BY billservice_timeperiod_time_period_nodes.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timeperiod_time_period_nodes_id_seq', 43, true);
-
 
 
 CREATE TABLE billservice_timeperiodnode (
@@ -4213,24 +3705,14 @@ CREATE TABLE billservice_timeperiodnode (
     repeat_after character varying(255) DEFAULT ''::character varying
 );
 
-
 ALTER TABLE public.billservice_timeperiodnode OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timeperiodnode_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timeperiodnode_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timeperiodnode_id_seq OWNED BY billservice_timeperiodnode.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timeperiodnode_id_seq', 26, true);
 
 
@@ -4249,24 +3731,14 @@ CREATE TABLE billservice_timespeed (
 
 
 ALTER TABLE public.billservice_timespeed OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_timespeed_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_timespeed_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_timespeed_id_seq OWNED BY billservice_timespeed.id;
-
-
-
 SELECT pg_catalog.setval('billservice_timespeed_id_seq', 5, true);
-
 
 
 CREATE TABLE billservice_trafficlimit (
@@ -4280,26 +3752,15 @@ CREATE TABLE billservice_trafficlimit (
     action integer
 );
 
-
 ALTER TABLE public.billservice_trafficlimit OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_trafficlimit_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_trafficlimit_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_trafficlimit_id_seq OWNED BY billservice_trafficlimit.id;
-
-
-
 SELECT pg_catalog.setval('billservice_trafficlimit_id_seq', 18, true);
-
 
 
 CREATE TABLE billservice_trafficlimit_traffic_class (
@@ -4310,24 +3771,14 @@ CREATE TABLE billservice_trafficlimit_traffic_class (
 
 
 ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_trafficlimit_traffic_class_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_trafficlimit_traffic_class_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_trafficlimit_traffic_class_id_seq OWNED BY billservice_trafficlimit_traffic_class.id;
-
-
-
 SELECT pg_catalog.setval('billservice_trafficlimit_traffic_class_id_seq', 7, true);
-
 
 
 CREATE TABLE billservice_traffictransmitnodes (
@@ -4336,31 +3787,18 @@ CREATE TABLE billservice_traffictransmitnodes (
     cost double precision DEFAULT 0,
     edge_start double precision DEFAULT 0,
     edge_end double precision DEFAULT 0,
-    group_id integer,
-    in_direction boolean DEFAULT false,
-    out_direction boolean DEFAULT false
+    group_id integer
 );
 
-
 ALTER TABLE public.billservice_traffictransmitnodes OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_traffictransmitnodes_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_traffictransmitnodes_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_traffictransmitnodes_id_seq OWNED BY billservice_traffictransmitnodes.id;
-
-
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_id_seq', 7, true);
-
 
 
 CREATE TABLE billservice_traffictransmitnodes_time_nodes (
@@ -4369,26 +3807,15 @@ CREATE TABLE billservice_traffictransmitnodes_time_nodes (
     timeperiod_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_traffictransmitnodes_time_nodes_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq OWNED BY billservice_traffictransmitnodes_time_nodes.id;
-
-
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_time_nodes_id_seq', 23, true);
-
 
 
 CREATE TABLE billservice_traffictransmitnodes_traffic_class (
@@ -4397,26 +3824,15 @@ CREATE TABLE billservice_traffictransmitnodes_traffic_class (
     trafficclass_id integer NOT NULL
 );
 
-
 ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_traffictransmitnodes_traffic_class_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq OWNED BY billservice_traffictransmitnodes_traffic_class.id;
-
-
-
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_traffic_class_id_seq', 14, true);
-
 
 
 CREATE TABLE billservice_traffictransmitservice (
@@ -4426,26 +3842,15 @@ CREATE TABLE billservice_traffictransmitservice (
     period_check character varying(32) DEFAULT 'SP_START'::character varying
 );
 
-
 ALTER TABLE public.billservice_traffictransmitservice OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_traffictransmitservice_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_traffictransmitservice_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_traffictransmitservice_id_seq OWNED BY billservice_traffictransmitservice.id;
-
-
-
 SELECT pg_catalog.setval('billservice_traffictransmitservice_id_seq', 17, true);
-
 
 
 CREATE TABLE billservice_transaction (
@@ -4460,26 +3865,15 @@ CREATE TABLE billservice_transaction (
     created timestamp without time zone
 );
 
-
 ALTER TABLE public.billservice_transaction OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_transaction_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.billservice_transaction_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_transaction_id_seq OWNED BY billservice_transaction.id;
-
-
-
 SELECT pg_catalog.setval('billservice_transaction_id_seq', 60795, true);
-
 
 
 CREATE TABLE billservice_transactiontype (
@@ -4488,10 +3882,7 @@ CREATE TABLE billservice_transactiontype (
     internal_name character varying(32) NOT NULL
 );
 
-
 ALTER TABLE public.billservice_transactiontype OWNER TO mikrobill;
-
-
 CREATE SEQUENCE billservice_transactiontype_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -4499,16 +3890,9 @@ CREATE SEQUENCE billservice_transactiontype_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.billservice_transactiontype_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE billservice_transactiontype_id_seq OWNED BY billservice_transactiontype.id;
-
-
-
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 1, false);
-
 
 
 CREATE TABLE django_admin_log (
@@ -4523,27 +3907,16 @@ CREATE TABLE django_admin_log (
     CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
 );
 
-
 ALTER TABLE public.django_admin_log OWNER TO mikrobill;
-
-
 CREATE SEQUENCE django_admin_log_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.django_admin_log_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE django_admin_log_id_seq OWNED BY django_admin_log.id;
-
-
-
 SELECT pg_catalog.setval('django_admin_log_id_seq', 1, false);
-
 
 
 CREATE TABLE django_content_type (
@@ -4553,26 +3926,15 @@ CREATE TABLE django_content_type (
     model character varying(100) NOT NULL
 );
 
-
 ALTER TABLE public.django_content_type OWNER TO mikrobill;
-
-
 CREATE SEQUENCE django_content_type_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.django_content_type_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE django_content_type_id_seq OWNED BY django_content_type.id;
-
-
-
 SELECT pg_catalog.setval('django_content_type_id_seq', 59, true);
-
 
 
 CREATE TABLE django_session (
@@ -4580,7 +3942,6 @@ CREATE TABLE django_session (
     session_data text NOT NULL,
     expire_date timestamp without time zone NOT NULL
 );
-
 
 ALTER TABLE public.django_session OWNER TO mikrobill;
 
@@ -4591,38 +3952,18 @@ CREATE TABLE django_site (
     name character varying(50) NOT NULL
 );
 
-
 ALTER TABLE public.django_site OWNER TO mikrobill;
-
-
 CREATE SEQUENCE django_site_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.django_site_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE django_site_id_seq OWNED BY django_site.id;
-
-
-
 SELECT pg_catalog.setval('django_site_id_seq', 1, true);
 
 
-
-
-
-
-
 ALTER TABLE billservice_groupstat ALTER COLUMN id SET DEFAULT nextval('billservice_groupstat_id_seq'::regclass);
-
-
-
-
-
 
 CREATE TABLE nas_nas (
     id integer NOT NULL,
@@ -4649,24 +3990,14 @@ CREATE TABLE nas_nas (
 
 
 ALTER TABLE public.nas_nas OWNER TO mikrobill;
-
-
 CREATE SEQUENCE nas_nas_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.nas_nas_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE nas_nas_id_seq OWNED BY nas_nas.id;
-
-
-
 SELECT pg_catalog.setval('nas_nas_id_seq', 6, true);
-
 
 
 CREATE TABLE nas_trafficclass (
@@ -4678,26 +4009,15 @@ CREATE TABLE nas_trafficclass (
     passthrough boolean DEFAULT true
 );
 
-
 ALTER TABLE public.nas_trafficclass OWNER TO mikrobill;
-
-
 CREATE SEQUENCE nas_trafficclass_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.nas_trafficclass_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE nas_trafficclass_id_seq OWNED BY nas_trafficclass.id;
-
-
-
 SELECT pg_catalog.setval('nas_trafficclass_id_seq', 12, true);
-
 
 
 CREATE TABLE nas_trafficnode (
@@ -4706,42 +4026,29 @@ CREATE TABLE nas_trafficnode (
     name character varying(255) NOT NULL,
     direction character varying(32) NOT NULL,
     protocol integer DEFAULT 0,
-    src_ip inet DEFAULT '0.0.0.0'::inet,
-    src_mask inet DEFAULT '0.0.0.0'::inet,
+    src_ip inet DEFAULT '0.0.0.0/0'::inet,
     src_port integer DEFAULT 0,
-    dst_ip inet DEFAULT '0.0.0.0'::inet,
-    dst_mask inet DEFAULT '0.0.0.0'::inet,
+    dst_ip inet DEFAULT '0.0.0.0/0'::inet,
     dst_port integer DEFAULT 0,
     next_hop inet DEFAULT '0.0.0.0'::inet
 );
 
 
 ALTER TABLE public.nas_trafficnode OWNER TO mikrobill;
-
-
 CREATE SEQUENCE nas_trafficnode_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
-
-
 ALTER TABLE public.nas_trafficnode_id_seq OWNER TO mikrobill;
 
 
 ALTER SEQUENCE nas_trafficnode_id_seq OWNED BY nas_trafficnode.id;
-
-
-
 SELECT pg_catalog.setval('nas_trafficnode_id_seq', 22, true);
 
 ALTER TABLE billservice_netflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_netflowstream_id_seq'::regclass);
 
-
 ALTER TABLE billservice_periodicalservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservicehistory_id_seq'::regclass);
-
-
-
 
 CREATE TABLE radius_activesession (
     id integer NOT NULL,
@@ -4762,26 +4069,16 @@ CREATE TABLE radius_activesession (
     framed_ip_address character varying(255)
 );
 
-
 ALTER TABLE public.radius_activesession OWNER TO mikrobill;
-
-
 CREATE SEQUENCE radius_activesession_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.radius_activesession_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE radius_activesession_id_seq OWNED BY radius_activesession.id;
-
-
-
 SELECT pg_catalog.setval('radius_activesession_id_seq', 237, true);
-
 
 
 CREATE SEQUENCE radius_session_id_seq
@@ -4790,287 +4087,79 @@ CREATE SEQUENCE radius_session_id_seq
     NO MINVALUE
     CACHE 1;
 
-
 ALTER TABLE public.radius_session_id_seq OWNER TO mikrobill;
-
-
 ALTER SEQUENCE radius_session_id_seq OWNED BY radius_session.id;
-
-
-
 SELECT pg_catalog.setval('radius_session_id_seq', 80527, true);
-
-
 
 ALTER TABLE radius_session ALTER COLUMN id SET DEFAULT nextval('radius_session_id_seq'::regclass);
 
-
-
-
 ALTER TABLE auth_group ALTER COLUMN id SET DEFAULT nextval('auth_group_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('auth_group_permissions_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_message ALTER COLUMN id SET DEFAULT nextval('auth_message_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_permission ALTER COLUMN id SET DEFAULT nextval('auth_permission_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_user ALTER COLUMN id SET DEFAULT nextval('auth_user_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_user_groups ALTER COLUMN id SET DEFAULT nextval('auth_user_groups_id_seq'::regclass);
-
-
-
 ALTER TABLE auth_user_user_permissions ALTER COLUMN id SET DEFAULT nextval('auth_user_user_permissions_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accessparameters ALTER COLUMN id SET DEFAULT nextval('billservice_accessparameters_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_account ALTER COLUMN id SET DEFAULT nextval('billservice_account_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accountipnspeed ALTER COLUMN id SET DEFAULT nextval('billservice_accountipnspeed_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accountprepaystime ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystime_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accountprepaystrafic ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystrafic_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accountspeedlimit ALTER COLUMN id SET DEFAULT nextval('billservice_accountspeedlimit_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_accounttarif ALTER COLUMN id SET DEFAULT nextval('billservice_accounttarif_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_card ALTER COLUMN id SET DEFAULT nextval('billservice_card_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_dealerpay ALTER COLUMN id SET DEFAULT nextval('billservice_dealerpay_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_document ALTER COLUMN id SET DEFAULT nextval('billservice_document_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_documenttype ALTER COLUMN id SET DEFAULT nextval('billservice_documenttype_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_globalstat ALTER COLUMN id SET DEFAULT nextval('billservice_globalstat_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_group ALTER COLUMN id SET DEFAULT nextval('billservice_group_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_group_trafficclass ALTER COLUMN id SET DEFAULT nextval('billservice_group_trafficclass_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_ipinuse ALTER COLUMN id SET DEFAULT nextval('billservice_ipinuse_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_ippool ALTER COLUMN id SET DEFAULT nextval('billservice_ippool_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_onetimeservice ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservice_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_onetimeservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservicehistory_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_organization ALTER COLUMN id SET DEFAULT nextval('billservice_organization_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_periodicalservice ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservice_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_ports ALTER COLUMN id SET DEFAULT nextval('billservice_ports_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_prepaidtraffic ALTER COLUMN id SET DEFAULT nextval('billservice_prepaidtraffic_id_seq'::regclass);
-
-
-
-ALTER TABLE billservice_rawnetflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_rawnetflowstream_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_salecard ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_salecard_cards ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_cards_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_settlementperiod ALTER COLUMN id SET DEFAULT nextval('billservice_settlementperiod_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_shedulelog ALTER COLUMN id SET DEFAULT nextval('billservice_shedulelog_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_speedlimit ALTER COLUMN id SET DEFAULT nextval('billservice_speedlimit_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_suspendedperiod ALTER COLUMN id SET DEFAULT nextval('billservice_suspendedperiod_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_systemuser ALTER COLUMN id SET DEFAULT nextval('billservice_systemuser_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_tariff ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_template ALTER COLUMN id SET DEFAULT nextval('billservice_template_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timeaccessnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessnode_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timeaccessservice ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessservice_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timeperiod ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timeperiod_time_period_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_time_period_nodes_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timeperiodnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiodnode_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_timespeed ALTER COLUMN id SET DEFAULT nextval('billservice_timespeed_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_trafficlimit ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_trafficlimit_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_traffic_class_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_traffictransmitnodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_traffictransmitnodes_time_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_time_nodes_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_traffictransmitnodes_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_traffic_class_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_traffictransmitservice ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitservice_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_transaction ALTER COLUMN id SET DEFAULT nextval('billservice_transaction_id_seq'::regclass);
-
-
-
 ALTER TABLE billservice_transactiontype ALTER COLUMN id SET DEFAULT nextval('billservice_transactiontype_id_seq'::regclass);
 
 
-
 ALTER TABLE django_admin_log ALTER COLUMN id SET DEFAULT nextval('django_admin_log_id_seq'::regclass);
-
-
-
 ALTER TABLE django_content_type ALTER COLUMN id SET DEFAULT nextval('django_content_type_id_seq'::regclass);
-
-
-
 ALTER TABLE django_site ALTER COLUMN id SET DEFAULT nextval('django_site_id_seq'::regclass);
-
-
-
 ALTER TABLE nas_nas ALTER COLUMN id SET DEFAULT nextval('nas_nas_id_seq'::regclass);
-
-
-
 ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficclass_id_seq'::regclass);
 
 
 
 ALTER TABLE nas_trafficnode ALTER COLUMN id SET DEFAULT nextval('nas_trafficnode_id_seq'::regclass);
-
-
-
 ALTER TABLE radius_activesession ALTER COLUMN id SET DEFAULT nextval('radius_activesession_id_seq'::regclass);
-
-
-
-COPY auth_group (id, name) FROM stdin;
-\.
-
-
-
-COPY auth_group_permissions (id, group_id, permission_id) FROM stdin;
-\.
-
-
-
-COPY auth_message (id, user_id, message) FROM stdin;
-\.
 
 
 
@@ -11574,6 +10663,7 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 44925	16367	17	netserialext3	aquilagroup.com
 44926	16368	6	netserialext4	aquilagroup.com
 44927	16368	17	netserialext4	aquilagroup.com
+44928	16660	6	stacheldraht	Stacheldraht distributed attack tool client --> handler
 44929	16959	6	subseven	Subseven DEFCON8 2.1 backdoor remote access tool
 44930	16969	6	priority	Priority Trojan Horse
 44931	16991	6	intel-rci-mp	intel.com
@@ -11600,6 +10690,8 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 44952	18187	17	opsec-ela	checkpoint.com
 44953	18487	6	ac-cluster	cup.hp.com
 44954	18487	17	ac-cluster	cup.hp.com
+44955	18753	6	shaft	Shaft distributed attack tool handler --> agent
+44956	18753	17	shaft	Shaft distributed attack tool handler --> agent
 44957	18888	6	apc-necmp	astralpoint.com
 44958	18888	17	apc-necmp	astralpoint.com
 44959	18888	6	liquidaudio	Liquid Audio Server
@@ -11622,6 +10714,8 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 44976	20001	6	millennium	Millennium Trojan Horse
 44977	20005	6	btx	xcept4 (Interacts with German Telekoms CEPT videotext service)
 44978	20034	6	netbusn	NetBus II (!!! trojan)
+44979	20432	6	shaft	Shaft distributed attack client --> handler
+44980	20432	17	shaft	Shaft distributed attack agent --> handler
 44981	20670	6	track	nawcad.navy.mil
 44982	20670	17	track	nawcad.navy.mil
 44983	20999	6	athand-mmp	At Hand MMP hand.com
@@ -11818,11 +10912,6 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 COPY billservice_prepaidtraffic (id, traffic_transmit_service_id, size, group_id) FROM stdin;
 8	17	104857600	1
 9	15	104857600	6
-\.
-
-
-
-COPY billservice_rawnetflowstream (id, nas_id, date_start, src_addr, traffic_class_id, direction, dst_addr, next_hop, in_index, out_index, packets, octets, src_port, dst_port, tcp_flags, protocol, tos, source_as, dst_as, src_netmask_length, dst_netmask_length, fetched, account_id, store) FROM stdin;
 \.
 
 
@@ -12226,102 +11315,61 @@ COPY nas_trafficnode (id, traffic_class_id, name, direction, protocol, src_ip, s
 
 
 
-
-
-
-
-
-
-
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_name_key UNIQUE (name);
 
-
-
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_key UNIQUE (group_id, permission_id);
-
-
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
 
 
-
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_content_type_id_key UNIQUE (content_type_id, codename);
 
 
-
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_key UNIQUE (user_id, group_id);
-
-
 
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_key UNIQUE (user_id, permission_id);
 
-
-
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_username_key UNIQUE (username);
-
-
 
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_username_key UNIQUE (username);
 
-
-
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_pkey PRIMARY KEY (id);
@@ -12331,17 +11379,15 @@ ALTER TABLE ONLY billservice_accountprepaystrafic
 ALTER TABLE ONLY billservice_accountspeedlimit
     ADD CONSTRAINT billservice_accountspeedlimit_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_pkey PRIMARY KEY (id);
-
+    
+ALTER TABLE billservice_accounttarif
+   ADD CONSTRAINT billservice_accounttarif_acc_dt_uq_key UNIQUE(account_id, datetime);
 
 
 ALTER TABLE ONLY billservice_bankdata
     ADD CONSTRAINT billservice_bankdata_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_pkey PRIMARY KEY (id);
@@ -12416,12 +11462,8 @@ ALTER TABLE ONLY billservice_ippool
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_onetimeservice
     ADD CONSTRAINT billservice_onetimeservice_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_pkey PRIMARY KEY (id);
@@ -12441,25 +11483,15 @@ ALTER TABLE ONLY billservice_organization
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_periodicalservicehistory
     ADD CONSTRAINT billservice_periodicalservicehistory_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_ports
     ADD CONSTRAINT billservice_ports_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT billservice_prepaidtraffic_pkey PRIMARY KEY (id);
 
-
-
-ALTER TABLE ONLY billservice_rawnetflowstream
-    ADD CONSTRAINT billservice_rawnetflowstream_pkey PRIMARY KEY (id);
 
 
 
@@ -12476,17 +11508,11 @@ ALTER TABLE ONLY billservice_salecard_cards
 ALTER TABLE ONLY billservice_salecard
     ADD CONSTRAINT billservice_salecard_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_name_key UNIQUE (name);
 
-
-
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_key UNIQUE (account_id);
@@ -12495,8 +11521,6 @@ ALTER TABLE ONLY billservice_shedulelog
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_accounttarif_id UNIQUE (accounttarif_id);
-
-
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_pkey PRIMARY KEY (id);
@@ -12541,22 +11565,14 @@ ALTER TABLE ONLY billservice_template
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_timeaccessservice
     ADD CONSTRAINT billservice_timeaccessservice_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_name_key UNIQUE (name);
 
-
-
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_pkey PRIMARY KEY (id);
@@ -12566,200 +11582,95 @@ ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_key UNIQUE (timeperiod_id, timeperiodnode_id);
 
-
-
 ALTER TABLE ONLY billservice_timeperiodnode
     ADD CONSTRAINT billservice_timeperiodnode_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_key UNIQUE (trafficlimit_id, trafficclass_id);
-
-
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnodes_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_ti_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, timeperiod_id);
-
-
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_tr_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, trafficclass_id);
-
-
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_class_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_traffictransmitservice
     ADD CONSTRAINT billservice_traffictransmitservice_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_internal_name_key UNIQUE (internal_name);
-
-
 
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_name_key UNIQUE (name);
 
-
-
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_app_label_key UNIQUE (app_label, model);
-
-
 
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY django_session
     ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
-
-
 
 ALTER TABLE ONLY django_site
     ADD CONSTRAINT django_site_pkey PRIMARY KEY (id);
 
-
-
-ALTER TABLE ONLY gpst20090301
-    ADD CONSTRAINT gpst20090301_id_pkey PRIMARY KEY (id);
-
-
-
 ALTER TABLE ONLY nas_nas
     ADD CONSTRAINT nas_nas_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_name_key UNIQUE (name);
 
-
-
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_weight_key UNIQUE (weight);
-
-
 
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_pkey PRIMARY KEY (id);
 
 
 
-ALTER TABLE ONLY nfs20090323
-    ADD CONSTRAINT nfs20090323_id_pkey PRIMARY KEY (id);
-
-
-
-ALTER TABLE ONLY nfs20090324
-    ADD CONSTRAINT nfs20090324_id_pkey PRIMARY KEY (id);
-
-
-
 ALTER TABLE ONLY billservice_ipinuse
     ADD CONSTRAINT pool_ip_unique UNIQUE (pool_id, ip);
-
-
-
-ALTER TABLE ONLY psh20081201
-    ADD CONSTRAINT psh20081201_id_pkey PRIMARY KEY (id);
-
-
-
-ALTER TABLE ONLY psh20090101
-    ADD CONSTRAINT psh20090101_id_pkey PRIMARY KEY (id);
-
-
-
-ALTER TABLE ONLY psh20090201
-    ADD CONSTRAINT psh20090201_id_pkey PRIMARY KEY (id);
-
-
-
-ALTER TABLE ONLY psh20090301
-    ADD CONSTRAINT psh20090301_id_pkey PRIMARY KEY (id);
-
-
-
-ALTER TABLE ONLY psh20090401
-    ADD CONSTRAINT psh20090401_id_pkey PRIMARY KEY (id);
-
-
 
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT radius_activesession_pkey PRIMARY KEY (id);
 
-
-
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT radius_session_pkey PRIMARY KEY (id);
 
-
-
-ALTER TABLE ONLY rsss20090301
-    ADD CONSTRAINT rsss20090301_id_pkey PRIMARY KEY (id);
-
-
-
 CREATE INDEX auth_message_user_id ON auth_message USING btree (user_id);
 
-
-
 CREATE INDEX auth_permission_content_type_id ON auth_permission USING btree (content_type_id);
-
-
 
 CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accessparameters USING btree (access_time_id);
 
@@ -12851,23 +11762,13 @@ CREATE INDEX billservice_globalstat_datetime ON billservice_globalstat USING btr
 
 CREATE INDEX billservice_ipinuse_pool_id ON billservice_ipinuse USING btree (pool_id);
 
-
-
 CREATE INDEX billservice_netflowstream_account_id ON billservice_netflowstream USING btree (account_id);
-
-
 
 CREATE INDEX billservice_netflowstream_nas_id ON billservice_netflowstream USING btree (nas_id);
 
-
-
 CREATE INDEX billservice_netflowstream_tarif_id ON billservice_netflowstream USING btree (tarif_id);
 
-
-
 CREATE INDEX billservice_netflowstream_traffic_class_id ON billservice_netflowstream USING btree (traffic_class_id);
-
-
 
 CREATE INDEX billservice_netflowstream_traffic_transmit_node_id ON billservice_netflowstream USING btree (traffic_transmit_node_id);
 
@@ -12904,15 +11805,6 @@ CREATE INDEX billservice_periodicalservicehistory_transaction_id ON billservice_
 CREATE INDEX billservice_prepaidtraffic_traffic_transmit_service_id ON billservice_prepaidtraffic USING btree (traffic_transmit_service_id);
 
 
-
-CREATE INDEX billservice_rawnetflowstream_nas_id ON billservice_rawnetflowstream USING btree (nas_id);
-
-
-
-CREATE INDEX billservice_rawnetflowstream_traffic_class_id ON billservice_rawnetflowstream USING btree (traffic_class_id);
-
-
-
 CREATE INDEX billservice_salecard_dealer_id ON billservice_salecard USING btree (dealer_id);
 
 
@@ -12927,15 +11819,9 @@ CREATE INDEX billservice_suspendedperiod_account_id ON billservice_suspendedperi
 
 CREATE INDEX billservice_tariff_access_parameters_id ON billservice_tariff USING btree (access_parameters_id);
 
-
-
 CREATE INDEX billservice_tariff_settlement_period_id ON billservice_tariff USING btree (settlement_period_id);
 
-
-
 CREATE INDEX billservice_tariff_time_access_service_id ON billservice_tariff USING btree (time_access_service_id);
-
-
 
 CREATE INDEX billservice_tariff_traffic_transmit_service_id ON billservice_tariff USING btree (traffic_transmit_service_id);
 
@@ -12947,19 +11833,11 @@ CREATE INDEX billservice_template_type_id ON billservice_template USING btree (t
 
 CREATE INDEX billservice_timeaccessnode_time_access_service_id ON billservice_timeaccessnode USING btree (time_access_service_id);
 
-
-
 CREATE INDEX billservice_timeaccessnode_time_period_id ON billservice_timeaccessnode USING btree (time_period_id);
-
-
 
 CREATE INDEX billservice_timespeed_access_parameters_id ON billservice_timespeed USING btree (access_parameters_id);
 
-
-
 CREATE INDEX billservice_timespeed_time_id ON billservice_timespeed USING btree (time_id);
-
-
 
 CREATE INDEX billservice_trafficlimit_settlement_period_id ON billservice_trafficlimit USING btree (settlement_period_id);
 
@@ -12971,19 +11849,11 @@ CREATE INDEX billservice_trafficlimit_tarif_id ON billservice_trafficlimit USING
 
 CREATE INDEX billservice_traffictransmitnodes_traffic_transmit_service_id ON billservice_traffictransmitnodes USING btree (traffic_transmit_service_id);
 
-
-
 CREATE INDEX billservice_transaction_account_id ON billservice_transaction USING btree (account_id);
-
-
 
 CREATE INDEX billservice_transaction_tarif_id ON billservice_transaction USING btree (tarif_id);
 
-
-
 CREATE INDEX django_admin_log_content_type_id ON django_admin_log USING btree (content_type_id);
-
-
 
 CREATE INDEX django_admin_log_user_id ON django_admin_log USING btree (user_id);
 
@@ -13017,103 +11887,14 @@ CREATE INDEX fki_billservice_prepaidtraffic_group_id_fkey ON billservice_prepaid
 
 
 
-CREATE INDEX gpst20090301_account_id ON gpst20090301 USING btree (account_id);
-
-
-
-CREATE INDEX gpst20090301_datetime_id ON gpst20090301 USING btree (datetime);
-
-
-
-CREATE INDEX gpst20090301_gr_acc_dt_id ON gpst20090301 USING btree (group_id, account_id, datetime);
-
-
-
-CREATE INDEX gpst20090301_group_id ON gpst20090301 USING btree (group_id);
-
-
-
 CREATE INDEX nas_trafficnode_traffic_class_id ON nas_trafficnode USING btree (traffic_class_id);
-
-
-
-CREATE INDEX nfs20090323_date_start_id ON nfs20090323 USING btree (date_start);
-
-
-
-CREATE INDEX nfs20090324_date_start_id ON nfs20090324 USING btree (date_start);
-
-
-
-CREATE INDEX psh20081201_datetime_id ON psh20081201 USING btree (datetime);
-
-
-
-CREATE INDEX psh20081201_service_id ON psh20081201 USING btree (service_id);
-
-
-
-CREATE INDEX psh20081201_transaction_id ON psh20081201 USING btree (transaction_id);
-
-
-
-CREATE INDEX psh20090101_datetime_id ON psh20090101 USING btree (datetime);
-
-
-
-CREATE INDEX psh20090101_service_id ON psh20090101 USING btree (service_id);
-
-
-
-CREATE INDEX psh20090101_transaction_id ON psh20090101 USING btree (transaction_id);
-
-
-
-CREATE INDEX psh20090201_datetime_id ON psh20090201 USING btree (datetime);
-
-
-
-CREATE INDEX psh20090201_service_id ON psh20090201 USING btree (service_id);
-
-
-
-CREATE INDEX psh20090201_transaction_id ON psh20090201 USING btree (transaction_id);
-
-
-
-CREATE INDEX psh20090301_datetime_id ON psh20090301 USING btree (datetime);
-
-
-
-CREATE INDEX psh20090301_service_id ON psh20090301 USING btree (service_id);
-
-
-
-CREATE INDEX psh20090301_transaction_id ON psh20090301 USING btree (transaction_id);
-
-
-
-CREATE INDEX psh20090401_datetime_id ON psh20090401 USING btree (datetime);
-
-
-
-CREATE INDEX psh20090401_service_id ON psh20090401 USING btree (service_id);
-
-
-
-CREATE INDEX psh20090401_transaction_id ON psh20090401 USING btree (transaction_id);
-
-
 
 CREATE INDEX radius_activesession_account_id ON radius_activesession USING btree (account_id);
 
+CREATE INDEX radius_session_account_id ON radius_session USING btree (account_id);
 
+CREATE RULE on_tariff_delete_rule AS ON DELETE TO billservice_tariff DO SELECT on_tariff_delete_fun(old.*) AS on_tariff_delete_fun;
 
-CREATE INDEX rsss20090301_account_id ON rsss20090301 USING btree (account_id);
-
-
-
-CREATE INDEX rsss20090301_interrim_update_id ON rsss20090301 USING btree (interrim_update);
 
 
 
@@ -13204,62 +11985,38 @@ CREATE TRIGGER rsss_ins_trg
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT account_id_refs_id_16c70393 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT account_id_refs_id_600b3363 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT account_tarif_id_refs_id_48fe22d0 FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT account_tarif_id_refs_id_7d07606a FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_access_time_id_fkey FOREIGN KEY (access_time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_ipnipinuse_fkey FOREIGN KEY (ipn_ipinuse_id) REFERENCES billservice_ipinuse(id) ON DELETE CASCADE;
@@ -13279,12 +12036,8 @@ ALTER TABLE ONLY billservice_account
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_prepaid_time_service_id_fkey FOREIGN KEY (prepaid_time_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_prepaid_traffic_id_fkey FOREIGN KEY (prepaid_traffic_id) REFERENCES billservice_prepaidtraffic(id) ON DELETE CASCADE DEFERRABLE;
@@ -13362,7 +12115,7 @@ ALTER TABLE ONLY billservice_document
 
 
 ALTER TABLE ONLY billservice_globalstat
-    ADD CONSTRAINT billservice_globalstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT billservice_globalstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
@@ -13377,12 +12130,12 @@ ALTER TABLE ONLY billservice_group_trafficclass
 
 
 ALTER TABLE ONLY billservice_groupstat
-    ADD CONSTRAINT billservice_groupstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT billservice_groupstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
 ALTER TABLE ONLY billservice_groupstat
-    ADD CONSTRAINT billservice_groupstat_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT billservice_groupstat_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
 
@@ -13451,14 +12204,6 @@ ALTER TABLE ONLY billservice_prepaidtraffic
 
 
 
-ALTER TABLE ONLY billservice_rawnetflowstream
-    ADD CONSTRAINT billservice_rawnetflowstream_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
-
-
-
-ALTER TABLE ONLY billservice_rawnetflowstream
-    ADD CONSTRAINT billservice_rawnetflowstream_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
-
 
 
 ALTER TABLE ONLY billservice_salecard_cards
@@ -13504,8 +12249,6 @@ ALTER TABLE ONLY billservice_tariff
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id);
 
-
-
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_traffic_transmit_service_id_fkey FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id);
 
@@ -13519,32 +12262,20 @@ ALTER TABLE ONLY billservice_template
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_period_id_fkey FOREIGN KEY (time_period_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiodnode_id_fkey FOREIGN KEY (timeperiodnode_id) REFERENCES billservice_timeperiodnode(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_time_id_fkey FOREIGN KEY (time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE DEFERRABLE;
@@ -13558,8 +12289,6 @@ ALTER TABLE ONLY billservice_trafficlimit
 
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
@@ -13579,47 +12308,29 @@ ALTER TABLE ONLY billservice_traffictransmitnodes
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id);
 
-
-
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_c_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT content_type_id_refs_id_728de91f FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_content_type_id_fkey FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
-
-
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
-
-
 
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT traffic_transmit_service_id_refs_id_4797c3b9 FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
