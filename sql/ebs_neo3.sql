@@ -331,44 +331,6 @@ $$
 ALTER FUNCTION public.credit_account(account_id integer, sum double precision) OWNER TO postgres;
 
 
-CREATE FUNCTION crt_allowed_checker(allowed integer) RETURNS void
-    AS $$
-DECLARE
-
-    allowed_ text := allowed::text;
-
-
-    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn () RETURNS trigger AS ';
-
-
-    fn_bd_tx1_ text := ' DECLARE counted_num_ int; 
-                         allowed_num_ int := ';
-    fn_bd_tx2_ text := '; 
-			 BEGIN 
-				SELECT count(*) INTO counted_num_ FROM billservice_account;
-				IF counted_num_ + 1 > allowed_num_ THEN
-				    RAISE EXCEPTION ';
-    fn_bd_tx3_ text := 			    ', counted_num_, allowed_num_;
-				ELSE 
-				    RETURN NEW;
-				END IF; 
-				END; ';
-
-
-    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
-
-    exception_ text := 'Amount of users[% + 1] will exceed allowed[%] for the license file!';
-BEGIN    
-    EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
-    RETURN;
-END;
-$$
-    LANGUAGE plpgsql;
-
-
-ALTER FUNCTION public.crt_allowed_checker(allowed integer) OWNER TO ebs;
-
-
 CREATE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void
     AS $$
 DECLARE
