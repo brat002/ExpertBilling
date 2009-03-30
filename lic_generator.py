@@ -14,9 +14,12 @@ if __name__ == '__main__':
     else:
         hex_users = hex(int(users))[2:].zfill(4).upper()
         
-    main_str = ''
-    for i in xrange(12):
-        main_str += choice(let_seq)
+    if len(sys.argv)==3:
+        main_str = ''
+        for i in xrange(12):
+            main_str += choice(let_seq)
+    else:
+        main_str = sys.argv[3]
         
     main_str = (hex_users[0:2] + main_str + hex_users[2:4]).upper()
     

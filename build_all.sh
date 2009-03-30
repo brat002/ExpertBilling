@@ -1,7 +1,7 @@
 #!/bin/sh -e
-#$1 - project name $2 users $3 key 
+#$1 - project name $2 users $3 key $4 license string
 
-python lic_generator.py $1 $2
+python lic_generator.py $1 $2 $4
 
 reskey=""
 karg=""
