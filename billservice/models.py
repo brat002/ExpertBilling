@@ -540,9 +540,6 @@ class Account(models.Model):
         
     @models.permalink
     def change_password_url_ajax(self):
-        print '-----------------'
-        print 123456789
-        print '-----------------'
         return ('billservice.views.change_password', (), {})
 
     def save(self, *args, **kwargs):
