@@ -20,7 +20,6 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         #time_start=time_start.replace(tzinfo='UTC')
         #print "repeat_after_seconds=",repeat_after_seconds
         if repeat_after_seconds>0:
-            #print 1
             if prev==False:
                 delta_days=now - time_start
             else:
