@@ -28,6 +28,7 @@ from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllow
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import pollreactor
 pollreactor.install()
+from twisted.internet import reactor
 
 try:    import mx.DateTime
 except: pass
