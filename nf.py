@@ -30,6 +30,7 @@ from twisted.internet import pollreactor
 pollreactor.install()
 from twisted.internet import reactor
 
+
 try:    import mx.DateTime
 except: pass
 
@@ -613,7 +614,7 @@ class ServiceThread(Thread):
         global nascache, ipncache, vpncache, cachesRead
         global nodesCache, groupsCache
         global class_groupsCache, tarif_groupsCache
-        global nfFlowCache, allowedUsers
+        global nfFlowCache, allowedUsers, dcache
         while True:
             if suicideCondition[self.tname]: break
             cur = connection.cursor()
@@ -702,12 +703,11 @@ class ServiceThread(Thread):
                 
                 
                 #reread runtime config options
-                config.read("ebs_config_runtime.ini")
-                logger.setNewLevel(int(config.get("nf", "log_level")))
                 logger.info("nf time : %s", time.clock() - a)
                 global writeProf
                 writeProf = logger.writeInfoP()
                 if writeProf:
+                    logger.info("len flowCache %s", len(dcache))
                     logger.info("len flowQueue %s", len(flowQueue))
                     logger.info("len dbQueue: %s", len(databaseQueue))
                     logger.info("len fnameQueue: %s", len(fnameQueue))
@@ -738,6 +738,10 @@ class RecoveryThread(Thread):
 
 def SIGTERM_handler(signum, frame):
     graceful_save()
+
+def SIGHUP_handler(signum, frame):
+    config.read("ebs_config.ini")
+    logger.setNewLevel(int(config.get("nf", "log_level")))
 
 def graceful_save():
     global cacheThr, threads, suicideCondition
@@ -799,7 +803,10 @@ def main ():
         
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
-    except: logger.lprint('NO SIGTERM!')    
+    except: logger.lprint('NO SIGTERM!')
+    try:
+        signal.signal(signal.SIGHUP, SIGHUP_handler)
+    except: logger.lprint('NO SIGHUP!')
     
     #reception_server(config.get("nf", "host"), int(config.get("nf", "port"))) 
     
