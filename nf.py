@@ -38,7 +38,7 @@ class Reception(DatagramProtocol):
     Twisted Asynchronous server that recieves datagrams with NetFlow packets
     and appends them to 'nfQueue' queue.
     '''
-    def datagramReceived(self, data, (host, port)):
+    def datagramReceived(self, data, addrport):
         if len(data)<=8192:
             nfQueue.append((data, addrport))
         else:
