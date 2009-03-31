@@ -25,9 +25,24 @@ from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
+from twisted.internet.protocol import DatagramProtocol
+from twisted.internet import pollreactor
+pollreactor.install()
+
 try:    import mx.DateTime
 except: pass
 
+class Reception(DatagramProtocol):
+    '''
+    Twisted Asynchronous server that recieves datagrams with NetFlow packets
+    and appends them to 'nfQueue' queue.
+    '''
+    def datagramReceived(self, data, (host, port)):
+        if len(data)<=8192:
+            nfQueue.append((data, addrport))
+        else:
+            logger.error("NF server exception: packet <= 8192")
+            
 class reception_server(asyncore.dispatcher):
     '''
     Asynchronous server that recieves datagrams with NetFlow packets
@@ -784,11 +799,17 @@ def main ():
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')    
-    reception_server(config.get("nf", "host"), int(config.get("nf", "port"))) 
     
+    #reception_server(config.get("nf", "host"), int(config.get("nf", "port"))) 
+    
+    
+    reactor.listenUDP(int(config.get("nf", "port")), Reception())
     print "ebs: nf: started"
+    reactor.run()
+    '''
     while 1: 
         asyncore.poll(0.010)
+    '''
 
 
 if __name__=='__main__':
