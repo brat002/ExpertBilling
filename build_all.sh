@@ -2,7 +2,7 @@
 #$1 - project name $2 users $3 key $4 license string
 
 python lic_generator.py $1 $2 $4
-
+mkdir builds
 reskey=""
 karg=""
 
@@ -18,9 +18,9 @@ else
 fi
 
 rm -rf modules
-rm -rf $1
+rm -rf builds/$1
 
-mkdir $1
+mkdir builds/$1
 
 
 
