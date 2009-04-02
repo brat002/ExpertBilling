@@ -50,7 +50,7 @@ cp -rf dicts builds/$1/dicts
 cp -rf fonts builds/$1/fonts
 rm -rf builds/$1/modules/chartprovider
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
-svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/ebsadmin/ebscab ebscab/ --force
+svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/webadmin/ebscab ebscab/ --force
 
 mkdir builds/$1/ebscab
 cp -r ebscab/ builds/$1/ebscab/
