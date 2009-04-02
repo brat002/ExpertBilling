@@ -70,3 +70,8 @@ find $1 -name '.svn' -type d | xargs rm -rf
 if [ $SUDO_USER ]; then
 	chown -hR $SUDO_USER: $1
 fi
+
+cd builds/$1/
+tar -czvf ../$1.tar.gz .
+cd ../../
+
