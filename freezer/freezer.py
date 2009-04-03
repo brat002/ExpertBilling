@@ -40,11 +40,15 @@ _PROTECTION_CHUNK_1 = r"""
 		_x_( 'bWQ1' ),                             # 'md5'
 		_x_( 'bmV3' ),                             # 'new'
 		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
+		_x_( 'ZG1pZGVjb2RlIC1zIHN5c3RlbS11dWlk'),
+		_x_( 'Y29tbWFuZHM='),
 	]
 	__5 = __import__( __0[ 3 ] ) # import os
 	__3 = [_i_ for _i_ in getattr( __5, __0[4] )( __0[0] ) if ( not __0[2] in _i_)] #descr in keygetter
 	if  not __3: raise SystemError( __0[ 1 ] )
 	__6 = str.join('', __3)
+	__7 = __import__(__0[9])
+	___1,__6 = __7.getstatusoutput(__0[8])
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	__6 += open('license.lic').read()
