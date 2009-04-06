@@ -32,7 +32,7 @@ _PROTECTION_CHUNK_1 = r"""
 	#  __5 - module
 	#  __6 - key data
 	__0 = [
-		_x_( 'L2Rldi9kaXNrL2J5LWlk' ),             # '/dev/disk/by-id'
+		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),             # '/dev/disk/by-uuid'
 		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
 		_x_( 'cGFydA==' ),                         # 'part'
 		_x_( 'b3M=' ),                             # 'os'
@@ -48,7 +48,7 @@ _PROTECTION_CHUNK_1 = r"""
 	if  not __3: raise SystemError( __0[ 1 ] )
 	__6 = str.join('', __3)
 	__7 = __import__(__0[9])
-	___1,__6 = __7.getstatusoutput(__0[8])
+	#___1,__6 = __7.getstatusoutput(__0[8])
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	__6 += open('license.lic').read()
