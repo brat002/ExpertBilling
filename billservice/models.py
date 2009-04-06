@@ -768,7 +768,14 @@ class Ports(models.Model):
     protocol = models.IntegerField()
     name = models.CharField(max_length=64, default='')
     description = models.CharField(max_length=255, default='')
+
+class DocumentType(models.Model):
+    name = models.CharField(max_length=255)
     
+class Template(models.Model):
+    name = models.CharField(max_length=255)
+    type = models.ForeignKey(DocumentType)
+    body = models.TextField()    
 
 class Card(models.Model):
     series = models.IntegerField()
@@ -781,7 +788,7 @@ class Card(models.Model):
     end_date = models.DateTimeField(blank=True, default='')
     disabled= models.BooleanField(default=False, blank=True)
     created = models.DateTimeField()
-    template = models.CharField(max_length=255)
+    template = models.ForeignKey(Template)
   
   
 class BankData(models.Model):
@@ -842,14 +849,6 @@ class DealerPay(models.Model):
     salecard = models.ForeignKey(SaleCard, blank=True, null=True)
     created = models.DateTimeField()
 
-
-class DocumentType(models.Model):
-    name = models.CharField(max_length=255)
-    
-class Template(models.Model):
-    name = models.CharField(max_length=255)
-    type = models.ForeignKey(DocumentType)
-    body = models.TextField()
     
 class Document(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
