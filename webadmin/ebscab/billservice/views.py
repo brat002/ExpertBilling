@@ -414,9 +414,8 @@ def statistics(request):
         return HttpResponseRedirect('/')
     user = request.session['user']
     net_flow_streams = NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start')[:8]
-    net_flow_streams
     transaction = Transaction.objects.filter(account=request.session['user']).order_by('-created')[:8]
-    active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
+    active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]  
     return {
             'net_flow_stream':net_flow_streams,
             'transactions':transaction,
