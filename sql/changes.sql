@@ -15,3 +15,12 @@ ALTER TABLE billservice_shedulelog
 ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id)
 REFERENCES billservice_account (id) MATCH SIMPLE
 ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE billservice_traffictransmitnodes
+  DROP CONSTRAINT billservice_traffictransmitnodes_group_id_fkey ;
+
+ALTER TABLE billservice_traffictransmitnodes
+  ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id)
+      REFERENCES billservice_group (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE;
+      
