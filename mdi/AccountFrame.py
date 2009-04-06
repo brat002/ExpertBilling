@@ -3405,7 +3405,7 @@ class AccountWindow(QtGui.QMainWindow):
 
                         if ip < start_ip or ip>end_ip: raise Exception
                         
-                        ipn_ip_model.pool_id = pool_id
+                        #ipn_ip_model.pool_id = pool_id
                         vpn_ip_model.pool_id = pool_id
                         vpn_ip_model.ip = unicode(self.lineEdit_vpn_ip_address.text())
                         vpn_ip_model.datetime = "now()"

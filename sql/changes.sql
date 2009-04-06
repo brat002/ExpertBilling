@@ -24,3 +24,33 @@ ALTER TABLE billservice_traffictransmitnodes
       REFERENCES billservice_group (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE;
       
+CREATE OR REPLACE FUNCTION clear_tariff_services_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+
+IF (TG_OP = 'DELETE') THEN
+    IF (OLD.traffic_transmit_service_id is not Null) THEN
+        DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+    END IF;
+
+    IF (OLD.time_access_service_id is not Null) THEN
+        DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
+    RETURN OLD;
+    END IF;
+    
+END IF;
+RETURN OLD;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+
+
+CREATE TRIGGER clear_tariff_services_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE clear_tariff_services_trg_fn();
+
