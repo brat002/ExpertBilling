@@ -1,6 +1,9 @@
-import commands, md5, platform, os
+import commands, md5, platform, os, os.path
 
 if __name__ == '__main__':
+    fsys_name = commands.getstatusoutput('df '+ os.getcwd())[1].split('\n')[1].split(' ')[0]
+    id = filter(lambda x: os.path.realpath('/dev/disk/by-uuid/' + x) == '/dev/sda3', os.listdir('/dev/disk/by-uuid'))
+    
     #__1, __2 =  commands.getstatusoutput( 'dmidecode -s system-uuid' )
     #if __1 or not __2: raise SystemError( "can't identify hardware" )
     __3 = [ids for ids in os.listdir('/dev/disk/by-uuid') if ( not 'part' in ids)]
