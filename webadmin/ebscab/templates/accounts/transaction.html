@@ -20,7 +20,7 @@
     			</tr>
     			{% for transaction in transactions %}
        				<tr>
-           				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+           				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y  H:i"}}</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{{ transaction.summ }}</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.description }}&nbsp;</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.bill }}&nbsp;</td>

@@ -58,7 +58,7 @@
 				<div><span class="bold">Тарифный план :</span> {{ tarif }}</div>
 				<div><span class="bold">Баланс :</span> {{ ballance }}</div>
 				<div><span class="bold">Размер кредита :</span> {{ user.credit }}</div>
-				<div><span class="bold">Дата подключенияs :</span> {{ user.created|date_with_offset:"%d.%m.%Y в %m:%H" }}</div>
+				<div><span class="bold">Дата подключенияs :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
 			</div>
 		</td>
 		<td class="right_border main_table_left_border diagram_bg" align="center" valign="center">
@@ -88,7 +88,7 @@
 			     						{{ previous_tarif.tarif }}
 			  						</td>
 									<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} a-right">
-										{{ previous_tarif.datetime|date_with_offset:"%d.%m.%Y %H:%m" }}
+										{{ previous_tarif.datetime|date:"d.m.Y  H:i" }}
 									</td>
 								</tr>
 			  				{% endifnotequal %}
