@@ -22,8 +22,8 @@
     			</tr>
     			{% for session in sessions %}
        				<tr>
-	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date_with_offset:"%d.%m.%Y %H:%m" }}</td>
+	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y  H:i" }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y  H:i"}}</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% if session.bytes_out or session.bytes_in%}  {% trafic_format session.bytes_out %}&nbsp; / {% trafic_format session.bytes_in %}{% endif %}&nbsp;</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
