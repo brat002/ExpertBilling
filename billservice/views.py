@@ -80,10 +80,9 @@ def login(request):
                         else:
                             cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)    
                     cursor = connection.cursor()
-                    cursor.execute("""SELECT name, allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
-                    tarif = cursor.fetchone()
-                    tarif = tarif[1]
-                    if tarif:
+                    cursor.execute("""SELECT allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
+                    allow_express_pay = cursor.fetchone()[0]
+                    if allow_express_pay:
                         request.session['express_pay']=True
                     request.session.modified = True
                     return HttpResponseRedirect('/')
@@ -129,9 +128,8 @@ def index(request):
         del request.session['user']
         return is_login_user(request)
     cursor = connection.cursor()
-    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
-    tarif = cursor.fetchone()
-    tarif = tarif[0]
+    cursor.execute("""SELECT id, name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+    tariff_id, tariff_name = cursor.fetchone()
     cache_user = cache.get(user.id)
     if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
         time = datetime.datetime.now() - cache_user['last_date']
@@ -139,30 +137,28 @@ def index(request):
             cache.delete(user.id)
             cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
-    tarifs = AccountTarif.objects.filter(account=user, datetime__lt=date)
-    if len(tarifs) == 0 or len(tarifs) == 1:
-        tarif_flag = False
+    tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date)
+    if len(tariffs) == 0 or len(tariffs) == 1:
+        tariff_flag = False
     else:
-        tarif_flag = True 
+        tariff_flag = True 
     ballance = u'%.2f' % user.ballance 
     #find prepare trafick
     
     #cursor = connection.cursor()
     cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
-    tarif = cursor.fetchone()
-    tarif = tarif[0]
     try:
-        tarif = Tariff.objects.get(name=tarif)
-        traffic = TrafficLimit.objects.filter(tarif=tarif) 
+        tariff = cursor.fetchone()[0]
+        traffic = TrafficLimit.objects.filter(tarif=tariff_id) 
     except:
         traffic = None
     return {
             #'account':user,
             'ballance':ballance,
-            'tarif':tarif,
-            'tarifs':tarifs,
+            'tariff':tariff_name,
+            'tariffs':tariffs,
             'status': bool(cache_user['blocked']),
-            'tarif_flag':tarif_flag,
+            'tariff_flag':tariff_flag,
             'trafficlimit':traffic,
             'form':  CardForm(),
             }
@@ -333,15 +329,15 @@ def account_prepays_traffic(request):
     user = request.session['user']
     try:
         from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
-        account_tarif = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())[:1]
-        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tarif)
+        account_tariff = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())[:1]
+        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
         prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     except:
         prepaidtraffic = None
-        account_tarif = None  
+        account_tariff = None  
     return {
             'prepaidtraffic':prepaidtraffic,
-            'account_tarif':account_tarif,
+            'account_tariff':account_tariff,
             }
     
 
@@ -394,12 +390,12 @@ def traffic_limit(request):
         return HttpResponseRedirect('/')
     user = request.session['user']
     cursor = connection.cursor()
-    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
-    tarif = cursor.fetchone()
-    tarif = tarif[0]
+    cursor.execute("""SELECT id FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+    
     try:
-        tarif = Tariff.objects.get(name=tarif)
-        traffic = TrafficLimit.objects.filter(tarif=tarif) 
+        tariff = cursor.fetchone()[0]
+        #tariff = Tariff.objects.get(id=tariff)
+        traffic = TrafficLimit.objects.filter(tarif=tariff) 
     except:
         traffic = None
     return {
