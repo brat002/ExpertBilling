@@ -13,7 +13,7 @@
 	   <th>Лимит</th>
 	</tr>
 	{% for traffic_limit in trafficlimit %}
-		{% traffic_limit_coll traffic_limit user %}
+		{% traffic_limit_row traffic_limit user %}
 	{% endfor %}
 </table>
 {% else %}

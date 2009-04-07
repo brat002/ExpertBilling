@@ -5,8 +5,8 @@ from django.db import connection
 from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic
 register = template.Library()
 
-@register.inclusion_tag('accounts/tags/writen_off_time.html')
-def writen_off_time(session, user):
+@register.inclusion_tag('accounts/tags/writen_of_time.html')
+def writen_of_time(session, user):
     type = TransactionType.objects.get(internal_name='TIME_ACCESS')
     if session.date_end:
         transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
@@ -17,8 +17,10 @@ def writen_off_time(session, user):
         sum += transaction.summ
     return {'sum':sum}
 
-@register.inclusion_tag('accounts/tags/writen_off_trafic.html')
-def writen_off_trafic(session, user):
+@register.inclusion_tag('accounts/tags/writen_of_traffic.html')
+def writen_of_traffic(session, user):
+    """
+    """
     type = TransactionType.objects.get(internal_name='NETFLOW_BILL')
     if session.date_end:
         transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
@@ -29,8 +31,8 @@ def writen_off_trafic(session, user):
         sum += transaction.summ
     return {'sum':sum}
 
-@register.inclusion_tag('accounts/tags/trafic_format.html')    
-def trafic_format(value):
+@register.inclusion_tag('accounts/tags/traffic_format.html')    
+def traffic_format(value):
     try:
         a=float(value)
         #res = a/1024
@@ -86,8 +88,8 @@ def time_format(s):
                 'time': u"0с",
                 }
         
-@register.inclusion_tag('accounts/tags/traffic_limit_coll.html')
-def traffic_limit_coll(trafficlimit, user, iter_nom, last=False):
+@register.inclusion_tag('accounts/tags/traffic_limit_row.html')
+def traffic_limit_row(trafficlimit, user, iter_nom, last=False):
     settlement_period = trafficlimit.settlement_period
     cursor = connection.cursor()
     if settlement_period.autostart==True:
