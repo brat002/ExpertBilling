@@ -1,147 +1,148 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Dialog</class>
- <widget class="QDialog" name="Dialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
-    <height>410</height>
+    <width>406</width>
+    <height>454</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Настройки сервера доступа</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="0" column="0" >
-    <widget class="QTabWidget" name="maintabWidget" >
-     <property name="currentIndex" >
-      <number>0</number>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="maintabWidget">
+     <property name="currentIndex">
+      <number>2</number>
      </property>
-     <widget class="QWidget" name="general_tab" >
-      <attribute name="title" >
+     <widget class="QWidget" name="general_tab">
+      <attribute name="title">
        <string>Общее</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_2" >
-       <item row="0" column="0" >
-        <widget class="QLabel" name="label_name" >
-         <property name="text" >
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_name">
+         <property name="text">
           <string>Название</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1" colspan="2" >
-        <widget class="QLineEdit" name="lineEdit_name" />
+       <item row="0" column="1" colspan="2">
+        <widget class="QLineEdit" name="lineEdit_name"/>
        </item>
-       <item row="1" column="0" colspan="3" >
-        <widget class="QGroupBox" name="identify_groupBox" >
-         <property name="title" >
+       <item row="1" column="0" colspan="3">
+        <widget class="QGroupBox" name="identify_groupBox">
+         <property name="title">
           <string>Сетевая идентификация</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_6" >
-          <item row="0" column="0" >
-           <widget class="QLabel" name="type_label" >
-            <property name="text" >
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="type_label">
+            <property name="text">
              <string>Тип</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>nas_comboBox</cstring>
             </property>
            </widget>
           </item>
-          <item row="0" column="1" >
-           <widget class="QComboBox" name="nas_comboBox" >
+          <item row="0" column="1">
+           <widget class="QComboBox" name="nas_comboBox">
             <item>
-             <property name="text" >
+             <property name="text">
               <string>Mikrotik 2.8</string>
              </property>
             </item>
             <item>
-             <property name="text" >
+             <property name="text">
               <string>Mikrotik 2.9</string>
              </property>
             </item>
             <item>
-             <property name="text" >
+             <property name="text">
               <string>Mikrotik 3.0</string>
              </property>
             </item>
             <item>
-             <property name="text" >
+             <property name="text">
               <string>-other-</string>
              </property>
             </item>
            </widget>
           </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="name_label" >
-            <property name="text" >
+          <item row="1" column="0">
+           <widget class="QLabel" name="name_label">
+            <property name="text">
              <string>Сетевое имя</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>nas_name</cstring>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="nas_name" />
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="nas_name"/>
           </item>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="ip_label" >
-            <property name="text" >
+          <item row="2" column="0">
+           <widget class="QLabel" name="ip_label">
+            <property name="text">
              <string>IP</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>nas_ip</cstring>
             </property>
            </widget>
           </item>
-          <item row="2" column="1" >
-           <widget class="QLineEdit" name="nas_ip" >
-            <property name="inputMask" >
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="nas_ip">
+            <property name="inputMask">
              <string>000.000.000.000; </string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="secret_label" >
-            <property name="text" >
+          <item row="3" column="0">
+           <widget class="QLabel" name="secret_label">
+            <property name="text">
              <string>Секретная фраза</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>nas_secret</cstring>
             </property>
            </widget>
           </item>
-          <item row="3" column="1" >
-           <widget class="QLineEdit" name="nas_secret" />
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="nas_secret"/>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2" >
-        <widget class="QGroupBox" name="services_groupBox" >
-         <property name="title" >
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="services_groupBox">
+         <property name="title">
           <string>Разрешённые сервисы</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_4" >
-          <item row="0" column="0" >
-           <widget class="QCheckBox" name="pptp_checkBox" >
-            <property name="text" >
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="pptp_checkBox">
+            <property name="text">
              <string>PPTP</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" >
-           <widget class="QCheckBox" name="pppoe_checkBox" >
-            <property name="text" >
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="pppoe_checkBox">
+            <property name="text">
              <string>PPPOE</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0" >
-           <widget class="QCheckBox" name="ipn_checkBox" >
-            <property name="text" >
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="ipn_checkBox">
+            <property name="text">
              <string>IPN</string>
             </property>
            </widget>
@@ -149,45 +150,45 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="2" >
-        <widget class="QGroupBox" name="ssh_groupBox" >
-         <property name="title" >
+       <item row="2" column="2">
+        <widget class="QGroupBox" name="ssh_groupBox">
+         <property name="title">
           <string>SSH</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3" >
-          <item row="0" column="0" >
-           <widget class="QLabel" name="ssh_name_label" >
-            <property name="text" >
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="ssh_name_label">
+            <property name="text">
              <string>Имя</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>ssh_name_lineEdit</cstring>
             </property>
            </widget>
           </item>
-          <item row="0" column="1" >
-           <widget class="QLineEdit" name="ssh_name_lineEdit" />
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ssh_name_lineEdit"/>
           </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="ssh_password_label" >
-            <property name="text" >
+          <item row="1" column="0">
+           <widget class="QLabel" name="ssh_password_label">
+            <property name="text">
              <string>Пароль</string>
             </property>
-            <property name="buddy" >
+            <property name="buddy">
              <cstring>ssh_password_lineEdit</cstring>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="ssh_password_lineEdit" >
-            <property name="echoMode" >
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ssh_password_lineEdit">
+            <property name="echoMode">
              <enum>QLineEdit::Password</enum>
             </property>
            </widget>
           </item>
-          <item row="2" column="1" >
-           <widget class="QPushButton" name="pushButton" >
-            <property name="text" >
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
              <string>Test</string>
             </property>
            </widget>
@@ -195,100 +196,207 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="0" colspan="3" >
-        <widget class="QCheckBox" name="checkBox_multilink" >
-         <property name="text" >
+       <item row="3" column="0" colspan="3">
+        <widget class="QCheckBox" name="checkBox_multilink">
+         <property name="text">
           <string>Разрешить Multilink подключения</string>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="commands_tab" >
-      <attribute name="title" >
+     <widget class="QWidget" name="commands_tab">
+      <attribute name="title">
        <string>Команды</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_5" >
-       <item row="0" column="0" >
-        <widget class="QLabel" name="create_user_label" >
-         <property name="text" >
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QLabel" name="create_user_label">
+         <property name="text">
           <string>Создать пользователя</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" >
-        <widget class="QLineEdit" name="create_user_textEdit" />
+       <item row="1" column="0">
+        <widget class="QLineEdit" name="create_user_textEdit"/>
        </item>
-       <item row="2" column="0" >
-        <widget class="QLabel" name="remove_user_label" >
-         <property name="text" >
+       <item row="2" column="0">
+        <widget class="QLabel" name="remove_user_label">
+         <property name="text">
           <string>Удалить пользователя</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" >
-        <widget class="QLineEdit" name="remove_user_textEdit" />
+       <item row="3" column="0">
+        <widget class="QLineEdit" name="remove_user_textEdit"/>
        </item>
-       <item row="4" column="0" >
-        <widget class="QLabel" name="enable_user_label" >
-         <property name="text" >
+       <item row="4" column="0">
+        <widget class="QLabel" name="enable_user_label">
+         <property name="text">
           <string>Активировать пользователя</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0" >
-        <widget class="QLineEdit" name="enable_user_textEdit" />
+       <item row="5" column="0">
+        <widget class="QLineEdit" name="enable_user_textEdit"/>
        </item>
-       <item row="6" column="0" >
-        <widget class="QLabel" name="disable_user_label" >
-         <property name="text" >
+       <item row="6" column="0">
+        <widget class="QLabel" name="disable_user_label">
+         <property name="text">
           <string>Деактивировать пользователя</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0" >
-        <widget class="QLineEdit" name="disable_user_textEdit" />
+       <item row="7" column="0">
+        <widget class="QLineEdit" name="disable_user_textEdit"/>
        </item>
-       <item row="8" column="0" >
-        <widget class="QLabel" name="pod_label" >
-         <property name="text" >
+       <item row="8" column="0">
+        <widget class="QLabel" name="pod_label">
+         <property name="text">
           <string>Сбросить сессию пользователя</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="0" >
-        <widget class="QLineEdit" name="pod_textEdit" />
+       <item row="9" column="0">
+        <widget class="QLineEdit" name="pod_textEdit"/>
        </item>
-       <item row="10" column="0" >
-        <widget class="QLabel" name="set_vpn_speed_label" >
-         <property name="text" >
+       <item row="10" column="0">
+        <widget class="QLabel" name="set_vpn_speed_label">
+         <property name="text">
           <string>Установить скорость для VPN клиента</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="0" >
-        <widget class="QLineEdit" name="set_vpn_speed_textEdit" />
+       <item row="11" column="0">
+        <widget class="QLineEdit" name="set_vpn_speed_textEdit"/>
        </item>
-       <item row="12" column="0" >
-        <widget class="QLabel" name="set_ipn_speed_label" >
-         <property name="text" >
+       <item row="12" column="0">
+        <widget class="QLabel" name="set_ipn_speed_label">
+         <property name="text">
           <string>Установить скорость для IPN клиента</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="0" >
-        <widget class="QLineEdit" name="set_ipn_speed_lineEdit" />
+       <item row="13" column="0">
+        <widget class="QLineEdit" name="set_ipn_speed_lineEdit"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>RADIUS Attributes</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_9">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Настройка RADIUS аттрибутов</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_vendor">
+              <property name="text">
+               <string>Vendor</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_attr_id">
+              <property name="text">
+               <string>Attr ID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_value">
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_type">
+              <property name="text">
+               <string>Type</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLineEdit" name="lineEdit_vendor"/>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineEdit_attr_id"/>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLineEdit" name="lineEdit_value"/>
+            </item>
+            <item row="1" column="3">
+             <widget class="QComboBox" name="comboBox_type"/>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCommandLinkButton" name="commandLinkButton_add">
+              <property name="text">
+               <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCommandLinkButton" name="commandLinkButton_del">
+              <property name="text">
+               <string>Удалить</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QTableWidget" name="tableWidget">
+         <column>
+          <property name="text">
+           <string>#</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Vendor</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Attr ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Value</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Type</string>
+          </property>
+         </column>
+        </widget>
        </item>
       </layout>
      </widget>
     </widget>
    </item>
-   <item row="1" column="0" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <property name="standardButtons" >
+     <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
@@ -326,11 +434,11 @@
    <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -342,11 +450,11 @@
    <receiver>Dialog</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
     </hint>

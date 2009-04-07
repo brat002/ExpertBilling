@@ -3850,7 +3850,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #tariff_type = self.connection.get("SELECT get_tariff_type(%d);" % tarif.id)
             #item.setText(1, tarif.ttype)
             if not tarif.active:
-                item.setDisabled(True)
+                item.setIcon(0, QtGui.QIcon("images/folder_disabled.png"))
             
         self.connectTree()
         if curItem != -1:
@@ -3905,6 +3905,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setColumnHidden(0, False)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
+        #self.tablewidget.setShowGrid(False)
         #self.tableWidget.setSortingEnabled(True)
         
 

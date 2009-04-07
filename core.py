@@ -793,6 +793,8 @@ class limit_checker(Thread):
                             sp_start = spRec[1]
                         
                         settlement_period_start, settlement_period_end, delta = settlement_period_info(sp_start, spRec[3], spRec[2], dateAT)
+                        if settlement_period_start<acct[3]:
+                            settlement_period_start = acct[3]
                         #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
                         now = dateAT
                         limit_mode = limitRec[6]
@@ -962,6 +964,9 @@ class settlement_period_service_dog(Thread):
                                 time_start = setpRec[1]
                             #time_start, length_in, length
                             period_start, period_end, delta = fMem.settlement_period_(time_start, setpRec[3], setpRec[2], dateAT)
+                            #Если начало расчётного периода осталось в прошлом тарифном плане-за начало расчётного периода принимаем начало тарифного плана
+                            if period_start<acct[3]:
+                                period_start = acct[3]
                         else:
                             time_start = acct_datetime
                             period_start = acct_datetime
@@ -988,7 +993,7 @@ class settlement_period_service_dog(Thread):
                                 """
                                 SELECT sum(summ)
                                 FROM billservice_transaction
-                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and type_id not in ('MANUAL_TRANSACTION', 'ACTIVATION_CARD');
+                                WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and summ>0;
                                 """, (tnc, tkc, account_id, tarif_id,))
                             summ=cur.fetchone()[0]
                             if summ==None:

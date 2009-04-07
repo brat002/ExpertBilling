@@ -11,7 +11,7 @@ from helpers import HeaderUtil
 from helpers import dateDelim
 from ebsWindow import ebsTableWindow
 
-
+roles = [u"Администратор", u"Кассир", u"Веб-кабинет"]
 class PasswordEditFrame(QtGui.QDialog):
     def __init__(self):
         super(PasswordEditFrame, self).__init__()
@@ -80,51 +80,56 @@ class SystemUserFrame(QtGui.QDialog):
         self.model = model
         self.password = ''
        
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,369,182).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(379, 194)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.username_label = QtGui.QLabel(self.groupBox)
+        self.username_label.setObjectName("username_label")
+        self.gridLayout_2.addWidget(self.username_label, 0, 0, 1, 1)
+        self.username_edit = QtGui.QLineEdit(self.groupBox)
+        self.username_edit.setMinimumSize(QtCore.QSize(0, 21))
+        self.username_edit.setObjectName("username_edit")
+        self.gridLayout_2.addWidget(self.username_edit, 0, 1, 1, 2)
+        self.label = QtGui.QLabel(self.groupBox)
+        self.label.setObjectName("label")
+        self.gridLayout_2.addWidget(self.label, 1, 0, 1, 1)
+        self.hosts_lineEdit = QtGui.QLineEdit(self.groupBox)
+        self.hosts_lineEdit.setMinimumSize(QtCore.QSize(0, 21))
+        self.hosts_lineEdit.setObjectName("hosts_lineEdit")
+        self.gridLayout_2.addWidget(self.hosts_lineEdit, 1, 1, 1, 2)
+        self.comment_label = QtGui.QLabel(self.groupBox)
+        self.comment_label.setObjectName("comment_label")
+        self.gridLayout_2.addWidget(self.comment_label, 2, 0, 1, 1)
+        self.comment_edit = QtGui.QLineEdit(self.groupBox)
+        self.comment_edit.setMinimumSize(QtCore.QSize(0, 21))
+        self.comment_edit.setObjectName("comment_edit")
+        self.gridLayout_2.addWidget(self.comment_edit, 2, 1, 1, 2)
+        self.label_role = QtGui.QLabel(self.groupBox)
+        self.label_role.setObjectName("label_role")
+        self.gridLayout_2.addWidget(self.label_role, 3, 0, 1, 1)
+        self.comboBox_role = QtGui.QComboBox(self.groupBox)
+        self.comboBox_role.setMinimumSize(QtCore.QSize(0, 21))
+        self.comboBox_role.setObjectName("comboBox_role")
 
-        self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(200,150,161,25))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setCenterButtons(False)
-        self.buttonBox.setObjectName("buttonBox")
-
+        self.gridLayout_2.addWidget(self.comboBox_role, 3, 1, 1, 1)
+        self.status_checkBox = QtGui.QCheckBox(self.groupBox)
+        self.status_checkBox.setObjectName("status_checkBox")
+        self.gridLayout_2.addWidget(self.status_checkBox, 3, 2, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 2)
         self.password_pushButton = QtGui.QPushButton(self)
-        self.password_pushButton.setGeometry(QtCore.QRect(10,150,93,25))
         self.password_pushButton.setFlat(False)
         self.password_pushButton.setObjectName("password_pushButton")
-
-        self.groupBox = QtGui.QGroupBox(self)
-        self.groupBox.setGeometry(QtCore.QRect(10,10,351,131))
-        self.groupBox.setObjectName("groupBox")
-
-        self.hosts_lineEdit = QtGui.QLineEdit(self.groupBox)
-        self.hosts_lineEdit.setGeometry(QtCore.QRect(110,50,231,20))
-        self.hosts_lineEdit.setObjectName("hosts_lineEdit")
-
-        self.username_edit = QtGui.QLineEdit(self.groupBox)
-        self.username_edit.setGeometry(QtCore.QRect(110,20,230,20))
-        self.username_edit.setObjectName("username_edit")
-
-        self.label = QtGui.QLabel(self.groupBox)
-        self.label.setGeometry(QtCore.QRect(10,50,101,20))
-        self.label.setObjectName("label")
-
-        self.username_label = QtGui.QLabel(self.groupBox)
-        self.username_label.setGeometry(QtCore.QRect(11,20,97,21))
-        self.username_label.setObjectName("username_label")
-
-        self.comment_label = QtGui.QLabel(self.groupBox)
-        self.comment_label.setGeometry(QtCore.QRect(11,80,93,21))
-        self.comment_label.setObjectName("comment_label")
-
-        self.comment_edit = QtGui.QLineEdit(self.groupBox)
-        self.comment_edit.setGeometry(QtCore.QRect(110,80,230,20))
-        self.comment_edit.setObjectName("comment_edit")
-
-        self.status_checkBox = QtGui.QCheckBox(self.groupBox)
-        self.status_checkBox.setGeometry(QtCore.QRect(110,110,131,16))
-        self.status_checkBox.setObjectName("status_checkBox")
+        self.gridLayout.addWidget(self.password_pushButton, 1, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setCenterButtons(False)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 1, 1, 1)
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
@@ -144,7 +149,8 @@ class SystemUserFrame(QtGui.QDialog):
         self.status_checkBox.setText(QtGui.QApplication.translate("Dialog", "Разрешён вход", None, QtGui.QApplication.UnicodeUTF8))
         self.password_pushButton.setText(QtGui.QApplication.translate("Dialog", "Новый пароль", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "Разрешённые IP:", None, QtGui.QApplication.UnicodeUTF8))        
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Разрешённые IP:", None, QtGui.QApplication.UnicodeUTF8))     
+        self.label_role.setText(QtGui.QApplication.translate("Dialog", "Роль", None, QtGui.QApplication.UnicodeUTF8))   
 
     def setPassword(self):
         child = PasswordEditFrame()
@@ -185,6 +191,8 @@ class SystemUserFrame(QtGui.QDialog):
             model.username = unicode(self.username_edit.text())
             model.description = unicode(self.comment_edit.text())
             model.status = self.status_checkBox.checkState()==2
+            model.role = self.comboBox_role.currentIndex()
+            
             try:
                 self.connection.save(model, "billservice_systemuser")
                 self.connection.commit()
@@ -198,12 +206,20 @@ class SystemUserFrame(QtGui.QDialog):
             return
 
     def fixtures(self):
-
+        
+        i=0
+        for role in roles:
+            self.comboBox_role.addItem(role)
+            self.comboBox_role.setItemData(i, QtCore.QVariant(i))
+            i+=1
+            
+        #print "current index", self.model.role
         if self.model:
             self.username_edit.setText(unicode(self.model.username))
             self.comment_edit.setText(unicode(self.model.description))
             self.status_checkBox.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.hosts_lineEdit.setText(unicode(self.model.host))
+            self.comboBox_role.setCurrentIndex(int(self.model.role))
         else:
             self.hosts_lineEdit.setText(u'0.0.0.0/0')
 
