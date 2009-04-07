@@ -54,3 +54,11 @@ CREATE TRIGGER clear_tariff_services_trg
   FOR EACH ROW
   EXECUTE PROCEDURE clear_tariff_services_trg_fn();
 
+--7.04.2009
+ALTER TABLE billservice_systemuser
+   ADD COLUMN "role" integer;
+ALTER TABLE billservice_systemuser
+   ALTER COLUMN "role" SET NOT NULL;
+   
+UPDATE billservice_systemuser SET role = 0 WHERE id>0;
+

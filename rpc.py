@@ -59,10 +59,11 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 logger.error("rpc max_users depleted: %s", repr(ex))
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SERVERTOOBUSY)'''
+            #print hash
+            user, mdpass, role = hash.split(':')
             
-            user, mdpass = hash.split(':', 1)
             try:
-                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s';" % user)
+                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
                 val[0].connection.commit()
             except Exception, ex:
                 logger.error("acceptIdentification error: %s", repr(ex))
