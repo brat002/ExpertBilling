@@ -62,7 +62,7 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_addr }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_port }}</td>
 							<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.get_protocol }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% trafic_format stream.octets %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_format stream.octets %}</td>
 						</tr>
 					{% endfor %}
 				</table>
@@ -93,10 +93,10 @@
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y H:i" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y H:i" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% trafic_format session.bytes_out %} / {% trafic_format session.bytes_in %}{% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% traffic_format session.bytes_out %} / {% traffic_format session.bytes_in %}{% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_off_trafic session user %}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_off_time session user %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_of_traffic session user %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_of_time session user %}</td>
 						</tr>
 					{% endfor %}
 				</table>

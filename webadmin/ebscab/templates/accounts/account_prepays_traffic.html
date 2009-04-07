@@ -19,7 +19,7 @@
 				<td class="first_row">{{ class.name }}</td>
 				<td align="center">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
 				<td align="center">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
-				<td>{% traffic_size traffic account_tarif %}</td>
+				<td>{% traffic_size traffic account_tariff %}</td>
 			</tr>
 		{% endfor %}
 	{% endfor %}
