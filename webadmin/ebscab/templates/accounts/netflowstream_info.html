@@ -28,7 +28,7 @@
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.dst_addr }}</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.dst_port }}</td>
 		   				<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.get_protocol }}</td>
-		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% trafic_format net_flow_stream.octets %}</td>
+		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% traffic_format net_flow_stream.octets %}</td>
 	   				</tr>
 				{% endfor%}
 			</table>

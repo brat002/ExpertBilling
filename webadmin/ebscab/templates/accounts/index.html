@@ -55,7 +55,7 @@
 				{% endif %}
 				<div><span class="bold">Cетевой IP адрес :</span> {{ user.ipn_ip_address }}</div>
 				<div><span class="bold">VPN IP адрес :</span> {{ user.vpn_ip_address }}</div>
-				<div><span class="bold">Тарифный план :</span> {{ tarif }}</div>
+				<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
 				<div><span class="bold">Баланс :</span> {{ ballance }}</div>
 				<div><span class="bold">Размер кредита :</span> {{ user.credit }}</div>
 				<div><span class="bold">Дата подключенияs :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
@@ -75,20 +75,20 @@
 	<!--- Предыдущие тарифные планы/активация карточек - данные --->
 	<tr>
 		<td class="main_table_left_border" valign="top">
-			{% if tarifs %}
+			{% if tariffs %}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th class="bold a-left">Название</th>
 						<th class="bold" align="right">Начало действия</th>
 					</tr>
-						{% for previous_tarif in tarifs %}
-		      				{% ifnotequal tarif previous_tarif %}
+						{% for previous_tariff in tariffs %}
+		      				{% ifnotequal tariff previous_tariff %}
 								<tr>
 		      						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">
-			     						{{ previous_tarif.tarif }}
+			     						{{ previous_tariff.tarif }}
 			  						</td>
 									<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} a-right">
-										{{ previous_tarif.datetime|date:"d.m.Y  H:i" }}
+										{{ previous_tariff.datetime|date:"d.m.Y  H:i" }}
 									</td>
 								</tr>
 			  				{% endifnotequal %}
@@ -140,7 +140,7 @@
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tarif %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tariff %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
 						</tr>
 					{% endfor %}
 				{% endfor %}
@@ -161,7 +161,7 @@
 	   						<th>Лимит</th>
 						</tr>
 						{% for traffic_limit in trafficlimit %}
-							{% traffic_limit_coll traffic_limit user forloop.counter forloop.last %}
+							{% traffic_limit_row traffic_limit user forloop.counter forloop.last %}
 						{% endfor %}
 					</table>
 				{% else %}
