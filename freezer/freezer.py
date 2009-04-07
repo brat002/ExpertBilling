@@ -22,7 +22,7 @@ from zlib import decompress as _z_
 #  version, OS name and user login
 def _1_():"""
 
-_PROTECTION_CHUNK_1 = r"""
+_PROTECTION_CHUNK_1_L = r"""
 	# local variables:
 	#  __0 - string constants
 	#  __1 - exit code of a command
@@ -32,7 +32,7 @@ _PROTECTION_CHUNK_1 = r"""
 	#  __5 - module
 	#  __6 - key data
 	__0 = [
-		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),             # '/dev/disk/by-uuid'
+		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),         # '/dev/disk/by-uuid'
 		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
 		_x_( 'cGFydA==' ),                         # 'part'
 		_x_( 'b3M=' ),                             # 'os'
@@ -41,19 +41,83 @@ _PROTECTION_CHUNK_1 = r"""
 		_x_( 'bmV3' ),                             # 'new'
 		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
 		_x_( 'ZG1pZGVjb2RlIC1zIHN5c3RlbS11dWlk'),
-		_x_( 'Y29tbWFuZHM='),
+		_x_( 'Y29tbWFuZHM='),                      #'9' 'commands'
+		_x_( 'b3MucGF0aA=='),                      #$10 'os.path'
+		_x_( 'cmVhbHBhdGg='),                      #$11 'realpath'
+		_x_( 'Z2V0Y3dk'),                          #$12 'getcwd'
+		_x_( 'L2Jpbi9kZiA='),                      #$13 '/bin/df '
+		_x_( 'Z2V0c3RhdHVzb3V0cHV0'),              #$14 'getstatusoutput'
+		_x_( 'c3lz'),                              #$15 'sys
+		_x_( 'ZXhpdA==')                           #$16 'exit'
 	]
+	
 	__5 = __import__( __0[ 3 ] ) # import os
-	__3 = [_i_ for _i_ in getattr( __5, __0[4] )( __0[0] ) if ( not __0[2] in _i_)] #descr in keygetter
-	if  not __3: raise SystemError( __0[ 1 ] )
+	_5p = __import__( __0[ 10 ] )
+	_5c = __import__( __0[ 9 ] )
+	_5s = __import__( __0[ 15 ] )
+	try:
+	    _3f = in getattr( _5c, __0[14] )(__0[13] + getattr(__5, __0[12])())[1].split('\n')[1].split(' ')[0]
+            __3 = filter(lambda x: getattr(_5p, __0[11])(__0[0] + x) == _3f, getattr( __5, __0[4] )( __0[0] ))
+        except:
+            print "error 66004"; getattr(_5s, __0[16])()
+        if not __3:
+            print "error 11294"; getattr(_5s, __0[16])()
+        else:
+            __3 = __3[0]
+	    
 	__6 = str.join('', __3)
-	__7 = __import__(__0[9])
-	#___1,__6 = __7.getstatusoutput(__0[8])
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	__6 += open('license.lic').read()
 	del __0
-	return __6.upper()
+	return __6.upper()[:-1] + 'L'
+"""
+_PROTECTION_CHUNK_1_D = r"""
+	# local variables:
+	#  __0 - string constants
+	#  __1 - exit code of a command
+	#  __2 - output of the command
+	#  __3 - list of serials
+	#  __4 - temporary variable
+	#  __5 - module
+	#  __6 - key data
+	__0 = [
+		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),         # '/dev/disk/by-uuid'
+		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
+		_x_( 'cGFydA==' ),                         # 'part'
+		_x_( 'b3M=' ),                             # 'os'
+		_x_( 'bGlzdGRpcg==' ),                     # 'listdir'
+		_x_( 'bWQ1' ),                             # 'md5'
+		_x_( 'bmV3' ),                             # 'new'
+		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
+		_x_( 'ZG1pZGVjb2RlIC1zIHN5c3RlbS11dWlk'),
+		_x_( 'Y29tbWFuZHM='),                      #$9 'commands'
+		_x_( 'L3NiaW4vc3lzY3RsIGRldi4lcy4lcy4lJWRlc2M='), #$10 '/sbin/sysctl dev.%s.%s.%%desc'
+		_x_( 'dmlydHVhbA=='),                      #$11 'virtual'
+		_x_( 'Z2V0Y3dk'),                          #$12 'getcwd'
+		_x_( 'L2Jpbi9kZiA='),                      #$13 '/bin/df '
+		_x_( 'Z2V0c3RhdHVzb3V0cHV0'),              #$14 'getstatusoutput'
+		_x_( 'c3lz'),                              #$15 'sys
+		_x_( 'ZXhpdA==')                           #$16 'exit'
+	]
+	__5 = __import__( __0[ 3 ] ) # import os
+	_5c = __import__( __0[ 9 ] )
+	_5s = __import__( __0[ 15 ] )
+	try:
+	    _3f = in getattr( _5c, __0[14] )(__0[13] + getattr(__5, __0[12])())[1].split('\n')[1].split(' ')[0]
+	    _3d = _3f[:2]; _3n = _3f[2]
+            __3 = getattr( _5c, __0[14] )(__0[10] % (_3d, _3n))
+	    if not __3: print "error 77075"; getattr(_5s, __0[16])()
+	    #if __3.lower().find(__0[11]) != -1: print "error 77088"; getattr(_5s, __0[16])()
+	    __3 = __3.split(': ')[1]
+        except:
+            print "error 77004"; getattr(_5s, __0[16])()
+	__6 = str.join('', __3)
+	__5 = __import__(__0[5]) # import md5
+	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 += open('license.lic').read()
+	del __0
+	return __6.upper()[:-1] + 'D'
 """
 
 _PROTECTION_CHUNK_2 = """
@@ -452,7 +516,17 @@ def _create_proj():
 		print "Dumping '%s'" % m.__name__
 		mods[ zlib.compress( m.__name__, 9 ) ] = _encrypt_str( _pack_code( _dump_code( m.__code__ ) ), _flags[ 'PROTECTION_KEY' ] )
 	ordered_mods = [zlib.compress( m_name.strip(), 9 ) for m_name in  _flags[ 'INIT_ORDER' ]]
-	_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1 if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY else _PROTECTION_CHUNK_2
+	if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY:
+		sys_letter = _flags[ 'PROTECTION_KEY' ][-1]
+		if sys_letter == 'L':
+			_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_L
+		elif sys_letter == 'D':
+			_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_D
+		else:
+			raise SystemError('Unknown system id: %s' % sys_letter)
+	else:
+		_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_2
+	#_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1 if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY else _PROTECTION_CHUNK_2
 	protbc = _encrypt_str( _dump_code( compile(
 	    '_0_ = ' + `mods` + '\n' + '_0om_ = ' + `ordered_mods` + '\n' + _PROTECTION_CHUNK_0 + _KEY_PROTECTION_CHUNK + _PROTECTION_CHUNK_3,
 	    '',
