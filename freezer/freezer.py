@@ -48,7 +48,7 @@ _PROTECTION_CHUNK_1_L = r"""
 		_x_( 'L2Jpbi9kZiA='),                      #$13 '/bin/df '
 		_x_( 'Z2V0c3RhdHVzb3V0cHV0'),              #$14 'getstatusoutput'
 		_x_( 'c3lz'),                              #$15 'sys
-		_x_( 'ZXhpdA==')                           #$16 'exit'
+		_x_( 'ZXhpdA=='),                           #$16 'exit'
 	]
 	
 	__5 = __import__( __0[ 3 ] ) # import os
@@ -98,7 +98,7 @@ _PROTECTION_CHUNK_1_D = r"""
 		_x_( 'L2Jpbi9kZiA='),                      #$13 '/bin/df '
 		_x_( 'Z2V0c3RhdHVzb3V0cHV0'),              #$14 'getstatusoutput'
 		_x_( 'c3lz'),                              #$15 'sys
-		_x_( 'ZXhpdA==')                           #$16 'exit'
+		_x_( 'ZXhpdA=='),                          #$16 'exit'
 	]
 	__5 = __import__( __0[ 3 ] ) # import os
 	_5c = __import__( __0[ 9 ] )
@@ -257,7 +257,7 @@ int main( int argc, char ** argv )
 
 ####################################################################################################
 
-import sys, os, os.path, modulefinder, zlib
+import sys, os, os.path, modulefinder, zlib, traceback
 
 _PY_VER = float( sys.version[ : 3 ] )
 if _PY_VER < 2.4 or _PY_VER >= 3.0: raise RuntimeError( 'Python of version 2.x (>=2.4) required' )
@@ -517,7 +517,7 @@ def _create_proj():
 		mods[ zlib.compress( m.__name__, 9 ) ] = _encrypt_str( _pack_code( _dump_code( m.__code__ ) ), _flags[ 'PROTECTION_KEY' ] )
 	ordered_mods = [zlib.compress( m_name.strip(), 9 ) for m_name in  _flags[ 'INIT_ORDER' ]]
 	if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY:
-		sys_letter = _flags[ 'PROTECTION_KEY' ][-1]
+		sys_letter = _flags[ 'PROTECTION_KEY' ][-17]
 		if sys_letter == 'L':
 			_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_L
 		elif sys_letter == 'D':
@@ -527,10 +527,9 @@ def _create_proj():
 	else:
 		_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_2
 	#_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1 if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY else _PROTECTION_CHUNK_2
-	protbc = _encrypt_str( _dump_code( compile(
-	    '_0_ = ' + `mods` + '\n' + '_0om_ = ' + `ordered_mods` + '\n' + _PROTECTION_CHUNK_0 + _KEY_PROTECTION_CHUNK + _PROTECTION_CHUNK_3,
-	    '',
-	    'exec') ) )
+	compile_str = '_0_ = ' + `mods` + '\n' + '_0om_ = ' + `ordered_mods` + '\n' + _PROTECTION_CHUNK_0 + _KEY_PROTECTION_CHUNK + _PROTECTION_CHUNK_3
+	print compile_str
+	protbc = _encrypt_str( _dump_code( compile(compile_str, '', 'exec') ) )
 	_write2file( f, protbc, '__prot__' );
 	f.write( _CODE_CHUNK_0 )
 	f.write( '\t{ "__main__", __prot__, %d },\n' % len( protbc ) )
@@ -748,6 +747,7 @@ def _main(): # called from a command line
 		sys.exit( 0 )
 	except Exception, err:
 		sys.stderr.write( '%s: %s\n' % ( sys.argv[ 0 ], err ) )
+		traceback.print_exc(file=sys.stderr)
 		sys.exit( 1 )
 
 if __name__ == '__main__': _main()
