@@ -56,7 +56,7 @@ _PROTECTION_CHUNK_1_L = r"""
 	_5c = __import__( __0[ 9 ] )
 	_5s = __import__( __0[ 15 ] )
 	try:
-	    _3f = in getattr( _5c, __0[14] )(__0[13] + getattr(__5, __0[12])())[1].split('\n')[1].split(' ')[0]
+	    _3f = getattr( _5c, __0[14] )(__0[13] + getattr(__5, __0[12])())[1].split('\n')[1].split(' ')[0]
             __3 = filter(lambda x: getattr(_5p, __0[11])(__0[0] + x) == _3f, getattr( __5, __0[4] )( __0[0] ))
         except:
             print "error 66004"; getattr(_5s, __0[16])()
@@ -68,10 +68,12 @@ _PROTECTION_CHUNK_1_L = r"""
 	__6 = str.join('', __3)
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 = __6[:-1] + 'L'
 	__6 += open('license.lic').read()
-	del __0
-	return __6.upper()[:-1] + 'L'
+	#del __0
+	return __6.upper()
 """
+
 _PROTECTION_CHUNK_1_D = r"""
 	# local variables:
 	#  __0 - string constants
@@ -115,9 +117,10 @@ _PROTECTION_CHUNK_1_D = r"""
 	__6 = str.join('', __3)
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 = __6[:-1] + 'D'
 	__6 += open('license.lic').read()
-	del __0
-	return __6.upper()[:-1] + 'D'
+	#del __0
+	return __6.upper()
 """
 
 _PROTECTION_CHUNK_2 = """
