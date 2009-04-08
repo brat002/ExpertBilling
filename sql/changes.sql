@@ -62,3 +62,6 @@ ALTER TABLE billservice_systemuser
    
 UPDATE billservice_systemuser SET role = 0 WHERE id>0;
 
+--08.04.2009
+ALTER TABLE radius_activesession
+   ALTER COLUMN interrim_update DROP DEFAULT;
