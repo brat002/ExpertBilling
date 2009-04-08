@@ -1822,3 +1822,4 @@ class SpeedLimitDialog(QtGui.QDialog):
         #self.model.id = self.connection.save(self.model, "billservice_speedlimit")
         #self.connection.commit()
         QtGui.QDialog.accept(self)
+

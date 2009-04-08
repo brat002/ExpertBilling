@@ -151,7 +151,8 @@ class SystemUserFrame(QtGui.QDialog):
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Разрешённые IP:", None, QtGui.QApplication.UnicodeUTF8))     
         self.label_role.setText(QtGui.QApplication.translate("Dialog", "Роль", None, QtGui.QApplication.UnicodeUTF8))   
-
+        self.hosts_lineEdit.setValidator(self.ipValidator)
+        
     def setPassword(self):
         child = PasswordEditFrame()
         
