@@ -3731,16 +3731,6 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         account = self.connection.get_model(id, "billservice_account")
         child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
-            tr = transaction(account_id=account.id, type_id = "MANUAL_TRANSACTION", approved = True, description = "", summ=child.result, bill=unicode(child.payed_document_edit.text()))
-            try:
-                
-                self.connection.transaction(tr)
-                self.connection.commit()
-            except Exception, e:
-                print "omg traf exception", e
-                self.connection.rollback()
-            
-            #Если будем переделывать - здесь нужно списывать со счёта пользователя указанную сумму денег.
             self.refresh()
        
     def prepaidReport(self):

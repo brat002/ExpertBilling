@@ -174,10 +174,10 @@ class check_vpn_access(Thread):
                 now = datetime.datetime.now()
                 cur.execute("""UPDATE radius_activesession 
                 SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                WHERE ((%s-interrim_update>=interval '00:06:00') or (%s-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
-                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""", (now, now,))
+                WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
+                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
                 connection.commit()
-                #TODO: make nas_nas.ipadress UNIQUE and INDEXed                
+                #
                 cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL;""")
@@ -426,7 +426,7 @@ class periodical_service_bill(Thread):
                                             #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
                                             pass
                                         # Смотрим сколько раз уже должны были снять деньги
-                                        cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
+                                        
                                         lc=now - last_checkout
                                         last_checkout_seconds = lc.seconds+lc.days*86400
                                         nums, ost=divmod(last_checkout_seconds,n)
@@ -435,13 +435,16 @@ class periodical_service_bill(Thread):
                                         chk_date = last_checkout + n_delta
                                         if nums>1:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
-                                            while chk_date <= now:                                                
+                                            while chk_date <= now:    
+                                                period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, chk_date)                                            
+                                                cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                                 cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
                                                 #psycopg2._psycopg.cursor.c
                                         else:
                                             #make an approved transaction
+                                            cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                             cash_summ = cash_summ * susp_per_mlt
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
@@ -796,9 +799,10 @@ class limit_checker(Thread):
                         if settlement_period_start<acct[3]:
                             settlement_period_start = acct[3]
                         #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
-                        now = dateAT
+                        
                         limit_mode = limitRec[6]
                         if limit_mode==True:
+                            now = dateAT
                             settlement_period_start=now-datetime.timedelta(seconds=delta)
                             settlement_period_end=now
                         
@@ -1143,6 +1147,7 @@ class settlement_period_service_dog(Thread):
                                     cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
                                     connection.commit()
                                     cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
+                        #Списывам с баланса просроченные обещанные платежи
                     except Exception, ex:
                         logger.error("%s : internal exception: %s", (self.getName(), repr(ex)))
                 connection.commit()
@@ -1150,7 +1155,7 @@ class settlement_period_service_dog(Thread):
                 #to select good accounttarifs:
                 #select distinct order by datetime and datetime < dateAT
                 #onetimeservice??
-
+                cur.execute("UPDATE billservice_transaction SET promise_expired = True, summ=-1*summ WHERE end_promise<now() and promise_expired=False;")
                 logger.info("Settlement period thread run time: %s", time.clock() - a)
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
@@ -1705,7 +1710,7 @@ class AccountServiceThread(Thread):
                     print self.getName() + ": exception: " + repr(ex)
             
             gc.collect()
-            time.sleep(180)
+            time.sleep(100)
             
 
 def SIGTERM_handler(signum, frame):
