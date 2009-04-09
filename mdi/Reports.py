@@ -44,7 +44,7 @@ _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"),
 class TransactionsReportEbs(ebsTableWindow):
     def __init__(self, connection ,account=None):
         self.account = account
-        columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
+        columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
@@ -145,13 +145,15 @@ class TransactionsReportEbs(ebsTableWindow):
             self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
 
 
-    def addrow(self, value, x, y):
+    def addrow(self, value, x, y, promise=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=""
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/user.png"))
-
+        
+        if promise:
+            headerItem.setBackgroundColor(QtGui.QColor("lightblue"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
                 
@@ -164,23 +166,23 @@ class TransactionsReportEbs(ebsTableWindow):
         
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
         if self.system_transactions_checkbox.checkState()==2 and account_id:
-            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
+            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
                                             FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
                                             WHERE transaction.created between '%s' and '%s' and transaction.account_id=%s ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
         elif account_id:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
             FROM billservice_transaction as transaction
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
+            WHERE transaction.type_id IN ('MANUAL_TRANSACTION', 'CASSA_TRANSACTION') and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
         else:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username
+            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
             FROM billservice_transaction as transaction
             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' ORDER BY transaction.created DESC""" %  (start_date, end_date))                        
+            WHERE transaction.type_id IN ('MANUAL_TRANSACTION', 'CASSA_TRANSACTION') and transaction.created between '%s' and '%s' ORDER BY transaction.created DESC""" %  (start_date, end_date))                        
         self.connection.commit()
         self.tableWidget.setRowCount(len(transactions))
         i=0
@@ -188,14 +190,18 @@ class TransactionsReportEbs(ebsTableWindow):
         write_on = 0
         write_off = 0
         for transaction in transactions:
-            self.addrow(transaction.id, i, 0)
-            self.addrow(transaction.username, i, 1)
-            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 2)
-            self.addrow(transaction.bill, i, 3)
-            self.addrow(transaction.transaction_type_name, i, 4)
-            self.addrow(transaction.tariff_name, i, 5)
-            self.addrow(transaction.summ*(-1), i, 6)
-            self.addrow(transaction.description, i, 7)
+            self.addrow(transaction.id, i, 0, promise = transaction.promise)
+            self.addrow(transaction.username, i, 1, promise = transaction.promise)
+            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 2, promise = transaction.promise)
+            self.addrow(transaction.bill, i, 3, promise = transaction.promise)
+            self.addrow(transaction.transaction_type_name, i, 4, promise = transaction.promise)
+            self.addrow(transaction.systemuser, i, 5, promise = transaction.promise)
+            self.addrow(transaction.tariff_name, i, 6, promise = transaction.promise)
+            self.addrow(transaction.summ*(-1), i, 7, promise = transaction.promise)
+            self.addrow(transaction.description, i, 8, promise = transaction.promise)
+            self.addrow(transaction.promise, i, 9, promise = transaction.promise)
+            if transaction.promise:
+                self.addrow(transaction.end_promise.strftime(self.strftimeFormat), i, 10, promise = transaction.promise)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
                 

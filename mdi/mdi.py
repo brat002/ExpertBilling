@@ -580,8 +580,7 @@ def login():
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 password = unicode(child.password.toHex())
                 connection._setNewConnectionValidator(antiMungeValidator())
-                #connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
-                connection._setIdentification("%s:%s" % (str(child.name), str(child.password.toHex())))
+                connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
                 connection.test()
                 #waitchild.hide()
                 return connection

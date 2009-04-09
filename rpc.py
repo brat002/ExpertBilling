@@ -30,7 +30,7 @@ from chartprovider.bpcdplot import cdDrawer
 from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-
+from utilites import settlement_period_info
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -389,18 +389,25 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return retres
 
     @authentconn
-    def pay(self, account, sum, document, cur=None, connection=None):
+    def pay(self, account, summ, document, description, created, promise, end_promise, systemuser_id, cur=None, connection=None):
         
-        o = Object()
-        o.account_id = account
-        o.type_id = "MANUAL_TRANSACTION"
-        o.approved = True
-        o.description = ""
-        o.summ = sum * (-1)
-        o.bill = document
-        o.created = datetime.datetime.now()
+        transaction = Object()
+        transaction.account_id=account
+        transaction.type_id = "CASSA_TRANSACTION"
+        transaction.approved = True
+        transaction.description = description
+        transaction.summ=summ*(-1)
+        transaction.bill=document
+        transaction.systemuser_id = systemuser_id
+        transaction.created = created
+        
+        transaction.promise = promise
+        if end_promise:
+            transaction.end_promise = end_promise
+        
+        
         try:
-            sql = o.save("billservice_transaction")
+            sql = transaction.save("billservice_transaction")
             #sql = "INSERT INTO billservice_transaction(account_id, type_id, approved, description, bill, summ, created) VALUES(%s,'%s', True, '', '%s',%s, '%s') RETURNING id;" % (account, "MANUAL_TRANSACTION", document, sum*(-1), datetime.datetime.now())
             cur.execute(sql)
             id=cur.fetchall()[0]
@@ -550,6 +557,58 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             #print "Pickle length=", time.clock()-a
         return result
 
+    @authentconn
+    def get_limites(self, account_id, cur=None, connection=None):
+        limites = cur.execute("""SELECT lim.name, lim.size, lim.group_id, lim.mode, sp.time_start, sp.length, sp.length_in, sp.autostart FROM billservice_trafficlimit as lim
+        JOIN billservice_settlementperiod as sp ON sp.id=lim.settlement_period_id
+        WHERE lim.tarif_id=get_tarif(%s)""", (account_id,))
+        limites = cur.fetchall()
+
+        cur.execute("SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY ID DESC LIMIT 1", (account_id,))
+        accounttarif_date = cur.fetchone()["datetime"]
+#
+        res = []
+        for limit in limites:
+            limit_name = limit["name"]
+            limit_size = limit["size"]
+            group_id = limit["group_id"]
+            mode = limit["mode"] 
+            time_start = limit["time_start"]
+            length = limit["length"]
+            length_in = limit["length_in"]
+            autostart = limit["autostart"]
+            #print limit_name
+            #print 3
+            if autostart:
+                time_start = accounttarif_date
+            
+            settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start, length_in, length)
+            if settlement_period_start<accounttarif_date:
+                settlement_period_start = accounttarif_date
+            #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
+            
+
+            if mode==True:
+                now = datetime.datetime.now()
+                settlement_period_start=now-datetime.timedelta(seconds=delta)
+                settlement_period_end=now
+            
+            connection.commit()
+
+            #print 4
+            cur.execute("""
+            SELECT sum(bytes) as size FROM billservice_groupstat
+            WHERE group_id=%s and account_id=%s and datetime>%s and datetime<%s
+            """ , (group_id, account_id, settlement_period_start, settlement_period_end,))
+            
+            size=cur.fetchone()
+            res.append({'limit_name': limit_name, 'limit_size':limit_size, 'size':size["size"],})
+            connection.commit()
+        
+        return res
+
+
+    
     @authentconn
     def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
         cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))

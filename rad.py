@@ -522,7 +522,7 @@ class HandleSAuth(HandleSBase):
                 return self.auth_NA(authobject) 
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        if int(nas_id)!=int(self.nas_id):
+        if ignore_nas_for_vpn==False and int(nas_id)!=int(self.nas_id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject) 
 
@@ -758,7 +758,7 @@ class HandleSDHCP(HandleSBase):
         ballance = acct_row[11]
         tarif_status = acct_row[14]
         acc_status = acct_row[17]
-        if int(nas_id)!=int(self.nas_id):
+        if ignore_nas_for_vpn==False and int(nas_id)!=int(self.nas_id):
             return self.auth_NA(authobject)
 
         acstatus = (allow_dhcp_null==True or ballance>0) and (allow_dhcp_block==True or (balance_blocked==False and disabled_by_limit==False and acc_status==True))
@@ -891,8 +891,8 @@ class HandleSAcct(HandleSBase):
                 
             self.cur.execute("""UPDATE radius_activesession
                                 SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
-                                WHERE sessionid=%s and nas_id=%s;
-                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],))
+                                WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
+                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],account_id, self.access_type,))
 
 
         if self.packetobject['Acct-Status-Type']==['Stop']:
@@ -911,8 +911,8 @@ class HandleSAcct(HandleSBase):
                                  bytes_in, bytes_out, self.access_type, False, False,))
 
             self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
-                                WHERE sessionid=%s and nas_id=%s;
-                             """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],))
+                                WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
+                             """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0],account_id, self.access_type,))
 
         self.cur.connection.commit()
         self.cur.close()        
@@ -1199,7 +1199,7 @@ if __name__ == "__main__":
         fMem = pfMemoize()
     
         try:
-            common_vpn = config.get("radius", "common_vpn")
+            common_vpn = True if config.get("radius", "common_vpn") == "True" else False
         except Exception, e: common_vpn=False
     
         try:
@@ -1210,7 +1210,10 @@ if __name__ == "__main__":
             session_timeout = int(config.get("dhcp", "session_timeout"))
         except Exception, e: session_timeout=86400
         
-        
+        try:
+            ignore_nas_for_vpn = True if config.get("radius", "ignore_nas_for_vpn") == "True" else False
+        except Exception, e: ignore_nas_for_vpn=False
+                
         allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
         allowedUsers()
         #-------------------

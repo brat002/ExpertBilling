@@ -65,3 +65,36 @@ UPDATE billservice_systemuser SET role = 0 WHERE id>0;
 --08.04.2009
 ALTER TABLE radius_activesession
    ALTER COLUMN interrim_update DROP DEFAULT;
+ALTER TABLE billservice_transaction
+   ADD COLUMN systemuser_id integer;
+   
+ALTER TABLE billservice_transaction ADD CONSTRAINT billservice_systemuser_fkey FOREIGN KEY (systemuser_id) REFERENCES billservice_systemuser (id)
+   ON UPDATE NO ACTION ON DELETE SET NULL
+   DEFERRABLE;
+CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction(systemuser_id);
+
+ALTER TABLE billservice_transaction
+   ADD COLUMN promise boolean;
+ALTER TABLE billservice_transaction
+   ALTER COLUMN promise SET DEFAULT False;
+   
+ALTER TABLE billservice_transaction
+   ADD COLUMN end_promise timestamp without time zone;
+
+
+ALTER TABLE billservice_transaction
+   ADD COLUMN promise_expired boolean;
+ALTER TABLE billservice_transaction
+   ALTER COLUMN promise_expired SET DEFAULT False;
+
+-- !!! 
+ALTER TABLE billservice_transaction
+  ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+      
+
+INSERT INTO billservice_transactiontype(
+             "name", internal_name)
+    VALUES ('Операция проведена кассиром', 'CASSA_TRANSACTION');
+    

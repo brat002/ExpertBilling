@@ -22,11 +22,13 @@ tr_id=0
 class CassaEbs(ebsTableWindow):
     def __init__(self, connection):
         columns = ['#', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Улица', u'д.', u'к.', u'кв.']
-        initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,912, 539), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
+        initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,1024, 642), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
         self.printer = None
     def ebsInterInit(self, initargs):
         
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtGui.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.groupBox_filter = QtGui.QGroupBox(self.centralwidget)
@@ -51,9 +53,9 @@ class CassaEbs(ebsTableWindow):
         self.lineEdit_house = QtGui.QLineEdit(self.groupBox_filter)
         self.lineEdit_house.setObjectName("lineEdit_house")
         self.gridLayout.addWidget(self.lineEdit_house, 1, 8, 1, 1)
-        self.pushButton = QtGui.QPushButton(self.groupBox_filter)
-        self.pushButton.setObjectName("pushButton")
-        self.gridLayout.addWidget(self.pushButton, 0, 10, 1, 1)
+        self.pushButton_search = QtGui.QPushButton(self.groupBox_filter)
+        self.pushButton_search.setObjectName("pushButton_search")
+        self.gridLayout.addWidget(self.pushButton_search, 0, 10, 1, 1)
         self.label_username = QtGui.QLabel(self.groupBox_filter)
         self.label_username.setObjectName("label_username")
         self.gridLayout.addWidget(self.label_username, 1, 0, 1, 1)
@@ -78,111 +80,191 @@ class CassaEbs(ebsTableWindow):
         self.lineEdit_room = QtGui.QLineEdit(self.groupBox_filter)
         self.lineEdit_room.setObjectName("lineEdit_room")
         self.gridLayout.addWidget(self.lineEdit_room, 2, 4, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_filter, 0, 0, 1, 3)
-        self.gridLayout_4.addWidget(self.tableWidget, 2, 0, 1, 3)
-        self.groupBox_pay = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_pay.setMinimumSize(QtCore.QSize(0, 0))
-        self.groupBox_pay.setObjectName("groupBox_pay")
-        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_pay)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.label_sum = QtGui.QLabel(self.groupBox_pay)
-        self.label_sum.setObjectName("label_sum")
-        self.gridLayout_2.addWidget(self.label_sum, 0, 0, 1, 1)
-        self.lineEdit_sum = QtGui.QLineEdit(self.groupBox_pay)
-        self.lineEdit_sum.setMinimumSize(QtCore.QSize(0, 22))
-        self.lineEdit_sum.setObjectName("lineEdit_sum")
-        self.gridLayout_2.addWidget(self.lineEdit_sum, 0, 1, 1, 1)
-        self.pushButton_pay = QtGui.QPushButton(self.groupBox_pay)
-        self.pushButton_pay.setObjectName("pushButton_pay")
-        self.gridLayout_2.addWidget(self.pushButton_pay, 0, 2, 1, 1)
-        self.pushButton_print = QtGui.QPushButton(self.groupBox_pay)
-        self.pushButton_print.setObjectName("pushButton_print")
-        self.pushButton_print.setHidden(True)
-        self.gridLayout_2.addWidget(self.pushButton_print, 0, 3, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_pay, 3, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_filter, 1, 0, 1, 3)
+
+        self.gridLayout_4.addWidget(self.tableWidget, 0, 0, 1, 3)
         self.groupBox_tariffs = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_tariffs.setMinimumSize(QtCore.QSize(450, 0))
-        self.groupBox_tariffs.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.groupBox_tariffs.setMaximumSize(QtCore.QSize(16777215, 60))
         self.groupBox_tariffs.setObjectName("groupBox_tariffs")
         self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_tariffs)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.comboBox_tariff = QtGui.QComboBox(self.groupBox_tariffs)
         self.comboBox_tariff.setObjectName("comboBox_tariff")
         self.gridLayout_3.addWidget(self.comboBox_tariff, 0, 0, 1, 1)
-        self.groupBox_prefs = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_prefs.setObjectName("groupBox_prefs")
-        self.pushButton_getPrinter = QtGui.QPushButton(self.groupBox_prefs)
-        self.pushButton_getPrinter.setGeometry(QtCore.QRect(10, 27, 61, 25))
-        self.pushButton_getPrinter.setObjectName("pushButton_getPrinter")
-        self.gridLayout_4.addWidget(self.groupBox_prefs, 3, 2, 1, 1)
-
-        self.dateTime = QtGui.QDateTimeEdit(self.groupBox_tariffs)
-        self.dateTime.setCalendarPopup(True)
-        self.dateTime.setDateTime(datetime.datetime.now())
-        #self.dateTime.setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.dateTime.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.gridLayout_3.addWidget(self.dateTime, 0, 1, 1, 1)
         self.pushButton_change_tariff = QtGui.QPushButton(self.groupBox_tariffs)
         self.pushButton_change_tariff.setMaximumSize(QtCore.QSize(75, 16777215))
         self.pushButton_change_tariff.setObjectName("pushButton_change_tariff")
-        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 2, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_tariffs, 3, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_tariffs, 2, 0, 1, 2)
+        self.groupBox_payment = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_payment.setMinimumSize(QtCore.QSize(400, 0))
+        self.groupBox_payment.setObjectName("groupBox_payment")
+        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_payment)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.summ_label = QtGui.QLabel(self.groupBox_payment)
+        self.summ_label.setObjectName("summ_label")
+        self.gridLayout_6.addWidget(self.summ_label, 1, 0, 1, 1)
+        self.lineEdit_summ = QtGui.QLineEdit(self.groupBox_payment)
+        self.lineEdit_summ.setObjectName("lineEdit_summ")
+        self.gridLayout_6.addWidget(self.lineEdit_summ, 1, 1, 1, 2)
+        self.payed_document_label = QtGui.QLabel(self.groupBox_payment)
+        self.payed_document_label.setObjectName("payed_document_label")
+        self.gridLayout_6.addWidget(self.payed_document_label, 3, 0, 1, 1)
+        self.lineEdit_document = QtGui.QLineEdit(self.groupBox_payment)
+        self.lineEdit_document.setFrame(True)
+        self.lineEdit_document.setObjectName("lineEdit_document")
+        self.gridLayout_6.addWidget(self.lineEdit_document, 3, 1, 1, 2)
+        self.label = QtGui.QLabel(self.groupBox_payment)
+        self.label.setObjectName("label")
+        self.gridLayout_6.addWidget(self.label, 5, 0, 1, 1)
+        self.lineEdit_description= QtGui.QLineEdit(self.groupBox_payment)
+        self.lineEdit_description.setObjectName("lineEdit_description")
+        self.gridLayout_6.addWidget(self.lineEdit_description, 5, 1, 1, 2)
+        self.label_paymend_date = QtGui.QLabel(self.groupBox_payment)
+        self.label_paymend_date.setObjectName("label_paymend_date")
+        self.gridLayout_6.addWidget(self.label_paymend_date, 7, 0, 1, 1)
+        self.dateTimeEdit_paymend_date = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_paymend_date.setFrame(True)
+        self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.dateTimeEdit_paymend_date.setCalendarPopup(True)
+        self.dateTimeEdit_paymend_date.setObjectName("dateTimeEdit_paymend_date")
+        self.gridLayout_6.addWidget(self.dateTimeEdit_paymend_date, 7, 1, 1, 2)
+        self.label_promise = QtGui.QLabel(self.groupBox_payment)
+        self.label_promise.setObjectName("label_promise")
+        self.gridLayout_6.addWidget(self.label_promise, 8, 0, 1, 1)
+        self.checkBox_promise = QtGui.QCheckBox(self.groupBox_payment)
+        self.checkBox_promise.setObjectName("checkBox_promise")
+        self.gridLayout_6.addWidget(self.checkBox_promise, 8, 1, 1, 1)
+        self.label_end_promise = QtGui.QLabel(self.groupBox_payment)
+        self.label_end_promise.setObjectName("label_end_promise")
+        self.gridLayout_6.addWidget(self.label_end_promise, 9, 0, 1, 1)
+        self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_end_promise.setCalendarPopup(True)
+        self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
+        self.gridLayout_6.addWidget(self.dateTimeEdit_end_promise, 9, 1, 1, 2)
+        self.checkBox_promise_infinite = QtGui.QCheckBox(self.groupBox_payment)
+        self.checkBox_promise_infinite.setObjectName("checkBox_promise_infinite")
+        self.gridLayout_6.addWidget(self.checkBox_promise_infinite, 9, 3, 1, 1)
+        self.pushButton_pay = QtGui.QPushButton(self.groupBox_payment)
+        self.pushButton_pay.setObjectName("pushButton_pay")
+        self.gridLayout_6.addWidget(self.pushButton_pay, 10, 0, 1, 1)
+        self.checkBox = QtGui.QCheckBox(self.groupBox_payment)
+        self.checkBox.setObjectName("checkBox")
+        self.gridLayout_6.addWidget(self.checkBox, 10, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_payment, 2, 2, 2, 1)
+        self.groupBox_limites = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_limites.setObjectName("groupBox_limites")
+        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_limites)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        #self.label_limites = QtGui.QLabel(self.groupBox_limites)
+        #self.label_limites.setObjectName("label_limites")
+        #self.label_limites.setMaximumWidth(275)
+        #self.label_limites.setMinimumWidth(275)
+        self.textEdit_limites = QtGui.QTextEdit(self.groupBox_limites)
+        self.textEdit_limites.setDisabled(True)
+        self.gridLayout_5.addWidget(self.textEdit_limites, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_limites, 3, 0, 1, 1)
+        self.groupBox_prepaid_traffic = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_prepaid_traffic.setObjectName("groupBox_prepaid_traffic")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_prepaid_traffic)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.textEdit_prepaid_traffic = QtGui.QTextEdit(self.groupBox_limites)
+        self.textEdit_prepaid_traffic.setDisabled(True)
+        self.gridLayout_2.addWidget(self.textEdit_prepaid_traffic, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_prepaid_traffic, 3, 1, 1, 1)
+        self.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
-        QtCore.QMetaObject.connectSlotsByName(self)
 
-        self.setTabOrder(self.lineEdit_fullname, self.lineEdit_username)
-        self.setTabOrder(self.lineEdit_username, self.lineEdit_city)
-        self.setTabOrder(self.lineEdit_city, self.lineEdit_street)
-        self.setTabOrder(self.lineEdit_street, self.lineEdit_house)
-        self.setTabOrder(self.lineEdit_house, self.lineEdit_bulk)
-        self.setTabOrder(self.lineEdit_bulk, self.lineEdit_room)
-        self.setTabOrder(self.lineEdit_room, self.pushButton)
-        self.setTabOrder(self.pushButton, self.comboBox_tariff)
-        self.setTabOrder(self.comboBox_tariff, self.pushButton_change_tariff)
-        self.setTabOrder(self.pushButton_change_tariff, self.lineEdit_sum)
-        self.setTabOrder(self.lineEdit_sum, self.pushButton_pay)
-        self.setTabOrder(self.pushButton_pay, self.pushButton_print)
-        self.setTabOrder(self.pushButton_print, self.pushButton_getPrinter)
-        self.setTabOrder(self.pushButton_getPrinter, self.tableWidget)    
+
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+  
         
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         
     def ebsPostInit(self, initargs):
+        
+        actList=[("setPrinter", "Настроить принтер", "images/printer.png", self.getPrinter)]
+        objDict = {self.toolBar:["setPrinter",],}
+        self.actionCreator(actList, objDict)
         self.connect(self.pushButton_pay, QtCore.SIGNAL("clicked()"), self.pay)
-        self.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.refreshTable)
+        self.connect(self.pushButton_search, QtCore.SIGNAL("clicked()"), self.refreshTable)
         self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
-        self.connect(self.pushButton_print, QtCore.SIGNAL("clicked()"), self.cheque_print)
-        self.connect(self.pushButton_getPrinter, QtCore.SIGNAL("clicked()"), self.getPrinter)
+        QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        
+        QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.update_info)
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.restoreWindow()
         self.refreshTariffs()
+        self.fixtures()
+        self.promise_actions()
 
         
     def retranslateUI(self, initargs):
         super(CassaEbs, self).retranslateUI(initargs)
         self.groupBox_filter.setTitle(QtGui.QApplication.translate("MainWindow", "Фильтр", None, QtGui.QApplication.UnicodeUTF8))
         self.label_fullname.setText(QtGui.QApplication.translate("MainWindow", "ФИО", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_username.setText(QtGui.QApplication.translate("MainWindow", "Username", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
         self.label_street.setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
         self.label_house.setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_search.setText(QtGui.QApplication.translate("MainWindow", "Искать", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_username.setText(QtGui.QApplication.translate("MainWindow", "Username", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Показать", None, QtGui.QApplication.UnicodeUTF8))
-         
-        self.groupBox_pay.setTitle(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_sum.setText(QtGui.QApplication.translate("MainWindow", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_pay.setText(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_print.setText(QtGui.QApplication.translate("MainWindow", "Печать чека", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_tariffs.setTitle(QtGui.QApplication.translate("MainWindow", "Перевести на другой тарифный план", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_change_tariff.setText(QtGui.QApplication.translate("MainWindow", "Перевести", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_prefs.setTitle(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_getPrinter.setText(QtGui.QApplication.translate("MainWindow", "Принтер", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_payment.setTitle(QtGui.QApplication.translate("MainWindow", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
+        self.summ_label.setText(QtGui.QApplication.translate("MainWindow", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
+        self.payed_document_label.setText(QtGui.QApplication.translate("MainWindow", "На основании док.", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_paymend_date.setText(QtGui.QApplication.translate("MainWindow", "Дата платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_promise.setText(QtGui.QApplication.translate("MainWindow", "Обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_promise.setText(QtGui.QApplication.translate("MainWindow", "Да", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_end_promise.setText(QtGui.QApplication.translate("MainWindow", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("MainWindow", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_pay.setText(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox.setText(QtGui.QApplication.translate("MainWindow", "Печать", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_limites.setTitle(QtGui.QApplication.translate("MainWindow", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
+        self.textEdit_limites.setPlainText(QtGui.QApplication.translate("MainWindow", "Нет данных", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_prepaid_traffic.setTitle(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.textEdit_prepaid_traffic.setPlainText(QtGui.QApplication.translate("MainWindow", "Функция недоступна", None, QtGui.QApplication.UnicodeUTF8))
 
-
+    def promise_actions(self):
+        if self.checkBox_promise.isChecked():
+            self.dateTimeEdit_end_promise.setEnabled(True)
+            self.checkBox_promise_infinite.setEnabled(True)
+            if self.checkBox_promise_infinite.isChecked():
+                self.dateTimeEdit_end_promise.setEnabled(False)
+            
+        else:
+            self.dateTimeEdit_end_promise.setEnabled(False)
+            self.checkBox_promise_infinite.setEnabled(False)
+    
+    def update_info(self):
+        account = self.getSelectedId()
+        if account:
+            limites = self.connection.get_limites(account)
+            if not limites: self.textEdit_limites.setPlainText(u"Нет данных"); return
+            r=[]
+            for limit in limites:
+                r.append(u"Название %s Размер %s Расходовано %s" % (limit["limit_name"], limit["limit_size"], limit["size"] or "0"))
+            #self.label_limites.setText('\n'.join(r))
+            self.textEdit_limites.setPlainText('\n'.join(r))
+            #prepaid = self.connection.get_prepaid(account)
+        else:
+            self.textEdit_limites.setPlainText(u"Нет данных")
+        
+            
+                
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
         tariffs = self.connection.get_models("billservice_tariff")
@@ -194,13 +276,12 @@ class CassaEbs(ebsTableWindow):
             i+=1
         #self.refresh()
             
-    def refresh(self):
-        pass
-        '''selected_id = unicode(self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0])
-        #print "id=", selected_id, self.comboBox_account.currentIndex()
-        account = self.connection.get_model(selected_id, "billservice_account")
-        self.lineEdit_balance.setText(unicode(account.ballance))
-        self.lineEdit_label.setText(unicode(account.credit))'''
+    def fixtures(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        self._name = settings.value("user", QtCore.QVariant("")).toString()
+        if self._name:
+            self.systemuser_id = self.connection.sql("SELECT id FROM billservice_systemuser WHERE username='%s'" % self._name)[0].id
+            self.connection.commit()
     
     def addrow(self, value, x, y, color=None, enabled=True):
         headerItem = QtGui.QTableWidgetItem()
@@ -268,19 +349,32 @@ class CassaEbs(ebsTableWindow):
     def pay(self):
         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             account = self.getSelectedId()
-            document = u"Платёж проведён кассиром"
+            document = unicode(self.lineEdit_document.text())
+            description = unicode(self.lineEdit_description.text())
+            created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
+            promise = self.checkBox_promise.isChecked()
+            summ = float(unicode(self.lineEdit_summ.text()))
+            if not self.checkBox_promise_infinite.isChecked():
+                end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
+            else:
+                end_promise = None
             global tr_id
-            tr_id = self.connection.pay(account, float(unicode(self.lineEdit_sum.text())), document)
+            
+            tr_id = self.connection.pay(account, summ, document, description, created, promise, end_promise, self.systemuser_id)
+            
             if tr_id!=False:
                 QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
-                if QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                if self.checkBox.isChecked() and QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                     if not self.printer:
                         QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
                         self.getPrinter()
                     if self.printer:
                         self.cheque_print()
                 
-                self.lineEdit_sum.setText("")
+                self.lineEdit_summ.setText("")
+                self.lineEdit_document.setText("")
+                self.lineEdit_description.setText("")
+                
                 self.refreshTable()
             else:
                 QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Обратитесь к администратору."))
@@ -311,7 +405,7 @@ class CassaEbs(ebsTableWindow):
             self.connection.commit()
             sum = 10000
 
-            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id.id, sum=unicode(self.lineEdit_sum.text()), document = u"Платёж в кассу", created=datetime.datetime.now().strftime(strftimeFormat))
+            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id.id, sum=unicode(self.lineEdit_summ.text()), document = unicode(self.lineEdit_document.text()), created=datetime.datetime.now().strftime(strftimeFormat))
             
             #it seem that software printers can change the path!
             file= open('templates/tmp/temp.html', 'wb')
@@ -384,17 +478,17 @@ if __name__ == "__main__":
     if connection is None:
         sys.exit()
     connection.commit()
-    try:
-        global mainwindow
-        #mainwindow = MainWindow(connection=connection)
-        mainwindow = CassaEbs(connection=connection)
-        mainwindow.show()
-        app.setStyleSheet(open("./cassa_style.qss","r").read())
-        sys.exit(app.exec_())
-        connection.commit()
-    except Exception, ex:
-        print "main-----------"
-        print repr(ex)
+    #try:
+    global mainwindow
+    #mainwindow = MainWindow(connection=connection)
+    mainwindow = CassaEbs(connection=connection)
+    mainwindow.show()
+    app.setStyleSheet(open("./cassa_style.qss","r").read())
+    sys.exit(app.exec_())
+    connection.commit()
+    #except Exception, ex:
+    #    print "main-----------"
+    #    print repr(ex)
 
 
         

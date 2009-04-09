@@ -1,141 +1,156 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Dialog</class>
- <widget class="QDialog" name="Dialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>166</height>
+    <width>399</width>
+    <height>275</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Новая проводка для Dolphink</string>
   </property>
-  <widget class="QGroupBox" name="groupBox" >
-   <property name="geometry" >
-    <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>371</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <property name="title" >
-    <string>Платёжные данные</string>
-   </property>
-   <widget class="QLineEdit" name="summ_edit" >
-    <property name="geometry" >
-     <rect>
-      <x>130</x>
-      <y>20</y>
-      <width>231</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="summ_label" >
-    <property name="geometry" >
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>111</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Сумма</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="payed_document_edit" >
-    <property name="geometry" >
-     <rect>
-      <x>130</x>
-      <y>50</y>
-      <width>231</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="frame" >
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="payed_document_label" >
-    <property name="geometry" >
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>115</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>На основании</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QLabel" name="pay_type_label" >
-   <property name="geometry" >
-    <rect>
-     <x>13</x>
-     <y>10</y>
-     <width>111</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Вид платежа</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="transactions_pushButton" >
-   <property name="geometry" >
-    <rect>
-     <x>10</x>
-     <y>130</y>
-     <width>106</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>История</string>
-   </property>
-  </widget>
-  <widget class="QDialogButtonBox" name="buttonBox" >
-   <property name="geometry" >
-    <rect>
-     <x>210</x>
-     <y>130</y>
-     <width>167</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="payed_type_edit" >
-   <property name="geometry" >
-    <rect>
-     <x>140</x>
-     <y>10</y>
-     <width>241</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <item>
-    <property name="text" >
-     <string>Пополнить балланс</string>
-    </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
+    <widget class="QLabel" name="pay_type_label">
+     <property name="text">
+      <string>Вид платежа</string>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text" >
-     <string>Списать с балланса</string>
-    </property>
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="payed_type_edit">
+     <item>
+      <property name="text">
+       <string>Пополнить балланс</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Списать с балланса</string>
+      </property>
+     </item>
+    </widget>
    </item>
-  </widget>
+   <item row="1" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Платёжные данные</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="summ_label">
+        <property name="text">
+         <string>Сумма</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="summ_edit"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="payed_document_label">
+        <property name="text">
+         <string>На основании док.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="payed_document_edit">
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Комментарий</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_paymend_date">
+        <property name="text">
+         <string>Дата платежа</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QDateTimeEdit" name="dateTimeEdit_paymend_date">
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>2009</year>
+          <month>1</month>
+          <day>1</day>
+         </datetime>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_promise">
+        <property name="text">
+         <string>Обещаный платёж</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="checkBox_promise">
+        <property name="text">
+         <string>Да</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_end_promise">
+        <property name="text">
+         <string>Истекает</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDateTimeEdit" name="dateTimeEdit_end_promise">
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QCheckBox" name="checkBox_promise_infinite">
+        <property name="text">
+         <string>Никогда</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
@@ -145,11 +160,11 @@
    <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -161,11 +176,11 @@
    <receiver>Dialog</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
     </hint>
