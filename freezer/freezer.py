@@ -42,7 +42,7 @@ _PROTECTION_CHUNK_1_L = r"""
 		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
 		_x_( 'ZG1pZGVjb2RlIC1zIHN5c3RlbS11dWlk'),
 		_x_( 'Y29tbWFuZHM='),                      #'9' 'commands'
-		_x_( 'GF0aA=='),                           #$10 'path'
+		_x_( 'cGF0aA=='),                           #$10 'path'
 		_x_( 'cmVhbHBhdGg='),                      #$11 'realpath'
 		_x_( 'Z2V0Y3dk'),                          #$12 'getcwd'
 		_x_( 'L2Jpbi9kZiA='),                      #$13 '/bin/df '
