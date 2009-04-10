@@ -1,6 +1,5 @@
 #-*-coding=utf-8-*-
 
-
 import gc
 import glob
 import random
@@ -225,6 +224,8 @@ class FlowCache(object):
     def addflow5(self, flow):
         global ipncache, vpncache, nascache
         #key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
+        if __debug__:
+            total_count +=1
         #constructs a key
         key = (flow[0], flow[1], flow[2], flow[9], flow[10], flow[13])
         val = dcache.get(key)
@@ -256,6 +257,8 @@ class FlowCache(object):
             dflow[5] += flow[5]
             dflow[8] = flow[8]
             dcacheLock.release()
+            if __debug__:
+                agg_count +=1
 
 
 
@@ -614,7 +617,7 @@ class ServiceThread(Thread):
         global nascache, ipncache, vpncache, cachesRead
         global nodesCache, groupsCache
         global class_groupsCache, tarif_groupsCache
-        global nfFlowCache, allowedUsers, dcache
+        global nfFlowCache, allowedUsers, dcache, total_count, agg_count
         while True:
             if suicideCondition[self.tname]: break
             cur = connection.cursor()
@@ -712,6 +715,8 @@ class ServiceThread(Thread):
                     logger.info("len dbQueue: %s", len(databaseQueue))
                     logger.info("len fnameQueue: %s", len(fnameQueue))
                     logger.info("len nfqueue: %s", len(nfQueue))
+                    logger.info("count: total: %s agg: %s perc: %s", (total_count, agg_count, float(agg_count) / total_count)) 
+                    total_count = 1; agg_count = 0
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError):
                     logger.error("%s: database connection is down: %s", (self.getName(),repr(ex)))
@@ -881,6 +886,9 @@ if __name__=='__main__':
     
         suicideCondition = {}
         cachesRead = False
+        
+        agg_count = 0
+        total_count = 1
         #aggregation cache
         dcache   = {}
         #caches for Nas data, account IPN, VPN address indexes
