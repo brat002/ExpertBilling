@@ -12,20 +12,28 @@ class DefaultNamedTuple(tuple):
 
     
 class CacheCollection(object):
-    __slots__ = ()
+    __slots__ = ('date', 'cursor', 'caches')
+    
+    def ___init__(self, date, cursor):
+        self.date = date
+        self.cursor = cursor
+        
+    def getdata():
+        for cache in caches:
+            cache.getdata(cursor)
+            
+    def reindex():
+        for cache in caches:
+            cache.reindex()
 
 class CacheItem(object):
-    __slots__ = ('datatype', 'sql', 'data')
+    __slots__ = ('data',)
     
-    def __init__(self, datatype=DefaultNamedTuple, sql=''):
-        self.datatype = datatype
-        self.sql = sql
+    datatype = tuple
+    sql = ''
+    
+    def __init__(self):
         self.data = None
-        if not hasattr(self.datatype, '_fields'):
-            raise AttributeError("%s: datatype has no attribute '_fields' => probably not a named tuple." % self.__class__.__name__)
-        if not hasattr(self.datatype, '_make'):
-            raise AttributeError("%s: datatype has no attribute '_make' => probably not a named tuple." % self.__class__.__name__)
-
         
     def checkdata(self):
         for field in self.datatype._fields:
@@ -41,6 +49,10 @@ class CacheItem(object):
         self.transformdata()
         
     def transformdata(self):
+        
+        if not hasattr(self.datatype, '_make'):
+            raise AttributeError("%s: datatype has no attribute '_make' => probably not a named tuple." % self.__class__.__name__)
+
         self.data = [self.datatype._make(row) for row in self.data]
         
     
