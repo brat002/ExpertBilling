@@ -3,28 +3,6 @@ from keyword import iskeyword as _iskeyword
 import sys as _sys
 
 def namedlist(typename, field_names, verbose=True, rename=False):
-    """Returns a new subclass of tuple with named fields.
-
-    >>> Point = namedtuple('Point', 'x y')
-    >>> Point.__doc__                   # docstring for the new class
-    'Point(x, y)'
-    >>> p = Point(11, y=22)             # instantiate with positional args or keywords
-    >>> p[0] + p[1]                     # indexable like a plain tuple
-    33
-    >>> x, y = p                        # unpack like a regular tuple
-    >>> x, y
-    (11, 22)
-    >>> p.x + p.y                       # fields also accessable by name
-    33
-    >>> d = p._asdict()                 # convert to a dictionary
-    >>> d['x']
-    11
-    >>> Point(**d)                      # convert from a dictionary
-    Point(x=11, y=22)
-    >>> p._replace(x=100)               # _replace() is like str.replace() but targets named fields
-    Point(x=100, y=22)
-
-    """
 
     # Parse and validate the field names.  Validation serves two purposes,
     # generating informative error messages and preventing template injection attacks.
@@ -62,43 +40,47 @@ def namedlist(typename, field_names, verbose=True, rename=False):
     defargtxt = ', '.join('%s=None' % name for name in field_names)
     reprtxt = ', '.join('%s=%%r' % name for name in field_names)
     dicttxt = ', '.join('%r: t[%d]' % (name, pos) for pos, name in enumerate(field_names))
-    template = '''class %(typename)s(list):
-        '%(typename)s(%(argtxt)s)' \n
-        __slots__ = () \n
-        _fields = %(field_names)r \n
-        def __init__(self, empty=True, %(defargtxt)s):
-            if empty:
-                pass
-            else:
-                self.extend((%(argtxt)s)) \n                
-        @classmethod
-        def _make(cls, iterable):
-            'Make a new %(typename)s object from a sequence or iterable'
-            result = cls()
-            result.extend(iterable)
-            if len(result) < %(numfields)d:
-                result.extend([None for i in xrange(%(numfields)d - len(result))])
-            return result \n
-        def __repr__(self):
-            try:
-                return '%(typename)s(%(reprtxt)s)' %% tuple(self) 
-            except:
-                return repr(tuple(self)) \n
-        def _asdict(t):
-            'Return a new dict which maps field names to their values'
-            return {%(dicttxt)s} \n
-        def _replace(self, **kwds):
-            'Return a new %(typename)s object replacing specified fields with new values'
-            result = self._make(map(kwds.pop, %(field_names)r, self))
-            if kwds:
-                raise ValueError('Got unexpected field names: %%r' %% kwds.keys())
-            return result \n
-        def __getnewargs__(self):
-            return tuple(self) \n\n''' % locals()
+    template = '''from operator import itemgetter, setitem\n
+class %(typename)s(list):
+    '%(typename)s(%(argtxt)s)' \n
+    __slots__ = () \n
+    _fields = %(field_names)r \n
+    def __init__(self, empty=True, %(defargtxt)s):
+        if empty:
+            pass
+        else:
+            self.extend((%(argtxt)s)) \n                
+    @classmethod
+    def _make(cls, iterable):
+        'Make a new %(typename)s object from a sequence or iterable'
+        result = cls()
+        result.extend(iterable)
+        if len(result) < %(numfields)d:
+            result.extend([None for i in xrange(%(numfields)d - len(result))])
+        return result \n
+    def __repr__(self):
+        try:
+            return '%(typename)s(%(reprtxt)s)' %% tuple(self) 
+        except:
+            return repr(tuple(self)) \n
+    def _asdict(t):
+        'Return a new dict which maps field names to their values'
+        return {%(dicttxt)s} \n
+    def _replace(self, **kwds):
+        'Return a new %(typename)s object replacing specified fields with new values'
+        result = self._make(map(kwds.pop, %(field_names)r, self))
+        if kwds:
+            raise ValueError('Got unexpected field names: %%r' %% kwds.keys())
+        return result \n
+    def __getnewargs__(self):
+        return tuple(self) \n\n''' % locals()
     for i, name in enumerate(field_names):
-        template += '        %s = property(itemgetter(%d), lambda self_, value_: setitem(self_, %d, value_))\n' % (name, i, i)
+        template += '    %s = property(itemgetter(%d), lambda self_, value_: setitem(self_, %d, value_))\n' % (name, i, i)
     if verbose:
         _sys.stdout.write(template)
+        f = open(typename + '.py', 'wb')
+        f.write(template)
+        f.close()
 
     # Execute the template string in a temporary namespace
     namespace = dict(itemgetter=_itemgetter, setitem=_setitem)
