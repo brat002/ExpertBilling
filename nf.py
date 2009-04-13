@@ -222,7 +222,7 @@ class FlowCache(object):
             self.stime = time.time()
             
     def addflow5(self, flow):
-        global ipncache, vpncache, nascache
+        global ipncache, vpncache, nascache, total_count, agg_count
         #key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
         if __debug__:
             total_count +=1
