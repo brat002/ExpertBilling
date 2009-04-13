@@ -1,6 +1,7 @@
 from operator import itemgetter, setitem
 from cacheutils import CacheCollection, CacheItem, SimpleDefDictCache, SimpleDictCache
 from cache_sql import core_sql
+from collections import defaultdict
 
 from core_class.AccountData import AccountData
 from core_class.TrafficTransmitSData import TrafficTransmitSData
@@ -19,10 +20,10 @@ from core_class.AccessParametersData import AccessParametersData
 from core_class.IpnSpeedData import IpnSpeedData
 
 class CoreCaches(CacheCollection):
-    __slots__ = ()
+    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache')
     
-    def __init__(self, cursor, date, fMem):
-        super(CoreCaches, self).__init__(cursor, date)
+    def __init__(self, date, fMem):
+        super(CoreCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.traffictransmitservice_cache = TrafficTransmitServiceCache()
         self.settlementperiod_cache = SettlementPeriodCache()
@@ -42,6 +43,8 @@ class CoreCaches(CacheCollection):
         self.onetimehistory_cache = OnetimeHistoryCache(date)
         self.suspended_cache = SuspendedCache(date)
         self.timeperiodaccess_cache = TimePeriodAccessCache(date, fMem)
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache]
+        
 class AccountCache(CacheItem):
     __slots__ = ('by_account', 'by_tarif', 'by_acctf')
     
@@ -50,7 +53,7 @@ class AccountCache(CacheItem):
     
     def __init__(self, date):
         super(AccountCache, self).__init__()
-        self.sql = self.sql % date
+        self.vars = (date,)
         
     def reindex(self):
         self.by_account = {}
@@ -107,6 +110,7 @@ class PeriodicalTarifCache(CacheItem):
     datatype = tuple
     sql = core_sql['periodtf']
     def transformdata(self): pass
+    
 class PeriodicalServiceSettlementCache(SimpleDefDictCache):
     '''By tarif id'''
     __slots__ = ()
@@ -131,7 +135,7 @@ class TimePeriodNodeCache(SimpleDefDictCache):
 class TrafficLimitCache(SimpleDefDictCache):
     '''By tarif id'''
     __slots__ = ()
-    datatype = TimeAccessNodeData
+    datatype = TrafficLimitData
     sql = core_sql['tlimits']
     num = 1
     
@@ -169,24 +173,25 @@ class IpnSpeedCache(SimpleDictCache):
     num = 1
     
 class OnetimeHistoryCache(CacheItem):
-    __slots__ = ('by_acctf_ots_id')
+    __slots__ = ('by_acctf_ots_id',)
     datatype = dict
     sql = core_sql['otshist']
     def __init__(self, date):
         super(OnetimeHistoryCache, self).__init__()
-        self.sql = self.sql % date
+        self.vars = (date,)
     def transformdata(self): pass
     def reindex(self):
         self.by_acctf_ots_id = {}
         for otsh in self.data:
             self.by_acctf_ots_id[(otsh[1], otsh[2])] = otsh[0]
+            
 class SuspendedCache(CacheItem):
-    __slots__ = ('by_account_id')
+    __slots__ = ('by_account_id',)
     datatype = dict
     sql = core_sql['suspended']
     def __init__(self, date):
         super(SuspendedCache, self).__init__()
-        self.sql = self.sql % date
+        self.vars = (date,)
     def transformdata(self): pass
     def reindex(self):
         self.by_account_id = {}
@@ -198,14 +203,14 @@ class TimePeriodAccessCache(CacheItem):
     datatype = dict
     sql = core_sql['tpnaccess']
     def __init__(self, date, fMem):
-        super(SuspendedCache, self).__init__()
+        super(TimePeriodAccessCache, self).__init__()
         self.date = date
-        self.sql = self.sql % date
+        self.vars = (date,)
         self.fMem = fMem
         
     def transformdata(self): pass
     def reindex(self):
         self.in_period = defaultdict(lambda: False)
-        for tpnap in tpnapsTp:
+        for tpnap in self.data:
             self.in_period[tpnap[3]] = self.in_period[tpnap[3]] or self.fMem.in_period_(tpnap[0], tpnap[1], tpnap[2], self.date)[3]
                     

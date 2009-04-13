@@ -4,19 +4,21 @@ from cache_sql import nf_sql
 from nf_class.AccountData import AccountData
 from nf_class.ClassData import ClassData
 from nf_class.GroupsData import GroupsData
+from IPy import IP, IPint, parseAddress
+from collections import defaultdict
 
 
 class NfCaches(CacheCollection):
     __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache')
     
-    def __init__(self, cursor, date):
-        super(NfCaches, self).__init__(cursor, date)
+    def __init__(self, date):
+        super(NfCaches, self).__init__(date)
         self.nas_cache = NasCache()
-        self.account_cache = AccountCache(self.date)
+        self.account_cache = AccountCache(date)
         self.class_cache = ClassCache()
         self.group_cache = GroupsCache()
         self.tfgroup_cache = TarifCache(self.group_cache)
-        self.caches = (self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache)
+        self.caches = [self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache]
     
 class NasCache(CacheItem):
     '''Cache id -> nas.ip'''
@@ -32,14 +34,15 @@ class NasCache(CacheItem):
         self.ip_id = self.datatype(self.data)
     
 class AccountCache(CacheItem):
-    __slots__ = ('vpn_ips', 'ipn_ips')  
+    __slots__ = ('vpn_ips', 'ipn_ips')
     
     datatype = AccountData
     sql = nf_sql['accounts']
     
     def __init__(self, date):
         super(AccountCache, self).__init__()
-        self.sql = self.sql % date
+        
+        self.vars = (date,)
         
         
     def transformdata(self):
@@ -86,7 +89,7 @@ class ClassCache(CacheItem):
 class GroupsCache(CacheItem):
     __slots__ = ('by_id',)
     
-    datatype = GroupData
+    datatype = GroupsData
     sql = nf_sql['groups']
     
     def reindex(self):
@@ -113,6 +116,6 @@ class TarifCache(CacheItem):
     
     def reindex(self):
         self.by_tarif = defaultdict(list)
-        for tarif_id, groups__ in tarif_groups:
+        for tarif_id, groups__ in self.data:
             for grp in set(groups__):
-                tg_[tarif_id].append(groupsCache.get(grp, [-1,[], None, None]))
+                self.by_tarif[tarif_id].append(self.groupsCache.by_id.get(grp, GroupsData._make([-1,[], None, None])))
