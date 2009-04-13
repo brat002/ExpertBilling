@@ -14,26 +14,30 @@ class DefaultNamedTuple(tuple):
 class CacheCollection(object):
     __slots__ = ('date', 'cursor', 'caches')
     
-    def ___init__(self, cursor, date):
+    def ___init__(self, date):
         self.date = date
-        self.cursor = cursor
+        #self.cursor = cursor
         
-    def getdata():
-        for cache in caches:
+    def getdata(self, cursor):
+        for cache in self.caches:
             cache.getdata(cursor)
             
-    def reindex():
-        for cache in caches:
+    def reindex(self):
+        for cache in self.caches:
             cache.reindex()
+            
+    def __repr__(self):
+        return self.__class__.__name__ + '\n' + '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
 
 class CacheItem(object):
-    __slots__ = ('data',)
+    __slots__ = ('data','sql', 'vars')
     
     datatype = tuple
-    sql = ''
+
     
     def __init__(self):
         self.data = None
+        self.vars = ()
         
     def checkdata(self):
         for field in self.datatype._fields:
@@ -44,7 +48,7 @@ class CacheItem(object):
     
     
     def getdata(self, cursor):
-        cursor.execute(self.sql)
+        cursor.execute(self.sql, self.vars)
         self.data = cursor.fetchall() 
         self.transformdata()
         
@@ -58,18 +62,27 @@ class CacheItem(object):
     
     def reindex(self):
         pass
+    def __repr__(self):
+        return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +'\n\n'+ '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
     
 class SimpleDictCache(CacheItem):
     __slots__ = ('by_id','num')
     num = 0
     def reindex(self):
         self.by_id = {}
-        for tpl in self.data: self.by_id[tpl[num]] = tpl
+        for tpl in self.data: self.by_id[tpl[self.num]] = tpl
+        
+    def __repr__(self):
+        return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +  '\n\n' +repr(self.by_id)
+
         
 class SimpleDefDictCache(CacheItem):
     __slots__ = ('by_id','num')
     num = 0
     def reindex(self):
         self.by_id = defaultdict(list)
-        for tpl in self.data: self.by_id[tpl[num]].append(tpl)
+        for tpl in self.data: self.by_id[tpl[self.num]].append(tpl)
+        
+    def __repr__(self):
+        return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +  '\n\n' + repr(self.by_id)
     
