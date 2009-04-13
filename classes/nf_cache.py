@@ -9,8 +9,8 @@ from nf_class.GroupsData import GroupsData
 class NfCaches(CacheCollection):
     __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache')
     
-    def __init__(self, date, cursor):
-        super(NfCaches, self).__init__(date, cursor)
+    def __init__(self, cursor, date):
+        super(NfCaches, self).__init__(cursor, date)
         self.nas_cache = NasCache()
         self.account_cache = AccountCache(self.date)
         self.class_cache = ClassCache()
@@ -39,7 +39,7 @@ class AccountCache(CacheItem):
     
     def __init__(self, date):
         super(AccountCache, self).__init__()
-        self.sql = sqlf.sql % date
+        self.sql = self.sql % date
         
         
     def transformdata(self):

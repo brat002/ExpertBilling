@@ -1557,7 +1557,7 @@ class StatReport(QtGui.QMainWindow):
         webv = QtWebKit.QWebView()
         #webv.setHtml(sht)
         lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(fname))
-        print lfurl.toString()
+        #print lfurl.toString()
         webv.load(lfurl)
 
         self.setCentralWidget(webv)

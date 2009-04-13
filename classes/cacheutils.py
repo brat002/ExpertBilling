@@ -1,5 +1,5 @@
 from operator import itemgetter
-
+from collections import defaultdict
 
 class DefaultNamedTuple(tuple):
     __slots__ = () 
@@ -14,7 +14,7 @@ class DefaultNamedTuple(tuple):
 class CacheCollection(object):
     __slots__ = ('date', 'cursor', 'caches')
     
-    def ___init__(self, date, cursor):
+    def ___init__(self, cursor, date):
         self.date = date
         self.cursor = cursor
         
@@ -58,4 +58,18 @@ class CacheItem(object):
     
     def reindex(self):
         pass
+    
+class SimpleDictCache(CacheItem):
+    __slots__ = ('by_id','num')
+    num = 0
+    def reindex(self):
+        self.by_id = {}
+        for tpl in self.data: self.by_id[tpl[num]] = tpl
+        
+class SimpleDefDictCache(CacheItem):
+    __slots__ = ('by_id','num')
+    num = 0
+    def reindex(self):
+        self.by_id = defaultdict(list)
+        for tpl in self.data: self.by_id[tpl[num]].append(tpl)
     

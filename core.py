@@ -1486,12 +1486,7 @@ class AccountServiceThread(Thread):
                 
                 accts = cur.fetchall()
                 allowedUsersChecker(allowedUsers, lambda: len(accts))
-                #connection.commit()
-                #cur.close()
-                #index on account_id, directly links to tuples
-
-                    #i += 1
-                #cur = connection.cursor()
+ 
                 cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
                 
                 ttssTp = cur.fetchall()
@@ -1541,7 +1536,6 @@ class AccountServiceThread(Thread):
                         FROM billservice_timeaccessnode as tan
                         JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id;""")
                 timeaccnTp = cur.fetchall()
-                #connection.commit()
                 cur.execute("""
                             SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after, tptpn.timeperiod_id 
                             FROM billservice_timeperiodnode as tpn

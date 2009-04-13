@@ -682,25 +682,12 @@ class AccountServiceThread(Thread):
                             JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
                             JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""")
                 tpnsTp = cur.fetchall()
-                '''
-                cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prept_tc.trafficclass_id, prepaidtraffic.traffic_transmit_service_id, prepaidtraffic.in_direction, prepaidtraffic.out_direction
-                             FROM billservice_accountprepaystrafic as prepais
-                             JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                             JOIN billservice_prepaidtraffic_traffic_class AS prept_tc ON prept_tc.prepaidtraffic_id=prepaidtraffic.id
-                             WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""", (tmpDate,))
-                             '''
+
                 cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                              FROM billservice_accountprepaystrafic as prepais
                              JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
                              WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""", (tmpDate,))
                 prepTp = cur.fetchall()
-                '''cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
-                               ARRAY(SELECT trafficclass_id FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=ttsn.id) as classes, ttsn.traffic_transmit_service_id, ttsn.in_direction, ttsn.out_direction
-                               FROM billservice_traffictransmitnodes as ttsn
-                               JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
-                               (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-                               (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));
-                            """)'''
                 cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
                                ttsn.group_id, ttsn.traffic_transmit_service_id 
                                FROM billservice_traffictransmitnodes as ttsn
@@ -732,13 +719,6 @@ class AccountServiceThread(Thread):
                     prepaysCache = prepaysTmp
                     
                 trafnodesTmp = defaultdict(list)
-                """
-                #keys: traffictransmitservice, trafficclass
-                
-                for trnode in trtrnodsTp:
-                    for classnd in trnode[7]:
-                        trafnodesTmp[(trnode[8],classnd)].append(trnode)
-                """
                 #keys: traffictransmitservice, group_id
                 
                 for trnode in trtrnodsTp:
