@@ -1035,7 +1035,7 @@ class settlement_period_service_dog(Thread):
                             #cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
                             cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                     (account_id, period_start, now))
-                            pstart_balance = cur.fetchone()[0] + account_balance
+                            pstart_balance = (cur.fetchone()[0] or 0) + account_balance
                             if cost > pstart_balance:
                             #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
                                 cur.execute("""UPDATE billservice_account SET balance_blocked=True WHERE id=%s and ballance+credit<%s;
