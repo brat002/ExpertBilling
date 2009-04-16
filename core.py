@@ -31,7 +31,7 @@ from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
-from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id, 
+from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id 
 from db import timetransaction, transaction, set_account_deleted, get_limit_speed
 
 try:    import mx.DateTime
@@ -440,7 +440,7 @@ class periodical_service_bill(Thread):
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, chk_date)                                            
                                                 cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
                                                 #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
-                                                cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_GRADUAL', cash_summ, chk_date, ps_condition_type))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_GRADUAL', cash_summ, chk_date, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
                                                 #psycopg2._psycopg.cursor.c
@@ -497,7 +497,7 @@ class periodical_service_bill(Thread):
                                                     if ps_created>=chk_date:
                                                         cash_summ=0
                                                 #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
-                                                cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_START', cash_summ, chk_date, ps_condition_type))                                                
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_START', cash_summ, chk_date, ps_condition_type))                                                
                                                 connection.commit()
                                                 chk_date += s_delta
                                             connection.commit() 
@@ -556,7 +556,7 @@ class periodical_service_bill(Thread):
                                                         if ps_created>chk_date:
                                                             cash_summ=0
                                                     #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, ps_condition_type))
-                                                    cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_END', cash_summ, chk_date, ps_condition_type))
+                                                    cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_END', cash_summ, chk_date, ps_condition_type))
                                                     connection.commit()
                                                     chk_date += s_delta
                                         else:
