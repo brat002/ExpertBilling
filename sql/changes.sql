@@ -44,7 +44,7 @@ CREATE TABLE billservice_traffictransaction
   account_id integer NOT NULL,
   accounttarif_id integer NOT NULL,
   summ double precision NOT NULL,
-  datetime timestamp with time zone NOT NULL,
+  datetime timestamp without time zone NOT NULL,
   CONSTRAINT billservice_traffictransaction_pkey PRIMARY KEY (id),
   CONSTRAINT billservice_traffictransaction_account_id_fkey FOREIGN KEY (account_id)
       REFERENCES billservice_account (id) MATCH SIMPLE
@@ -97,7 +97,7 @@ CREATE TABLE billservice_timetransaction
   accounttarif_id integer NOT NULL,
   session_id integer NOT NULL,
   summ double precision NOT NULL,
-  datetime timestamp with time zone NOT NULL,
+  datetime timestamp without time zone NOT NULL,
   CONSTRAINT billservice_timetransaction_pkey PRIMARY KEY (id),
   CONSTRAINT billservice_timetransaction_account_id_fkey FOREIGN KEY (account_id)
       REFERENCES billservice_account (id) MATCH SIMPLE
@@ -243,5 +243,5 @@ ALTER TABLE billservice_transaction
 
 INSERT INTO billservice_transactiontype(
              "name", internal_name)
-    VALUES ('Операция проведена кассиром', 'CASSA_TRANSACTION');
+    VALUES ('РџР»Р°С‚С‘Р¶ СЃРѕРІРµСЂС€С‘РЅ РєР°СЃСЃРёСЂРѕРј', 'CASSA_TRANSACTION');
     
