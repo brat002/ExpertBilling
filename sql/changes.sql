@@ -19,9 +19,24 @@ CREATE OR REPLACE FUNCTION transaction_sum(account_id_ int, acctf_id_ int, start
     AS $$ 
 DECLARE
     start_date_5m_ timestamp without time zone;
+    result_ double precision;
 BEGIN
     start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
-    RETURN SELECT sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (created > start_date_ AND created < end_date) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)) ;    
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (created > start_date_ AND created < end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)) AS ts_union ;
+    RETURN result_;
+END;
+$$
+    LANGUAGE plpgsql;
+    
+CREATE OR REPLACE FUNCTION transaction_block_sum(account_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS double precision
+    AS $$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ double precision;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (summ > 0) AND (created BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) AS ts_union ;
+    RETURN result_;
 END;
 $$
     LANGUAGE plpgsql;
@@ -54,6 +69,201 @@ END;
 $$
     LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION psh_crt_cur_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+
+
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION psh_cur_ins (pshr billservice_periodicalservicehistory) RETURNS void AS ';
+
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO psh';
+                         
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, summ, datetime)
+                          VALUES 
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.summ, pshr.datetime); RETURN; END;';
+                          
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION psh_cur_datechk(psh_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+
+
+    dt_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION psh_cur_dt() RETURNS date AS ';
+    
+    onemonth_ text := '1 month';
+    query_ text;
+    
+    prevdate_ date;
+    
+BEGIN    
+
+
+    
+        query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+        EXECUTE query_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+
+        EXECUTE query_;
+        
+        prevdate_ := psh_cur_dt();
+        
+        PERFORM psh_crt_prev_ins(prevdate_);
+        
+        query_ := dt_fn_tx1_ || quote_literal(' BEGIN RETURN  DATE ' || quote_literal(datetx_) || '; END; ') || fn_tx2_;
+        
+        EXECUTE query_;
+
+        
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql;
+    
+CREATE OR REPLACE FUNCTION psh_crt_pdb(datetx date) RETURNS integer
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+    datetx_e_ text := to_char((datetx + interval '1 month')::date, 'YYYYMM01');
+
+    qt_dtx_ text;
+    qt_dtx_e_ text;
+    seq_tx1_ text := 'CREATE SEQUENCE psh#rpdate#_id_seq
+                      INCREMENT 1
+                      MINVALUE 1
+                      MAXVALUE 9223372036854775807
+                      START 1
+                      CACHE 1;';
+    seqname_tx1_ text := 'psh#rpdate#_id_seq';
+
+    chk_tx1_ text := 'CHECK ( datetime >= DATE #stdtx# AND datetime < DATE #eddtx# )';
+    ct_tx1_ text := 'CREATE TABLE psh#rpdate# (
+                     #chk#,
+                     CONSTRAINT psh#rpdate#_id_pkey PRIMARY KEY (id) ) 
+                     INHERITS (billservice_periodicalservicehistory) 
+                     WITH (OIDS=FALSE);                     
+                     CREATE INDEX psh#rpdate#_datetime_id ON psh#rpdate# USING btree (datetime);
+                     CREATE INDEX psh#rpdate#_service_id ON psh#rpdate# USING btree (service_id);
+                     CREATE INDEX psh#rpdate#_accounttarif_id ON psh#rpdate# USING btree (accounttarif_id);
+                     ';
+                     
+    at_tx1_ text := 'ALTER TABLE psh#rpdate# ALTER COLUMN id SET DEFAULT nextval(#qseqname#::regclass);';
+
+    chk_       text;
+    seq_query_ text;
+    ct_query_  text;
+    seqn_      text;
+    at_query_  text;
+
+
+BEGIN    
+    seq_query_ := replace(seq_tx1_, '#rpdate#', datetx_);
+    EXECUTE seq_query_;
+    qt_dtx_    := quote_literal(datetx_);
+    qt_dtx_e_  := quote_literal(datetx_e_);
+    chk_       := replace(chk_tx1_, '#stdtx#', qt_dtx_ );
+    chk_       := replace(chk_, '#eddtx#', qt_dtx_e_ );
+    ct_query_  := replace(ct_tx1_, '#rpdate#', datetx_);
+    ct_query_  := replace(ct_query_, '#chk#', chk_);
+    EXECUTE ct_query_;
+    seqn_        := replace(seqname_tx1_, '#rpdate#', datetx_);
+    at_query_    := replace(at_tx1_, '#rpdate#', datetx_);
+    at_query_    := replace(at_query_, '#qseqname#', quote_literal(seqn_));
+    EXECUTE at_query_;
+    RETURN 0;
+
+END;
+$$
+    LANGUAGE plpgsql; 
+    
+CREATE OR REPLACE FUNCTION psh_crt_prev_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+
+
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION psh_prev_ins (pshr billservice_periodicalservicehistory) RETURNS void AS ';
+
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO psh';
+                         
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, summ, datetime)
+                          VALUES 
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.summ, pshr.datetime); RETURN; END;';
+                          
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION psh_prev_datechk(psh_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+    ch_fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+    qts_ text := 'CHK % % %';
+    
+    onemonth_ text := '1 month';
+    query_ text;
+BEGIN    
+
+        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+        
+        EXECUTE query_;
+        
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql; 
+ 
+CREATE OR REPLACE FUNCTION psh_cur_datechk(psh_date timestamp without time zone) RETURNS integer
+    AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700101'+ interval '1 month')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
+    LANGUAGE plpgsql;
+    
+CREATE OR REPLACE FUNCTION psh_prev_datechk(psh_date timestamp without time zone) RETURNS integer
+    AS $$ DECLARE d_s_ date := DATE '19700101'; d_e_ date := (DATE '19700101'+ interval '1 month')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
+    LANGUAGE plpgsql;
+    
+CREATE OR REPLACE FUNCTION psh_inserter(pshr billservice_periodicalservicehistory) RETURNS void
+    AS $$
+DECLARE
+    datetx_ text := to_char(pshr.datetime::date, 'YYYYMM01');
+    insq_   text;
+
+    ttrn_actfid_ text;    
+BEGIN
+    
+    IF pshr.accounttarif_id IS NULL THEN
+       ttrn_actfid_ := 'NULL';
+    ELSE
+       ttrn_actfid_ := pshr.accounttarif_id::text;
+    END IF;
+    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, summ, datetime) VALUES (' 
+    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ',' || pshr.summ || ','  || quote_literal(pshr.datetime) || ','  || ttrn_actfid_ || ');';
+    EXECUTE insq_;
+    RETURN;
+END;
+$$
+    LANGUAGE plpgsql;
+    
 ALTER TABLE billservice_onetimeservicehistory ADD COLUMN summ double precision;
 ALTER TABLE billservice_onetimeservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_onetimeservicehistory ADD CONSTRAINT billservice_onetimeservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
@@ -62,7 +272,7 @@ ALTER TABLE billservice_onetimeservicehistory DROP COLUMN transaction_id;
 CREATE TRIGGER acc_otsh_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_onetimeservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();  
 
 
-ALTER TABLE billservice_traffictransaction RENAME COLUMN sum TO summ;
+--ALTER TABLE billservice_traffictransaction RENAME COLUMN sum TO summ;
   
   
 -----------------------------------------------  
