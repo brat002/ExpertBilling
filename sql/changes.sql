@@ -1,5 +1,35 @@
 --14.04.2009
 
+ALTER TABLE billservice_transaction ADD COLUMN accounttarif_id int;
+UPDATE billservice_transaction AS bt SET accounttarif_id = (SELECT ba.id FROM billservice_accounttarif AS ba WHERE ba.account_id = bt.account_id AND ba.datetime < bt.created ORDER BY ba.datetime DESC LIMIT 1);
+
+CREATE OR REPLACE FUNCTION trans_acctf_ins_trg_fn() RETURNS trigger
+    AS $$ 
+BEGIN
+    IF NEW.accounttarif_id IS NULL THEN
+        SELECT INTO NEW.accounttarif_id ba.id FROM billservice_accounttarif AS ba WHERE ba.account_id = NEW.account_id AND ba.datetime < NEW.created ORDER BY ba.datetime DESC LIMIT 1;
+    END IF;
+    RETURN NEW;    
+END;
+$$
+    LANGUAGE plpgsql;
+    
+    
+CREATE OR REPLACE FUNCTION transaction_sum(account_id_ int, acctf_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS double precision
+    AS $$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    RETURN SELECT sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (created > start_date_ AND created < end_date) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND accounttarif_id=acctf_id_ AND (datetime > start_date_ AND datetime < end_date)) ;    
+END;
+$$
+    LANGUAGE plpgsql;
+    
+CREATE TRIGGER trans_acctf_ins_trg
+    BEFORE INSERT ON billservice_transaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE trans_acctf_ins_trg_fn();
 
 ALTER TABLE billservice_periodicalservicehistory DROP COLUMN transaction_id;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN summ double precision;
