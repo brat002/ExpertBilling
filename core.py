@@ -1004,7 +1004,7 @@ class settlement_period_service_dog(Thread):
                             cur.execute("""SELECT sum(summ) FROM billservice_transaction
                                 WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and summ>0;
                                 """, (tnc, tkc, account_id, tarif_id,))'''
-                            cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone""",
+                            cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                     (account_id, accounttarif_id, tnc, tkc))
                             summ=cur.fetchone()[0]
                             if summ==None:
@@ -1033,7 +1033,7 @@ class settlement_period_service_dog(Thread):
                         if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
                             #cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
                             #cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
-                            cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone""",
+                            cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                     (account_id, period_start, now))
                             pstart_balance = cur.fetchone()[0] + account_balance
                             if cost > pstart_balance:
