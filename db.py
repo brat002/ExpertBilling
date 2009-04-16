@@ -259,16 +259,16 @@ def time_periods_by_tarif_id(cursor, tarif_id):
                     WHERE bst.id=%s""", (int(tarif_id),))
     return cursor.fetchall()
 
-def transaction(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
+def transaction(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null', accounttarif='Null'):
     #print 'new transaction'
     if not created:
         created=datetime.datetime.now()
     #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
     cursor.execute("""                   
                     INSERT INTO billservice_transaction(bill,
-                    account_id, approved, type_id, tarif_id, summ, description, created)
+                    account_id, approved, type_id, tarif_id, accounttarif_id, summ, description, created)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-                    """ , (bill, account, approved, type, tarif , summ, description, created))
+                    """ , (bill, account, approved, type, tarif, accounttarif, summ, description, created))
 
     tr_id=cursor.fetchone()[0]
     return tr_id
@@ -304,13 +304,24 @@ def delete_transaction(cursor, id):
                    UPDATE billservice_account
                    SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))'''
 
-
-def ps_history(cursor, ps_id, transaction, accounttarif, created=None):
+def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, account_id, summ=0, created=None):
+    if not created:
+        created=datetime.datetime.now()
+    cursor.execute("""INSERT INTO billservice_traffictransaction(traffictransmitservice_id, accounttarif_id, account_id, summ, datetime) VALUES (%s, %s, %s, %s, %s);
+                   """, (traffictransmitservice_id, accounttarif, account_id, summ, created,))
+    
+def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, session_id, summ=0, created=None):
+    if not created:
+        created=datetime.datetime.now()
+    cursor.execute("""INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, session_id, summ, datetime) VALUES (%s, %s, %s, %s, %s);
+                   """, (traffictransmitservice_id, accounttarif, account_id, session_id, summ, created,))
+    
+def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
     cursor.execute("""
-                   INSERT INTO billservice_periodicalservicehistory(service_id, transaction_id, accounttarif_id,  datetime) VALUES (%s, %s, %s, %s);
-                   """, (ps_id, transaction, accounttarif, created,))
+                   INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, datetime) VALUES (%s, %s, %s, %s, %s, %s);
+                   """, (ps_id, accounttarif, account_id, type_id, summ, created,))
 
 def get_last_checkout(cursor, ps_id, accounttarif):
     cursor.execute("""

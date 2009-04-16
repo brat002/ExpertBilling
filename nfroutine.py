@@ -24,7 +24,7 @@ from collections import deque, defaultdict
 from period_utilities import in_period_info
 from db import delete_transaction, dbRoutine
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
+from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -36,10 +36,10 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 class Picker(object):
     __slots__= ('data',)
     def __init__(self):
-        self.data=defaultdict(int)      
+        self.data=defaultdict(float)      
 
-    def add_summ(self, account, tarif, summ):
-        self.data[(account, tarif)] += summ
+    def add_summ(self, tts_id, acctf_id, account_id, summ):
+        self.data[(tts_id, acctf_id, account_id)] += summ
 
     def get_list(self):
         while len(self.data) > 0:
@@ -79,10 +79,12 @@ class DepickerThread(Thread):
                 #ilen = len(picker.data)
                 ilist = picker
                 ilen = len(picker)
-                for acc_tf_id, summ in ilist:
+                for tts_acctf_acc, summ in ilist:
                     #debit accounts
-                    transaction_noret(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
-                                tarif=acc_tf_id[1], summ=summ, description=u"", created=now)
+                    #tts_id, acctf_id, acc_id = tts_acctf_acc
+                    traffictransaction(cur, tts_acctf_acc[0], tts_acctf_acc[1], tts_acctf_acc[2], summ=summ, created=now)
+                    '''transaction_noret(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
+                                tarif=acc_tf_id[1], summ=summ, description=u"", created=now)'''
                     icount += 1
                     connection.commit()
                 if writeProf:
@@ -393,6 +395,8 @@ class NetFlowRoutine(Thread):
                     pickerTime = time.time()
                     pickerLock.release()
                     
+                    
+                oldAcct = defaultdict(list)
                 #if deadlocks arise add locks
                 #pop flows
                 fqueue = 1
@@ -565,9 +569,9 @@ class NetFlowRoutine(Thread):
                             summ=(trafic_cost*octets)/(1048576)
         
                             if summ>0:
-                                #account_id, tariff_id, summ
+                                #tts, acctf, acc, summ
                                 pickerLock.acquire()
-                                gPicker.add_summ(flow[20], acct[4], summ)
+                                gPicker.add_summ(tts_id, acct[12], account_id, summ)
                                 pickerLock.release()
                     if store_classes:
                         cur.execute("""INSERT INTO billservice_netflowstream(

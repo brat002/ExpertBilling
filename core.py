@@ -31,7 +31,8 @@ from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
-from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted, get_limit_speed
+from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id, 
+from db import timetransaction, transaction, set_account_deleted, get_limit_speed
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -438,7 +439,8 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, length_in_sp, length_ps, chk_date)                                            
                                                 cash_summ=((float(n)*float(transaction_number)*float(ps_cost))/(float(delta)*float(transaction_number)))
-                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, 'PS_GRADUAL', True, tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_GRADUAL', cash_summ, chk_date, ps_condition_type))
                                                 connection.commit()
                                                 chk_date += n_delta
                                                 #psycopg2._psycopg.cursor.c
@@ -449,10 +451,10 @@ class periodical_service_bill(Thread):
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
-                                            if cash_summ:
-                                                transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = chk_date)
-                                            else: transaction_id = None
-                                            ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created= chk_date)
+                                            #if cash_summ:
+                                            #    transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_GRADUAL', tarif = tariff_id, summ=cash_summ, description=description, created = chk_date)
+                                            #else: transaction_id = None
+                                            ps_history(cur, ps_id, accounttarif_id, account_id, 'PS_GRADUAL', cash_summ, chk_date)
                                     connection.commit()
                                 if ps_cash_method=="AT_START":
                                     """
@@ -494,8 +496,8 @@ class periodical_service_bill(Thread):
                                                 if ps_created!=None:
                                                     if ps_created>=chk_date:
                                                         cash_summ=0
-                                                cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
-                                                
+                                                #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_START', tariff_id, cash_summ, description, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_START', cash_summ, chk_date, ps_condition_type))                                                
                                                 connection.commit()
                                                 chk_date += s_delta
                                             connection.commit() 
@@ -506,12 +508,13 @@ class periodical_service_bill(Thread):
                                             if (ps_condition_type==1 and account_ballance<=0) or (ps_condition_type==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
+                                            '''
                                             if summ:
                                                 transaction_id = transaction(cursor=cur, account=account_id, approved=True, type='PS_AT_START', tarif = tariff_id,
                                                                      summ = summ, description=description,
                                                                      created = chk_date)
-                                            else: transaction_id = None
-                                            ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                            else: transaction_id = None'''
+                                            ps_history(cur, ps_id, accounttarif_id, account_id, 'PS_AT_START', summ, chk_date)
                                     connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
@@ -552,7 +555,8 @@ class periodical_service_bill(Thread):
                                                     if ps_created!=None:
                                                         if ps_created>chk_date:
                                                             cash_summ=0
-                                                    cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                    #cur.execute("SELECT transaction_fn(%s::character varying, %s, %s::character varying, %s, %s, %s::double precision, %s::text, %s::timestamp without time zone, %s, %s, %s);", ('', account_id, True, 'PS_AT_END', tariff_id, cash_summ, descr, chk_date, ps_id, accounttarif_id, ps_condition_type))
+                                                    cur.execute("SELECT periodical_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps_id, accounttarif_id, account_id, 'PS_AT_END', cash_summ, chk_date, ps_condition_type))
                                                     connection.commit()
                                                     chk_date += s_delta
                                         else:
@@ -564,14 +568,16 @@ class periodical_service_bill(Thread):
                                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                             cash_summ = 0              
                                             
-                                        summ = cash_summ * susp_per_mlt                                        
+                                        summ = cash_summ * susp_per_mlt
+                                        '''
                                         if summ:
                                             transaction_id = transaction(cursor=cur, account=account_id,approved=True,
                                                                      type='PS_AT_END', tarif = tariff_id,summ=summ,
                                                                      description=descr, created = chk_date)
                                         else:
                                             transaction_id = None
-                                        ps_history(cursor=cur, ps_id=ps_id, accounttarif=accounttarif_id, transaction=transaction_id, created=chk_date)
+                                        '''
+                                        ps_history(cur, ps_id, accounttarif_id, account_id, 'PS_AT_END', summ, chk_date)
                                     connection.commit()
                             except Exception, ex:
                                 if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
@@ -631,7 +637,7 @@ class TimeAccessBill(Thread):
                     continue
                 
                 cur = connection.cursor()
-                cur.execute("""SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id
+                cur.execute("""SELECT rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id, rs.id, tarif.time_access_service_id 
                                  FROM radius_session AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
@@ -646,7 +652,7 @@ class TimeAccessBill(Thread):
                     #TODO:2.1 Если была смена периода -посчитать сколько времени прошло до смены и после смены,
                     # рассчитав соотв снятия.
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
-                    account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
+                    account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id, rs_id, taccs_id = row
 
                     cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time=True
                                ORDER BY interrim_update DESC LIMIT 1
@@ -692,10 +698,11 @@ class TimeAccessBill(Thread):
                             if fMem.in_period_(period_start,period_length,repeat_after, dateAT)[3]:
                                 summ=(float(total_time)/60.000)*period_cost
                                 if summ>0:
-                                    transaction(cursor=cur, type='TIME_ACCESS', account=account_id,
+                                    '''transaction(cursor=cur, type='TIME_ACCESS', account=account_id,
                                         approved=True, tarif=tarif_id, summ=summ,
                                         description=u"Снятие денег за время по RADIUS сессии %s" % session_id,
-                                        created=now)
+                                        created=now)'''
+                                    timetransaction(cur, taccs_id, accountt_tarif_id, account_id, rs_id, summ, now)
                                     connection.commit()
 
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
@@ -993,12 +1000,12 @@ class settlement_period_service_dog(Thread):
                         
                             tnc, tkc, delta = settlement_period_info(time_start, setpRec[3], setpRec[2], dateAT, prev=True)
                             #Считаем сколько было списано по услугам
-                            cur.execute(
-                                """
-                                SELECT sum(summ)
-                                FROM billservice_transaction
+                            '''
+                            cur.execute("""SELECT sum(summ) FROM billservice_transaction
                                 WHERE created > %s and created< %s and account_id=%s and tarif_id=%s and summ>0;
-                                """, (tnc, tkc, account_id, tarif_id,))
+                                """, (tnc, tkc, account_id, tarif_id,))'''
+                            cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone""",
+                                    (account_id, accounttarif_id, tnc, tkc))
                             summ=cur.fetchone()[0]
                             if summ==None:
                                 summ=0
@@ -1011,6 +1018,7 @@ class settlement_period_service_dog(Thread):
                                     account=account_id,
                                     approved=True,
                                     tarif=tarif_id,
+                                    accounttarif=accounttarif_id,
                                     summ=s,
                                     description=u"Доснятие денег до стоимости тарифного плана у %s" % account_id,
                                     created=now
@@ -1024,7 +1032,9 @@ class settlement_period_service_dog(Thread):
                         #Если балланса не хватает - отключить пользователя
                         if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
                             #cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
-                            cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
+                            #cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
+                            cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone""",
+                                    (account_id, period_start, now))
                             pstart_balance = cur.fetchone()[0] + account_balance
                             if cost > pstart_balance:
                             #print "balance blocked1", ballance_checkout, period_start, cost, account_balance
@@ -1134,7 +1144,7 @@ class settlement_period_service_dog(Thread):
                             for ots in onetimesvs:
                                 ots_id = ots[0]
                                 if not cacheOTSHist.has_key((accounttarif_id, ots_id)):
-                                    transaction_id = transaction(
+                                    '''transaction_id = transaction(
                                                                  cursor=cur,
                                                                  type='ONETIME_SERVICE',
                                                                  account=account_id,
@@ -1143,8 +1153,8 @@ class settlement_period_service_dog(Thread):
                                                                  summ=ots[2],
                                                                  description=u"Снятие денег по разовой услуге %s" % ots[1],
                                                                  created=now
-                                                                 )
-                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id,onetimeservice_id, transaction_id,datetime) VALUES(%s, %s, %s, %s);", (accounttarif_id, ots_id, transaction_id,now,))
+                                                                 )'''
+                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (accounttarif_id, ots_id, account_id,ots[2], now,))
                                     connection.commit()
                                     cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
                         #Списывам с баланса просроченные обещанные платежи
