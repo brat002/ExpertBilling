@@ -228,11 +228,13 @@ class FlowCache(object):
             total_count +=1
         #constructs a key
         key = (flow[0], flow[1], flow[2], flow[9], flow[10], flow[13])
-        val = dcache.get(key)
-        #no such value, must add
-        if not val:
-            dcacheLock.acquire()
-            #adds
+        
+        dcacheLock.acquire()
+        dflow = dcache.get(key)
+        #no such value, must add        
+        if not dflow:
+            #with dcacheLock:
+                #adds
             dcache[key] = flow
             dcacheLock.release()
             #stores key in a list
@@ -241,18 +243,17 @@ class FlowCache(object):
             if (len(self.keylist) > aggrNum) or ((self.stime + 10.0) < time.time()):
                 #-----------------
                 #appends keylist to flowQueue
-                fqueueLock.acquire()
-                flowQueue.append((self.keylist, time.time()))
-                fqueueLock.release()
+                with fqueueLock:
+                    flowQueue.append((self.keylist, time.time()))
                 #-----------------
                 #nullifies keylist
                 self.keylist = []
                 self.stime = time.time()
                 #=====              
         else:
-            dcacheLock.acquire()
+            #dcacheLock.acquire()
             #appends flows
-            dflow= dcache[key]
+            #dflow= dcache[key]
             dflow[6] += flow[6]
             dflow[5] += flow[5]
             dflow[8] = flow[8]
@@ -750,7 +751,8 @@ def SIGHUP_handler(signum, frame):
 
 def graceful_save():
     global cacheThr, threads, suicideCondition
-    asyncore.close_all()
+    #asyncore.close_all()
+    
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
             suicideCondition[thr.tname] = True

@@ -1,5 +1,6 @@
 from operator import itemgetter
 from collections import defaultdict
+from threading import Lock
 
 class DefaultNamedTuple(tuple):
     __slots__ = () 
@@ -85,4 +86,14 @@ class SimpleDefDictCache(CacheItem):
         
     def __repr__(self):
         return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +  '\n\n' + repr(self.by_id)
+    
+class CacheMaster(object):
+    __slots__ = ('date', 'lock', 'cache', 'read')
+    
+    def __init__(self):
+        self.date = None
+        self.lock = Lock()
+        self.cache = None
+        self.read = False
+        
     
