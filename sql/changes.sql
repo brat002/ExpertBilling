@@ -344,7 +344,7 @@ CREATE TRIGGER trans_acctf_ins_trg
     FOR EACH ROW
     EXECUTE PROCEDURE trans_acctf_ins_trg_fn();
 
-ALTER TABLE billservice_periodicalservicehistory DROP COLUMN transaction_id;
+--ALTER TABLE billservice_periodicalservicehistory DROP COLUMN transaction_id;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN summ double precision;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN type_id character varying;
@@ -566,7 +566,7 @@ ALTER TABLE billservice_onetimeservicehistory ADD COLUMN summ double precision;
 ALTER TABLE billservice_onetimeservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_onetimeservicehistory ADD CONSTRAINT billservice_onetimeservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE billservice_onetimeservicehistory ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE billservice_onetimeservicehistory DROP COLUMN transaction_id;
+--ALTER TABLE billservice_onetimeservicehistory DROP COLUMN transaction_id;
 CREATE TRIGGER acc_otsh_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_onetimeservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();  
 
 
