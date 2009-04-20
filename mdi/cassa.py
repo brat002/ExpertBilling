@@ -92,10 +92,17 @@ class CassaEbs(ebsTableWindow):
         self.comboBox_tariff = QtGui.QComboBox(self.groupBox_tariffs)
         self.comboBox_tariff.setObjectName("comboBox_tariff")
         self.gridLayout_3.addWidget(self.comboBox_tariff, 0, 0, 1, 1)
+        self.dateTime = QtGui.QDateTimeEdit(self.groupBox_tariffs)
+        self.dateTime.setCalendarPopup(True)
+        self.dateTime.setDateTime(datetime.datetime.now())
+        #self.dateTime.setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.dateTime.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.gridLayout_3.addWidget(self.dateTime, 0, 1, 1, 1)
         self.pushButton_change_tariff = QtGui.QPushButton(self.groupBox_tariffs)
         self.pushButton_change_tariff.setMaximumSize(QtCore.QSize(75, 16777215))
         self.pushButton_change_tariff.setObjectName("pushButton_change_tariff")
-        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 2, 1, 1)
+
         self.gridLayout_4.addWidget(self.groupBox_tariffs, 2, 0, 1, 2)
         self.groupBox_payment = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_payment.setMinimumSize(QtCore.QSize(400, 0))
@@ -282,7 +289,10 @@ class CassaEbs(ebsTableWindow):
         if self._name:
             self.systemuser_id = self.connection.sql("SELECT id FROM billservice_systemuser WHERE username='%s'" % self._name)[0].id
             self.connection.commit()
-    
+        
+        self.dateTimeEdit_paymend_date.setDateTime(datetime.datetime.now())
+        self.dateTimeEdit_end_promise.setDateTime(datetime.datetime.now())
+        
     def addrow(self, value, x, y, color=None, enabled=True):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
@@ -354,10 +364,12 @@ class CassaEbs(ebsTableWindow):
             created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
             promise = self.checkBox_promise.isChecked()
             summ = float(unicode(self.lineEdit_summ.text()))
-            if not self.checkBox_promise_infinite.isChecked():
+            if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
                 end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
             else:
                 end_promise = None
+
+                
             global tr_id
             
             tr_id = self.connection.pay(account, summ, document, description, created, promise, end_promise, self.systemuser_id)
@@ -378,6 +390,7 @@ class CassaEbs(ebsTableWindow):
                 self.refreshTable()
             else:
                 QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Обратитесь к администратору."))
+            self.lineEdit_summ.setFocus(True)
             
     
     def createAccountTarif(self):

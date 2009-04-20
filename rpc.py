@@ -455,7 +455,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         status_card_was_activated =3
         now = datetime.datetime.now()
         if login and pin:
-            cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null;",  (login, pin, ))
+            cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null and disabled=False;",  (login, pin, ))
             card = cur.fetchone()
             if not card: return status_bad_userpassword
             

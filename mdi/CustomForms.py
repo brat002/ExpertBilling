@@ -339,6 +339,9 @@ class TransactionForm(QtGui.QDialog):
         self.dateTimeEdit_paymend_date.setDateTime(now)
         self.dateTimeEdit_end_promise.setDateTime(now)
     
+        self.payed_type_edit.setItemData(0, QtCore.QVariant(0))
+        self.payed_type_edit.setItemData(1, QtCore.QVariant(1))
+        
     def promise_actions(self):
         if self.checkBox_promise.isChecked():
             self.dateTimeEdit_end_promise.setEnabled(True)
@@ -351,7 +354,8 @@ class TransactionForm(QtGui.QDialog):
             self.checkBox_promise_infinite.setEnabled(False)
             
     def accept(self):
-        if self.payed_type_edit.currentText()==u"Пополнить балланс":
+        print self.payed_type_edit.itemData(self.payed_type_edit.currentIndex()).toInt()[0]
+        if self.payed_type_edit.itemData(self.payed_type_edit.currentIndex()).toInt()[0]==0:
             self.result = int(self.summ_edit.text()) * (-1)
         else:
             self.result = int(self.summ_edit.text())
@@ -367,9 +371,10 @@ class TransactionForm(QtGui.QDialog):
         transaction.created = self.dateTimeEdit_paymend_date.dateTime().toPyDateTime()
         
         transaction.promise = self.checkBox_promise.isChecked()
-        if not self.checkBox_promise_infinite.isChecked():
+        if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
             transaction.end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
-        
+
+            
         try:
             
             self.connection.save(transaction, "billservice_transaction")
@@ -674,7 +679,7 @@ class ConnectDialog(QtGui.QDialog):
             selRec = self.tableWidget.model().record(args[0].row())
             self.address_edit.setText(selRec.value(1).toString())
             self.name_edit.setText(selRec.value(2).toString())
-            self.password_edit.setText("*******")
+            #self.password_edit.setText("*******")
             
         except Exception, ex:
             print ex
@@ -837,36 +842,34 @@ class OperatorDialog(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Operator", "Данные о организации", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        self.op_model = self.connection.get_model(1, "billservice_operator")
-#        try:
-#            self.op_model =self.connection.get_operator()
-#        except Exception, e:
-#            print e
-#            return
-        print 1
+#        self.op_model = self.connection.get_model(1, "billservice_operator")
         try:
-            self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
+            self.op_model =self.connection.get_operator()[0]
+            #print self.op_model
+            try:
+                self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
+            except:
+                pass
+            self.connection.commit()
+            self.lineEdit_organization.setText(self.op_model.organization)
+            self.lineEdit_okpo.setText(self.op_model.okpo)
+            self.lineEdit_unp.setText(self.op_model.unp)
+            self.lineEdit_contactperson.setText(self.op_model.contactperson)
+            self.lineEdit_director.setText(self.op_model.director)
+            self.lineEdit_phone.setText(self.op_model.phone)
+            self.lineEdit_fax.setText(self.op_model.fax)
+            self.lineEdit_postaddress.setText(self.op_model.postaddress)
+            self.lineEdit_uraddress.setText(self.op_model.uraddress)
+            self.lineEdit_email.setText(self.op_model.email)
+            
+            self.lineEdit_bank.setText(self.bank_model.bank)
+            self.lineEdit_bankcode.setText(self.bank_model.bankcode)
+            self.lineEdit_rs.setText(self.bank_model.rs)
+            self.lineEdit_currency.setText(self.bank_model.currency)
+        
         except Exception, e:
             print e
-            return
-        print 2
-        self.connection.commit()
-        self.lineEdit_organization.setText(self.op_model.organization)
-        self.lineEdit_okpo.setText(self.op_model.okpo)
-        self.lineEdit_unp.setText(self.op_model.unp)
-        self.lineEdit_contactperson.setText(self.op_model.contactperson)
-        self.lineEdit_director.setText(self.op_model.director)
-        self.lineEdit_phone.setText(self.op_model.phone)
-        self.lineEdit_fax.setText(self.op_model.fax)
-        self.lineEdit_postaddress.setText(self.op_model.postaddress)
-        self.lineEdit_uraddress.setText(self.op_model.uraddress)
-        self.lineEdit_email.setText(self.op_model.email)
-        
-        self.lineEdit_bank.setText(self.bank_model.bank)
-        self.lineEdit_bankcode.setText(self.bank_model.bankcode)
-        self.lineEdit_rs.setText(self.bank_model.rs)
-        self.lineEdit_currency.setText(self.bank_model.currency)
-        
+            
     def accept(self):
         if self.op_model:
             op_model = self.op_model
@@ -1895,3 +1898,47 @@ class SpeedLimitDialog(QtGui.QDialog):
         #self.connection.commit()
         QtGui.QDialog.accept(self)
 
+
+class SqlDialog(QtGui.QDialog):
+    def __init__(self, connection):
+        super(SqlDialog, self).__init__()
+        self.connection = connection
+        self.setObjectName("Dialog")
+        self.resize(604, 358)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.plainTextEdit = QtGui.QPlainTextEdit(self)
+        self.plainTextEdit.setObjectName("plainTextEdit")
+        self.gridLayout.addWidget(self.plainTextEdit, 0, 0, 1, 2)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 1, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "SQL Command Window", None, QtGui.QApplication.UnicodeUTF8))
+        
+        
+    def accept(self):
+        
+        if unicode(self.plainTextEdit.toPlainText()):
+            try:
+                self.connection.sql(unicode(self.plainTextEdit.toPlainText()))
+                self.connection.commit()
+                QtGui.QMessageBox.information(self, u"Ok", unicode(u"Запрос успешно выполнен."))
+            except:
+                self.connection.rollback()
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"При выполнении запроса возникла ошибка."))
+                return
+        else:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите текст запроса."))
+            return
+        QtGui.QDialog.accept(self)
+    
+        

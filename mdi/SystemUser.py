@@ -58,7 +58,7 @@ class PasswordEditFrame(QtGui.QDialog):
     def accept(self):
         if self.password_lineEdit.text():
             if self.passValidator.validate(self.password_lineEdit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной как минимум 3 и не содержать спецефических символов."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть не менее 3-х символов."))
                 return
             if self.password_lineEdit.text() == self.repeat_password_lineEdit.text():
                 self.password = QtCore.QCryptographicHash.hash(self.password_lineEdit.text().toUtf8(), QtCore.QCryptographicHash.Md5)

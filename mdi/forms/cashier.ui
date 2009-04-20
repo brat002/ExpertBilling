@@ -16,6 +16,55 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
     <item row="0" column="0" colspan="3">
+     <widget class="QTableWidget" name="tableWidget">
+      <column>
+       <property name="text">
+        <string>#</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>ФИО</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Тарифный план</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Баланс</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Кредит</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Улица</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Дом</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>к.</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>кв.</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="3">
      <widget class="QGroupBox" name="groupBox_filter">
       <property name="title">
        <string>Фильтр</string>
@@ -99,55 +148,6 @@
         <widget class="QLineEdit" name="lineEdit_room"/>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="3">
-     <widget class="QTableWidget" name="tableWidget">
-      <column>
-       <property name="text">
-        <string>#</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>ФИО</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Тарифный план</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Баланс</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Кредит</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Улица</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Дом</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>к.</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>кв.</string>
-       </property>
-      </column>
      </widget>
     </item>
     <item row="2" column="0" colspan="2">

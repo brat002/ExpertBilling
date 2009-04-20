@@ -27,7 +27,7 @@ from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelectDialog
 from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
-from CustomForms import TemplatesWindow
+from CustomForms import TemplatesWindow, SqlDialog
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -229,6 +229,11 @@ class MainWindow(QtGui.QMainWindow):
         child.exec_()
         
     @connlogin
+    def sqlDialog(self):
+        child = SqlDialog(connection=connection)
+        child.exec_()
+        
+    @connlogin
     def cardsFrame(self):
         child = CardsChild(connection = connection)
         for window in self.workspace.windowList():
@@ -332,9 +337,16 @@ class MainWindow(QtGui.QMainWindow):
         
         self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
                                     u'Периоды тарификации', self)
-        #self.cutAct.setShortcut(self.tr("Ctrl+T"))
+
         self.cutAct.setStatusTip(u"Периоды тарификации")
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
+
+
+        self.sqlDialogAct = QtGui.QAction(u'SQL Консоль', self)
+
+        self.sqlDialogAct.setShortcut(self.tr("Ctrl+Y"))
+        self.connect(self.sqlDialogAct, QtCore.SIGNAL("triggered()"), self.sqlDialog)
+
 
         self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
                                      u"Классы трафика", self)
@@ -379,7 +391,7 @@ class MainWindow(QtGui.QMainWindow):
             self.reportActs.append([branch[0],[]])
             for leaf in branch[1]:
                 rAct = QtGui.QAction(self.trUtf8(leaf[2]), self)
-                rAct.setStatusTip(self.tr("Report"))
+                rAct.setStatusTip(u"Отчёт")
                 rAct.setData(QtCore.QVariant('_'.join((str(i), str(j)))))
                 self.connect(rAct, QtCore.SIGNAL("triggered()"), self.reportsMenu)
                 self.reportActs[-1][1].append(rAct)
@@ -462,6 +474,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.reloginAct)
         self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.sqlDialogAct)
         self.fileMenu.addAction(self.exitAct)
 
         self.windowMenu = self.menuBar().addMenu(u"&Окна")

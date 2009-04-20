@@ -46,6 +46,8 @@ class TransactionsReportEbs(ebsTableWindow):
         self.account = account
         columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
+        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время"]
+        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction",]
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -88,36 +90,55 @@ class TransactionsReportEbs(ebsTableWindow):
         self.user_label.setMargin(10)
         self.user_label.setObjectName("user_label")
 
+        self.label_transactions_type = QtGui.QLabel(self)
+        self.label_transactions_type.setMargin(10)
+        
+        self.comboBox_transactions_type = QtGui.QComboBox(self)
+        
+        
         self.go_pushButton = QtGui.QPushButton(self)
         self.go_pushButton.setGeometry(QtCore.QRect(590,40,101,25))
         self.go_pushButton.setObjectName("go_pushButton")        
-        self.system_transactions_checkbox = QtGui.QCheckBox(self)
-        self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
+        #self.system_transactions_checkbox = QtGui.QCheckBox(self)
+        #self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
 
         self.toolBar = QtGui.QToolBar(self)      
         
         self.toolBar.addWidget(self.user_label)
         self.toolBar.addWidget(self.user_edit)
         
+        self.toolBar.addWidget(self.label_transactions_type)
+        self.toolBar.addWidget(self.comboBox_transactions_type)
         self.toolBar.addWidget(self.date_start_label)
         self.toolBar.addWidget(self.date_start)
         self.toolBar.addWidget(self.date_end_label)
         self.toolBar.addWidget(self.date_end)
-        self.toolBar.addWidget(self.system_transactions_checkbox)
+        #self.toolBar.addWidget(self.system_transactions_checkbox)
         self.toolBar.addWidget(self.go_pushButton)
         self.toolBar.addSeparator()        
         
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        
+        self.columns = {}
+
+        self.columns["billservice_periodicalservicehistory"]=['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+        self.columns["billservice_onetimeservicehistory"]=['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+        self.columns["billservice_traffictransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
+        self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'ID сессии', u'Сумма', u'Дата']
+        self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
+
+       
     def ebsPostInit(self, initargs):
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
+        QtCore.QObject.connect(self.comboBox_transactions_type,QtCore.SIGNAL("currentIndexChanged(int)"),self.setTableColumns)
+        
         actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction)]
         objDict = {self.tableWidget:["actionDeleteTransaction"]}
         self.actionCreator(actList, objDict)
+        self.setTableColumns()
         
     def retranslateUI(self, initargs):
         super(TransactionsReportEbs, self).retranslateUI(initargs)
@@ -127,8 +148,9 @@ class TransactionsReportEbs(ebsTableWindow):
         self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Показать", None, QtGui.QApplication.UnicodeUTF8))
         self.date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
-        
+        #self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
+        self.label_transactions_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+    
     def refresh(self):
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
         self.connection.commit()
@@ -144,8 +166,12 @@ class TransactionsReportEbs(ebsTableWindow):
             self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
             self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
 
-
-    def addrow(self, value, x, y, promise=False):
+        i=0
+        for tr_type in self.transactions_types:
+            self.comboBox_transactions_type.addItem(tr_type)
+            self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
+            i+=1
+    def addrow(self, value, x, y, id=None, promise=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=""
@@ -155,9 +181,17 @@ class TransactionsReportEbs(ebsTableWindow):
         if promise:
             headerItem.setBackgroundColor(QtGui.QColor("lightblue"))
         headerItem.setText(unicode(value))
+        if id:
+            headerItem.id = id
         self.tableWidget.setItem(x,y,headerItem)
-                
+             
+    def setTableColumns(self):
+        self.tableWidget.clear()
+        self.tableWidget.setRowCount(0)
+        makeHeaders(self.columns[self.transactions_tables[self.comboBox_transactions_type.currentIndex()]], self.tableWidget)   
+           
     def refresh_table(self):
+
         self.tableWidget.setSortingEnabled(False)
         self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
         self.tableWidget.clearContents()
@@ -165,44 +199,178 @@ class TransactionsReportEbs(ebsTableWindow):
         end_date = self.date_end.dateTime().toPyDateTime()
         
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
-        if self.system_transactions_checkbox.checkState()==2 and account_id:
-            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
+
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
+            sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
                                             FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
-                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%s ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
-        elif account_id:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
-            FROM billservice_transaction as transaction
-            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
-            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id IN ('MANUAL_TRANSACTION', 'CASSA_TRANSACTION') and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, account_id))
-        else:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
-            FROM billservice_transaction as transaction
-            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
-            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id IN ('MANUAL_TRANSACTION', 'CASSA_TRANSACTION') and transaction.created between '%s' and '%s' ORDER BY transaction.created DESC""" %  (start_date, end_date))                        
-        self.connection.commit()
-        self.tableWidget.setRowCount(len(transactions))
-        i=0
-        ballance = 0
-        write_on = 0
-        write_off = 0
-        for transaction in transactions:
-            self.addrow(transaction.id, i, 0, promise = transaction.promise)
-            self.addrow(transaction.username, i, 1, promise = transaction.promise)
-            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 2, promise = transaction.promise)
-            self.addrow(transaction.bill, i, 3, promise = transaction.promise)
-            self.addrow(transaction.transaction_type_name, i, 4, promise = transaction.promise)
-            self.addrow(transaction.systemuser, i, 5, promise = transaction.promise)
-            self.addrow(transaction.tariff_name, i, 6, promise = transaction.promise)
-            self.addrow(transaction.summ*(-1), i, 7, promise = transaction.promise)
-            self.addrow(transaction.description, i, 8, promise = transaction.promise)
-            self.addrow(transaction.promise, i, 9, promise = transaction.promise)
-            if transaction.promise:
-                self.addrow(transaction.end_promise.strftime(self.strftimeFormat), i, 10, promise = transaction.promise)
-            i+=1
+                                            WHERE transaction.created between '%s' and '%s' %%s ORDER BY transaction.created DESC""" %  (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and transaction.account_id=%s " % account_id
+            else:
+                sql = sql % " "
+            
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+
+            for item in items:
+                self.addrow(i, i, 0, id=item.id, promise = item.promise)
+                self.addrow(item.username, i, 1, promise = item.promise)
+                self.addrow(item.created.strftime(self.strftimeFormat), i, 2, promise = item.promise)
+                self.addrow(item.bill, i, 3, promise = item.promise)
+                self.addrow(item.transaction_type_name, i, 4, promise = item.promise)
+                self.addrow(item.systemuser, i, 5, promise = item.promise)
+                self.addrow(item.tariff_name, i, 6, promise = item.promise)
+                self.addrow(item.summ*(-1), i, 7, promise = item.promise)
+                self.addrow(item.description, i, 8, promise = item.promise)
+                self.addrow(item.promise, i, 9, promise = item.promise)
+                if item.promise:
+                    self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 10, promise = item.promise)
+                i+=1
+                
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
+            services = self.connection.get_models("billservice_periodicalservice")
+            s = {}
+            for x in services:
+                s[x.id] = x.name
+ 
+            tariffs = self.connection.get_models("billservice_tariff")
+            t = {}
+            for x in tariffs:
+                t[x.id] = x.name
+                               
+            sql = """
+            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, psh.type_id 
+            FROM billservice_periodicalservicehistory as psh 
+            WHERE psh.datetime between '%s' and '%s' %%s ORDER BY psh.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and psh.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            
+            ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+            for item in items:
+                self.addrow(i, i, 0, id = item.id)
+                self.addrow(item.username, i, 1)
+                self.addrow(t.get(item.tarif_id), i, 2)
+                self.addrow(s.get(item.service_id), i, 3)
+                self.addrow(item.type_id, i, 4)
+                self.addrow(item.summ, i, 5)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 6)
+                i+=1
+                
+
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
+            services = self.connection.get_models("billservice_onetimeservice")
+            s = {}
+            for x in services:
+                s[x.id] = x.name
+ 
+            tariffs = self.connection.get_models("billservice_tariff")
+            t = {}
+            for x in tariffs:
+                t[x.id] = x.name
+                               
+            sql = """
+            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username 
+            FROM billservice_onetimeservicehistory as osh 
+            WHERE osh.datetime between '%s' and '%s' %%s ORDER BY osh.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and osh.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            
+            ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
+            for item in items:
+                self.addrow(i, i, 0, id = item.id)
+                self.addrow(item.username, i, 1)
+                self.addrow(t.get(item.tarif_id), i, 2)
+                self.addrow(s.get(item.onetimeservice_id), i, 3)
+                self.addrow(item.summ, i, 4)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
+                i+=1
+
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
+            tariffs = self.connection.get_models("billservice_tariff")
+            t = {}
+            for x in tariffs:
+                t[x.id] = x.name
+                               
+            sql = """
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username 
+            FROM billservice_traffictransaction as tr 
+            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and tr.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            
+            ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
+            for item in items:
+                self.addrow(i, i, 0, id = item.id)
+                self.addrow(item.username, i, 1)
+                self.addrow(t.get(item.tarif_id), i, 2)
+                self.addrow(item.summ, i, 3)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 4)
+                i+=1
+ 
+ 
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
+            print 111
+            tariffs = self.connection.get_models("billservice_tariff")
+            t = {}
+            for x in tariffs:
+                t[x.id] = x.name
+                               
+            sql = """
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT sessionid FROM radius_activesession WHERE id=tr.session_id) as  session
+            FROM billservice_timetransaction as tr 
+            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and tr.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            
+            for item in items:
+                self.addrow(i, i, 0, id = item.id)
+                self.addrow(item.username, i, 1)
+                self.addrow(t.get(item.tarif_id), i, 2)
+                self.addrow(item.session, i, 3)
+                self.addrow(item.summ, i, 4)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
+                i+=1                               
         self.tableWidget.setColumnHidden(0, True)
                 
         try:
@@ -214,14 +382,18 @@ class TransactionsReportEbs(ebsTableWindow):
         #self.tableWidget.setSortingEnabled(True)
         
     def delete_transaction(self):
+        
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]!="billservice_transaction":
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Удаление проводок не доступно для данного типа данных."))
+            return
         ids = []
         #import Pyro
         for index in self.tableWidget.selectedIndexes():
-            print index.row(), index.column()
+            #print index.row(), index.column()
             if index.column()>1:
                 continue
             
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
+            i=unicode(self.tableWidget.item(index.row(), 0).id)
             try:
                 ids.append(int(i))
             except Exception, e:
