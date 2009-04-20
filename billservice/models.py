@@ -911,4 +911,9 @@ class IPInUse(models.Model):
     datetime = models.DateTimeField()
     
 
+class TrafficTransaction(models.Model):
+    traffictransmitservice = models.ForeignKey(TrafficTransmitService) # ON DELETE SET NULL
+    account = models.ForeignKey(Account)
+    sum = models.FloatField()
+    datetime = models.DateTimeField()
     
