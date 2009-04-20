@@ -1,5 +1,6 @@
 #-*-coding=utf-8-*-
 
+from __future__ import with_statement
 import gc
 import glob
 import random
@@ -28,6 +29,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import pollreactor
 pollreactor.install()
 from twisted.internet import reactor
+
 
 
 try:    import mx.DateTime
