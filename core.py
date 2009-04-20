@@ -774,7 +774,7 @@ class limit_checker(Thread):
                     disabled_by_limit = acct[15]
                     if not limitRecs:
                         if disabled_by_limit:
-                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;""", (False, account_id,))
+                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (account_id,))
                         cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
                         connection.commit()
                         continue
@@ -836,14 +836,18 @@ class limit_checker(Thread):
                             #print "block client"
                         elif tsize>Decimal("%s" % limitRec[4]) and limit_action==1:
                             #Меняем скорость
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
-                            cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
+                            cur.execute("UPDATE billservice_accountspeedlimit SET speedlimit_id=%s WHERE account_id=%s RETURNING id;", (limitRec[8], account_id,))
+                            id = cur.fetchone()
+                            if not id:
+                                #cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
+                                cur.execute("""INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(%s,%s);""", (account_id, limitRec[8],))
                             #print "Change speed"
-                            connection.commit()
+                            #connection.commit()
                             speed_changed=True
                             block = False
-                        #print settlement_period_start, settlement_period_end, limitRec[5], account_id, tsize, Decimal("%s" % limitRec[4]), limit_action
-                        #Если у тарифного плана нет лимитов-снимаем отметку disabled_by_limit
+                        elif tsize<Decimal("%s" % limitRec[4]):
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))
+                            
                         #account_id
                         oldid=account_id
                         #acct[15] - disabled_by_limit

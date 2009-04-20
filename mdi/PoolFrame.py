@@ -147,7 +147,7 @@ class AddPoolFrame(QtGui.QDialog):
 
 class PoolEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u"#", u"Название", u"Тип", u"Start IP", u"End IP", u"Количество адресов", u"Bспользовано адресов"]
+        columns=[u"#", u"Название", u"Тип", u"Start IP", u"End IP", u"Количество адресов", u"Использовано адресов"]
         initargs = {"setname":"pool_frame_header", "objname":"PoolEbsMDI", "winsize":(0,0,750,400), "wintitle":"Пулы адресов", "tablecolumns":columns}
         super(PoolEbs, self).__init__(connection, initargs)
         

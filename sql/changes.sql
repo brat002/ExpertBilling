@@ -1,3 +1,301 @@
+--06.04.2009
+ALTER TABLE billservice_shedulelog
+DROP CONSTRAINT billservice_shedulelog_accounttarif_id_fkey;
+
+ALTER TABLE billservice_shedulelog
+ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
+REFERENCES billservice_accounttarif (id) MATCH SIMPLE
+ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
+
+
+ALTER TABLE billservice_shedulelog
+DROP CONSTRAINT billservice_shedulelog_account_id_fkey;
+
+ALTER TABLE billservice_shedulelog
+ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id)
+REFERENCES billservice_account (id) MATCH SIMPLE
+ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE billservice_traffictransmitnodes
+  DROP CONSTRAINT billservice_traffictransmitnodes_group_id_fkey ;
+
+ALTER TABLE billservice_traffictransmitnodes
+  ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id)
+      REFERENCES billservice_group (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE;
+      
+CREATE OR REPLACE FUNCTION clear_tariff_services_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+
+IF (TG_OP = 'DELETE') THEN
+    IF (OLD.traffic_transmit_service_id is not Null) THEN
+        DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+    END IF;
+
+    IF (OLD.time_access_service_id is not Null) THEN
+        DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
+    RETURN OLD;
+    END IF;
+    
+END IF;
+RETURN OLD;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+
+
+CREATE TRIGGER clear_tariff_services_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE clear_tariff_services_trg_fn();
+
+--7.04.2009
+ALTER TABLE billservice_systemuser
+   ADD COLUMN "role" integer;
+ALTER TABLE billservice_systemuser
+   ALTER COLUMN "role" SET NOT NULL;
+   
+UPDATE billservice_systemuser SET role = 0 WHERE id>0;
+
+--08.04.2009
+ALTER TABLE radius_activesession
+   ALTER COLUMN interrim_update DROP DEFAULT;
+ALTER TABLE billservice_transaction
+   ADD COLUMN systemuser_id integer;
+   
+ALTER TABLE billservice_transaction ADD CONSTRAINT billservice_systemuser_fkey FOREIGN KEY (systemuser_id) REFERENCES billservice_systemuser (id)
+   ON UPDATE NO ACTION ON DELETE SET NULL
+   DEFERRABLE;
+CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction(systemuser_id);
+
+ALTER TABLE billservice_transaction
+   ADD COLUMN promise boolean;
+ALTER TABLE billservice_transaction
+   ALTER COLUMN promise SET DEFAULT False;
+   
+ALTER TABLE billservice_transaction
+   ADD COLUMN end_promise timestamp without time zone;
+
+
+ALTER TABLE billservice_transaction
+   ADD COLUMN promise_expired boolean;
+ALTER TABLE billservice_transaction
+   ALTER COLUMN promise_expired SET DEFAULT False;
+
+-- !!! 
+ALTER TABLE billservice_transaction
+  ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+      
+
+INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'Операция проведена кассиром', 'CASSA_TRANSACTION');INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
+--13.04.2009
+ALTER TABLE billservice_bankdata ALTER bank TYPE character varying(255);
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN bank SET DEFAULT '';
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN bank DROP NOT NULL;
+
+ALTER TABLE billservice_bankdata ALTER bankcode TYPE character varying(40);
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN bankcode SET DEFAULT '';
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN bankcode DROP NOT NULL;
+
+ALTER TABLE billservice_bankdata ALTER rs TYPE character varying(60);
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN rs SET DEFAULT '';
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN rs DROP NOT NULL;
+
+ALTER TABLE billservice_bankdata ALTER currency TYPE character varying(40);
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN currency SET DEFAULT '';
+ALTER TABLE billservice_bankdata
+   ALTER COLUMN currency DROP NOT NULL;
+
+
+ALTER TABLE billservice_operator
+   ALTER COLUMN bank_id DROP NOT NULL;
+
+-- 15.04.2009 
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (4, 'Акт выполненных работ', 4, 'Акт выполненных работ');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (5, 'Счет фактура', 3, 'Счет фактура');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (6, 'Договор на подключение юр. лиц', 2, '<html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body>
+            Имя: ${account.username}  <br>
+${organization.name} 
+${bank.bankcode} 
+            </body>
+            </html>');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (7, 'Кассовый чек', 5, '<html>
+ <head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <style>
+   td{
+        FONT: 9px Times New Roman;
+    }
+    h1{
+        FONT: 9px Arial;
+    }
+  </style>
+ </head>
+ <body>
+  <table align=center width="85%">
+    <tr>
+     <td>
+       <h1 align=center> <b> Квитанция об оплате услуг № ${transaction_id} </b> </h1>
+       <strong>Абонент:</strong> ${account.fullname} <br>
+       <strong>Тарифный план:</strong> ${tarif.name} <br>
+       <strong>Логин:</strong> ${account.username}<br>
+       <strong>Сумма:</strong> ${sum}<br>
+       <strong>Дата приема платежа:</strong> ${created}<br>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>
+');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (2, 'Договор', 1, '<html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body>
+${account.id}<br />
+${account.username}<br />
+${account.password}<br />
+${account.fullname}<br />
+${account.email}<br />
+${account.address}<br />
+${account.nas_id}<br />
+${account.vpn_ip_address}<br />
+${account.assign_ipn_ip_from_dhcp}<br />
+${account.ipn_ip_address}<br />
+${account.ipn_mac_address}<br />
+${account.ipn_status}<br />
+${account.status}<br />
+${account.suspended}<br />
+${account.created}<br />
+${account.ballance}<br />
+${account.credit}<br />
+${account.disabled_by_limit}<br />
+${account.balance_blocked}<br />
+${account.ipn_speed}<br />
+${account.vpn_speed}<br />
+${account.netmask}<br />
+${account.ipn_added}<br />
+${account.city}<br />
+${account.postcode}<br />
+${account.region}<br />
+${account.street}<br />
+${account.house}<br />
+${account.house_bulk}<br />
+${account.entrance}<br />
+${account.room}<br />
+${account.vlan}<br />
+${account.allow_webcab}<br />
+${account.allow_expresscards}<br />
+${account.assign_dhcp_null}<br />
+${account.assign_dhcp_block}<br />
+${account.allow_vpn_null}<br />
+${account.allow_vpn_block}<br />
+${account.passport}<br />
+${account.passport_date}<br />
+${account.passport_given}<br />
+
+${tarif.name}<br />
+
+
+${created}<br />
+            
+            
+            
+            </body>
+            </html>
+');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (8, 'Накладная на карты экспресс-оплаты', 6, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+<div style="width:100%; "> 
+<div style="float:right ">
+<span style="font-weight:bold; ">Дилер</span><br>		
+Организация: ${dealer.organization}<br>	
+Директор: ${dealer.director}<br>	
+Юр адрес: ${dealer.uraddress}<br>	
+р/с: ${dealer.rs}<br>	
+УНН: ${dealer.unp}<br>	
+ОКПО: ${dealer.okpo}<br>	
+Банк: ${dealer.bank}, код ${dealer.bankcode}<br>	
+</div>
+
+<div style="float:left ">
+	<span style="font-weight:bold; ">Оператор</span><br>	
+	Организация: ${operator.organization}<br>	
+	Директор: ${operator.director}<br>	
+	Юр адрес: ${operator.uraddress}<br>
+  р/с: ${operator.rs}	<br>	
+	УНН: ${operator.unp}<br>	
+	ОКПО: ${operator.okpo}<br>	
+	Банк: ${operator.bank}, Код ${operator.bankcode}<br>	
+</div>
+</div>
+
+<div style="font-weight:bold; float:left; width:100%; text-align:center; margin-bottom:20px; margin-top:20px; ">Накладная от ${created}</div>
+
+<div style="clear:both "></div>
+<table border="1" align="center" style="width:100%">
+	<tr>
+		<td>ID карты</td>
+		<td>Серия</td>
+		<td>Номинал</td>
+		<td>Активировать С</td>
+		<td>Активировать По</td>
+	</tr>
+	
+	% for card in cards:
+	<tr>
+	   <td>${card.id}</td>
+	   <td>${card.series}</td>
+	   <td>${card.nominal}</td>
+	   <td>${card.start_date}</td>
+	   <td>${card.end_date}</td>
+	</tr>
+	% endfor
+</table>
+
+Итого ${cardcount} карт на сумму: ${sum_for_pay}<br>	
+Скидка: ${discount} на сумму ${discount_sum}<br>	
+Оплачено: ${pay}<br>	
+Оплатить до:${paydeffer}
+
+</body>
+</html>');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (9, 'Шаблон карты экспресс-оплаты', 7, '<div style="position:relative; display:block; width:255px; height:143px; font-face:Arial;">
+<img src="D:/projects/mikrobill/mdi/img/card_blue.gif" style="border:none;">
+	<div style="position:absolute; display:block; top:60px; left:16px; font-size:32px;">${card.nominal}</div>
+	<div style="position:absolute; display:block; top:96px; left:3px; font-size:10px;">PIN: ${card.pin}</div>
+	<div style="position:absolute; display:block; top:96px; left:175px; font-size:10px;">Серия: ${card.series}</div>
+	<div style="position:absolute; display:block; top:118px; left:3px; font-size:6px;">Активировать c ${card.start_date} по ${card.end_date} </div>
+	<div style="position:absolute; display:block; top:128px; left:3px; font-size:6px;">${operator.organization}. Тел. ${operator.phone}</div>
+</div>
+');
+
+
+
 --14.04.2009
 
 ALTER TABLE billservice_transaction ADD COLUMN accounttarif_id int;
@@ -385,103 +683,3 @@ CREATE TRIGGER tmtrans_ins_trg
     
 CREATE TRIGGER acc_tmtrans_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_timetransaction FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();
 
---06.04.2009
-ALTER TABLE billservice_shedulelog
-DROP CONSTRAINT billservice_shedulelog_accounttarif_id_fkey;
-
-ALTER TABLE billservice_shedulelog
-ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
-REFERENCES billservice_accounttarif (id) MATCH SIMPLE
-ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
-
-
-ALTER TABLE billservice_shedulelog
-DROP CONSTRAINT billservice_shedulelog_account_id_fkey
-
-ALTER TABLE billservice_shedulelog
-ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id)
-REFERENCES billservice_account (id) MATCH SIMPLE
-ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE billservice_traffictransmitnodes
-  DROP CONSTRAINT billservice_traffictransmitnodes_group_id_fkey ;
-
-ALTER TABLE billservice_traffictransmitnodes
-  ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id)
-      REFERENCES billservice_group (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE CASCADE;
-      
-CREATE OR REPLACE FUNCTION clear_tariff_services_trg_fn()
-  RETURNS trigger AS
-$BODY$
-BEGIN
-
-
-IF (TG_OP = 'DELETE') THEN
-    IF (OLD.traffic_transmit_service_id is not Null) THEN
-        DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
-    END IF;
-
-    IF (OLD.time_access_service_id is not Null) THEN
-        DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
-    RETURN OLD;
-    END IF;
-    
-END IF;
-RETURN OLD;
-END;
-$BODY$
-  LANGUAGE 'plpgsql' VOLATILE
-  COST 100;
-
-
-CREATE TRIGGER clear_tariff_services_trg
-  BEFORE DELETE
-  ON billservice_tariff
-  FOR EACH ROW
-  EXECUTE PROCEDURE clear_tariff_services_trg_fn();
-
---7.04.2009
-ALTER TABLE billservice_systemuser
-   ADD COLUMN "role" integer;
-ALTER TABLE billservice_systemuser
-   ALTER COLUMN "role" SET NOT NULL;
-   
-UPDATE billservice_systemuser SET role = 0 WHERE id>0;
-
---08.04.2009
-ALTER TABLE radius_activesession
-   ALTER COLUMN interrim_update DROP DEFAULT;
-ALTER TABLE billservice_transaction
-   ADD COLUMN systemuser_id integer;
-   
-ALTER TABLE billservice_transaction ADD CONSTRAINT billservice_systemuser_fkey FOREIGN KEY (systemuser_id) REFERENCES billservice_systemuser (id)
-   ON UPDATE NO ACTION ON DELETE SET NULL
-   DEFERRABLE;
-CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction(systemuser_id);
-
-ALTER TABLE billservice_transaction
-   ADD COLUMN promise boolean;
-ALTER TABLE billservice_transaction
-   ALTER COLUMN promise SET DEFAULT False;
-   
-ALTER TABLE billservice_transaction
-   ADD COLUMN end_promise timestamp without time zone;
-
-
-ALTER TABLE billservice_transaction
-   ADD COLUMN promise_expired boolean;
-ALTER TABLE billservice_transaction
-   ALTER COLUMN promise_expired SET DEFAULT False;
-
--- !!! 
-ALTER TABLE billservice_transaction
-  ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id)
-      REFERENCES billservice_tariff (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
-      
-
-INSERT INTO billservice_transactiontype(
-             "name", internal_name)
-    VALUES ('РџР»Р°С‚С‘Р¶ СЃРѕРІРµСЂС€С‘РЅ РєР°СЃСЃРёСЂРѕРј', 'CASSA_TRANSACTION');
-    

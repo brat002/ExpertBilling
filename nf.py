@@ -26,8 +26,8 @@ from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import pollreactor
-pollreactor.install()
+#from twisted.internet import pollreactor
+#pollreactor.install()
 from twisted.internet import reactor
 
 
