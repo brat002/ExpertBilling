@@ -30,6 +30,7 @@ from twisted.internet.protocol import DatagramProtocol
 #pollreactor.install()
 from twisted.internet import reactor
 
+from classes.nf_cache import *
 
 
 try:    import mx.DateTime
@@ -627,9 +628,10 @@ class ServiceThread(Thread):
             a = time.clock()
             nfFlowCache.reset()
             try:
+                curDate = datetime.datetime.now()
                 cur.execute("SELECT ipaddress, id from nas_nas;")                
                 nasvals = cur.fetchall()
-                cur.execute("SELECT ba.id,ba.vpn_ip_address,ba.ipn_ip_address, bacct.id, bacct.tarif_id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON bacct.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1);", (datetime.datetime.now(),))
+                cur.execute("SELECT ba.id,ba.vpn_ip_address,ba.ipn_ip_address, bacct.id, bacct.tarif_id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON bacct.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1);", (curDate,))
                 accts = cur.fetchall()
                 cur.execute("SELECT weight, traffic_class_id, store, direction, passthrough, protocol, dst_port, src_port, src_ip, dst_ip, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;")
                 nnodes = cur.fetchall()
@@ -706,8 +708,20 @@ class ServiceThread(Thread):
                 tarif_groupsCache = tg_
                 #print tarif_groupsCache
                 cachesRead = True
-                
-                
+                logger.info("nf time : %s", time.clock() - a)
+                a = time.clock()
+                logger.debug('%s%s%s%s%s%s%s%s', (nascache,'\n\n', ipncache,'\n\n', vpncache,'\n\n', cachesRead,'\n\n'))
+                logger.debug('%s%s%s%s', (nodesCache,'\n\n', groupsCache,'\n\n'))
+                logger.debug('%s%s%s%s',(class_groupsCache, '\n\n',tarif_groupsCache, '\n\n'))
+                logger.lprint('--------------------------------------------------')
+                cur = connection.cursor()
+                caches = NfCaches(curDate)
+                caches.getdata(cur)
+                connection.commit()
+                cur.close()
+                caches.reindex()
+                logger.debug('%s%s', (caches, '\n\n'))
+                logger.lprint('--------------------------------------------------')
                 #reread runtime config options
                 logger.info("nf time : %s", time.clock() - a)
                 global writeProf
