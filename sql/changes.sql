@@ -683,3 +683,70 @@ CREATE TRIGGER tmtrans_ins_trg
     
 CREATE TRIGGER acc_tmtrans_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_timetransaction FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();
 
+
+--23-04-2009----------------------------------------------
+CREATE OR REPLACE FUNCTION speedlimit_ins_fn(splimit_id_ int, account_id_ int) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_accountspeedlimit SET speedlimit_id=splimit_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(account_id_,splimit_id_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_co_fn(account_id_ int, accounttarif_id_ int, checkout_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_shedulelog SET ballance_checkout=checkout_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) VALUES(account_id_,accounttarif_id_, checkout_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_blocked_fn(account_id_ int, accounttarif_id_ int, blocked_ timestamp without time zone, cost_ double precision) RETURNS void
+    AS $$ 
+BEGIN
+	UPDATE billservice_account SET balance_blocked=True WHERE id=account_id_ and ballance+credit<cost_;
+    UPDATE billservice_shedulelog SET balance_blocked=blocked_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(account_id_,accounttarif_id_, blocked_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_tr_reset_fn(account_id_ int, accounttarif_id_ int, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_traffic_reset=reset_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION shedulelog_time_reset_fn(account_id_ int, accounttarif_id_ int, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_time_reset=reset_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
