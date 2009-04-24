@@ -349,14 +349,14 @@ ALTER TABLE billservice_periodicalservicehistory ADD COLUMN summ double precisio
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN type_id character varying;
 ALTER TABLE billservice_periodicalservicehistory ADD CONSTRAINT billservice_periodicalservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
-CREATE TRIGGER acc_psh_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_periodicalservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn(); 
+CREATE TRIGGER acc_psh_trg BEFORE INSERT OR DELETE OR UPDATE ON billservice_periodicalservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn(); 
 
 CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ double precision, created_ timestamp without time zone, ps_condition_type_ integer) RETURNS void
     AS $$
 DECLARE
     new_summ_ double precision;
 BEGIN
-    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id_ AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
         SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
@@ -379,9 +379,9 @@ DECLARE
     fn_bd_tx1_ text := 'BEGIN 
                          INSERT INTO psh';
                          
-    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, summ, datetime)
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, type_id, summ, datetime)
                           VALUES 
-                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.summ, pshr.datetime); RETURN; END;';
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.type_id, pshr.summ, pshr.datetime); RETURN; END;';
                           
     fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
@@ -498,9 +498,9 @@ DECLARE
     fn_bd_tx1_ text := 'BEGIN 
                          INSERT INTO psh';
                          
-    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, summ, datetime)
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id,type_id, summ, datetime)
                           VALUES 
-                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.summ, pshr.datetime); RETURN; END;';
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.type_id, pshr.summ, pshr.datetime); RETURN; END;';
                           
     fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
@@ -554,8 +554,8 @@ BEGIN
     ELSE
        ttrn_actfid_ := pshr.accounttarif_id::text;
     END IF;
-    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, summ, datetime) VALUES (' 
-    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ',' || pshr.summ || ','  || quote_literal(pshr.datetime) || ','  || ttrn_actfid_ || ');';
+    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, type_id, summ, datetime) VALUES (' 
+    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ','  || quote_literal(pshr.type_id) || ',' || pshr.summ || ','  || quote_literal(pshr.datetime) || ');';
     EXECUTE insq_;
     RETURN;
 END;
