@@ -750,3 +750,61 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql;
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ int, accounttarif_id_ int, trts_id_ int, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+DECLARE
+	prepaid_tr_id_ int;
+	size_ double precision;
+	count_ int := 0;
+BEGIN
+	
+	FOR IN prepaid_tr_id_, size_ SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+		UPDATE billservice_accountprepaystrafic SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_;
+		IF NOT FOUND THEN
+			INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) VALUES(accounttarif_id_, prepaid_tr_id_, size_*1048576, datetime_);
+        END IF;
+        count_ := count_ + 1
+    END LOOP;
+    IF count_ > 0 THEN
+    	UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_ WHERE account_id=account_id_;
+    	IF NOT FOUND THEN
+        	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+    	END IF;
+   	END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+    
+    
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_time_credit_fn(account_id_ int, accounttarif_id_ int, taccs_id_ int, size_ int, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN	
+	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; -- AND??
+	IF NOT FOUND THEN
+		INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id) VALUES(accounttarif_id_, size_, datetime_, taccs_id_);
+    END IF;
+	UPDATE billservice_shedulelog SET prepaid_time_accrued=datetime_ WHERE account_id=account_id_;
+	IF NOT FOUND THEN
+    	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+	END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION accountipnspeed_ins_fn(account_id_ int, speed_ character varying, state_ boolean, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_accountipnspeed SET speed=speed_, state=state_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES(account_id_, speed_, state_, datetime_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;

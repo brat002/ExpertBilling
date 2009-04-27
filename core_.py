@@ -41,6 +41,7 @@ except: print 'cannot import mx'
 
 from classes.cacheutils import CacheMaster
 from classes.core_cache import *
+from classes.flags import CoreFlags
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -105,7 +106,7 @@ class check_vpn_access(Thread):
                         caches = cacheMaster.cache
                         dateAT = deepcopy(cacheMaster.date)
                     except Exception, ex:
-                        logger.error("Vpn cache exception: %s", repr(ex))
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
                     finally:
                         cacheMaster.lock.release()
                 if not caches:
@@ -128,25 +129,25 @@ class check_vpn_access(Thread):
                 connection.commit()
                 for row in rows:
                     try:
-                        rsRec = RadiusSession(*row)
+                        rs = RadiusSession(*row)
                         result=None
-                        nasRec = caches.nas_cache.by_id.get(str(rsRec.nas_id))
-                        accRec = caches.account_cache.by_account.get(rsRec.account_id)
-                        if not nasRec or not accRec:
-                            continue
+                        nas = caches.nas_cache.by_id.get(str(rs.nas_id))
+                        acc = caches.account_cache.by_account.get(rs.account_id)
+                        if not nas or not acc or not acc.account_status: continue
                         
-                        assert isinstance(nasRec, NasData)
-                        assert isinstance(accRec, AccountData)
-                        acstatus = (((not accRec.allow_vpn_null) and (accRec.balance + accRec.credit > 0)) or accRec.allow_vpn_null) \
+                        assert isinstance(nas, NasData)
+                        assert isinstance(acc, AccountData)
+                        
+                        acstatus = (((not acc.allow_vpn_null) and (acc.balance + acc.credit > 0)) or acc.allow_vpn_null) \
                                     and \
-                                    (accRec.allow_vpn_null or ((accRec.allow_vpn_block or accRec.balance_blocked or accRec.disabled_by_limit) and accRec.account_status))
+                                    (acc.allow_vpn_null or ((acc.allow_vpn_block or acc.balance_blocked or acc.disabled_by_limit) and acc.account_status))
 
-                        if acstatus and caches.timeperiodaccess_cache.in_period(accRec.tarif_id):
+                        if acstatus and caches.timeperiodaccess_cache.in_period(acc.tarif_id):
                             #chech whether speed has changed
-                            if accRec.vpn_speed=='':
-                                account_limit_speed = get_limit_speed(cur, rsRec.account_id)
+                            if acc.vpn_speed=='':
+                                account_limit_speed = get_limit_speed(cur, rs.account_id)
                                 connection.commit()
-                                speed = self.create_speed(list(caches.defspeed_cache.by_id.get(accRec.tarif_id,[])), caches.speed_cache.by_id.get(accRec.tarif_id, []), dateAT)
+                                speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
                                 speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
                                 speed=parse_custom_speed_lst(vpn_speed)
@@ -154,21 +155,21 @@ class check_vpn_access(Thread):
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                             if row[3]!=newspeed:
                                 #print "set speed", newspeed
-                                coa_result=change_speed(dict, rsRec.account_id, str(accRec.username), str(accRec.vpn_ip_address), str(accRec.ipn_ip_address), 
-                                                        str(accRec.ipn_mac_address), str(nasRec.ipaddress),nasRec.type, str(nasRec.name),
-                                                        str(nasRec.login), str(nasRec.password), nas_secret=str(nasRec.secret),
-                                                        session_id=str(rsRec.sessionid), access_type=str(rsRec.access_type),format_string=str(nasRec.vpn_speed_action),
+                                coa_result=change_speed(dict, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                                                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
+                                                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
+                                                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
                                                         speed=speed[:6])                           
         
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
-                                                """ , (newspeed, rsRec.id,))
+                                                """ , (newspeed, rs.id,))
                                     connection.commit()
                         else:
-                            result = PoD(dict,rsRec.account_id, str(accRec.username),str(accRec.vpn_ip_address), str(accRec.ipn_ip_address), 
-                                         str(accRec.ipn_mac_address),str(rsRec.access_type),str(nasRec.ipaddress), nas_type=nasRec.type, 
-                                         nas_name=str(nasRec.name),nas_secret=str(nasRec.secret),nas_login=str(nasRec.login), 
-                                         nas_password=str(nasRec.password),session_id=str(rsRec.sessionid), format_string=str(nasRec.reset_action))
+                            result = PoD(dict,rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                                         str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
+                                         nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
+                                         nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
         
                         if   result is True:
                             disconnect_result='ACK'
@@ -177,7 +178,7 @@ class check_vpn_access(Thread):
                             
                         if result is not None:
                             cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
-                                        """, (disconnect_result, rsRec.sessionid,))
+                                        """, (disconnect_result, rs.sessionid,))
                             connection.commit()                            
                     
                     except Exception, ex:
@@ -230,7 +231,7 @@ class periodical_service_bill(Thread):
                         caches = cacheMaster.cache
                         dateAT = deepcopy(cacheMaster.date)
                     except Exception, ex:
-                        logger.error("Vpn cache exception: %s", repr(ex))
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
                     finally:
                         cacheMaster.lock.release()                
                 assert isinstance(caches, CoreCaches)
@@ -246,13 +247,13 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
                         assert isinstance(ps, PeriodicalServiceSettlementData)
-                        for account in caches.account_cache.by_tarif.get(tariff_id,[]):
-                            assert isinstance(account, AccountData)
+                        for acc in caches.account_cache.by_tarif.get(tariff_id,[]):
+                            assert isinstance(acc, AccountData)
                             try:
-                                if account.acctf_id is None: continue
-                                susp_per_mlt = 0 if cacheSuspP.has_key(account.account_id) else 1
-                                account_ballance = account.ballance + account.credit
-                                time_start_ps = account.datetime if ps.autostart else ps.time_start
+                                if acc.acctf_id is None or not acc.account_status: continue
+                                susp_per_mlt = 0 if cacheSuspP.has_key(acc.acc.id) else 1
+                                acc.ballance = acc.ballance + acc.credit
+                                time_start_ps = acc.datetime if ps.autostart else ps.time_start
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, dateAT)                                
                                 # Проверка на расчётный период без повторения
@@ -266,7 +267,7 @@ class periodical_service_bill(Thread):
                                     # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, account.acctf_id)                                    
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)                                    
                                     if last_checkout is None and ps.created is None:
                                         last_checkout = period_start
                                     elif last_checkout is None and ps_created is not None:
@@ -287,25 +288,23 @@ class periodical_service_bill(Thread):
                                         # Смотрим сколько раз уже должны были снять деньги
                                         lc = now - last_checkout
                                         last_checkout_seconds = lc.seconds + lc.days*86400
-                                        nums, ost=divmod(last_checkout_seconds,n)
-                                        #description = ps.ps_name
-                                        
+                                        nums,ost = divmod(last_checkout_seconds,n)                                        
                                         chk_date = last_checkout + n_delta
                                         if nums>1:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
                                                 cash_summ = (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, account.acctf_id, account.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                                                 connection.commit()
                                                 chk_date += n_delta
                                         else:
                                             #make an approved transaction
                                             cash_summ = susp_per_mlt * (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
-                                            if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                                            if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
-                                            ps_history(cur, ps.ps_id, account.acctf_id, account.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_GRADUAL', cash_summ, chk_date)
                                     connection.commit()
                                     
                                 if ps.cash_method == "AT_START":
@@ -313,7 +312,7 @@ class periodical_service_bill(Thread):
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                     не платили-производим снятие.
                                     """
-                                    last_checkout=get_last_checkout(cur, ps.ps_id, account.acctf_id)
+                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
                                     # Здесь нужно проверить сколько раз прошёл расчётный период
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -330,7 +329,6 @@ class periodical_service_bill(Thread):
                                         lc = period_start - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
                                         nums, ost = divmod(lc.seconds + lc.days*86400, delta)
-                                        #description=ps_name
                                         cash_summ =ps.cost
                                         chk_date = last_checkout + s_delta
                                         if nums > 1:
@@ -342,15 +340,15 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:
                                                 if ps.created and ps.created >= chk_date:
                                                     cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, account.acctf_id, account.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 connection.commit()
                                                 chk_date += s_delta
                                         else:
                                             summ = cash_summ * susp_per_mlt
-                                            if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                                            if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
-                                            ps_history(cur, ps.ps_id, account.acctf_id, account.account_id, 'PS_AT_START', summ, chk_date)
+                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_START', summ, chk_date)
                                     connection.commit()
                                 if ps_cash_method=="AT_END":
                                     """
@@ -358,7 +356,7 @@ class periodical_service_bill(Thread):
                                     Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
-                                    last_checkout=get_last_checkout(cur, ps.ps_id, account.acctf_id)
+                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
                                     connection.commit()
                                     if last_checkout is None:
                                         first_time = True
@@ -388,15 +386,15 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:
                                                 if ps.created and ps.created>chk_date:
                                                     cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, account.acctf_id, account.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
                                                 connection.commit()
                                                 chk_date += s_delta                                          
                                             
-                                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                                        if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
                                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                             cash_summ = 0                                            
                                         summ = cash_summ * susp_per_mlt
-                                        ps_history(cur, ps.ps_id, account.acctf_id, account.account_id, 'PS_AT_END', summ, chk_date)
+                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_END', summ, chk_date)
                                     connection.commit()
                             except Exception, ex:
                                 if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
@@ -444,26 +442,6 @@ class TimeAccessBill(Thread):
                         cacheMaster.lock.release()
 
                 assert isinstance(caches, CoreCaches)
-                """
-                try:
-                    #if caches were renewed, renew local copies
-                    if curAT_date > dateAT:
-                        curAT_lock.acquire()
-                        cacheTimeAccN  = copy(curTimeAccNCache)
-                        #traffic_transmit_service
-                        cacheTimePerN = copy(curTimePerNCache)
-                        #date of renewal
-                        dateAT = deepcopy(curAT_date)
-                        curAT_lock.release()
-                    else:
-                        time.sleep(10)
-                        continue
-                except:
-                    try:
-                        curAT_lock.release()
-                    except: pass
-                    time.sleep(1)
-                    continue"""
                 
                 cur = connection.cursor()
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
@@ -496,26 +474,18 @@ class TimeAccessBill(Thread):
                     prepaid_id, prepaid = result if result else (0, -1)                    
                     if prepaid > 0:
                         if prepaid >= total_time:
-                            total_time = 0
-                            prepaid = prepaid - total_time
+                            total_time, prepaid = 0, prepaid - total_time
                         elif total_time >= prepaid:
-                            total_time = total_time - prepaid
-                            prepaid = 0
+                            total_time, prepaid = total_time - prepaid, 0
                         cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
                         connection.commit()
                     #get the list of time periods and their cost
                     now = datetime.datetime.now()
-                    #periods = cacheTimeAccN.get(ps_id, [])
                     for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
                         assert isinstance(period, TimeAccessNodeData)
-                        #period_id, period_cost=period[0:2]
                         #get period nodes and check them
-                        #period_nodes_data = cacheTimePerN.get(period_id,[])
                         for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
                             assert isinstance(pnode, TimePeriodNodeData)
-                            #period_id, period_name =period_node[0:2]
-                            #period_start, period_length, repeat_after = period_node[2:5]
-                            #if in_period(time_start=period_start,length=period_length, repeat_after=repeat_after):
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
                                 summ = (float(total_time)/60) * period_cost
                                 if summ > 0:
@@ -571,6 +541,7 @@ class limit_checker(Thread):
                 cur = connection.cursor()
                 for acc in caches.account_cache.data:
                     assert isinstance(acc, AccountData)
+                    if not acc.account_status: continue
                     limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
                     if not limits:
                         if acc.disabled_by_limit:
@@ -683,42 +654,17 @@ class settlement_period_service_dog(Thread):
 
                 assert isinstance(caches, CoreCaches)
                 
-                try:
-                    #if caches were renewed, renew local copies
-                    if curAT_date > dateAT:
-                        curAT_lock.acquire()
-                        cacheAT = copy(curATCache)
-                        #account-tarif cach indexed by account_id
-                        #cacheAT = deepcopy(curAT_acctIdx)
-                        #settlement_period cache
-                        cacheSetP = copy(curSPCache)
-                        cacheShedLog  = copy(curShedLogCache)
-                        #traffic_transmit_service
-                        cacheTTS = copy(curTTSCache)                        
-                        cacheTAccS = copy(curTimeAccSrvCache)                        
-                        cacheOTSrv = copy(curOneTimeSrvCache)                        
-                        cacheOTSHist = copy(curOTSHistCache)
-                        #date of renewal
-                        dateAT = deepcopy(curAT_date)
-                        curAT_lock.release()
-                    else:
-                        time.sleep(10)
-                        continue
-                except:                    
-                    try:
-                        curAT_lock.release()
-                    except: pass
-                    time.sleep(1)
-                    continue
-                
                 cur = connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
                         assert isinstance(acc, AccountData)
+                        if not acc.account_status: continue
+                        
                         shedl = caches.shedulelog_cache.by_id.get(acc.account_id)
                         if not shedl: shedl = ShedulelogData(-1, *(None,)*8)
                         assert isinstance(shedl, ShedulelogData)
-                        time_start, period_end = (None, None)
+                        
+                        time_start, period_end = None, None
                         now = datetime.datetime.now()
                         if not acc.settlement_period_id:
                             time_start, period_start, delta = (acc.datetime, acc.datetime, 86400*365*365)
@@ -730,7 +676,6 @@ class settlement_period_service_dog(Thread):
                             #Если начало расчётного периода осталось в прошлом тарифном плане-за начало расчётного периода принимаем начало тарифного плана
                             if period_start < acc.datetime: period_start = acc.datetime                            
     
-                        #account_balance_blocked = acct[16]
                         #нужно производить в конце расчётного периода
                         ballance_checkout = shedl.ballance_checkout if shedl.balance_blocked else acc.datetime
                         
@@ -777,60 +722,30 @@ class settlement_period_service_dog(Thread):
         
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
-                            cur.execute("""SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=%s;
-                                        """, (traffic_transmit_service_id,))
-        
-                            prepais=cur.fetchall()
+                            cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
                             connection.commit()
-                            u=False
-                            for prepaid_traffic_id, size in prepais:
-                                u=True
-                                #print "SET PREPAID TRAFIC"
-                                cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=%s
-                                               WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
-                                            """, (size, now, accounttarif_id, prepaid_traffic_id,))
-                                if cur.fetchone() is None:
-                                    cur.execute("""INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) 
-                                                   VALUES(%s, %s, %f*1048576, '%s');
-                                                """ % (accounttarif_id, prepaid_traffic_id, size, now,))
-                                connection.commit()
-                                
-                            if u==True:
-                                cur.execute("UPDATE billservice_shedulelog SET prepaid_traffic_accrued=%s WHERE account_id=%s RETURNING id;", (now, account_id,))
-                                if cur.fetchone()==None:
-                                    cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) values(%s, %s, %s) ;
-                                                """, (account_id, accounttarif_id, now,))  
-                        connection.commit() 
                         
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]   
                         if (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or shedl.prepaid_time_reset<period_start or acc.acctf_id!=shedl.accounttarif_id):                        
                             #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
                             #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
-                            cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", 
+                            cur.execute("SELECT shedulelog_time_reset_fn(%s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, now))                            
                             connection.commit()        
-                        if (prepaid_time_accrued is None or prepaid_time_accrued<period_start) and time_access_service_id:
-        
-                            cur.execute("""UPDATE billservice_accountprepaystime
-                                           SET size=size+%s,datetime=%s WHERE account_tarif_id=%s RETURNING id;
-                                        """, (prepaid_time,now, accounttarif_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_accountprepaystime(account_tarif_id, size, datetime,prepaid_time_service_id) VALUES(%s, %s, %s, %s);
-                                            """, (accounttarif_id, prepaid_time, now, time_access_service_id,))    
-                            cur.execute("UPDATE billservice_shedulelog SET prepaid_time_accrued=%s WHERE account_id=%s RETURNING id;", (now,account_id,))
-                            if cur.fetchone()==None:
-                                cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,prepaid_time_accrued) values(%s, %s, %s) ;
-                                            """, (account_id, accounttarif_id,now))
+                        if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
+                            cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time, now))
+                            connection.commit()
                         
                         if account_balance > 0:
-                            onetimesvs = cacheOTSrv.get(tarif_id, [])
-                            for ots in onetimesvs:
-                                ots_id = ots[0]
-                                if not cacheOTSHist.has_key((accounttarif_id, ots_id)):
-                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (accounttarif_id, ots_id, account_id,ots[2], now,))
+                            for ots in caches.onetimeservice_cache.by_id.get(acc.tarif_id, []):
+                                assert isinstance(ots, OneTimeServiceData)
+                                if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)):
+                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
                                     connection.commit()
-                                    cacheOTSHist[(accounttarif_id, ots_id)] = (1,)
-                        #Списывам с баланса просроченные обещанные платежи
+                                    caches.onetimehistory_cache.by_acctf_ots_id[(acc.acctf_id, ots.id)] = (1,)
+                                    #Списывам с баланса просроченные обещанные платежи
                     except Exception, ex:
                         logger.error("%s : internal exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 connection.commit()
@@ -853,24 +768,15 @@ class ipn_service(Thread):
     def __init__ (self):
         Thread.__init__(self)
 
-    def check_period(self, rows):
-        for row in rows:
-            if in_period(row['time_start'], row['length'], row['repeat_after'])==True:
-                return True
-        return False
-
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
         speeds = spRec
         min_from_start=0
         f_speed = None
         for speed in speeds:
-            #if in_period(speed['time_start'],speed['length'],speed['repeat_after'])==True:
             tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
-            if from_start<min_from_start or min_from_start==0:
-                        min_from_start=from_start
-                        f_speed=speed
-                        
+            if from_start<min_from_start or min_from_start == 0:
+                        min_from_start, f_speed = from_start, speed
         if f_speed != None:
             for i in range(6):
                     speedi = f_speed[i]
@@ -881,188 +787,105 @@ class ipn_service(Thread):
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
-        global tp_asInPeriod, suicideCondition
-        global curNasCache,curATCache
-        global curAccParCache,curDefSpCache,curNewSpCache
-        global curAT_date,curAT_lock
-        cacheAT = None
+        global suicideCondition, cacheMaster
+        caches = None
         dateAT = datetime.datetime(2000, 1, 1)
         while True:             
             try:
                 if suicideCondition[self.__class__.__name__]: break
                 a = time.clock()
-                try:
-                    #if caches were renewed, renew local copies
-                    if curAT_date > dateAT:
-                        curAT_lock.acquire()
-                        #account-tarif cach indexed by account_id
-                        cacheAT = copy(curATCache)
-                        #nas cache
-                        cacheNas  = copy(curNasCache)
-                        #default speed cache
-                        cacheAccp = copy(curAccParCache)
-                        #current speed cache
-                        cacheDefSp = copy(curDefSpCache)
-                        cacheNewSp = copy(curNewSpCache)
-                        
-                        c_tp_asInPeriod = copy(tp_asInPeriod)
-                        #date of renewal
-                        dateAT = deepcopy(curAT_date)
-                        curAT_lock.release()
-                    else:
-                        time.sleep(10)
-                        continue
-                except Exception, ex:
-                    print "Ipn speed thread exception: ", repr(ex)
-                cur = connection.cursor()
-                cur.execute("""SELECT id, account_id, speed, state, static, datetime FROM billservice_accountipnspeed;""")
-                
-                ipnspTp=cur.fetchall()
-                connection.commit()
-                acc_ipn_sps = {} # {account_id:(id, account_id, speed, state, static, datetime),}
-                for ipns in ipnspTp:
-                    """
-                    Индексируем параметры скорости по Acount_id
-                    """
-                    acc_ipn_sps[ipns[1]] = ipns                  
-                
-                #for row in rows:
-                for acct in cacheAT:
-                    #print acct
-                    #print "acct", acct
-                    #if tariff not active
-                    if not acct[11]:
-                        continue
-                    account_vpn_ip, account_ipn_ip, account_mac_address  = acct[18:21]
-                    if account_ipn_ip == '0.0.0.0':
-                        """
-                        Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем.
-                        """
-                        continue                    
-                    #acct[5]- access_parameter_id
-                    accpRec = cacheAccp.get(acct[5])
-                    #accessparameters.ipn_for_vpn==True
-                    #print accpRec
-                    if (not accpRec) or (not accpRec[9]):
-                        continue
-                    #print "check ipn"
-                    sended=None
-                    recreate_speed = False
-                    tarif_id= acct[4]
-                    account_id = acct[0]
-                    account_password = acct[33]
-                    account_ballance = acct[1]+acct[2]                    
-                    account_disabled_by_limit, account_balance_blocked = acct[15:17]
-                    account_ipn_status = acct[22]
-                    account_status = acct[29]
-                    account_name = acct[32]                    
-                    period = c_tp_asInPeriod[tarif_id]# True/False
-                    nasRec = cacheNas[acct[17]]
-                    nas_ipaddress = nasRec[3]
-                    nas_login, nas_password = nasRec[5:7]
-                    nas_user_add, nas_user_enable, nas_user_disable = nasRec[10:13]
-                    access_type = 'IPN'
-                    now = datetime.datetime.now()
-                    #if row['account_ipn_status']==False and row['ballance']>0 and period==True and row['account_disabled_by_limit']==False and row['account_status']==True and row['account_balance_blocked']==False:
-                    if (not account_ipn_status) and  (account_ballance>0) and period and (not account_disabled_by_limit) and account_status and (not account_balance_blocked):
-                        #print u"ВКЛЮЧАЕМ",row['account_username']
-                        #шлём команду, на включение пользователя, account_ipn_status=True
-                        ipn_added = acct[25]
-                        if ipn_added==False:
-                            """
-                            Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled
-                            """
-                            sended = cred(account_id, account_name, 
-                                          account_password, access_type,
-                                          account_vpn_ip, account_ipn_ip, 
-                                          account_mac_address, nas_ipaddress, nas_login, 
-                                          nas_password, format_string=nas_user_add)
-                            if sended == True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, account_id))
-                        else:
-                            sended = cred(account_id, account_name, 
-                                          account_password, access_type,
-                                          account_vpn_ip, account_ipn_ip, 
-                                          account_mac_address, nas_ipaddress, nas_login, 
-                                          nas_password, format_string=nas_user_enable)
-                            recreate_speed = True
-                    
-                            if sended == True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, account_id))
-                    elif (account_disabled_by_limit==True or account_ballance<=0 or period==False or account_balance_blocked==True or account_status==False) and account_ipn_status==True:
-    
-                        #шлём команду на отключение пользователя,account_ipn_status=False
-                        #print u"ОТКЛЮЧАЕМ",row['account_username']
-                        sended = cred(account_id, account_name, \
-                                      account_password, access_type,
-                                      account_vpn_ip, account_ipn_ip, \
-                                      account_mac_address, nas_ipaddress, nas_login, \
-                                      nas_password, format_string=nas_user_disable)
-    
-                        if sended == True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, account_id,))
-    
-                    connection.commit()
-                    account_ipn_speed = acct[23]
-                    
-                    #print account_id
 
-                    #print "account_limit_speed", account_limit_speed
-                    if account_ipn_speed=='' or account_ipn_speed==None:    
-                        account_limit_speed = get_limit_speed(cur, account_id)
+                if cacheMaster.date <= dateAT:
+                    time.sleep(10); continue
+                else:
+                    cacheMaster.lock.acquire()
+                    try:
+                        caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()                
+                assert isinstance(caches, CoreCaches)
+
+                for acc in caches.account_cache.data:
+                    try:
+                        assert isinstance(acc, AccountData)
+                        """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем."""                    
+                        if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0': continue
+                        accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
+                        if (not accps) or (not accps.ipn_for_vpn): continue
+                        assert isinstance(accps, AccessParametersData)
+                        sended, recreate_speed = (None, False)
+    
+                        account_ballance = acc.ballance + acc.credit
+                        period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
+                        nas = caches.nas_cache.by_id[acc.nas_id]
+                        assert isinstance(nas, NasData)
+                        access_type = 'IPN'
+                        now = datetime.datetime.now()
+                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
+                            #шлём команду, на включение пользователя, account_ipn_status=True
+                            ipn_added = acct[25]
+                            """Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled"""
+                            if not acc.ipn_added:
+                                sended = cred(acc.account_id, acc.username,acc.password, access_type,
+                                              acc.vpn_ip_address, acc.ipn_ip_address, 
+                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=nas.user_add_action)
+                                if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
+                            else:
+                                sended = cred(acc.account_id, acc.username,acc.password, access_type,
+                                              acc.vpn_ip_address, acc.ipn_ip_address, 
+                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=nas.user_enable_action)
+                                recreate_speed = True                        
+                                if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
+                                
+                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status) and acc.ipn_status:
+                            #шлём команду на отключение пользователя,account_ipn_status=False
+                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
+                                              acc.vpn_ip_address, acc.ipn_ip_address, 
+                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=nas.user_disable_action)    
+                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
+        
                         connection.commit()
-                        speed=self.create_speed(list(cacheDefSp[tarif_id]), cacheNewSp[tarif_id], dateAT)
-                        speed = get_corrected_speed(speed[:6], account_limit_speed)
-                    else:
-                        speed = parse_custom_speed_lst(account_ipn_speed)
-                    #print "speed",speed
-                    #print "corrected_speed=", 
-                    
-                    
-                    
-                    newspeed=''
-                    newspeed = ''.join([unicode(spi) for spi in speed[:6]])
-                    
-                    ipn_speed = None
-                    ipn_state = None
-                    accipnRec = acc_ipn_sps.get(account_id)
-                    if accipnRec:
-                        ipn_speed = accipnRec[2]
-                        ipn_state = accipnRec[3]
-                    
-                    nas_type,nas_name = nasRec[1:3]
-                    nas_ipn_speed = nasRec[15]
-                    #print newspeed, row['ipn_speed'],row['ipn_state']
-                    #print newspeed!=row['ipn_speed'] or row['ipn_state']==False
-
-                    if newspeed!=ipn_speed or ipn_state==False or recreate_speed==True:
-                        #print u"МЕНЯЕМ НАСТРОЙКИ СКОРОСТИ НА СЕВРЕРЕ ДОСТУПА", speed
-                        #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-                        sended_speed = change_speed(dict, 
-                                                    account_id,account_name,account_vpn_ip, \
-                                                    account_ipn_ip,account_mac_address, \
-                                                    nas_ipaddress,nas_type,nas_name,\
-                                                    nas_login,nas_password,\
-                                                    format_string=nas_ipn_speed, access_type=access_type,\
-                                                    speed=speed[:6])
-                        data_for_save=''
-                        #print speed
-                        #print "speed sended=", sended_speed
-                        cur.execute("UPDATE billservice_accountipnspeed SET speed=%s, state=%s WHERE account_id=%s RETURNING id;", (newspeed, sended_speed, account_id,))
-                        id = cur.fetchone()
-                        #print 'id=', id
-                        if id==None:
-                            cur.execute("INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES( %s, %s, %s, %s);", (account_id, unicode(newspeed), sended_speed, now,))
     
+                        if not acc.ipn_speed:    
+                            account_limit_speed = get_limit_speed(cur, acc.account_id)
+                            connection.commit()
+                            speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
+                            speed = get_corrected_speed(speed[:6], account_limit_speed)
+                        else:
+                            speed = parse_custom_speed_lst(acc.ipn_speed)
+    
+                        newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+                        
+                        ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
+                        assert isinstance(ipnsp, IpnSpeedData)
+                        if newspeed != ipnsp.speed or not ipnsp.state or recreate_speed:
+                            #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+                            sended_speed = change_speed(dict,acc.account_id,acc.username,
+                                                        acc.vpn_ip_address,acc.ipn_ip_address,
+                                                        acc.ipn_mac_address,nas.ipaddress,
+                                                        nas.type,nas.name,nas.login,nas.password,
+                                                        access_type=access_type,
+                                                        format_string=nas.ipn_speed_action,
+                                                        speed=speed[:6])
+                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::craracter varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                            connection.commit()
+                    except Exception, ex:
+                        if isinstance(ex, psycopg2.OperationalError): raise ex
+                        else:
+                            logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+
+        
                 connection.commit()
                 cur.close()
-                logger.info("IPN thread run time: %s", time.clock() - a)
+                logger.info("IPNALIVE: %s: run time: %s", (self.getName, time.clock() - a))
             except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s : database connection is down: %s", (self.getName(), repr(ex)))
-                else:
-                    logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-
-
-            
-            #self.connection.close()
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
             gc.collect()
             time.sleep(120)
 
@@ -1095,43 +918,7 @@ class pfMemoize(object):
 
 
 
-'''
-acct structure
-[0]  - ba.id, 
-[1]  - ba.ballance, 
-[2]  - ba.credit, 
-[3]  - act.datetime, 
-[4]  - bt.id, 
-[5]  - bt.access_parameters_id, 
-[6]  - bt.time_access_service_id, 
-[7]  - bt.traffic_transmit_service_id, 
-[8]  - bt.cost,
-[9]  - bt.reset_tarif_cost, 
-[10] - bt.settlement_period_id, 
-[11] - bt.active, 
-[12] - act.id, 
-[13] - FALSE, 
-[14] - ba.created, 
-[15] - ba.disabled_by_limit, 
-[16] - ba.balance_blocked, 
-[17] - ba.nas_id, 
-[18] - ba.vpn_ip_address, 
-[19] - ba.ipn_ip_address,
-[20] - ba.ipn_mac_address, 
-[21] - ba.assign_ipn_ip_from_dhcp, 
-[22] - ba.ipn_status, 
-[23] - ba.ipn_speed, 
-[24] - ba.vpn_speed, 
-[25] - ba.ipn_added, 
-[26] - bt.ps_null_ballance_checkout, 
-[27] - bt.deleted, 
-[28] - bt.allow_express_pay,
-[29] - ba.status, 
-[30] - ba.allow_vpn_null
-[31] - ba.allow_vpn_block
-[32] - ba.username,
-[33] - ba.password
-'''
+
 class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
@@ -1140,278 +927,33 @@ class AccountServiceThread(Thread):
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
-        i_fMem = 0
+        global suicideCondition, cacheMaster, flags
+        counter = 0; now = datetime.datetime.now
         while True:
             if suicideCondition[self.__class__.__name__]: break            
             try: 
-                run_time = time.clock()
-                cur = connection.cursor()
-                renewCaches(cur)
-                i_fMem += 1
-                if i_fMem == 5:                  
-                    i_fMem = 0
-                    #nullify caches
-                    fMem.settlementCache = {}
-                    fMem.periodCache = {}                    
-                logger.info("ast time : %s", time.clock() - run_time)
+                if flags.cacheFlag or (now() - cacheMaster.date).seconds > 100:
+                    run_time = time.clock()                    
+                    cur = connection.cursor()
+                    renewCaches(cur)
+                    cur.close()
+                    if counter == 0:
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
+                    counter += 1
+                    if counter == 5:
+                        #nullify 
+                        counter, fMem.settlementCache, fMem.periodCache = 0, {}, {}
+                    if flags.cacheFlag:
+                        with flags.cacheLock: flags.cacheFlag = False
+                    
+                    logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30310004 : %s", (self.getName(), repr(ex)))
                 
             gc.collect()
-            time.sleep(100)
+            time.sleep(20)
             
-    def run2(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global fMem, sendFlag, nfIncomingQueue
-        global curATCache,curAT_acIdx,curAT_tfIdx
-        global curAT_date, curAT_lock
-        global curSPCache, curTLimitCache, curSuspPerCache
-        global curNasCache, curNas_ipIdx, curTTSCache
-        global curDefSpCache, curNewSpCache, curShedLogCache
-        global curPerTarifCache, curPersSetpCache
-        global curTimeAccNCache, curTimePerNCache, curTimeAccSrvCache
-        global curOneTimeSrvCache, curAccParCache, curIPNSpCache, curOTSHistCache
-        global tp_asInPeriod, allowedUsers
-        i_fMem = 0
-        while True:
-            if suicideCondition[self.__class__.__name__]: break
-            a = time.clock()
-            try:                
-                cur = connection.cursor()
-                ptime =  time.time()
-                ptime = ptime - (ptime % 20)
-                tmpDate = datetime.datetime.fromtimestamp(ptime)
-                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password  
-                    FROM billservice_account as ba
-                    LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
-                    LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.status AND bt.active;""", (tmpDate,))
-                #list cache
-                
-                accts = cur.fetchall()
-                allowedUsersChecker(allowedUsers, lambda: len(accts))
- 
-                cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
-                
-                ttssTp = cur.fetchall()
-                #connection.commit()
-                cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
-                
-                spsTp = cur.fetchall()
-                #connection.commit()
-                cur.execute("""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink FROM nas_nas;""")
-                nasTp = cur.fetchall()
-                cur.execute("""
-                   SELECT 
-                    accessparameters.max_limit,accessparameters.burst_limit,
-                    accessparameters.burst_treshold, accessparameters.burst_time,
-                    accessparameters.priority, accessparameters.min_limit,
-                    tariff.id
-                    FROM billservice_accessparameters as accessparameters
-                    JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id;
-                    """)
-                defspTmp = cur.fetchall()
-                cur.execute("""
-                   SELECT 
-                    timespeed.max_limit,timespeed.burst_limit,
-                    timespeed.burst_treshold,timespeed.burst_time,
-                    timespeed.priority, timespeed.min_limit,
-                    timenode.time_start, timenode.length, timenode.repeat_after,
-                    tariff.id 
-                    FROM billservice_timespeed as timespeed
-                    JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
-                    JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
-                    JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id;""")
-                nspTmp = cur.fetchall()
-                #connection.commit()
-                cur.execute("""SELECT id, settlement_period_id  
-                                 FROM billservice_tariff  as tarif
-                                 WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""")
-                perTarTp = cur.fetchall()
-                cur.execute("""SELECT b.id, b.name, b.cost, b.cash_method, c.name, c.time_start,
-                                     c.length, c.length_in, c.autostart, b.tarif_id, b.condition, b.created
-                                     FROM billservice_periodicalservice as b 
-                                     JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id;""")
-                #b.condition 0 - При любом балансе. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                
-                psspTp = cur.fetchall()
-                cur.execute("""
-                        SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
-                        FROM billservice_timeaccessnode as tan
-                        JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id;""")
-                timeaccnTp = cur.fetchall()
-                cur.execute("""
-                            SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after, tptpn.timeperiod_id 
-                            FROM billservice_timeperiodnode as tpn
-                            JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id;""")
-                timeperndTp = cur.fetchall()
-                cur.execute("""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
-                                    trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
-                                    trafficlimit."mode", trafficlimit.action,
-                                    speedlimit.id
-                                    FROM billservice_trafficlimit as trafficlimit
-                                    LEFT JOIN billservice_speedlimit as speedlimit ON speedlimit.limit_id=trafficlimit.id
-                                    ORDER BY trafficlimit.size DESC;""") # DESC Критично!
-                #action = 0:block
-                #action = 1:change speed
-                tlimitsTp = cur.fetchall()
-                cur.execute("""SELECT id,account_id, ballance_checkout, prepaid_traffic_reset,prepaid_traffic_accrued, 
-                                      prepaid_time_reset, prepaid_time_accrued, balance_blocked, accounttarif_id 
-                                      FROM billservice_shedulelog;""")
-                shllTp = cur.fetchall()
-                cur.execute("""SELECT id, prepaid_time, reset_time FROM billservice_timeaccessservice;""")
-                taccsTp = cur.fetchall()
-                cur.execute("""SELECT id, tarif_id, cost FROM billservice_onetimeservice;""")
-                otsTp = cur.fetchall()
-                cur.execute("""SELECT id, access_type, access_time_id, max_limit, min_limit, 
-                               burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""")
-                #make through "defaultspeed"
-                accpsTp = cur.fetchall()
-                cur.execute("""SELECT id, account_id, speed, state, static, datetime FROM billservice_accountipnspeed;""")
-                ipnspTp = cur.fetchall()
-                cur.execute("""SELECT id, accounttarif_id, onetimeservice_id FROM billservice_onetimeservicehistory WHERE ARRAY[accounttarif_id] && get_cur_acct(%s);""", (tmpDate,))
-                otshTp = cur.fetchall()
-                cur.execute("""SELECT id, account_id FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date)""", (tmpDate,))
-                suspsTp = cur.fetchall()
-
-                cur.execute("""SELECT tpn.time_start::timestamp without time zone as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
-                    FROM billservice_timeperiodnode as tpn
-                    JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
-                    JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
-                    JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id""")
-                tpnapsTp = cur.fetchall()
-                connection.commit()
-                cur.close()
-                
-                tmpacIdx = {}
-                #index on accounttarif.id
-                tmpacctIdx = {}
-                #index on tariff_id
-                tmptfIdx = defaultdict(list)
-                i = 0
-                for acct in accts:
-                    tmpacIdx[acct[0]]  = acct
-                    if acct[4]:
-                        tmptfIdx[acct[4]].append(acct)
-                    if acct[12]:
-                        tmpacctIdx[acct[11]] = acct
-
-                tmpPerAPTP = defaultdict(lambda: False)
-                for tpnap in tpnapsTp:
-                    tmpPerAPTP[tpnap[3]] = tmpPerAPTP[tpnap[3]] or fMem.in_period_(tpnap[0], tpnap[1], tpnap[2], tmpDate)[3]
-                    
-                prepaysTmp = {}    
-                #traffic_transmit_service cache, indexed by id
-                tmpttsC = {}
-                #settlement period cache, indexed by id
-                tmpspC = {}
-                #nas cache, indexed by ID
-                tmpnasC = {}
-                
-                tmpnasipC = {}
-                # default speed cache
-                tmpdsC = {}
-                #nondef speed cache
-                tmpnsC       = defaultdict(list)
-                tmppsspC     = defaultdict(list)                
-                tmptimeaccC  = defaultdict(list)                
-                tmptimepernC = defaultdict(list)                
-                tmptlimitC   = defaultdict(list)
-                
-                tmpshlC = {}
-                tmptaccsC = {}
-                tmpotsC = defaultdict(list)
-                tmpipnsC = {}
-                tmpaccpC = {}
-                tmpotshC = {}
-                tmpsusppC = {}
-                
-                for tts in ttssTp:
-                    tmpttsC[tts[0]] = tts
-                for sps in spsTp:
-                    tmpspC[sps[0]] = sps
-                for nas in nasTp:
-                    tmpnasC[nas[0]] = nas
-                    tmpnasipC[str(nas[3])] = nas
-                for ds in defspTmp:
-                    tmpdsC[ds[6]] = ds
-                for ns in nspTmp:
-                    tmpnsC[ns[9]].append(ns)
-                for pssp in psspTp:
-                    tmppsspC[pssp[9]].append(pssp)
-                for timeaccn in timeaccnTp:
-                    tmptimeaccC[timeaccn[2]].append(timeaccn)
-                for timepern in timeperndTp:
-                    tmptimepernC[timepern[5]].append(timepern)                    
-                for tlimit in tlimitsTp:
-                    tmptlimitC[tlimit[1]].append(tlimit)
-                for shl in shllTp:
-                    tmpshlC[shl[1]] = shl
-                for tacc in taccsTp:
-                    tmptaccsC[tacc[0]] = tacc
-                for ipns in ipnspTp:
-                    tmpipnsC[ipns[1]] = ipns
-                for ots in otsTp:
-                    tmpotsC[ots[1]].append(ots)
-                for otsh in otshTp:
-                    tmpotshC[(otsh[1], otsh[2])] = otsh
-                for accp in accpsTp:
-                    tmpaccpC[accp[0]] = accp
-                for susp in suspsTp:
-                    tmpsusppC[susp[1]] = suspsTp
-                #renew global cache links
-                curAT_lock.acquire()
-                curATCache    = accts
-                curAT_acIdx   = tmpacIdx
-                curAT_tfIdx   = tmptfIdx
-                curAT_acctIdx = tmpacctIdx
-                curSPCache = tmpspC
-                curTTSCache = tmpttsC
-                curNasCache = tmpnasC
-                curNas_ipIdx = tmpnasipC
-                curDefSpCache = tmpdsC
-                curNewSpCache = tmpnsC
-                curPerTarifCache = perTarTp
-                curPersSetpCache = tmppsspC
-                curTimeAccNCache = tmptimeaccC
-                curTimePerNCache = tmptimepernC
-                curTLimitCache = tmptlimitC
-                curShedLogCache = tmpshlC
-                curTimeAccSrvCache = tmptaccsC
-                curAccIPNSpCache = tmpipnsC
-                curOneTimeSrvCache = tmpotsC
-                curOTSHistCache = tmpotshC
-                curAccParCache = tmpaccpC
-                curSuspPerCache = tmpsusppC
-                curIPNSpCache = tmpipnsC                
-                tp_asInPeriod = tmpPerAPTP
-                curAT_date  = tmpDate
-                curAT_lock.release()
-                #del accts, tmpacIdx, tmptfIdx, tmpspC, tmpttsC, tmpnasC, tmpdsC, tmpnsC, tmpDate
-                #del ttssTp, spsTp, nasTp, defspTmp, nspTmp
-                #every cacheRenewalTime*3
-                i_fMem += 1
-                if i_fMem == 3:                  
-                    i_fMem = 0
-                    #nullify caches
-                    fMem.settlementCache = {}
-                    fMem.periodCache = {}
-                    #reread runtime options
-                    config.read("ebs_config_runtime.ini")
-                    logger.setNewLevel(int(config.get("core", "log_level")))
-                    
-                logger.info("ast time : %s", time.clock() - a)
-            except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    print self.getName() + ": database connection is down: " + repr(ex)
-                else:
-                    print self.getName() + ": exception: " + repr(ex)
-            
-            gc.collect()
-            time.sleep(100)
-            
-
-
+   
 def renewCaches(cur):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
@@ -1430,9 +972,7 @@ def renewCaches(cur):
         cacheMaster.read = True
             
     with cacheMaster.lock:
-        cacheMaster.cache = caches
-        cacheMaster.date = cacheDate
-    
+        cacheMaster.cache, cacheMaster.date = caches, cacheDate    
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
@@ -1447,6 +987,11 @@ def SIGHUP_handler(signum, frame):
         logger.error("SIGHUP config reread error: %s", repr(ex))
     else:
         logger.lprint("SIGHUP config reread OK")
+        
+def SIGUSR1_handler(signum, frame):
+    global flags
+    logger.lprint("SIGUSR1 recieved")
+    with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
     global cacheThr, threads, suicideCondition
@@ -1469,8 +1014,7 @@ def main():
                 (TimeAccessBill, 'Core Time Access Thread'), (limit_checker, 'Core Limit Thread'),\
                 (settlement_period_service_dog, 'Core Settlement Per. Thread'), (ipn_service, 'Core IPN Thread')]
 
-    print "ONLY VPN THREAD!!!"
-    thrnames = [(check_vpn_access, 'Core VPN Thread')]
+
     for thClass, thName in thrnames:
         threads.append(thClass())
         threads[-1].setName(thName)
@@ -1498,6 +1042,10 @@ def main():
     try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
+    
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1!')
     
     print "ebs: core: started"
     #main thread should not exit!
@@ -1530,21 +1078,15 @@ if __name__ == "__main__":
             blocking=True,creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
                                                                    config.get("db", "host"),config.get("db", "password")))
-        '''
-        #last cache renewal date
-        curAT_date  = None
-        #lock for cache operations
-        curAT_lock  = Lock()'''
         
         cacheMaster = CacheMaster()
         cacheMaster.date = None
-        flags = {}
+        flags = CoreFlags()
         
         suicideCondition = {}
         #function that returns number of allowed users
         #create allowedUsers
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")
-        
+        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
         logger.info("Allowed users: %s", (allowedUsers(),))
         
         fMem = pfMemoize()    
@@ -1556,5 +1098,5 @@ if __name__ == "__main__":
         
     except Exception, ex:
         print 'Exception in core, exiting: ', repr(ex)
-        logger.error('Exception in core, exiting: %s', repr(ex))
+        logger.error('Exception in core, exiting: %s \n %s', (repr(ex), traceback.format_exc()))
 
