@@ -26,11 +26,11 @@ from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 from twisted.internet.protocol import DatagramProtocol
-#from twisted.internet import pollreactor
-#pollreactor.install()
+from twisted.internet import pollreactor
+pollreactor.install()
 from twisted.internet import reactor
 
-from classes.nf_cache import *
+#from classes.nf_cache import *
 
 
 try:    import mx.DateTime
@@ -708,21 +708,6 @@ class ServiceThread(Thread):
                 tarif_groupsCache = tg_
                 #print tarif_groupsCache
                 cachesRead = True
-                logger.info("nf time : %s", time.clock() - a)
-                a = time.clock()
-                logger.debug('%s%s%s%s%s%s%s%s', (nascache,'\n\n', ipncache,'\n\n', vpncache,'\n\n', cachesRead,'\n\n'))
-                logger.debug('%s%s%s%s', (nodesCache,'\n\n', groupsCache,'\n\n'))
-                logger.debug('%s%s%s%s',(class_groupsCache, '\n\n',tarif_groupsCache, '\n\n'))
-                logger.lprint('--------------------------------------------------')
-                cur = connection.cursor()
-                caches = NfCaches(curDate)
-                caches.getdata(cur)
-                connection.commit()
-                cur.close()
-                caches.reindex()
-                logger.debug('%s%s', (caches, '\n\n'))
-                logger.lprint('--------------------------------------------------')
-                #reread runtime config options
                 logger.info("nf time : %s", time.clock() - a)
                 global writeProf
                 writeProf = logger.writeInfoP()
