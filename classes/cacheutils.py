@@ -1,6 +1,7 @@
 from operator import itemgetter
 from collections import defaultdict
 from threading import Lock
+from datetime import datetime
 
 class DefaultNamedTuple(tuple):
     __slots__ = () 
@@ -91,7 +92,7 @@ class CacheMaster(object):
     __slots__ = ('date', 'lock', 'cache', 'read')
     
     def __init__(self):
-        self.date = None
+        self.date = datetime(1970,1,1)
         self.lock = Lock()
         self.cache = None
         self.read = False

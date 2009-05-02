@@ -760,12 +760,12 @@ DECLARE
 	count_ int := 0;
 BEGIN
 	
-	FOR IN prepaid_tr_id_, size_ SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+	FOR prepaid_tr_id_, size_ IN SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
 		UPDATE billservice_accountprepaystrafic SET size=size+size_*1048576, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_;
 		IF NOT FOUND THEN
 			INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) VALUES(accounttarif_id_, prepaid_tr_id_, size_*1048576, datetime_);
         END IF;
-        count_ := count_ + 1
+        count_ := count_ + 1;
     END LOOP;
     IF count_ > 0 THEN
     	UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_ WHERE account_id=account_id_;

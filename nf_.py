@@ -26,9 +26,13 @@ from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver_ import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
+import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import pollreactor
-pollreactor.install()
+if hasattr(twisted.internet, 'pollreactor'):
+    from twisted.internet import pollreactor
+    pollreactor.install()
+else:
+    print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 
 from classes.nf_cache import *
@@ -50,7 +54,7 @@ class Reception(DatagramProtocol):
     '''
     def datagramReceived(self, data, addrport):
         if len(data)<=8192:
-            nfQueue.append((data, addrport))
+            queues.nfQueue.append((data, addrport))
         else:
             logger.error("NF server exception: packet <= 8192")
              
@@ -63,15 +67,14 @@ class nfDequeThread(Thread):
         Thread.__init__(self)
         
     def run(self):
-        global nfFlowCache
         while True:
             if suicideCondition[self.tname]: break
             #TODO: add locks if deadlocking issues arise
             try:
-                data, addrport = nfQueue.popleft()        
-                nfPacketHandle(data, addrport, nfFlowCache)
+                data, addrport = queues.nfQueue.popleft()        
+                nfPacketHandle(data, addrport, queues.nfFlowCache)
             except IndexError, ierr:
-                time.sleep(3); continue    
+                time.sleep(3); continue  
             except Exception, ex:
                 logger.error("NFP exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
@@ -80,7 +83,7 @@ def flow5(data):
     if len(data) != vars.flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
     #must turn tuples into lists because they are to be modified
-    return Flow5Data(*struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data))
+    return Flow5Data(False, *struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data))
 
 
 def header5(data):
@@ -94,7 +97,7 @@ def header5(data):
         self.time_secs = _nh[3]
         self.time_nsecs = _nh[4]
     """
-    if len(data) != headerLENGTH:
+    if len(data) != vars.headerLENGTH:
         raise ValueError, "Short flow header"
     return struct.unpack("!HHIIIIBBH", data)
 
@@ -118,7 +121,7 @@ def nfPacketHandle(data, addrport, flowCache):
     if not pVersion in vars.FLOW_TYPES.keys():
         raise RuntimeWarning, "NetFlow version %d is not yet implemented" % pVersion
     hdr_class, flow_class  = vars.FLOW_TYPES[pVersion]
-    hdr = hdr_class(data[:headerLENGTH])
+    hdr = hdr_class(data[:vars.headerLENGTH])
     #======
     #runs through flows
     for n in xrange(hdr[1]):
@@ -128,7 +131,7 @@ def nfPacketHandle(data, addrport, flowCache):
         if 0: assert isinstance(flow, Flow5Data)
         #look for account for ip address
         acc_acct_tf = (caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.vpn_ips.get(flow.dst_addr) \
-                    or caches.account_cache.ipn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr) )
+                    or caches.account_cache.ipn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr))
         if acc_acct_tf:
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
@@ -182,7 +185,6 @@ class FlowCache(object):
         if 0: assert isinstance(flow, Flow5Data)
         #constructs a key
         key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
-        
         queues.dcacheLock.acquire()
         dflow = queues.dcache.get(key)
         #no such value, must add        
@@ -278,7 +280,7 @@ class FlowDequeThread(Thread):
                     #checks classes                    
                     fnode = None; classLst = []                    
                     #Direction is taken from the first approved node
-                    for nclass, nnodes in nodesCache:                    
+                    for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
                         for nnode in nnodes:
                             if 0: assert isinstance(nnode, ClassData)
                             if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
@@ -346,7 +348,7 @@ class NfUDPSenderThread(Thread):
                 #get a bunch of packets
                 fpacket = None
                 queues.dbLock.acquire()
-                try:     fpacket = databaseQueue.popleft()
+                try:     fpacket = queues.databaseQueue.popleft()
                 except:  pass
                 finally: queues.dbLock.release()
                 if not fpacket: time.sleep(5); continue
@@ -536,27 +538,6 @@ class RecoveryThread(Thread):
                     for fl in fllist: queues.fnameQueue.appendleft(fl)
         except Exception, ex:
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
-
-'''
-def renewCaches(cur):
-    ptime =  time.time()
-    ptime = ptime - (ptime % 20)
-    cacheDate = datetime.datetime.fromtimestamp(ptime)
-    try:
-        caches = NfCaches(cacheDate)
-        caches.getdata(cur)
-        cur.connection.commit()
-        caches.reindex()
-    except Exception, ex:
-        if isinstance(ex, psycopg2.DatabaseError):
-            logger.error('#30110001 renewCaches attempt failed due to database error: %s', repr(ex))
-        else: 
-            logger.error('#30110002 renewCaches attempt failed due to error: %s \n %s', (repr(ex), traceback.format_exc()))
-    else:
-        cacheMaster.read = True
-            
-    with cacheMaster.lock:
-        cacheMaster.cache, cacheMaster.date = caches, cacheDate'''
         
 def SIGTERM_handler(signum, frame):
     graceful_save()
@@ -580,7 +561,7 @@ def graceful_save():
     time.sleep(10)
     
     graceful_saver([['dcache','nfFlowCache'], ['flowQueue'], ['databaseQueue']],
-                   queues, 'nf_', saveDir)
+                   queues, 'nf_', vars.saveDir)
     
     pool.close()
     time.sleep(2)
@@ -588,7 +569,7 @@ def graceful_save():
         
 def graceful_recover():
     graceful_loader(['dcache','nfFlowCache','flowQueue','databaseQueue'],
-                    queues, 'nf_', saveDir)
+                    queues, 'nf_', vars.saveDir)
                 
 def main ():        
     global flags, queues, cacheMaster, threads, cacheThr, caches
@@ -651,7 +632,7 @@ if __name__=='__main__':
     queues= NfQueues()
     
     cacheMaster = CacheMaster()
-    cacheMaster.date = None
+    #cacheMaster.date = None
     caches = None
     
     config = ConfigParser.ConfigParser()
@@ -677,18 +658,18 @@ if __name__=='__main__':
         if config.get("nfroutine_nf", "usock") == '0':
             vars.clientHost = config.get("nfroutine_nf_inet", "host")
             vars.clientPort = int(config.get("nfroutine_nf_inet", "port"))
-            vars.clientAddr = (coreHost, corePort)
+            vars.clientAddr = (vars.clientHost, vars.clientPort)
             
         elif config.get("nfroutine_nf", "usock") == '1':
             vars.clientHost = config.get("nfroutine_nf_unix", "host")
             vars.clientPort = 0
-            vars.clientAddr = (coreHost,)
+            vars.clientAddr = (vars.clientHost,)
         else:
             raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         
         
         flags.recover    = (config.get("nfroutine_nf", "recover") == '1')
-        flags.recoverAtt = (config.get("nfroutine_nf", "recoverAttempted") == '1')   
+        flags.recoverprev = (config.get("nfroutine_nf", "recoverAttempted") == '1')   
         flags.checkClasses = (config.get("nf", "checkclasses") == '1')
         
         vars.sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))

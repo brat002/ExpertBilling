@@ -1,5 +1,6 @@
 #-*-coding=utf-8-*-
 
+from __future__ import with_statement
 from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
 #from log_adapter import log_debug_, log_info_, log_warning_, log_error_
@@ -661,20 +662,20 @@ def get_corrected_speed(speed, correction):
     else:
         return speed
 
-def renewCaches(cur, cacheMaster, cacheType, code):
+def renewCaches(cur, cacheMaster, cacheType, code, cargs=()):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
     cacheDate = datetime.datetime.fromtimestamp(ptime)
     try:
-        caches = cacheType(cacheDate)
+        caches = cacheType(cacheDate, *cargs)
         caches.getdata(cur)
         cur.connection.commit()
         caches.reindex()
     except Exception, ex:
         if isinstance(ex, psycopg2.DatabaseError):
-            logger.error('#30%s0001 renewCaches attempt failed due to database error: %s', (code, repr(ex)))
+            log_error_('#30%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex)))
         else: 
-            logger.error('#30%s0002 renewCaches attempt failed due to error: %s \n %s', (code, repr(ex), traceback.format_exc()))
+            log_error_('#30%s0002 renewCaches attempt failed due to error: %s \n %s' % (code, repr(ex), traceback.format_exc()))
     else:
         cacheMaster.read = True
             
