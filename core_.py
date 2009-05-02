@@ -14,7 +14,7 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import socket
 import isdlogger
-import utilites, saver
+import utilites, saver_ as saver
 
 from decimal import Decimal
 from copy import copy, deepcopy
@@ -27,7 +27,7 @@ from collections import defaultdict
 
 
 from constants import rules
-from saver import allowedUsersChecker, setAllowedUsers
+from saver_ import allowedUsersChecker, setAllowedUsers
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred
 from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
 
@@ -42,6 +42,7 @@ except: print 'cannot import mx'
 from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
+from utilites import renewCaches
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -112,7 +113,7 @@ class check_vpn_access(Thread):
                 if not caches:
                     time.sleep(10)
                     continue
-                assert isinstance(caches, CoreCaches)             
+                if 0: assert isinstance(caches, CoreCaches)             
                    
                 cur = connection.cursor()
                 #close frozen sessions
@@ -135,8 +136,7 @@ class check_vpn_access(Thread):
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         if not nas or not acc or not acc.account_status: continue
                         
-                        assert isinstance(nas, NasData)
-                        assert isinstance(acc, AccountData)
+                        if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
                         acstatus = (((not acc.allow_vpn_null) and (acc.balance + acc.credit > 0)) or acc.allow_vpn_null) \
                                     and \
@@ -234,7 +234,7 @@ class periodical_service_bill(Thread):
                         logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
                     finally:
                         cacheMaster.lock.release()                
-                assert isinstance(caches, CoreCaches)
+                if 0: assert isinstance(caches, CoreCaches)
 
                 cur = connection.cursor()
                 #transactions per day              
@@ -246,9 +246,9 @@ class periodical_service_bill(Thread):
                     tariff_id, settlement_period_id = row
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
-                        assert isinstance(ps, PeriodicalServiceSettlementData)
+                        if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
                         for acc in caches.account_cache.by_tarif.get(tariff_id,[]):
-                            assert isinstance(acc, AccountData)
+                            if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or not acc.account_status: continue
                                 susp_per_mlt = 0 if cacheSuspP.has_key(acc.acc.id) else 1
@@ -441,7 +441,7 @@ class TimeAccessBill(Thread):
                     finally:
                         cacheMaster.lock.release()
 
-                assert isinstance(caches, CoreCaches)
+                if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = connection.cursor()
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
@@ -482,10 +482,10 @@ class TimeAccessBill(Thread):
                     #get the list of time periods and their cost
                     now = datetime.datetime.now()
                     for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
-                        assert isinstance(period, TimeAccessNodeData)
+                        if 0: assert isinstance(period, TimeAccessNodeData)
                         #get period nodes and check them
                         for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
-                            assert isinstance(pnode, TimePeriodNodeData)
+                            if 0: assert isinstance(pnode, TimePeriodNodeData)
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
                                 summ = (float(total_time)/60) * period_cost
                                 if summ > 0:
@@ -535,12 +535,12 @@ class limit_checker(Thread):
                     finally:
                         cacheMaster.lock.release()
 
-                assert isinstance(caches, CoreCaches)
+                if 0: assert isinstance(caches, CoreCaches)
                 
                 oldid = -1
                 cur = connection.cursor()
                 for acc in caches.account_cache.data:
-                    assert isinstance(acc, AccountData)
+                    if 0: assert isinstance(acc, AccountData)
                     if not acc.account_status: continue
                     limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
                     if not limits:
@@ -551,7 +551,7 @@ class limit_checker(Thread):
                         continue
                     block, speed_changed = (False, False)
                     for limit in limits:
-                        assert isinstance(limit, TrafficLimitData)
+                        if 0: assert isinstance(limit, TrafficLimitData)
                         if not limit.group_id: continue
                         
                         if oldid == acc.account_id and (block or speed_changed):
@@ -564,7 +564,7 @@ class limit_checker(Thread):
                         
                         sp = caches.settlementperiod_cache.by_id.get(limit.settlement_period_id)
                         if not sp: logger.info("NOT FOUND: SP: %s",limit.settlement_period_id); continue
-                        assert isinstance(sp, SettlementPeriodData)
+                        if 0: assert isinstance(sp, SettlementPeriodData)
                         
                         sp_defstart = acc.datetime if sp.autostart else sp.time_start
                         sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
@@ -652,17 +652,17 @@ class settlement_period_service_dog(Thread):
                     finally:
                         cacheMaster.lock.release()
 
-                assert isinstance(caches, CoreCaches)
+                if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
-                        assert isinstance(acc, AccountData)
+                        if 0: assert isinstance(acc, AccountData)
                         if not acc.account_status: continue
                         
                         shedl = caches.shedulelog_cache.by_id.get(acc.account_id)
                         if not shedl: shedl = ShedulelogData(-1, *(None,)*8)
-                        assert isinstance(shedl, ShedulelogData)
+                        if 0: assert isinstance(shedl, ShedulelogData)
                         
                         time_start, period_end = None, None
                         now = datetime.datetime.now()
@@ -670,7 +670,7 @@ class settlement_period_service_dog(Thread):
                             time_start, period_start, delta = (acc.datetime, acc.datetime, 86400*365*365)
                         else:
                             sp = caches.settlementperiod_cache.by_id.get(acc.settlement_period_id)
-                            assert isinstance(sp, SettlementPeriodData)
+                            if 0: assert isinstance(sp, SettlementPeriodData)
                             time_start = acc.datetime if sp.autostart else sp.time_start
                             period_start, period_end, delta = fMem.settlement_period_(time_start, sp.length_in, sp.length, dateAT)
                             #Если начало расчётного периода осталось в прошлом тарифном плане-за начало расчётного периода принимаем начало тарифного плана
@@ -740,7 +740,7 @@ class settlement_period_service_dog(Thread):
                         
                         if account_balance > 0:
                             for ots in caches.onetimeservice_cache.by_id.get(acc.tarif_id, []):
-                                assert isinstance(ots, OneTimeServiceData)
+                                if 0: assert isinstance(ots, OneTimeServiceData)
                                 if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)):
                                     cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
                                     connection.commit()
@@ -806,22 +806,22 @@ class ipn_service(Thread):
                         logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
                     finally:
                         cacheMaster.lock.release()                
-                assert isinstance(caches, CoreCaches)
+                if 0: assert isinstance(caches, CoreCaches)
 
                 for acc in caches.account_cache.data:
                     try:
-                        assert isinstance(acc, AccountData)
+                        if 0: assert isinstance(acc, AccountData)
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем."""                    
                         if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0': continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
-                        assert isinstance(accps, AccessParametersData)
+                        if 0: assert isinstance(accps, AccessParametersData)
                         sended, recreate_speed = (None, False)
     
                         account_ballance = acc.ballance + acc.credit
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
                         nas = caches.nas_cache.by_id[acc.nas_id]
-                        assert isinstance(nas, NasData)
+                        if 0: assert isinstance(nas, NasData)
                         access_type = 'IPN'
                         now = datetime.datetime.now()
                         if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
@@ -863,7 +863,7 @@ class ipn_service(Thread):
                         newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                         
                         ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
-                        assert isinstance(ipnsp, IpnSpeedData)
+                        if 0: assert isinstance(ipnsp, IpnSpeedData)
                         if newspeed != ipnsp.speed or not ipnsp.state or recreate_speed:
                             #отправляем на сервер доступа новые настройки скорости, помечаем state=True
                             sended_speed = change_speed(dict,acc.account_id,acc.username,
@@ -935,7 +935,8 @@ class AccountServiceThread(Thread):
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > 100:
                     run_time = time.clock()                    
                     cur = connection.cursor()
-                    renewCaches(cur)
+                    #renewCaches(cur)
+                    renewCaches(cur, cacheMaster, CoreCaches, 31)
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
@@ -948,13 +949,13 @@ class AccountServiceThread(Thread):
                     
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
-                logger.error("%s : #30310004 : %s", (self.getName(), repr(ex)))
+                logger.error("%s : #30310004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 
             gc.collect()
             time.sleep(20)
             
    
-def renewCaches(cur):
+'''def renewCaches(cur):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
     cacheDate = datetime.datetime.fromtimestamp(ptime)
@@ -967,12 +968,12 @@ def renewCaches(cur):
         if isinstance(ex, psycopg2.DatabaseError):
             logger.error('#30310001 renewCaches attempt failed due to database error: %s', repr(ex))
         else: 
-            logger.error('#30310002 renewCaches attempt failed due to error: %s', repr(ex))
+            logger.error('#30310002 renewCaches attempt failed due to error: %s \n %s', (repr(ex), traceback.format_exc()))
     else:
         cacheMaster.read = True
             
     with cacheMaster.lock:
-        cacheMaster.cache, cacheMaster.date = caches, cacheDate    
+        cacheMaster.cache, cacheMaster.date = caches, cacheDate''' 
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")

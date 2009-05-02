@@ -11,7 +11,9 @@ import packet
 import socket
 import cPickle
 import logging
-import datetime, calendar
+import psycopg2
+import traceback
+import datetime, calendar, time
 import os, sys, time, md5, binascii, socket, select
 
 ssh_exec = False
@@ -658,3 +660,23 @@ def get_corrected_speed(speed, correction):
         return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
     else:
         return speed
+
+def renewCaches(cur, cacheMaster, cacheType, code):
+    ptime =  time.time()
+    ptime = ptime - (ptime % 20)
+    cacheDate = datetime.datetime.fromtimestamp(ptime)
+    try:
+        caches = cacheType(cacheDate)
+        caches.getdata(cur)
+        cur.connection.commit()
+        caches.reindex()
+    except Exception, ex:
+        if isinstance(ex, psycopg2.DatabaseError):
+            logger.error('#30%s0001 renewCaches attempt failed due to database error: %s', (code, repr(ex)))
+        else: 
+            logger.error('#30%s0002 renewCaches attempt failed due to error: %s \n %s', (code, repr(ex), traceback.format_exc()))
+    else:
+        cacheMaster.read = True
+            
+    with cacheMaster.lock:
+        cacheMaster.cache, cacheMaster.date = caches, cacheDate  
