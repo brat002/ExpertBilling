@@ -1,7 +1,38 @@
 from operator import itemgetter, setitem
 
 class Flow5Data(list):
-    'Flow5Data(src_addr, dst_addr, next_hop, in_index, out_index, packets, octets, start, finish, src_port, dst_port, nas_id, tcp_flags, protocol, tos, source_as, dst_as, src_netmask_length, dst_netmask_length, padding, account_id, datetime, class_id, node_direction, class_store, class_passthrough, acctf_id, has_groups, groups)' 
+    '''Flow5Data(src_addr, dst_addr, next_hop, in_index, out_index, packets, octets, start, finish, src_port, dst_port, nas_id, tcp_flags, protocol, tos, source_as, dst_as, src_netmask_length, dst_netmask_length, padding, account_id, datetime, class_id, node_direction, class_store, class_passthrough, acctf_id, has_groups, groups) \n
+        self.src_addr = self._int_to_ipv4(_ff[0])
+        self.dst_addr = self._int_to_ipv4(_ff[1])
+        self.next_hop = self._int_to_ipv4(_ff[2])
+        self.in_index = _ff[3]
+        self.out_index = _ff[4]
+        self.packets = _ff[5]
+        self.octets = _ff[6]
+        self.start = _ff[7]
+        self.finish = _ff[8]
+        self.src_port = _ff[9]
+        self.dst_port = _ff[10]
+        [11] - nas_id
+        self.tcp_flags = _ff[12]
+        self.protocol = _ff[13]
+        self.tos = _ff[14]
+        self.source_as = _ff[15]
+        self.dst_as = _ff[16]
+        self.src_netmask_length = _ff[17]
+        self.dst_netmask_length = _ff[18]
+        [19]- 
+        #added_later
+        [20] - account_id
+        [21] - CURRENT_TIMESTAMP
+        [22] - nas_traficclass_id
+        [23] - nas_trafficnode.direction
+        [24] - nas_trafficclass.store
+        [25] - nas.trafficclass.passthrough
+        [26] - accounttarif.id
+        [27] - hasgroups
+        [28] - groups
+    ''' 
 
     __slots__ = () 
 

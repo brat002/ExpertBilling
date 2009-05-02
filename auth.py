@@ -184,7 +184,7 @@ class Auth:
     	if utf16==True:
     	    pw=password.encode("utf-16-le")
     	else:
-             pw=password
+	    pw=password
 
     	md4_context = md4.new()       #Эксперимент с нативной md4 библиотекой
     	md4_context.update(pw)    #

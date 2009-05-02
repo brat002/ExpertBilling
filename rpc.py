@@ -790,6 +790,19 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 def SIGTERM_handler(signum, frame):
     graceful_save()
+    
+def SIGHUP_handler(signum, frame):
+    global config
+    logger.lprint("SIGHUP recieved")
+    try:
+        config.read("ebs_config.ini")
+    except Exception, ex:
+        logger.error("SIGHUP config reread error: %s", repr(ex))
+    else:
+        logger.lprint("SIGHUP config reread OK")
+        
+def SIGUSR1_handler(signum, frame):
+    pass
 
 def graceful_save():
     global threads
@@ -811,6 +824,13 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
+    try:
+        signal.signal(signal.SIGHUP, SIGHUP_handler)
+    except: logger.lprint('NO SIGHUP!')
+    
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1!')
     #main thread should not exit!
     print "ebs: rpc: started"
     while True:

@@ -7,6 +7,7 @@ import random
 import signal
 import os, sys
 import marshal
+import utilites
 import asyncore
 import psycopg2
 import threading
@@ -15,7 +16,7 @@ import ConfigParser
 import socket, select, struct, datetime, time
 
 import isdlogger
-import saver
+import saver_ as saver
 
 
 from threading import Thread, Lock
@@ -23,7 +24,7 @@ from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
-from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
+from saver_ import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import pollreactor
@@ -35,6 +36,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
+from utilites import renewCaches
 
 
 
@@ -499,7 +501,7 @@ class ServiceThread(Thread):
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
                     cur = connection.cursor()
-                    renewCaches(cur)
+                    renewCaches(cur, cacheMaster, NfCaches, 11)
                     cur.close()
                     if counter % 5 == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data)); counter = 0
@@ -535,7 +537,7 @@ class RecoveryThread(Thread):
         except Exception, ex:
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
 
-
+'''
 def renewCaches(cur):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
@@ -554,7 +556,7 @@ def renewCaches(cur):
         cacheMaster.read = True
             
     with cacheMaster.lock:
-        cacheMaster.cache, cacheMaster.date = caches, cacheDate  
+        cacheMaster.cache, cacheMaster.date = caches, cacheDate'''
         
 def SIGTERM_handler(signum, frame):
     graceful_save()
@@ -657,6 +659,7 @@ if __name__=='__main__':
     
     logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
     saver.log_adapt = logger.log_adapt
+    utilites.log_adapt = logger.log_adapt
     logger.lprint('Nf start')
     
     try:
