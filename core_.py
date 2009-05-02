@@ -242,7 +242,7 @@ class periodical_service_bill(Thread):
                 n_delta = datetime.timedelta(seconds=n)
                 now=datetime.datetime.now()
                 #get a list of tarifs with periodical services & loop                
-                for row in caches.periodicaltarif_cache:
+                for row in caches.periodicaltarif_cache.data:
                     tariff_id, settlement_period_id = row
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
@@ -251,8 +251,8 @@ class periodical_service_bill(Thread):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or not acc.account_status: continue
-                                susp_per_mlt = 0 if cacheSuspP.has_key(acc.acc.id) else 1
-                                acc.ballance = acc.ballance + acc.credit
+                                susp_per_mlt = 0 if caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
+                                account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, dateAT)                                
@@ -295,16 +295,16 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
                                                 cash_summ = (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                                                 connection.commit()
                                                 chk_date += n_delta
                                         else:
                                             #make an approved transaction
                                             cash_summ = susp_per_mlt * (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
-                                            if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
+                                            if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
-                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_GRADUAL', cash_summ, chk_date)
+                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
                                     connection.commit()
                                     
                                 if ps.cash_method == "AT_START":
@@ -340,17 +340,17 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:
                                                 if ps.created and ps.created >= chk_date:
                                                     cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 connection.commit()
                                                 chk_date += s_delta
                                         else:
                                             summ = cash_summ * susp_per_mlt
-                                            if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
+                                            if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
-                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_START', summ, chk_date)
+                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', summ, chk_date)
                                     connection.commit()
-                                if ps_cash_method=="AT_END":
+                                if ps.cash_method=="AT_END":
                                     """
                                     Смотрим завершился ли хотя бы один расчётный период.
                                     Если завершился - считаем сколько уже их завершилось.    
@@ -386,15 +386,15 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:
                                                 if ps.created and ps.created>chk_date:
                                                     cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
                                                 connection.commit()
                                                 chk_date += s_delta                                          
                                             
-                                        if (ps.condition==1 and acc.ballance<=0) or (ps.condition==2 and acc.ballance>0):
+                                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                             cash_summ = 0                                            
                                         summ = cash_summ * susp_per_mlt
-                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.acc.id, 'PS_AT_END', summ, chk_date)
+                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', summ, chk_date)
                                     connection.commit()
                             except Exception, ex:
                                 if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
@@ -595,7 +595,7 @@ class limit_checker(Thread):
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
                         connection.commit()
                         
-                        oldid = account_id
+                        oldid = acc.account_id
                         if acc.disabled_by_limit != block:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;
                                         """ , (block, acc.account_id,))
@@ -677,8 +677,7 @@ class settlement_period_service_dog(Thread):
                             if period_start < acc.datetime: period_start = acc.datetime                            
     
                         #нужно производить в конце расчётного периода
-                        ballance_checkout = shedl.ballance_checkout if shedl.balance_blocked else acc.datetime
-                        
+                        ballance_checkout = shedl.ballance_checkout if shedl.ballance_checkout else acc.datetime
                         if ballance_checkout < period_start and acc.reset_tarif_cost and period_end and acc.cost > 0:
                             #Снять сумму до стоимости тарифного плана                   
                             #Считаем сколько было списано по услугам                   
@@ -695,7 +694,7 @@ class settlement_period_service_dog(Thread):
                             cur.execute("SELECT shedulelog_co_fn(%s, %s, %s::timestamp without time zone);", (acc.account_id, acc.acctf_id, now,))
                             connection.commit()
 
-                        account_balance = acc.ballance + acc.credit   
+                        account_balance = (acc.ballance or 0) + (acc.credit or 0)
                         #Если балланса не хватает - отключить пользователя
                         if (shedl.balance_blocked is None or shedl.balance_blocked<=period_start) and acc.cost>=account_balance and acc.cost != 0 and not acc.balance_blocked:
                             cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
@@ -716,7 +715,7 @@ class settlement_period_service_dog(Thread):
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
-                            cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", 
+                            cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
                                         (acc.account_id, acc.acctf_id, now))  
                             connection.commit()
         
@@ -751,7 +750,7 @@ class settlement_period_service_dog(Thread):
                 connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 cur.execute("UPDATE billservice_transaction SET promise_expired = True, summ=-1*summ WHERE end_promise<now() and promise_expired=False;")
-                logger.info("SPALIVE: %s run time: %s", time.clock() - a)
+                logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
 
@@ -807,7 +806,8 @@ class ipn_service(Thread):
                     finally:
                         cacheMaster.lock.release()                
                 if 0: assert isinstance(caches, CoreCaches)
-
+                
+                cur = connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
@@ -818,7 +818,7 @@ class ipn_service(Thread):
                         if 0: assert isinstance(accps, AccessParametersData)
                         sended, recreate_speed = (None, False)
     
-                        account_ballance = acc.ballance + acc.credit
+                        account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
                         nas = caches.nas_cache.by_id[acc.nas_id]
                         if 0: assert isinstance(nas, NasData)
@@ -883,7 +883,7 @@ class ipn_service(Thread):
         
                 connection.commit()
                 cur.close()
-                logger.info("IPNALIVE: %s: run time: %s", (self.getName, time.clock() - a))
+                logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
             gc.collect()
@@ -936,7 +936,7 @@ class AccountServiceThread(Thread):
                     run_time = time.clock()                    
                     cur = connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, CoreCaches, 31)
+                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,))
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
@@ -1081,7 +1081,6 @@ if __name__ == "__main__":
                                                                    config.get("db", "host"),config.get("db", "password")))
         
         cacheMaster = CacheMaster()
-        cacheMaster.date = None
         flags = CoreFlags()
         
         suicideCondition = {}
