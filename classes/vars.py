@@ -46,6 +46,7 @@ class NfrQueues(object):
     def __init__(self):
         self.nfIncomingQueue = deque(); self.nfQueueLock = Lock()
         self.groupAggrDict = {}; self.statAggrDict = {}
+        self.groupAggrLock = Lock(); self.statAggrLock = Lock()
         self.groupDeque = deque(); self.groupLock = Lock()
         self.statDeque =  deque(); self.statLock = Lock()
         self.depickerQueue = deque(); self.depickerLock = Lock()

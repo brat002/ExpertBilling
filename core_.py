@@ -1069,7 +1069,9 @@ if __name__ == "__main__":
         suicideCondition = {}
         #function that returns number of allowed users
         #create allowedUsers
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(pool.connection(), _1i())        
         logger.info("Allowed users: %s", (allowedUsers(),))
         
         fMem = pfMemoize()    

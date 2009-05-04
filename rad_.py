@@ -924,7 +924,9 @@ if __name__ == "__main__":
         vars.session_timeout = int(config.get("dhcp", "session_timeout"))        
         flags.ignore_nas_for_vpn = True if config.get("radius", "ignore_nas_for_vpn") == "True" else False
                 
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(pool.connection(), _1i())        
         allowedUsers()
         #-------------------
         print "ebs: rad: configs read, about to start"
