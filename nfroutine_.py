@@ -1,5 +1,6 @@
 #-*-coding=utf-8-*-
 
+from __future__ import with_statement
 
 import cPickle
 import signal
@@ -68,17 +69,16 @@ class DepickerThread(Thread):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         cur = connection.cursor()
-        global depickerQueue, depickerLock, suicideCondition
+        global queues, flags, suicideCondition
         while True:
             if suicideCondition[self.tname]: break
             try:
-                if len(depickerQueue) > 0:
-                    depickerLock.acquire()
-                    picker = depickerQueue.popleft()
-                    depickerLock.release()
-                else:
-                    time.sleep(10)
-                    continue                
+                picker = None
+                
+                with queues.depickerLock:
+                    if len(queues.depickerQueue) > 0:
+                        picker = queues.depickerQueue.popleft()
+                if not picker: time.sleep(10); continue              
                 
                 a = time.clock()
                 now = datetime.datetime.now()
@@ -87,21 +87,26 @@ class DepickerThread(Thread):
                 for (tts,acctf,acc), summ in ilist:
                     #debit accounts
                     traffictransaction(cur, tts, acctf, acc, summ=summ, created=now)
-                    icount += 1
                     connection.commit()
-                if writeProf:
-                    logger.info("%s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
+                    icount += 1
+                if flags.writeProf:
+                    logger.info("DPKALIVE: %s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
             except IndexError, ierr:
-                try: depickerLock.release()
-                except: pass
-                time.sleep(60)
+                if not picker:
+                    try: queues.depickerLock.release()
+                    except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                time.sleep(10)
                 continue             
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                    if picker:
+                        with queues.depickerLock:
+                            queues.depickerQueue.appendleft(ilist[icount:])
                     try: cur = connection.cursor()
                     except: pass
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))    
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))    
+                time.sleep(10)
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
@@ -113,49 +118,42 @@ class groupDequeThread(Thread):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         cur = connection.cursor()
-        global groupAggrDict, groupAggrTime
-        global groupDeque, groupLock
+        global queues, flags
         #direction type->operations
         gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
-        global writeProf
         icount = 0; timecount = 0
         while True:
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
             try:
                 if suicideCondition[self.tname]: break
-                if writeProf:
+                if flags.writeProf: 
                     a = time.clock()
-                groupLock.acquire()
-                gqueue = 1
-                
+                    
+                gkey, groupData = None, None
+                with queues.groupLock:
+                    #check whether double aggregation time passed - updates are rather costly
+                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.groupAggrTime*2 < time.time()):
+                        gkey = queues.groupDeque.popleft()[0]
 
-                #check whether double aggregation time passed - updates are rather costly
-                if groupDeque and (groupDeque[0][1] + groupAggrTime*2 < time.time()):
-                    gkey = groupDeque.popleft()[0]
-                    groupLock.release()
-                else:
-                    groupLock.release()
-                    time.sleep(30)
-                    continue
-                gqueue = 0
+                if not gkey: time.sleep(30); continue
+
                 #get data
-                groupData = groupAggrDict.pop(gkey)
-                groupInfo = groupData[1]
+                groupData = queues.groupAggrDict.pop(gkey)
+                groupItems, groupInfo = groupData[0:2]
                 #get needed method
-                gop = gops[groupInfo[1]]
-                octlist = []
-                classes = []
+                group_id, group_dir, group_type = groupInfo
+                gop = gops[group_dir]
+                octlist, classes = [], []             
                 max_class = None
-                octets = 0
-                gdate = datetime.datetime.fromtimestamp(gkey[2])
-                account_id = gkey[0]
+                octets = 0                
+                account_id = gkey[0]; gdate = datetime.datetime.fromtimestamp(gkey[2])
                 
                 #second type groups
-                if groupInfo[2] == 2:                        
+                if group_type == 2:                        
                     max_oct = 0
                     #get class octets, calculate with direction method, find maxes
-                    for class_, gdict in groupData[0].iteritems():                            
+                    for class_, gdict in groupItems.iteritems():                            
                         octs = gop(gdict)
                         classes.append(class_)
                         octlist.append(octs)
@@ -165,15 +163,15 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
-                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s, %s, %s, %s);""" , (groupInfo[0], account_id, octets, gdate, classes, octlist, max_class))
+                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s, %s, %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     connection.commit()
                 #first type groups
-                elif groupInfo[2] == 1:
+                elif group_type == 1:
                     #get class octets, calculate sum with direction method
-                    for class_, gdict in groupData[0].iteritems():
+                    for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s, %s, %s, %s);""" , (groupInfo[0], account_id, octets, gdate, classes, octlist, max_class))
+                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s, %s, %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     connection.commit()
                 else:
                     continue
@@ -186,23 +184,18 @@ class groupDequeThread(Thread):
                         logger.info("NFGroupdeque thread name: %s run time(10): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
             except IndexError, ierr:
-                if gqueue:
-                    groupLock.release()
-                    time.sleep(30)
+                if not gkey:
+                    try:    queues.groupLock.release()
+                    except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
-                continue
             except KeyError, kerr:
-                logger.info("%s : keyerror : %s", (self.getName(), repr(kerr)))                
-            except psycopg2.OperationalError, p2oerr:
-                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
-            except psycopg2.ProgrammingError, p2perr:
-                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
-            except psycopg2.InterfaceError, p2ierr:
-                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
-                try: cur = connection.cursor()
-                except: pass
+                logger.info("%s : keyerror : %s \n %s", (self.getName(), repr(kerr), traceback.format_exc()))                
             except Exception, ex:
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))            
+                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                    if gkey and groupData:
+                    try: cur = connection.cursor()
+                    except: time.sleep(20)
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))             
                 
                 
 class statDequeThread(Thread):
@@ -900,6 +893,7 @@ def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
 
 def SIGTERM_handler(signum, frame):
+    logger.lprint("SIGTERM recieved")
     graceful_save()
 
 def SIGHUP_handler(signum, frame):
@@ -907,6 +901,8 @@ def SIGHUP_handler(signum, frame):
     logger.lprint("SIGHUP recieved")
     try:
         config.read("ebs_config.ini")
+        logger.setNewLevel(int(config.get("nfroutine", "log_level")))
+        flags.writeProf = logger.writeInfoP()
     except Exception, ex:
         logger.error("SIGHUP config reread error: %s", repr(ex))
     else:
@@ -923,6 +919,7 @@ def graceful_save():
     asyncore.close_all()
     #cacheThr.exit()
     suicideCondition[cacheThr.tname] = True
+    logger.lprint("About to exit gracefully.")
     st_time = time.time()
     time.sleep(1)
     i = 0
@@ -949,6 +946,7 @@ def graceful_save():
     
     pool.close()
     time.sleep(2)
+    logger.lprint("Stopping gracefully.")
     sys.exit()
         
 def graceful_recover():

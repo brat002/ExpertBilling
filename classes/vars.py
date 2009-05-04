@@ -46,10 +46,10 @@ class NfrQueues(object):
     def __init__(self):
         self.nfIncomingQueue = deque(); self.nfQueueLock = Lock()
         self.groupAggrDict = {}; self.statAggrDict = {}
-        self.groupDeque, self.groupLock = deque(), Lock()
-        self.statDeque, self.statLock = deque(), Lock()
-        self.depickerQueue, self.depickerLock = deque(), Lock()
-        self.picker, self.pickerLock, self.pickerTime = None, Lock(), 0
+        self.groupDeque = deque(); self.groupLock = Lock()
+        self.statDeque =  deque(); self.statLock = Lock()
+        self.depickerQueue = deque(); self.depickerLock = Lock()
+        self.picker = None; self.pickerLock = Lock(); self.pickerTime = 0
         
         
 class RadVars(object):

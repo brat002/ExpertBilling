@@ -789,6 +789,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         )
 
 def SIGTERM_handler(signum, frame):
+    logger.lprint("SIGTERM recieved")
     graceful_save()
     
 def SIGHUP_handler(signum, frame):
@@ -796,6 +797,7 @@ def SIGHUP_handler(signum, frame):
     logger.lprint("SIGHUP recieved")
     try:
         config.read("ebs_config.ini")
+        logger.setNewLevel(int(config.get("rpc", "log_level")))
     except Exception, ex:
         logger.error("SIGHUP config reread error: %s", repr(ex))
     else:
@@ -809,8 +811,10 @@ def graceful_save():
     for th in threads:
         if isinstance(th, RPCServer):
             th.daemon.shutdown(disconnect=True)
+    logger.lprint("About to stop gracefully.")
     pool.close()
     time.sleep(2)
+    logger.lprint("Stopping gracefully.")
     sys.exit()
     
 def main():
