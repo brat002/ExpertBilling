@@ -130,11 +130,11 @@ class groupDequeThread(Thread):
                 if flags.writeProf: 
                     a = time.clock()
                     
-                gkey, groupData = None, None
+                gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
                     if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.groupAggrTime*2 < time.time()):
-                        gkey = queues.groupDeque.popleft()[0]
+                        gkey, gkeyTime  = queues.groupDeque.popleft()
 
                 if not gkey: time.sleep(30); continue
 
@@ -192,8 +192,19 @@ class groupDequeThread(Thread):
                 logger.info("%s : keyerror : %s \n %s", (self.getName(), repr(kerr), traceback.format_exc()))                
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
-                    if gkey and groupData:
-                        pass
+                    if gkey and gkeyTime and groupData:
+                        grec = queues.groupAggrDict.get(gkey)
+                        queues.groupLock.acquire()
+                        if not grec:
+                            queues.groupAggrDict[gkey] = groupData
+                            queues.groupDeque.appendleft((gkey, gkeyTime))
+                            queues.groupLock.release()
+                        else:
+                            queues.groupLock.release()
+                            for gclass, class_io in groupItems.iteritems():
+                                grec[glass]['INPUT']  += class_io['INPUT']
+                                grec[glass]['OUTPUT'] += class_io['OUTPUT']
+                        
                     try: cur = connection.cursor()
                     except: time.sleep(20)
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))             
@@ -459,9 +470,11 @@ class NetFlowRoutine(Thread):
                                 grec = groupAggrDict.get(gkey)
                                 if not grec:
                                     #add new record to the queue and the dictionary
-                                    groupDeque.append((gkey, time.time()))
                                     grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
                                     groupAggrDict[gkey] = grec
+                                    with queues.groupLock:
+                                        groupDeque.append((gkey, time.time()))                                  
+                                    
                                 #aggregate bytes for every class/direction
                                 for class_ in group_classes:
                                     grec[0][class_][flow_dir] += octets                     
