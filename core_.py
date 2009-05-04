@@ -954,26 +954,7 @@ class AccountServiceThread(Thread):
             gc.collect()
             time.sleep(20)
             
-   
-'''def renewCaches(cur):
-    ptime =  time.time()
-    ptime = ptime - (ptime % 20)
-    cacheDate = datetime.datetime.fromtimestamp(ptime)
-    try:
-        caches = CoreCaches(cacheDate, fMem)
-        caches.getdata(cur)
-        cur.connection.commit()
-        caches.reindex()
-    except Exception, ex:
-        if isinstance(ex, psycopg2.DatabaseError):
-            logger.error('#30310001 renewCaches attempt failed due to database error: %s', repr(ex))
-        else: 
-            logger.error('#30310002 renewCaches attempt failed due to error: %s \n %s', (repr(ex), traceback.format_exc()))
-    else:
-        cacheMaster.read = True
-            
-    with cacheMaster.lock:
-        cacheMaster.cache, cacheMaster.date = caches, cacheDate''' 
+    
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
@@ -984,6 +965,8 @@ def SIGHUP_handler(signum, frame):
     logger.lprint("SIGHUP recieved")
     try:
         config.read("ebs_config.ini")
+        logger.setNewLevel(int(config.get("core", "log_level")))
+        flags.writeProf = logger.writeInfoP()
     except Exception, ex:
         logger.error("SIGHUP config reread error: %s", repr(ex))
     else:

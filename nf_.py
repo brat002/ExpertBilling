@@ -540,11 +540,20 @@ class RecoveryThread(Thread):
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
         
 def SIGTERM_handler(signum, frame):
+    logger.lprint("SIGTERM recieved")
     graceful_save()
 
 def SIGHUP_handler(signum, frame):
-    config.read("ebs_config.ini")
-    logger.setNewLevel(int(config.get("nf", "log_level")))
+    global config
+    logger.lprint("SIGHUP recieved")
+    try:
+        config.read("ebs_config.ini")
+        logger.setNewLevel(int(config.get("nf", "log_level")))
+        flags.writeProf = logger.writeInfoP()
+    except Exception, ex:
+        logger.error("SIGHUP config reread error: %s", repr(ex))
+    else:
+        logger.lprint("SIGHUP config reread OK")
 
 def SIGUSR1_handler(signum, frame):
     global flags
@@ -558,6 +567,7 @@ def graceful_save():
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
             suicideCondition[thr.tname] = True
+    logger.lprint("About to stop gracefully.")
     time.sleep(10)
     
     graceful_saver([['dcache','nfFlowCache'], ['flowQueue'], ['databaseQueue']],
@@ -565,6 +575,7 @@ def graceful_save():
     
     pool.close()
     time.sleep(2)
+    logger.lprint("Stopping gracefully.")
     sys.exit()
         
 def graceful_recover():
