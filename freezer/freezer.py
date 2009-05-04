@@ -14,6 +14,7 @@ import sys
 sys.path = [ sys.path[ 0 ] + '/modules' ]
 from base64 import b64decode as _x_
 from zlib import decompress as _z_
+_1i = open(_x_('bGljZW5zZS5saWM=')).read() #license.lic
 # get_key():
 #  returns string hash of concatented
 #  serial numbers of harddrives, architecture,
@@ -31,6 +32,7 @@ _PROTECTION_CHUNK_1_L = r"""
 	#  __4 - temporary variable
 	#  __5 - module
 	#  __6 - key data
+	global _1i
 	__0 = [
 		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),         # '/dev/disk/by-uuid'
 		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
@@ -68,7 +70,7 @@ _PROTECTION_CHUNK_1_L = r"""
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	__6 = __6[:-1] + 'L'
-	__6 += open('license.lic').read()
+	__6 += _1i
 	#del __0
 	return __6.upper()
 """
@@ -82,6 +84,7 @@ _PROTECTION_CHUNK_1_D = r"""
 	#  __4 - temporary variable
 	#  __5 - module
 	#  __6 - key data
+	global _1i
 	__0 = [
 		_x_( 'L2Rldi9kaXNrL2J5LXV1aWQv' ),         # '/dev/disk/by-uuid'
 		_x_( 'Y2FuJ3QgaWRlbnRpZnkgaGFyZHdhcmU=' ), # "can't identify hardware"
@@ -117,7 +120,7 @@ _PROTECTION_CHUNK_1_D = r"""
 	__5 = __import__(__0[5]) # import md5
 	__6 = getattr(getattr(__5, __0[6])(__6), __0[7])() # ... = md5.new(...).hexdigest()
 	__6 = __6[:-1] + 'D'
-	__6 += open('license.lic').read()
+	__6 += _1i
 	#del __0
 	return __6.upper()
 """
