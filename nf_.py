@@ -704,7 +704,9 @@ if __name__=='__main__':
             vars.aggrNum   = float(config.get("nf", "aggrnum"))
         except Exception, ex: logger.info('numeric values ex %s', repr(ex)); print ex
         
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(pool.connection(), _1i())         
         allowedUsers()
         test_now = time.time()
         #-------------------

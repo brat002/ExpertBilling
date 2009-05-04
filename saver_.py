@@ -6,7 +6,7 @@ def log_error_(lstr, level=3):
 def log_adapt(lstr, level):
     print lstr
 
-def setAllowedUsers(dbconnection, filepath):
+def setAllowedUsers(dbconnection, licstr):
     def transformByte(lbytes):
         indef = lambda x: x == 'FFFF'
         if indef(lbytes): return (1 << 63) - 1
@@ -14,21 +14,12 @@ def setAllowedUsers(dbconnection, filepath):
     #global allowedUsers
     allowedUsers = lambda: 0
     try:
-        lfile = open(filepath, 'rb')
-    except Exception,e:
-        log_error_(repr(e))
-        log_error_("License not found")
-        print "License not found"
-        sys.exit()
-      
-    try:
-        lfile.seek(0,0)
-        fhf = lfile.read(2)        
-        lfile.seek(-2, 2)
-        shf = lfile.read(2) 
-        allowed = str(transformByte(fhf + shf))
+        if not licstr == '':
+            allowed = str(transformByte(licstr[:2] + licstr[-2:]))
+        else:
+            log_error_('Test version: only 32 users allowed!' % ())
+            allowed = str(2**3*2**2)        
         allowedUsers = lambda: int(allowed)
-        lfile.close()
     except Exception, ex:
         log_error_("License file format error!")
         print "License file format error!"

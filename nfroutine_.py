@@ -193,6 +193,7 @@ class groupDequeThread(Thread):
             except Exception, ex:
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
                     if gkey and groupData:
+                        pass
                     try: cur = connection.cursor()
                     except: time.sleep(20)
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))             
@@ -1085,7 +1086,9 @@ if __name__ == "__main__":
         
         #function that returns number of allowed users
         #create allowedUsers
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(pool.connection(), _1i())       
         allowedUsers()
         
         fMem = pfMemoize()    
