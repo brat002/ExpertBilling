@@ -567,7 +567,7 @@ class HandleHotSpotAuth(HandleSBase):
 
         allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc_status, ballance, disabled_by_limit, balance_blocked, tarif_status))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
         if self.packetobject['User-Name'][0]==user_name and allow_dial and acct_card.tariff_active:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
