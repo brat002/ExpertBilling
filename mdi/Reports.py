@@ -602,7 +602,7 @@ class TransactionsReport(QtGui.QMainWindow):
         #import Pyro
         for index in self.tableWidget.selectedIndexes():
             #print index.row(), index.column()
-            if index.column()>1:
+            if not index.column()==0:
                 continue
             
             i=unicode(self.tableWidget.item(index.row(), 0).text())

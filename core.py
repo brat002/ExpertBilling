@@ -1291,6 +1291,7 @@ class ipn_service(Thread):
                     account_ballance = acct[1]+acct[2]                    
                     account_disabled_by_limit, account_balance_blocked = acct[15:17]
                     account_ipn_status = acct[22]
+                    #print "account_ipn_status", account_ipn_status
                     account_status = acct[29]
                     account_name = acct[32]                    
                     period = c_tp_asInPeriod[tarif_id]# True/False
@@ -1325,7 +1326,7 @@ class ipn_service(Thread):
                     
                             if sended == True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, account_id))
                     elif (account_disabled_by_limit==True or account_ballance<=0 or period==False or account_balance_blocked==True or account_status==False) and account_ipn_status==True:
-    
+                        
                         #шлём команду на отключение пользователя,account_ipn_status=False
                         #print u"ОТКЛЮЧАЕМ",row['account_username']
                         sended = cred(account_id, account_name, \

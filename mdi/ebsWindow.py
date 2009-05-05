@@ -549,6 +549,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         pass
     def editTarif(self):
         pass
+    
     def connectTree(self):
         self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         

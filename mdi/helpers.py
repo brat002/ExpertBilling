@@ -364,7 +364,10 @@ class sqliteDbAccess(object):
         #import sys 
         #print >>sys.stderr, "dbpath=", self.dbfile
         self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        self.db.setDatabaseName(self.dbfile)
+        try:
+            self.db.setDatabaseName(self.dbfile)
+        except:
+            self.db.setDatabaseName("c:\%s" % connectDBName)
             
     def action(self, qstr, type, vartuple=None):
         if vartuple:

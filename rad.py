@@ -192,12 +192,12 @@ class AsyncAuthServ(AsyncUDPServer):
                 coreconnect.nasCache = self.cacheNas; coreconnect.inTimePeriods = self.in_periods
                 coreconnect.fMem = fMem; coreconnect.atCache_uidx = self.cacheAT
                 coreconnect.defSpeed = self.cacheDefSpeed; coreconnect.newSpeed = self.cacheNewSpeed
-                authobject, packetfromcore=coreconnect.handle()
+                authobject, packetfromcore = coreconnect.handle()
                 
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(packetobject['NAS-IP-Address'][0])); return
     
                 #authobject=Auth(packetobject=packetobject, packetfromcore=packetfromcore, username=packetfromcore.username, password = packetfromcore.password,  secret=secret, access_type=access_type)
-                logger.info("Password check: %s", authobject.code)
+                logger.info("Auth check: %s", authobject.code)
                 returndata=authobject.ReturnPacket(packetfromcore) 
     
             elif access_type in ['HotSpot']:
@@ -505,7 +505,7 @@ class HandleSAuth(HandleSBase):
                     ((allow_vpn_null) or ((not allow_vpn_block) and (not balance_blocked) and (not disabled_by_limit) and (acc_status))))
         
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
+            logger.warning("Unallowed account status for user %s: account_status is %s (balance %s, balance_blocked %s, disabled_by_limit %s)", (user_name, acc_status, ballance, balance_blocked, disabled_by_limit,))
             return self.auth_NA(authobject)      
         
         if self.multilink==False:

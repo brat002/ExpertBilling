@@ -602,12 +602,20 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             """ , (group_id, account_id, settlement_period_start, settlement_period_end,))
             
             size=cur.fetchone()
-            res.append({'limit_name': limit_name, 'limit_size':limit_size, 'size':size["size"],})
+            res.append({'settlement_period_start':settlement_period_start, 'settlement_period_end':settlement_period_end, 'limit_name': limit_name, 'limit_size':limit_size or 0, 'size':size["size"] or 0,})
             connection.commit()
         
         return res
 
 
+    @authentconn
+    def get_prepaid_traffic(self, account_id, cur=None, connection=None):
+        cur.execute("""SELECT   ppt.id, ppt.account_tarif_id, ppt.prepaid_traffic_id,  ppt.size, ppt.datetime, pp.size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
+                            JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
+                            WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=175 and datetime<now() ORDER BY datetime DESC LIMIT 1);""", (account_id,))
+
+        result = map(Object, cur.fetchall())
+        return result
     
     @authentconn
     def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
