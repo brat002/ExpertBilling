@@ -1,3 +1,10 @@
+queueLock.acquire()
+dictlock.acquire()
+queuelock.release()
+
+we need queue locks to ensure that our dict is in the queue
+we need dict locks to ensure our dict's integrity
+
 TRY USING weakref FOR DICTS IN nf
 
 __debug__!!!
