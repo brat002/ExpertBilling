@@ -16,6 +16,7 @@ from base64 import b64decode as _x_
 from zlib import decompress as _z_
 _1i = lambda: ''
 def _1fi_():
+        global _1i
         ____1i = open(_x_('bGljZW5zZS5saWM=')).read() #license.lic
 	_1i =  lambda: ____1i
 	
