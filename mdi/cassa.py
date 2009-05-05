@@ -207,7 +207,7 @@ class CassaEbs(ebsTableWindow):
         QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         
-        QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.update_info)
+        QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemSelectionChanged()"), self.update_info)
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.restoreWindow()
@@ -263,7 +263,7 @@ class CassaEbs(ebsTableWindow):
             if not limites: self.textEdit_limites.setPlainText(u"Нет данных"); return
             r=[]
             for limit in limites:
-                r.append(u"Название %s Размер %s Расходовано %s" % (limit["limit_name"], limit["limit_size"], limit["size"] or "0"))
+                r.append(u"Название %s Размер %s Расходовано %s Начало %s Конец %s" % (limit["limit_name"], limit["limit_size"], limit["size"] or "0", limit["settlement_period_start"].strftime(self.strftimeFormat),limit["settlement_period_end"].strftime(self.strftimeFormat) ))
             #self.label_limites.setText('\n'.join(r))
             self.textEdit_limites.setPlainText('\n'.join(r))
             #prepaid = self.connection.get_prepaid(account)

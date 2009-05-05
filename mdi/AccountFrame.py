@@ -27,7 +27,7 @@ from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog
+from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import IPy
@@ -3463,7 +3463,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_suspended, a.id, i, 0)
                 self.addrow(self.tableWidget_suspended, a.start_date.strftime(strftimeFormat), i, 1)
                 self.addrow(self.tableWidget_suspended, a.end_date.strftime(strftimeFormat), i, 2)
-                
+                i+=1
             self.tableWidget_suspended.setColumnHidden(0, True)
             
     def addrow(self, widget, value, x, y):
@@ -3594,7 +3594,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
                  ("prepaidTrafficTailsAction", "Остаток предоплаченного трафика", "", self.prepaidReport),\
                  ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
-                 ("actOfProvidedServices", "Акт выполненных работ", "", self.pass_)\
+                 ("actOfProvidedServices", "Акт выполненных работ", "", self.pass_),\
+                 ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
+                 ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
+                 ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
                 ]
 
 
@@ -3602,7 +3605,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
-                   self.menu       :["prepaidTrafficTailsAction", "separator", "connectionAgreementAction", "separator", "actOfProvidedServices"],\
+                   self.menu       :["prepaidTrafficTailsAction", "separator", "connectionAgreementAction", "separator", "actOfProvidedServices", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -3615,7 +3618,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
         self.tb.setMenu(self.menu)
-        self.tb.setDisabled(True)
+        #self.tb.setDisabled(True)
         self.toolBar.addWidget(self.tb)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.editRow = self.editTarif
@@ -3625,6 +3628,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.restoreWindow()
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         
     def retranslateUI(self, initargs):
         super(AccountsMdiEbs, self).retranslateUI(initargs)
@@ -3639,7 +3643,48 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.refreshTree()
             self.refresh()
         
+    def limit_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="limit", account_id=id)
+            child.exec_()
+        
+    def prepaidtraffic_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="prepaidtraffic", account_id=id)
+            child.exec_()
+        
+        
+    def suspended_period(self):
+        ids = []
+        #import Pyro
+        for index in self.tableWidget.selectedIndexes():
+            #print index.row(), index.column()
+            if not index.column()==0:
+                continue
+
+            i=unicode(self.tableWidget.item(index.row(), 0).id)
+            try:
+                ids.append(int(i))
+            except Exception, e:
+                print "can not convert transaction id to int"      
+                
+        print ids
+        child=SuspendedPeriodForm()
+
+        if child.exec_()==1:
+            for id in ids:
+                model = Object()
+                model.account_id = id
+                model.start_date = child.start_date
+                model.end_date = child.end_date
+                self.connection.save(model, "billservice_suspendedperiod")
+                self.connection.commit()
+                #self.suspendedPeriodRefresh()
+            self.connection.commit()
     
+
     def delTarif(self):
         tarif_id = self.getTarifId()
         if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
@@ -3745,7 +3790,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     
     def getSelectedId(self):
-        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).data(39).toInt()[0])
+        return self.tableWidget.item(self.tableWidget.currentRow(), 0).id
 
 
     def pass_(self):
@@ -3788,7 +3833,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         return
         
 
-    def addrow(self, value, x, y, color=None, enabled=True, ctext=None, setdata=False):
+    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
@@ -3815,6 +3860,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             headerItem.setText(unicode(ctext))
         else:
             headerItem.setText(unicode(value))
+        
+        headerItem.id = id
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)
 
@@ -3869,7 +3916,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         i=0
         for a in accounts:            
-            self.addrow(a.id, i,0, enabled=a.status, ctext=str(i+1), setdata=True)
+            self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(a.credit, i,3, enabled=a.status)

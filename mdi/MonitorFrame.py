@@ -137,7 +137,7 @@ class MonitorEbs(ebsTableWindow):
         self.fixtures()
         
     def fixtures(self, user=None):
-        
+        self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
         self.tableWidget.setSortingEnabled(False)
         if self.allTimeCheckbox.checkState()==2:

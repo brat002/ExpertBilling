@@ -1942,3 +1942,110 @@ class SqlDialog(QtGui.QDialog):
         QtGui.QDialog.accept(self)
     
         
+class InfoDialog(QtGui.QDialog):
+    def __init__(self, connection, type, account_id):
+        super(InfoDialog, self).__init__()
+        self.connection = connection
+        self.type = type
+        self.account_id = account_id
+        self.setObjectName("InfoDialog")
+        self.resize(550, 300)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.refresh()
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
+        
+       
+    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=''
+        if color:
+            if float(value)<0:
+                headerItem.setBackgroundColor(QtGui.QColor(color))
+                headerItem.setTextColor(QtGui.QColor('#ffffff'))
+            elif float(value)==0:
+                headerItem.setBackgroundColor(QtGui.QColor("#ffdc51"))
+                #headerItem.setTextColor(QtGui.QColor('#ffffff'))
+                                
+        if not enabled:
+            headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
+        
+            
+        if y==1:
+            if enabled==True:
+                headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            else:
+                headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
+        if setdata:
+            headerItem.setData(39, QtCore.QVariant(value))   
+        if ctext is not None:
+            headerItem.setText(unicode(ctext))
+        else:
+            headerItem.setText(unicode(value))
+        
+        headerItem.id = id
+        self.tableWidget.setItem(x,y,headerItem)
+         
+    def refresh(self):
+        
+        if self.type == "limit":
+            columns=["#", u"Название", u"Количество", u"Израсходовано", u"Начало", u"Окончание"]
+            makeHeaders(columns, self.tableWidget)
+            items = self.connection.get_limites(self.account_id)
+            
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            for a in items:            
+                self.addrow(i, i,0)
+                self.addrow(a['limit_name'], i,1)
+                self.addrow("%s KB" % (a['limit_size']/1024), i,2)
+                self.addrow("%s KB" % (a['size']/1024), i,3)
+                try:
+                    self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,4)
+                    self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,5)
+                except:
+                    pass
+                i+=1
+            self.tableWidget.resizeRowsToContents()
+            
+        else:
+            columns=["#", u"Группа", u"Количество", u"Израсходовано", ]
+            makeHeaders(columns, self.tableWidget)
+            items = self.connection.sql("""
+            SELECT   ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
+            JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
+            WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1);""" % (self.account_id,)            
+            )
+
+            
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            for a in items:            
+                self.addrow(i, i,0)
+                self.addrow(a.group_name, i,1)
+                self.addrow("%s KB" % (a.pp_size/1024), i2)
+                self.addrow("%s KB" % (a.size/1024), i,3)
+
+                i+=1
+            self.tableWidget.resizeRowsToContents()            
+
+        
