@@ -71,7 +71,7 @@ class check_vpn_access(Thread):
             if result==True and (from_start<min_from_start or min_from_start==0):
                 min_from_start=from_start
                 f_speed=speed
-        #print "f_speed=", f_speed                
+              
         if f_speed != None:
             for i in range(6):
                 speedi = f_speed[i]
@@ -936,7 +936,7 @@ class AccountServiceThread(Thread):
                     run_time = time.clock()                    
                     cur = connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,))
+                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))

@@ -2,6 +2,7 @@
 
 from __future__ import with_statement
 import gc
+import copy
 import glob
 import random
 import signal
@@ -130,12 +131,19 @@ def nfPacketHandle(data, addrport, flowCache):
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
         #look for account for ip address
+        '''
         acc_acct_tf = (caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.vpn_ips.get(flow.dst_addr) \
-                    or caches.account_cache.ipn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr))
+                    or caches.account_cache.ipn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr))'''
+        acc_data_src = caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.src_addr)
+        acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
+        local = bool(acc_data_src and acc_data_dst)
+        acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
         if acc_acct_tf:
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
-            flow.padding = acc_acct_tf
+            flow.padding = local
+            flow.account_id = acc_acct_tf
+            flow.node_direction = None
             if flags.checkClasses:
                 break_outer = False
                 for nclass, nnodes in caches.class_cache.classes:                        
@@ -161,7 +169,7 @@ def nfPacketHandle(data, addrport, flowCache):
 class FlowCache(object):
     '''Aggregates flows.'''
     def __init__(self):
-        queues.dcache = {}
+        #queues.dcache = {}
         #list for keeping keys
         self.keylist = []
         self.stime = time.time()
@@ -194,10 +202,10 @@ class FlowCache(object):
             dflow.finish = flow.finish
             queues.dcacheLock.release()
         else:
-            queues.dcache[key] = flow
-            queues.dcacheLock.release()
+            queues.dcache[key] = flow            
             #stores key in a list
             self.keylist.append(key)
+            queues.dcacheLock.release()
             #time to start over?
             if (len(self.keylist) > vars.aggrNum) or ((self.stime + 10.0) < time.time()):
                 #appends keylist to flowQueue
@@ -266,62 +274,72 @@ class FlowDequeThread(Thread):
                 flst = []
                 for key in keylist:
                     with queues.dcacheLock:
-                        flow = queues.dcache.pop(key, None)
-                    if not flow: continue
-                    if 0: assert isinstance(flow, Flow5Data)
+                        qflow = queues.dcache.pop(key, None)
+                    if not qflow: continue
                     #get id's
-                    acc_id, acctf_id, tf_id = flow.padding; flow.padding = 0
-                    flow.account_id = acc_id
-                    #get groups for tarif
-                    tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(tf_id)
-                    has_groups = True if tarifGroups else False
-                    
-                    passthr = True; direction=None
-                    #checks classes                    
-                    fnode = None; classLst = []                    
-                    #Direction is taken from the first approved node
-                    for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
-                        for nnode in nnodes:
-                            if 0: assert isinstance(nnode, ClassData)
-                            if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
-                                ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
-                                ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
-                                ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
-                                ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
-                                ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
-                                
-                                if not classLst:
-                                    fnode = nnode
-                                elif nnode.direction != fnode.direction:
-                                    continue
-                                classLst.append(nclass)
-                                if not nnode.passthrough:
-                                    passthr = False
-                                break
-                        #found passthrough=false
-                        if not passthr:
-                            self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
-                            break                   
-                    #traversed all the nodes
-                    else:
-                        if classLst:
-                            self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
-                        else: continue
+                    acc_data = qflow.account_id
+                    qflow.account_id = None
+                    local = qflow.padding
+                    src = True
+                    for acc_id, acctf_id, tf_id in acc_data:
+                        flow = copy.copy(qflow) if (local and src) else qflow
+                        if 0: assert isinstance(flow, Flow5Data)
+                        flow.account_id = acc_id
+                        #get groups for tarif
+                        tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(tf_id)
+                        has_groups = True if tarifGroups else False
+                        direction = ((src and 'INPUT') or 'OUTPUT') if local else None
+                        passthr = True
+                        #checks classes                    
+                        fnode = None; classLst = []                    
+                        #Direction is taken from the first approved node
+                        for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
+                            for nnode in nnodes:
+                                if 0: assert isinstance(nnode, ClassData)
+                                if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
+                                    ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
+                                    ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
+                                    ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
+                                    ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
+                                    ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
+                                    
+                                    if not classLst and (not direction or (nnode.direction == direction)):
+                                        fnode = nnode
+                                    elif not fnode:
+                                        continue
+                                    elif nnode.direction != fnode.direction:
+                                        continue
+                                    classLst.append(nclass)
+                                    if not nnode.passthrough:
+                                        passthr = False
+                                    break
+                            #found passthrough=false
+                            if not passthr:
+                                self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
+                                break                   
+                        #traversed all the nodes
+                        else:
+                            if classLst:
+                                self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
+                            else: continue
+                            
+                        #construct a list
+                        flst.append(tuple(flow)); fcnt += 1                    
+                        #append to databaseQueue
+                        if fcnt == 37:
+                            with queues.dbLock:
+                                queues.databaseQueue.append(flst)
+                            flst = []; fcnt = 0
+                            
+                        src = False
                         
-                    #construct a list
-                    flst.append(tuple(flow)); fcnt += 1                    
-                    #append to databaseQueue
-                    if fcnt == 37:
-                        with queues.dbLock:
-                            queues.databaseQueue.append(flst)
-                        flst = []; fcnt = 0
                 if len(flst) > 0:
                     with queues.dbLock:
                         queues.databaseQueue.append(flst)
                     flst = []
                 del keylist
             except Exception, ex:
-                    logger.error("fdqThread exception: %s", repr(ex))
+                    logger.error("fdqThread exception: %s \n %s", (repr(ex), traceback.format_exc()))
             
             
 class NfUDPSenderThread(Thread):
@@ -566,7 +584,7 @@ def graceful_save():
     
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
-            suicideCondition[thr.tname] = True
+        suicideCondition[thr.tname] = True
     logger.lprint("About to stop gracefully.")
     time.sleep(10)
     
