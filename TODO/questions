@@ -1,3 +1,9 @@
+ask nfr:
+	get-actual_self
+	prepays
+	settlement
+
+
 self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
 
 

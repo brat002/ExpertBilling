@@ -29,24 +29,26 @@ class NfQueues(object):
         self.nfQueue, self.nfqLock = deque(), Lock()
 
 class NfrVars(object):
-    __slots__ = ('host', 'port', 'addr', 'sendFlag', 'saveDir', 'groupAggrTime', 'statAggrTime')
+    __slots__ = ('host', 'port', 'addr', 'sendFlag', 'saveDir', 'groupAggrTime', 'statAggrTime', 'statDicts', 'groupDicts')
     
     def __init__(self):
         self.host, self.port = '127.0.0.1', 9997
         self.addr = (self.host, self.port)
         self.sendFlag = ''
-        self.savedir = '.'
+        self.saveDir = '.'
         self.groupAggrTime = 300    
         self.statAggrTime  = 1800
+        self.statDicts  = 10
+        self.groupDicts = 10
         
 class NfrQueues(object):
     __slots__ = ('nfIncomingQueue', 'nfQueueLock', 'groupAggrDict', 'statAggrDict', \
                  'groupDeque', 'groupLock', 'statDeque', 'statLock', 'depickerQueue', 'depickerLock', \
                  'picker', 'pickerLock', 'pickerTime')
-    def __init__(self):
+    def __init__(self, groupDicts = 10, statDicts = 10):
         self.nfIncomingQueue = deque(); self.nfQueueLock = Lock()
-        self.groupAggrDict = {}; self.statAggrDict = {}
-        self.groupAggrLock = Lock(); self.statAggrLock = Lock()
+        self.groupAggrDicts = [{}]*groupDicts;     self.statAggrDicts = [{}]*statDicts
+        self.groupAggrLocks = [Lock()]*groupDicts; self.statAggrLocks = [Lock()]*statDicts
         self.groupDeque = deque(); self.groupLock = Lock()
         self.statDeque =  deque(); self.statLock = Lock()
         self.depickerQueue = deque(); self.depickerLock = Lock()

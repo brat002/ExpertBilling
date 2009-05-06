@@ -661,8 +661,8 @@ def get_corrected_speed(speed, correction):
         return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
     else:
         return speed
-
-def renewCaches(cur, cacheMaster, cacheType, code, cargs=()):
+'''use Old = use old caches if any errors were encountered during renewing process'''
+def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
     cacheDate = datetime.datetime.fromtimestamp(ptime)
@@ -679,5 +679,10 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=()):
     else:
         cacheMaster.read = True
             
-    with cacheMaster.lock:
-        cacheMaster.cache, cacheMaster.date = caches, cacheDate  
+    if cacheMaster.read:
+        with cacheMaster.lock:
+            cacheMaster.cache, cacheMaster.date = caches, cacheDate
+    elif useOld:
+        log_warning_('#30%s0001 renewCaches: using old caches: %s' % (code,))
+        with cacheMaster.lock:
+            cacheMaster.date = cacheDate
