@@ -7,6 +7,7 @@ import datetime
 import os
 import time
 import string
+import traceback
 dateDelim = "."
 connectDBName = "exbillusers"
 tableHeight = 17
@@ -61,10 +62,10 @@ def connlogin(func):
             res = func(*args, **kwargs)
             return res
         except Pyro.errors.ConnectionClosedError, cce:
-            print cce
+            print repr(cce)
             QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Потеря связи."))
         except Pyro.errors.ConnectionDeniedError, cde:
-            print cde
+            print repr(cde)
             QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Действие не авторизовано."))
     return relogfunc
 

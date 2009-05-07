@@ -95,8 +95,8 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                     return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
                 #Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
                 #reread runtime options
-                config.read("ebs_config_runtime.ini")
-                logger.setNewLevel(int(config.get("rpc", "log_level")))
+                #config.read("ebs_config_runtime.ini")
+                #logger.setNewLevel(int(config.get("rpc", "log_level")))
                 return(1,0)
             else:
                 #print "DENIED-----------------"
@@ -157,9 +157,10 @@ def authentconn(func):
                 return func(*args, **kwargs)
         except Exception, ex:
             if isinstance(ex, psycopg2.OperationalError):
-                logger.error("%s : (RPC Server) database connection is down: %s", (args[0].getName(),repr(ex)))
+                logger.error("%s : (RPC Server) database connection is down: %s \n %s", (args[0].getName(),repr(ex), traceback.format_exc()))
             else:
                 #print args[0].getName() + ": exception: " + str(ex)
+                logger.error("%s: (RPC server) remote execution exception: %s \n %s", (args[0].getName(),repr(ex), traceback.format_exc()))
                 raise ex
 
     return relogfunc
@@ -873,7 +874,7 @@ if __name__ == "__main__":
             maxcached=10,
             blocking=True,
             #maxusage=20,
-            setsession=["SET statement_timeout = 6000000;"],
+            setsession=["SET statement_timeout = 180000000;"],
             creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
                                                                    config.get("db", "username"),
