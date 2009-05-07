@@ -73,7 +73,7 @@ class PrepaysCache(CacheItem):
 class NodesCache(CacheItem):
     '''Traffictransmit- and timeperiod- nodes data by (traffic_transmit_service_id, group_id)'''
     __slots__ = ('by_tts_group',)
-    datatype = lambda: defaultdict(list)
+    datatype = NodesData
     sql = nfroutine_sql['nodes']
     
     def reindex(self):

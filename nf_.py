@@ -138,7 +138,7 @@ def nfPacketHandle(data, addrport, flowCache):
         acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
         local = bool(acc_data_src and acc_data_dst)
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
-        if acc_acct_tf:
+        if acc_acct_tf:            
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
@@ -287,12 +287,13 @@ class FlowDequeThread(Thread):
                     qflow.account_id = None
                     local = qflow.padding
                     src = True
-                    for acc_id, acctf_id, tf_id in acc_data:
+                    for acc in acc_data:
                         flow = copy.copy(qflow) if (local and src) else qflow
                         if 0: assert isinstance(flow, Flow5Data)
-                        flow.account_id = acc_id
+                        flow.account_id = acc.account_id
+                        flow.acctf_id = acc.acctf_id
                         #get groups for tarif
-                        tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(tf_id)
+                        tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(acc.tarif_id)
                         has_groups = True if tarifGroups else False
                         direction = ((src and 'INPUT') or 'OUTPUT') if local else None
                         passthr = True
@@ -653,7 +654,7 @@ def main ():
 
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
-    reactor.listenUDP(vars.clientPort, Reception())
+    reactor.listenUDP(vars.port, Reception())
     print "ebs: nf: started"
     reactor.run()
 
@@ -705,6 +706,8 @@ if __name__=='__main__':
         else:
             raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         
+        vars.host = config.get("nf", "host")
+        vars.port = int(config.get("nf", "port"))
         
         flags.recover      = (config.get("nfroutine_nf", "recover") == '1')
         flags.recoverprev  = (config.get("nfroutine_nf", "recoverAttempted") == '1')   

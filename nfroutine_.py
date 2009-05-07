@@ -392,7 +392,7 @@ class NetFlowRoutine(Thread):
                         queues.picker = Picker()
                         queues.pickerTime = time.time()                    
 
-                fpacket = nfIncomingQueue.popleft()
+                fpacket = queues.nfIncomingQueue.popleft()
                 flows = loads(fpacket)
                 #iterate through them
                 for pflow in flows:
@@ -428,12 +428,12 @@ class NetFlowRoutine(Thread):
                     Ключ - (account_id, group_id, gtime)
                     Ключ затем добавляется в очередь.'''
                     if flow.has_groups and flow.groups:                        
-                        gtime = ftime - (ftime % vars.groupAggrTime)                        
+                        gtime = flow.datetime - (flow.datetime % vars.groupAggrTime)                        
                         for group_id, group_classes, group_dir, group_type in flow.groups:
                             #group_id, group_classes, group_dir, group_type  = group
                             #calculate a key and check the dictionary
                             gkey = (flow.account_id, group_id, gtime)
-                            dgkey = (int(gtime) + flow.account_id) % vars.groupDicts
+                            dgkey = (int(gtime / 667) + flow.account_id) % vars.groupDicts
                             aggrgDict = queues.groupAggrDicts[dgkey]
                             aggrgLock = queues.groupAggrLocks[dgkey]
                             with aggrgLock:
@@ -450,9 +450,9 @@ class NetFlowRoutine(Thread):
                    
                                 
                     #global statistics calculation
-                    stime = ftime - (ftime % vars.statAggrTime)
+                    stime = flow.datetime - (flow.datetime % vars.statAggrTime)
                     skey  = (flow.account_id, stime)
-                    dskey = (int(stime) + flow.account_id) % vars.statDicts
+                    dskey = (int(stime / 667) + flow.account_id) % vars.statDicts
                     aggrsDict = queues.statAggrDicts[dskey]
                     aggrsLock = queues.statAggrLocks[dskey]
                     with aggrsLock:
@@ -485,23 +485,8 @@ class NetFlowRoutine(Thread):
                         continue
                     
                     if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
-                        if 0 and acc.settlement_period_id:
-                            sp = caches.settlement_cache.by_id[acc.settlement_period_id]
-                            if 0: assert isinstance(sp, SettlementData)
-                            if sp.autostart:
-                                # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
-                                # дату привязки тарифного плана пользователю
-                                #start = accounttarif.datetime
-                                sp_time_start=acc[3]
-                                
-                            #stream_date = datetime.datetime.fromtimestamp(flow[20])
-                            settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=spInf[1], repeat_after=spInf[3], repeat_after_seconds=spInf[2], now=stream_date)
-                            #Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-                            
-                            octets_summ = 0
-                        else:
-                            octets_summ = 0
-                            #loop throungh classes in 'classes' tuple
+                        octets_summ = 0
+                        #loop throungh classes in 'classes' tuple
                             
                         for group_id, group_classes, group_dir, group_type in flow.groups:
                             nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
@@ -579,18 +564,17 @@ class AccountServiceThread(Thread):
     def run(self):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, queues
+        global suicideCondition, cacheMaster, flags, queues, threads, cacheThr
         counter = 0; now = datetime.datetime.now
         while True:
             if suicideCondition[self.__class__.__name__]: break
             a = time.clock()
-            queues.nfFlowCache.reset()
             try: 
                 time_run = (now() - cacheMaster.date).seconds > 180
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
                     cur = connection.cursor()
-                    renewCaches(cur, cacheMaster, NfroutineCaches, 21)
+                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
                     cur.close()
                     if counter == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
@@ -612,6 +596,9 @@ class AccountServiceThread(Thread):
                             if vars.sendFlag and vars.sendFlag=='SLP!':
                                 vars.sendFlag = ''
                                 logger.lprint('Sleep flag unset!')
+                            
+                        th_status = ';'.join((thrd.getname().split(' ')[0] + ('OK' and thrd.isAlive()) or 'NO' for thrd in threads + [cacheThr]))
+                        logger.warning('THREAD STATUS: %s', th_status)
 
                     counter += 1
                     if flags.cacheFlag:
@@ -756,34 +743,39 @@ def main():
     graceful_recover()
     global cacheMaster, suicideCondition
     global threads, cacheThr, NfAsyncUDPServer
-    #thread_list = [['routinethreads', NetFlowRoutine, 'NetFlowRoutine'],]
     threads=[]
     for i in xrange(int(config.get("nfroutine", "routinethreads"))):
         newNfr = NetFlowRoutine()
-        newNfr.setName('NetFlowRoutine #%s ' % i)
+        newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
         threads.append(newNfr)
     for i in xrange(int(config.get("nfroutine", "groupstatthreads"))):
         grdqTh = groupDequeThread()
-        grdqTh.setName('groupDequeThread #%i' % i)
+        grdqTh.setName('GDT:#%i: groupDequeThread' % i)
         threads.append(grdqTh)
     for i in xrange(int(config.get("nfroutine", "globalstatthreads"))):
         stdqTh = statDequeThread()
-        stdqTh.setName('statDequeThread #%i' % i)
+        stdqTh.setName('SDS:#%i: statDequeThread' % i)
         threads.append(stdqTh)
     for i in xrange(int(config.get("nfroutine", "depickerthreads"))):
         depTh = DepickerThread()
-        depTh.setName('depickerThread #%i' % i)
+        depTh.setName('DET:#%i: depickerThread' % i)
         threads.append(depTh)
     
     cacheThr = AccountServiceThread()
-    cacheThr.setName('NFR AccountServiceThread')
+    cacheThr.setName('AST: AccountServiceThread')
     suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.start()
-    while cacheMaster.read is None:
-        time.sleep(0.2)
+    
+    time.sleep(2)
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
             sys.exit()
-        
+        time.sleep(10)
+        if not cacheMaster.read: 
+            print 'caches still not read, maybe you should check the log'
+      
+    print 'caches ready'
+    logger.info("NFR: cache read status: %s", cacheMaster.read)
     #i= range(len(threads))
     for th in threads:
         suicideCondition[th.__class__.__name__] = False
@@ -791,6 +783,8 @@ def main():
         logger.info("NFR %s start", th.getName())
         time.sleep(0.1)
         
+    logger.warning("THREADS=%s", repr([thrd.getName() for thrd in threads + [cacheThr]]))
+    #logger.warning("CACHETH=%s", cacheThr.getName())
     time.sleep(5)
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
@@ -807,7 +801,7 @@ def main():
     #asyncore.
     #NfAsyncUDPServer(vars.addr)
     
-    reactor.listenUDP(vars.port, NfTwistedServer())
+    reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
     print "ebs: nfroutine: started"
     reactor.run()
 #===============================================================================
@@ -819,7 +813,6 @@ if __name__ == "__main__":
         
 
     cacheMaster = CacheMaster()
-    cacheMaster.date = None
     
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")

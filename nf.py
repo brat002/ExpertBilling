@@ -25,9 +25,13 @@ from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
+import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import pollreactor
-pollreactor.install()
+if hasattr(twisted.internet, 'pollreactor'):
+    from twisted.internet import pollreactor
+    pollreactor.install()
+else:
+    print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 
 #from classes.nf_cache import *
