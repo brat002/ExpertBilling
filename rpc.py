@@ -49,7 +49,7 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
 
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
-        try:
+        #try:
             for val in tcpserver.implementations.itervalues():
                 if val[1] == 'rpc':
                     serv = val[0]
@@ -62,13 +62,13 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
             #print hash
             user, mdpass, role = hash.split(':')
             
-            try:
-                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
-                val[0].connection.commit()
-            except Exception, ex:
-                logger.error("acceptIdentification error: %s", repr(ex))
-                conn.utoken = ''
-                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
+            #try:
+            obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
+            val[0].connection.commit()
+            #except Exception, ex:
+            #    logger.error("acceptIdentification error: %s", repr(ex))
+            #    conn.utoken = ''
+            #    return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
             #print obj.id
             #print obj.host
             hostOk = self.checkIP(conn.addr[0], str(obj.host))
@@ -96,10 +96,10 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 #print "DENIED-----------------"
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SECURITY)
-        except Exception, ex:
-            logger.info("acceptIdentification exception: %s", repr(ex))
-            conn.utoken = ''
-            return (0,Pyro.constants.DENIED_SECURITY)
+        #except Exception, ex:
+        #    logger.info("acceptIdentification exception: %s", repr(ex))
+        #    conn.utoken = ''
+        #    return (0,Pyro.constants.DENIED_SECURITY)
 
     def checkIP(self, ipstr, hostsstr):
         #print "checkIP----"
