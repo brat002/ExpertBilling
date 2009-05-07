@@ -49,7 +49,7 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
 
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
-        #try:
+        try:
             for val in tcpserver.implementations.itervalues():
                 if val[1] == 'rpc':
                     serv = val[0]
@@ -62,13 +62,13 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
             #print hash
             user, mdpass, role = hash.split(':')
             
-            #try:
-            obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role,))
-            val[0].connection.commit()
-            #except Exception, ex:
-            #    logger.error("acceptIdentification error: %s", repr(ex))
-            #    conn.utoken = ''
-            #    return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
+            try:
+                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
+                val[0].connection.commit()
+            except Exception, ex:
+                logger.error("acceptIdentification error: %s", repr(ex))
+                conn.utoken = ''
+                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
             #print obj.id
             #print obj.host
             hostOk = self.checkIP(conn.addr[0], str(obj.host))
@@ -96,10 +96,10 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 #print "DENIED-----------------"
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SECURITY)
-        #except Exception, ex:
-        #    logger.info("acceptIdentification exception: %s", repr(ex))
-        #    conn.utoken = ''
-        #    return (0,Pyro.constants.DENIED_SECURITY)
+        except Exception, ex:
+            logger.info("acceptIdentification exception: %s", repr(ex))
+            conn.utoken = ''
+            return (0,Pyro.constants.DENIED_SECURITY)
 
     def checkIP(self, ipstr, hostsstr):
         #print "checkIP----"
@@ -137,7 +137,7 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
 
 def authentconn(func):
     def relogfunc(*args, **kwargs):
-        #try:
+        try:
             if args[0].getLocalStorage().caller:
                 caller = args[0].getLocalStorage().caller
                 if args[0].getLocalStorage().caller.utoken:
@@ -149,12 +149,12 @@ def authentconn(func):
                     return None
             else:
                 return func(*args, **kwargs)
-        #except Exception, ex:
-        #    if isinstance(ex, psycopg2.OperationalError):
-        #        logger.error("%s : (RPC Server) database connection is down: %s", (args[0].getName(),repr(ex)))
-        #    else:
-        #        #print args[0].getName() + ": exception: " + str(ex)
-        #        raise ex
+        except Exception, ex:
+            if isinstance(ex, psycopg2.OperationalError):
+                logger.error("%s : (RPC Server) database connection is down: %s", (args[0].getName(),repr(ex)))
+            else:
+                #print args[0].getName() + ": exception: " + str(ex)
+                raise ex
 
     return relogfunc
 
@@ -367,9 +367,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cur.execute(sql)
         #connection.commit()
         result=[]
-        result=cur.fetchone()
+        r=cur.fetchall()
+        if len(r)>1:
+            raise Exception
 
-        return Object(result)
+        if r==[]:
+            return None
+        return Object(r[0])
 
     @authentconn
     def get_list(self, sql, cur=None, connection=None):
