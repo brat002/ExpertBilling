@@ -367,13 +367,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cur.execute(sql)
         #connection.commit()
         result=[]
-        r=cur.fetchall()
-        if len(r)>1:
-            raise Exception
+        result=cur.fetchone()
 
-        if r==[]:
-            return None
-        return Object(r[0])
+        return Object(result)
 
     @authentconn
     def get_list(self, sql, cur=None, connection=None):
