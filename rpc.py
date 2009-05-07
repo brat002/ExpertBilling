@@ -76,9 +76,9 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                 return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
             #print obj.id
             #print obj.host
-            hostOk = self.checkIP(conn.addr[0], str(obj.host))
+            hostOk = self.checkIP(conn.addr[0], str(host))
 
-            if hostOk and (obj.password == mdpass):
+            if hostOk and (password == mdpass):
                 #print "accepted---------------------------------"
                 tmd5 = hashlib.md5(str(conn.addr[0]))
                 tmd5.update(str(conn.addr[1]))
