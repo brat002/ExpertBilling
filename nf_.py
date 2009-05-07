@@ -322,12 +322,12 @@ class FlowDequeThread(Thread):
                                     break
                             #found passthrough=false
                             if not passthr:
-                                self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
+                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 break                   
                         #traversed all the nodes
                         else:
                             if classLst:
-                                self.add_classes_groups(flow, classLst, fnode, acctf_id, has_groups, tarifGroups)
+                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                             else: continue
                             
                         #construct a list
