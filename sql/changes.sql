@@ -397,7 +397,7 @@ CREATE TABLE billservice_traffictransaction
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_traffictransaction OWNER TO mikrobill;
+ALTER TABLE billservice_traffictransaction OWNER TO ebs;
 
 CREATE INDEX billservice_traffictransaction_account_id
   ON billservice_traffictransaction

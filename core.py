@@ -1098,7 +1098,7 @@ class settlement_period_service_dog(Thread):
                             for prepaid_traffic_id, size in prepais:
                                 u=True
                                 #print "SET PREPAID TRAFIC"
-                                cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size+%s, datetime=%s
+                                cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size*1048576+%s, datetime=%s
                                                WHERE account_tarif_id=%s and prepaid_traffic_id=%s RETURNING id;
                                             """, (size, now, accounttarif_id, prepaid_traffic_id,))
                                 if cur.fetchone() is None:
