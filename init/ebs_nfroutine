@@ -33,11 +33,11 @@ stop)
 	if [ `uname` = 'SunOS' ]
 	then
 	    pkill -SIGTERM -x $NAME
-	    sleep 15
+	    sleep 17
 	    pkill -9 -x $DAEMON
 	else
         killall -SIGTERM $NAME
-        sleep 15
+        sleep 17
         killall -9 $NAME
 	fi
         ;;

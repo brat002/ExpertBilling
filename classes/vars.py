@@ -6,7 +6,7 @@ class NfVars(object):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
-                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts')
     def __init__(self):
         self.clientHost, self.clientPort, self.clientAddr, self.sockTimeout, self.saveDir = (None,)*5
         self.aggrTime, self.aggrNum = 120, 667
@@ -14,19 +14,20 @@ class NfVars(object):
         self.flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
         self.headerLENGTH = struct.calcsize("!HHIIIIBBH")
         self.dumpDir = '.'
+        self.cacheDicts = 10
         
 class NfQueues(object):
-    """('nfFlowCache', 'dcache','dcacheLock', 'flowQueue','fqueueLock',\
+    """('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
-    __slots__ = ('nfFlowCache', 'dcache','dcacheLock', 'flowQueue','fqueueLock',\
+    __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')
-    def __init__(self):
+    def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
-        self.dcache, self.dcacheLock = {}, Lock()
-        self.flowQueue, self.fqueueLock = deque(), Lock()
-        self.databaseQueue, self.dbLock = deque(), Lock()
-        self.fnameQueue, self.fnameLock = deque(), Lock()
-        self.nfQueue, self.nfqLock = deque(), Lock()
+        self.dcaches = [{}]*dcacheNum; self.dcacheLocks = [Lock()]*dcacheNum
+        self.flowQueue = deque(); self.fqueueLock = Lock()
+        self.databaseQueue = deque(); self.dbLock = Lock()
+        self.fnameQueue = deque(); self.fnameLock = Lock()
+        self.nfQueue = deque(); self.nfqLock = Lock()
 
 class NfrVars(object):
     __slots__ = ('host', 'port', 'addr', 'sendFlag', 'saveDir', 'groupAggrTime', 'statAggrTime', 'statDicts', 'groupDicts')
