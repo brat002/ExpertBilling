@@ -661,6 +661,7 @@ def get_corrected_speed(speed, correction):
         return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
     else:
         return speed
+    
 '''use Old = use old caches if any errors were encountered during renewing process'''
 def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     ptime =  time.time()
@@ -682,7 +683,9 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     if cacheMaster.read:
         with cacheMaster.lock:
             cacheMaster.cache, cacheMaster.date = caches, cacheDate
-    elif useOld:
-        log_warning_('#30%s0001 renewCaches: using old caches: %s' % (code,))
+    elif useOld and cacheMaster.cache:
+        log_warning_('#30%s0001 renewCaches: using old caches!' % (code,))
         with cacheMaster.lock:
             cacheMaster.date = cacheDate
+    else:
+        raise Exception("#30%s0049 renewCaches: attempt failed: fail propagated" % (code,))

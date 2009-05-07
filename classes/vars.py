@@ -5,7 +5,7 @@ from threading import Lock
 class NfVars(object):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
-    __slots__ = ('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
+    __slots__ = ('port', 'host', 'clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts')
     def __init__(self):
         self.clientHost, self.clientPort, self.clientAddr, self.sockTimeout, self.saveDir = (None,)*5
@@ -15,6 +15,8 @@ class NfVars(object):
         self.headerLENGTH = struct.calcsize("!HHIIIIBBH")
         self.dumpDir = '.'
         self.cacheDicts = 10
+        self.port = 9996
+        self.host = '0.0.0.0'
         
 class NfQueues(object):
     """('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
@@ -43,7 +45,7 @@ class NfrVars(object):
         self.groupDicts = 10
         
 class NfrQueues(object):
-    __slots__ = ('nfIncomingQueue', 'nfQueueLock', 'groupAggrDict', 'statAggrDict', \
+    __slots__ = ('nfIncomingQueue', 'nfQueueLock', 'groupAggrDicts', 'statAggrDicts', 'groupAggrLocks', 'statAggrLocks', \
                  'groupDeque', 'groupLock', 'statDeque', 'statLock', 'depickerQueue', 'depickerLock', \
                  'picker', 'pickerLock', 'pickerTime')
     def __init__(self, groupDicts = 10, statDicts = 10):
