@@ -875,7 +875,7 @@ if __name__ == "__main__":
         #[(1,2, )][1] = nas etc
         #statAggrDict = {}   
         
-
+        queues.picker = Picker()
         queues.pickerTime = time.time() + 5
         
         #function that returns number of allowed users
