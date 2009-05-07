@@ -63,8 +63,13 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
             user, mdpass, role = hash.split(':')
             
             try:
-                obj = serv.get("SELECT * FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
-                val[0].connection.commit()
+                db_connection = pool.connection()
+                cur = db_connection.cursor()
+                cur.execute("SELECT host, password FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
+                host, password = cur.fetchone()
+                db_connection.commit()
+                cur.close()
+                db_connection.close()
             except Exception, ex:
                 logger.error("acceptIdentification error: %s", repr(ex))
                 conn.utoken = ''
