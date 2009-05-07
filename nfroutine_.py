@@ -28,6 +28,15 @@ from db import delete_transaction, dbRoutine
 from saver_ import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
+import twisted.internet
+from twisted.internet.protocol import DatagramProtocol
+if hasattr(twisted.internet, 'pollreactor'):
+    from twisted.internet import pollreactor
+    pollreactor.install()
+else:
+    print 'No poll(). Using select() instead.'
+from twisted.internet import reactor
+
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
@@ -615,6 +624,20 @@ class AccountServiceThread(Thread):
             gc.collect()
             time.sleep(20)
             
+            
+class NfTwistedServer(DatagramProtocol):
+    '''
+    Twisted Asynchronous server that recieves datagrams with NetFlow packets
+    and appends them to 'nfQueue' queue.
+    '''
+    def datagramReceived(self, data, addrport):
+        try:
+            self.transport.write(vars.sendFlag + str(len(data)), addrport)
+            #self.socket.sendto(vars.sendFlag + str(len(data)), addrport)
+            queues.nfIncomingQueue.append(data)
+        except:            
+            logger.error("%s : #30210701 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+
 class NfAsyncUDPServer(asyncore.dispatcher):
     ac_out_buffer_size = 16384*10
     ac_in_buffer_size = 16384*10
@@ -684,7 +707,8 @@ def SIGUSR1_handler(signum, frame):
 
 def graceful_save():
     global cacheThr, threads, suicideCondition
-    asyncore.close_all()
+    #asyncore.close_all()
+    reactor.stop()
     suicideCondition[cacheThr.tname] = True
     logger.lprint("About to exit gracefully.")
     st_time = time.time()
@@ -781,11 +805,11 @@ def main():
     except: logger.lprint('NO SIGUSR1!')
     
     #asyncore.
-    NfAsyncUDPServer(vars.addr)
+    #NfAsyncUDPServer(vars.addr)
     
+    reactor.listenUDP(vars.port, NfTwistedServer())
     print "ebs: nfroutine: started"
-    while 1: 
-        asyncore.poll(0.010)
+    reactor.run()
 #===============================================================================
 
     
@@ -826,8 +850,8 @@ if __name__ == "__main__":
         #temp save on restart or graceful stop
         vars.saveDir = config.get("nfroutine", "save_dir")
         #store stat. for old tarifs and accounts?
-        flags.store_na_tarif   = True if ((config.get("nfroutine", "store_na_tarif")  =='True') or (config.get("nfroutine", "store_na_tarif")  =='1')) else False
-        flags.store_na_account = True if (config.get("nfroutine", "store_na_account")=='True') or (config.get("nfroutine", "store_na_account")=='1') else False
+        flags.store_na_tarif   = True if ((config.get("nfroutine", "store_na_tarif")   =='True') or (config.get("nfroutine", "store_na_tarif")  =='1')) else False
+        flags.store_na_account = True if ((config.get("nfroutine", "store_na_account") =='True') or (config.get("nfroutine", "store_na_account")=='1')) else False
         
         #write profiling info?
         flags.writeProf = logger.writeInfoP()  

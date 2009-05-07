@@ -9,7 +9,7 @@ import signal
 import os, sys
 import marshal
 import utilites
-import asyncore
+#import asyncore
 import psycopg2
 import threading
 import traceback
@@ -193,19 +193,22 @@ class FlowCache(object):
         if 0: assert isinstance(flow, Flow5Data)
         #constructs a key
         key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
-        queues.dcacheLock.acquire()
-        dflow = queues.dcache.get(key)
+        dhkey   = (flow.src_addr + flow.dst_addr + flow.src_port) % vars.cacheDicts
+        dhcache = queues.dcaches[dhkey]
+        dhlock  = queues.dcacheLocks[dhkey]
+        dhlock.acquire()
+        dflow = dhcache.get(key)
         #no such value, must add        
         if dflow:
             dflow.octets  += flow.octets
             dflow.packets += flow.packets
             dflow.finish = flow.finish
-            queues.dcacheLock.release()
+            dhlock.release()
         else:
-            queues.dcache[key] = flow            
+            dhcache[key] = flow            
             #stores key in a list
             self.keylist.append(key)
-            queues.dcacheLock.release()
+            dhlock.release()
             #time to start over?
             if (len(self.keylist) > vars.aggrNum) or ((self.stime + 10.0) < time.time()):
                 #appends keylist to flowQueue
@@ -268,13 +271,16 @@ class FlowDequeThread(Thread):
                 #if aggregation time was still not reached -> sleep
                 wtime = time.time() - vars.aggrTime - stime
                 if wtime < 0: time.sleep(abs(wtime))
-                
 
                 fcnt = 0
                 flst = []
                 for key in keylist:
-                    with queues.dcacheLock:
-                        qflow = queues.dcache.pop(key, None)
+                    #src_addr, dst_addr, src_port
+                    dhkey   = (key[0] + key[1] + key[3]) % vars.cacheDicts
+                    dhcache = queues.dcaches[dhkey]
+                    dhlock  = queues.dcacheLocks[dhkey]
+                    with dhlock:
+                        qflow = dhcache.pop(key, None)
                     if not qflow: continue
                     #get id's
                     acc_data = qflow.account_id
@@ -527,7 +533,7 @@ class ServiceThread(Thread):
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data)); counter = 0
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:
-                            logger.info("len flowCache %s", len(queues.dcache))
+                            #logger.info("len flowCache %s", len(queues.dcache))
                             logger.info("len flowQueue %s", len(queues.flowQueue))
                             logger.info("len dbQueue: %s", len(queues.databaseQueue))
                             logger.info("len fnameQueue: %s", len(queues.fnameQueue))
@@ -581,29 +587,27 @@ def SIGUSR1_handler(signum, frame):
 def graceful_save():
     global cacheThr, threads, suicideCondition
     #asyncore.close_all()
-    
+    reactor.stop()
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
         suicideCondition[thr.tname] = True
     logger.lprint("About to stop gracefully.")
     time.sleep(10)
-    
-    graceful_saver([['dcache','nfFlowCache'], ['flowQueue'], ['databaseQueue']],
+    pool.close()
+    time.sleep(1)
+    graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, 'nf_', vars.saveDir)
     
-    pool.close()
-    time.sleep(2)
+    time.sleep(1)
     logger.lprint("Stopping gracefully.")
     sys.exit()
         
 def graceful_recover():
-    graceful_loader(['dcache','nfFlowCache','flowQueue','databaseQueue'],
+    graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
                     queues, 'nf_', vars.saveDir)
                 
 def main ():        
     global flags, queues, cacheMaster, threads, cacheThr, caches
-
-    queues.nfFlowCache = FlowCache()
     graceful_recover()
     #recover leftover dumps?
     if flags.recover:
@@ -647,7 +651,9 @@ def main ():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
 
-    reactor.listenUDP(int(config.get("nf", "port")), Reception())
+    #add "listenunixdatagram!"
+    #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
+    reactor.listenUDP(vars.clientPort, Reception())
     print "ebs: nf: started"
     reactor.run()
 
@@ -658,7 +664,6 @@ if __name__=='__main__':
         
     flags = NfFlags()
     vars  = NfVars()
-    queues= NfQueues()
     
     cacheMaster = CacheMaster()
     #cacheMaster.date = None
@@ -666,6 +671,11 @@ if __name__=='__main__':
     
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
+    
+    if config.has_option("nf", "cachedicts"):  vars.cacheDicts  = config.getint("nf", "cachedicts")
+    
+    queues = NfQueues(vars.cacheDicts)
+    queues.nfFlowCache = FlowCache()
     
     logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
     saver.log_adapt = logger.log_adapt
@@ -682,7 +692,6 @@ if __name__=='__main__':
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                config.get("db", "host"), config.get("db", "password")))
     
-            
         #get socket parameters. AF_UNIX support
         if config.get("nfroutine_nf", "usock") == '0':
             vars.clientHost = config.get("nfroutine_nf_inet", "host")
@@ -697,8 +706,8 @@ if __name__=='__main__':
             raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         
         
-        flags.recover    = (config.get("nfroutine_nf", "recover") == '1')
-        flags.recoverprev = (config.get("nfroutine_nf", "recoverAttempted") == '1')   
+        flags.recover      = (config.get("nfroutine_nf", "recover") == '1')
+        flags.recoverprev  = (config.get("nfroutine_nf", "recoverAttempted") == '1')   
         flags.checkClasses = (config.get("nf", "checkclasses") == '1')
         
         vars.sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
