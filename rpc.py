@@ -874,7 +874,7 @@ if __name__ == "__main__":
             maxcached=10,
             blocking=True,
             #maxusage=20,
-            #setsession=["SET statement_timeout = 180000000;"],
+            setsession=["SET statement_timeout = 180000000;"],
             creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
                                                                    config.get("db", "username"),
