@@ -3,6 +3,7 @@
 from __future__ import with_statement
 
 import cPickle
+import random
 import signal
 import asyncore
 import threading
@@ -265,7 +266,7 @@ class statDequeThread(Thread):
                 aggrsDict = queues.statAggrDicts[dkey]
                 aggrsLock = queues.statAggrLocks[dkey]
                 with aggrsLock:
-                    statData = aggrsDict.pop(gkey, None)
+                    statData = aggrsDict.pop(skey, None)
                     
                 if not statData:
                     logger.info('%s: no statdata for key: %s', (self.getName(), skey))
@@ -346,7 +347,7 @@ class NetFlowRoutine(Thread):
                 """
                 if from_start < min_from_start or min_from_start == 0:
                     min_from_start = from_start
-                    cost = trafic_cost
+                    cost = node.traffic_cost
                     
         return cost
 
@@ -378,6 +379,7 @@ class NetFlowRoutine(Thread):
                     finally:
                         cacheMaster.lock.release()
                     oldAcct = defaultdict(list)
+                    
                 if not caches:
                     time.sleep(3)
                     continue
@@ -446,7 +448,7 @@ class NetFlowRoutine(Thread):
                                         queues.groupDeque.append((gkey, time.time()))                      
                                 #aggregate bytes for every class/direction
                                 for class_ in group_classes:
-                                    grec[0][class_][flow.node_direction] += octets                     
+                                    grec[0][class_][flow.node_direction] += flow.octets                     
                    
                                 
                     #global statistics calculation
@@ -458,15 +460,15 @@ class NetFlowRoutine(Thread):
                     with aggrsLock:
                         srec = aggrsDict.get(skey)
                         if not srec:                            
-                            srec = [defaultdict(ddict_IO), [nas_id, {'INPUT':0, 'OUTPUT':0}]]
+                            srec = [defaultdict(ddict_IO), [flow.nas_id, {'INPUT':0, 'OUTPUT':0}]]
                             aggrsDict[skey] = srec
                             with queues.statLock:
                                 queues.statDeque.append((skey, time.time()))
                         #add for every class
                         for class_ in flow.class_id:
-                            srec[0][class_][flow.node_direction] += octets
+                            srec[0][class_][flow.node_direction] += flow.octets
                         #global data
-                        srec[1][1][flow.node_direction] += octets                        
+                        srec[1][1][flow.node_direction] += flow.octets                        
 
                     tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
                     store_classes = list(caches.storeclass_cache.classes.intersection(flow.class_id))
@@ -530,8 +532,8 @@ class NetFlowRoutine(Thread):
                         icount = 0; timecount = 0
                         
             except IndexError, ierr:
-                if not fpacket: time.sleep(5)
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                if not fpacket: time.sleep(random.randint(10,20))                
                 continue               
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
@@ -597,7 +599,7 @@ class AccountServiceThread(Thread):
                                 vars.sendFlag = ''
                                 logger.lprint('Sleep flag unset!')
                             
-                        th_status = ';'.join((thrd.getname().split(' ')[0] + ('OK' and thrd.isAlive()) or 'NO' for thrd in threads + [cacheThr]))
+                        th_status = ';'.join((thrd.getName().split(' ')[0] + (thrd.isAlive() and 'OK') or 'NO' for thrd in threads + [cacheThr]))
                         logger.warning('THREAD STATUS: %s', th_status)
 
                     counter += 1

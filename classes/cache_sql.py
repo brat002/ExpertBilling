@@ -87,11 +87,11 @@ core_sql = \
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id"""}
 rad_sql = \
-        {'account'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
+        {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
                         ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                         ba.disabled_by_limit, ba.vpn_speed, bt.active, 
-                        ba.allow_vpn_null, ba.allow_vpn_block, ba.status, ba.ipn_ip_address, ba.netmask, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block
+                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.netmask, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block
                         FROM billservice_account as ba
                         JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id

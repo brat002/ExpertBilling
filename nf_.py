@@ -138,7 +138,7 @@ def nfPacketHandle(data, addrport, flowCache):
         acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
         local = bool(acc_data_src and acc_data_dst)
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
-        if acc_acct_tf:            
+        if acc_acct_tf[0]:            
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
@@ -632,10 +632,16 @@ def main ():
     cacheThr.start()
     
     #sleep until all caches are read
-    while not cacheMaster.date:
-        time.sleep(0.2)
+    time.sleep(2)
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
             sys.exit()
+        time.sleep(10)
+        if not cacheMaster.read: 
+            print 'caches still not read, maybe you should check the log'
+      
+    print 'caches ready'
+    
     if 0: assert isinstance(cacheMaster.cache, NfCaches)  
     for th in threads:
         suicideCondition[th.__class__.__name__] = False

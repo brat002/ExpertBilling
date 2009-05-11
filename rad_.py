@@ -37,6 +37,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
+from utilites import renewCaches
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -151,28 +152,28 @@ class AsyncAuthServ(AsyncUDPServer):
         self.dbconn = dbpool
         self.dbconn._con._con.set_isolation_level(0)
         self.dbconn._con._con.set_client_encoding('UTF8')
-        self.dateCache = datetime.datetime(2000, 1, 1)       
+        self.dateCache = datetime.datetime(2000, 1, 1)
+        self.caches = None
 
     def handle_readfrom(self, data, addrport):
         global cacheMaster, queues, vars, flags, fMem
         
-        
-        
         try:     
             #if caches were renewed, renew local copies
-            if cacheMaster.date <= self.dateCache:
-                time.sleep(10); continue
-            else:
+            if cacheMaster.date > self.dateCache:
                 cacheMaster.lock.acquire()
                 try:
-                    caches = cacheMaster.cache
+                    self.caches = cacheMaster.cache
                     dateAT = deepcopy(cacheMaster.date)
                 except Exception, ex:
                     logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
                 finally:
                     cacheMaster.lock.release()
-    
-            if 0: assert isinstance(caches, RadCaches)
+                    
+            if not self.caches:
+                raise Exception("Caches were not ready!")
+            
+            if 0: assert isinstance(self.caches, RadCaches)
                         
             t = clock()
             returndata = ''
@@ -187,7 +188,7 @@ class AsyncAuthServ(AsyncUDPServer):
     
                 coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                 coreconnect.nasip = nas_ip
-                coreconnect.fMem = fMem; coreconnect.caches = caches
+                coreconnect.fMem = fMem; coreconnect.caches = self.caches
                 authobject, packetfromcore=coreconnect.handle()
                 
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
@@ -199,7 +200,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 logger.info("Auth Type %s", access_type)
                 coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
                 coreconnect.nasip = nas_ip
-                coreconnect.fMem = fMem; coreconnect.caches = caches
+                coreconnect.fMem = fMem; coreconnect.caches = self.caches
                 authobject, packetfromcore=coreconnect.handle()
                 
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
@@ -209,14 +210,14 @@ class AsyncAuthServ(AsyncUDPServer):
                 
             elif access_type in ['DHCP'] :
                 coreconnect = HandleSDHCP(packetobject=packetobject)
-                coreconnect.nasip = nas_ip; coreconnect.caches = caches
+                coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
                 returndata=authobject.ReturnPacket(packetfromcore)
             else:
                 #-----
                 coreconnect = HandleSNA(packetobject)
-                coreconnect.nasip = nas_ip; coreconnect.nasCache = self.cacheNas
+                coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 returnpacket = coreconnect.handle()
                 if returnpacket is None: return
                 returndata=authNA(returnpacket)
@@ -241,33 +242,34 @@ class AsyncAcctServ(AsyncUDPServer):
         self.dbconn._con._con.set_isolation_level(0)
         self.dbconn._con._con.set_client_encoding('UTF8')
         self.dateCache = datetime.datetime(2000, 1, 1)
+        self.caches = None
 
 
     def handle_readfrom(self, data, addrport):
         global cacheMaster, vars, fMem
-        
         try:  
-            if cacheMaster.date <= self.dateCache:
-                time.sleep(10); continue
-            else:
+            if cacheMaster.date > self.dateCache:
                 cacheMaster.lock.acquire()
                 try:
-                    caches = cacheMaster.cache
+                    self.caches = cacheMaster.cache
                     dateAT = deepcopy(cacheMaster.date)
                 except Exception, ex:
                     logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
                 finally:
                     cacheMaster.lock.release()
-    
-            if 0: assert isinstance(caches, RadCaches)
+                    
+            if not self.caches:
+                raise Exception("Caches were not ready!")
+            
+            if 0: assert isinstance(self.caches, RadCaches)
 
                         
             t = clock()
-            assert len(data)<=4096
+            assert len(data) <= 4096
             packetobject=packet.AcctPacket(dict=vars.dict,packet=data)
     
             coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
-            coreconnect.caches = caches               
+            coreconnect.caches = self.caches               
             
             packetfromcore = coreconnect.handle()
             
@@ -769,7 +771,7 @@ class CacheRoutine(Thread):
                     run_time = time.clock()                    
                     cur = connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, RadCaches, 41)
+                    renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
@@ -860,10 +862,15 @@ def main():
     cacheThr.setName("CacheRoutine")
     cacheThr.start()    
     
-    while curCachesDate == None:
-        time.sleep(0.2)
+    time.sleep(2)
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
             sys.exit()
+        time.sleep(10)
+        if not cacheMaster.read: 
+            print 'caches still not read, maybe you should check the log'
+      
+    print 'caches ready'
     
     server_auth = AsyncAuthServ("0.0.0.0", 1812, pool.connection())
     server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
@@ -891,7 +898,7 @@ if __name__ == "__main__":
     vars  = RadVars()
     queues= RadQueues()
     cacheMaster = CacheMaster()
-    cacheMaster.date = None
+    #cacheMaster.date = None
     
     config = ConfigParser.ConfigParser()
     if os.name=='nt' and w32Import:
