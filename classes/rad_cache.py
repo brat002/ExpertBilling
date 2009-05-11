@@ -1,5 +1,5 @@
 from operator import itemgetter, setitem
-from cacheutils import CacheCollection, CacheItem
+from cacheutils import CacheCollection, CacheItem, SimpleDefDictCache, SimpleDictCache
 from cache_sql import rad_sql
 from collections import defaultdict
 from rad_class.AccountData import AccountData
@@ -13,7 +13,7 @@ class RadCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache')
     
     def __init__(self, date, fMem):
-        super(NfroutineCaches, self).__init__(date)
+        super(RadCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.period_cache  = PeriodCache(date, fMem)
         self.nas_cache = NasCache()

@@ -686,8 +686,8 @@ class settlement_period_service_dog(Thread):
                             cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                         (acc.account_id, acc.acctf_id, tnc, tkc))
                             summ = cur.fetchone()[0] or 0    
-                            if cost > summ:
-                                pay_summ = cost-summ
+                            if acc.cost > summ:
+                                pay_summ = acc.cost - summ
                                 transaction(cursor=cur,account=acc.account_id,approved=True,type='END_PS_MONEY_RESET',
                                             summ=pay_summ,created=now,tarif=acc.tarif_id,accounttarif=accounttarif_id,
                                             description=u"Доснятие денег до стоимости тарифного плана у %s" % acc.account_id)
@@ -700,11 +700,11 @@ class settlement_period_service_dog(Thread):
                             cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                           (acc.account_id, period_start, now))
                             pstart_balance = (cur.fetchone()[0] or 0) + account_balance
-                            if cost > pstart_balance:
+                            if acc.cost > pstart_balance:
                                 cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
-                                            (acc.account_id, acc.acctf_id, now,acc.cost))
+                                            (acc.account_id, acc.acctf_id, now, acc.cost))
                             connection.commit()
-                        if acc.balance_blocked and account_balance>=cost:
+                        if acc.balance_blocked and account_balance >= acc.cost:
                             """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
                             cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
                             connection.commit()
