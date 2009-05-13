@@ -1032,9 +1032,10 @@ class settlement_period_service_dog(Thread):
                             if shedulelog_id==None:
                                 cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) values(%s, %s, %s);""", (account_id, accounttarif_id, now,))
                                             
-                        account_balance = acct[1] + acct[2]    
+                        account_balance = acct[1] + acct[2]
+                        require_tarif_cost = acct[34]
                         #Если балланса не хватает - отключить пользователя
-                        if (balance_blocked is None or balance_blocked<=period_start) and cost>=account_balance and cost!=0 and account_balance_blocked==False:
+                        if (balance_blocked is None or balance_blocked<=period_start) and require_tarif_cost and cost>=account_balance and cost!=0 and account_balance_blocked is False:
                             #cur.execute("""SELECT SUM(summ)*-1 from billservice_transaction WHERE (account_id=%s) AND ((created < %s) OR ((created BETWEEN %s AND %s) AND (summ < 0)));""", (account_id, period_start, period_start, now))
                             #cur.execute("""SELECT SUM(summ) from billservice_transaction WHERE (account_id=%s) AND ((created BETWEEN %s AND %s) AND (summ > 0));""", (account_id, period_start, now))
                             cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
@@ -1050,7 +1051,9 @@ class settlement_period_service_dog(Thread):
                                     cur.execute("""INSERT INTO billservice_shedulelog(account_id, accounttarif_id,balance_blocked) values(%s, %s, %s); 
                                                 """, (account_id, accounttarif_id, now,))
                             connection.commit()
-                        if account_balance_blocked==True and account_balance>=cost:
+                            
+                        
+                        if account_balance_blocked==True and (account_balance>=cost or not require_tarif_cost):
                             """
                             Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя
                             """
@@ -1466,6 +1469,7 @@ acct structure
 [31] - ba.allow_vpn_block
 [32] - ba.username,
 [33] - ba.password
+[34] - bt.requite_tarif_cost
 '''
 class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
@@ -1493,7 +1497,7 @@ class AccountServiceThread(Thread):
                 ptime =  time.time()
                 ptime = ptime - (ptime % 20)
                 tmpDate = datetime.datetime.fromtimestamp(ptime)
-                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password  
+                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password, bt.requite_tarif_cost   
                     FROM billservice_account as ba
                     LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                     LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE ba.status AND bt.active;""", (tmpDate,))
