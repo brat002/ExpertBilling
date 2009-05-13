@@ -442,31 +442,24 @@ class ConnectDialog(QtGui.QDialog):
         self.exit_pushButton.setObjectName("exit_pushButton")
 
         self.tableWidget = QtGui.QTableView(self.centralwidget)
-        try:
-            self.model = self.getModel("exbill_users")
-        except:
-            print "model not found"
-        
+
+        self.model = self.getModel("exbill_users")
+
         #self.model.removeColumn(0)
         self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
         self.model.setHeaderData(1, QtCore.Qt.Horizontal, QtCore.QVariant("IP"))
         self.model.setHeaderData(2, QtCore.Qt.Horizontal, QtCore.QVariant("Username"))
-        #height = self.tableWidget.fontMetrics().height()
-        #self.tableWidget.verticalHeader().setDefaultSectionSize(height+3)
-        #print height
+
         self.tableWidget.verticalHeader().setDefaultSectionSize(tableHeight)
         self.tableWidget.setModel(self.model)
         self.tableWidget.setGeometry(QtCore.QRect(0,150,341,128))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setColumnHidden(3, True)
-        #self.tableWidget.setRowHeight(-1, 17)
-        #self.tableWidget.resizeRowsToContents()
-        #self.tableWidget.setr
+
+        
         self.tableWidget.show()
         self.twIndex = -1
-        #columns = [u'IP', 'Username']
-
 
         self.save_pushButton = QtGui.QPushButton(self.centralwidget)
         self.save_pushButton.setGeometry(QtCore.QRect(260,70,75,23))

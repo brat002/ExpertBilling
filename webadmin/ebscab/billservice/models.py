@@ -917,3 +917,12 @@ class TrafficTransaction(models.Model):
     sum = models.FloatField()
     datetime = models.DateTimeField()
     
+    
+class TPChangeRule(models.Model):
+    from_tariff = models.ForeignKey(Tariff, related_name="from_tariff")
+    to_tariff = models.ForeignKey(Tariff, related_name="to_tariff")
+    disabled = models.BooleanField()
+    cost = models.FloatField()
+    ballance_min = models.FloatField()
+    oldtptime = models.FloatField()
+    

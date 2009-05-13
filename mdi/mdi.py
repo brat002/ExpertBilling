@@ -28,6 +28,7 @@ from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelec
 from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
+from TPChangeRules import TPRulesEbs
 
 #add speed "Загрузка канала пользователем"
 # общая трафик/загрузка по типам
@@ -186,6 +187,17 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.addWindow(child)
         child.show()
 
+    @connlogin
+    def tpchangerules(self):
+        child = TPRulesEbs(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return            
+        self.workspace.addWindow(child)
+        child.show()       
+               
+    
     @connlogin
     def cut(self):
         child=TimePeriodChild(connection=connection)
@@ -383,6 +395,11 @@ class MainWindow(QtGui.QMainWindow):
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.templatesAct, QtCore.SIGNAL("triggered()"), self.templates)
 
+
+        self.tpchangeAct = QtGui.QAction(u"Правила смены ТП", self)
+        #self.reloginAct.setStatusTip(self.tr("Reconnect"))
+        self.connect(self.tpchangeAct, QtCore.SIGNAL("triggered()"), self.tpchangerules)
+
         self.reportActs = []
         i = 0
         
@@ -475,6 +492,9 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.reloginAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.sqlDialogAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.tpchangeAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
         self.windowMenu = self.menuBar().addMenu(u"&Окна")

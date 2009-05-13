@@ -165,7 +165,7 @@ class AddSettlementPeriod(QtGui.QDialog):
             model.name=unicode(self.name_edit.text())
 
         if unicode(self.length_edit.currentText())==u"---" and self.length_seconds_edit.text()==u"":
-            QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны параметры длительности расчётного периода"))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны параметры длительности расчётного периода"))
             return
         elif unicode(self.length_edit.currentText())==u"---" :
             model.length=int(unicode(self.length_seconds_edit.text()))
