@@ -441,7 +441,8 @@ class Tariff(models.Model):
     active            = models.BooleanField(default=False, blank=True)
     deleted           = models.BooleanField(default=False, blank=True)
     allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, null=True, default=False)
-
+    require_tarif_cost = models.BooleanField(default=False, blank=True)
+    
     def __unicode__(self):
         return u"%s" % self.name
 
