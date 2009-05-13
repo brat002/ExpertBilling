@@ -583,6 +583,7 @@ def SIGHUP_handler(signum, frame):
 def SIGUSR1_handler(signum, frame):
     global flags
     logger.lprint("SIGUSR1 recieved")
+    logger.lprint(signal.getsignal(signal.SIGTERM))
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
@@ -648,9 +649,7 @@ def main ():
         th.start()
         time.sleep(0.5)
         
-    try:
-        signal.signal(signal.SIGTERM, SIGTERM_handler)
-    except: logger.lprint('NO SIGTERM!')
+
     try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
@@ -661,6 +660,11 @@ def main ():
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
     reactor.listenUDP(vars.port, Reception())
+    try:
+        logger.lprint(signal.getsignal(signal.SIGTERM))
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+        logger.lprint(signal.getsignal(signal.SIGTERM))
+    except: logger.lprint('NO SIGTERM!')
     print "ebs: nf: started"
     reactor.run()
 
