@@ -27,10 +27,10 @@ from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllow
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
-if hasattr(twisted.internet, 'pollreactor'):
+try:
     from twisted.internet import pollreactor
     pollreactor.install()
-else:
+except:
     print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 

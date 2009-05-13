@@ -3863,12 +3863,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 headerItem.setIcon(QtGui.QIcon("images/user.png"))
             else:
                 headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
-        if setdata:
-            headerItem.setData(39, QtCore.QVariant(value))   
-        if ctext is not None:
-            headerItem.setText(unicode(ctext))
-        else:
-            headerItem.setText(unicode(value))
+        #if setdata:
+            #headerItem.setData(39, QtCore.QVariant(value))
+        headerItem.setData(0, QtCore.QVariant(value)) 
+        '''if ctext is not None:
+                headerItem.setText(unicode(ctext))
+            else:
+                headerItem.setText(unicode(value))'''
         
         headerItem.id = id
         self.tableWidget.setItem(x,y,headerItem)
@@ -3927,7 +3928,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         for a in accounts:            
             self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
-            self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
+            #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
+            self.addrow(a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(a.credit, i,3, enabled=a.status)
             self.addrow(a.fullname, i,4, enabled=a.status)
             self.addrow(a.email, i,5, enabled=a.status)
@@ -3940,6 +3942,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
             #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
+            #self.addrow(a.created, i,11, enabled=a.status)
             
             #self.tableWidget.setRowHeight(i, 17)
             

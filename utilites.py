@@ -667,6 +667,7 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     ptime =  time.time()
     ptime = ptime - (ptime % 20)
     cacheDate = datetime.datetime.fromtimestamp(ptime)
+    cacheMaster.read = False
     try:
         caches = cacheType(cacheDate, *cargs)
         caches.getdata(cur)
@@ -689,3 +690,4 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
             cacheMaster.date = cacheDate
     else:
         raise Exception("#30%s0049 renewCaches: attempt failed: fail propagated" % (code,))
+    
