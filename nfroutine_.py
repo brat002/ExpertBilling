@@ -31,10 +31,10 @@ from db import transaction, transaction_noret, traffictransaction, get_last_chec
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
-if hasattr(twisted.internet, 'pollreactor'):
+try:
     from twisted.internet import pollreactor
     pollreactor.install()
-else:
+except:
     print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 
