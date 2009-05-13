@@ -883,3 +883,14 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql;
+
+-- 13.05.2009 
+
+ALTER TABLE billservice_tariff
+   ADD COLUMN require_tarif_cost boolean;
+   
+ALTER TABLE billservice_tariff
+   ALTER COLUMN require_tarif_cost SET DEFAULT False;
+   
+  
+

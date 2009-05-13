@@ -326,14 +326,14 @@ class sqliteDbAccess(object):
         if dbtype == 'system':
             if os.name == "nt":
                 if os.environ.has_key('USERPROFILE'):
-                    if os.path.exists(os.environ['USERPROFILE'] + '\\' + dbname):
-                        self.dbfile = os.environ['USERPROFILE'] + '\\' + dbname
+                    if os.path.exists(u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)):
+                        self.dbfile = u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)
                         self.filestat = 1
                     elif os.path.exists(dbname):
                         self.dbfile = dbname
                         self.filestat = 3
                     else:
-                        self.dbfile = os.environ['USERPROFILE'] + '\\' + dbname
+                        self.dbfile = u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)
                         self.filestat = 2
                 elif os.path.exists(dbname):
                     self.dbfile = dbname
@@ -360,15 +360,15 @@ class sqliteDbAccess(object):
                     self.filestat = 4
 
         else:
-            self.dbfile = dbname
+            self.dbfile = u"%s" % dbname
             self.filestat = 1
         #import sys 
         #print >>sys.stderr, "dbpath=", self.dbfile
         self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         try:
-            self.db.setDatabaseName(self.dbfile)
+            self.db.setDatabaseName(u"%s" % self.dbfile)
         except:
-            self.db.setDatabaseName("c:\%s" % connectDBName)
+            self.db.setDatabaseName(u"c:\%s" % connectDBName)
             
     def action(self, qstr, type, vartuple=None):
         if vartuple:

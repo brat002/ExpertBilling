@@ -229,6 +229,10 @@ class TarifFrame(QtGui.QDialog):
         self.reset_tarif_cost_edit.setGeometry(QtCore.QRect(9,120,453,19))
         self.reset_tarif_cost_edit.setObjectName("reset_tarif_cost_edit")
 
+        self.require_tarif_cost_edit = QtGui.QCheckBox(self.sp_groupbox)
+        self.require_tarif_cost_edit.setGeometry(QtCore.QRect(9,138,453,19))
+        self.require_tarif_cost_edit.setObjectName("require_tarif_cost_edit")
+        
         self.tarif_cost_edit = QtGui.QLineEdit(self.sp_groupbox)
         self.tarif_cost_edit.setGeometry(QtCore.QRect(139,80,241,21))
         self.tarif_cost_edit.setObjectName("tarif_cost_edit")
@@ -709,6 +713,8 @@ class TarifFrame(QtGui.QDialog):
         self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_cost_label.setText(QtGui.QApplication.translate("Dialog", "Стоимость пакета", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Производить доснятие суммы до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.require_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Требовать наличия всей суммы", None, QtGui.QApplication.UnicodeUTF8))
         self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом балансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.access_type_label.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setText(QtGui.QApplication.translate("Dialog", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
@@ -1480,6 +1486,7 @@ class TarifFrame(QtGui.QDialog):
             if not self.model.isnull('settlement_period_id'):
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
                 
+            self.require_tarif_cost_edit.setCheckState(self.model.require_tarif_cost == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.checkBoxAllowExpressPay.setChecked(bool(self.model.allow_express_pay))
             self.tarif_name_edit.setText(self.model.name)
@@ -1864,10 +1871,12 @@ class TarifFrame(QtGui.QDialog):
                 model.settlement_period_id = self.connection.get( "SELECT * FROM billservice_settlementperiod WHERE name='%s'" % sp).id
                 model.cost = unicode(self.tarif_cost_edit.text()) or 0
                 model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
+                model.require_tarif_cost = self.require_tarif_cost_edit.checkState()==2
                 
             else:
                 model.settlement_period_id=None
                 model.reset_tarif_cost=False
+                model.require_tarif_cost = False
                 model.cost = 0
 
             model.id = self.connection.save(model, "billservice_tariff")
@@ -3895,7 +3904,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
             
     def refresh(self, item=None, k=''):
-        #self.tableWidget.setSortingEnabled(False)
+        self.tableWidget.setSortingEnabled(False)
         #print item
         if item:
             id=item.id
@@ -3943,7 +3952,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         #self.tablewidget.setShowGrid(False)
-        #self.tableWidget.setSortingEnabled(True)
+        self.tableWidget.setSortingEnabled(True)
         
 
     def accountEnable(self):
