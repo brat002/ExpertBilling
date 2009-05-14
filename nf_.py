@@ -609,11 +609,15 @@ def graceful_save():
     
     time.sleep(1)
     logger.lprint("Stopping gracefully.")
-    if not reactor.running:
+    try:
+        if not reactor.running:
+            sys.exit(0)
+        else:
+            reactor.callFromThread(reactor.stop)
+            sys.exit(0)
+    except Exception, ex:
+        logger.info("Reactor exception: %s", repr(ex))
         sys.exit(0)
-    else:
-        reactor.callFromThread(reactor.stop)
-        reactor.callLater(0, sys.exit)
         
 def graceful_recover():
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],

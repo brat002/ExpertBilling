@@ -697,6 +697,7 @@ def SIGUSR1_handler(signum, frame):
 def graceful_save():
     global cacheThr, threads, suicideCondition
     #asyncore.close_all()
+    reactor.callFromThread(reactor.disconnectAll)
     reactor.callFromThread(reactor.stop)
     suicideCondition[cacheThr.tname] = True
     logger.lprint("About to exit gracefully.")
@@ -733,7 +734,15 @@ def graceful_save():
     queues.groupLock.release()
     queues.depickerLock.release()
     logger.lprint("Stopping gracefully.")
-    sys.exit()
+    try:
+        if not reactor.running:
+            sys.exit(0)
+        else:
+            reactor.callFromThread(reactor.stop)
+            sys.exit(0)
+    except Exception, ex:
+        logger.info("Reactor exception: %s", repr(ex))
+        sys.exit(0)
         
 def graceful_recover():
     global queues, vars
