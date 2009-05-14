@@ -173,6 +173,9 @@ class FlowCache(object):
         #list for keeping keys
         self.keylist = []
         self.stime = time.time()
+        
+    def __len__(self):
+        return len(self.keylist)
 
     def addflow(self, version, flow):
         method = getattr(self, "addflow" + str(version), None)
@@ -660,18 +663,9 @@ def main ():
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
     reactor.listenUDP(vars.port, Reception())
-    try:
-        logger.lprint(signal.getsignal(signal.SIGTERM))
-        signal.signal(signal.SIGTERM, SIGTERM_handler)
-        logger.lprint(signal.getsignal(signal.SIGTERM))
-    except: logger.lprint('NO SIGTERM!')
     print "ebs: nf: started"
+    reactor.sigTerm = SIGTERM_handler
     reactor.run()
-    try:
-        logger.lprint(signal.getsignal(signal.SIGTERM))
-        signal.signal(signal.SIGTERM, SIGTERM_handler)
-        logger.lprint(signal.getsignal(signal.SIGTERM))
-    except: logger.lprint('NO SIGTERM!')
 
 
 if __name__=='__main__':

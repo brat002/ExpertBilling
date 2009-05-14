@@ -787,11 +787,7 @@ def main():
         
     logger.warning("THREADS=%s", repr([thrd.getName() for thrd in threads + [cacheThr]]))
     #logger.warning("CACHETH=%s", cacheThr.getName())
-    time.sleep(5)
-    try:
-        signal.signal(signal.SIGTERM, SIGTERM_handler)
-    except: logger.lprint('NO SIGTERM!')
-    
+    time.sleep(5)    
     try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
@@ -800,11 +796,9 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     
-    #asyncore.
-    #NfAsyncUDPServer(vars.addr)
-    
     reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
     print "ebs: nfroutine: started"
+    reactor.sigTerm = SIGTERM_handler
     reactor.run()
 #===============================================================================
 
