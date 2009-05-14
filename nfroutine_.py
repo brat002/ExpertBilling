@@ -734,15 +734,8 @@ def graceful_save():
     queues.groupLock.release()
     queues.depickerLock.release()
     logger.lprint("Stopping gracefully.")
-    try:
-        if not reactor.running:
-            sys.exit(0)
-        else:
-            reactor.callFromThread(reactor.stop)
-            sys.exit(0)
-    except:
-        sys.exit(0)
-        
+    sys.exit(0)
+
 def graceful_recover():
     global queues, vars
     graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDicts','statDeque', 'statAggrDicts'],
