@@ -592,8 +592,9 @@ def graceful_save():
     global cacheThr, threads, suicideCondition
     from twisted.internet import reactor
     #asyncore.close_all()
-    reactor.disconnectAll()
+    #reactor.disconnectAll()
     #reactor.callLater(0, reactor.stop)
+    reactor.callFromThread(reactor.disconnectAll)
     reactor.callFromThread(reactor.stop)
     #reactor.stop()
     suicideCondition[cacheThr.tname] = True
