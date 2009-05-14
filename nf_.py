@@ -590,6 +590,7 @@ def SIGUSR1_handler(signum, frame):
     
 def graceful_save():
     global cacheThr, threads, suicideCondition
+    from twisted.internet import reactor
     #asyncore.close_all()
     reactor.disconnectAll()
     reactor.callLater(0, reactor.stop)
@@ -607,7 +608,10 @@ def graceful_save():
     
     time.sleep(1)
     logger.lprint("Stopping gracefully.")
-    sys.exit(0)
+    if not reactor.running:
+        sys.exit(0)
+    else:
+        reactor.callLater(0, sys.exit)
         
 def graceful_recover():
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
