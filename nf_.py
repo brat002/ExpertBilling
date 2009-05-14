@@ -591,7 +591,9 @@ def SIGUSR1_handler(signum, frame):
 def graceful_save():
     global cacheThr, threads, suicideCondition
     #asyncore.close_all()
-    reactor.callFromThread(reactor.stop)
+    reactor.disconnectAll()
+    reactor.callLater(0, reactor.stop)
+    #reactor.callFromThread(reactor.stop)
     #reactor.stop()
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
@@ -605,7 +607,7 @@ def graceful_save():
     
     time.sleep(1)
     logger.lprint("Stopping gracefully.")
-    sys.exit()
+    sys.exit(0)
         
 def graceful_recover():
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
