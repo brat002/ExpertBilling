@@ -740,8 +740,7 @@ def graceful_save():
         else:
             reactor.callFromThread(reactor.stop)
             sys.exit(0)
-    except Exception, ex:
-        logger.info("Reactor exception: %s", repr(ex))
+    except:
         sys.exit(0)
         
 def graceful_recover():
