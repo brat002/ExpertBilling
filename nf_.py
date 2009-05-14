@@ -667,6 +667,11 @@ def main ():
     except: logger.lprint('NO SIGTERM!')
     print "ebs: nf: started"
     reactor.run()
+    try:
+        logger.lprint(signal.getsignal(signal.SIGTERM))
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+        logger.lprint(signal.getsignal(signal.SIGTERM))
+    except: logger.lprint('NO SIGTERM!')
 
 
 if __name__=='__main__':
