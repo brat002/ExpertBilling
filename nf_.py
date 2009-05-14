@@ -586,13 +586,13 @@ def SIGHUP_handler(signum, frame):
 def SIGUSR1_handler(signum, frame):
     global flags
     logger.lprint("SIGUSR1 recieved")
-    logger.lprint(signal.getsignal(signal.SIGTERM))
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
     global cacheThr, threads, suicideCondition
     #asyncore.close_all()
-    reactor.stop()
+    reactor.callFromThread(reactor.stop)
+    #reactor.stop()
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
         suicideCondition[thr.tname] = True
