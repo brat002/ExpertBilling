@@ -596,6 +596,7 @@ def graceful_save():
     #reactor.callLater(0, reactor.stop)
     reactor.callFromThread(reactor.disconnectAll)
     reactor.callFromThread(reactor.stop)
+    reactor._started = False
     #reactor.stop()
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
@@ -609,14 +610,7 @@ def graceful_save():
     
     time.sleep(1)
     logger.lprint("Stopping gracefully.")
-    try:
-        if not reactor.running:
-            sys.exit(0)
-        else:
-            reactor.callFromThread(reactor.stop)
-            sys.exit(0)
-    except:
-        sys.exit(0)
+    sys.exit(0)
         
 def graceful_recover():
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
@@ -670,13 +664,16 @@ def main ():
     try:
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
+    
+    try:
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
 
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
     reactor.listenUDP(vars.port, Reception())
-    print "ebs: nf: started"
-    reactor.sigTerm = SIGTERM_handler
-    reactor.run()
+    print "ebs: nf: started"    
+    reactor.run(installSignalHandlers=False)
 
 
 if __name__=='__main__':
