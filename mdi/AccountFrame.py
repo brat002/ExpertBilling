@@ -2966,7 +2966,7 @@ class AccountWindow(QtGui.QMainWindow):
         
         if self.checkBox_assign_ipn_ip_from_dhcp.checkState()==2:
             self.lineEdit_ipn_ip_mask.setDisabled(False)
-            self.lineEdit_ipn_ip_mask.setText("")
+            #self.lineEdit_ipn_ip_mask.setText("")
         elif self.checkBox_assign_ipn_ip_from_dhcp.checkState()==0:
             self.lineEdit_ipn_ip_mask.setDisabled(True)
             self.lineEdit_ipn_ip_mask.setText("")
@@ -3601,7 +3601,6 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionDeleteAccount", "Удалить с сервера доступа", "images/del.png", self.accountDelete), \
                  ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif),\
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
-                 ("prepaidTrafficTailsAction", "Остаток предоплаченного трафика", "", self.prepaidReport),\
                  ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
                  ("actOfProvidedServices", "Акт выполненных работ", "", self.pass_),\
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
@@ -3614,7 +3613,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
-                   self.menu       :["prepaidTrafficTailsAction", "separator", "connectionAgreementAction", "separator", "actOfProvidedServices", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
+                   self.menu       :["connectionAgreementAction", "separator", "actOfProvidedServices", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
         

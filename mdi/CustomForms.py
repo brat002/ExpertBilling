@@ -1942,6 +1942,8 @@ class InfoDialog(QtGui.QDialog):
         self.type = type
         self.account_id = account_id
         self.setObjectName("InfoDialog")
+        dateDelim = '.'
+        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.resize(550, 300)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
@@ -2013,9 +2015,9 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow("%s KB" % (a['size']/1024), i,3)
                 try:
                     self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,4)
-                    self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,5)
-                except:
-                    pass
+                    self.addrow(a.get('settlement_period_end').strftime(self.strftimeFormat), i,5)
+                except Exception, e:
+                    print e
                 i+=1
             self.tableWidget.resizeRowsToContents()
             

@@ -214,9 +214,9 @@ class TransactionsReportEbs(ebsTableWindow):
             
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items))
+            self.tableWidget.setRowCount(len(items)+1)
             i=0
-
+            sum = 0
             for item in items:
                 self.addrow(i, i, 0, id=item.id, promise = item.promise)
                 self.addrow(item.username, i, 1, promise = item.promise)
@@ -228,10 +228,12 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.summ*(-1), i, 7, promise = item.promise)
                 self.addrow(item.description, i, 8, promise = item.promise)
                 self.addrow(item.promise, i, 9, promise = item.promise)
+                sum+=item.summ*(-1)
                 if item.promise:
                     self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 10, promise = item.promise)
                 i+=1
-                
+            self.addrow(u"Итого", i, 6)
+            self.addrow(sum, i, 7)
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
             services = self.connection.get_models("billservice_periodicalservice")
             s = {}
@@ -256,10 +258,11 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items))
+            self.tableWidget.setRowCount(len(items)+1)
             i=0
             
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+            sum = 0
             for item in items:
                 self.addrow(i, i, 0, id = item.id)
                 self.addrow(item.username, i, 1)
@@ -269,8 +272,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.summ, i, 5)
                 self.addrow(item.datetime.strftime(self.strftimeFormat), i, 6)
                 i+=1
-                
-
+                sum+=item.summ
+            self.addrow(u"Итого", i, 4)
+            self.addrow(sum, i, 5)
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
             services = self.connection.get_models("billservice_onetimeservice")
             s = {}
@@ -295,10 +299,11 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items))
+            self.tableWidget.setRowCount(len(items)+1)
             i=0
             
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
+            sum = 0
             for item in items:
                 self.addrow(i, i, 0, id = item.id)
                 self.addrow(item.username, i, 1)
@@ -307,7 +312,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.summ, i, 4)
                 self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
                 i+=1
-
+                sum += item.summ
+            self.addrow(u"Итого", i, 3)
+            self.addrow(sum, i, 4)                
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
@@ -327,10 +334,11 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items))
+            self.tableWidget.setRowCount(len(items)+1)
             i=0
             
             ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
+            sum = 0
             for item in items:
                 self.addrow(i, i, 0, id = item.id)
                 self.addrow(item.username, i, 1)
@@ -338,10 +346,13 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.summ, i, 3)
                 self.addrow(item.datetime.strftime(self.strftimeFormat), i, 4)
                 i+=1
- 
- 
+                sum+=item.summ
+                
+            self.addrow(u"Итого", i, 3)
+            self.addrow(sum, i, 4)   
+            
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
-            print 111
+            #print 111
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
             for x in tariffs:
@@ -360,9 +371,9 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items))
+            self.tableWidget.setRowCount(len(items)+1)
             i=0
-            
+            sum = 0
             for item in items:
                 self.addrow(i, i, 0, id = item.id)
                 self.addrow(item.username, i, 1)
@@ -370,7 +381,10 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.session, i, 3)
                 self.addrow(item.summ, i, 4)
                 self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
-                i+=1                               
+                i+=1
+                sum +=item.summ
+            self.addrow(u"Итого", i, 3)
+            self.addrow(sum, i, 4)                                 
         self.tableWidget.setColumnHidden(0, True)
                 
         try:
