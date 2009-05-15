@@ -219,7 +219,7 @@ class groupDequeThread(Thread):
                         with aggrgLock:
                             grec = aggrgDict.get(gkey)
                             if not grec:
-                                aggrsDict[gkey] = groupData
+                                aggrgDict[gkey] = groupData
                                 with queues.groupLock:
                                     queues.groupDeque.appendleft((gkey, gkeyTime))
                             else:

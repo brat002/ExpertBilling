@@ -3,9 +3,10 @@ from collections import deque
 from threading import Lock
 
 class Vars(object):
-    __slots__ = ('name',)
+    __slots__ = ('name', 'piddir')
     def __init__(self):
         self.name = ''
+        self.piddir = 'pid'
 
 class NfVars(Vars):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\

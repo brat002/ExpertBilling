@@ -35,10 +35,10 @@ cp license.lic license.lic.old
 cp license_$1.lic license.lic
 
 for bld in $simple_build; do
-	python freezer/freezer.py  -i $karg $reskey $bld.py > builds/$1.$bld.buildlog;
+	python freezer/freezer_rec.py  -i $karg $reskey $bld.py > builds/$1.$bld.buildlog;
 done
 
-python freezer/freezer.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $reskey rpc.py > builds/$1.rpc.buildlog;
+python freezer/freezer_rec.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic
@@ -47,6 +47,8 @@ cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini
 cp -rf modules builds/$1
 mkdir builds/$1/nf_dump
 mkdir builds/$1/log
+mkdir builds/$1/pid
+mkdir builds/$1/temp
 mkdir builds/$1/init.d
 cp -rf dicts builds/$1/dicts
 cp -rf fonts builds/$1/fonts

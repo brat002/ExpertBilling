@@ -15,7 +15,12 @@ import logging
 import psycopg2
 import traceback
 import datetime, calendar, time
-import os, sys, time, md5, binascii, socket, select
+import os, os.path, sys, time, md5, binascii, socket, select
+try:
+    from os import kill
+except Exception, ex:
+    print "NO SIGNALS!"
+    kill = lambda x,y: 1
 
 ssh_exec = False
 #try: 
@@ -690,4 +695,19 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
             cacheMaster.date = cacheDate
     else:
         raise Exception("#30%s0049 renewCaches: attempt failed: fail propagated" % (code,))
+    
+def savepid(piddir, procname):
+    if not os.path.isdir(piddir): os.mkdir(piddir)
+    pfile = open(procname + '.pid', 'wb')
+    pfile.write(str(os.getpid()))
+    pfile.close()
+    
+def readpids(piddir, lastmtime = -1, exclude = []):
+    presmtime = os.path.getmtime(piddir)
+    if lastmtime == presmtime: return None
+    pidfiles = os.listdir(piddir)
+    if exclude:
+        pidfiles = list(set(pidfiles).difference(exclude))
+    return [(pidfile[:-4], int(open(pidfile, 'rb').read())) for pidfile in pidfiles]
+    
     
