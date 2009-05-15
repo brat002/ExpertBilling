@@ -710,4 +710,7 @@ def readpids(piddir, lastmtime = -1, exclude = []):
         pidfiles = list(set(pidfiles).difference(exclude))
     return [(pidfile[:-4], int(open(pidfile, 'rb').read())) for pidfile in pidfiles]
     
-    
+#SIGUSR1 = 10    
+def killpids(pids, sig):
+    for pid in pids:
+        kill(pid, sig)
