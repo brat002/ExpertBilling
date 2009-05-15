@@ -28,7 +28,7 @@ mkdir builds/$1
 
 
 
-simple_build="core rad nf nfroutine"
+simple_build="core rad nf nfroutine sendmail"
 total_build="$simple_build rpc"
 
 cp license.lic license.lic.old
