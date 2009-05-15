@@ -770,10 +770,12 @@ class HandleSDHCP(HandleSBase):
         
         if tarif_status==True:
             authobject.set_code(2)
+            print "netmask", netmask
             self.replypacket.AddAttribute('Framed-IP-Address', ipaddress)
             self.replypacket.AddAttribute('Framed-IP-Netmask',netmask)
             self.replypacket.AddAttribute('Session-Timeout', session_timeout)
             #self.create_speed(tarif_id, speed=speed)
+            #print "set attributes"
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)

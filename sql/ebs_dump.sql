@@ -2838,7 +2838,7 @@ CREATE TABLE billservice_account (
     status boolean DEFAULT false,
     suspended boolean DEFAULT true,
     created timestamp without time zone DEFAULT now(),
-    ballance double precision DEFAULT 0,
+    ballance numeric DEFAULT 0,
     credit double precision DEFAULT 0,
     disabled_by_limit boolean DEFAULT false,
     balance_blocked boolean DEFAULT false,

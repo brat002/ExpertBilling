@@ -98,7 +98,7 @@ ALTER TABLE billservice_transaction
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
       
 
-INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'Операция проведена кассиром', 'CASSA_TRANSACTION');INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
+INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'РћРїРµСЂР°С†РёСЏ РїСЂРѕРІРµРґРµРЅР° РєР°СЃСЃРёСЂРѕРј', 'CASSA_TRANSACTION');INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('РџР»Р°С‚С‘Р¶РЅР°СЏ СЃРёСЃС‚РµРјР° РћРЎРњРџ', 'OSMP_BILL');    
 
 
 --14.04.2009
@@ -519,19 +519,19 @@ ALTER TABLE billservice_operator
    ALTER COLUMN bank_id DROP NOT NULL;
 
 -- 15.04.2009 
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (4, 'Акт выполненных работ', 4, 'Акт выполненных работ');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (5, 'Счет фактура', 3, 'Счет фактура');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (6, 'Договор на подключение юр. лиц', 2, '<html>
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (4, 'РђРєС‚ РІС‹РїРѕР»РЅРµРЅРЅС‹С… СЂР°Р±РѕС‚', 4, 'РђРєС‚ РІС‹РїРѕР»РЅРµРЅРЅС‹С… СЂР°Р±РѕС‚');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (5, 'РЎС‡РµС‚ С„Р°РєС‚СѓСЂР°', 3, 'РЎС‡РµС‚ С„Р°РєС‚СѓСЂР°');
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (6, 'Р”РѕРіРѕРІРѕСЂ РЅР° РїРѕРґРєР»СЋС‡РµРЅРёРµ СЋСЂ. Р»РёС†', 2, '<html>
             <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             </head>
             <body>
-            Имя: ${account.username}  <br>
+            РРјСЏ: ${account.username}  <br>
 ${organization.name} 
 ${bank.bankcode} 
             </body>
             </html>');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (7, 'Кассовый чек', 5, '<html>
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (7, 'РљР°СЃСЃРѕРІС‹Р№ С‡РµРє', 5, '<html>
  <head>
  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
  <style>
@@ -547,19 +547,19 @@ INSERT INTO billservice_template (id, name, type_id, body) VALUES (7, 'Кассовый 
   <table align=center width="85%">
     <tr>
      <td>
-       <h1 align=center> <b> Квитанция об оплате услуг № ${transaction_id} </b> </h1>
-       <strong>Абонент:</strong> ${account.fullname} <br>
-       <strong>Тарифный план:</strong> ${tarif.name} <br>
-       <strong>Логин:</strong> ${account.username}<br>
-       <strong>Сумма:</strong> ${sum}<br>
-       <strong>Дата приема платежа:</strong> ${created}<br>
+       <h1 align=center> <b> РљРІРёС‚Р°РЅС†РёСЏ РѕР± РѕРїР»Р°С‚Рµ СѓСЃР»СѓРі в„– ${transaction_id} </b> </h1>
+       <strong>РђР±РѕРЅРµРЅС‚:</strong> ${account.fullname} <br>
+       <strong>РўР°СЂРёС„РЅС‹Р№ РїР»Р°РЅ:</strong> ${tarif.name} <br>
+       <strong>Р›РѕРіРёРЅ:</strong> ${account.username}<br>
+       <strong>РЎСѓРјРјР°:</strong> ${sum}<br>
+       <strong>Р”Р°С‚Р° РїСЂРёРµРјР° РїР»Р°С‚РµР¶Р°:</strong> ${created}<br>
     </td>
    </tr>
   </table>
  </body>
 </html>
 ');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (2, 'Договор', 1, '<html>
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (2, 'Р”РѕРіРѕРІРѕСЂ', 1, '<html>
             <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             </head>
@@ -616,7 +616,7 @@ ${created}<br />
             </body>
             </html>
 ');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (8, 'Накладная на карты экспресс-оплаты', 6, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (8, 'РќР°РєР»Р°РґРЅР°СЏ РЅР° РєР°СЂС‚С‹ СЌРєСЃРїСЂРµСЃСЃ-РѕРїР»Р°С‚С‹', 6, '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -626,38 +626,38 @@ INSERT INTO billservice_template (id, name, type_id, body) VALUES (8, 'Накладная
 <body>
 <div style="width:100%; "> 
 <div style="float:right ">
-<span style="font-weight:bold; ">Дилер</span><br>		
-Организация: ${dealer.organization}<br>	
-Директор: ${dealer.director}<br>	
-Юр адрес: ${dealer.uraddress}<br>	
-р/с: ${dealer.rs}<br>	
-УНН: ${dealer.unp}<br>	
-ОКПО: ${dealer.okpo}<br>	
-Банк: ${dealer.bank}, код ${dealer.bankcode}<br>	
+<span style="font-weight:bold; ">Р”РёР»РµСЂ</span><br>		
+РћСЂРіР°РЅРёР·Р°С†РёСЏ: ${dealer.organization}<br>	
+Р”РёСЂРµРєС‚РѕСЂ: ${dealer.director}<br>	
+Р®СЂ Р°РґСЂРµСЃ: ${dealer.uraddress}<br>	
+СЂ/СЃ: ${dealer.rs}<br>	
+РЈРќРќ: ${dealer.unp}<br>	
+РћРљРџРћ: ${dealer.okpo}<br>	
+Р‘Р°РЅРє: ${dealer.bank}, РєРѕРґ ${dealer.bankcode}<br>	
 </div>
 
 <div style="float:left ">
-	<span style="font-weight:bold; ">Оператор</span><br>	
-	Организация: ${operator.organization}<br>	
-	Директор: ${operator.director}<br>	
-	Юр адрес: ${operator.uraddress}<br>
-  р/с: ${operator.rs}	<br>	
-	УНН: ${operator.unp}<br>	
-	ОКПО: ${operator.okpo}<br>	
-	Банк: ${operator.bank}, Код ${operator.bankcode}<br>	
+	<span style="font-weight:bold; ">РћРїРµСЂР°С‚РѕСЂ</span><br>	
+	РћСЂРіР°РЅРёР·Р°С†РёСЏ: ${operator.organization}<br>	
+	Р”РёСЂРµРєС‚РѕСЂ: ${operator.director}<br>	
+	Р®СЂ Р°РґСЂРµСЃ: ${operator.uraddress}<br>
+  СЂ/СЃ: ${operator.rs}	<br>	
+	РЈРќРќ: ${operator.unp}<br>	
+	РћРљРџРћ: ${operator.okpo}<br>	
+	Р‘Р°РЅРє: ${operator.bank}, РљРѕРґ ${operator.bankcode}<br>	
 </div>
 </div>
 
-<div style="font-weight:bold; float:left; width:100%; text-align:center; margin-bottom:20px; margin-top:20px; ">Накладная от ${created}</div>
+<div style="font-weight:bold; float:left; width:100%; text-align:center; margin-bottom:20px; margin-top:20px; ">РќР°РєР»Р°РґРЅР°СЏ РѕС‚ ${created}</div>
 
 <div style="clear:both "></div>
 <table border="1" align="center" style="width:100%">
 	<tr>
-		<td>ID карты</td>
-		<td>Серия</td>
-		<td>Номинал</td>
-		<td>Активировать С</td>
-		<td>Активировать По</td>
+		<td>ID РєР°СЂС‚С‹</td>
+		<td>РЎРµСЂРёСЏ</td>
+		<td>РќРѕРјРёРЅР°Р»</td>
+		<td>РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ РЎ</td>
+		<td>РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ РџРѕ</td>
 	</tr>
 	
 	% for card in cards:
@@ -671,20 +671,20 @@ INSERT INTO billservice_template (id, name, type_id, body) VALUES (8, 'Накладная
 	% endfor
 </table>
 
-Итого ${cardcount} карт на сумму: ${sum_for_pay}<br>	
-Скидка: ${discount} на сумму ${discount_sum}<br>	
-Оплачено: ${pay}<br>	
-Оплатить до:${paydeffer}
+РС‚РѕРіРѕ ${cardcount} РєР°СЂС‚ РЅР° СЃСѓРјРјСѓ: ${sum_for_pay}<br>	
+РЎРєРёРґРєР°: ${discount} РЅР° СЃСѓРјРјСѓ ${discount_sum}<br>	
+РћРїР»Р°С‡РµРЅРѕ: ${pay}<br>	
+РћРїР»Р°С‚РёС‚СЊ РґРѕ:${paydeffer}
 
 </body>
 </html>');
-INSERT INTO billservice_template (id, name, type_id, body) VALUES (9, 'Шаблон карты экспресс-оплаты', 7, '<div style="position:relative; display:block; width:255px; height:143px; font-face:Arial;">
+INSERT INTO billservice_template (id, name, type_id, body) VALUES (9, 'РЁР°Р±Р»РѕРЅ РєР°СЂС‚С‹ СЌРєСЃРїСЂРµСЃСЃ-РѕРїР»Р°С‚С‹', 7, '<div style="position:relative; display:block; width:255px; height:143px; font-face:Arial;">
 <img src="img/card_blue.gif" style="border:none;">
 	<div style="position:absolute; display:block; top:60px; left:16px; font-size:32px;">${card.nominal}</div>
 	<div style="position:absolute; display:block; top:96px; left:3px; font-size:10px;">PIN: ${card.pin}</div>
-	<div style="position:absolute; display:block; top:96px; left:175px; font-size:10px;">Серия: ${card.series}</div>
-	<div style="position:absolute; display:block; top:118px; left:3px; font-size:6px;">Активировать c ${card.start_date} по ${card.end_date} </div>
-	<div style="position:absolute; display:block; top:128px; left:3px; font-size:6px;">${operator.organization}. Тел. ${operator.phone}</div>
+	<div style="position:absolute; display:block; top:96px; left:175px; font-size:10px;">РЎРµСЂРёСЏ: ${card.series}</div>
+	<div style="position:absolute; display:block; top:118px; left:3px; font-size:6px;">РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ c ${card.start_date} РїРѕ ${card.end_date} </div>
+	<div style="position:absolute; display:block; top:128px; left:3px; font-size:6px;">${operator.organization}. РўРµР». ${operator.phone}</div>
 </div>
 ');
 
