@@ -37,7 +37,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches
+from utilites import renewCaches, savepid
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
