@@ -992,7 +992,7 @@ def graceful_save():
     sys.exit()
     
 def main():
-    global caches, suicideCondition, threads, cacheThr
+    global caches, suicideCondition, threads, cacheThr, vars
     
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
