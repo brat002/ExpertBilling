@@ -810,6 +810,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
 
 def reread_pids():
+    global vars
     newpids, newpiddate = readpids(vars.piddir, vars.piddate, exclude = [vars.name + '.pid'])
     if newpids:
         with vars.pidLock:
@@ -817,7 +818,9 @@ def reread_pids():
             vars.piddate = newpiddate
         
 def broadcast_SIGUSR1():
+    global vars
     reread_pids()
+    logger.warning("Broadcasting SIGUSR1 to known pids, except self: %s {%s/%s}", (repr(vars.pids),vars.piddir, vars.piddate)) 
     if vars.pids:
         killpids(itertools.imap(operator.itemgetter(1), vars.pids), 10)
         
@@ -840,7 +843,6 @@ def SIGHUP_handler(signum, frame):
         
 def SIGUSR1_handler(signum, frame):
     logger.lprint("SIGUSR1 received!")
-    logger.warning("Broadcasting SIGUSR1 to known pids, except self: %s {%s/%s}", (repr(vars.pids),vars.piddir, vars.piddate)) 
     try:
         broadcast_SIGUSR1()
     except Exception, ex:
