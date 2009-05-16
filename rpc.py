@@ -1,5 +1,7 @@
 # -*- coding=utf-8 -*-
 
+from __future__ import with_statement
+
 import IPy
 import hmac
 import zlib
@@ -7,7 +9,8 @@ import signal
 import hashlib
 import asyncore
 import datetime
-
+import operator
+import itertools
 import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
@@ -30,13 +33,15 @@ from chartprovider.bpcdplot import cdDrawer
 from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from utilites import settlement_period_info
+from utilites import settlement_period_info, readpids, killpids, savepid
 try:    import mx.DateTime
 except: print 'cannot import mx'
+from classes.vars import RpcVars
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 config = ConfigParser.ConfigParser()
+
 
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
@@ -803,6 +808,21 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             format_string=str(row['reset_action'])
         )
 
+
+def reread_pids():
+    newpids, newpiddate = readpids(vars.piddir, vars.piddate, exclude = [vars.name + '.pid'])
+    if newpids:
+        with vars.pidLock:
+            vars.pids    = newpids
+            vars.piddate = newpiddate
+        
+def broadcast_SIGUSR1():
+    reread_pids()
+    if vars.pids:
+        killpids(itertools.imap(operator.itemgetter(1), vars.pids), 10)
+        
+    
+    
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
     graceful_save()
@@ -819,7 +839,12 @@ def SIGHUP_handler(signum, frame):
         logger.lprint("SIGHUP config reread OK")
         
 def SIGUSR1_handler(signum, frame):
-    pass
+    logger.lprint("SIGUSR1 received!")
+    logger.warning("Broadcasting SIGUSR1 to known pids, except self: %s {%s/%s}", (repr(vars.pids),vars.piddir, vars.piddate)) 
+    try:
+        broadcast_SIGUSR1()
+    except Exception, ex:
+        logger.error("Exception diring SIGUSR1 broadcast: %s", repr(ex))
 
 def graceful_save():
     global threads
@@ -852,6 +877,7 @@ def main():
     except: logger.lprint('NO SIGUSR1!')
     #main thread should not exit!
     print "ebs: rpc: started"
+    savepid(vars.piddir, vars.name)
     while True:
         time.sleep(300)
         
@@ -859,6 +885,7 @@ if __name__ == "__main__":
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
      
+    vars = RpcVars()
     config.read("ebs_config.ini")
     logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
     utilites.log_adapt = logger.log_adapt

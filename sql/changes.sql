@@ -893,6 +893,7 @@ ALTER TABLE billservice_tariff
    ALTER COLUMN require_tarif_cost SET DEFAULT False;
    
 -- 15.05.2009
+
 CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint 
     AS $$
 BEGIN

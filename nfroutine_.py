@@ -43,7 +43,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
-from utilites import renewCaches
+from utilites import renewCaches, savepid
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -716,9 +716,6 @@ def graceful_save():
             suicideCondition[thr.tname] = True
     time.sleep(1)
     
-    #depickerQueue_ = depickerQueue
-    #depickerQueue = deque()
-    #depickerLock.release()
     for thr in threads:
             suicideCondition[thr.tname] = True
     time.sleep(2)
@@ -797,11 +794,14 @@ def main():
     try:
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
+    try:
+        signal.signal(signal.SIGTERM, SIGTERM_handler)
+    except: logger.lprint('NO SIGTERM!')
     
     reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
     print "ebs: nfroutine: started"
-    reactor.sigTerm = SIGTERM_handler
-    reactor.run()
+    savepid(vars.piddir, vars.name)
+    reactor.run(installSignalHandlers=False)
 #===============================================================================
 
     

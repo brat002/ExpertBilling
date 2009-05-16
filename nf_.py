@@ -41,7 +41,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
-from utilites import renewCaches
+from utilites import renewCaches, savepid
 
 
 
@@ -668,6 +668,7 @@ def main ():
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
     reactor.listenUDP(vars.port, Reception())
+    savepid(vars.piddir, vars.name)
     print "ebs: nf: started"    
     reactor.run(installSignalHandlers=False)
 
