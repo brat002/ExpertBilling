@@ -887,6 +887,8 @@ def main():
     except: logger.lprint('NO SIGUSR1!')
     
     print "ebs: rad: started"
+    savepid(vars.piddir, vars.name)
+
     while 1: 
         asyncore.poll(0.01)
         

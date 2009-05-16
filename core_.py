@@ -42,7 +42,7 @@ except: print 'cannot import mx'
 from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
-from utilites import renewCaches
+from utilites import renewCaches, savepid
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -1033,7 +1033,9 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     
+    
     print "ebs: core: started"
+    savepid(vars.piddir, vars.name)
     #main thread should not exit!
     while True:
         time.sleep(300)

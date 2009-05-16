@@ -92,8 +92,11 @@ class CoreVars(Vars):
         self.name = 'core'
         
 class RpcVars(Vars):
-    __slots__ = ()
+    __slots__ = ('pids', 'piddate', 'pidLock')
     
     def __init__(self):
         super(RpcVars, self).__init__()
         self.name = 'rpc'
+        self.pids = []
+        self.piddate = 0
+        self.pidLock = Lock()

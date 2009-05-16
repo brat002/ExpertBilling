@@ -704,11 +704,11 @@ def savepid(piddir, procname):
     
 def readpids(piddir, lastmtime = -1, exclude = []):
     presmtime = os.path.getmtime(piddir)
-    if lastmtime == presmtime: return None
+    if lastmtime == presmtime: return ([], presmtime)
     pidfiles = os.listdir(piddir)
     if exclude:
         pidfiles = list(set(pidfiles).difference(exclude))
-    return [(pidfile[:-4], int(open(pidfile, 'rb').read())) for pidfile in pidfiles]
+    return ([(pidfile[:-4], int(open(pidfile, 'rb').read())) for pidfile in pidfiles], presmtime)
     
 #SIGUSR1 = 10    
 def killpids(pids, sig):
