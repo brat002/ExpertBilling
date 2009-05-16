@@ -186,7 +186,7 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
-                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s, %s, %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     connection.commit()
                 #first type groups
                 elif group_type == 1:
@@ -194,7 +194,7 @@ class groupDequeThread(Thread):
                     for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s, %s, %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     connection.commit()
                 else:
                     continue
@@ -284,7 +284,7 @@ class statDequeThread(Thread):
                     classes.append(class_)
                     octlist.append([sdict['INPUT'], sdict['OUTPUT']])              
                     
-                cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s, %s, %s, %s);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
+                cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
                 connection.commit()
                 
                 if flags.writeProf:
@@ -538,8 +538,16 @@ class NetFlowRoutine(Thread):
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
-                    try: cur = connection.cursor()
-                    except: time.sleep(20)
+                    try: 
+                        cur = connection.cursor()
+                    except: 
+                        time.sleep(20)
+                        try:
+                            connection = persist.connection()
+                            connection._con.set_client_encoding('UTF8')
+                            cur = connection.cursor()
+                        except:
+                            time.sleep(30)
                 time.sleep(1)
                     
 
