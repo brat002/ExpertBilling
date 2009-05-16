@@ -698,7 +698,7 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     
 def savepid(piddir, procname):
     if not os.path.isdir(piddir): os.mkdir(piddir)
-    pfile = open(procname + '.pid', 'wb')
+    pfile = open(''.join([piddir, '/', procname, '.pid']), 'wb')
     pfile.write(str(os.getpid()))
     pfile.close()
     
