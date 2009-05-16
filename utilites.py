@@ -698,7 +698,7 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
     
 def savepid(piddir, procname):
     if not os.path.isdir(piddir): os.mkdir(piddir)
-    pfile = open(''.join([piddir, '/', procname, '.pid']), 'wb')
+    pfile = open(''.join((piddir, '/', procname, '.pid')), 'wb')
     pfile.write(str(os.getpid()))
     pfile.close()
     
@@ -708,7 +708,7 @@ def readpids(piddir, lastmtime = -1, exclude = []):
     pidfiles = os.listdir(piddir)
     if exclude:
         pidfiles = list(set(pidfiles).difference(exclude))
-    return ([(pidfile[:-4], int(open(pidfile, 'rb').read())) for pidfile in pidfiles], presmtime)
+    return ([(pidfile[:-4], int(open(''.join((piddir, '/', pidfile)), 'rb').read())) for pidfile in pidfiles], presmtime)
     
 #SIGUSR1 = 10    
 def killpids(pids, sig):
