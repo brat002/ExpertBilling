@@ -860,7 +860,7 @@ def graceful_save():
     sys.exit()
     
 def main():
-    global threads
+    global threads, vars
     threads=[]
     threads.append(RPCServer())
     for th in threads:	
