@@ -42,6 +42,7 @@ except: print 'cannot import mx'
 from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
+from classes.vars import CoreVars
 from utilites import renewCaches, savepid
 
 from classes.core_class.RadiusSession import RadiusSession
@@ -1048,7 +1049,8 @@ def main():
 if __name__ == "__main__":
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
-        
+       
+    vars = CoreVars()
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
 
