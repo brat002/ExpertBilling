@@ -11,6 +11,7 @@ import asyncore
 import datetime
 import operator
 import itertools
+import traceback
 import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
@@ -846,7 +847,7 @@ def SIGUSR1_handler(signum, frame):
     try:
         broadcast_SIGUSR1()
     except Exception, ex:
-        logger.error("Exception diring SIGUSR1 broadcast: %s", repr(ex))
+        logger.error("Exception diring SIGUSR1 broadcast: %s \n %s", (repr(ex), traceback.format_exc()))
 
 def graceful_save():
     global threads
