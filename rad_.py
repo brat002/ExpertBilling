@@ -37,7 +37,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid
+from utilites import renewCaches, savepid, get_connection
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -119,6 +119,8 @@ class AsyncUDPServer(asyncore.dispatcher):
         self.close()
     
     def handle_close(self):
+        try:    self.dbconn.close()
+        except: pass
         self.close()
         
 def authNA(packet):
@@ -146,12 +148,15 @@ def get_accesstype(packetobject):
     return
     
 class AsyncAuthServ(AsyncUDPServer):
-    def __init__(self, host, port, dbpool):
+    def __init__(self, host, port):
+        global vars
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        self.dbconn = dbpool
-        self.dbconn._con._con.set_isolation_level(0)
-        self.dbconn._con._con.set_client_encoding('UTF8')
+        #self.dbconn = dbpool
+        #self.dbconn._con._con.set_isolation_level(0)
+        #self.dbconn._con._con.set_client_encoding('UTF8')
+        self.dbconn = get_connection(vars.db_dsn)
+        self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
 
@@ -233,14 +238,23 @@ class AsyncAuthServ(AsyncUDPServer):
                 
         except Exception, ex:
             logger.error("Auth Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
-
+            if isinstance(ex, vars.db_errors):
+                time.sleep(5)
+                try:
+                    self.dbconn = get_connection(vars.db_dsn)
+                except Exception, eex:
+                    logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                    time.sleep(10)
+                        
 class AsyncAcctServ(AsyncUDPServer):
-    def __init__(self, host, port, dbconn):
+    def __init__(self, host, port):
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        self.dbconn = dbconn
-        self.dbconn._con._con.set_isolation_level(0)
-        self.dbconn._con._con.set_client_encoding('UTF8')
+        #self.dbconn = dbconn
+        #self.dbconn._con._con.set_isolation_level(0)
+        #self.dbconn._con._con.set_client_encoding('UTF8')
+        self.dbconn = get_connection(vars.db_dsn)
+        self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
 
@@ -760,16 +774,17 @@ class CacheRoutine(Thread):
         Thread.__init__(self)
         
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global suicideCondition, cacheMaster, flags, vars
+        self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
             if suicideCondition[self.__class__.__name__]: break            
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > 60:
                     run_time = time.clock()                    
-                    cur = connection.cursor()
+                    cur = self.connection.cursor()
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
                     cur.close()
@@ -785,7 +800,13 @@ class CacheRoutine(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(20)
             
@@ -849,7 +870,7 @@ def graceful_save():
     suicideCondition[cacheThr.__class__.__name__] = True
     logger.lprint("About to stop gracefully.")
     time.sleep(5)
-    pool.close()
+    #pool.close()
     logger.lprint("Stopping gracefully.")
     sys.exit()
 
@@ -872,8 +893,8 @@ def main():
       
     print 'caches ready'
     
-    server_auth = AsyncAuthServ("0.0.0.0", 1812, pool.connection())
-    server_acct = AsyncAcctServ("0.0.0.0", 1813, pool.connection())
+    server_auth = AsyncAuthServ("0.0.0.0", 1812)
+    server_acct = AsyncAcctServ("0.0.0.0", 1813)
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
@@ -918,14 +939,16 @@ if __name__ == "__main__":
     try:
         #write profiling info?
         writeProf = logger.writeInfoP()         
-        
+        '''
         pool = PooledDB(
             mincached=3, maxcached=10,
             blocking=True, creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                    config.get("db", "host"), config.get("db", "password")))
         
-        
+        '''
+        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                         config.get("db", "host"), config.get("db", "password"))
         suicideCondition = {}
         fMem = pfMemoize()
     
@@ -935,7 +958,7 @@ if __name__ == "__main__":
                 
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())        
+        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
         allowedUsers()
         #-------------------
         print "ebs: rad: configs read, about to start"
