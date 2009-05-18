@@ -722,6 +722,7 @@ def get_connection(dsn, session = []):
         cur = conn.cursor()
         for sess_sql in session:
             cur.execute(sess_sql)
+        cur.close()
         conn.commit()
     return conn
         

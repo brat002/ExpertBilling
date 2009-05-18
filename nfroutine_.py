@@ -860,7 +860,8 @@ if __name__ == "__main__":
     
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-
+    
+    suicideCondition = {}
     flags = NfrFlags()
     vars  = NfrVars()
     
