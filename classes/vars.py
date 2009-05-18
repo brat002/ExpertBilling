@@ -1,12 +1,17 @@
 import struct
+import psycopg2
 from collections import deque
 from threading import Lock
 
+
 class Vars(object):
-    __slots__ = ('name', 'piddir')
+    __slots__ = ('name', 'piddir', 'db_errors', 'db_dsn', 'db_session')
     def __init__(self):
         self.name = ''
         self.piddir = 'pid'
+        self.db_errors = [psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError, psycopg2.InternalError]
+        self.db_dsn = ''
+        self.db_session = []
 
 class NfVars(Vars):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
@@ -40,12 +45,13 @@ class NfQueues(object):
         self.nfQueue = deque(); self.nfqLock = Lock()
 
 class NfrVars(Vars):
-    __slots__ = ('host', 'port', 'addr', 'sendFlag', 'saveDir', 'groupAggrTime', 'statAggrTime', 'statDicts', 'groupDicts')
+    __slots__ = ('nfr_session', 'host', 'port', 'addr', 'sendFlag', 'saveDir', 'groupAggrTime', 'statAggrTime', 'statDicts', 'groupDicts')
     
     def __init__(self):
         super(NfrVars, self).__init__()
         self.name = 'nfroutine'
         self.host, self.port = '127.0.0.1', 9997
+        self.nfr_session = ["SET synchronous_commit TO OFF;"]
         self.addr = (self.host, self.port)
         self.sendFlag = ''
         self.saveDir = '.'
