@@ -945,6 +945,73 @@ END;
 $$
     LANGUAGE plpgsql;
 
-   
+-- 18.05.2009
+
+ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;
+ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];
+
+DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
+
+CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)
+  RETURNS void AS
+$BODY$
+BEGIN
+    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
+EXCEPTION WHEN unique_violation THEN
+    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
   
 
+DROP FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
+
+CREATE OR REPLACE FUNCTION group_type2_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)
+  RETURNS void AS
+$BODY$
+DECLARE
+    old_classes_ int[];
+    old_classbytes_  bigint[];
+
+
+    i int;
+    ilen int;
+    j int;
+    max_ bigint;
+    maxclass_ int;
+    nbytes bigint;
+    nclass int;
+    --jlen int;
+BEGIN
+    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
+EXCEPTION WHEN unique_violation THEN
+    SELECT classes, classbytes INTO old_classes_ ,old_classbytes_ FROM billservice_groupstat WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_ FOR UPDATE;
+    ilen := icount(classes_);
+    max_ := 0;
+    maxclass_ := NULL;
+    --jlen := icount(old_classes_);
+    FOR i IN 1..ilen LOOP
+        nclass := classes_[i];
+        nbytes := classbytes_[i];
+        j := idx(old_classes_, nclass);
+        IF j = 0 THEN
+	    old_classes_ := array_append(old_classes_, nclass);
+	    old_classbytes_ := array_append(old_classbytes_, nbytes);
+	    IF nbytes > max_ THEN
+	        max_ := nbytes;
+	        maxclass_ := nclass;
+	    END IF;
+	ELSE
+	    old_classbytes_[j] := old_classbytes_[j] + nbytes;
+	    IF old_classbytes_[j] > max_ THEN
+	        max_ := old_classbytes_[j];
+	        maxclass_ := nclass;
+	    END IF;
+	END IF;      
+    END LOOP;    
+    UPDATE billservice_groupstat SET bytes=max_, max_class=maxclass_, classes=old_classes_, classbytes=old_classbytes_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;

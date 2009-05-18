@@ -206,7 +206,7 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
-                    self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     self.connection.commit()
                 #first type groups
                 elif group_type == 1:
@@ -214,7 +214,7 @@ class groupDequeThread(Thread):
                     for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     self.connection.commit()
                 else:
                     continue
