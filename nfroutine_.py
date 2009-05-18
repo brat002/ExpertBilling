@@ -343,7 +343,7 @@ class statDequeThread(Thread):
                         with aggrsLock:
                             srec = aggrsDict.get(skey)
                             if not srec:
-                                aggrsDict[gkey] = statData
+                                aggrsDict[skey] = statData
                                 with queues.statLock:
                                     queues.statDeque.appendleft((skey, skeyTime))
                             else:
