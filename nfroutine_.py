@@ -653,8 +653,9 @@ class AccountServiceThread(Thread):
                 if isinstance(ex, vars.db_errors):
                     time.sleep(5)
                     try:
-                        connection = get_connection(vars.db_dsn)
-                    except:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(20)
