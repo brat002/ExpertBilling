@@ -9,7 +9,7 @@ class Vars(object):
     def __init__(self):
         self.name = ''
         self.piddir = 'pid'
-        self.db_errors = [psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError, psycopg2.InternalError]
+        self.db_errors = (psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError, psycopg2.InternalError)
         self.db_dsn = ''
         self.db_session = []
 

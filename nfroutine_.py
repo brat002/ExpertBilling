@@ -616,8 +616,8 @@ class AccountServiceThread(Thread):
                 time_run = (now() - cacheMaster.date).seconds > 180
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
-                    self.cur = self.connection.cursor()
-                    renewCaches(self.cur, cacheMaster, NfroutineCaches, 21, (fMem,))
+                    cur = self.connection.cursor()
+                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
                     cur.close()
                     if counter == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
