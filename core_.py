@@ -145,7 +145,7 @@ class check_vpn_access(Thread):
 
                         if acstatus and caches.timeperiodaccess_cache.in_period(acc.tarif_id):
                             #chech whether speed has changed
-                            if acc.vpn_speed=='':
+                            if acc.vpn_speed == '':
                                 account_limit_speed = get_limit_speed(cur, rs.account_id)
                                 connection.commit()
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
@@ -154,7 +154,7 @@ class check_vpn_access(Thread):
                                 speed=parse_custom_speed_lst(vpn_speed)
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
-                            if row[3]!=newspeed:
+                            if rs.speed_string != newspeed:
                                 #print "set speed", newspeed
                                 coa_result=change_speed(dict, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                                         str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
@@ -319,12 +319,9 @@ class periodical_service_bill(Thread):
                                     # Для последней проводки ставим статус Approved=True
                                     # для всех сотальных False
                                     # Если последняя проводка меньше или равно дате начала периода-делаем снятие
+                                    
                                     summ = 0
-                                    if last_checkout is None:
-                                        first_time = True
-                                        last_checkout = now
-                                    else:
-                                        first_time = False
+                                    first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                         
                                     if first_time or last_checkout < period_start:    
                                         lc = period_start - last_checkout
@@ -359,11 +356,7 @@ class periodical_service_bill(Thread):
                                     """
                                     last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
                                     connection.commit()
-                                    if last_checkout is None:
-                                        first_time = True
-                                        last_checkout = now
-                                    else:
-                                        first_time = False
+                                    first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                         
                                     # Здесь нужно проверить сколько раз прошёл расчётный период    
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
@@ -376,9 +369,9 @@ class periodical_service_bill(Thread):
                                         chk_date = now 
                                         cash_summ = 0
                                         #descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"
-                                    elif period_start>last_checkout:
+                                    elif period_start > last_checkout:
                                         lc = period_start - last_checkout
-                                        le = period_end - last_checkout
+                                        le = period_end   - last_checkout
                                         nums, ost = divmod(le.seconds + le.days*86400, delta)
                                         summ = ps.cost
                                         chk_date = last_checkout + s_delta
@@ -488,7 +481,7 @@ class TimeAccessBill(Thread):
                         for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
                             if 0: assert isinstance(pnode, TimePeriodNodeData)
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
-                                summ = (float(total_time)/60) * period_cost
+                                summ = (float(total_time)/60) * period.cost
                                 if summ > 0:
                                     timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                     connection.commit()
@@ -574,7 +567,7 @@ class limit_checker(Thread):
                         if limit.mode:
                             now = dateAT
                             sp_start = now - datetime.timedelta(seconds=delta)
-                            sp_end = now
+                            sp_end   = now
                         
                         connection.commit()        
                         cur.execute("""SELECT sum(bytes) AS size FROM billservice_groupstat

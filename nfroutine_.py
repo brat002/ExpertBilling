@@ -114,8 +114,20 @@ class DepickerThread(Thread):
                     if picker:
                         with queues.depickerLock:
                             queues.depickerQueue.appendleft(ilist[icount:])
-                    try: cur = connection.cursor()
-                    except: pass
+                    #try: cur = connection.cursor()
+                    #except: pass
+                    try: 
+                        time.sleep(3)
+                        cur = connection.cursor()
+                    except: 
+                        time.sleep(20)
+                        try:
+                            connection = pool.connection()
+                            connection._con.set_client_encoding('UTF8')
+                            cur = connection.cursor()
+                            continue
+                        except:
+                            time.sleep(10)
                 time.sleep(10)
   
 class groupDequeThread(Thread):
@@ -227,8 +239,19 @@ class groupDequeThread(Thread):
                                     grec[0][gclass]['INPUT']  += class_io['INPUT']
                                     grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
                         
-                    try: cur = connection.cursor()
-                    except: time.sleep(20)
+                    #try: cur = connection.cursor()
+                    #except: time.sleep(20)
+                    try: 
+                        time.sleep(3)
+                        cur = connection.cursor()
+                    except: 
+                        time.sleep(20)
+                        try:
+                            connection = pool.connection()
+                            connection._con.set_client_encoding('UTF8')
+                            cur = connection.cursor()
+                        except:
+                            time.sleep(20)
                             
                 
                 
@@ -317,8 +340,17 @@ class statDequeThread(Thread):
                                 srec[1][1]['INPUT']  += octets_in
                                 srec[1][1]['OUTPUT'] += octets_out
                         
-                    try: cur = connection.cursor()
-                    except: time.sleep(20)
+                    try: 
+                        time.sleep(3)
+                        cur = connection.cursor()
+                    except: 
+                        time.sleep(20)
+                        try:
+                            connection = pool.connection()
+                            connection._con.set_client_encoding('UTF8')
+                            cur = connection.cursor()
+                        except:
+                            time.sleep(20)
                             
                 
             
@@ -539,6 +571,7 @@ class NetFlowRoutine(Thread):
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
                 if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
                     try: 
+                        time.sleep(3)
                         cur = connection.cursor()
                     except: 
                         time.sleep(20)
@@ -547,7 +580,7 @@ class NetFlowRoutine(Thread):
                             connection._con.set_client_encoding('UTF8')
                             cur = connection.cursor()
                         except:
-                            time.sleep(30)
+                            time.sleep(20)
                 time.sleep(1)
                     
 
@@ -617,7 +650,13 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30210004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                
+                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                    time.sleep(5)
+                    try:
+                        connection = pool.connection()
+                        connection._con.set_client_encoding('UTF8')
+                    except:
+                        time.sleep(10)
             gc.collect()
             time.sleep(20)
             
