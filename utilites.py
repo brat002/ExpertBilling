@@ -714,3 +714,14 @@ def readpids(piddir, lastmtime = -1, exclude = []):
 def killpids(pids, sig):
     for pid in pids:
         kill(pid, sig)
+        
+def get_connection(dsn, session = []):
+    conn = psycopg2.connect(dsn)
+    conn.set_client_encoding('UTF8')
+    if session:
+        cur = conn.cursor()
+        for sess_sql in session:
+            cur.execute(sess_sql)
+        conn.commit()
+    return conn
+        

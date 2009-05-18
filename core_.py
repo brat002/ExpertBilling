@@ -919,21 +919,22 @@ class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
         Thread.__init__(self)
+        self.connection = pool.connection()
+        self.connection._con._con.set_client_encoding('UTF8')
         
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags
+        
+        global suicideCondition, cacheMaster, flags, vars
         counter = 0; now = datetime.datetime.now
         while True:
             if suicideCondition[self.__class__.__name__]: break            
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > 100:
                     run_time = time.clock()                    
-                    cur = connection.cursor()
+                    self.cur = self.connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
-                    cur.close()
+                    renewCaches(self.cur, cacheMaster, CoreCaches, 31, (fMem,), False)
+                    self.cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
                     counter += 1

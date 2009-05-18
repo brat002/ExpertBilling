@@ -43,7 +43,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
-from utilites import renewCaches, savepid
+from utilites import renewCaches, savepid, get_connection
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -140,7 +140,7 @@ class groupDequeThread(Thread):
         connection = pool.connection()
         connection._con._con.set_client_encoding('UTF8')
         cur = connection.cursor()
-        global queues, flags
+        global queues, flags, vars
         #direction type->operations
         #gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
         gops = [lambda xdct: xdct['INPUT'], lambda xdct: xdct['OUTPUT'], lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])]
@@ -226,7 +226,7 @@ class groupDequeThread(Thread):
                 continue
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError) or isinstance(ex, psycopg2.InternalError):
                     if gkey and gkeyTime and groupData:
                         with aggrgLock:
                             grec = aggrgDict.get(gkey)
@@ -358,8 +358,10 @@ class statDequeThread(Thread):
 class NetFlowRoutine(Thread):
     '''Thread that handles NetFlow statistic packets and bills according to them'''
     def __init__ (self):
+        global vars
         Thread.__init__(self)
         self.tname = self.__class__.__name__
+        self.connection = get_connection(vars.db_dsn, vars.nfr_session)
         
     def get_actual_cost(self, octets_summ, stream_date, nodes):
         """Метод возвращает актуальную цену для направления трафика для пользователя:"""
@@ -386,13 +388,13 @@ class NetFlowRoutine(Thread):
 
     
     def run(self):
-        connection = persist.connection()
-        connection._con.set_client_encoding('UTF8')
+        #connection = persist.connection()
+        #connection._con.set_client_encoding('UTF8')
         global cacheMaster, vars, flags, queues
         caches = None
         dateAT = datetime.datetime(2000, 1, 1)
         oldAcct = defaultdict(list)
-        cur = connection.cursor()
+        self.cur = self.connection.cursor()
         icount, timecount = 0, 0
         while True:
             try:   
@@ -442,13 +444,13 @@ class NetFlowRoutine(Thread):
                     if  (acc.acctf_id  != flow.acctf_id) or (not acc.datetime <= stream_date):
                         acc = oldAcct.get(flow.acctf_id)
                         if not acc:
-                            cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
+                            self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
                                            FROM billservice_account as ba
                                            JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
                                            LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
                                         """, (flow.account_id,))
-                            acc = cur.fetchone()
-                            connection.commit()
+                            acc = self.cur.fetchone()
+                            self.connection.commit()
                             if not acc: continue
                             acc = AccountData(*acc)
                             oldAcct[flow.acctf_id] = acc                           
@@ -508,14 +510,14 @@ class NetFlowRoutine(Thread):
                     #write statistics without billing it
                     if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status):
                         #cur = connection.cursor()
-                        cur.execute("""INSERT INTO billservice_netflowstream(
+                        self.cur.execute("""INSERT INTO billservice_netflowstream(
                                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                                     """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
                                           intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
                                           flow.src_port, flow.dst_port, flow.protocol, False, False,))
-                        connection.commit()
+                        self.connection.commit()
                         continue
                     
                     if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
@@ -537,8 +539,8 @@ class NetFlowRoutine(Thread):
                                     elif octets>=prepaid:
                                         prepaid, octets = octets-prepaid, abs(prepaid-octets)
                                         
-                                    cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
-                                    connection.commit()
+                                    self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
+                                    self.connection.commit()
             
                             summ = (trafic_cost * octets)/(1048576)
         
@@ -547,14 +549,14 @@ class NetFlowRoutine(Thread):
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
                                     
                     if store_classes:
-                        cur.execute("""INSERT INTO billservice_netflowstream(
+                        self.cur.execute("""INSERT INTO billservice_netflowstream(
                                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
                                        dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
                                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                                    """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
                                          intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
                                          flow.src_port, flow.dst_port, flow.protocol, True, False,))
-                        connection.commit()
+                        self.connection.commit()
                  
                 if flags.writeProf:
                     icount += 1
@@ -569,16 +571,15 @@ class NetFlowRoutine(Thread):
                 continue               
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                if isinstance(ex, vars.db_errors):
                     try: 
                         time.sleep(3)
-                        cur = connection.cursor()
+                        self.cur = self.connection.cursor()
                     except: 
-                        time.sleep(20)
+                        time.sleep(10)
                         try:
-                            connection = persist.connection()
-                            connection._con.set_client_encoding('UTF8')
-                            cur = connection.cursor()
+                            self.connection = get_connection(vars.db_dsn, vars.nfr_session)
+                            self.cur = self.connection.cursor()
                         except:
                             time.sleep(20)
                 time.sleep(1)
@@ -605,9 +606,8 @@ class AccountServiceThread(Thread):
         self.tname = self.__class__.__name__
     
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, queues, threads, cacheThr
+        global suicideCondition, cacheMaster, flags, vars, queues, threads, cacheThr
+        self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
             if suicideCondition[self.__class__.__name__]: break
@@ -616,8 +616,8 @@ class AccountServiceThread(Thread):
                 time_run = (now() - cacheMaster.date).seconds > 180
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
-                    cur = connection.cursor()
-                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
+                    self.cur = self.connection.cursor()
+                    renewCaches(self.cur, cacheMaster, NfroutineCaches, 21, (fMem,))
                     cur.close()
                     if counter == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
@@ -650,11 +650,10 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30210004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                if isinstance(ex, vars.db_errors):
                     time.sleep(5)
                     try:
-                        connection = pool.connection()
-                        connection._con._con.set_client_encoding('UTF8')
+                        connection = get_connection(vars.db_dsn)
                     except:
                         time.sleep(10)
             gc.collect()
@@ -894,6 +893,8 @@ if __name__ == "__main__":
         #write profiling info?
         flags.writeProf = logger.writeInfoP()  
         
+        vars.db_dsn = dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                   config.get("db", "host"), config.get("db", "password"))
         pool = PooledDB(
             mincached=4,  maxcached=20,
             blocking=True,creator=psycopg2,
@@ -904,11 +905,11 @@ if __name__ == "__main__":
             creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
                                                                    config.get("db", "host"), config.get("db", "password")))
-    
+
         #--------------------------------------------------------
         
-        suicideCondition = {}
 
+        psycopg2.connect
         #group statistinc an global statistics objects    
         #key = account, group id , time
         #[(1,2,3)][0][4]['INPUT']
