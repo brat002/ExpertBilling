@@ -76,12 +76,17 @@ class DepickerThread(Thread):
         self.tname = self.__class__.__name__
         
     def run(self):        
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
-        global queues, flags, suicideCondition
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
+        global queues, flags, suicideCondition, vars
+        self.connection = get_connection(vars.db_dsn)
+        self.cur        = self.connection.cursor()
         while True:
-            if suicideCondition[self.tname]: break
+            if suicideCondition[self.tname]:
+                try: self.connection.close()
+                except: pass
+                break
             try:
                 picker = None
                 
@@ -96,8 +101,8 @@ class DepickerThread(Thread):
                 ilist = picker; ilen = len(picker)
                 for (tts,acctf,acc), summ in ilist:
                     #debit accounts
-                    traffictransaction(cur, tts, acctf, acc, summ=summ, created=now)
-                    connection.commit()
+                    traffictransaction(self.cur, tts, acctf, acc, summ=summ, created=now)
+                    self.connection.commit()
                     icount += 1
                 if flags.writeProf:
                     logger.info("DPKALIVE: %s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
@@ -110,7 +115,7 @@ class DepickerThread(Thread):
                 continue             
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))    
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                if isinstance(ex, vars.db_errors):
                     if picker:
                         with queues.depickerLock:
                             queues.depickerQueue.appendleft(ilist[icount:])
@@ -118,16 +123,14 @@ class DepickerThread(Thread):
                     #except: pass
                     try: 
                         time.sleep(3)
-                        cur = connection.cursor()
+                        self.cur = self.connection.cursor()
                     except: 
-                        time.sleep(20)
+                        time.sleep(10)
                         try:
-                            connection = pool.connection()
-                            connection._con._con.set_client_encoding('UTF8')
-                            cur = connection.cursor()
-                            continue
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
                         except:
-                            time.sleep(10)
+                            time.sleep(20)
                 time.sleep(10)
   
 class groupDequeThread(Thread):
@@ -137,10 +140,12 @@ class groupDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
         global queues, flags, vars
+        self.connection = get_connection(vars.db_dsn)
+        self.cur = self.connection.cursor()
         #direction type->operations
         #gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
         gops = [lambda xdct: xdct['INPUT'], lambda xdct: xdct['OUTPUT'], lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])]
@@ -150,7 +155,10 @@ class groupDequeThread(Thread):
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
             try:
-                if suicideCondition[self.tname]: break
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 if flags.writeProf: 
                     a = time.clock()
                     
@@ -198,16 +206,16 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
-                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
-                    connection.commit()
+                    self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.connection.commit()
                 #first type groups
                 elif group_type == 1:
                     #get class octets, calculate sum with direction method
                     for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
-                    connection.commit()
+                    self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s::int[], %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.connection.commit()
                 else:
                     continue
                 
@@ -226,7 +234,7 @@ class groupDequeThread(Thread):
                 continue
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError) or isinstance(ex, psycopg2.InternalError):
+                if isinstance(ex, vars.db_errors):
                     if gkey and gkeyTime and groupData:
                         with aggrgLock:
                             grec = aggrgDict.get(gkey)
@@ -243,13 +251,12 @@ class groupDequeThread(Thread):
                     #except: time.sleep(20)
                     try: 
                         time.sleep(3)
-                        cur = connection.cursor()
+                        self.cur = self.connection.cursor()
                     except: 
-                        time.sleep(20)
+                        time.sleep(10)
                         try:
-                            connection = pool.connection()
-                            connection._con._con.set_client_encoding('UTF8')
-                            cur = connection.cursor()
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
                         except:
                             time.sleep(20)
                             
@@ -262,17 +269,23 @@ class statDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
-        global queues, flags
+        global queues, flags, vars
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
+        self.connection = get_connection(vars.db_dsn)
+        self.cur = self.connection.cursor()
+        
         icount = 0; timecount = 0
         a = time.clock()
         while True:
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
             try:
-                if suicideCondition[self.tname]: break
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 if flags.writeProf:
                     a = time.clock()
                     
@@ -307,8 +320,8 @@ class statDequeThread(Thread):
                     classes.append(class_)
                     octlist.append([sdict['INPUT'], sdict['OUTPUT']])              
                     
-                cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
-                connection.commit()
+                self.cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
+                self.connection.commit()
                 
                 if flags.writeProf:
                     icount += 1
@@ -325,7 +338,7 @@ class statDequeThread(Thread):
                 continue
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
+                if isinstance(ex, vars.db_errors):
                     if skey and skeyTime and statData:
                         with aggrsLock:
                             srec = aggrsDict.get(skey)
@@ -342,13 +355,12 @@ class statDequeThread(Thread):
                         
                     try: 
                         time.sleep(3)
-                        cur = connection.cursor()
+                        self.cur = self.connection.cursor()
                     except: 
-                        time.sleep(20)
+                        time.sleep(10)
                         try:
-                            connection = pool.connection()
-                            connection._con._con.set_client_encoding('UTF8')
-                            cur = connection.cursor()
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
                         except:
                             time.sleep(20)
                             
@@ -398,7 +410,10 @@ class NetFlowRoutine(Thread):
         icount, timecount = 0, 0
         while True:
             try:   
-                if suicideCondition[self.tname]: break
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 if flags.writeProf:
                     a = time.clock()
                     
@@ -610,7 +625,10 @@ class AccountServiceThread(Thread):
         self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
-            if suicideCondition[self.__class__.__name__]: break
+            if suicideCondition[self.__class__.__name__]: 
+                try:    self.connection.close()
+                except: pass
+                break
             a = time.clock()
             try: 
                 time_run = (now() - cacheMaster.date).seconds > 180
@@ -674,46 +692,6 @@ class NfTwistedServer(DatagramProtocol):
         except:            
             logger.error("%s : #30210701 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
 
-class NfAsyncUDPServer(asyncore.dispatcher):
-    ac_out_buffer_size = 16384*10
-    ac_in_buffer_size = 16384*10
-    
-    def __init__(self, addr_):
-        self.outbuf = []
-        asyncore.dispatcher.__init__(self)
-
-        self.host = addr_[0]
-        self.port = addr_[1]
-        self.dbconn = None
-        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.settimeout(1.0)
-        self.bind(addr_)
-        self.set_reuse_addr()
-
-    def handle_connect(self):
-        pass    
-    def handle_read_event (self):
-        try:
-            data, addr = self.socket.recvfrom(32768)
-            self.socket.sendto(vars.sendFlag + str(len(data)), addr)
-            queues.nfIncomingQueue.append(data)
-        except:            
-            logger.error("%s : #30210701 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-
-
-    def handle_readfrom(self,data, address):
-        pass
-    def writable(self):
-        return (0)
-
-    def handle_error (self, *info):
-        logger.error('Uncaptured python exception, closing channel %s \n %s', (repr(self), traceback.format_exc()))
-        self.close()
-    
-    def handle_close(self):
-        self.close()     
-
-
         
 
 def ddict_IO():
@@ -766,8 +744,15 @@ def graceful_save():
     for thr in threads:
             suicideCondition[thr.tname] = True
     time.sleep(2)
-    pool.close()            
+    #pool.close()
+    '''
+    for thr in threads + [cacheThr]:
+        if hasattr(thr, 'connection'):
+            try:
+                thr.connection.close()
+            except: pass
     time.sleep(1)
+    '''
     
     queues.depickerLock.acquire()
     queues.groupLock.acquire()
@@ -895,8 +880,9 @@ if __name__ == "__main__":
         #write profiling info?
         flags.writeProf = logger.writeInfoP()  
         
-        vars.db_dsn = dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                   config.get("db", "host"), config.get("db", "password"))
+        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                         config.get("db", "host"), config.get("db", "password"))
+        '''
         pool = PooledDB(
             mincached=4,  maxcached=20,
             blocking=True,creator=psycopg2,
@@ -907,11 +893,9 @@ if __name__ == "__main__":
             creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
                                                                    config.get("db", "host"), config.get("db", "password")))
-
+        '''
         #--------------------------------------------------------
-        
 
-        psycopg2.connect
         #group statistinc an global statistics objects    
         #key = account, group id , time
         #[(1,2,3)][0][4]['INPUT']
@@ -930,7 +914,7 @@ if __name__ == "__main__":
         #create allowedUsers
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())       
+        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())       
         allowedUsers()
         
         fMem = pfMemoize()    

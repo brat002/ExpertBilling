@@ -43,7 +43,7 @@ from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
 from classes.vars import CoreVars
-from utilites import renewCaches, savepid
+from utilites import renewCaches, savepid, get_connection
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -92,14 +92,18 @@ class check_vpn_access(Thread):
             nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
             TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
         """
-        global cacheMaster, suicideCondition
+        global cacheMaster, suicideCondition, vars
         dateAT = datetime.datetime(2000, 1, 1)
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        self.connection = get_connection(vars.db_dsn)
         caches = None
         while True:            
             try:
-                if suicideCondition[self.__class__.__name__]: break
+                if suicideCondition[self.__class__.__name__]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 a = time.clock()
 
                 if cacheMaster.date > dateAT:
@@ -116,19 +120,19 @@ class check_vpn_access(Thread):
                     continue
                 if 0: assert isinstance(caches, CoreCaches)             
                    
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 #close frozen sessions
                 now = datetime.datetime.now()
                 cur.execute("""UPDATE radius_activesession 
                                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
                                WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
                                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
-                connection.commit()
+                cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL;""")
                 rows=cur.fetchall()
-                connection.commit()
+                cur.connection.commit()
                 for row in rows:
                     try:
                         rs = RadiusSession(*row)
@@ -147,7 +151,7 @@ class check_vpn_access(Thread):
                             #chech whether speed has changed
                             if acc.vpn_speed == '':
                                 account_limit_speed = get_limit_speed(cur, rs.account_id)
-                                connection.commit()
+                                cur.connection.commit()
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
                                 speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
@@ -165,7 +169,7 @@ class check_vpn_access(Thread):
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
-                                    connection.commit()
+                                    cur.connection.commit()
                         else:
                             result = PoD(dict,rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                          str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
@@ -180,16 +184,24 @@ class check_vpn_access(Thread):
                         if result is not None:
                             cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                                         """, (disconnect_result, rs.sessionid,))
-                            connection.commit()                            
+                            cur.connection.commit()                            
                     
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                        if isinstance(ex, vars.db_dsn): raise ex
                     
-                connection.commit()   
+                cur.connection.commit()   
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             time.sleep(60)
 
     def run(self):
@@ -213,9 +225,10 @@ class periodical_service_bill(Thread):
         Thread.__init__(self)
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global cacheMaster, fMem, suicideCondition, transaction_number
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global cacheMaster, fMem, suicideCondition, transaction_number, vars
+        self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
@@ -237,7 +250,7 @@ class periodical_service_bill(Thread):
                         cacheMaster.lock.release()                
                 if 0: assert isinstance(caches, CoreCaches)
 
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 #transactions per day              
                 n=(86400)/transaction_number
                 n_delta = datetime.timedelta(seconds=n)
@@ -297,7 +310,7 @@ class periodical_service_bill(Thread):
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
                                                 cash_summ = (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
-                                                connection.commit()
+                                                cur.connection.commit()
                                                 chk_date += n_delta
                                         else:
                                             #make an approved transaction
@@ -306,7 +319,7 @@ class periodical_service_bill(Thread):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
                                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
-                                    connection.commit()
+                                    cur.connection.commit()
                                     
                                 if ps.cash_method == "AT_START":
                                     """
@@ -339,7 +352,7 @@ class periodical_service_bill(Thread):
                                                 if ps.created and ps.created >= chk_date:
                                                     cash_summ=0
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
-                                                connection.commit()
+                                                cur.connection.commit()
                                                 chk_date += s_delta
                                         else:
                                             summ = cash_summ * susp_per_mlt
@@ -347,7 +360,7 @@ class periodical_service_bill(Thread):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
                                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', summ, chk_date)
-                                    connection.commit()
+                                    cur.connection.commit()
                                 if ps.cash_method=="AT_END":
                                     """
                                     Смотрим завершился ли хотя бы один расчётный период.
@@ -355,7 +368,7 @@ class periodical_service_bill(Thread):
                                     для остальных со статусом False
                                     """
                                     last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
-                                    connection.commit()
+                                    cur.connection.commit()
                                     first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                         
                                     # Здесь нужно проверить сколько раз прошёл расчётный период    
@@ -381,7 +394,7 @@ class periodical_service_bill(Thread):
                                                 if ps.created and ps.created>chk_date:
                                                     cash_summ=0
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
-                                                connection.commit()
+                                                cur.connection.commit()
                                                 chk_date += s_delta                                          
                                             
                                         if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
@@ -389,16 +402,22 @@ class periodical_service_bill(Thread):
                                             cash_summ = 0                                            
                                         summ = cash_summ * susp_per_mlt
                                         ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', summ, chk_date)
-                                    connection.commit()
+                                    cur.connection.commit()
                             except Exception, ex:
-                                if not  isinstance(ex, psycopg2.OperationalError or isinstance(ex, psycopg2.InterfaceError)):
-                                    logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                                else: raise ex
-                connection.commit()
+                                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                                if isinstance(ex, vars.db_errors): raise ex
+                cur.connection.commit()
                 cur.close()
                 logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(180-(time.clock()-a_)-random.randint(10, 120))
             
@@ -414,14 +433,18 @@ class TimeAccessBill(Thread):
         """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
         """
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global fMem, suicideCondition, cacheMaster
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global fMem, suicideCondition, cacheMaster, vars
+        self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
             try:
-                if suicideCondition[self.__class__.__name__]: break
+                if suicideCondition[self.__class__.__name__]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 a = time.clock()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
@@ -437,7 +460,7 @@ class TimeAccessBill(Thread):
 
                 if 0: assert isinstance(caches, CoreCaches)
                 
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
                                  FROM radius_session AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
@@ -445,7 +468,7 @@ class TimeAccessBill(Thread):
                                  WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id NOTNULL)
                                  ORDER BY rs.interrim_update ASC;""")
                 rows=cur.fetchall()
-                connection.commit()
+                cur.connection.commit()
                 for row in rows:
                     rs = BillSession(*row)
                     #1. Ищем последнюю запись по которой была произведена оплата
@@ -464,7 +487,7 @@ class TimeAccessBill(Thread):
     
                     cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (accountt_tarif_id,))
                     result = cur.fetchone()
-                    connection.commit()
+                    cur.connection.commit()
                     prepaid_id, prepaid = result if result else (0, -1)                    
                     if prepaid > 0:
                         if prepaid >= total_time:
@@ -472,7 +495,7 @@ class TimeAccessBill(Thread):
                         elif total_time >= prepaid:
                             total_time, prepaid = total_time - prepaid, 0
                         cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
-                        connection.commit()
+                        cur.connection.commit()
                     #get the list of time periods and their cost
                     now = datetime.datetime.now()
                     for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
@@ -484,17 +507,23 @@ class TimeAccessBill(Thread):
                                 summ = (float(total_time)/60) * period.cost
                                 if summ > 0:
                                     timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
-                                    connection.commit()
+                                    cur.connection.commit()
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
                                    WHERE sessionid=%s AND account_id=%s AND interrim_update=%s
                                 """, (unicode(rs.sessionid), rs.account_id, rs.interrim_update,))
-                    connection.commit()                    
-                connection.commit()
+                    cur.connection.commit()                    
+                cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(60)
 
@@ -508,14 +537,18 @@ class limit_checker(Thread):
         Thread.__init__(self)
  
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, fMem   
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global suicideCondition, cacheMaster, fMem, vars
+        self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:            
             try:
-                if suicideCondition[self.__class__.__name__]: break
+                if suicideCondition[self.__class__.__name__]:
+                    try:    self.connection.close()
+                    except: pass
+                    break
                 a = time.clock()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
@@ -532,7 +565,7 @@ class limit_checker(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 oldid = -1
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     if 0: assert isinstance(acc, AccountData)
                     if not acc.account_status: continue
@@ -541,7 +574,7 @@ class limit_checker(Thread):
                         if acc.disabled_by_limit:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
                         cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                        connection.commit()
+                        cur.connection.commit()
                         continue
                     block, speed_changed = (False, False)
                     for limit in limits:
@@ -569,12 +602,12 @@ class limit_checker(Thread):
                             sp_start = now - datetime.timedelta(seconds=delta)
                             sp_end   = now
                         
-                        connection.commit()        
+                        cur.connection.commit()        
                         cur.execute("""SELECT sum(bytes) AS size FROM billservice_groupstat
                                        WHERE group_id=%s AND account_id=%s AND datetime>%s AND datetime<%s
                                     """ , (limit.group_id, acc.account_id, sp_start, sp_end,)) 
                         sizes = cur.fetchone()
-                        connection.commit()
+                        cur.connection.commit()
                         
                         tsize = sizes[0] if sizes[0] else 0
                         limit_size = Decimal("%s" % limit.size)
@@ -587,20 +620,27 @@ class limit_checker(Thread):
                             speed_changed, block = (True, False)
                         elif tsize < limit_size:
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                        connection.commit()
+                        cur.connection.commit()
                         
                         oldid = acc.account_id
                         if acc.disabled_by_limit != block:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;
                                         """ , (block, acc.account_id,))
-                            connection.commit()
+                            cur.connection.commit()
                             logger.info("set user %s new limit %s state %s", (acc.account_id, limit.trafficlimit_id, block))
     
-                connection.commit()
+                cur.connection.commit()
                 cur.close()                
                 logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(110)          
 
@@ -625,14 +665,18 @@ class settlement_period_service_dog(Thread):
         """
         Сделать привязку к пользователю через billservice_accounttarif
         """         
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global fMem, suicideCondition, cacheMaster
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global fMem, suicideCondition, cacheMaster, vars
+        self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
             try:
-                if suicideCondition[self.__class__.__name__]: break
+                if suicideCondition[self.__class__.__name__]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 a = time.clock()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
@@ -648,7 +692,7 @@ class settlement_period_service_dog(Thread):
 
                 if 0: assert isinstance(caches, CoreCaches)
                 
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
@@ -686,7 +730,7 @@ class settlement_period_service_dog(Thread):
                                             summ=pay_summ,created=now,tarif=acc.tarif_id,accounttarif=accounttarif_id,
                                             description=u"Доснятие денег до стоимости тарифного плана у %s" % acc.account_id)
                             cur.execute("SELECT shedulelog_co_fn(%s, %s, %s::timestamp without time zone);", (acc.account_id, acc.acctf_id, now,))
-                            connection.commit()
+                            cur.connection.commit()
 
                         account_balance = (acc.ballance or 0) + (acc.credit or 0)
                         #Если балланса не хватает - отключить пользователя
@@ -698,12 +742,12 @@ class settlement_period_service_dog(Thread):
                             if acc.cost > pstart_balance:
                                 cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
                                             (acc.account_id, acc.acctf_id, now, acc.cost))
-                            connection.commit()
+                            cur.connection.commit()
                             
                         if acc.balance_blocked and (account_balance >= acc.cost or not acc.require_tarif_cost):
                             """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
                             cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
-                            connection.commit()
+                            cur.connection.commit()
 
                         reset_traffic = caches.traffictransmitservice_cache.by_id.get(acc.traffic_transmit_service_id, (None, None))[1]                        
                         prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_time_reset else acc.datetime
@@ -713,13 +757,13 @@ class settlement_period_service_dog(Thread):
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
                             cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
                                         (acc.account_id, acc.acctf_id, now))  
-                            connection.commit()
+                            cur.connection.commit()
         
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
-                            connection.commit()
+                            cur.connection.commit()
                         
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]   
                         if (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or shedl.prepaid_time_reset<period_start or acc.acctf_id!=shedl.accounttarif_id):                        
@@ -727,29 +771,37 @@ class settlement_period_service_dog(Thread):
                             #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
                             cur.execute("SELECT shedulelog_time_reset_fn(%s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, now))                            
-                            connection.commit()        
+                            cur.connection.commit()        
                         if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
                             cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time, now))
-                            connection.commit()
+                            cur.connection.commit()
                         
                         if account_balance > 0:
                             for ots in caches.onetimeservice_cache.by_id.get(acc.tarif_id, []):
                                 if 0: assert isinstance(ots, OneTimeServiceData)
                                 if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)):
                                     cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
-                                    connection.commit()
+                                    cur.connection.commit()
                                     caches.onetimehistory_cache.by_acctf_ots_id[(acc.acctf_id, ots.id)] = (1,)
                                     #Списывам с баланса просроченные обещанные платежи
                     except Exception, ex:
                         logger.error("%s : internal exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                connection.commit()
+                        if isinstance(ex, vars.db_errors): raise ex
+                cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 cur.execute("UPDATE billservice_transaction SET promise_expired = True, summ=-1*summ WHERE end_promise<now() and promise_expired=False;")
+                cur.connection.commit()
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(120)
 
@@ -780,14 +832,16 @@ class ipn_service(Thread):
         return defaults
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster
+        global suicideCondition, cacheMaster, vars
+        self.connection = get_connection(vars.db_dsn)
         caches = None
         dateAT = datetime.datetime(2000, 1, 1)
         while True:             
             try:
-                if suicideCondition[self.__class__.__name__]: break
+                if suicideCondition[self.__class__.__name__]:
+                    try: self.connection.close()
+                    except: pass
+                    break
                 a = time.clock()
 
                 if cacheMaster.date <= dateAT:
@@ -803,7 +857,7 @@ class ipn_service(Thread):
                         cacheMaster.lock.release()                
                 if 0: assert isinstance(caches, CoreCaches)
                 
-                cur = connection.cursor()
+                cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
@@ -846,11 +900,11 @@ class ipn_service(Thread):
                                               nas.password, format_string=nas.user_disable_action)    
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
         
-                        connection.commit()
+                        self.connection.commit()
     
                         if not acc.ipn_speed:    
                             account_limit_speed = get_limit_speed(cur, acc.account_id)
-                            connection.commit()
+                            self.connection.commit()
                             speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
                             speed = get_corrected_speed(speed[:6], account_limit_speed)
                         else:
@@ -870,18 +924,24 @@ class ipn_service(Thread):
                                                         format_string=nas.ipn_speed_action,
                                                         speed=speed[:6])
                             cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::craracter varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
-                            connection.commit()
+                            cur.connection.commit()
                     except Exception, ex:
-                        if isinstance(ex, psycopg2.OperationalError): raise ex
+                        if isinstance(ex, vars.db_errors): raise ex
                         else:
                             logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-
         
-                connection.commit()
+                cur.connection.commit()
                 cur.close()
                 logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(120)
 
@@ -919,22 +979,25 @@ class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
         Thread.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_client_encoding('UTF8')
+        #self.connection = pool.connection()
+        #self.connection._con._con.set_client_encoding('UTF8')
         
-    def run(self):
-        
+    def run(self):        
         global suicideCondition, cacheMaster, flags, vars
+        self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
-            if suicideCondition[self.__class__.__name__]: break            
+            if suicideCondition[self.__class__.__name__]:
+                try:    self.connection.close()
+                except: pass
+                break
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > 100:
                     run_time = time.clock()                    
-                    self.cur = self.connection.cursor()
+                    cur = self.connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(self.cur, cacheMaster, CoreCaches, 31, (fMem,), False)
-                    self.cur.close()
+                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
+                    cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
                     counter += 1
@@ -947,7 +1010,13 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30310004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(20)
             
@@ -980,8 +1049,8 @@ def graceful_save():
         suicideCondition[key] = True
     logger.lprint("Core - about to exit gracefully.")
     time.sleep(20)
-    pool.close()
-    time.sleep(2)
+    #pool.close()
+    #time.sleep(2)
     logger.lprint("Core - exiting gracefully.")
     sys.exit()
     
@@ -1057,12 +1126,15 @@ if __name__ == "__main__":
     
     try:
         transaction_number = int(config.get("core", 'transaction_number'))
+        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                         config.get("db", "host"), config.get("db", "password"))
+        '''
         pool = PooledDB(
             mincached=7,  maxcached=20,
             blocking=True,creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
                                                                    config.get("db", "host"),config.get("db", "password")))
-        
+        '''
         cacheMaster = CacheMaster()
         flags = CoreFlags()
         
@@ -1071,7 +1143,7 @@ if __name__ == "__main__":
         #create allowedUsers
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())        
+        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
         logger.info("Allowed users: %s", (allowedUsers(),))
         
         fMem = pfMemoize()    

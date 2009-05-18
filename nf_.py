@@ -41,7 +41,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
-from utilites import renewCaches, savepid
+from utilites import renewCaches, savepid, get_connection
 
 
 
@@ -518,19 +518,23 @@ class ServiceThread(Thread):
         self.tname = self.__class__.__name__
         
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, queues
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global suicideCondition, cacheMaster, flags, queues, vars
+        self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
-            if suicideCondition[self.__class__.__name__]: break
+            if suicideCondition[self.__class__.__name__]:
+                try:    self.connection.close()
+                except: pass
+                break
             a = time.clock()
             queues.nfFlowCache.reset()
             try: 
                 time_run = (now() - cacheMaster.date).seconds > 300
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
-                    cur = connection.cursor()
+                    cur = self.connection.cursor()
                     renewCaches(cur, cacheMaster, NfCaches, 11)
                     cur.close()
                     if counter % 5 == 0 or time_run:
@@ -549,7 +553,13 @@ class ServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30110004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
             time.sleep(20)
     
@@ -599,8 +609,8 @@ def graceful_save():
         suicideCondition[thr.tname] = True
     logger.lprint("About to stop gracefully.")
     time.sleep(10)
-    pool.close()
-    time.sleep(1)
+    #pool.close()
+    #time.sleep(1)
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, 'nf_', vars.saveDir)
     
@@ -700,13 +710,15 @@ if __name__=='__main__':
     try:
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
-        
+        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                         config.get("db", "host"), config.get("db", "password"))
+        '''
         pool = PooledDB(
         mincached=1,  maxcached=9,
         blocking=True,creator=psycopg2,
         dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                config.get("db", "host"), config.get("db", "password")))
-    
+        '''
         #get socket parameters. AF_UNIX support
         if config.get("nfroutine_nf", "usock") == '0':
             vars.clientHost = config.get("nfroutine_nf_inet", "host")
@@ -750,7 +762,7 @@ if __name__=='__main__':
         
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())         
+        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())         
         allowedUsers()
         test_now = time.time()
         #-------------------
