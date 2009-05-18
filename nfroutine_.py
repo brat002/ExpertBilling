@@ -123,7 +123,7 @@ class DepickerThread(Thread):
                         time.sleep(20)
                         try:
                             connection = pool.connection()
-                            connection._con.set_client_encoding('UTF8')
+                            connection._con._con.set_client_encoding('UTF8')
                             cur = connection.cursor()
                             continue
                         except:
@@ -248,7 +248,7 @@ class groupDequeThread(Thread):
                         time.sleep(20)
                         try:
                             connection = pool.connection()
-                            connection._con.set_client_encoding('UTF8')
+                            connection._con._con.set_client_encoding('UTF8')
                             cur = connection.cursor()
                         except:
                             time.sleep(20)
@@ -347,7 +347,7 @@ class statDequeThread(Thread):
                         time.sleep(20)
                         try:
                             connection = pool.connection()
-                            connection._con.set_client_encoding('UTF8')
+                            connection._con._con.set_client_encoding('UTF8')
                             cur = connection.cursor()
                         except:
                             time.sleep(20)
@@ -654,7 +654,7 @@ class AccountServiceThread(Thread):
                     time.sleep(5)
                     try:
                         connection = pool.connection()
-                        connection._con.set_client_encoding('UTF8')
+                        connection._con._con.set_client_encoding('UTF8')
                     except:
                         time.sleep(10)
             gc.collect()
