@@ -802,6 +802,7 @@ def main():
     time.sleep(2)
     while cacheMaster.read is False:        
         if not cacheThr.isAlive:
+            print 'Exception in cache thread: exiting'
             sys.exit()
         time.sleep(10)
         if not cacheMaster.read: 
@@ -882,18 +883,7 @@ if __name__ == "__main__":
         
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                          config.get("db", "host"), config.get("db", "password"))
-        '''
-        pool = PooledDB(
-            mincached=4,  maxcached=20,
-            blocking=True,creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                   config.get("db", "host"), config.get("db", "password")))
-        persist = PersistentDB(
-            setsession=["SET synchronous_commit TO OFF;"],
-            creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
-                                                                   config.get("db", "host"), config.get("db", "password")))
-        '''
+
         #--------------------------------------------------------
 
         #group statistinc an global statistics objects    

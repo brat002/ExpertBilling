@@ -727,7 +727,7 @@ class settlement_period_service_dog(Thread):
                             if acc.cost > summ:
                                 pay_summ = acc.cost - summ
                                 transaction(cursor=cur,account=acc.account_id,approved=True,type='END_PS_MONEY_RESET',
-                                            summ=pay_summ,created=now,tarif=acc.tarif_id,accounttarif=accounttarif_id,
+                                            summ=pay_summ,created=now,tarif=acc.tarif_id,accounttarif=acc.acctf_id,
                                             description=u"Доснятие денег до стоимости тарифного плана у %s" % acc.account_id)
                             cur.execute("SELECT shedulelog_co_fn(%s, %s, %s::timestamp without time zone);", (acc.account_id, acc.acctf_id, now,))
                             cur.connection.commit()
@@ -1074,12 +1074,16 @@ def main():
     cacheThr.setName('Core AccountServiceThread')
     cacheThr.start()
     
-    while cacheMaster.date == None:
-        time.sleep(0.2)
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
-            logger.error('Exception in core cache thread, exiting!%s', '')
+            print 'Exception in cache thread: exiting'
             sys.exit()
-        
+        time.sleep(10)
+        if not cacheMaster.read: 
+            print 'caches still not read, maybe you should check the log'
+      
+    print 'caches ready'
+    
     for th in threads:	
         suicideCondition[th.__class__.__name__] = False
         th.start()
