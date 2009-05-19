@@ -611,10 +611,10 @@ class limit_checker(Thread):
                         
                         tsize = sizes[0] if sizes[0] else 0
                         limit_size = Decimal("%s" % limit.size)
-                        if tsize > limit_size and limit_action==0:
+                        if tsize > limit_size and limit.action==0:
                             block = True
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))                            
-                        elif tsize > limit_size and limit.action == 1:
+                        elif tsize > limit_size and limit.action == 1 and limit.speedlimit_id:
                             #Меняем скорость
                             cur.execute("SELECT speedlimit_ins_fn(%s, %s);", (limit.speedlimit_id, acc.account_id,))
                             speed_changed, block = (True, False)
@@ -998,6 +998,7 @@ class AccountServiceThread(Thread):
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
                     cur.close()
+                    #print cacheMaster.cache
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
                     counter += 1
