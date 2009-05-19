@@ -886,6 +886,7 @@ def main():
     time.sleep(2)
     while cacheMaster.read is False:        
         if not cacheThr.isAlive:
+            print 'Exception in cache thread: exiting'
             sys.exit()
         time.sleep(10)
         if not cacheMaster.read: 

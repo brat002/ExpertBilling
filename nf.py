@@ -25,7 +25,7 @@ from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
-from saver_ import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
+from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
@@ -650,6 +650,7 @@ def main ():
     time.sleep(2)
     while cacheMaster.read is False:        
         if not cacheThr.isAlive:
+            print 'Exception in cache thread: exiting'
             sys.exit()
         time.sleep(10)
         if not cacheMaster.read: 
@@ -712,13 +713,6 @@ if __name__=='__main__':
         flags.writeProf = logger.writeInfoP()
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                          config.get("db", "host"), config.get("db", "password"))
-        '''
-        pool = PooledDB(
-        mincached=1,  maxcached=9,
-        blocking=True,creator=psycopg2,
-        dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                               config.get("db", "host"), config.get("db", "password")))
-        '''
         #get socket parameters. AF_UNIX support
         if config.get("nfroutine_nf", "usock") == '0':
             vars.clientHost = config.get("nfroutine_nf_inet", "host")
