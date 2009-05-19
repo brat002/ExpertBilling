@@ -1,7 +1,9 @@
 #-*-coding=utf-8-*-
 
+from __future__ import with_statement
 
 import cPickle
+import random
 import signal
 import asyncore
 import threading
@@ -10,8 +12,9 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import socket
 
+
 import isdlogger
-import saver
+import saver, utilites
 
 from IPy import intToIp
 from marshal import dumps, loads
@@ -26,6 +29,22 @@ from db import delete_transaction, dbRoutine
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
+import twisted.internet
+from twisted.internet.protocol import DatagramProtocol
+try:
+    from twisted.internet import pollreactor
+    pollreactor.install()
+except:
+    print 'No poll(). Using select() instead.'
+from twisted.internet import reactor
+
+from classes.nfroutine_cache import *
+from classes.common.Flow5Data import Flow5Data
+from classes.cacheutils import CacheMaster
+from classes.flags import NfrFlags
+from classes.vars import NfrVars, NfrQueues
+from utilites import renewCaches, savepid, get_connection
+
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -36,7 +55,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 class Picker(object):
     __slots__= ('data',)
     def __init__(self):
-        self.data=defaultdict(float)      
+        self.data = defaultdict(float)      
 
     def add_summ(self, tts_id, acctf_id, account_id, summ):
         self.data[(tts_id, acctf_id, account_id)] += summ
@@ -45,6 +64,7 @@ class Picker(object):
         while len(self.data) > 0:
             #yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
             yield self.data.popitem()
+            
     def get_data(self):
         return self.data.items()
 
@@ -56,50 +76,62 @@ class DepickerThread(Thread):
         self.tname = self.__class__.__name__
         
     def run(self):        
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
-        global depickerQueue, depickerLock, suicideCondition
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
+        global queues, flags, suicideCondition, vars
+        self.connection = get_connection(vars.db_dsn)
+        self.cur        = self.connection.cursor()
         while True:
-            if suicideCondition[self.tname]: break
+            if suicideCondition[self.tname]:
+                try: self.connection.close()
+                except: pass
+                break
             try:
-                if len(depickerQueue) > 0:
-                    depickerLock.acquire()
-                    picker = depickerQueue.popleft()
-                    depickerLock.release()
-                else:
-                    time.sleep(10)
-                    continue                
+                picker = None
+                
+                with queues.depickerLock:
+                    if len(queues.depickerQueue) > 0:
+                        picker = queues.depickerQueue.popleft()
+                if not picker: time.sleep(10); continue              
                 
                 a = time.clock()
                 now = datetime.datetime.now()
                 icount = 0
-                
-                #ilist = picker.get_list()
-                #ilen = len(picker.data)
-                ilist = picker
-                ilen = len(picker)
-                for tts_acctf_acc, summ in ilist:
+                ilist = picker; ilen = len(picker)
+                for (tts,acctf,acc), summ in ilist:
                     #debit accounts
-                    #tts_id, acctf_id, acc_id = tts_acctf_acc
-                    traffictransaction(cur, tts_acctf_acc[0], tts_acctf_acc[1], tts_acctf_acc[2], summ=summ, created=now)
-                    '''transaction_noret(cursor=cur, type='NETFLOW_BILL', account=acc_tf_id[0], approved=True,
-                                tarif=acc_tf_id[1], summ=summ, description=u"", created=now)'''
+                    traffictransaction(self.cur, tts, acctf, acc, summ=summ, created=now)
+                    self.connection.commit()
                     icount += 1
-                    connection.commit()
-                if writeProf:
-                    logger.info("%s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
+                if flags.writeProf:
+                    logger.info("DPKALIVE: %s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
             except IndexError, ierr:
-                try: depickerLock.release()
-                except: pass
-                time.sleep(60)
+                if not picker:
+                    try: queues.depickerLock.release()
+                    except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                time.sleep(10)
                 continue             
             except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError) or isinstance(ex, psycopg2.ProgrammingError) or isinstance(ex, psycopg2.InterfaceError):
-                    try: cur = connection.cursor()
-                    except: pass
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))    
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))    
+                if isinstance(ex, vars.db_errors):
+                    if picker:
+                        with queues.depickerLock:
+                            queues.depickerQueue.appendleft(ilist[icount:])
+                    #try: cur = connection.cursor()
+                    #except: pass
+                    try: 
+                        time.sleep(3)
+                        self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                time.sleep(10)
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
@@ -108,52 +140,63 @@ class groupDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
-        global groupAggrDict, groupAggrTime
-        global groupDeque, groupLock
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
+        global queues, flags, vars
+        self.connection = get_connection(vars.db_dsn)
+        self.cur = self.connection.cursor()
         #direction type->operations
-        gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
-        global writeProf
+        #gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
+        gops = [lambda xdct: xdct['INPUT'], lambda xdct: xdct['OUTPUT'], lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])]
         icount = 0; timecount = 0
+        a = time.clock()
         while True:
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
             try:
-                if suicideCondition[self.tname]: break
-                if writeProf:
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
+                if flags.writeProf: 
                     a = time.clock()
-                groupLock.acquire()
-                gqueue = 1
-                
+                    
+                gkey, gkeyTime, groupData = None, None, None
+                with queues.groupLock:
+                    #check whether double aggregation time passed - updates are rather costly
+                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.groupAggrTime*2 < time.time()):
+                        gkey, gkeyTime  = queues.groupDeque.popleft()
 
-                #check whether double aggregation time passed - updates are rather costly
-                if groupDeque and (groupDeque[0][1] + groupAggrTime*2 < time.time()):
-                    gkey = groupDeque.popleft()[0]
-                    groupLock.release()
-                else:
-                    groupLock.release()
-                    time.sleep(30)
-                    continue
-                gqueue = 0
+                if not gkey: time.sleep(30); continue
+
                 #get data
-                groupData = groupAggrDict.pop(gkey)
-                groupInfo = groupData[1]
+                account_id, kgroup_id, gtime = gkey 
+                dkey = (int(gtime) + account_id) % vars.groupDicts
+                aggrgDict = queues.groupAggrDicts[dkey]
+                aggrgLock = queues.groupAggrLocks[dkey]
+                with aggrgLock:
+                    groupData = aggrgDict.pop(gkey, None)
+                    
+                if not groupData:
+                    logger.info('%s: no groupdata for key: %s', (self.getName(), gkey))
+                    continue
+                
+                groupItems, groupInfo = groupData[0:2]
                 #get needed method
-                gop = gops[groupInfo[1]]
-                octlist = []
-                classes = []
+                group_id, group_dir, group_type = groupInfo
+                gdate = datetime.datetime.fromtimestamp(gtime)
+                #gop = gops[group_dir]
+                gop = gops[group_dir - 1]
+                octlist, classes = [], []             
                 max_class = None
-                octets = 0
-                gdate = datetime.datetime.fromtimestamp(gkey[2])
-                account_id = gkey[0]
+                octets = 0               
                 
                 #second type groups
-                if groupInfo[2] == 2:                        
+                if   group_type == 2:                        
                     max_oct = 0
                     #get class octets, calculate with direction method, find maxes
-                    for class_, gdict in groupData[0].iteritems():                            
+                    for class_, gdict in groupItems.iteritems():                            
                         octs = gop(gdict)
                         classes.append(class_)
                         octlist.append(octs)
@@ -163,44 +206,60 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
-                    cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s, %s, %s, %s);""" , (groupInfo[0], account_id, octets, gdate, classes, octlist, max_class))
-                    connection.commit()
+                    self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.connection.commit()
                 #first type groups
-                elif groupInfo[2] == 1:
+                elif group_type == 1:
                     #get class octets, calculate sum with direction method
-                    for class_, gdict in groupData[0].iteritems():
+                    for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s, %s, %s, %s);""" , (groupInfo[0], account_id, octets, gdate, classes, octlist, max_class))
-                    connection.commit()
+                    self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.connection.commit()
                 else:
                     continue
                 
                 #write profiling infos
-                if writeProf:
+                if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
                     if icount == 10:                        
-                        logger.info("NFGroupdeque thread name: %s run time(10): %s", (self.getName(), timecount))
+                        logger.info("%s run time(10): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
             except IndexError, ierr:
-                if gqueue:
-                    groupLock.release()
-                    time.sleep(30)
+                if not gkey:
+                    try:    queues.groupLock.release()
+                    except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
                 continue
-            except KeyError, kerr:
-                logger.info("%s : keyerror : %s", (self.getName(), repr(kerr)))                
-            except psycopg2.OperationalError, p2oerr:
-                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
-            except psycopg2.ProgrammingError, p2perr:
-                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
-            except psycopg2.InterfaceError, p2ierr:
-                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
-                try: cur = connection.cursor()
-                except: pass
             except Exception, ex:
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))            
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                if isinstance(ex, vars.db_errors):
+                    if gkey and gkeyTime and groupData:
+                        with aggrgLock:
+                            grec = aggrgDict.get(gkey)
+                            if not grec:
+                                aggrgDict[gkey] = groupData
+                                with queues.groupLock:
+                                    queues.groupDeque.appendleft((gkey, gkeyTime))
+                            else:
+                                for gclass, class_io in groupItems.iteritems():
+                                    grec[0][gclass]['INPUT']  += class_io['INPUT']
+                                    grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
+                        
+                    #try: cur = connection.cursor()
+                    #except: time.sleep(20)
+                    try: 
+                        time.sleep(3)
+                        self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                            
                 
                 
 class statDequeThread(Thread):
@@ -210,111 +269,119 @@ class statDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        cur = connection.cursor()
-        global statAggrDict, statAggrTime
-        global statDeque, statLock
-        global writeProf
-        icount = 0
-        timecount = 0
+        global queues, flags, vars
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        #cur = connection.cursor()
+        self.connection = get_connection(vars.db_dsn)
+        self.cur = self.connection.cursor()
+        
+        icount = 0; timecount = 0
+        a = time.clock()
         while True:
                 #gdata[1] - group_id, group_dir, group_type
                 #gkey[0] - account_id, gkey[2] - date
-                #ftm = open('routtmp', 'ab+')
             try:
-                if suicideCondition[self.tname]: break
-                if writeProf:
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
+                if flags.writeProf:
                     a = time.clock()
                     
-                #check whether double aggregation time passed - updates are rather costly
-                statLock.acquire()
-                #if statDeque[0][1]:
-                #if statDeque[0][1] + statAggrTime*2 < time.time():
-                if statDeque and (statDeque[0][1] + statAggrTime*2 < time.time()):
-                    #get a key                
-                    skey = statDeque.popleft()[0]
-                    statLock.release()
-                else:
-                    statLock.release()
-                    time.sleep(30)
+                skey, skeyTime, statData = None, None, None
+                with queues.statLock:
+                    #check whether double aggregation time passed - updates are rather costly
+                    if len(queues.statDeque) > 0 and (queues.statDeque[0][1] + vars.statAggrTime*2 < time.time()):
+                        skey, skeyTime  = queues.statDeque.popleft()
+
+                if not skey: time.sleep(30); continue
+                
+                account_id, stime = skey 
+                dkey = (int(stime) + account_id) % vars.statDicts
+                aggrsDict = queues.statAggrDicts[dkey]
+                aggrsLock = queues.statAggrLocks[dkey]
+                with aggrsLock:
+                    statData = aggrsDict.pop(skey, None)
+                    
+                if not statData:
+                    logger.info('%s: no statdata for key: %s', (self.getName(), skey))
                     continue
-                #get data
-                statData = statAggrDict.pop(skey)
-                
-                statInfo = statData[1]
-                nas_id = statInfo[0]
-                #total octets
-                sum_bytes = statInfo[1]
-                
-                octlist = []
-                classes = []
-                sdate = datetime.datetime.fromtimestamp(skey[1])
-                account_id = skey[0]
+
+                statItems, statInfo = statData
+                nas_id, sum_bytes   = statInfo
+                octets_in  = sum_bytes['INPUT']
+                octets_out = sum_bytes['OUTPUT']
+                sdate = datetime.datetime.fromtimestamp(stime)
+                octlist, classes = [], []
                        
                 #get octets for every class
-                for class_, sdict in statData[0].iteritems():                            
+                for class_, sdict in statItems.iteritems():                            
                     classes.append(class_)
-                    octlist.append([sdict['INPUT'], sdict['OUTPUT']])
+                    octlist.append([sdict['INPUT'], sdict['OUTPUT']])              
                     
-                octets_in  = sum_bytes['INPUT']
-                octets_out = sum_bytes['OUTPUT']                  
-                    
-                cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s, %s, %s, %s);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
-                connection.commit()
+                self.cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
+                self.connection.commit()
                 
-                if writeProf:
+                if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
                     if icount == 10:                        
-                        logger.info("NFStatDeque thread name: %s run time(10): %s", (self.getName(), timecount))
+                        logger.info("%s run time(10): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
                         
             except IndexError, ierr:
-                statLock.release()
-                time.sleep(30)
+                if not skey:
+                    try:    queues.statLock.release()
+                    except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
                 continue
-            except KeyError, kerr:
-                logger.info("%s : keyerror : %s", (self.getName(), repr(kerr)))                
-            except psycopg2.OperationalError, p2oerr:
-                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
-            except psycopg2.ProgrammingError, p2perr:
-                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
-            except psycopg2.InterfaceError, p2ierr:
-                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
-                try: cur = connection.cursor()
-                except: pass
             except Exception, ex:
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                if isinstance(ex, vars.db_errors):
+                    if skey and skeyTime and statData:
+                        with aggrsLock:
+                            srec = aggrsDict.get(skey)
+                            if not srec:
+                                aggrsDict[skey] = statData
+                                with queues.statLock:
+                                    queues.statDeque.appendleft((skey, skeyTime))
+                            else:
+                                for sclass, class_io in statItems.iteritems():
+                                    srec[0][sclass]['INPUT']  += class_io['INPUT']
+                                    srec[0][sclass]['OUTPUT'] += class_io['OUTPUT']
+                                srec[1][1]['INPUT']  += octets_in
+                                srec[1][1]['OUTPUT'] += octets_out
+                        
+                    try: 
+                        time.sleep(3)
+                        self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                            
+                
+            
        
 class NetFlowRoutine(Thread):
     '''Thread that handles NetFlow statistic packets and bills according to them'''
     def __init__ (self):
+        global vars
         Thread.__init__(self)
         self.tname = self.__class__.__name__
+        self.connection = get_connection(vars.db_dsn, vars.nfr_session)
         
-    def get_actual_cost(self, trafic_transmit_service_id, group_id, octets_summ, stream_date, cTRTRNodesCache):
-        """
-        Метод возвращает актуальную цену для направления трафика для пользователя:
-        """
+    def get_actual_cost(self, octets_summ, stream_date, nodes):
+        """Метод возвращает актуальную цену для направления трафика для пользователя:"""
         #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
-        #print (octets_summ, octets_summ, octets_summ, trafic_transmit_service_id, traffic_class_id, d)
-        #trafic_transmit_nodes=self.cur.fetchall()
-        trafic_transmit_nodes = cTRTRNodesCache.get((trafic_transmit_service_id, group_id), [])
-        cost=0
-        min_from_start=0
-        # [0] - ttsn.id, [1] - ttsn.cost, [2] - ttsn.edge_start, [3] - ttsn.edge_end, [4] - tpn.time_start, [5] - tpn.length, [6] - tpn.repeat_after
-        for node in trafic_transmit_nodes:
-            #'d': '9' - in_direction, '10' - out_direction
-            #if node[d]:
-            trafic_transmit_node_id=node[0]
-            trafic_cost=node[1]
-            trafic_edge_start, trafic_edge_end=node[2:4]    
-            period_start, period_length, repeat_after=node[4:7]
-
-            #tnc, tkc, from_start,result=in_period_info(time_start=period_start,length=period_length, repeat_after=repeat_after, now=stream_date)
-            tnc, tkc, from_start,result=fMem.in_period_(period_start,period_length, repeat_after, stream_date)
+        cost, min_from_start = 0, 0
+        for node in nodes:
+            if 0: assert isinstance(node, NodesData)
+            tnc, tkc, from_start, result = fMem.in_period_(node.time_start, node.length, node.repeat_after, stream_date)
             if result:
                 """
                 Зачем здесь было это делать:
@@ -324,289 +391,213 @@ class NetFlowRoutine(Thread):
                 значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
                 у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
                 """
-                if from_start<min_from_start or min_from_start==0:
-                    min_from_start=from_start
-                    cost=trafic_cost
-        #del trafic_transmit_nodes
+                if from_start < min_from_start or min_from_start == 0:
+                    min_from_start = from_start
+                    cost = node.traffic_cost
+                    
         return cost
 
 
     
     def run(self):
-        connection = persist.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        connection._con.set_client_encoding('UTF8')
-        #connection._con._con.set_isolation_level(0)
-        global curAT_acIdx
-        global curAT_date,curAT_lock
-        global nfIncomingQueue
-        global tpnInPeriod, curSPCache, curTTSCache
-        global prepaysCache, TRTRNodesCache, ClassesStore
-        global store_na_tarif, store_na_account
-        global groupAggrDict, statAggrDict
-        global groupAggrTime, statAggrTime
-        global groupDeque, statDeque
-        global gPicker, pickerLock, pickerTime
-        cacheAT = None
+        #connection = persist.connection()
+        #connection._con.set_client_encoding('UTF8')
+        global cacheMaster, vars, flags, queues
+        caches = None
         dateAT = datetime.datetime(2000, 1, 1)
         oldAcct = defaultdict(list)
-        cur = connection.cursor()
-        icount = 0
-        timecount = 0
-        global writeProf
+        self.cur = self.connection.cursor()
+        icount, timecount = 0, 0
         while True:
             try:   
-                if suicideCondition[self.tname]: break
-                if writeProf:
+                if suicideCondition[self.tname]:
+                    try: self.connection.close()
+                    except: pass
+                    break
+                if flags.writeProf:
                     a = time.clock()
-                if curAT_date > dateAT:
+                    
+                fpacket = None
+                if cacheMaster.date > dateAT:
+                    cacheMaster.lock.acquire()
                     try:
-                        #if caches were renewed, renew local copies                    
-                        curAT_lock.acquire()
-                        #cacheAT = deepcopy(curATCache)
-                        #account-tarif cach indexed by account_id
-                        cacheAT = copy(curAT_acIdx)
-                        #settlement_period cache
-                        cacheSP  = copy(curSPCache)
-                        #traffic_transmit_service
-                        cacheTTS = copy(curTTSCache)
-                        classesStore = copy(ClassesStore)
-                        
-                        c_TRTRNodesCache = copy(TRTRNodesCache)
-                        c_tpnInPeriod    = copy(tpnInPeriod)
-                        c_prepaysCache   = copy(prepaysCache)                        
-                        oldAcct = defaultdict(list)
-                        #date of renewal
-                        dateAT = deepcopy(curAT_date)
-
-                        curAT_lock.release()
-                    except:
-                        time.sleep(1)
-                        continue
+                        caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()
+                    oldAcct = defaultdict(list)
+                    
+                if not caches:
+                    time.sleep(3)
+                    continue
                 
-                #if deadlocks arise add locks
+                if 0: assert isinstance(caches, NfroutineCaches)  
+                
                 #time to pick
-                if (time.time() > pickerTime + 300.0):
+                if (time.time() > queues.pickerTime + 300.0):
                     #add picker to a depicker queue
-                    pickerLock.acquire()
-                    depickerQueue.append(gPicker.get_data())
-                    del gPicker
-                    gPicker = Picker()
-                    pickerTime = time.time()
-                    pickerLock.release()
-                    
-                    
-                oldAcct = defaultdict(list)
-                #if deadlocks arise add locks
-                #pop flows
-                fqueue = 1
-                fpacket = nfIncomingQueue.popleft()
-                flows = loads(fpacket)
-                fqueue = 0
+                    with queues.pickerLock:
+                        queues.depickerQueue.append(queues.picker.get_data())
+                        queues.picker = Picker()
+                        queues.pickerTime = time.time()                    
 
-                #print flows
+                fpacket = queues.nfIncomingQueue.popleft()
+                flows = loads(fpacket)
                 #iterate through them
-                for flow in flows:
+                for pflow in flows:
+                    flow = Flow5Data(False, *pflow)
                     #get account id and get a record from cache based on it
-                    acct = cacheAT.get(flow[20])
-                    #get collection date
-                    ftime = flow[21]
-                    stream_date = datetime.datetime.fromtimestamp(ftime)
-                    cur_actf_id = acct[12]
-                    if not acct:
-                        continue
-                    
-                    flow_actf_id = flow[26]                    
-                    #print stream_date
+                    acc = caches.account_cache.by_account.get(flow.account_id)
+                    if not acc: continue
+                    if 0: assert isinstance(acc, AccountData)
+                    stream_date = datetime.datetime.fromtimestamp(flow.datetime)
+
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
-                    if  (cur_actf_id  != flow_actf_id) or (not acct[3] <= stream_date):
-                        if oldAcct.has_key(flow_actf_id):
-                            acct = oldAcct[flow_actf_id]
-                        else:                        
-                            cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
-                            FROM billservice_account as ba
-                            JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
-                            LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (flow[26],))
-                            acct = cur.fetchone()
-                            connection.commit()
-                            oldAcct[flow_actf_id] = acct                           
-                        
-                        if not acct:
-                            continue
+                    if  (acc.acctf_id  != flow.acctf_id) or (not acc.datetime <= stream_date):
+                        acc = oldAcct.get(flow.acctf_id)
+                        if not acc:
+                            self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
+                                           FROM billservice_account as ba
+                                           JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
+                                           LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
+                                        """, (flow.account_id,))
+                            acc = self.cur.fetchone()
+                            self.connection.commit()
+                            if not acc: continue
+                            acc = AccountData(*acc)
+                            oldAcct[flow.acctf_id] = acc                           
                     
-                    tarif_id = acct[4]
                     #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
-                    if (tarif_id == None) or (not (acct[11] or store_na_tarif)) or (not (acct[13] or store_na_account)):
-                        continue                    
+                    if (acc.tarif_id == None) or (not (acc.tarif_active or flags.store_na_tarif)) \
+                       or (not (acc.account_status or flags.store_na_account)): continue                    
                     
-                    octets = flow[6]
-                    flow_classes, flow_dir = flow[22:24]                    
-                    account_id = flow[20]
-                    nas_id = flow[11]
-                    
-                    has_groups = (len(flow) > 27) and flow[27]
-                    #check for groups
                     '''Статистика по группам: 
                     аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
                     Ключ - (account_id, group_id, gtime)
                     Ключ затем добавляется в очередь.'''
-                    groups = []
-                    if has_groups:                        
-                        groups = flow[28]
-                        gtime = ftime - (ftime % groupAggrTime)                        
-                        for group in groups:
-                            try:
-                                group_id, group_classes, group_dir, group_type  = group
-                                #calculate a key and check the dictionary
-                                gkey = (account_id, group_id, gtime)
-                                grec = groupAggrDict.get(gkey)
+                    if flow.has_groups and flow.groups:                        
+                        gtime = flow.datetime - (flow.datetime % vars.groupAggrTime)                        
+                        for group_id, group_classes, group_dir, group_type in flow.groups:
+                            #group_id, group_classes, group_dir, group_type  = group
+                            #calculate a key and check the dictionary
+                            gkey = (flow.account_id, group_id, gtime)
+                            dgkey = (int(gtime / 667) + flow.account_id) % vars.groupDicts
+                            aggrgDict = queues.groupAggrDicts[dgkey]
+                            aggrgLock = queues.groupAggrLocks[dgkey]
+                            with aggrgLock:
+                                grec = aggrgDict.get(gkey)
                                 if not grec:
                                     #add new record to the queue and the dictionary
-                                    groupDeque.append((gkey, time.time()))
                                     grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
-                                    groupAggrDict[gkey] = grec
+                                    aggrgDict[gkey] = grec
+                                    with queues.groupLock:
+                                        queues.groupDeque.append((gkey, time.time()))                      
                                 #aggregate bytes for every class/direction
                                 for class_ in group_classes:
-                                    grec[0][class_][flow_dir] += octets                     
-                
-                            except Exception, ex:
-                                logger.info('%s groupstat exception: %s', (self.getName(), repr(ex)))
-                                traceback.print_exc(file=sys.stderr)                    
+                                    grec[0][class_][flow.node_direction] += flow.octets                     
+                   
                                 
                     #global statistics calculation
-                    stime = ftime - (ftime % statAggrTime)
-                    skey  = (account_id, stime)
-                    try:
-                        srec = statAggrDict.get(skey)
-                        if not srec:
-                            statDeque.append((skey, time.time()))
-                            srec = [defaultdict(ddict_IO), [nas_id, {'INPUT':0, 'OUTPUT':0}]]
-                            statAggrDict[skey] = srec
-                        #calculation for every class
-                        for class_ in flow_classes:
-                            srec[0][class_][flow_dir] += octets
+                    stime = flow.datetime - (flow.datetime % vars.statAggrTime)
+                    skey  = (flow.account_id, stime)
+                    dskey = (int(stime / 667) + flow.account_id) % vars.statDicts
+                    aggrsDict = queues.statAggrDicts[dskey]
+                    aggrsLock = queues.statAggrLocks[dskey]
+                    with aggrsLock:
+                        srec = aggrsDict.get(skey)
+                        if not srec:                            
+                            srec = [defaultdict(ddict_IO), [flow.nas_id, {'INPUT':0, 'OUTPUT':0}]]
+                            aggrsDict[skey] = srec
+                            with queues.statLock:
+                                queues.statDeque.append((skey, time.time()))
+                        #add for every class
+                        for class_ in flow.class_id:
+                            srec[0][class_][flow.node_direction] += flow.octets
                         #global data
-                        srec[1][1][flow_dir] += octets                        
-                    except Exception, ex:
-                                logger.info('%s globalstat exception: %s', (self.getName(), repr(ex)))
-                                traceback.print_exc(file=sys.stderr)
-                    
-                    
-                    tarif_mode = False
-                    
-                    tts_id = acct[7]
-                    #if traffic_transmit_service_id is OK
-                    if tts_id:
-                        tarif_mode = c_tpnInPeriod[tts_id]
-                        
-                    store_classes = list(classesStore.intersection(flow_classes))
+                        srec[1][1][flow.node_direction] += flow.octets                        
+
+                    tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
+                    store_classes = list(caches.storeclass_cache.classes.intersection(flow.class_id))
                     #if tarif_mode is False or tarif.active = False
                     #write statistics without billing it
-                    if store_classes and ( not (tarif_mode and acct[11] and acct[13])):
+                    if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status):
                         #cur = connection.cursor()
-                        cur.execute("""INSERT INTO billservice_netflowstream(
-                                    nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                                    dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                                    VALUES (%s, %s, %s, %s, %s, %s, %s,
-                                    %s, %s, %s, %s, %s, %s, %s);
-                                    """, (nas_id, account_id, tarif_id, flow[23], stream_date,intToIp(flow[0],4), store_classes, intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], False, False,))
-                        connection.commit()
-                        #cur.close()
+                        self.cur.execute("""INSERT INTO billservice_netflowstream(
+                                       nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                                       dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                                    """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
+                                          intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
+                                          flow.src_port, flow.dst_port, flow.protocol, False, False,))
+                        self.connection.commit()
                         continue
                     
-                    s = False
-                    #if traffic_transmit_service_id is OK
-                    if tts_id and has_groups:
-                        #if settlement_period_id is OK
-                        setper_id = acct[10]
-                        if setper_id:
-                            #get a line from Settlement Period cache                            
-                            #[0] - id, [1] - time_start, [2] - length, [3] - length_in, [4] - autostart
-                            spInf = cacheSP[setper_id]
-                            #if 'autostart'
-                            if spInf[4]:
-                                # Если у расчётного периода стоит параметр Автостарт-за начало расчётного периода принимаем
-                                # дату привязки тарифного плана пользователю
-                                #start = accounttarif.datetime
-                                sp_time_start=acct[3]
-                                
-                            #stream_date = datetime.datetime.fromtimestamp(flow[20])
-                            settlement_period_start, settlement_period_end, deltap = settlement_period_info(time_start=spInf[1], repeat_after=spInf[3], repeat_after_seconds=spInf[2], now=stream_date)
-                            #Смотрим сколько уже наработал за текущий расчётный период по этому тарифному плану
-
-                            octets_summ=0
-                        else:
-                            octets_summ=0
-                            #loop throungh classes in 'classes' tuple
-                        for group in groups:
-                            tgroup = group[0]
-                            #acct[7] - traffic_transmit_service_id
-                            #flow[23] - direction
-                            trafic_cost=self.get_actual_cost(tts_id, tgroup, octets_summ, stream_date, c_TRTRNodesCache)
+                    if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
+                        octets_summ = 0
+                        #loop throungh classes in 'classes' tuple
+                            
+                        for group_id, group_classes, group_dir, group_type in flow.groups:
+                            nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
+                            trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
 
                             #get a record from prepays cache
-                            #keys: traffic_transmit_service_id, accounttarif.id, trafficclass
-                            prepInf =  c_prepaysCache.get((tts_id, acct[12], tgroup))                            
-                            
+                            prepInf = caches.prepays_cache.by_tts_acctf_group.get((acc.traffic_transmit_service_id, acc.acctf_id, group_id))                            
+                            octets = flow.octets
                             if prepInf:
-                                #d = 5: checks whether in_direction is True; d = 6: whether out_direction
-                                #if prepInf[d]:
-                                #[0] - prepais.id, [1] - prepais.size
                                 prepaid_id, prepaid = prepInf[0:2]
-                                prepHnd = prepaid
-                                if prepaid>0:                            
+                                if prepaid > 0:                            
                                     if prepaid>=octets:
-                                        prepaid=prepaid-octets
-                                        octets=0
+                                        prepaid, octets = prepaid-octets, 0
                                     elif octets>=prepaid:
-                                        octets=octets-prepaid
-                                        prepaid=abs(prepaid-octets)
+                                        prepaid, octets = octets-prepaid, abs(prepaid-octets)
                                         
-                                    cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
-                                    connection.commit()
+                                    self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
+                                    self.connection.commit()
             
-                            summ=(trafic_cost*octets)/(1048576)
+                            summ = (trafic_cost * octets)/(1048576)
         
-                            if summ>0:
-                                #tts, acctf, acc, summ
-                                pickerLock.acquire()
-                                gPicker.add_summ(tts_id, acct[12], account_id, summ)
-                                pickerLock.release()
+                            if summ > 0:
+                                with queues.pickerLock:
+                                    queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
+                                    
                     if store_classes:
-                        cur.execute("""INSERT INTO billservice_netflowstream(
-                                nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                                dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s);
-                                """, (nas_id, account_id, tarif_id, flow_dir, stream_date,intToIp(flow[0],4), store_classes, intToIp(flow[1],4), flow[6],flow[9], flow[10], flow[13], True, False,))
-                        connection.commit()
+                        self.cur.execute("""INSERT INTO billservice_netflowstream(
+                                       nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                                       dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                                   """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
+                                         intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
+                                         flow.src_port, flow.dst_port, flow.protocol, True, False,))
+                        self.connection.commit()
                  
-                if writeProf:
+                if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
                     if icount == 100:                        
-                        logger.info("NFRoutine thread name: %s run time: %s", (self.getName(), timecount))
+                        logger.info("%s run time: %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
                         
             except IndexError, ierr:
-                if fqueue: time.sleep(3)                
+                logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                if not fpacket: time.sleep(random.randint(10,20))                
                 continue               
-            except psycopg2.OperationalError, p2oerr:
-                time.sleep(1)
-                logger.error("%s : database connection is down: %s", (self.getName(), repr(p2oerr)))
-                try: cur = connection.cursor()
-                except: pass
-            except psycopg2.ProgrammingError, p2perr:
-                logger.error("%s : cursor programming error: %s", (self.getName(), repr(p2perr)))
-            except psycopg2.InterfaceError, p2ierr:
-                time.sleep(1)
-                logger.error("%s : cursor interface error: %s", (self.getName(), repr(p2ierr)))
-                try: cur = connection.cursor()
-                except: pass
             except Exception, ex:
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                if isinstance(ex, vars.db_errors):
+                    try: 
+                        time.sleep(3)
+                        self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection = get_connection(vars.db_dsn, vars.nfr_session)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
                 time.sleep(1)
-                logger.error("%s : exception: %s", (self.getName(), repr(ex)))
                     
 
 #periodical function memoize class
@@ -623,226 +614,83 @@ class pfMemoize(object):
         return res
     
     
-'''
-acct structure
-[0]  - ba.id, 
-[1]  - ba.ballance, 
-[2]  - ba.credit, 
-[3]  - act.datetime, 
-[4]  - bt.id, 
-[5]  - bt.access_parameters_id, 
-[6]  - bt.time_access_service_id, 
-[7]  - bt.traffic_transmit_service_id, 
-[8]  - bt.cost,
-[9]  - bt.reset_tarif_cost, 
-[10] - bt.settlement_period_id, 
-[11] - bt.active, 
-[12] - act.id, 
-[13] - ba.status 
-
-'''
 class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
     def __init__ (self):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
-        
+    
     def run(self):
-        connection = pool.connection()
-        connection._con._con.set_client_encoding('UTF8')
-        global caches, fMem, sendFlag, nfIncomingQueue, suicideCondition
-        global curAT_acIdx
-        global curAT_date, curAT_lock
-        global curSPCache, curTTSCache
-        global tpnInPeriod, prepaysCache, TRTRNodesCache, ClassesStore
+        global suicideCondition, cacheMaster, flags, vars, queues, threads, cacheThr
+        self.connection = get_connection(vars.db_dsn)
+        counter = 0; now = datetime.datetime.now
         while True:
+            if suicideCondition[self.__class__.__name__]: 
+                try:    self.connection.close()
+                except: pass
+                break
             a = time.clock()
-            try:
-                if suicideCondition[self.tname]: break
-                cur = connection.cursor()
-                ptime =  time.time()
-                ptime = ptime - (ptime % 20)
-                tmpDate = datetime.datetime.fromtimestamp(ptime)
-                cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
-                    FROM billservice_account as ba
-                    LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
-                    LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""", (tmpDate,))
-                #list cache
-                
-                accts = cur.fetchall()
-                allowedUsersChecker(allowedUsers, lambda: len(accts))
+            try: 
+                time_run = (now() - cacheMaster.date).seconds > 180
+                if flags.cacheFlag or time_run:
+                    run_time = time.clock()                    
+                    cur = self.connection.cursor()
+                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
+                    cur.close()
+                    if counter == 0 or time_run:
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
+                        flags.writeProf = logger.writeInfoP()
+                        if flags.writeProf:        
+                            logger.info("incoming queue len: %s", len(queues.nfIncomingQueue))
+                            #logger.info("groupDictLen: %s", len(queues.groupAggrDict))
+                            logger.info("groupDequeLen: %s", len(queues.groupDeque))
+                            #logger.info("statDictLen: %s", len(queues.statAggrDict))
+                            logger.info("statDequeLen: %s", len(queues.statDeque))
+                            
+                    if counter == 5:
+                        counter, fMem.periodCache = 0, {}
+                        if (len(queues.nfIncomingQueue) > 1000) or (len(queues.statDeque) > len(cacheMaster.cache.account_cache.data) * 10):
+                            if not vars.sendFlag or vars.sendFlag!='SLP!':
+                                vars.sendFlag = 'SLP!'
+                                logger.lprint('Sleep flag set!')                        
+                        else:
+                            if vars.sendFlag and vars.sendFlag=='SLP!':
+                                vars.sendFlag = ''
+                                logger.lprint('Sleep flag unset!')
+                            
+                        th_status = ';'.join((thrd.getName().split(' ')[0] + (thrd.isAlive() and 'OK') or 'NO' for thrd in threads + [cacheThr]))
+                        logger.warning('THREAD STATUS: %s', th_status)
 
-                cur.execute("""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""")
-                
-                ttssTp = cur.fetchall()
-                #connection.commit()
-                cur.execute("""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""")
-                
-                spsTp = cur.fetchall()                
-
-                cur.execute("""SELECT tpn.time_start, tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
-                            FROM billservice_timeperiodnode AS tpn
-                            JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
-                            JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
-                            JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""")
-                tpnsTp = cur.fetchall()
-
-                cur.execute("""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
-                             FROM billservice_accountprepaystrafic as prepais
-                             JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                             WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""", (tmpDate,))
-                prepTp = cur.fetchall()
-                cur.execute("""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
-                               ttsn.group_id, ttsn.traffic_transmit_service_id 
-                               FROM billservice_traffictransmitnodes as ttsn
-                               JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
-                               (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-                               (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));
-                            """)
-                trtrnodsTp = cur.fetchall()
-                cur.execute("""SELECT int_array_aggregate(id) FROM nas_trafficclass WHERE store=TRUE""")
-                clsstoreTp = cur.fetchall()
-                connection.commit()
-                cur.close()
-                
-                tmpacIdx = {}
-
-                for acct in accts:
-                    tmpacIdx[acct[0]]  = acct
-  
-                tmpPerTP = defaultdict(lambda: False)
-                #calculates whether traffic_transmit_service fits in any oh the periods
-                for tpn in tpnsTp:
-                    tmpPerTP[tpn[3]] = tmpPerTP[tpn[3]] or fMem.in_period_(tpn[0], tpn[1], tpn[2], tmpDate)[3]
-                     
-                prepaysTmp = {}
-                if prepTp:                    
-                    #keys: traffic_transmit_service_id, accounttarif.id, group_id
-                    for prep in prepTp:
-                        prepaysTmp[(prep[4],prep[2],prep[3])] = [prep[0], prep[1]]
-                    prepaysCache = prepaysTmp
+                    counter += 1
+                    if flags.cacheFlag:
+                        with flags.cacheLock: flags.cacheFlag = False
                     
-                trafnodesTmp = defaultdict(list)
-                #keys: traffictransmitservice, group_id
-                
-                for trnode in trtrnodsTp:
-                    if trnode[7]:
-                        trafnodesTmp[(trnode[8],trnode[7])].append(trnode)
-                #traffic_transmit_service cache, indexed by id
-                tmpttsC = {}
-                #settlement period cache, indexed by id
-                tmpspC = {}
-                
-                
-                for tts in ttssTp:
-                    tmpttsC[tts[0]] = tts
-                for sps in spsTp:
-                    tmpspC[sps[0]] = sps
-                
-                    
-                clsstore = set(clsstoreTp[0][0])
-                
-                #renew global cache links
-                curAT_lock.acquire()
-                curAT_acIdx   = tmpacIdx
-                
-                curSPCache = tmpspC
-                curTTSCache = tmpttsC
-                tpnInPeriod = tmpPerTP
-                prepaysCache = prepaysTmp
-                TRTRNodesCache = trafnodesTmp
-                ClassesStore = clsstore
-                curAT_date  = tmpDate
-                curAT_lock.release()
-                
-                #clear memoize cache
-                fMem.periodCache = {}
-                
-                #reread dynamic options
-                '''
-                    Переопределяет динамические опции.
-                '''
-                config.read("ebs_config_runtime.ini")
-                logger.setNewLevel(int(config.get("nfroutine", "log_level")))
-                global writeProf
-                writeProf = logger.writeInfoP()
-                    
-                #check queue length            
-                if len(nfIncomingQueue) > 1000:
-                    if not sendFlag or sendFlag!='SLP!':
-                        sendFlag = 'SLP!'
-                        logger.lprint('Sleep flag set!')                        
-                else:
-                    if sendFlag and sendFlag=='SLP!':
-                        sendFlag = ''
-                        logger.lprint('Sleep flag unset!')
-                        
-                #write profinig infos
-                if writeProf:        
-                    logger.info("nfr ast time : %s", time.clock() - a)
-                    logger.info("incoming queue len: %s", len(nfIncomingQueue))
-                    logger.info("groupDictLen: %s", len(groupAggrDict))
-                    logger.info("groupDequeLen: %s", len(groupDeque))
-                    logger.info("statDictLen: %s", len(statAggrDict))
-                    logger.info("statDequeLen: %s", len(statDeque))
-                
-                
+                    logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
-                if isinstance(ex, psycopg2.OperationalError):
-                    logger.error("%s: database connection is down: %s", (self.getName(), repr(ex)))
-                else:
-                    logger.error("%s: exception: %s", (self.getName(), repr(ex)))
-            
+                logger.error("%s : #30210004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if isinstance(ex, vars.db_errors):
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
             gc.collect()
-            time.sleep(180)
+            time.sleep(20)
             
-
-class NfAsyncUDPServer(asyncore.dispatcher):
-    ac_out_buffer_size = 16384*10
-    ac_in_buffer_size = 16384*10
-    
-    def __init__(self, addr_):
-        self.outbuf = []
-        asyncore.dispatcher.__init__(self)
-
-        self.host = addr_[0]
-        self.port = addr_[1]
-        self.dbconn = None
-        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.settimeout(1.0)
-        self.bind(addr_)
-        self.set_reuse_addr()
-
-    def handle_connect(self):
-        #print 'New packet'
-        pass    
-    #TODO: send '0' when queue is too long
-    def handle_read_event (self):
+            
+class NfTwistedServer(DatagramProtocol):
+    '''
+    Twisted Asynchronous server that recieves datagrams with NetFlow packets
+    and appends them to 'nfQueue' queue.
+    '''
+    def datagramReceived(self, data, addrport):
         try:
-            data, addr = self.socket.recvfrom(32768)
-            self.socket.sendto(sendFlag+str(len(data)), addr)
-            nfIncomingQueue.append(data)
-            #print data
-            #print str(len(nfIncomingQueue)) + sendFlag
+            self.transport.write(vars.sendFlag + str(len(data)), addrport)
+            #self.socket.sendto(vars.sendFlag + str(len(data)), addrport)
+            queues.nfIncomingQueue.append(data)
         except:            
-            traceback.print_exc()
-            return
-        #self.handle_readfrom(data, addr)
-
-
-    def handle_readfrom(self,data, address):
-        pass
-    def writable(self):
-        return (0)
-
-    def handle_error (self, *info):
-        traceback.print_exc()
-        logger.error('uncaptured python exception, closing channel %s', repr(self))
-        self.close()
-    
-    def handle_close(self):
-        self.close()     
-
+            logger.error("%s : #30210701 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
 
         
 
@@ -850,78 +698,117 @@ def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
 
 def SIGTERM_handler(signum, frame):
+    logger.lprint("SIGTERM recieved")
     graceful_save()
 
+def SIGHUP_handler(signum, frame):
+    global config
+    logger.lprint("SIGHUP recieved")
+    try:
+        config.read("ebs_config.ini")
+        logger.setNewLevel(int(config.get("nfroutine", "log_level")))
+        flags.writeProf = logger.writeInfoP()
+    except Exception, ex:
+        logger.error("SIGHUP config reread error: %s", repr(ex))
+    else:
+        logger.lprint("SIGHUP config reread OK")
+        
+def SIGUSR1_handler(signum, frame):
+    global flags
+    logger.lprint("SIGUSR1 recieved")
+    with flags.cacheLock: flags.cacheFlag = True
+    
+
 def graceful_save():
-    global nfIncomingQueue, depickerQueue, cacheThr, threads, suicideCondition, depickerQueue_
-    asyncore.close_all()
-    #cacheThr.exit()
+    global cacheThr, threads, suicideCondition, vars
+    #asyncore.close_all()
+    reactor.callFromThread(reactor.disconnectAll)
+    reactor.callFromThread(reactor.stop)
+    reactor._started = False
     suicideCondition[cacheThr.tname] = True
+    logger.lprint("About to exit gracefully.")
     st_time = time.time()
     time.sleep(1)
     i = 0
     while True:
-        if len(nfIncomingQueue) > 300:  break
-        if len(nfIncomingQueue) == 0:   break
-        if i == 4:                      break
+        if len(queues.nfIncomingQueue) > 300:  break
+        if len(queues.nfIncomingQueue) == 0:   break
+        if i == 4:                             break
         time.sleep(1)
 
     for thr in threads:
         if not isinstance(thr, DepickerThread):
             suicideCondition[thr.tname] = True
     time.sleep(1)
-    depickerLock.acquire()
-    depickerQueue_ = depickerQueue
-    depickerQueue = deque()
-    depickerLock.release()
-    time.sleep(1.5)
+    
     for thr in threads:
             suicideCondition[thr.tname] = True
-           
-    graceful_saver([['depickerQueue_'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDict'], ['statDeque', 'statAggrDict']],
-                   globals(), 'nfroutine_', saveDir)
-    
-    pool.close()
     time.sleep(2)
-    sys.exit()
-        
+    #pool.close()
+    '''
+    for thr in threads + [cacheThr]:
+        if hasattr(thr, 'connection'):
+            try:
+                thr.connection.close()
+            except: pass
+    time.sleep(1)
+    '''
+    
+    queues.depickerLock.acquire()
+    queues.groupLock.acquire()
+    queues.statLock.acquire()
+    graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
+                   queues, 'nfroutine_', vars.saveDir)
+    time.sleep(3)
+    queues.statLock.release()
+    queues.groupLock.release()
+    queues.depickerLock.release()
+    logger.lprint(vars.name + " stopping gracefully.")
+    print vars.name + " stopping gracefully."
+
 def graceful_recover():
-    graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDict','statDeque', 'statAggrDict'],
-                    globals(), 'nfroutine_', saveDir)
+    global queues, vars
+    graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDicts','statDeque', 'statAggrDicts'],
+                    queues, 'nfroutine_', vars.saveDir)
     
 
 def main():
     graceful_recover()
-    global curAT_date, suicideCondition
+    global cacheMaster, suicideCondition
     global threads, cacheThr, NfAsyncUDPServer
-    #thread_list = [['routinethreads', NetFlowRoutine, 'NetFlowRoutine'],]
     threads=[]
     for i in xrange(int(config.get("nfroutine", "routinethreads"))):
         newNfr = NetFlowRoutine()
-        newNfr.setName('NetFlowRoutine #%s ' % i)
+        newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
         threads.append(newNfr)
     for i in xrange(int(config.get("nfroutine", "groupstatthreads"))):
         grdqTh = groupDequeThread()
-        grdqTh.setName('groupDequeThread #%i' % i)
+        grdqTh.setName('GDT:#%i: groupDequeThread' % i)
         threads.append(grdqTh)
     for i in xrange(int(config.get("nfroutine", "globalstatthreads"))):
         stdqTh = statDequeThread()
-        stdqTh.setName('statDequeThread #%i' % i)
+        stdqTh.setName('SDS:#%i: statDequeThread' % i)
         threads.append(stdqTh)
     for i in xrange(int(config.get("nfroutine", "depickerthreads"))):
         depTh = DepickerThread()
-        depTh.setName('depickerThread #%i' % i)
+        depTh.setName('DET:#%i: depickerThread' % i)
         threads.append(depTh)
     
     cacheThr = AccountServiceThread()
-    cacheThr.setName('NFR AccountServiceThread')
+    cacheThr.setName('AST: AccountServiceThread')
     suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.start()
-    while curAT_date == None:
-        time.sleep(0.2)
+    
+    time.sleep(2)
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
             sys.exit()
-        
+        time.sleep(10)
+        if not cacheMaster.read: 
+            print 'caches still not read, maybe you should check the log'
+      
+    print 'caches ready'
+    logger.info("NFR: cache read status: %s", cacheMaster.read)
     #i= range(len(threads))
     for th in threads:
         suicideCondition[th.__class__.__name__] = False
@@ -929,16 +816,24 @@ def main():
         logger.info("NFR %s start", th.getName())
         time.sleep(0.1)
         
-    time.sleep(5)
+    logger.warning("THREADS=%s", repr([thrd.getName() for thrd in threads + [cacheThr]]))
+    #logger.warning("CACHETH=%s", cacheThr.getName())
+    time.sleep(5)    
+    try:
+        signal.signal(signal.SIGHUP, SIGHUP_handler)
+    except: logger.lprint('NO SIGHUP!')
+    
+    try:
+        signal.signal(signal.SIGUSR1, SIGUSR1_handler)
+    except: logger.lprint('NO SIGUSR1!')
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
-    #asyncore.
-    NfAsyncUDPServer(coreAddr)
     
+    reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
     print "ebs: nfroutine: started"
-    while 1: 
-        asyncore.poll(0.010)
+    savepid(vars.piddir, vars.name)
+    reactor.run(installSignalHandlers=False)
 #===============================================================================
 
     
@@ -946,38 +841,48 @@ if __name__ == "__main__":
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
         
+
+    cacheMaster = CacheMaster()
+    
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-
-        
+    
+    suicideCondition = {}
+    flags = NfrFlags()
+    vars  = NfrVars()
+    
+    if config.has_option("nfroutine", "groupdicts"): vars.groupDicts = config.getint("nfroutine", "groupdicts")
+    if config.has_option("nfroutine", "statdicts"):  vars.statDicts  = config.getint("nfroutine", "statdicts")
+    queues= NfrQueues(vars.groupDicts, vars.statDicts)
+    
     logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file")) 
     saver.log_adapt = logger.log_adapt
+    utilites.log_adapt = logger.log_adapt
     logger.lprint('Nfroutine start')
     try:
         
         if config.get("nfroutine_nf", "usock") == '0':
-            coreHost = config.get("nfroutine_nf_inet", "host")
-            corePort = int(config.get("nfroutine_nf_inet", "port"))
-            coreAddr = (coreHost, corePort)
+            vars.host = config.get("nfroutine_nf_inet", "host")
+            vars.port = int(config.get("nfroutine_nf_inet", "port"))
+            vars.addr = (vars.host, vars.port)
         elif config.get("nfroutine_nf", "usock") == '1':
-            coreHost = config.get("nfroutine_nf_unix", "host")
-            corePort = 0
-            coreAddr = (coreHost,)
+            vars.host = config.get("nfroutine_nf_unix", "host")
+            vars.port = 0
+            vars.addr = (vars.host,)
         else:
             raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         #temp save on restart or graceful stop
-        saveDir = config.get("nfroutine", "save_dir")
+        vars.saveDir = config.get("nfroutine", "save_dir")
         #store stat. for old tarifs and accounts?
-        store_na_tarif   = False
-        store_na_account = False
-        if (config.get("nfroutine", "store_na_tarif")  =='True') or (config.get("nfroutine", "store_na_tarif")  =='1'):
-            store_na_tarif   = True
-        if (config.get("nfroutine", "store_na_account")=='True') or (config.get("nfroutine", "store_na_account")=='1'):
-            store_na_account = True
+        flags.store_na_tarif   = True if ((config.get("nfroutine", "store_na_tarif")   =='True') or (config.get("nfroutine", "store_na_tarif")  =='1')) else False
+        flags.store_na_account = True if ((config.get("nfroutine", "store_na_account") =='True') or (config.get("nfroutine", "store_na_account")=='1')) else False
         
         #write profiling info?
-        writeProf = logger.writeInfoP()  
+        flags.writeProf = logger.writeInfoP()  
         
+        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
+                                                                         config.get("db", "host"), config.get("db", "password"))
+        '''
         pool = PooledDB(
             mincached=4,  maxcached=20,
             blocking=True,creator=psycopg2,
@@ -988,53 +893,28 @@ if __name__ == "__main__":
             creator=psycopg2,
             dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"), 
                                                                    config.get("db", "host"), config.get("db", "password")))
-    
+        '''
         #--------------------------------------------------------
-        
-        suicideCondition = {}
-        #queue for Incoming packet lists
-        nfIncomingQueue = deque()
-        #lock for nfIncomingQueue operations
-        nfQueueLock = Lock()
-        
-        #last cache renewal date
-        curAT_date  = None
-        #lock for cache operations
-        curAT_lock  = Lock()
-        
-        #sendflag prefix
-        sendFlag = ''
-        
-        
+
         #group statistinc an global statistics objects    
         #key = account, group id , time
         #[(1,2,3)][0][4]['INPUT']
         #[(1,2, )][1] = group info
         #lambda: [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), None])
-        groupAggrDict = {}   
+        #groupAggrDict = {}   
         #key - account_id, time
         #[(1,2,3)][0][4]['INPUT']
         #[(1,2, )][1] = nas etc
-        statAggrDict = {}   
+        #statAggrDict = {}   
         
-        groupAggrTime = 300    
-        statAggrTime  = 1800
-        
-        groupDeque = deque()
-        statDeque  = deque()    
-        groupLock = Lock()
-        statLock  = Lock()    
-        
-        depickerQueue = deque()
-        depickerLock  = Lock()
-        
-        gPicker = Picker()
-        pickerLock = Lock()
-        pickerTime = time.time() + 5
+        queues.picker = Picker()
+        queues.pickerTime = time.time() + 5
         
         #function that returns number of allowed users
         #create allowedUsers
-        allowedUsers = setAllowedUsers(pool.connection(), "license.lic")        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())       
         allowedUsers()
         
         fMem = pfMemoize()    
@@ -1045,4 +925,4 @@ if __name__ == "__main__":
         main()
     except Exception, ex:
         print 'Exception in nfroutine, exiting: ', repr(ex)
-        logger.error('Exception in nfroutine, exiting: %s', repr(ex))
+        logger.error('Exception in nfroutine, exiting: %s \b %s', (repr(ex), traceback.format_exc()))
