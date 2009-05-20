@@ -63,10 +63,8 @@ class check_vpn_access(Thread):
         Thread.__init__(self)
 
     def create_speed(self, decRec, spRec, date_):
-        defaults = decRec
-        speeds = spRec
-        min_from_start=0
-        f_speed = None
+        defaults, speeds = decRec, spRec
+        min_from_start, f_speed = 0, None
         for speed in speeds:
             tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
             if result==True and (from_start<min_from_start or min_from_start==0):
@@ -94,8 +92,6 @@ class check_vpn_access(Thread):
         """
         global cacheMaster, suicideCondition, vars
         dateAT = datetime.datetime(2000, 1, 1)
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
         self.connection = get_connection(vars.db_dsn)
         caches = None
         while True:            
@@ -225,8 +221,6 @@ class periodical_service_bill(Thread):
         Thread.__init__(self)
 
     def run(self):
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
         self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
@@ -282,13 +276,8 @@ class periodical_service_bill(Thread):
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
                                     last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)                                    
-                                    if last_checkout is None and ps.created is None:
-                                        last_checkout = period_start
-                                    elif last_checkout is None and ps_created is not None:
-                                        if ps_created < period_start:
-                                            last_checkout = period_start
-                                        else:
-                                            last_checkout = ps.created
+                                    if last_checkout is None:
+                                        last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
 
                                     if (now - last_checkout).seconds + (now - last_checkout).days*86400 >= n:
                                         #Проверяем наступил ли новый период
@@ -308,13 +297,13 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
-                                                cash_summ = (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                                                cash_summ = (n * transaction_number * ps.cost) / (delta * transaction_number)
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                                                 cur.connection.commit()
                                                 chk_date += n_delta
                                         else:
                                             #make an approved transaction
-                                            cash_summ = susp_per_mlt * (float(n) * transaction_number * ps.cost) / (delta * transaction_number)
+                                            cash_summ = susp_per_mlt * (n * transaction_number * ps.cost) / (delta * transaction_number)
                                             if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
@@ -326,7 +315,7 @@ class periodical_service_bill(Thread):
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                     не платили-производим снятие.
                                     """
-                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)
                                     # Здесь нужно проверить сколько раз прошёл расчётный период
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -340,7 +329,7 @@ class periodical_service_bill(Thread):
                                         lc = period_start - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
                                         nums, ost = divmod(lc.seconds + lc.days*86400, delta)
-                                        cash_summ =ps.cost
+                                        cash_summ = ps.cost
                                         chk_date = last_checkout + s_delta
                                         if nums > 1:
                                             """
@@ -350,8 +339,8 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её                                            
                                             while chk_date <= now:
                                                 if ps.created and ps.created >= chk_date:
-                                                    cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                                                    cash_summ = 0
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 cur.connection.commit()
                                                 chk_date += s_delta
                                         else:
@@ -393,7 +382,7 @@ class periodical_service_bill(Thread):
                                             while chk_date <= now:
                                                 if ps.created and ps.created>chk_date:
                                                     cash_summ=0
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::double precision, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
                                                 cur.connection.commit()
                                                 chk_date += s_delta                                          
                                             
@@ -504,7 +493,7 @@ class TimeAccessBill(Thread):
                         for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
                             if 0: assert isinstance(pnode, TimePeriodNodeData)
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
-                                summ = (float(total_time)/60) * period.cost
+                                summ = (total_time * period.cost) / 60
                                 if summ > 0:
                                     timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                     cur.connection.commit()
@@ -610,15 +599,16 @@ class limit_checker(Thread):
                         cur.connection.commit()
                         
                         tsize = sizes[0] if sizes[0] else 0
-                        limit_size = Decimal("%s" % limit.size)
-                        if tsize > limit_size and limit.action==0:
+                        #limit_size = Decimal("%s" % limit.size)
+                        #100% trace through!
+                        if tsize > limit.size and limit.action==0:
                             block = True
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))                            
-                        elif tsize > limit_size and limit.action == 1 and limit.speedlimit_id:
+                        elif tsize > limit.size and limit.action == 1 and limit.speedlimit_id:
                             #Меняем скорость
                             cur.execute("SELECT speedlimit_ins_fn(%s, %s);", (limit.speedlimit_id, acc.account_id,))
                             speed_changed, block = (True, False)
-                        elif tsize < limit_size:
+                        elif tsize < limit.size:
                             cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
                         cur.connection.commit()
                         

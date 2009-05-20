@@ -1015,3 +1015,168 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+  
+  
+-- 19.05.2009
+
+ALTER TABLE billservice_account ALTER ballance TYPE decimal;
+ALTER TABLE billservice_account ALTER credit TYPE decimal;
+ALTER TABLE billservice_card ALTER nominal TYPE decimal;
+ALTER TABLE billservice_dealer ALTER prepayment TYPE decimal;
+ALTER TABLE billservice_dealer ALTER discount TYPE decimal;
+ALTER TABLE billservice_dealerpay ALTER pay TYPE decimal;
+ALTER TABLE billservice_onetimeservice ALTER cost TYPE decimal;
+ALTER TABLE billservice_onetimeservicehistory ALTER summ TYPE decimal;
+ALTER TABLE billservice_periodicalservice ALTER cost TYPE decimal;
+ALTER TABLE billservice_periodicalservicehistory ALTER summ TYPE decimal;
+ALTER TABLE billservice_salecard ALTER sum_for_pay TYPE decimal;
+ALTER TABLE billservice_salecard ALTER discount TYPE decimal;
+ALTER TABLE billservice_salecard ALTER discount_sum TYPE decimal;
+ALTER TABLE billservice_salecard ALTER prepayment TYPE decimal;
+ALTER TABLE billservice_tariff ALTER cost TYPE decimal;
+ALTER TABLE billservice_timeaccessnode ALTER cost TYPE decimal;
+ALTER TABLE billservice_timetransaction ALTER summ TYPE decimal;
+ALTER TABLE billservice_traffictransmitnodes ALTER cost TYPE decimal;
+ALTER TABLE billservice_traffictransaction ALTER summ TYPE decimal;
+ALTER TABLE billservice_transaction ALTER summ TYPE decimal;
+ALTER TABLE billservice_tpchangerule ALTER cost TYPE decimal;
+
+ALTER TABLE billservice_prepaidtraffic ALTER size TYPE bigint;
+ALTER TABLE billservice_accountprepaystrafic ALTER size TYPE bigint;
+ALTER TABLE billservice_trafficlimit ALTER size TYPE bigint;
+
+
+DROP FUNCTION credit_account(integer, double precision);
+
+CREATE OR REPLACE FUNCTION credit_account(account_id integer, sum decimal)
+  RETURNS void AS
+$BODY$
+BEGIN
+	UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
+RETURN;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+DROP FUNCTION debit_account(integer, double precision);
+
+CREATE OR REPLACE FUNCTION debit_account(account_id integer, sum decimal)
+  RETURNS void AS
+$BODY$
+BEGIN
+	UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
+RETURN;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+DROP FUNCTION periodicaltr_fn(integer, integer, integer, character varying, double precision, timestamp without time zone, integer);
+
+CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ decimal, created_ timestamp without time zone, ps_condition_type_ integer)
+  RETURNS void AS
+$BODY$
+DECLARE
+    new_summ_ decimal;
+BEGIN
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
+    IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    END IF; 
+    INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+DROP FUNCTION shedulelog_blocked_fn(integer, integer, timestamp without time zone, double precision);
+
+CREATE OR REPLACE FUNCTION shedulelog_blocked_fn(account_id_ integer, accounttarif_id_ integer, blocked_ timestamp without time zone, cost_ decimal)
+  RETURNS void AS
+$BODY$ 
+BEGIN
+	UPDATE billservice_account SET balance_blocked=True WHERE id=account_id_ and ballance+credit<cost_;
+    UPDATE billservice_shedulelog SET balance_blocked=blocked_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(account_id_,accounttarif_id_, blocked_);
+    END IF;
+    RETURN;  
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+  
+DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$ 
+DECLARE
+	prepaid_tr_id_ int;
+	size_ bigint;
+	count_ int := 0;
+BEGIN
+	
+	FOR prepaid_tr_id_, size_ IN SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+		UPDATE billservice_accountprepaystrafic SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_;
+		IF NOT FOUND THEN
+			INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) VALUES(accounttarif_id_, prepaid_tr_id_, size_, datetime_);
+        END IF;
+        count_ := count_ + 1;
+    END LOOP;
+    IF count_ > 0 THEN
+    	UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_ WHERE account_id=account_id_;
+    	IF NOT FOUND THEN
+        	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+    	END IF;
+   	END IF;
+    RETURN;  
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+DROP FUNCTION transaction_block_sum(integer, timestamp without time zone, timestamp without time zone);
+  
+CREATE OR REPLACE FUNCTION transaction_block_sum(account_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone)
+  RETURNS decimal AS
+$BODY$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ decimal;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (summ > 0) AND (created BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) AS ts_union ;
+    RETURN result_;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+DROP FUNCTION transaction_sum(integer, integer, timestamp without time zone, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION transaction_sum(account_id_ integer, acctf_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone)
+  RETURNS decimal AS
+$BODY$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ decimal;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (created > start_date_ AND created < end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)) AS ts_union ;
+    RETURN result_;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+
+  
