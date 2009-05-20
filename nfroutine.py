@@ -38,6 +38,7 @@ except:
     print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 
+from decimal import Decimal
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
@@ -55,7 +56,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 class Picker(object):
     __slots__= ('data',)
     def __init__(self):
-        self.data = defaultdict(float)      
+        self.data = defaultdict(Decimal)      
 
     def add_summ(self, tts_id, acctf_id, account_id, summ):
         self.data[(tts_id, acctf_id, account_id)] += summ
