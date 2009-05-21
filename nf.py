@@ -41,7 +41,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
-from utilites import renewCaches, savepid, get_connection
+from utilites import renewCaches, savepid, get_connection, getpid, check_running
 
 
 
@@ -709,6 +709,8 @@ if __name__=='__main__':
     logger.lprint('Nf start')
     
     try:
+        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),

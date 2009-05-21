@@ -34,7 +34,7 @@ from chartprovider.bpcdplot import cdDrawer
 from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from utilites import settlement_period_info, readpids, killpids, savepid
+from utilites import settlement_period_info, readpids, killpids, savepid, getpid, check_running
 try:    import mx.DateTime
 except: print 'cannot import mx'
 from classes.vars import RpcVars
@@ -896,6 +896,8 @@ if __name__ == "__main__":
     logger.lprint('Ebs RPC start')
     
     try:
+        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+
         maxUsers = int(config.get("rpc", "max_users"))
     
 

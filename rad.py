@@ -37,7 +37,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid, get_connection
+from utilites import renewCaches, savepid, get_connection, getpid, check_running
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -938,16 +938,11 @@ if __name__ == "__main__":
     logger.lprint('Radius start')
     
     try:
+        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+
         #write profiling info?
-        writeProf = logger.writeInfoP()         
-        '''
-        pool = PooledDB(
-            mincached=3, maxcached=10,
-            blocking=True, creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                   config.get("db", "host"), config.get("db", "password")))
-        
-        '''
+        flags.writeProf = logger.writeInfoP()         
+
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                          config.get("db", "host"), config.get("db", "password"))
         suicideCondition = {}

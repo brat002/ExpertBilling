@@ -43,7 +43,7 @@ from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
 from classes.vars import CoreVars
-from utilites import renewCaches, savepid, get_connection
+from utilites import renewCaches, savepid, get_connection, check_running, getpid
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -1120,16 +1120,12 @@ if __name__ == "__main__":
     logger.lprint('core start')
     
     try:
+        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        
         transaction_number = int(config.get("core", 'transaction_number'))
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
                                                                          config.get("db", "host"), config.get("db", "password"))
-        '''
-        pool = PooledDB(
-            mincached=7,  maxcached=20,
-            blocking=True,creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),config.get("db", "username"),
-                                                                   config.get("db", "host"),config.get("db", "password")))
-        '''
+
         cacheMaster = CacheMaster()
         flags = CoreFlags()
         
