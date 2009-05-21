@@ -44,7 +44,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
-from utilites import renewCaches, savepid, get_connection
+from utilites import renewCaches, savepid, get_connection, getpid, check_running
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -862,7 +862,8 @@ if __name__ == "__main__":
     utilites.log_adapt = logger.log_adapt
     logger.lprint('Nfroutine start')
     try:
-        
+        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+                
         if config.get("nfroutine_nf", "usock") == '0':
             vars.host = config.get("nfroutine_nf_inet", "host")
             vars.port = int(config.get("nfroutine_nf_inet", "port"))

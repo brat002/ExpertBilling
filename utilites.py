@@ -20,7 +20,7 @@ try:
     from os import kill
 except Exception, ex:
     print "NO SIGNALS!"
-    kill = lambda x,y: 1
+    kill = lambda x,y: None
 
 ssh_exec = False
 #try: 
@@ -714,6 +714,25 @@ def readpids(piddir, lastmtime = -1, exclude = []):
 def killpids(pids, sig):
     for pid in pids:
         kill(pid, sig)
+  
+def getpid(piddir, procname):
+    try:
+        return int(open(''.join((piddir, '/', procname, '.pid')), 'rb').read())
+    except:
+        return None
+    
+def check_running(pid):
+    if not pid:
+        return False
+    else:
+        try:
+            os.kill(pid, 0)
+        except Exception, ex:
+            #except OSError, oerr:
+            #if oerr.errno == 3:
+            return False
+        else:
+            return True
         
 def get_connection(dsn, session = []):
     conn = psycopg2.connect(dsn)
