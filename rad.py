@@ -417,7 +417,7 @@ class HandleSAuth(HandleSBase):
             return self.auth_NA(authobject)         
 
         #print common_vpn,access_type,self.access_type
-        if (not common_vpn) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
+        if (not flags.common_vpn) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
             logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
         
