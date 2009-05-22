@@ -325,7 +325,7 @@ class periodical_service_bill(Thread):
                                     summ = 0
                                     first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                         
-                                    if first_time or last_checkout < period_start:    
+                                    if (first_time and (ps.created or last_checkout) < period_start) or (not first_time and last_checkout < period_start):
                                         lc = period_start - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
                                         nums, ost = divmod(lc.seconds + lc.days*86400, delta)
