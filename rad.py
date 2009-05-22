@@ -452,7 +452,7 @@ class HandleSAuth(HandleSBase):
         if self.packetobject['User-Name'][0]==user_name and allow_dial and acc.tarif_active:
             authobject.set_code(2)
             self.replypacket.username = str(user_name) #Нельзя юникод
-            self.replypacket.password = str(password) #Нельзя юникод
+            self.replypacket.password = str(acc.password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.vpn_ip_address)
