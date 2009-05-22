@@ -576,7 +576,7 @@ class HandleHotSpotAuth(HandleSBase):
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)       
        
-        if int(acct_card.nas_id)!=int(nas.nas_id):
+        if int(acct_card.nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject)
 
@@ -623,7 +623,7 @@ class HandleSDHCP(HandleSBase):
             return self.auth_NA(authobject)
         if 0: assert isinstance(acc, AccountData)
         
-        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.nas_id):
+        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.id):
             return self.auth_NA(authobject)
 
         acstatus = (acc.allow_dhcp_null or acc.ballance>0) and \
