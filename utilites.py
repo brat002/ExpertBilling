@@ -504,7 +504,7 @@ def get_sessions_for_nas(nas):
         #Use SSH For fetching sessions
         if ssh_exec:
             try:
-                sshclient = ssh_execute(nas_login, nas_ip, nas_password, "/ppp active print terse without-paging")
+                sshclient = ssh_execute(nas['login'], nas['ip'], nas['password'], "/ppp active print terse without-paging")
             except Exception, e:
                 log_error_('Get sessions for nas SSH sshexec error: %s' % repr(e))
                 return []
