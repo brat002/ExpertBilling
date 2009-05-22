@@ -35,6 +35,7 @@ from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, getpid, check_running
+from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 try:    import mx.DateTime
 except: print 'cannot import mx'
 from classes.vars import RpcVars
@@ -912,7 +913,10 @@ if __name__ == "__main__":
                                                                    config.get("db", "username"),
                                                                    config.get("db", "host"),
                                                                    config.get("db", "password")))
-        
+        if not globals().has_key('_1i'):
+            _1i = lambda: ''
+        allowedUsers = setAllowedUsers(pool.connection(), _1i())       
+        allowedUsers()
         #-------------------
         print "ebs: rpc: configs read, about to start"
         main()
