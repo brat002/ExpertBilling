@@ -100,7 +100,6 @@ class AsyncUDPServer(asyncore.dispatcher):
     def initiate_send(self):
         b = self.outbuf
         #self.send()
-
         while len(b):
             data, addr = b.popleft()
             try:
@@ -108,7 +107,7 @@ class AsyncUDPServer(asyncore.dispatcher):
                 if result != len(data):
                     logger.warning('Sent packet truncated to %s bytes', result)
             except socket.error, why:
-                if why[0] == EWOULDBLOCK:
+                if why[0] == 'EWOULDBLOCK':
                     return
                 else:
                     raise socket.error, why
@@ -243,7 +242,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 try:
                     self.dbconn = get_connection(vars.db_dsn)
                 except Exception, eex:
-                    logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                    logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                     time.sleep(10)
                         
 class AsyncAcctServ(AsyncUDPServer):
@@ -678,9 +677,9 @@ class HandleSAcct(HandleSBase):
         userName = self.packetobject['User-Name'][0]
 
         acc = self.caches.account_cache.by_username.get(userName)
-        if acct_row is None:
+        if acc is None:
             self.cur.close()
-            logger.warning("Unkown User or user tarif %s", userName)
+            logger.warning("Unknown User or user tarif %s", userName)
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
@@ -805,7 +804,7 @@ class CacheRoutine(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(20)
