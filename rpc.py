@@ -39,6 +39,7 @@ from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, gracefu
 try:    import mx.DateTime
 except: print 'cannot import mx'
 from classes.vars import RpcVars
+from constants import rules
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -351,15 +352,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return sended
 
         
-    @authentconn
+    '''@authentconn
     def get_object(self, name, cur=None, connection=None):
         try:
             model = models.__getattribute__(name)()
         except:
             return None
-
-
-        return model
+        return model'''
 
     @authentconn
     def transaction_delete(self, ids, cur=None, connection=None):
@@ -562,13 +561,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if return_response:
             result = map(Object, cur.fetchall())
         #print "Query length=", time.clock()-a
-        if pickler:
-            output = open('data.pkl', 'wb')
-            b=time.clock()-a
-
-            pickle.dump(result, output)
-            output.close()
-            #print "Pickle length=", time.clock()-a
         return result
 
     @authentconn
@@ -750,25 +742,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id
-
-    @authentconn
-    def connection_request(self, username, password, cur=None, connection=None):
-        try:
-            obj = self.get("SELECT * FROM billservice_systemuser WHERE username=%s",(username,))
-            self.commit()
-        except Exception, e:
-            logger.error('connection request exception: %s', repr(e))
-            return False
-        #print "connection_____request"
-        #print self.getProxy()
-        if obj is not None and obj.password==password:
-            self.create("UPDATE billservice_systemuser SET last_login=%s WHERE id=%s;" , (datetime.datetime.now(), obj.id,))
-            self.commit()
-            #Pyro.constants.
-
-            return True
-        else:
-            return False
 
     @authentconn
     def test(self, cur=None, connection=None):

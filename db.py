@@ -314,7 +314,7 @@ def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, s
     if not created:
         created=datetime.datetime.now()
     cursor.execute("""INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, session_id, summ, datetime) VALUES (%s, %s, %s, %s, %s);
-                   """, (traffictransmitservice_id, accounttarif_id, account_id, session_id, summ, created,))
+                   """, (timeaccessservice_id, accounttarif_id, account_id, session_id, summ, created,))
     
 def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
     if not created:

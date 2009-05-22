@@ -151,7 +151,7 @@ class check_vpn_access(Thread):
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
                                 speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
-                                speed=parse_custom_speed_lst(vpn_speed)
+                                speed=parse_custom_speed_lst(acc.vpn_speed)
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                             if rs.speed_string != newspeed:
@@ -468,13 +468,13 @@ class TimeAccessBill(Thread):
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     #rs_id,  account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
                     cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time IS TRUE 
-                                   ORDER BY interrim_update DESC LIMIT 1""", (session_id,))
+                                   ORDER BY interrim_update DESC LIMIT 1""", (rs.sessionid,))
                     old_time = cur.fetchone()
                     old_time = old_time[0] if old_time else 0
                     
                     total_time = rs.session_time - old_time
     
-                    cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (accountt_tarif_id,))
+                    cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (rs.acctf_id,))
                     result = cur.fetchone()
                     cur.connection.commit()
                     prepaid_id, prepaid = result if result else (0, -1)                    
@@ -603,7 +603,7 @@ class limit_checker(Thread):
                         #100% trace through!
                         if tsize > limit.size and limit.action==0:
                             block = True
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (account_id,))                            
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))                            
                         elif tsize > limit.size and limit.action == 1 and limit.speedlimit_id:
                             #Меняем скорость
                             cur.execute("SELECT speedlimit_ins_fn(%s, %s);", (limit.speedlimit_id, acc.account_id,))
@@ -866,7 +866,7 @@ class ipn_service(Thread):
                         now = datetime.datetime.now()
                         if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
                             #шлём команду, на включение пользователя, account_ipn_status=True
-                            ipn_added = acct[25]
+                            ipn_added = acc.ipn_added
                             """Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled"""
                             if not acc.ipn_added:
                                 sended = cred(acc.account_id, acc.username,acc.password, access_type,
@@ -959,7 +959,7 @@ class pfMemoize(object):
         return res
     
     def clear(self):
-        for dct in self.dicts: dct.clean()
+        for dct in self.dicts: dct.clear()
   
 
 

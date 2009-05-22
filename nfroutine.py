@@ -691,7 +691,7 @@ class NfTwistedServer(DatagramProtocol):
             #self.socket.sendto(vars.sendFlag + str(len(data)), addrport)
             queues.nfIncomingQueue.append(data)
         except:            
-            logger.error("%s : #30210701 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            logger.error("Twisted Server Error : #30210701 : %s \n %s", (repr(ex), traceback.format_exc()))
 
         
 

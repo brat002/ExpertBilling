@@ -82,7 +82,7 @@ class nfDequeThread(Thread):
 
 def flow5(data):
     if len(data) != vars.flowLENGTH:
-        raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), flowLENGTH)
+        raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), vars.flowLENGTH)
     #must turn tuples into lists because they are to be modified
     return Flow5Data(False, *struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data))
 
