@@ -443,7 +443,7 @@ class HandleSAuth(HandleSBase):
                 return self.auth_NA(authobject) 
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.nas_id):
+        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject) 
         
