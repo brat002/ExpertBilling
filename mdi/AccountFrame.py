@@ -2012,7 +2012,7 @@ class TarifFrame(QtGui.QDialog):
                     limit.name=unicode(self.limit_tableWidget.item(i, 1).text())
                     limit.settlement_period_id = self.limit_tableWidget.item(i, 3).id
                     limit.mode = self.limit_tableWidget.cellWidget(i,2).checkState()==2
-                    limit.size=unicode(float(unicode(self.limit_tableWidget.item(i, 5).text()))*1048576)
+                    limit.size=unicode(int(float(unicode(self.limit_tableWidget.item(i, 5).text()))*1048576))
                     limit.group_id = self.limit_tableWidget.item(i, 4).id
                     limit.action = self.limit_tableWidget.item(i, 6).id
                     
@@ -2130,7 +2130,7 @@ class TarifFrame(QtGui.QDialog):
                     prepaid_node.group_id = self.prepaid_tableWidget.item(i,1).id
                     #prepaid_node.out_direction = self.prepaid_tableWidget.cellWidget(i,3).checkState()==2
                     #prepaid_node.transit_direction = self.prepaid_tableWidget.cellWidget(i,4).checkState()==2
-                    prepaid_node.size = unicode(float(self.prepaid_tableWidget.item(i,2).text())*1048576)
+                    prepaid_node.size = unicode(int(float(self.prepaid_tableWidget.item(i,2).text())*1048576))
 
 
                     #traffic_class_models = [x.id for x in self.prepaid_tableWidget.item(i, 1).models]
