@@ -41,7 +41,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
-from utilites import renewCaches, savepid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 
 
 
@@ -615,6 +615,7 @@ def graceful_save():
                    queues, 'nf_', vars.saveDir)
     
     time.sleep(1)
+    rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
         

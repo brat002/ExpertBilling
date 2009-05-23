@@ -702,6 +702,12 @@ def savepid(piddir, procname):
     pfile.write(str(os.getpid()))
     pfile.close()
     
+def rempid(piddir, procname):
+    try:
+        os.unlink(''.join((piddir, '/', procname, '.pid')))
+    except:
+        pass
+    
 def readpids(piddir, lastmtime = -1, exclude = []):
     presmtime = os.path.getmtime(piddir)
     if lastmtime == presmtime: return ([], presmtime)
