@@ -136,7 +136,9 @@ class CassaEbs(ebsTableWindow):
         self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_paymend_date.setCalendarPopup(True)
         self.dateTimeEdit_paymend_date.setObjectName("dateTimeEdit_paymend_date")
+        self.checkBox_autotime = QtGui.QCheckBox(self.groupBox_payment)
         self.gridLayout_6.addWidget(self.dateTimeEdit_paymend_date, 7, 1, 1, 2)
+        self.gridLayout_6.addWidget(self.checkBox_autotime, 7, 3)
         self.label_promise = QtGui.QLabel(self.groupBox_payment)
         self.label_promise.setObjectName("label_promise")
         self.gridLayout_6.addWidget(self.label_promise, 8, 0, 1, 1)
@@ -149,6 +151,7 @@ class CassaEbs(ebsTableWindow):
         self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox_payment)
         self.dateTimeEdit_end_promise.setCalendarPopup(True)
         self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
+        
         self.gridLayout_6.addWidget(self.dateTimeEdit_end_promise, 9, 1, 1, 2)
         self.checkBox_promise_infinite = QtGui.QCheckBox(self.groupBox_payment)
         self.checkBox_promise_infinite.setObjectName("checkBox_promise_infinite")
@@ -205,6 +208,8 @@ class CassaEbs(ebsTableWindow):
         self.connect(self.pushButton_search, QtCore.SIGNAL("clicked()"), self.refreshTable)
         self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
         QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        QtCore.QObject.connect(self.checkBox_autotime,QtCore.SIGNAL("stateChanged(int)"),self.checkAutoTime)
+        
         QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         
         QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemSelectionChanged()"), self.update_info)
@@ -214,6 +219,7 @@ class CassaEbs(ebsTableWindow):
         self.refreshTariffs()
         self.fixtures()
         self.promise_actions()
+        self.checkAutoTime()
 
         
     def retranslateUI(self, initargs):
@@ -244,7 +250,8 @@ class CassaEbs(ebsTableWindow):
         self.textEdit_limites.setPlainText(QtGui.QApplication.translate("MainWindow", "Нет данных", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_prepaid_traffic.setTitle(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.textEdit_prepaid_traffic.setPlainText(QtGui.QApplication.translate("MainWindow", "Функция недоступна", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.checkBox_autotime.setText(QtGui.QApplication.translate("MainWindow", "Auto", None, QtGui.QApplication.UnicodeUTF8))
+        
     def promise_actions(self):
         if self.checkBox_promise.isChecked():
             self.dateTimeEdit_end_promise.setEnabled(True)
@@ -270,7 +277,12 @@ class CassaEbs(ebsTableWindow):
         else:
             self.textEdit_limites.setPlainText(u"Нет данных")
         
-            
+    
+    def checkAutoTime(self):
+        if self.checkBox_autotime.isChecked()==True:
+            self.dateTimeEdit_paymend_date.setDisabled(True)
+        else:
+            self.dateTimeEdit_paymend_date.setDisabled(False)
                 
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
@@ -361,7 +373,10 @@ class CassaEbs(ebsTableWindow):
             account = self.getSelectedId()
             document = unicode(self.lineEdit_document.text())
             description = unicode(self.lineEdit_description.text())
-            created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
+            if self.checkBox_autotime.isChecked()==False:
+                created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
+            else:
+                created = "now()"
             promise = self.checkBox_promise.isChecked()
             summ = float(unicode(self.lineEdit_summ.text()))
             if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():

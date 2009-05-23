@@ -892,78 +892,7 @@ ALTER TABLE billservice_tariff
 ALTER TABLE billservice_tariff
    ALTER COLUMN require_tarif_cost SET DEFAULT False;
    
--- 15.05.2009
-
-CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint 
-    AS $$
-BEGIN
-    RETURN 0;
-END;
-$$
-    LANGUAGE plpgsql;
-    
-
-CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger
-    AS $$ DECLARE counted_num_ int; 
-             allowed_num_ int := 0; 
-             BEGIN 
-             	allowed_num_ := return_allowed();
-                SELECT count(*) INTO counted_num_ FROM billservice_account;
-                IF counted_num_ + 1 > allowed_num_ THEN
-                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
-                ELSE 
-                    RETURN NEW;
-                END IF; 
-                END; $$
-    LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void
-    AS $$
-DECLARE
-
-    allowed_ text := allowed::text;
-    prev_ bigint  := 0;
-
-
-    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';
-
-
-    fn_bd_tx1_ text := ' BEGIN RETURN ';
-    fn_bd_tx2_ text := '; END;';
-
-
-    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
-
-BEGIN    
-    prev_ := return_allowed();
-    IF prev_ != allowed THEN
-    	EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;
-    END IF;
-    RETURN;
-
-END;
-$$
-    LANGUAGE plpgsql;
-
--- 18.05.2009
-
-ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;
-ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];
-
-DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
-
-CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)
-  RETURNS void AS
-$BODY$
-BEGIN
-    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
-EXCEPTION WHEN unique_violation THEN
-    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
-END;
-$BODY$
-  LANGUAGE 'plpgsql' VOLATILE
-  COST 100;
-  
+-- 15.05.2009CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS $$BEGIN    RETURN 0;END;$$    LANGUAGE plpgsql;    CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS $$ DECLARE counted_num_ int;              allowed_num_ int := 0;              BEGIN              	allowed_num_ := return_allowed();                SELECT count(*) INTO counted_num_ FROM billservice_account;                IF counted_num_ + 1 > allowed_num_ THEN                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;                ELSE                     RETURN NEW;                END IF;                 END; $$    LANGUAGE plpgsql;CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void    AS $$DECLARE    allowed_ text := allowed::text;    prev_ bigint  := 0;    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    fn_bd_tx1_ text := ' BEGIN RETURN ';    fn_bd_tx2_ text := '; END;';    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';BEGIN        prev_ := return_allowed();    IF prev_ != allowed THEN    	EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    END IF;    RETURN;END;$$    LANGUAGE plpgsql;-- 18.05.2009ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS$BODY$BEGIN    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);EXCEPTION WHEN unique_violation THEN    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;END;$BODY$  LANGUAGE 'plpgsql' VOLATILE  COST 100;  
 
 DROP FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
 

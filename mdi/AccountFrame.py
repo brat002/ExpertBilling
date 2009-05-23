@@ -3864,15 +3864,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
         #if setdata:
             #headerItem.setData(39, QtCore.QVariant(value))
-        if isinstance(value, basestring):
-            headerItem.setText(unicode(value))
-        else:
-            headerItem.setData(0, QtCore.QVariant(value)) 
-        '''if ctext is not None:
-                headerItem.setText(unicode(ctext))
-            else:
-                headerItem.setText(unicode(value))'''
-        
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))        
+        else:            
+            headerItem.setData(0, QtCore.QVariant(value))         
+            '''if ctext is not None:                headerItem.setText(unicode(ctext))            else:                headerItem.setText(unicode(value))'''        
         headerItem.id = id
         self.tableWidget.setItem(x,y,headerItem)
         #self.tablewidget.setShowGrid(False)

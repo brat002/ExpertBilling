@@ -2037,9 +2037,8 @@ class InfoDialog(QtGui.QDialog):
             for a in items:            
                 self.addrow(i, i,0)
                 self.addrow(a.group_name, i,1)
-                self.addrow("%s KB" % (a.pp_size/1024), i2)
-                self.addrow("%s KB" % (a.size/1024), i,3)
-
+                self.addrow("%s KB" % (a.pp_size/1024), i, 2)
+                self.addrow("%s KB" % (a.size/1024), i, 3)
                 i+=1
             self.tableWidget.resizeRowsToContents()            
 
