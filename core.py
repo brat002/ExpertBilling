@@ -43,7 +43,7 @@ from classes.cacheutils import CacheMaster
 from classes.core_cache import *
 from classes.flags import CoreFlags
 from classes.vars import CoreVars
-from utilites import renewCaches, savepid, get_connection, check_running, getpid
+from utilites import renewCaches, savepid, get_connection, check_running, getpid, rempid
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -1035,13 +1035,14 @@ def SIGUSR1_handler(signum, frame):
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
-    global cacheThr, threads, suicideCondition
+    global cacheThr, threads, suicideCondition, vars
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
     logger.lprint("Core - about to exit gracefully.")
     time.sleep(20)
     #pool.close()
     #time.sleep(2)
+    rempid(vars.piddir, vars.name)
     logger.lprint("Core - exiting gracefully.")
     sys.exit()
     

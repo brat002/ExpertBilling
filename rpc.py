@@ -34,7 +34,7 @@ from chartprovider.bpcdplot import cdDrawer
 from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from utilites import settlement_period_info, readpids, killpids, savepid, getpid, check_running
+from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -824,13 +824,14 @@ def SIGUSR1_handler(signum, frame):
         logger.error("Exception diring SIGUSR1 broadcast: %s \n %s", (repr(ex), traceback.format_exc()))
 
 def graceful_save():
-    global threads
+    global threads, vars
     for th in threads:
         if isinstance(th, RPCServer):
             th.daemon.shutdown(disconnect=True)
     logger.lprint("About to stop gracefully.")
     pool.close()
     time.sleep(2)
+    rempid(vars.piddir, vars.name)
     logger.lprint("Stopping gracefully.")
     sys.exit()
     

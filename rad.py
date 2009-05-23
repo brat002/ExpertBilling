@@ -37,7 +37,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -864,12 +864,13 @@ def SIGUSR1_handler(signum, frame):
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
-    global  cacheThr, suicideCondition
+    global  cacheThr, suicideCondition, vars
     asyncore.close_all()
     suicideCondition[cacheThr.__class__.__name__] = True
     logger.lprint("About to stop gracefully.")
     time.sleep(5)
     #pool.close()
+    rempid(vars.piddir, vars.name)
     logger.lprint("Stopping gracefully.")
     sys.exit()
 

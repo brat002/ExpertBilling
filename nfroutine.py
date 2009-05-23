@@ -44,7 +44,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
-from utilites import renewCaches, savepid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -764,6 +764,7 @@ def graceful_save():
     queues.statLock.release()
     queues.groupLock.release()
     queues.depickerLock.release()
+    rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
 

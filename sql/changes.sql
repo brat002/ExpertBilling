@@ -1178,5 +1178,20 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
   
+-- 23.05.2009
 
+ALTER TABLE billservice_onetimeservicehistory ALTER account_id DROP NOT NULL;
+ALTER TABLE billservice_onetimeservicehistory ALTER onetimeservice_id DROP NOT NULL;
+
+ALTER TABLE billservice_periodicalservicehistory ALTER account_id DROP NOT NULL;
+ALTER TABLE billservice_periodicalservicehistory ALTER service_id DROP NOT NULL;
+
+ALTER TABLE billservice_timetransaction ALTER account_id DROP NOT NULL;
+ALTER TABLE billservice_timetransaction ALTER session_id DROP NOT NULL;
+
+ALTER TABLE billservice_traffictransaction ALTER account_id DROP NOT NULL;
+ALTER TABLE billservice_traffictransaction ALTER traffictransmitservice_id DROP NOT NULL;
+
+ALTER TABLE billservice_transaction ALTER account_id DROP NOT NULL;
+ALTER TABLE billservice_transaction ALTER systemuser_id DROP NOT NULL;
   

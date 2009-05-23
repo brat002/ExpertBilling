@@ -326,14 +326,16 @@ class sqliteDbAccess(object):
         if dbtype == 'system':
             if os.name == "nt":
                 if os.environ.has_key('USERPROFILE'):
-                    if os.path.exists(u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)):
-                        self.dbfile = u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)
+                    if os.path.exists(''.join((os.environ['USERPROFILE'], '\\', dbname))):
+                        self.dbfile = ''.join((os.environ['USERPROFILE'], '\\', dbname))
+                        self.dbfile = self.dbfile.decode('mbcs')
                         self.filestat = 1
                     elif os.path.exists(dbname):
                         self.dbfile = dbname
                         self.filestat = 3
                     else:
-                        self.dbfile = u"%s" % (os.environ['USERPROFILE'] + '\\' + dbname)
+                        self.dbfile = ''.join((os.environ['USERPROFILE'], '\\', dbname))
+                        self.dbfile = self.dbfile.decode('mbcs')
                         self.filestat = 2
                 elif os.path.exists(dbname):
                     self.dbfile = dbname
@@ -343,14 +345,14 @@ class sqliteDbAccess(object):
                     self.filestat = 4
             else:
                 if os.environ.has_key('HOME'):
-                    if os.path.exists(os.environ['HOME'] + '/' + dbname):
-                        self.dbfile = os.environ['HOME'] + '/' + dbname
+                    if os.path.exists(''.join((os.environ['HOME'], '/', dbname))):
+                        self.dbfile = ''.join((os.environ['HOME'], '/', dbname))
                         self.filestat = 1
                     elif os.path.exists(dbname):
                         self.dbfile = dbname
                         self.filestat = 3
                     else:
-                        self.dbfile = os.environ['HOME'] + '/' + dbname
+                        self.dbfile = ''.join((os.environ['HOME'], '/', dbname))
                         self.filestat = 2
                 elif os.path.exists(dbname):
                     self.dbfile = dbname
@@ -360,15 +362,18 @@ class sqliteDbAccess(object):
                     self.filestat = 4
 
         else:
-            self.dbfile = u"%s" % dbname
+            self.dbfile = dbname
             self.filestat = 1
         #import sys 
         #print >>sys.stderr, "dbpath=", self.dbfile
+        #print unicode(self.dbfile).encode('raw-unicode-escape')
         self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
-        try:
-            self.db.setDatabaseName(u"%s" % self.dbfile)
-        except:
-            self.db.setDatabaseName(u"c:\%s" % connectDBName)
+        #try:
+        #print self.dbfile
+        #self.dbfile = QtCore.QString(self.dbfile)
+        self.db.setDatabaseName(self.dbfile)
+        #except:
+            #self.db.setDatabaseName(u"c:\%s" % connectDBName)
             
     def action(self, qstr, type, vartuple=None):
         if vartuple:
