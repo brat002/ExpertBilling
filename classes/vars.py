@@ -63,7 +63,7 @@ class NfrVars(Vars):
 class NfrQueues(object):
     __slots__ = ('nfIncomingQueue', 'nfQueueLock', 'groupAggrDicts', 'statAggrDicts', 'groupAggrLocks', 'statAggrLocks', \
                  'groupDeque', 'groupLock', 'statDeque', 'statLock', 'depickerQueue', 'depickerLock', \
-                 'picker', 'pickerLock', 'pickerTime')
+                 'picker', 'pickerLock', 'pickerTime', 'prepaidLock')
     def __init__(self, groupDicts = 10, statDicts = 10):
         self.nfIncomingQueue = deque(); self.nfQueueLock = Lock()
         self.groupAggrDicts = [{}]*groupDicts;     self.statAggrDicts = [{}]*statDicts
@@ -72,6 +72,7 @@ class NfrQueues(object):
         self.statDeque =  deque(); self.statLock = Lock()
         self.depickerQueue = deque(); self.depickerLock = Lock()
         self.picker = None; self.pickerLock = Lock(); self.pickerTime = 0
+        self.prepaidLock = Lock()
         
         
 class RadVars(Vars):

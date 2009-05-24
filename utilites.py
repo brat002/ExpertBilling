@@ -719,7 +719,10 @@ def readpids(piddir, lastmtime = -1, exclude = []):
 #SIGUSR1 = 10    
 def killpids(pids, sig):
     for pid in pids:
-        kill(pid, sig)
+        try:
+            kill(pid, sig)
+        except OSError, oerr:
+            pass
   
 def getpid(piddir, procname):
     try:

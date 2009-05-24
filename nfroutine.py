@@ -460,11 +460,11 @@ class NetFlowRoutine(Thread):
                     if  (acc.acctf_id  != flow.acctf_id) or (not acc.datetime <= stream_date):
                         acc = oldAcct.get(flow.acctf_id)
                         if not acc:
-                            self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, ba.created, ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username
-                                           FROM billservice_account as ba
-                                           JOIN billservice_accounttarif AS act ON act.id=%s AND ba.id=act.account_id
-                                           LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
-                                        """, (flow.account_id,))
+                            self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
+                                                FROM billservice_account as ba
+                                                LEFT JOIN billservice_accounttarif AS act ON act.id=%s
+                                                LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
+                                             """, (flow.account_id,))
                             acc = self.cur.fetchone()
                             self.connection.commit()
                             if not acc: continue
@@ -549,14 +549,19 @@ class NetFlowRoutine(Thread):
                             octets = flow.octets
                             if prepInf:
                                 prepaid_id, prepaid = prepInf[0:2]
-                                if prepaid > 0:                            
+                                if prepaid > 0:  
+                                    prep_octets = 0
                                     if prepaid>=octets:
-                                        prepaid, octets = prepaid-octets, 0
+                                        #prepaid, octets = prepaid-octets, 0
+                                        prep_octets, octets = octets, 0
                                     elif octets>=prepaid:
-                                        prepaid, octets = octets-prepaid, abs(prepaid-octets)
+                                        #prepaid, octets = octets-prepaid, abs(prepaid-octets)
+                                        prep_octets, octets = prepaid, octets-prepaid
                                         
-                                    self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prepaid, prepaid_id,))
+                                    self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prep_octets, prepaid_id,))
                                     self.connection.commit()
+                                    with queues.prepaidLock:
+                                        prepInf[1] -= prep_octets
             
                             summ = (trafic_cost * octets)/(1048576)
         
