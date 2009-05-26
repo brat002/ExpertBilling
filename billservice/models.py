@@ -308,14 +308,11 @@ class PrepaidTraffic(models.Model):
     Настройки предоплаченного трафика для тарифного плана
     """
     traffic_transmit_service = models.ForeignKey(to="TrafficTransmitService", verbose_name=u"Услуга доступа по трафику", related_name="prepaid_traffic")
-    traffic_class    = models.ManyToManyField(to=TrafficClass, verbose_name=u'Класс трафика')
-    in_direction     = models.BooleanField(default=True, blank=True)
-    out_direction    = models.BooleanField(default=True, blank=True)
-    transit_direction= models.BooleanField(default=True, blank=True)
     size             = models.FloatField(verbose_name=u'Размер в байтах', default=0,blank=True)
+    group             = models.ForeignKey("Group")
 
     def __unicode__(self):
-        return u"%s %s" % (self.traffic_class, self.size)
+        return u"%s" %self.size
 
     class Admin:
         ordering = ['traffic_class']
