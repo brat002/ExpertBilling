@@ -143,7 +143,10 @@ def index(request):
         tariff_flag = False
     else:
         tariff_flag = True 
-    ballance = u'%.2f' % user.ballance 
+    try:
+        ballance = u'%.2f' % user.ballance
+    except:
+         ballance = 0
     #find prepare trafick
     
     #cursor = connection.cursor()
@@ -153,14 +156,20 @@ def index(request):
         traffic = TrafficLimit.objects.filter(tarif=tariff_id) 
     except:
         traffic = None
+        
+    from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
+    account_tariff = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now(), tarif__id=tariff_id)
+    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff.id)
+    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     return {
-            #'account':user,
+            'account_tariff':account_tariff,
             'ballance':ballance,
             'tariff':tariff_name,
             'tariffs':tariffs,
             'status': bool(cache_user['blocked']),
             'tariff_flag':tariff_flag,
             'trafficlimit':traffic,
+            'prepaidtraffic':prepaidtraffic,
             'form':  CardForm(),
             }
     
