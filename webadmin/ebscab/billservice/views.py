@@ -158,8 +158,10 @@ def index(request):
         traffic = None
         
     from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
-    account_tariff = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now(), tarif__id=tariff_id)
-    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff.id)
+    account_tariff = AccountTarif.objects.filter(account=user, datetime__lt=datetime.datetime.now(), tarif__id=tariff_id)[:1]
+    for a_t in account_tariff:
+        at = a_t  
+    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=at.id)
     prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     return {
             'account_tariff':account_tariff,
