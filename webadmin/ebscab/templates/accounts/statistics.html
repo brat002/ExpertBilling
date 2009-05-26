@@ -85,8 +85,6 @@
 						<th>IP-адрес</th>
 						<th>Передано / Принято</th>
 						<th>Время</th>
-						<th>За трафик</th>
-						<th>За время</th>
 					</tr>
 					{% for session in active_session %}
 						<tr>
@@ -95,8 +93,6 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% traffic_format session.bytes_out %} / {% traffic_format session.bytes_in %}{% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_of_traffic session user %}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% writen_of_time session user %}</td>
 						</tr>
 					{% endfor %}
 				</table>
