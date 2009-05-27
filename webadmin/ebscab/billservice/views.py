@@ -40,7 +40,7 @@ def login(request):
                    
                     password = str(md1.hexdigest())
                     connection_server._setNewConnectionValidator(antiMungeValidator())
-                    #print connection_server._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
+                    print connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
                     connection_server.test()
                 except Exception, e:
                     if isinstance(e, Pyro.errors.ConnectionDeniedError):
@@ -380,7 +380,7 @@ def client(request):
        
         password = str(md1.hexdigest())
         connection._setNewConnectionValidator(antiMungeValidator())
-        #print connection._setIdentification("%s:%s" % (str(settings.RPC_USER), str(password)))
+        print connection._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
         connection.test()
     except Exception, e:
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
