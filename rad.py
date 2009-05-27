@@ -420,9 +420,9 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
         
-        acstatus = ((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
+        acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
-                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
+                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
         
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
