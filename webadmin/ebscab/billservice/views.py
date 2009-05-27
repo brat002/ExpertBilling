@@ -158,11 +158,16 @@ def index(request):
         traffic = None
         
     from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
-    account_tariff = AccountTarif.objects.filter(account=user, datetime__lt=datetime.datetime.now(), tarif__id=tariff_id)[:1]
-    for a_t in account_tariff:
-        at = a_t  
-    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=at.id)
-    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    
+
+    cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
+    try:
+        account_tariff_id = cursor.fetchone()[0]
+        account_tariff = AccountTarif.objects.get(id=account_tariff_id)
+        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff_id)
+        prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    except:
+        prepaidtraffic = None 
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
