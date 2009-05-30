@@ -36,17 +36,17 @@ def traffic_format(value):
     try:
         a=float(value)
         #res = a/1024
-        if a>1024 and a<(1024*1000):
+        if a>1024 and a<(1024*1024):
             return {
                     'size': u"%.5s KB" % unicode(a/(1024))
                     }
-        elif a>=(1024*1000) and a<=(1024*1000*1000):
+        elif a>=(1024*1024) and a<=(1024*1024*1024):
             return {
-                    'size': u"%.5s МB" % unicode(a/(1024*1000))
+                    'size': u"%.5s МB" % unicode(a/(1024*1024))
                     }
-        elif a>(1024*1000*1000):
+        elif a>(1024*1024*1024):
             return {
-                    'size': u"%.5s GB" % unicode(a/(1024*1000*1000))
+                    'size': u"%.5s GB" % unicode(a/(1024*1024*1024))
                     }
         elif a<1024:
             return {
