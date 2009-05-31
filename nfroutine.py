@@ -437,9 +437,9 @@ class NetFlowRoutine(Thread):
                 if 0: assert isinstance(caches, NfroutineCaches)  
                 
                 #time to pick
-                if (time.time() > queues.pickerTime + 300.0):
+                with queues.pickerLock:
                     #add picker to a depicker queue
-                    with queues.pickerLock:
+                    if (time.time() > queues.pickerTime + 300.0):
                         queues.depickerQueue.append(queues.picker.get_data())
                         queues.picker = Picker()
                         queues.pickerTime = time.time()                    
