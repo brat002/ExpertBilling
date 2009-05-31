@@ -323,14 +323,21 @@ class periodical_service_bill(Thread):
                                     # Если последняя проводка меньше или равно дате начала периода-делаем снятие
                                     
                                     summ = 0
-                                    first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+                                    #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+                                    first_time = False
+                                    if last_checkout is None:
+                                        last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                                        first_time = True
                                         
-                                    if (first_time and (ps.created or last_checkout) < period_start) or (not first_time and last_checkout < period_start):
-                                        lc = period_start - last_checkout
+                                    #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
+                                    if first_time or last_checkout <= period_start:
+                                        #lc = period_start - last_checkout
+                                        lc = now - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
                                         nums, ost = divmod(lc.seconds + lc.days*86400, delta)
                                         cash_summ = ps.cost
-                                        chk_date = last_checkout + s_delta
+                                        #chk_date = last_checkout + s_delta
+                                        chk_date = period_start
                                         if nums > 1:
                                             """
                                             Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
@@ -345,7 +352,7 @@ class periodical_service_bill(Thread):
                                                 chk_date += s_delta
                                         else:
                                             summ = cash_summ * susp_per_mlt
-                                            if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                                            if (ps.created and ps.created >= chk_date) or (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 summ = 0
                                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', summ, chk_date)
