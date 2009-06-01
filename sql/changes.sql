@@ -892,7 +892,12 @@ ALTER TABLE billservice_tariff
 ALTER TABLE billservice_tariff
    ALTER COLUMN require_tarif_cost SET DEFAULT False;
    
--- 15.05.2009CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS $$BEGIN    RETURN 0;END;$$    LANGUAGE plpgsql;    CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS $$ DECLARE counted_num_ int;              allowed_num_ int := 0;              BEGIN              	allowed_num_ := return_allowed();                SELECT count(*) INTO counted_num_ FROM billservice_account;                IF counted_num_ + 1 > allowed_num_ THEN                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;                ELSE                     RETURN NEW;                END IF;                 END; $$    LANGUAGE plpgsql;CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void    AS $$DECLARE    allowed_ text := allowed::text;    prev_ bigint  := 0;    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    fn_bd_tx1_ text := ' BEGIN RETURN ';    fn_bd_tx2_ text := '; END;';    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';BEGIN        prev_ := return_allowed();    IF prev_ != allowed THEN    	EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    END IF;    RETURN;END;$$    LANGUAGE plpgsql;-- 18.05.2009ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS$BODY$BEGIN    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);EXCEPTION WHEN unique_violation THEN    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;END;$BODY$  LANGUAGE 'plpgsql' VOLATILE  COST 100;  
+-- 15.05.2009
+CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS $$BEGIN    RETURN 0;END;$$    LANGUAGE plpgsql;    CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS $$ DECLARE counted_num_ int;              allowed_num_ int := 0;              BEGIN              	allowed_num_ := return_allowed();                SELECT count(*) INTO counted_num_ FROM billservice_account;                IF counted_num_ + 1 > allowed_num_ THEN                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;                ELSE                     RETURN NEW;                END IF;                 END; $$    LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void    AS $$DECLARE    allowed_ text := allowed::text;    prev_ bigint  := 0;    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    fn_bd_tx1_ text := ' BEGIN RETURN ';    fn_bd_tx2_ text := '; END;';    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';BEGIN        prev_ := return_allowed();    IF prev_ != allowed THEN    	EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    END IF;    RETURN;END;$$    LANGUAGE plpgsql;
+
+-- 18.05.2009
+ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS$BODY$BEGIN    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);EXCEPTION WHEN unique_violation THEN    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;END;$BODY$  LANGUAGE 'plpgsql' VOLATILE  COST 100;  
 
 DROP FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
 
@@ -1124,3 +1129,109 @@ ALTER TABLE billservice_traffictransaction ALTER traffictransmitservice_id DROP 
 ALTER TABLE billservice_transaction ALTER account_id DROP NOT NULL;
 ALTER TABLE billservice_transaction ALTER systemuser_id DROP NOT NULL;
   
+-- 01.06.2009
+
+CREATE OR REPLACE FUNCTION shedulelog_blocked_fn(account_id_ integer, accounttarif_id_ integer, blocked_ timestamp without time zone, cost_ decimal)
+  RETURNS void AS
+$BODY$ 
+BEGIN
+	UPDATE billservice_account SET balance_blocked=True WHERE id=account_id_ and ballance+credit<cost_;
+    UPDATE billservice_shedulelog SET balance_blocked=blocked_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(account_id_,accounttarif_id_, blocked_);
+    END IF;
+    RETURN;  
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+  
+DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$ 
+DECLARE
+	prepaid_tr_id_ int;
+	size_ bigint;
+	count_ int := 0;
+BEGIN
+	
+	FOR prepaid_tr_id_, size_ IN SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+		UPDATE billservice_accountprepaystrafic SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_;
+		IF NOT FOUND THEN
+			INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) VALUES(accounttarif_id_, prepaid_tr_id_, size_, datetime_);
+        END IF;
+        count_ := count_ + 1;
+    END LOOP;
+    IF count_ > 0 THEN
+    	UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    	IF NOT FOUND THEN
+        	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+    	END IF;
+   	END IF;
+    RETURN;  
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+CREATE OR REPLACE FUNCTION shedulelog_co_fn(account_id_ int, accounttarif_id_ int, checkout_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_shedulelog SET ballance_checkout=checkout_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) VALUES(account_id_,accounttarif_id_, checkout_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_tr_reset_fn(account_id_ int, accounttarif_id_ int, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION shedulelog_time_reset_fn(account_id_ int, accounttarif_id_ int, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_time_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+    
+    
+CREATE OR REPLACE FUNCTION shedulelog_time_credit_fn(account_id_ int, accounttarif_id_ int, taccs_id_ int, size_ int, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN	
+	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; -- AND??
+	IF NOT FOUND THEN
+		INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id) VALUES(accounttarif_id_, size_, datetime_, taccs_id_);
+    END IF;
+	UPDATE billservice_shedulelog SET prepaid_time_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+	IF NOT FOUND THEN
+    	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+	END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
