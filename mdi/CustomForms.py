@@ -2043,3 +2043,138 @@ class InfoDialog(QtGui.QDialog):
             self.tableWidget.resizeRowsToContents()            
 
         
+class RadiusAttrsDialog(QtGui.QDialog):
+    def __init__(self, tarif_id, connection):
+        super(RadiusAttrsDialog, self).__init__()
+        self.tarif_id = tarif_id
+        self.connection = connection
+        
+        self.setObjectName("RadiusAttrsDialog")
+        self.resize(450, 475)
+        self.gridLayout_2 = QtGui.QGridLayout(self)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.groupBox_edit = QtGui.QGroupBox(self)
+        self.groupBox_edit.setObjectName("groupBox_edit")
+        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_edit)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.label_vendor = QtGui.QLabel(self.groupBox_edit)
+        self.label_vendor.setObjectName("label_vendor")
+        self.gridLayout_3.addWidget(self.label_vendor, 0, 0, 1, 1)
+        self.lineEdit_vendor = QtGui.QLineEdit(self.groupBox_edit)
+        self.lineEdit_vendor.setObjectName("lineEdit_vendor")
+        self.gridLayout_3.addWidget(self.lineEdit_vendor, 0, 1, 1, 1)
+        self.label_attrid = QtGui.QLabel(self.groupBox_edit)
+        self.label_attrid.setObjectName("label_attrid")
+        self.gridLayout_3.addWidget(self.label_attrid, 0, 2, 1, 1)
+        self.lineEdit_attrid = QtGui.QLineEdit(self.groupBox_edit)
+        self.lineEdit_attrid.setObjectName("lineEdit_attrid")
+        self.gridLayout_3.addWidget(self.lineEdit_attrid, 0, 3, 1, 1)
+        self.label_value = QtGui.QLabel(self.groupBox_edit)
+        self.label_value.setObjectName("label_value")
+        self.gridLayout_3.addWidget(self.label_value, 0, 4, 1, 1)
+        self.lineEdit_value = QtGui.QLineEdit(self.groupBox_edit)
+        self.lineEdit_value.setObjectName("lineEdit_value")
+        self.gridLayout_3.addWidget(self.lineEdit_value, 0, 5, 1, 1)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.commandLinkButton_add = QtGui.QCommandLinkButton(self.groupBox_edit)
+        self.commandLinkButton_add.setCheckable(False)
+        self.commandLinkButton_add.setObjectName("commandLinkButton_add")
+        self.horizontalLayout.addWidget(self.commandLinkButton_add)
+        self.commandLinkButton_del = QtGui.QCommandLinkButton(self.groupBox_edit)
+        self.commandLinkButton_del.setObjectName("commandLinkButton_del")
+        self.horizontalLayout.addWidget(self.commandLinkButton_del)
+        self.gridLayout_3.addLayout(self.horizontalLayout, 1, 0, 1, 6)
+        self.gridLayout_2.addWidget(self.groupBox_edit, 0, 0, 1, 1)
+        self.groupBox_table = QtGui.QGroupBox(self)
+        self.groupBox_table.setObjectName("groupBox_table")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_table)
+        self.gridLayout.setObjectName("gridLayout")
+        self.tableWidget = QtGui.QTableWidget(self.groupBox_table)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_table, 1, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 2, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.commandLinkButton_add, QtCore.SIGNAL("clicked()"), self.save)
+        QtCore.QObject.connect(self.commandLinkButton_del, QtCore.SIGNAL("clicked()"), self.delete)
+        #self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.set_data)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройка RADIUS атрибутов", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_edit.setTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vendor.setText(QtGui.QApplication.translate("Dialog", "Vendor ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_attrid.setText(QtGui.QApplication.translate("Dialog", "Attr.ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_value.setText(QtGui.QApplication.translate("Dialog", "Value", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add.setDescription(QtGui.QApplication.translate("Dialog", "Поместить в таблицу", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del.setDescription(QtGui.QApplication.translate("Dialog", "Удалить из таблицы", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_table.setTitle(QtGui.QApplication.translate("Dialog", "Сохранённые значения", None, QtGui.QApplication.UnicodeUTF8))
+        columns = ["Vendor ID", "Attr ID", "Value"]
+        makeHeaders(columns, self.tableWidget)
+        
+    def addrow(self, value, x, y, id=None):
+        headerItem = QtGui.QTableWidgetItem()
+        if id:
+            headerItem.id=id
+
+        headerItem.setText(unicode(value))
+        self.tableWidget.setItem(x,y,headerItem)
+        
+#===============================================================================
+#    def set_data(self):
+#        id = self.getSelectedId()
+#        item = self.connection.get_model(id, "billservice_radiusattrs")
+#        self.connection.commit()
+#        self.lineEdit_vendor.setText(unicode(item.vendor))
+#        self.lineEdit_attrid.setText(unicode(item.attrid))
+#        self.lineEdit_value.setText(unicode(item.value))
+#===============================================================================
+        
+    def save(self):
+        model = Object()
+        model.tarif_id = self.tarif_id
+        model.vendor = unicode(self.lineEdit_vendor.text()) or 0
+        model.attrid = unicode(self.lineEdit_attrid.text())
+        model.value = unicode(self.lineEdit_value.text())
+        
+        try:
+            
+            self.connection.save(model, "billservice_radiusattrs")
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+        self.fixtures()
+      
+    def delete(self):
+        id = self.getSelectedId()
+        self.connection.iddelete(id, "billservice_radiusattrs")
+        self.connection.commit()
+        self.fixtures()
+              
+    def getSelectedId(self):
+        return self.tableWidget.item(self.tableWidget.currentRow(), 0).id
+    
+    def fixtures(self):
+        attrs = self.connection.get_models("billservice_radiusattrs", where={'tarif_id':self.tarif_id,})
+        self.connection.commit()
+        self.tableWidget.setRowCount(len(attrs))
+        i=0
+        for attr in attrs:
+            print attr.vendor
+            self.addrow(attr.vendor, i, 0, id = attr.id)
+            self.addrow(attr.attrid, i, 1)
+            self.addrow(attr.value, i, 2)
+            i+=1

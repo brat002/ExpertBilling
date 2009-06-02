@@ -19,7 +19,7 @@ import copy
 from randgen import nameGen, GenPasswd2
 import datetime, time, calendar
 from time import mktime
-from CustomForms import CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
+from CustomForms import RadiusAttrsDialog, CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
 import time
 from Reports import TransactionsReportEbs as TransactionsReport
 
@@ -3606,13 +3606,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
+                 ("actionRadiusAttrs", "Дополнительные RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                 ]
 
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
-                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
+                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
                    self.menu       :["connectionAgreementAction", "separator", "actOfProvidedServices", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
@@ -3663,7 +3664,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             child = InfoDialog(connection= self.connection, type="prepaidtraffic", account_id=id)
             child.exec_()
         
-        
+    def radius_attrs(self):
+        id = self.getTarifId()
+        if id>=0:
+            child = RadiusAttrsDialog(tarif_id = id, connection = self.connection)
+            child.exec_()
+            
     def suspended_period(self):
         ids = []
         #import Pyro
