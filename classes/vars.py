@@ -40,6 +40,13 @@ class Vars(object):
         if config.has_option(name, 'log_maxsize'): self.log_maxsize = config.getint(name, 'log_maxsize')
         if config.has_option(name, 'log_rotate'): self.log_rotate = config.getint(name, 'log_rotate')
         
+    def get_vars(config, name, db_name):
+        self.get_dynamic(config, name)
+        self.get_static(config, name, db_name)
+        
+    def __repr__(self):
+        return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
+        
         
         
         
@@ -48,7 +55,7 @@ class NfVars(Vars):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('port', 'host', 'clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
-                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts')
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts', 'sock_type')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -61,6 +68,17 @@ class NfVars(Vars):
         self.cacheDicts = 10
         self.port = 9996
         self.host = '0.0.0.0'
+        self.sock_type = 0
+    
+    def get_static(self, config, name, net_name):
+        super(NfVars, self).get_static(config, name)
+        if config.has_option(name, 'cachedicts'): self.log_level = config.getint(name, 'cachedicts')
+        if config.has_option(name, 'port'): self.log_level = config.getint(name, 'port')
+        if config.has_option(name, 'host'): self.log_level = config.getint(name, 'host')
+        self.sock_type = config.getint("nfroutine_nf", "usock")
+        if self.sock_type == 0:
+            self.clientHost = clientHost = config.get(net_name + "_inet", "host")
+        
         
 class NfQueues(object):
     """('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
