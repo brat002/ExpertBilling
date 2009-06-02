@@ -125,4 +125,4 @@ rad_sql = \
                         speedlimit.min_tx, speedlimit.min_rx, accountspeedlimit.account_id
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
-         'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattr;"""}
+         'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;"""}
