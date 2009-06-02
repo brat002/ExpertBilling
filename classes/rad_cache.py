@@ -7,10 +7,11 @@ from rad_class.NasData import NasData
 from rad_class.DefaultSpeedData import DefaultSpeedData
 from rad_class.SpeedData import SpeedData
 from rad_class.SpeedlimitData import SpeedlimitData
+from rad_class.RadiusAttrsData import RadiusAttrsData
 from core_cache import TimePeriodAccessCache as PeriodCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -20,7 +21,8 @@ class RadCaches(CacheCollection):
         self.defspeed_cache = DefaultSpeedCache()
         self.speed_cache = SpeedCache()
         self.speedlimit_cache = SpeedlimitCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache]
+        self.radattrs_cache = RadiusAttrsCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache]
 
 
 class AccountCache(CacheItem):
@@ -71,3 +73,10 @@ class NasCache(CacheItem):
         self.by_ip = {}
         for nas in self.data:
             self.by_ip[str(nas.ipaddress)] = nas
+            
+class RadiusAttrsCache(SimpleDefDictCache):
+    '''by tarif_id'''
+    __slots__ = ()
+    datatype = RadiusAttrsData
+    sql = rad_sql['attrs']
+    num = 3

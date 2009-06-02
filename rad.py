@@ -348,6 +348,15 @@ class HandleSAuth(HandleSBase):
         authobject.set_code(3)
         return authobject, self.packetobject
     
+    def add_values(self, tarif_id):
+        attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
+        for attr in attrs:
+            if 0: assert isinstance(attr, RadiusAttrsData)
+            if attr.vendor:
+                self.replypacket.AddAttribute((attr.vendor,attr.attrid),attr.value)
+            else:
+                self.replypacket.AddAttribute(attr.attrid,attr.value)
+                
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
@@ -458,6 +467,7 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Framed-IP-Address', acc.vpn_ip_address)
             #account_speed_limit_cache
             self.create_speed(acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
+            self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
         else:
