@@ -1235,3 +1235,33 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql;
+    
+--02.06.2009 14:26
+CREATE TABLE billservice_radiusattrs
+(
+  id serial NOT NULL,
+  tarif_id integer NOT NULL,
+  vendor integer NOT NULL,
+  attrid integer NOT NULL,
+  "value" character varying(255) NOT NULL,
+  CONSTRAINT billservice_radiusattrs_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_radiusattrs_tarif_id_fkey FOREIGN KEY (tarif_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_radiusattrs OWNER TO mikrobill;
+
+-- Index: billservice_radiusattrs_tarif_id
+
+-- DROP INDEX billservice_radiusattrs_tarif_id;
+
+CREATE INDEX billservice_radiusattrs_tarif_id
+  ON billservice_radiusattrs
+  USING btree
+  (tarif_id);
+
+ALTER TABLE billservice_radiusattrs
+   ALTER COLUMN vendor SET DEFAULT 0;
+ALTER TABLE billservice_radiusattrs
+   ALTER COLUMN vendor DROP NOT NULL;
