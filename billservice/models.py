@@ -924,3 +924,9 @@ class TPChangeRule(models.Model):
     ballance_min = models.FloatField()
     oldtptime = models.FloatField()
     
+class RadiusAttrs(models.Model):
+    tarif = models.ForeignKey(Tariff)
+    vendor = models.IntegerField()
+    attrid = models.IntegerField()
+    value = models.CharField(max_length = 255)
+    
