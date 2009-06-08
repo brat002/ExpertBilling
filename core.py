@@ -191,7 +191,7 @@ class check_vpn_access(Thread):
                 logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -401,13 +401,13 @@ class periodical_service_bill(Thread):
                                     cur.connection.commit()
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                                if isinstance(ex, vars.db_errors): raise ex
+                                if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 cur.close()
                 logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -513,7 +513,7 @@ class TimeAccessBill(Thread):
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -631,7 +631,7 @@ class limit_checker(Thread):
                 logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -785,7 +785,7 @@ class settlement_period_service_dog(Thread):
                                     #Списывам с баланса просроченные обещанные платежи
                     except Exception, ex:
                         logger.error("%s : internal exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                        if isinstance(ex, vars.db_errors): raise ex
+                        if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 cur.execute("UPDATE billservice_transaction SET promise_expired = True, summ=-1*summ WHERE end_promise<now() and promise_expired=False;")
@@ -793,7 +793,7 @@ class settlement_period_service_dog(Thread):
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -924,7 +924,7 @@ class ipn_service(Thread):
                             cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::craracter varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
                             cur.connection.commit()
                     except Exception, ex:
-                        if isinstance(ex, vars.db_errors): raise ex
+                        if ex.__class__ in vars.db_errors: raise ex
                         else:
                             logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
         
@@ -933,7 +933,7 @@ class ipn_service(Thread):
                 logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -1009,7 +1009,7 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30310004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)

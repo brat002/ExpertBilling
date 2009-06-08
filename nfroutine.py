@@ -116,7 +116,7 @@ class DepickerThread(Thread):
                 continue             
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))    
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     if picker:
                         with queues.depickerLock:
                             queues.depickerQueue.appendleft(ilist[icount:])
@@ -235,7 +235,7 @@ class groupDequeThread(Thread):
                 continue
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     if gkey and gkeyTime and groupData:
                         with aggrgLock:
                             grec = aggrgDict.get(gkey)
@@ -339,7 +339,7 @@ class statDequeThread(Thread):
                 continue
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     if skey and skeyTime and statData:
                         with aggrsLock:
                             srec = aggrsDict.get(skey)
@@ -592,7 +592,7 @@ class NetFlowRoutine(Thread):
                 continue               
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     try: 
                         time.sleep(3)
                         self.cur = self.connection.cursor()
@@ -674,7 +674,7 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30210004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
