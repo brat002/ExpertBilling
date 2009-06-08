@@ -394,7 +394,7 @@ class NfUDPSenderThread(Thread):
                 
                 if dtrc[:4] == 'SLP!':
                     logger.lprint("sleepFlag detected!")
-                    time.sleep(10); continue
+                    time.sleep(30); continue
                 
                 if (len(flst) != int(dtrc)): raise Exception("Sizes not equal!")
                 
@@ -556,7 +556,7 @@ class ServiceThread(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30110004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)

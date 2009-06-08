@@ -237,7 +237,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 
         except Exception, ex:
             logger.error("Auth Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
-            if isinstance(ex, vars.db_errors):
+            if ex.__class__ in vars.db_errors:
                 time.sleep(5)
                 try:
                     self.dbconn = get_connection(vars.db_dsn)
@@ -809,7 +809,7 @@ class CacheRoutine(Thread):
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if isinstance(ex, vars.db_errors):
+                if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
