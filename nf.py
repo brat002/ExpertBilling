@@ -366,9 +366,8 @@ class NfUDPSenderThread(Thread):
         Thread.__init__(self)
         
     def run(self):
-        addrport = vars.clientAddr
-        nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.sockTimeout)
+        addrport = vars.nfrAddr
+        nfsock = get_socket()
         errflag, flnumpack = 0, 0
         dfile, fname = None, None
         while True:     
@@ -386,7 +385,7 @@ class NfUDPSenderThread(Thread):
                 
                 flst = marshal.dumps(fpacket)
                 #send data
-                nfsock.sendto(flst,addrport)
+                nfsock.sendto(flst,vars.nfrAddr)
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
                 #if wrong length (probably zero reply) - raise exception
@@ -443,9 +442,10 @@ class NfFileReadThread(Thread):
         self.hpath  = ''.join((vars.dumpDir,'/','nf_'))
     
     def run(self):
-        addrport = vars.clientAddr
-        nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.sockTimeout)
+        addrport = vars.nfrAddr
+        #nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        #nfsock.settimeout(vars.sockTimeout)
+        nfsock = get_socket()
         fname, dfile = None, None
         while True:
             try:
@@ -580,6 +580,17 @@ class RecoveryThread(Thread):
         except Exception, ex:
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
         
+def get_socket():
+    global vars
+    nfsock = None
+    if vars.sock_type == 0:
+        nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        nfsock.settimeout(vars.sockTimeout)
+    elif vars.sock_type == 1:
+        nfsock = socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
+        nfsock.settimeout(vars.sockTimeout)
+    return nfsock
+
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
     graceful_save()
@@ -721,14 +732,14 @@ if __name__=='__main__':
                                                                          config.get("db", "host"), config.get("db", "password"))
         #get socket parameters. AF_UNIX support
         if config.get("nfroutine_nf", "usock") == '0':
-            vars.clientHost = config.get("nfroutine_nf_inet", "host")
-            vars.clientPort = int(config.get("nfroutine_nf_inet", "port"))
-            vars.clientAddr = (vars.clientHost, vars.clientPort)
+            vars.nfrHost = config.get("nfroutine_nf_inet", "host")
+            vars.nfrPort = int(config.get("nfroutine_nf_inet", "port"))
+            vars.nfrAddr = (vars.nfrHost, vars.nfrPort)
             
         elif config.get("nfroutine_nf", "usock") == '1':
-            vars.clientHost = config.get("nfroutine_nf_unix", "host")
-            vars.clientPort = 0
-            vars.clientAddr = (vars.clientHost,)
+            vars.nfrHost = config.get("nfroutine_nf_unix", "host")
+            vars.nfrPort = 0
+            vars.nfrAddr = vars.nfrHost
         else:
             raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
         

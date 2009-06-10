@@ -1,11 +1,12 @@
 from threading import Lock
 
 class Flags(object):
-    __slots__ = ('cacheFlag', 'cacheLock', 'writeProf')
+    __slots__ = ('cacheFlag', 'cacheLock', 'writeProf', 'recover')
     def __init__(self):
         self.cacheFlag = False
         self.cacheLock = Lock()
         self.writeProf = False
+        self.recover   = True
         
 class CoreFlags(Flags):
     __slots__ = ()
@@ -13,10 +14,10 @@ class CoreFlags(Flags):
         super(CoreFlags, self).__init__()
         
 class NfFlags(Flags):
-    __slots__ = ('recover', 'recoverprev', 'checkClasses')
+    __slots__ = ('recover_dumped', 'recoverprev', 'checkClasses')
     def __init__(self):
         super(NfFlags, self).__init__()
-        self.recover, self.recoverprev, self.checkClasses = False, False, False
+        self.recover_dumped, self.recoverprev, self.checkClasses = False, False, False
         
 class NfrFlags(Flags):
     __slots__ = ('store_na_tarif', 'store_na_account')
