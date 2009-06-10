@@ -838,7 +838,13 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
-    reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
+    if vars.sock_type == 0:
+        reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
+    elif vars.sock_type == 1:
+        reactor.listenUNIXDatagram(vars.addr, NfTwistedServer(), maxPacketSize=32687)
+    else: 
+        raise Exception("Unknown socket type!")
+    
     print "ebs: nfroutine: started"
     savepid(vars.piddir, vars.name)
     reactor.run(installSignalHandlers=False)

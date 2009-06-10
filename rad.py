@@ -198,6 +198,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
     
                 logger.info("Password check: %s", authobject.code)
+                #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
                 returndata=authobject.ReturnPacket(packetfromcore) 
     
             elif access_type in ['HotSpot']:
@@ -230,7 +231,7 @@ class AsyncAuthServ(AsyncUDPServer):
             if returndata:
                 self.sendto(returndata,addrport)
                 del returndata
-                
+                     
             del packetfromcore
             del coreconnect
             logger.info("ACC: %s", (clock()-t))
@@ -353,9 +354,9 @@ class HandleSAuth(HandleSBase):
         for attr in attrs:
             if 0: assert isinstance(attr, RadiusAttrsData)
             if attr.vendor:
-                self.replypacket.AddAttribute((attr.vendor,attr.attrid),attr.value)
+                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
-                self.replypacket.AddAttribute(attr.attrid,attr.value)
+                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
                 
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
@@ -432,7 +433,7 @@ class HandleSAuth(HandleSBase):
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
                     (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
-        
+        #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)      
