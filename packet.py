@@ -451,12 +451,12 @@ class AcctPacket(Packet):
 
 
 def CreateID():
-    """Generate a packet ID.
-
-    @return: packet ID
-    @rtype:  8 bit integer
-    """
-    global CurrentID
-
-    CurrentID=(CurrentID+1)%256
-    return CurrentID
+	"""Generate a packet ID.
+	
+	@return: packet ID
+	@rtype:  8 bit integer
+	"""
+	global CurrentID
+	
+	CurrentID=(CurrentID+1)%256
+	return CurrentID
