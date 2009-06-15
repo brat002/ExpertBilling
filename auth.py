@@ -10,6 +10,7 @@ from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
+from radius.eap.eap_packet import EAP_Packet, get_failure_packet, get_success_packet, EAP_HANDLERS
 
 class Auth:
     """
@@ -22,6 +23,9 @@ class Auth:
         self.packet=packetobject
         self.secret = secret
         self.access_type = access_type
+	self.extensions = {}
+	
+	
         self.typeauth=self._DetectTypeAuth()
 
         self.plainusername=username
@@ -32,7 +36,7 @@ class Auth:
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-
+	
         self.attrs = None
 
         
@@ -46,7 +50,7 @@ class Auth:
         if self._CheckAuth(code = self.code):
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
-                  self.Reply.AddAttribute((311,26),self._MSchapSuccess())
+		self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
         else:
             self.Reply.code=3
@@ -59,15 +63,21 @@ class Auth:
             return 'CHAP'
         elif self.packet.has_key('MS-CHAP-Challenge') and self.access_type!='DHCP':
             return 'MSCHAP2'
+	elif self.packet.has_key('EAP-Message') and self.access_type!='DHCP':
+	    self.extensions['eap-packet'] = EAP_Packet().unpack_header(self.packet['EAP-Message'])
+            return 'EAP'
         else:
             return 'UNKNOWN'
 
+    def _HandleEAP(self):
+	pass
     def set_code(self, code):
         self.code = code
     
     def check_auth(self):
         return self._CheckAuth()
     
+	
     def _CheckAuth(self, code=1):
         """
         Функция, в зависимости от типа авторизации, вызывает разные методы для определения правильности
@@ -91,7 +101,8 @@ class Auth:
                     return True
         return False
 
-               
+     
+    
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])
         self.AuthenticatorChallenge=self.packet['MS-CHAP-Challenge'][0]
