@@ -60,7 +60,7 @@ core_sql = \
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id;""",
           'timeaccnode':"""SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
                         FROM billservice_timeaccessnode as tan
-                        JOIN billservice_timeperiodnode as tp ON tan.time_period_id=tp.id;""",
+                        JOIN billservice_timeperiod as tp ON tan.time_period_id=tp.id;""",
           'timepnode':"""SELECT tpn.id, tpn.name, tpn.time_start, tpn.length, tpn.repeat_after, tptpn.timeperiod_id 
                         FROM billservice_timeperiodnode as tpn
                         JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id;""",
