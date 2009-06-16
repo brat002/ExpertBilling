@@ -4,7 +4,7 @@ RADIUS packet
 
 __docformat__	= "epytext en"
 
-import md5, struct, types, random, UserDict
+import md5, struct, types, random, UserDict, hmac
 import tools
 
 # Packet codes
@@ -229,11 +229,15 @@ class Packet(UserDict.UserDict):
 		"""
 		assert(self.authenticator)
 		assert(self.secret)
-
+		
+		
 		attr=self._PktEncodeAttributes()
 		attr=attr+attrs
 		header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
-
+		if self.has_key('Message-Authenticator'):
+			self.__setitem__('Message-Authenticator', hmac.new(self.secret, header + self.authenticator).digest())
+		attr=self._PktEncodeAttributes()
+		attr=attr+attrs
 		authenticator=md5.new(header[0:4] + self.authenticator
 			+ attr + self.secret).digest()
 

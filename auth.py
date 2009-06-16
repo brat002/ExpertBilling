@@ -52,8 +52,11 @@ class Auth:
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
 		self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
+	elif self.typeauth == 'EAP':
+	    self.packet.
+	    return self.Reply.ReplyPacket()
         else:
-            self.Reply.code=3
+            self.Reply.code=packet.AccessReject
             return self.Reply.ReplyPacket()
         
     def _DetectTypeAuth(self):
@@ -69,8 +72,17 @@ class Auth:
         else:
             return 'UNKNOWN'
 
-    def _HandleEAP(self):
+    def _HandlePacket(self):
 	pass
+    
+    def _ProcessPacket(self):
+	pass
+    
+    def EAP_Reply(self):
+	if self.code == packet.AccessAccept:
+	    return get_success_packet(self.extensions['eap-packet'].identifier)
+	    
+	
     def set_code(self, code):
         self.code = code
     
@@ -78,7 +90,7 @@ class Auth:
         return self._CheckAuth()
     
 	
-    def _CheckAuth(self, code=1):
+    def _CheckAuth(self, code= packet.AccessReject):
         """
         Функция, в зависимости от типа авторизации, вызывает разные методы для определения правильности
         логина и пароля.
@@ -86,7 +98,7 @@ class Auth:
         """
         if self.access_type=='DHCP':
             return True
-        if code!=3:
+        if code not in (packet.AccessReject, packet.AccessChallenge):
             if self.typeauth=='PAP':
                 #print self._PwDecrypt()
                 if self._PwDecrypt():

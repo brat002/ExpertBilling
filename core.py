@@ -133,7 +133,7 @@ class check_vpn_access(Thread):
                     try:
                         rs = RadiusSession(*row)
                         result=None
-                        nas = caches.nas_cache.by_id.get(str(rs.nas_id))
+                        nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         if not nas or not acc or not acc.account_status: continue
                         
@@ -921,7 +921,7 @@ class ipn_service(Thread):
                                                         access_type=access_type,
                                                         format_string=nas.ipn_speed_action,
                                                         speed=speed[:6])
-                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::craracter varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
                             cur.connection.commit()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
