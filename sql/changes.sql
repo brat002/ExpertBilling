@@ -1265,3 +1265,38 @@ ALTER TABLE billservice_radiusattrs
    ALTER COLUMN vendor SET DEFAULT 0;
 ALTER TABLE billservice_radiusattrs
    ALTER COLUMN vendor DROP NOT NULL;
+
+-- 16.06.2009 18.51
+ALTER TABLE radius_session ADD COLUMN transaction_id bigint;
+
+
+ALTER TABLE radius_session
+  ADD CONSTRAINT radius_session_transaction_id_fkey FOREIGN KEY (transaction_id)
+      REFERENCES billservice_timetransaction (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE billservice_timetransaction DROP COLUMN session_id;
+
+CREATE INDEX radius_session_account_session_interrim_idx
+  ON radius_session
+  USING btree
+  (account_id, sessionid, interrim_update);
+  
+  
+CREATE OR REPLACE FUNCTION timetransaction_insert(taccs_id_ int, accounttarif_id_ int, account_id_ int, summ_ decimal, datetime_ timestamp without time zone, sessionid_ character varying(32), interrim_update_ timestamp without time zone) RETURNS void
+    AS $$ 
+DECLARE
+	datetime_agg_ timestamp without time zone;
+	ins_tr_id_ int;
+BEGIN	
+
+    datetime_agg_ := date_trunc('minute', datetime_) - interval '1 min' * (date_part('min', datetime_)::int % 5); 
+    UPDATE billservice_timetransaction SET summ=summ+summ_ WHERE timeaccessservice_id=taccs_id_ AND account_id=account_id_ AND datetime=datetime_agg_ RETURNING id INTO ins_tr_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, summ, datetime) VALUES (taccs_id_, accounttarif_id_, account_id_, summ_, datetime_agg_) RETURNING id INTO ins_tr_id_;
+    END IF;
+	UPDATE radius_session SET transaction_id=ins_tr_id_ WHERE account_id=account_id_ AND sessionid=sessionid_ AND interrim_update=interrim_update_;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
