@@ -16,6 +16,8 @@ import socket
 import isdlogger
 import utilites, saver
 
+import db, utilites
+
 from decimal import Decimal
 from copy import copy, deepcopy
 from db import Object as Object
@@ -502,11 +504,12 @@ class TimeAccessBill(Thread):
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
                                 summ = (total_time * period.cost) / 60
                                 if summ > 0:
-                                    timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                    #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                    db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                     cur.connection.commit()
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
-                                   WHERE sessionid=%s AND account_id=%s AND interrim_update=%s
-                                """, (unicode(rs.sessionid), rs.account_id, rs.interrim_update,))
+                                   WHERE account_id=%s AND sessionid=%s AND interrim_update=%s
+                                """, (rs.account_id, unicode(rs.sessionid),rs.interrim_update,))
                     cur.connection.commit()                    
                 cur.connection.commit()
                 cur.close()

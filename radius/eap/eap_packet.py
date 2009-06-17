@@ -43,7 +43,7 @@ NAME_LEN  = 32
 EAP_HEADER = "!BBH"
 EAP_TYPE = "!B"
 
-EAP_HANDLERS = {PW_EAP_MD5: EAP_MD5}
+
 
 class EAPError(Exception):
     pass
@@ -150,6 +150,8 @@ class EAP_MD5(EAP_Packet):
     def check_response(self, password, challenge):
         return self.value == md5.md5(''.join((struct.pack("!B", self.identifier), password, challenge))).digest()
     
+EAP_HANDLERS = {PW_EAP_MD5: EAP_MD5}
+
 def get_success_packet(id):
     return EAP_Packet().packs(PW_MD5_SUCCESS, id).raw_packet
 

@@ -316,6 +316,13 @@ def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, s
     cursor.execute("""INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, session_id, summ, datetime) VALUES (%s, %s, %s, %s, %s, %s);
                    """, (timeaccessservice_id, accounttarif_id, account_id, session_id, summ, created,))
     
+def timetransaction_fn(cursor, timeaccessservice_id, accounttarif_id, account_id, summ=0, created=None, sessionid='', interrim_update=None):
+    if not created:
+        created=datetime.datetime.now()
+    if not interrim_update: interrim_update = created
+    cursor.execute("""SELECT timetransaction_insert(%s, %s, %s, %s::decimal, %s::timestamp without time zone, %s::character varying(32), %s::timestamp without time zone);
+                   """, (timeaccessservice_id, accounttarif_id, account_id, summ, created, sessionid, interrim_update))
+    
 def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
