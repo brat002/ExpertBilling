@@ -329,7 +329,7 @@ class SaleCards(QtGui.QDialog):
 
 
         prepay = self.spinBox_prepay.value()
-        self.lineEdit_for_pay.setText(unicode((self.nominalsumm-discount)))
+        self.lineEdit_for_pay.setText(unicode((float(self.nominalsumm)-float(discount))))
         self.lineEdit_discount_amount.setText(unicode(discount))
         self.lineEdit_pay.setText(unicode(float(self.nominalsumm-discount)*(prepay/100.00)))
     

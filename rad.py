@@ -198,6 +198,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
     
                 logger.info("Password check: %s", authobject.code)
+                #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
                 returndata=authobject.ReturnPacket(packetfromcore) 
     
             elif access_type in ['HotSpot']:
@@ -230,7 +231,7 @@ class AsyncAuthServ(AsyncUDPServer):
             if returndata:
                 self.sendto(returndata,addrport)
                 del returndata
-                
+                     
             del packetfromcore
             del coreconnect
             logger.info("ACC: %s", (clock()-t))
@@ -353,9 +354,9 @@ class HandleSAuth(HandleSBase):
         for attr in attrs:
             if 0: assert isinstance(attr, RadiusAttrsData)
             if attr.vendor:
-                self.replypacket.AddAttribute((attr.vendor,attr.attrid),attr.value)
+                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
-                self.replypacket.AddAttribute(attr.attrid,attr.value)
+                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
                 
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
@@ -432,7 +433,7 @@ class HandleSAuth(HandleSBase):
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
                     (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
-        
+        #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)      
@@ -528,6 +529,7 @@ class HandleHotSpotAuth(HandleSBase):
                 result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"] 
             result_params=create_speed_string(result)
             self.speed=result_params
+            #print "speed", result_params
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
             self.replypacket.AddAttribute((14988,8),result_params)
 
@@ -561,11 +563,12 @@ class HandleHotSpotAuth(HandleSBase):
             logger.warning("Bad User/Password %s", user_name)
             self.cur.close()
             return self.auth_NA(authobject)   
-        
 
+        #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
+                                          
         self.cur.execute("""SELECT * FROM card_activate_fn(%s, %s, %s, %s::inet) AS 
                             A(account_id int, "password" character varying, nas_id int, tarif_id int, account_status boolean, 
-                            balance_blocked boolean, ballance double precision, disabled_by_limit boolean, tariff_active boolean)
+                            balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
                          """, (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
 
         acct_card = self.cur.fetchone()
@@ -595,7 +598,7 @@ class HandleHotSpotAuth(HandleSBase):
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
         if self.packetobject['User-Name'][0]==user_name and allow_dial and acct_card.tariff_active:
             authobject.set_code(2)
-            self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
+            #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             self.create_speed(acct_card.tarif_id, acct_card.account_id, speed='')
             return authobject, self.replypacket
         else:
@@ -634,9 +637,9 @@ class HandleSDHCP(HandleSBase):
         
         if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.id):
             return self.auth_NA(authobject)
-
-        acstatus = (acc.allow_dhcp_null or acc.ballance>0) and \
-                   (acc.allow_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
+        #print dir(acc)
+        acstatus = (acc.assign_dhcp_null or acc.ballance>0) and \
+                   (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
         
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", acc.username)
@@ -708,7 +711,18 @@ class HandleSAcct(HandleSBase):
 
             allow_write = self.cur.fetchone() is None
 
-            if acc.time_access_service_id and allow_write:
+            if allow_write:
+                self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
+                                           caller_id, called_id, framed_ip_address, nas_id, 
+                                           framed_protocol, session_status)
+                                           VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
+                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
+                                       self.packetobject['Calling-Station-Id'][0], 
+                                       self.packetobject['Called-Station-Id'][0], 
+                                       self.packetobject['Framed-IP-Address'][0],
+                                       self.packetobject['NAS-IP-Address'][0], self.access_type,))
+                
+            if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
                                            caller_id, called_id, framed_ip_address, nas_id, 
                                            framed_protocol, checkouted_by_time, checkouted_by_trafic) 
@@ -720,16 +734,7 @@ class HandleSAcct(HandleSBase):
                                        self.packetobject['Framed-IP-Address'][0],
                                        self.packetobject['NAS-IP-Address'][0], 
                                        self.access_type, False, False,))
-            if allow_write:
-                self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
-                                           caller_id, called_id, framed_ip_address, nas_id, 
-                                           framed_protocol, session_status)
-                                           VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
-                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
-                                       self.packetobject['Calling-Station-Id'][0], 
-                                       self.packetobject['Called-Station-Id'][0], 
-                                       self.packetobject['Framed-IP-Address'][0],
-                                       self.packetobject['NAS-IP-Address'][0], self.access_type,))
+
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()

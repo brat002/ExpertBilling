@@ -999,6 +999,10 @@ class TarifFrame(QtGui.QDialog):
                 self.ipn_for_vpn_state = self.ipn_for_vpn.checkState()
                 self.ipn_for_vpn.setChecked(True)
                 self.ipn_for_vpn.setDisabled(True)
+        elif args[0] == "HotSpot":
+            self.ipn_for_vpn_state = self.ipn_for_vpn.checkState()
+            self.ipn_for_vpn.setChecked(False)
+            self.ipn_for_vpn.setDisabled(True)
         else:
             if not self.ipn_for_vpn.isEnabled():
                 self.ipn_for_vpn.setEnabled(True)
@@ -1471,7 +1475,7 @@ class TarifFrame(QtGui.QDialog):
 
 
 
-        access_types = ["PPTP", "PPPOE", "IPN"]
+        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot"]
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
         
@@ -1735,7 +1739,12 @@ class TarifFrame(QtGui.QDialog):
             if access_parameters.access_type == 'IPN':
                 self.access_type_edit.setDisabled(True)
                 self.ipn_for_vpn.setDisabled(True)
+            elif access_parameters.access_type == 'HotSpot':
+                self.access_type_edit.setDisabled(True)
+                self.ipn_for_vpn.setDisabled(True)
+                self.ipn_for_vpn.setChecked(False)
             else:
+                self.access_type_edit.removeItem(3)
                 self.access_type_edit.removeItem(2)
             self.access_type_edit.setCurrentIndex(self.access_type_edit.findText(access_parameters.access_type, QtCore.Qt.MatchCaseSensitive))
             self.access_time_edit.setCurrentIndex(self.access_time_edit.findText(access_parameters.time_name, QtCore.Qt.MatchCaseSensitive))
@@ -1773,7 +1782,7 @@ class TarifFrame(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
             return
         if (unicode(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть указано только для VPN планов")
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть выбрано только для VPN планов")
             return
         try:
             
@@ -3211,7 +3220,7 @@ class AccountWindow(QtGui.QMainWindow):
                     pass
                 model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text())
                 
-            elif self.ttype == 'IPN':
+            elif self.ttype in ['IPN', 'HotSpot']:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте IPN IP."))
                 return
             else:
@@ -3920,6 +3929,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 return
 
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+        print self.getTarifId()
         self.connection.commit()
         #self.connection.commit()
         #print accounts

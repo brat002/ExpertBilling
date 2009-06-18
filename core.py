@@ -16,6 +16,8 @@ import socket
 import isdlogger
 import utilites, saver
 
+import db, utilites
+
 from decimal import Decimal
 from copy import copy, deepcopy
 from db import Object as Object
@@ -130,20 +132,26 @@ class check_vpn_access(Thread):
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
+                    #print row
                     try:
                         rs = RadiusSession(*row)
+                        #print rs
                         result=None
-                        nas = caches.nas_cache.by_id.get(str(rs.nas_id))
+                        nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
+                        #print not nas or not acc or not acc.account_status
+                        #print nas, acc, acc.account_status
                         if not nas or not acc or not acc.account_status: continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
-                        acstatus = (((not acc.allow_vpn_null) and (acc.balance + acc.credit > 0)) or acc.allow_vpn_null) \
+                        acstatus = (((not acc.allow_vpn_null and acc.ballance + acc.credit>0) or acc.allow_vpn_null) \
                                     and \
-                                    (acc.allow_vpn_null or ((acc.allow_vpn_block or acc.balance_blocked or acc.disabled_by_limit) and acc.account_status))
-
-                        if acstatus and caches.timeperiodaccess_cache.in_period(acc.tarif_id):
+                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
+                        
+                        #print "hotspot acstatus", acstatus
+                        #print dir(caches.timeperiodaccess_cache)
+                        if acstatus and caches.timeperiodaccess_cache.in_period[acc.tarif_id]:
                             #chech whether speed has changed
                             if acc.vpn_speed == '':
                                 account_limit_speed = get_limit_speed(cur, rs.account_id)
@@ -154,8 +162,9 @@ class check_vpn_access(Thread):
                                 speed=parse_custom_speed_lst(acc.vpn_speed)
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+                            print newspeed
                             if rs.speed_string != newspeed:
-                                #print "set speed", newspeed
+                                print "set speed", newspeed
                                 coa_result=change_speed(dict, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                                         str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
                                                         str(nas.login), str(nas.password), nas_secret=str(nas.secret),
@@ -167,7 +176,8 @@ class check_vpn_access(Thread):
                                                 """ , (newspeed, rs.id,))
                                     cur.connection.commit()
                         else:
-                            result = PoD(dict,rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                            print "send POD"
+                            result = PoD(dict, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                          str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
                                          nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
                                          nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
@@ -484,7 +494,7 @@ class TimeAccessBill(Thread):
                     cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (rs.acctf_id,))
                     result = cur.fetchone()
                     cur.connection.commit()
-                    prepaid_id, prepaid = result if result else (0, -1)                    
+                    prepaid_id, prepaid = result if result else (0, -1)
                     if prepaid > 0:
                         if prepaid >= total_time:
                             total_time, prepaid = 0, prepaid - total_time
@@ -502,11 +512,12 @@ class TimeAccessBill(Thread):
                             if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
                                 summ = (total_time * period.cost) / 60
                                 if summ > 0:
-                                    timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                    #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                    db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                     cur.connection.commit()
                     cur.execute("""UPDATE radius_session SET checkouted_by_time=True
-                                   WHERE sessionid=%s AND account_id=%s AND interrim_update=%s
-                                """, (unicode(rs.sessionid), rs.account_id, rs.interrim_update,))
+                                   WHERE account_id=%s AND sessionid=%s AND interrim_update=%s
+                                """, (rs.account_id, unicode(rs.sessionid),rs.interrim_update,))
                     cur.connection.commit()                    
                 cur.connection.commit()
                 cur.close()
@@ -921,7 +932,7 @@ class ipn_service(Thread):
                                                         access_type=access_type,
                                                         format_string=nas.ipn_speed_action,
                                                         speed=speed[:6])
-                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::craracter varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
                             cur.connection.commit()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
@@ -1055,7 +1066,7 @@ def graceful_save():
     sys.exit()
     
 def main():
-    global caches, suicideCondition, threads, cacheThr, vars
+    global caches, suicideCondition, threads, cacheThr, vars, dict
     
     dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
 
