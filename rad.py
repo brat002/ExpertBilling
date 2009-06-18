@@ -421,9 +421,31 @@ class HandleSAuth(HandleSBase):
         if 0: assert isinstance(acc, AccountData)
         authobject.plainusername = str(acc.username)
         authobject.plainpassword = str(acc.password)
-        if authobject.check_auth() is  False:
-            logger.warning("Bad User/Password %s", user_name)
-            return self.auth_NA(authobject)         
+        
+        process, ok, left = authobject._HandlePacket()
+        if not process:
+            logger.warning(left, ())
+            self.cur.close()
+            if ok:
+                return authobject, self.replypacket
+            else:
+                return self.auth_NA(authobject)
+            
+            
+        process, ok, left = authobject._ProcessPacket()
+        if not process:
+            logger.warning(left, ())
+            self.cur.close()
+            if ok:
+                return authobject, self.replypacket
+            else:
+                return self.auth_NA(authobject)
+                
+        check_auth, left = authobject.check_auth()
+        if not check_auth:
+            logger.warning(left, ())
+            self.cur.close()
+            return self.auth_NA(authobject) 
 
         #print common_vpn,access_type,self.access_type
         if (not flags.common_vpn) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
@@ -557,9 +579,10 @@ class HandleHotSpotAuth(HandleSBase):
 
         authobject.plainusername = str(user_name)
         authobject.plainpassword = str(pin)
-
-        if authobject.check_auth()==False:
-            logger.warning("Bad User/Password %s", user_name)
+        
+        check_auth, left = authobject.check_auth()
+        if not check_auth:
+            logger.warning(left, ())
             self.cur.close()
             return self.auth_NA(authobject)   
         
