@@ -10,7 +10,11 @@ from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
-from radius.eap.eap_packet import EAP_Packet, get_failure_packet, get_success_packet, EAP_HANDLERS
+import radius.eap.eap_packet as EAP
+from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS
+from collections import defaultdict
+
+EAP_IDENTITY_CHECK = lambda kwargs: 'EAP-MD5', EAP_MD5.get_challenge_reply
 
 class Auth:
     """
@@ -24,7 +28,7 @@ class Auth:
         self.secret = secret
         self.access_type = access_type
         self.extensions = {}
-
+        self.challenges = defaultdict(lambda:{'get': lambda x: None, 'set': lambda x,y: None})
 
         self.typeauth=self._DetectTypeAuth()
 
@@ -36,7 +40,7 @@ class Auth:
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-
+        
         self.attrs = None
 
 
@@ -47,14 +51,19 @@ class Auth:
 
         self.Reply=self.packet.CreateReply()
         self.Reply.secret = self.secret
-        if self._CheckAuth(code = self.code):
+        if self.typeauth == 'EAP':
+            if self.code == packet.AccessReject:
+                eap_packet = self.extensions.get('EAP-Packet')
+                self.packet['EAP-Message'] = EAP_Packet.get_failure_packet(eap_packet.identifier)
+            self.Reply.code=self.code
+            return self.Reply.ReplyPacket()
+            
+        elif self._CheckAuth(code = self.code):
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                 self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs)
-        elif self.typeauth == 'EAP':
-            #self.packet.
-            return self.Reply.ReplyPacket()
+
         else:
             self.Reply.code=packet.AccessReject
             return self.Reply.ReplyPacket()
@@ -67,16 +76,65 @@ class Auth:
         elif self.packet.has_key('MS-CHAP-Challenge') and self.access_type!='DHCP':
             return 'MSCHAP2'
         elif self.packet.has_key('EAP-Message') and self.access_type!='DHCP':
-            self.extensions['eap-packet'] = EAP_Packet().unpack_header(self.packet['EAP-Message'])
+            self.extensions['EAP-Packet'] = EAP_Packet().unpack_header(self.packet['EAP-Message'])
             return 'EAP'
         else:
             return 'UNKNOWN'
 
-    def _HandlePacket(self):
-        pass
+    def _HandlePacket(self, **kwargs):
+        if self.access_type == 'EAP':
+            eap_packet = self.extensions.get('EAP-Packet')
+            if not eap_packet:
+                self.code = packet.AccessReject
+                return False, False, 'EAP error: No EAP-Message found: %s' % self.plainusername
+            elif eap_packet.code not in (packet.AccessRequest,):
+                #self.code = packet.AccessReject
+                #self.packet['EAP-Message'] = EAP_Packet.get_failure_packet()
+                return False, False, 'EAP error: Wrong code: %s/%s' % (self.plainusername, eap_packet.code)
+            else:
+                eap_handler = EAP_HANDLERS.get(eap_packet.type)
+                if not eap_handler:
+                    return False, False, 'EAP error: unknown type: %s/%s' % (self.plainusername, eap_packet.type)
+                self.extensions['EAP-Packet'] = eap_handler().unpack(self.packet['EAP-Message'])
+                return True, True, ''
+            
+        else:
+            return True, True, ''
+            
 
-    def _ProcessPacket(self):
-        pass
+    def _ProcessPacket(self, **kwargs):
+        if self.access_type == 'EAP':
+            eap_packet = self.extensions.get('EAP-Packet')
+            if not eap_packet:
+                return False, False, 'EAP error: No EAP-Message found: %s' % self.plainusername
+            if eap_packet.type == EAP.PW_EAP_IDENTITY:
+                #assume that User-Name is checked as a radius attribute User-Name
+                self.code = packet.AccessChallenge
+                eap_packet.identifier = (eap_packet.identifier + 1)  % 255
+                auth_name, auth_handler = EAP_IDENTITY_CHECK({})
+                self.packet['EAP-Message'], challenge = auth_handler(eap_packet)
+                self.challenges[auth_name]['set'](self.plainusername, (challenge, eap_packet.identifier))
+                return False, True, 'EAP: challenge issued: %s' % self.plainusername                
+            
+            else:
+                return True, True, ''
+            
+        else:
+            return True, True, ''
+        
+    def _EAP_Check(self):
+        eap_packet = self.extensions.get('EAP-Packet')
+        if eap_packet.type == EAP.PW_EAP_MD5:
+            challenge, id = self.challenges['EAP-MD5']['get'](self.plainusername)
+            if eap_packet.check_response(self.plainpassword, challenge, id):
+                self.code = packet.AccessAccept
+                self.packet['EAP-Message'] = EAP_MD5.get_success_packet(eap_packet.identifier)
+                return True, ''
+            else:
+                return False, 'EAP Password check: wrong password: %s' % self.plainusername
+        
+        else:
+            return False, 'EAP Password check: type not implemented: %s/%s' % (self.plainusername, eap_packet.type)
 
     def EAP_Reply(self):
         if self.code == packet.AccessAccept:
@@ -90,28 +148,30 @@ class Auth:
         return self._CheckAuth()
 
 
-    def _CheckAuth(self, code= packet.AccessReject):
+    def _CheckAuth(self, code= packet.AccessAccept, **kwargs):
         """
         Функция, в зависимости от типа авторизации, вызывает разные методы для определения правильности
         логина и пароля.
         To Do: Если ядро ответило: доступ запретить-пропускаем.
         """
         if self.access_type=='DHCP':
-            return True
+            return True, ''
         if code not in (packet.AccessReject, packet.AccessChallenge):
             if self.typeauth=='PAP':
                 #print self._PwDecrypt()
                 if self._PwDecrypt():
                     #print 'pap=', True
-                    return True
+                    return True, ''
             elif self.typeauth=='CHAP':
                 if self._CHAPDecrypt():
-                    return True
+                    return True, ''
             elif self.typeauth=='MSCHAP2':
                 #print "mschap2"
                 if self._MSCHAP2Decrypt():
-                    return True
-        return False
+                    return True, ''
+            elif self.typeauth == 'EAP':
+                return self._EAP_Check()
+        return False, 'Password check: bad password: %s' % self.plainusername
 
 
 

@@ -1,4 +1,5 @@
 import struct, types, random, md5
+import copy
 
 
 PW_MD5_CHALLENGE  = 1
@@ -50,7 +51,7 @@ class EAPError(Exception):
 
 
 class EAP_Packet(object):
-    __slots__ = ('code', 'identifier', 'length', 'type', 'type_data', 'raw_packet')
+    __slots__ = ('code', 'identifier', 'length', 'type', 'type_data', 'raw_packet', 'value', 'value_length', 'name')
 
     def __init__(self):
         self.code = 0
@@ -59,6 +60,9 @@ class EAP_Packet(object):
         self.type = None
         self.type_data = None
         self.raw_packet = ''
+        self.value_length = 0
+        self.value = None
+        self.name = ''
 
     def unpack_header(self, raw_packet):
         self.raw_packet = raw_packet
@@ -83,6 +87,9 @@ class EAP_Packet(object):
             try:
                 self.type, = struct.unpack(EAP_TYPE, self.raw_packet[EAP_HEADER_LEN:EAP_HEADER_LEN + EAP_TYPE_LEN])
                 self.type_data = self.raw_packet[EAP_HEADER_LEN + EAP_TYPE_LEN:]
+                self.value_length = struct.unpack("!B", self.type_data[:1])
+                self.value = self.type_data[1:self.value_length - 1]
+                self.name  = self.type_data[self.value_length:]
             except struct.error:
                 raise EAPError("EAP type field is corrupt!")
             except IndexError:
@@ -117,27 +124,27 @@ class EAP_Packet(object):
                 raise EAPError("EAP error: problems with packing!")
         else:
             raise EAPError("EAP packing error: either TYPE or TYPE-Data are not present!")
+        
+    @staticmethod
+    def get_success_packet(id):
+        return EAP_Packet().packs(PW_EAP_SUCCESS, id).raw_packet
+    
+    @staticmethod
+    def get_failure_packet(id):
+        return EAP_Packet().packs(PW_EAP_FAILURE, id).raw_packet
+    
+    def __repr__(self):
+        return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
     
 class EAP_MD5(EAP_Packet):
-    __slots__ = ('value', 'value_length', 'name')
+    __slots__ = ()
     
     def __init__(self):
         super(self, EAP_MD5).__init__()
-        self.value_length = 0
-        self.value = None
-        self.name = ''
+        
         
     def unpack(self, raw_packet):
         super(self, EAP_MD5).unpack(raw_packet)
-        if self.type_data:
-            try:
-                self.value_length = struct.unpack("!B", self.type_data[:1])
-                self.value = self.type_data[1:self.value_length - 1]
-                self.name  = self.type_data[self.value_length:]
-            except struct.error:
-                    raise EAPError("EAP MD5 error: problems with unpacking!")
-        else:
-            raise EAPError("EAP MD5 error: corrupted packet - no data!")
     
     def set_challenge(self):
         self.type = PW_EAP_MD5
@@ -146,15 +153,25 @@ class EAP_MD5(EAP_Packet):
             value += chr(i)
             
         self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value + self.name
+        
+    @classmethod
+    def get_challenge_reply(old_eap_packet):
+        eap_packet = copy.deepcopy(old_eap_packet)
+        eap_packet.type = PW_EAP_MD5
+        value = ''
+        for i in xrange(MD5_CHALLENGE_LEN):
+            value += chr(i)
+            
+        eap_packet.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value + eap_packet.name
+        return eap_packet._pack(), value
     
-    def check_response(self, password, challenge):
-        return self.value == md5.md5(''.join((struct.pack("!B", self.identifier), password, challenge))).digest()
+    def check_response(self, password, challenge, id):
+        return self.value == md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
     
-EAP_HANDLERS = {PW_EAP_MD5: EAP_MD5}
+    def __repr__(self):
+        return super(EAP_MD5, self).__repr__() + ' '+ ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
+    
+EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_MD5: EAP_MD5}
 
-def get_success_packet(id):
-    return EAP_Packet().packs(PW_MD5_SUCCESS, id).raw_packet
 
-def get_failure_packet(id):
-    return EAP_Packet().packs(PW_MD5_FAILURE, id).raw_packet
     
