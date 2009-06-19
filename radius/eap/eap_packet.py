@@ -51,7 +51,7 @@ class EAPError(Exception):
 
 
 class EAP_Packet(object):
-    __slots__ = ('code', 'identifier', 'length', 'type', 'type_data', 'raw_packet', 'value', 'value_length', 'name')
+    __slots__ = ('code', 'identifier', 'length', 'type', 'type_data', 'raw_packet')
 
     def __init__(self):
         self.code = 0
@@ -60,16 +60,14 @@ class EAP_Packet(object):
         self.type = None
         self.type_data = None
         self.raw_packet = ''
-        self.value_length = 0
-        self.value = None
-        self.name = ''
+
 
     def unpack_header(self, raw_packet):
         self.raw_packet = raw_packet
         try:
             self.code, self.identifier, self.length = struct.unpack(EAP_HEADER, self.raw_packet[:EAP_HEADER_LEN])
         except struct.error:
-            raise EAPError("EAP message header is corrupt!")
+            raise EAPError("EAP message header is corrupt!: " + repr(struct.error))
         if self.code in (PW_EAP_REQUEST, PW_EAP_RESPONSE):
             self.type, = struct.unpack(EAP_TYPE, self.raw_packet[EAP_HEADER_LEN:EAP_HEADER_LEN + EAP_TYPE_LEN])
             
@@ -87,9 +85,6 @@ class EAP_Packet(object):
             try:
                 self.type, = struct.unpack(EAP_TYPE, self.raw_packet[EAP_HEADER_LEN:EAP_HEADER_LEN + EAP_TYPE_LEN])
                 self.type_data = self.raw_packet[EAP_HEADER_LEN + EAP_TYPE_LEN:]
-                self.value_length = struct.unpack("!B", self.type_data[:1])
-                self.value = self.type_data[1:self.value_length - 1]
-                self.name  = self.type_data[self.value_length:]
             except struct.error:
                 raise EAPError("EAP type field is corrupt!")
             except IndexError:
@@ -112,11 +107,13 @@ class EAP_Packet(object):
     def _pack(self):
         if self.type is None:            
             try:
+                self.length = EAP_HEADER_LEN
                 self.raw_packet = struct.pack(EAP_HEADER, self.code, self.identifier, self.length)
             except struct.error:
                 raise EAPError("EAP error: problems with packing!")
         elif self.type_data is not None:
             try:
+                self.length = EAP_HEADER_LEN + EAP_TYPE_LEN + len(self.type_data)
                 self.raw_packet  = struct.pack(EAP_HEADER, self.code, self.identifier, self.length)
                 self.raw_packet += struct.pack(EAP_TYPE, self.type)
                 self.raw_packet += self.type_data
@@ -127,24 +124,40 @@ class EAP_Packet(object):
         
     @staticmethod
     def get_success_packet(id):
-        return EAP_Packet().packs(PW_EAP_SUCCESS, id).raw_packet
+        eap_packet = EAP_Packet()
+        eap_packet.packs(PW_EAP_SUCCESS, id)
+        return eap_packet.raw_packet
     
     @staticmethod
     def get_failure_packet(id):
-        return EAP_Packet().packs(PW_EAP_FAILURE, id).raw_packet
+        eap_packet = EAP_Packet()
+        eap_packet.packs(PW_EAP_FAILURE, id)
+        return eap_packet.raw_packet
     
     def __repr__(self):
         return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
     
 class EAP_MD5(EAP_Packet):
-    __slots__ = ()
+    __slots__ = ('value', 'value_length', 'name')
     
     def __init__(self):
-        super(self, EAP_MD5).__init__()
-        
+        super(EAP_MD5, self).__init__()
+        self.value_length = 0
+        self.value = None
+        self.name = ''
         
     def unpack(self, raw_packet):
-        super(self, EAP_MD5).unpack(raw_packet)
+        super(EAP_MD5, self).unpack(raw_packet)
+        if not self.type_data:
+            raise EAPError("EAP-MD5 error: no type data found!")
+        try:
+            self.value_length = struct.unpack("!B", self.type_data[:1])[0]
+            self.value = self.type_data[1:self.value_length - 1]
+            self.name  = self.type_data[self.value_length:]
+        except struct.error:
+            raise EAPError("EAP type field is corrupt! - " + repr(struct.error))
+        except IndexError:
+            raise EAPError("EAP type data retrieval error! - " + repr(IndexError))
     
     def set_challenge(self):
         self.type = PW_EAP_MD5
@@ -154,16 +167,17 @@ class EAP_MD5(EAP_Packet):
             
         self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value + self.name
         
-    @classmethod
+    @staticmethod
     def get_challenge_reply(old_eap_packet):
         eap_packet = copy.deepcopy(old_eap_packet)
         eap_packet.type = PW_EAP_MD5
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
-            value += chr(i)
+            value += chr(random.randint(0,255))
             
-        eap_packet.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value + eap_packet.name
-        return eap_packet._pack(), value
+        eap_packet.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value
+        eap_packet._pack()
+        return eap_packet.raw_packet, value
     
     def check_response(self, password, challenge, id):
         return self.value == md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()

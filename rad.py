@@ -5,6 +5,7 @@ from __future__ import with_statement
 import gc
 import os
 import sys
+import hmac
 import time
 import signal
 import socket
@@ -131,7 +132,7 @@ def get_accesstype(packetobject):
     """
 
     try:
-        nas_port_type = packetobject['NAS-Port-Type'][0]
+        nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPTP'
         elif nas_port_type == 'Ethernet' and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
@@ -143,7 +144,7 @@ def get_accesstype(packetobject):
         else:
             logger.warning('Nas access type warning: unknown type: %s', nas_port_type)
     except Exception, ex:
-        logger.error('Packet access type error: %s \n %s', (repr(ex), show_packet(packetobject)))
+        logger.error('Packet access type error: %s \n %s', (repr(ex), repr(packetobject)))
     return
     
 class AsyncAuthServ(AsyncUDPServer):
@@ -186,10 +187,9 @@ class AsyncAuthServ(AsyncUDPServer):
             packetobject=packet.Packet(dict=vars.dict,packet=data)
             nas_ip = str(packetobject['NAS-IP-Address'][0])
             access_type = get_accesstype(packetobject)
-            
+            logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
             if access_type in ['PPTP', 'PPPOE']:
-                logger.info("Auth Type %s", access_type)
-    
+                logger.info("Auth Type %s, raw packet: %s", (access_type, data))
                 coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                 coreconnect.nasip = nas_ip
                 coreconnect.fMem = fMem; coreconnect.caches = self.caches
@@ -223,9 +223,9 @@ class AsyncAuthServ(AsyncUDPServer):
                 #-----
                 coreconnect = HandleSNA(packetobject)
                 coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
-                returnpacket = coreconnect.handle()
-                if returnpacket is None: return
-                returndata=authNA(returnpacket)
+                right, packetfromcore = coreconnect.handle()
+                if packetfromcore is None: return
+                returndata=authNA(packetfromcore)
                  
             logger.info("AUTH time: %s", (clock()-t))
             if returndata:
@@ -412,7 +412,7 @@ class HandleSAuth(HandleSBase):
 
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         acc = self.caches.account_cache.by_username.get(user_name)
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = {'EAP-MD5': {'get': queues.eap_md5_ch.pop, 'set': queues.eap_md5_ch.__setitem__, 'lock': queues.eap_md5_lock}})
         
         if acc is None:
             logger.warning("Unknown User %s", user_name)
@@ -422,9 +422,12 @@ class HandleSAuth(HandleSBase):
         authobject.plainusername = str(acc.username)
         authobject.plainpassword = str(acc.password)
         
+        logger.debug("Account data : %s", repr(acc))
+        
         process, ok, left = authobject._HandlePacket()
         if not process:
             logger.warning(left, ())
+            logger.debug("Auth object : %s" , authobject)
             self.cur.close()
             if ok:
                 return authobject, self.replypacket
@@ -435,16 +438,16 @@ class HandleSAuth(HandleSBase):
         process, ok, left = authobject._ProcessPacket()
         if not process:
             logger.warning(left, ())
-            self.cur.close()
+            logger.debug("Auth object : %s" , authobject)
             if ok:
                 return authobject, self.replypacket
             else:
                 return self.auth_NA(authobject)
                 
         check_auth, left = authobject.check_auth()
+        logger.debug("Auth object : %s" , authobject)
         if not check_auth:
             logger.warning(left, ())
-            self.cur.close()
             return self.auth_NA(authobject) 
 
         #print common_vpn,access_type,self.access_type

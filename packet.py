@@ -231,12 +231,20 @@ class Packet(UserDict.UserDict):
 		assert(self.secret)
 		
 		
-		attr=self._PktEncodeAttributes()
-		attr=attr+attrs
-		header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
+		#attr=self._PktEncodeAttributes()
+		#attr=attr+attrs
+		
 		if self.has_key('Message-Authenticator'):
-			self.__setitem__('Message-Authenticator', hmac.new(self.secret, header + self.authenticator).digest())
-		attr=self._PktEncodeAttributes()
+			#self.__delitem__('Message-Authenticator')
+			self.__setitem__('Message-Authenticator', '\0'*16)
+			attr=self._PktEncodeAttributes()
+			header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
+			index = attr.find('\0'*16)
+			#self.__setitem__('Message-Authenticator', hmac.new(self.secret, header + self.authenticator + attr).digest())
+			attr = attr[:index] + hmac.new(self.secret, header + self.authenticator + attr).digest() + attr[index + 16:]
+		else:
+			attr=self._PktEncodeAttributes()
+			header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
 		attr=attr+attrs
 		authenticator=md5.new(header[0:4] + self.authenticator
 			+ attr + self.secret).digest()
@@ -340,7 +348,11 @@ class Packet(UserDict.UserDict):
 
        
 
-
+			
+	def __repr__(self):
+		return ', '.join((name + str(item) for name, item in (('code: ', self.code), ('id: ', self.id),\
+								      ('secret: ', self.secret), ('authenticator: ', self.authenticator), \
+								      ('packet: ', ' | '.join((str(self._DecodeKey(key))+ ': ' +str(self[self._DecodeKey(key)][0]) for key, value in self.iteritems()))))))
 class AuthPacket(Packet):
 	def __init__(self, code=AccessRequest, id=None, secret="", authenticator=None, **attributes):
 		"""Constructor
