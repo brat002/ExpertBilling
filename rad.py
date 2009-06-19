@@ -494,7 +494,16 @@ class HandleHotSpotAuth(HandleSBase):
         """
         authobject.set_code(3)
         return authobject, self.packetobject
-    
+
+    def add_values(self, tarif_id):
+        attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
+        for attr in attrs:
+            if 0: assert isinstance(attr, RadiusAttrsData)
+            if attr.vendor:
+                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
+            else:
+                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
+                    
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
@@ -600,6 +609,7 @@ class HandleHotSpotAuth(HandleSBase):
             authobject.set_code(2)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             self.create_speed(acct_card.tarif_id, acct_card.account_id, speed='')
+            self.add_values(acct_card.tarif_id)
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)
