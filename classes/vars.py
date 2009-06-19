@@ -192,10 +192,12 @@ class RadVars(Vars):
         self.dict = None
     
 class RadQueues(object):
-    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count')
+    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_md5_ch', 'eap_md5_lock')
     def __init__(self):
         self.account_timeaccess_cache = {}
         self.account_timeaccess_cache_count = 0
+        self.eap_md5_ch = {}
+        self.eap_md5_lock = Lock()
         
 class CoreVars(Vars):
     __slots__ = ()
