@@ -12,9 +12,11 @@ from django.core.cache import cache
 from django.conf import settings
 from django import template
 
+from lib.http import JsonResponse
+
 from django.conf import settings
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff 
-from billservice.forms import LoginForm, PasswordForm, CardForm
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule 
+from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm
 from radius.models import ActiveSession  
 from billservice.utility import is_login_user
 from nas.models import TrafficClass
@@ -257,7 +259,57 @@ def change_password(request):
         return {
                 'error_message': u'Не предвиденная ошибка',
                 }
-        
+
+
+
+@ajax_request
+@render_to('accounts/change_tariff.html')
+def change_tariff_form(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    user = request.session['user']
+    cursor = connection.cursor()
+    cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
+    account_tariff_id = cursor.fetchone()[0]
+    account_tariff = AccountTarif.objects.get(id=account_tariff_id)
+    from datetime import datetime, date 
+    return {
+            'form':ChangeTariffForm(),
+            'tariff_objects':TPChangeRule.objects.all(),
+            'user':request.session['user'],
+            'tariff':account_tariff,
+            'time':(datetime.now() - account_tariff.datetime).seconds,
+            }
+
+
+@ajax_request
+def change_tariff(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    if request.method == 'POST':
+        new_tariff_id = request.POST.get('id_tariff_id', None)
+        if new_tariff_id != None:
+            print request
+            new_tariff = Tariff.objects.get(id=new_tariff_id)
+            from datetime import datetime
+            tariff = AccountTarif.objects.create(
+                                                    account = request.session['user'],
+                                                    tarif = new_tariff,
+                                                    datetime = datetime.now(), 
+                                                 )
+            return {
+                    'ok_message':u'Вы успешно сменили тариф',
+                    }
+        else:
+            return {
+                    'error_message':u'Проверьте Ваш тариф',
+                    }
+    else:
+        return {
+                'error_message':u'Проверьте Ваш тариф',
+                }
+
+
 @ajax_request
 def card_acvation(request):
     if not request.session.has_key('user'):
