@@ -9,8 +9,10 @@ h2 {
 	color:#9a9a9a;
 }
 
+.red { color:#ff0000;}
+
 .wide {
-	width:100%;
+	width:100%; 
 }
 
 .content_align {
@@ -32,6 +34,10 @@ h2 {
 
 .a-right {
 	text-align:right;
+}
+
+.a-center {
+	text-align:center;
 }
 
 .white {

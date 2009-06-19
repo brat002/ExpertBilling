@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 from django import forms
 
+from billservice.models import Tariff
+
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
     user = forms.CharField(label=u"user", required = False)
@@ -15,3 +17,6 @@ class PasswordForm(forms.Form):
 class CardForm(forms.Form):
     series = forms.IntegerField(label=u"Введите серию", required = True, error_messages={'required':u'Обязательное поле!'})
     pin = forms.CharField(label=u"ПИН", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'})
+    
+class ChangeTariffForm(forms.Form):
+    tariff_id = forms.ChoiceField(choices=[('','----')]+[(x.id, x.name) for x in Tariff.objects.all().order_by('name')], label=u"Выберите тарифный план", widget=forms.Select(attrs={'size': 1, 'onchange':'set_cost()'}))
