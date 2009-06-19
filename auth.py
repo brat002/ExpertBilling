@@ -90,7 +90,7 @@ class Auth:
         return self._CheckAuth()
 
 
-    def _CheckAuth(self, code= packet.AccessRequest):
+    def _CheckAuth(self, code= 1):
         """
         Функция, в зависимости от типа авторизации, вызывает разные методы для определения правильности
         логина и пароля.
