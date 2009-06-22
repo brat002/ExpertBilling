@@ -29,7 +29,7 @@ class Auth:
     def __init__(self, packetobject, username, password, secret, access_type, challenges={}):
         self.packet=packetobject
         self.secret = secret
-	self.packet.secret = secret
+        self.packet.secret = secret
         self.access_type = access_type
         self.extensions = {}
         self.challenges = defaultdict(lambda:{'get': lambda x,d: None, 'set': lambda x,y: None, 'lock': None})
@@ -41,19 +41,19 @@ class Auth:
         self.plainusername=username
         self.plainpassword=password
 
-	self.code = 0
+        self.code = 0
         self.ident=''
         self.NTResponse=''
         self.PeerChallenge=''
         self.AuthenticatorChallenge=''
-        
+
         self.attrs = None
 
     def __repr__(self):
-		return ', '.join((name + str(item) for name, item in (('code: ', self.code), ('access_type: ', self.access_type),\
-								      ('secret: ', self.secret), ('auth: ', self.typeauth), \
-								      ('username: ', self.plainusername), ('password: ', self.plainpassword), \
-								      ('\n packet: ', self.packet), ('\n extensions: ', ' | '.join((str(key) +': ' + str(value) for key, value in self.extensions.iteritems())))))) 
+        return ', '.join((name + str(item) for name, item in (('code: ', self.code), ('access_type: ', self.access_type),\
+                                                              ('secret: ', self.secret), ('auth: ', self.typeauth), \
+                                                              ('username: ', self.plainusername), ('password: ', self.plainpassword), \
+                                                              ('\n packet: ', self.packet), ('\n extensions: ', ' | '.join((str(key) +': ' + str(value) for key, value in self.extensions.iteritems())))))) 
 
 
     def ReturnPacket(self, packetfromcore):
@@ -65,13 +65,13 @@ class Auth:
             if self.code == packet.AccessReject:
                 eap_packet = self.extensions.get('EAP-Packet')
                 self.packet['EAP-Message'] = EAP_Packet.get_failure_packet(eap_packet.identifier)
-	    elif self.code == packet.AccessChallenge:
-		self.Reply['State'] = self.packet['State'][0]
+            elif self.code == packet.AccessChallenge:
+                self.Reply['State'] = self.packet['State'][0]
             self.Reply.code=self.code
-	    self.Reply['EAP-Message'] = self.packet['EAP-Message'][0]
-	    self.Reply['Message-Authenticator'] = self.packet['Message-Authenticator'][0]
+            self.Reply['EAP-Message'] = self.packet['EAP-Message'][0]
+            self.Reply['Message-Authenticator'] = self.packet['Message-Authenticator'][0]
             return self.Reply.ReplyPacket()
-            
+
         elif self._CheckAuth(code = self.code):
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
@@ -91,8 +91,8 @@ class Auth:
             return 'MSCHAP2'
         elif self.packet.has_key('EAP-Message') and self.access_type!='DHCP':
             eap_packet = EAP_Packet()
-	    eap_packet.unpack_header(self.packet['EAP-Message'][0])
-	    self.extensions['EAP-Packet'] = eap_packet
+            eap_packet.unpack_header(self.packet['EAP-Message'][0])
+            self.extensions['EAP-Packet'] = eap_packet
             return 'EAP'
         else:
             return 'UNKNOWN'
@@ -111,14 +111,14 @@ class Auth:
                 eap_handler = EAP_HANDLERS.get(eap_packet.type)
                 if not eap_handler:
                     return False, False, 'EAP error: unknown type: %s/%s' % (self.plainusername, eap_packet.type)
-		eap_packet = eap_handler()
-		eap_packet.unpack(self.packet['EAP-Message'][0])
-		self.extensions['EAP-Packet'] = eap_packet
+                eap_packet = eap_handler()
+                eap_packet.unpack(self.packet['EAP-Message'][0])
+                self.extensions['EAP-Packet'] = eap_packet
                 return True, True, ''
-            
+
         else:
             return True, True, ''
-            
+
 
     def _ProcessPacket(self, **kwargs):
         if self.typeauth == 'EAP':
@@ -132,17 +132,17 @@ class Auth:
                 auth_name, auth_handler = EAP_IDENTITY_CHECK({})
                 self.packet['EAP-Message'], challenge = auth_handler(eap_packet)
                 with self.challenges[auth_name]['lock']:
-		    state = self.plainusername[:3] + '00'
-		    self.packet['State'] = state
+                    state = self.plainusername[:3] + '00'
+                    self.packet['State'] = state
                     self.challenges[auth_name]['set'](self.plainusername, (challenge, eap_packet.identifier, state))
                 return False, True, 'EAP: challenge issued: %s' % self.plainusername                
-            
+
             else:
                 return True, True, ''
-            
+
         else:
             return True, True, ''
-        
+
     def _EAP_Check(self):
         eap_packet = self.extensions.get('EAP-Packet')
         if eap_packet.type == EAP.PW_EAP_MD5:
@@ -156,7 +156,7 @@ class Auth:
                 return True, ''
             else:
                 return False, 'EAP Password check: wrong password: %s' % self.plainusername
-        
+
         else:
             return False, 'EAP Password check: type not implemented: %s/%s' % (self.plainusername, eap_packet.type)
 

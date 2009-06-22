@@ -44,7 +44,7 @@ NAME_LEN  = 32
 EAP_HEADER = "!BBH"
 EAP_TYPE = "!B"
 
-
+# struct.pack('!B') == chr
 
 class EAPError(Exception):
     pass
@@ -180,6 +180,7 @@ class EAP_MD5(EAP_Packet):
         return eap_packet.raw_packet, value
     
     def check_response(self, password, challenge, id):
+        t1 =  md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
         return self.value == md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
     
     def __repr__(self):
