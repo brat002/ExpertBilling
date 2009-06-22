@@ -754,3 +754,5 @@ def get_connection(dsn, session = []):
         conn.commit()
     return conn
         
+def hex_bytestring(bstr):
+    return reduce(lambda x,y: x+y, ("%x" % ord(cbyte) for cbyte in bstr), '')

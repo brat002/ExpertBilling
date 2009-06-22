@@ -16,6 +16,8 @@ from Crypto.Hash import MD5 as md5
 import radius.eap.eap_packet as EAP
 from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS
 from collections import defaultdict
+from utilites import hex_bytestring
+
 
 EAP_IDENTITY_CHECK = lambda kwargs: ('EAP-MD5', EAP_MD5.get_challenge_reply)
 
@@ -150,6 +152,8 @@ class Auth:
                 challenge, id, state = self.challenges['EAP-MD5']['get'](self.plainusername, (None, None, None))
             if challenge is None:
                 return False, 'EAP Password check: issued challenge not found: %s' % self.plainusername
+            #print hex_bytestring(challenge)
+            #print hex_bytestring(md5.new(''.join((struct.pack("!B", id), self.plainpassword, challenge))).digest())
             if eap_packet.check_response(self.plainpassword, challenge, id):
                 self.code = packet.AccessAccept
                 self.packet['EAP-Message'] = EAP_MD5.get_success_packet(eap_packet.identifier)
