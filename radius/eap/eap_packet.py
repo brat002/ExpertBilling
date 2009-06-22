@@ -152,8 +152,8 @@ class EAP_MD5(EAP_Packet):
             raise EAPError("EAP-MD5 error: no type data found!")
         try:
             self.value_length = struct.unpack("!B", self.type_data[:1])[0]
-            self.value = self.type_data[1:self.value_length - 1]
-            self.name  = self.type_data[self.value_length:]
+            self.value = self.type_data[1:self.value_length + 1]
+            self.name  = self.type_data[self.value_length+1:]
         except struct.error:
             raise EAPError("EAP type field is corrupt! - " + repr(struct.error))
         except IndexError:
@@ -164,8 +164,8 @@ class EAP_MD5(EAP_Packet):
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
             value += chr(i)
-            
-        self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value + self.name
+        #MD5_CHALLENGE_LEN + 1
+        self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN) + value + self.name
         
     @staticmethod
     def get_challenge_reply(old_eap_packet):
@@ -175,16 +175,16 @@ class EAP_MD5(EAP_Packet):
         for i in xrange(MD5_CHALLENGE_LEN):
             value += chr(random.randint(0,255))
             
-        eap_packet.type_data = struct.pack("!B", MD5_CHALLENGE_LEN + 1) + value
+        #MD5_CHALLENGE_LEN + 1
+        eap_packet.type_data = struct.pack("!B", MD5_CHALLENGE_LEN) + value
         eap_packet._pack()
         return eap_packet.raw_packet, value
     
     def check_response(self, password, challenge, id):
-        t1 =  md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
         return self.value == md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
     
     def __repr__(self):
-        return super(EAP_MD5, self).__repr__() + ' '+ ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
+        return super(EAP_MD5, self).__repr__() + ' '+ '; '.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
     
 EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_MD5: EAP_MD5}
 
