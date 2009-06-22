@@ -286,7 +286,7 @@ class AsyncAcctServ(AsyncUDPServer):
             coreconnect.caches = self.caches               
             
             packetfromcore = coreconnect.handle()
-            
+            print packetfromcore
             if packetfromcore is not None: 
                 returndat=packetfromcore.ReplyPacket()
                 self.socket.sendto(returndat,addrport)
@@ -692,7 +692,7 @@ class HandleSAcct(HandleSBase):
     
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip)
-        if not nas: return '',None
+        if not nas: return None
         if 0: assert isinstance(nas, NasData)
        
         self.replypacket.secret=str(nas.secret)        

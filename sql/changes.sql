@@ -932,7 +932,17 @@ $$
 LANGUAGE plpgsql;
 
 -- 18.05.2009
-ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS$BODY$BEGIN    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);EXCEPTION WHEN unique_violation THEN    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;END;$BODY$  LANGUAGE 'plpgsql' VOLATILE  COST 100;  
+ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;
+ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];
+DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
+CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS $BODY$ 
+BEGIN    
+INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
+EXCEPTION WHEN unique_violation THEN    
+UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
+END;
+$BODY$  
+LANGUAGE 'plpgsql' VOLATILE  COST 100;  
 
 DROP FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
 
@@ -1008,6 +1018,7 @@ ALTER TABLE billservice_timetransaction ALTER summ TYPE decimal;
 ALTER TABLE billservice_traffictransmitnodes ALTER cost TYPE decimal;
 ALTER TABLE billservice_traffictransaction ALTER summ TYPE decimal;
 ALTER TABLE billservice_transaction ALTER summ TYPE decimal;
+
 ALTER TABLE billservice_tpchangerule ALTER cost TYPE decimal;
 
 ALTER TABLE billservice_prepaidtraffic ALTER size TYPE bigint;
@@ -1285,7 +1296,7 @@ CREATE TABLE billservice_radiusattrs
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_radiusattrs OWNER TO mikrobill;
+ALTER TABLE billservice_radiusattrs OWNER TO ebs;
 
 -- Index: billservice_radiusattrs_tarif_id
 
