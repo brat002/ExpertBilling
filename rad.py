@@ -975,7 +975,7 @@ if __name__ == "__main__":
     logger.lprint('Radius start')
     
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info?
         flags.writeProf = logger.writeInfoP()         

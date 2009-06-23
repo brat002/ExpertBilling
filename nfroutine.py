@@ -874,7 +874,7 @@ if __name__ == "__main__":
     utilites.log_adapt = logger.log_adapt
     logger.lprint('Nfroutine start')
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
                 
         if config.get("nfroutine_nf", "usock") == '0':
             vars.host = config.get("nfroutine_nf_inet", "host")
