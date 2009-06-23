@@ -13,6 +13,7 @@ import socket
 import cPickle
 import logging
 import psycopg2
+import commands
 import traceback
 import datetime, calendar, time
 import os, os.path, sys, time, md5, binascii, socket, select
@@ -730,7 +731,14 @@ def getpid(piddir, procname):
     except:
         return None
     
-def check_running(pid):
+def check_running(pid, name):
+    by_pid = check_running_by_pid(pid)
+    if by_pid:
+        by_name = check_running_by_name(pid, name)
+        return by_name
+    return False
+
+def check_running_by_pid(pid):
     if not pid:
         return False
     else:
@@ -742,6 +750,14 @@ def check_running(pid):
             return False
         else:
             return True
+        
+def check_running_by_name(pid, name):
+    by_name = commands.getstatusoutput('ps -p %d -o comm=' % pid)
+    if by_name[0] == 0:
+        return by_name[1] == name
+    else:
+        return False
+    
         
 def get_connection(dsn, session = []):
     conn = psycopg2.connect(dsn)

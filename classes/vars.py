@@ -75,7 +75,7 @@ class NfVars(Vars):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('port', 'host', 'nfrHost', 'nfrPort', 'nfrAddr', 'sockTimeout', 'saveDir', 'readDir', 'prefix', 'aggrTime', 'aggrNum',\
-                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts', 'sock_type', 'file_pack', 'check_classes')
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir', 'cacheDicts', 'sock_type', 'file_pack', 'check_classes', 'max_datagram_len')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -94,6 +94,7 @@ class NfVars(Vars):
         self.sock_type = 0
         self.file_pack = 300
         self.check_classes = 0
+        self.max_datagram_len = 8192
         self.types.update({'addr': ('host', 'port'), 'nfraddr': ('sock_type', 'nfrHost', 'nfrPort'),\
                            'cachedicts': ('cacheDicts',), 'filepack': ('file_pack',), 'checkclasses': ('check_classes',), 'prefix': ('prefix',), 'aggr':('aggrTime', 'aggrNum'),\
                            'savedir': ('saveDir',), 'readdir': ('readDir',), 'dumpdir': ('dumpDir',)})
@@ -124,6 +125,7 @@ class NfVars(Vars):
         if config.has_option(name, 'dump_dir'): self.dumpDir = config.get(name, 'dump_dir')
         self.readDir = config.get(name, 'read_dir') if config.has_option(name, 'read_dir') else self.dumpDir
         if config.has_option(name, 'save_dir'): self.saveDir = config.get(name, 'save_dir')
+        if config.has_option(name, 'max_datagram_len'): self.saveDir = config.getint(name, 'max_datagram_len')
             
     def get_static(self, **kwargs):
         super(NfVars, self).get_static(**kwargs)

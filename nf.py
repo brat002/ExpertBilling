@@ -47,6 +47,7 @@ from classes.vars import NfVars, NfQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 
 
+MIN_NETFLOW_PACKET_LEN = 16
 
 try:    import mx.DateTime
 except: pass
@@ -57,10 +58,10 @@ class Reception(DatagramProtocol):
     and appends them to 'nfQueue' queue.
     '''
     def datagramReceived(self, data, addrport):
-        if len(data)<=8192:
+        if len(data) <= vars.max_datagram_len:
             queues.nfQueue.append((data, addrport))
         else:
-            logger.error("NF server exception: packet <= 8192")
+            logger.error("NF server exception: packet <= %s", vars.max_datagram_len)
              
 class nfDequeThread(Thread):
     '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
@@ -724,7 +725,7 @@ if __name__=='__main__':
     logger.lprint('Nf start')
     
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
