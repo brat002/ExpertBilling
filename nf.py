@@ -48,6 +48,14 @@ from utilites import renewCaches, savepid, rempid, get_connection, getpid, check
 
 
 MIN_NETFLOW_PACKET_LEN = 16
+HEADER_FORMAT = "!HHIIIIBBH"
+FLOW_FORMAT   = "!LLLHHIIIIHHBBBBHHBBH"
+FLOWCACHE_OVER_TIME  = 10
+FLOWCACHE_RESET_TIME = 60
+
+NAME = 'nf'
+DB_NAME = 'db'
+NET_NAME = 'nfroutine_nf'
 
 try:    import mx.DateTime
 except: pass
@@ -58,10 +66,10 @@ class Reception(DatagramProtocol):
     and appends them to 'nfQueue' queue.
     '''
     def datagramReceived(self, data, addrport):
-        if len(data) <= vars.max_datagram_len:
+        if len(data) <= vars.MAX_DATAGRAM_LEN:
             queues.nfQueue.append((data, addrport))
         else:
-            logger.error("NF server exception: packet <= %s", vars.max_datagram_len)
+            logger.error("NF server exception: packet %s <= %s", (len(data), vars.MAX_DATAGRAM_LEN))
              
 class nfDequeThread(Thread):
     '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
@@ -88,7 +96,7 @@ def flow5(data):
     if len(data) != vars.flowLENGTH:
         raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), vars.flowLENGTH)
     #must turn tuples into lists because they are to be modified
-    return Flow5Data(False, *struct.unpack("!LLLHHIIIIHHBBBBHHBBH", data))
+    return Flow5Data(False, *struct.unpack(FLOW_FORMAT, data))
 
 
 def header5(data):
@@ -104,7 +112,7 @@ def header5(data):
     """
     if len(data) != vars.headerLENGTH:
         raise ValueError, "Short flow header"
-    return struct.unpack("!HHIIIIBBH", data)
+    return struct.unpack(HEADER_FORMAT, data)
 
 def nfPacketHandle(data, addrport, flowCache):
     '''
@@ -112,8 +120,9 @@ def nfPacketHandle(data, addrport, flowCache):
     Gets, unpacks and checks flows from packets.
     Approved packets are added to FlowCache.
     '''    
-    if len(data) < 16:
+    if len(data) < MIN_NETFLOW_PACKET_LEN:
         #raise ValueError, "Short packet"
+        logger.warning("Small packet, discarded: %s", repr(addrport))
         return
     caches = cacheMaster.cache
     if 0: assert isinstance(caches, NfCaches)
@@ -148,7 +157,7 @@ def nfPacketHandle(data, addrport, flowCache):
             flow.padding = local
             flow.account_id = acc_acct_tf
             flow.node_direction = None
-            if flags.checkClasses:
+            if vars.CHECK_CLASSES:
                 break_outer = False
                 for nclass, nnodes in caches.class_cache.classes:                        
                     for nnode in nnodes:
@@ -186,7 +195,7 @@ class FlowCache(object):
         return method(flow)
 
     def reset(self):
-        if ((self.stime + 60.0) < time.time()) and self.keylist:
+        if ((self.stime + FLOWCACHE_RESET_TIME) < time.time()) and self.keylist:
             #appends keylist to flowQueue
             with queues.fqueueLock:
                 queues.flowQueue.append((self.keylist, time.time()))
@@ -200,7 +209,7 @@ class FlowCache(object):
         if 0: assert isinstance(flow, Flow5Data)
         #constructs a key
         key = (flow.src_addr, flow.dst_addr, flow.next_hop, flow.src_port, flow.dst_port, flow.protocol)
-        dhkey   = (flow.src_addr + flow.dst_addr + flow.src_port) % vars.cacheDicts
+        dhkey   = (flow.src_addr + flow.dst_addr + flow.src_port) % vars.CACHE_DICTS
         dhcache = queues.dcaches[dhkey]
         dhlock  = queues.dcacheLocks[dhkey]
         dhlock.acquire()
@@ -217,7 +226,7 @@ class FlowCache(object):
             self.keylist.append(key)
             dhlock.release()
             #time to start over?
-            if (len(self.keylist) > vars.aggrNum) or ((self.stime + 10.0) < time.time()):
+            if (len(self.keylist) > vars.AGGR_NUM) or ((self.stime + FLOWCACHE_OVER_TIME) < time.time()):
                 #appends keylist to flowQueue
                 with queues.fqueueLock:
                     queues.flowQueue.append((self.keylist, time.time()))
@@ -235,7 +244,8 @@ class FlowDequeThread(Thread):
     
     def add_classes_groups(self, flow, classLst, nnode, acctf_id, has_groups, tarifGroups):
         ptime =  time.time()
-        ptime = ptime - (ptime % 20)
+        if vars.NF_TIME_MOD:
+            ptime = ptime - (ptime % vars.NF_TIME_MOD)
         if 0: assert isinstance(flow, Flow5Data); assert isinstance(nnode, ClassData)
         flow.datetime = ptime; flow.class_id = tuple(classLst)
         flow.node_direction = nnode.direction; flow.class_store = nnode.store
@@ -276,14 +286,14 @@ class FlowDequeThread(Thread):
                 if not stime: time.sleep(5); continue
                 
                 #if aggregation time was still not reached -> sleep
-                wtime = time.time() - vars.aggrTime - stime
+                wtime = time.time() - vars.AGGR_TIME - stime
                 if wtime < 0: time.sleep(abs(wtime))
 
                 fcnt = 0
                 flst = []
                 for key in keylist:
                     #src_addr, dst_addr, src_port
-                    dhkey   = (key[0] + key[1] + key[3]) % vars.cacheDicts
+                    dhkey   = (key[0] + key[1] + key[3]) % vars.CACHE_DICTS
                     dhcache = queues.dcaches[dhkey]
                     dhlock  = queues.dcacheLocks[dhkey]
                     with dhlock:
@@ -340,7 +350,7 @@ class FlowDequeThread(Thread):
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1                    
                         #append to databaseQueue
-                        if fcnt == 37:
+                        if fcnt == vars.PACKET_PACK:
                             with queues.dbLock:
                                 queues.databaseQueue.append(flst)
                             flst = []; fcnt = 0
@@ -363,11 +373,11 @@ class NfUDPSenderThread(Thread):
     def __init__(self): 
         self.tname = self.__class__.__name__
         self.outbuf = []
-        self.hpath = ''.join((vars.dumpDir,'/','nf_'))
+        self.hpath = ''.join((vars.DUMP_DIR,'/',vars.PREFIX))
         Thread.__init__(self)
         
     def run(self):
-        addrport = vars.nfrAddr
+        addrport = vars.NFR_ADDR
         nfsock = get_socket()
         errflag, flnumpack = 0, 0
         dfile, fname = None, None
@@ -386,7 +396,7 @@ class NfUDPSenderThread(Thread):
                 
                 flst = marshal.dumps(fpacket)
                 #send data
-                nfsock.sendto(flst,vars.nfrAddr)
+                nfsock.sendto(flst,vars.NFR_ADDR)
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
                 #if wrong length (probably zero reply) - raise exception
@@ -424,7 +434,7 @@ class NfUDPSenderThread(Thread):
                     dfile.write(flst); dfile.write('!FLW')
                     flnumpack += 1
                     #if got enough packets - open a new file
-                    if flnumpack == 300:
+                    if flnumpack == vars.FILE_PACK:
                         flnumpack = 0
                         dfile.close()
                         with queues.fnameLock: queues.fnameQueue.append(fname)
@@ -440,10 +450,10 @@ class NfFileReadThread(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
-        self.hpath  = ''.join((vars.dumpDir,'/','nf_'))
+        self.hpath  = ''.join((vars.READ_DIR,'/',vars.PREFIX))
     
     def run(self):
-        addrport = vars.nfrAddr
+        addrport = vars.NFR_ADDR
         #nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         #nfsock.settimeout(vars.sockTimeout)
         nfsock = get_socket()
@@ -535,7 +545,7 @@ class ServiceThread(Thread):
             a = time.clock()
             queues.nfFlowCache.reset()
             try: 
-                time_run = (now() - cacheMaster.date).seconds > 300
+                time_run = (now() - cacheMaster.date).seconds > vars.CACHE_TIME
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
                     cur = self.connection.cursor()
@@ -574,7 +584,7 @@ class RecoveryThread(Thread):
     def run(self):
         global vars,queues
         try:
-            fllist = glob.glob(''.join((vars.dumpDir, '/', 'nf_*.dmp')))
+            fllist = glob.glob(''.join((vars.DUMP_DIR, '/', vars.PREFIX + '*.dmp')))
             if fllist:
                 with queues.fnameLock:
                     for fl in fllist: queues.fnameQueue.appendleft(fl)
@@ -584,12 +594,12 @@ class RecoveryThread(Thread):
 def get_socket():
     global vars
     nfsock = None
-    if vars.sock_type == 0:
+    if vars.SOCK_TYPE   == 0:
         nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.sockTimeout)
-    elif vars.sock_type == 1:
+        nfsock.settimeout(vars.SOCK_TIMEOUT)
+    elif vars.SOCK_TYPE == 1:
         nfsock = socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.sockTimeout)
+        nfsock.settimeout(vars.SOCK_TIMEOUT)
     return nfsock
 
 def SIGTERM_handler(signum, frame):
@@ -627,7 +637,7 @@ def graceful_save():
     #pool.close()
     #time.sleep(1)
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
-                   queues, 'nf_', vars.saveDir)
+                   queues, vars.PREFIX, vars.SAVE_DIR)
     
     time.sleep(1)
     rempid(vars.piddir, vars.name)
@@ -636,13 +646,14 @@ def graceful_save():
         
 def graceful_recover():
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
-                    queues, 'nf_', vars.saveDir)
+                    queues, vars.PREFIX, vars.SAVE_DIR)
                 
 def main ():        
     global flags, queues, cacheMaster, threads, cacheThr, caches
-    graceful_recover()
+    if vars.RECOVER:
+        graceful_recover()
     #recover leftover dumps?
-    if flags.recover:
+    if vars.RECOVER_DUMP:
         recThr = RecoveryThread()
         recThr.setName('Recovery thread')
         recThr.start()
@@ -694,7 +705,7 @@ def main ():
 
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
-    reactor.listenUDP(vars.port, Reception())
+    reactor.listenUDP(vars.PORT, Reception())
     savepid(vars.piddir, vars.name)
     print "ebs: nf: started"    
     reactor.run(installSignalHandlers=False)
@@ -708,75 +719,44 @@ if __name__=='__main__':
     vars  = NfVars()
     
     cacheMaster = CacheMaster()
-    #cacheMaster.date = None
     caches = None
     
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
     
-    if config.has_option("nf", "cachedicts"):  vars.cacheDicts  = config.getint("nf", "cachedicts")
-    
-    queues = NfQueues(vars.cacheDicts)
-    queues.nfFlowCache = FlowCache()
-    
-    logger = isdlogger.isdlogger(config.get("nf", "log_type"), loglevel=int(config.get("nf", "log_level")), ident=config.get("nf", "log_ident"), filename=config.get("nf", "log_file")) 
-    saver.log_adapt = logger.log_adapt
-    utilites.log_adapt = logger.log_adapt
-    logger.lprint('Nf start')
-    
     try:
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
+        
+        queues = NfQueues(vars.CACHE_DICTS)
+        queues.nfFlowCache = FlowCache()
+        
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
+        saver.log_adapt = logger.log_adapt
+        utilites.log_adapt = logger.log_adapt
+        
+        logger.info("Config variables: %s", repr(vars))
+        logger.lprint('Nf start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
-        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                         config.get("db", "host"), config.get("db", "password"))
-        #get socket parameters. AF_UNIX support
-        if config.get("nfroutine_nf", "usock") == '0':
-            vars.nfrHost = config.get("nfroutine_nf_inet", "host")
-            vars.nfrPort = int(config.get("nfroutine_nf_inet", "port"))
-            vars.nfrAddr = (vars.nfrHost, vars.nfrPort)
-            
-        elif config.get("nfroutine_nf", "usock") == '1':
-            vars.nfrHost = config.get("nfroutine_nf_unix", "host")
-            vars.nfrPort = 0
-            vars.nfrAddr = vars.nfrHost
-        else:
-            raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
-        
-        vars.host = config.get("nf", "host")
-        vars.port = int(config.get("nf", "port"))
-        
-        flags.recover      = (config.get("nfroutine_nf", "recover") == '1')
-        flags.recoverprev  = (config.get("nfroutine_nf", "recoverAttempted") == '1')   
-        flags.checkClasses = (config.get("nf", "checkclasses") == '1')
-        
-        vars.sockTimeout = float(config.get("nfroutine_nf", "sock_timeout"))
-        vars.saveDir = config.get("nf", "save_dir")       
-        #get a dump' directrory string and check whethet it's writable
-        vars.dumpDir = config.get("nfroutine_nf", "dump_dir")
+
         try:
-            tfname = ''.join((vars.dumpDir,'/','nf_', str(time.time()), '.dmp'))
+            tfname = ''.join((vars.DUMP_DIR,'/',vars.PREFIX, str(time.time()), '.dmp'))
             dfile = open(tfname, 'wb')
             dfile.write("testtesttesttesttest")
             dfile.close()
             os.remove(tfname)
         except Exception, ex:
-            raise Exception("Dump directory '"+ vars.dumpDir+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
+            raise Exception("Dump directory '"+ vars.DUMP_DIR+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
     
         suicideCondition = {}    
         vars.FLOW_TYPES = {5 : (header5, flow5)}        
-        #numeric values
-        try:
-            vars.aggrTime  = float(config.get("nf", "aggrtime"))
-            vars.aggrNum   = float(config.get("nf", "aggrnum"))
-        except Exception, ex: logger.info('numeric values ex %s', repr(ex)); print ex
-        
+
         if not globals().has_key('_1i'):
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())         
         allowedUsers()
-        test_now = time.time()
         #-------------------
         print "ebs: nf: configs read, about to start"
         main()

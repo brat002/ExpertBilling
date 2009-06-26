@@ -43,8 +43,8 @@ from constants import rules
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
-config = ConfigParser.ConfigParser()
-
+NAME = 'rpc'
+DB_NAME = 'db'
 
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
@@ -183,8 +183,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         self.ticket = ''
-        #self._cddrawer = cdDrawer()
-
 
 
     def run(self):
@@ -753,7 +751,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     
     @authentconn
     def pod(self, session, cur=None, connection=None):
-        print "Start POD"
+        #print "Start POD"
         cur.execute("""
                     SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
                     nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
@@ -861,32 +859,31 @@ def main():
         
 if __name__ == "__main__":
     if "-D" in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
+        pass
+        #daemonize("/dev/null", "log.txt", "log.txt")
      
-    vars = RpcVars()
+    config = ConfigParser.ConfigParser()    
     config.read("ebs_config.ini")
-    logger = isdlogger.isdlogger(config.get("rpc", "log_type"), loglevel=int(config.get("rpc", "log_level")), ident=config.get("rpc", "log_ident"), filename=config.get("rpc", "log_file")) 
-    utilites.log_adapt = logger.log_adapt
-    saver.log_adapt    = logger.log_adapt
-    logger.lprint('Ebs RPC start')
     
     try:
+        vars = RpcVars()        
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+
+
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        utilites.log_adapt = logger.log_adapt
+        saver.log_adapt    = logger.log_adapt
+        logger.lprint('Ebs RPC start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         maxUsers = int(config.get("rpc", "max_users"))
     
 
-        pool = PooledDB(
-            mincached=1,
-            maxcached=10,
-            blocking=True,
-            #maxusage=20,
-            setsession=["SET statement_timeout = 180000000;"],
-            creator=psycopg2,
-            dsn="dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"),
-                                                                   config.get("db", "username"),
-                                                                   config.get("db", "host"),
-                                                                   config.get("db", "password")))
+        pool = PooledDB(mincached=1, maxcached=10,
+                        blocking=True, maxusage=20,
+                        setsession=["SET statement_timeout = 180000000;"],
+                        creator=psycopg2, dsn=vars.db_dsn)
+        
         if not globals().has_key('_1i'):
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(pool.connection(), _1i())       
