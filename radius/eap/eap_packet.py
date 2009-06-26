@@ -184,7 +184,8 @@ class EAP_MD5(EAP_Packet):
         return self.value == md5.md5(''.join((struct.pack("!B", id), password, challenge))).digest()
     
     def __repr__(self):
-        return super(EAP_MD5, self).__repr__() + ' '+ '; '.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
+        return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(EAP_MD5, self).__slots__ + self.__slots__))
+
     
 EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_MD5: EAP_MD5}
 

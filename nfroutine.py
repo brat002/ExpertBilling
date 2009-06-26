@@ -51,7 +51,9 @@ except: print 'cannot import mx'
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
-
+NAME = 'nfroutine'
+DB_NAME = 'db'
+NET_NAME = 'nfroutine_nf'
 
 class Picker(object):
     __slots__= ('data',)
@@ -77,9 +79,6 @@ class DepickerThread(Thread):
         self.tname = self.__class__.__name__
         
     def run(self):        
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
         global queues, flags, suicideCondition, vars
         self.connection = get_connection(vars.db_dsn)
         self.cur        = self.connection.cursor()
@@ -141,14 +140,10 @@ class groupDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
         global queues, flags, vars
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
         #direction type->operations
-        #gops = {1: lambda xdct: xdct['INPUT'], 2: lambda xdct: xdct['OUTPUT'] , 3: lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], 4: lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])}
         gops = [lambda xdct: xdct['INPUT'], lambda xdct: xdct['OUTPUT'], lambda xdct: xdct['INPUT'] + xdct['OUTPUT'], lambda xdct: max(xdct['INPUT'], xdct['OUTPUT'])]
         icount = 0; timecount = 0
         a = time.clock()
@@ -166,14 +161,14 @@ class groupDequeThread(Thread):
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
-                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.groupAggrTime*2 < time.time()):
+                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
                         gkey, gkeyTime  = queues.groupDeque.popleft()
 
                 if not gkey: time.sleep(30); continue
 
                 #get data
                 account_id, kgroup_id, gtime = gkey 
-                dkey = (int(gtime) + account_id) % vars.groupDicts
+                dkey = (int(gtime) + account_id) % vars.GROUP_DICTS
                 aggrgDict = queues.groupAggrDicts[dkey]
                 aggrgLock = queues.groupAggrLocks[dkey]
                 with aggrgLock:
@@ -248,8 +243,6 @@ class groupDequeThread(Thread):
                                     grec[0][gclass]['INPUT']  += class_io['INPUT']
                                     grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
                         
-                    #try: cur = connection.cursor()
-                    #except: time.sleep(20)
                     try: 
                         time.sleep(3)
                         self.cur = self.connection.cursor()
@@ -271,9 +264,6 @@ class statDequeThread(Thread):
 
     def run(self):
         global queues, flags, vars
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
         
@@ -293,13 +283,13 @@ class statDequeThread(Thread):
                 skey, skeyTime, statData = None, None, None
                 with queues.statLock:
                     #check whether double aggregation time passed - updates are rather costly
-                    if len(queues.statDeque) > 0 and (queues.statDeque[0][1] + vars.statAggrTime*2 < time.time()):
+                    if len(queues.statDeque) > 0 and (queues.statDeque[0][1] + vars.STAT_AGGR_TIME*2 < time.time()):
                         skey, skeyTime  = queues.statDeque.popleft()
 
                 if not skey: time.sleep(30); continue
                 
                 account_id, stime = skey 
-                dkey = (int(stime) + account_id) % vars.statDicts
+                dkey = (int(stime) + account_id) % vars.STAT_DICTS
                 aggrsDict = queues.statAggrDicts[dkey]
                 aggrsLock = queues.statAggrLocks[dkey]
                 with aggrsLock:
@@ -374,7 +364,7 @@ class NetFlowRoutine(Thread):
         global vars
         Thread.__init__(self)
         self.tname = self.__class__.__name__
-        self.connection = get_connection(vars.db_dsn, vars.nfr_session)
+        self.connection = get_connection(vars.db_dsn, vars.NFR_SESSION)
         
     def get_actual_cost(self, octets_summ, stream_date, nodes):
         """Метод возвращает актуальную цену для направления трафика для пользователя:"""
@@ -439,7 +429,7 @@ class NetFlowRoutine(Thread):
                 #time to pick
                 with queues.pickerLock:
                     #add picker to a depicker queue
-                    if (time.time() > queues.pickerTime + 300.0):
+                    if (time.time() > queues.pickerTime + vars.PICKER_AGGR_TIME):
                         queues.depickerQueue.append(queues.picker.get_data())
                         queues.picker = Picker()
                         queues.pickerTime = time.time()                    
@@ -472,20 +462,20 @@ class NetFlowRoutine(Thread):
                             oldAcct[flow.acctf_id] = acc                           
                     
                     #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
-                    if (acc.tarif_id == None) or (not (acc.tarif_active or flags.store_na_tarif)) \
-                       or (not (acc.account_status or flags.store_na_account)): continue                    
+                    if (acc.tarif_id == None) or (not (acc.tarif_active or vars.STORE_NA_TARIF)) \
+                       or (not (acc.account_status or vars.STORE_NA_ACCOUNT)): continue                    
                     
                     '''Статистика по группам: 
                     аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
                     Ключ - (account_id, group_id, gtime)
                     Ключ затем добавляется в очередь.'''
                     if flow.has_groups and flow.groups:                        
-                        gtime = flow.datetime - (flow.datetime % vars.groupAggrTime)                        
+                        gtime = flow.datetime - (flow.datetime % vars.GROUP_AGGR_TIME)                        
                         for group_id, group_classes, group_dir, group_type in flow.groups:
                             #group_id, group_classes, group_dir, group_type  = group
                             #calculate a key and check the dictionary
                             gkey = (flow.account_id, group_id, gtime)
-                            dgkey = (int(gtime / 667) + flow.account_id) % vars.groupDicts
+                            dgkey = (int(gtime / 667) + flow.account_id) % vars.GROUP_DICTS
                             aggrgDict = queues.groupAggrDicts[dgkey]
                             aggrgLock = queues.groupAggrLocks[dgkey]
                             with aggrgLock:
@@ -502,9 +492,9 @@ class NetFlowRoutine(Thread):
                    
                                 
                     #global statistics calculation
-                    stime = flow.datetime - (flow.datetime % vars.statAggrTime)
+                    stime = flow.datetime - (flow.datetime % vars.STAT_AGGR_TIME)
                     skey  = (flow.account_id, stime)
-                    dskey = (int(stime / 667) + flow.account_id) % vars.statDicts
+                    dskey = (int(stime / 667) + flow.account_id) % vars.STAT_DICTS
                     aggrsDict = queues.statAggrDicts[dskey]
                     aggrsLock = queues.statAggrLocks[dskey]
                     with aggrsLock:
@@ -599,7 +589,7 @@ class NetFlowRoutine(Thread):
                     except: 
                         time.sleep(10)
                         try:
-                            self.connection = get_connection(vars.db_dsn, vars.nfr_session)
+                            self.connection = get_connection(vars.db_dsn, vars.NFR_SESSION)
                             self.cur = self.connection.cursor()
                         except:
                             time.sleep(20)
@@ -637,7 +627,7 @@ class AccountServiceThread(Thread):
                 break
             a = time.clock()
             try: 
-                time_run = (now() - cacheMaster.date).seconds > 180
+                time_run = (now() - cacheMaster.date).seconds > vars.CACHE_TIME
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
                     cur = self.connection.cursor()
@@ -648,9 +638,9 @@ class AccountServiceThread(Thread):
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:        
                             logger.info("incoming queue len: %s", len(queues.nfIncomingQueue))
-                            #logger.info("groupDictLen: %s", len(queues.groupAggrDict))
+                            logger.info("groupDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.groupAggrDicts)) + ')')
                             logger.info("groupDequeLen: %s", len(queues.groupDeque))
-                            #logger.info("statDictLen: %s", len(queues.statAggrDict))
+                            logger.info("statDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.statAggrDicts)) + ')')
                             logger.info("statDequeLen: %s", len(queues.statDeque))
                             
                     if counter == 5:
@@ -750,21 +740,12 @@ def graceful_save():
     for thr in threads:
             suicideCondition[thr.tname] = True
     time.sleep(2)
-    #pool.close()
-    '''
-    for thr in threads + [cacheThr]:
-        if hasattr(thr, 'connection'):
-            try:
-                thr.connection.close()
-            except: pass
-    time.sleep(1)
-    '''
     
     queues.depickerLock.acquire()
     queues.groupLock.acquire()
     queues.statLock.acquire()
     graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
-                   queues, 'nfroutine_', vars.saveDir)
+                   queues, 'nfroutine_', vars.SAVE_DIR)
     time.sleep(3)
     queues.statLock.release()
     queues.groupLock.release()
@@ -776,29 +757,30 @@ def graceful_save():
 def graceful_recover():
     global queues, vars
     graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDicts','statDeque', 'statAggrDicts'],
-                    queues, 'nfroutine_', vars.saveDir)
+                    queues, 'nfroutine_', vars.SAVE_DIR)
     
 
 def main():
-    graceful_recover()
+    if vars.RECOVER:
+        graceful_recover()
     global cacheMaster, suicideCondition
     global threads, cacheThr, NfAsyncUDPServer
     threads=[]
-    for i in xrange(int(config.get("nfroutine", "routinethreads"))):
+    for i in xrange(vars.ROUTINE_THREADS):
         newNfr = NetFlowRoutine()
         newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
         threads.append(newNfr)
-    for i in xrange(int(config.get("nfroutine", "groupstatthreads"))):
+    for i in xrange(vars.GROUPSTAT_THREADS):
         grdqTh = groupDequeThread()
         grdqTh.setName('GDT:#%i: groupDequeThread' % i)
         threads.append(grdqTh)
-    for i in xrange(int(config.get("nfroutine", "globalstatthreads"))):
+    for i in xrange(vars.GLOBALSTAT_THREADS):
         stdqTh = statDequeThread()
         stdqTh.setName('SDS:#%i: statDequeThread' % i)
         threads.append(stdqTh)
-    for i in xrange(int(config.get("nfroutine", "depickerthreads"))):
+    for i in xrange(vars.BILL_THREADS):
         depTh = DepickerThread()
-        depTh.setName('DET:#%i: depickerThread' % i)
+        depTh.setName('DET:#%i: billThread' % i)
         threads.append(depTh)
     
     cacheThr = AccountServiceThread()
@@ -838,10 +820,10 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
-    if vars.sock_type == 0:
-        reactor.listenUDP(vars.port, NfTwistedServer(), maxPacketSize=32687)
-    elif vars.sock_type == 1:
-        reactor.listenUNIXDatagram(vars.addr, NfTwistedServer(), maxPacketSize=32687)
+    if   vars.SOCK_TYPE == 0:
+        reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+    elif vars.SOCK_TYPE == 1:
+        reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
     else: 
         raise Exception("Unknown socket type!")
     
@@ -862,54 +844,29 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
     
     suicideCondition = {}
-    flags = NfrFlags()
-    vars  = NfrVars()
-    
-    if config.has_option("nfroutine", "groupdicts"): vars.groupDicts = config.getint("nfroutine", "groupdicts")
-    if config.has_option("nfroutine", "statdicts"):  vars.statDicts  = config.getint("nfroutine", "statdicts")
-    queues= NfrQueues(vars.groupDicts, vars.statDicts)
-    
-    logger = isdlogger.isdlogger(config.get("nfroutine", "log_type"), loglevel=int(config.get("nfroutine", "log_level")), ident=config.get("nfroutine", "log_ident"), filename=config.get("nfroutine", "log_file")) 
-    saver.log_adapt = logger.log_adapt
-    utilites.log_adapt = logger.log_adapt
-    logger.lprint('Nfroutine start')
+
     try:
+        flags = NfrFlags()
+        vars  = NfrVars()
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
+        
+        queues= NfrQueues(vars.GROUP_DICTS, vars.STAT_DICTS)
+        
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        saver.log_adapt = logger.log_adapt
+        utilites.log_adapt = logger.log_adapt
+        
+        logger.info("Config variables: %s", repr(vars))
+        logger.lprint(vars.name + ' start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
                 
-        if config.get("nfroutine_nf", "usock") == '0':
-            vars.host = config.get("nfroutine_nf_inet", "host")
-            vars.port = int(config.get("nfroutine_nf_inet", "port"))
-            vars.addr = (vars.host, vars.port)
-        elif config.get("nfroutine_nf", "usock") == '1':
-            vars.host = config.get("nfroutine_nf_unix", "host")
-            vars.port = 0
-            vars.addr = (vars.host,)
-        else:
-            raise Exception("Config '[nfroutine_nf] -> usock' value is wrong, must be 0 or 1")
+
         #temp save on restart or graceful stop
-        vars.saveDir = config.get("nfroutine", "save_dir")
         #store stat. for old tarifs and accounts?
-        flags.store_na_tarif   = True if ((config.get("nfroutine", "store_na_tarif")   =='True') or (config.get("nfroutine", "store_na_tarif")  =='1')) else False
-        flags.store_na_account = True if ((config.get("nfroutine", "store_na_account") =='True') or (config.get("nfroutine", "store_na_account")=='1')) else False
-        
+
         #write profiling info?
-        flags.writeProf = logger.writeInfoP()  
-        
-        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                         config.get("db", "host"), config.get("db", "password"))
-
-        #--------------------------------------------------------
-
-        #group statistinc an global statistics objects    
-        #key = account, group id , time
-        #[(1,2,3)][0][4]['INPUT']
-        #[(1,2, )][1] = group info
-        #lambda: [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), None])
-        #groupAggrDict = {}   
-        #key - account_id, time
-        #[(1,2,3)][0][4]['INPUT']
-        #[(1,2, )][1] = nas etc
-        #statAggrDict = {}   
+        flags.writeProf = logger.writeInfoP()         
+        #--------------------------------------------------------  
         
         queues.picker = Picker()
         queues.pickerTime = time.time() + 5
@@ -922,7 +879,6 @@ if __name__ == "__main__":
         allowedUsers()
         
         fMem = pfMemoize()    
-    
     
         #-------------------
         print "ebs: nfroutine: configs read, about to start"

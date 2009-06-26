@@ -52,7 +52,9 @@ from classes.core_class.BillSession import BillSession
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
-
+NAME = 'core'
+DB_NAME = 'db'
+SECONDS_PER_DAY = 86400
 
 def comparator(d, s):
     for key in s:
@@ -162,10 +164,10 @@ class check_vpn_access(Thread):
                                 speed=parse_custom_speed_lst(acc.vpn_speed)
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
-                            print newspeed
+                            #print newspeed
                             if rs.speed_string != newspeed:
-                                print "set speed", newspeed
-                                coa_result=change_speed(dict, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                                #print "set speed", newspeed
+                                coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                                         str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
                                                         str(nas.login), str(nas.password), nas_secret=str(nas.secret),
                                                         session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
@@ -176,8 +178,8 @@ class check_vpn_access(Thread):
                                                 """ , (newspeed, rs.id,))
                                     cur.connection.commit()
                         else:
-                            print "send POD"
-                            result = PoD(dict, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                            #print "send POD"
+                            result = PoD(vars.DICT, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                          str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
                                          nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
                                          nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
@@ -208,7 +210,7 @@ class check_vpn_access(Thread):
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
-            time.sleep(60)
+            time.sleep(vars.VPN_SLEEP + random.randint(0,5))
 
     def run(self):
         #self.remove_sessions()
@@ -256,9 +258,9 @@ class periodical_service_bill(Thread):
 
                 cur = self.connection.cursor()
                 #transactions per day              
-                n=(86400)/transaction_number
+                n = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
                 n_delta = datetime.timedelta(seconds=n)
-                now=datetime.datetime.now()
+                now = datetime.datetime.now()
                 #get a list of tarifs with periodical services & loop                
                 for row in caches.periodicaltarif_cache.data:
                     tariff_id, settlement_period_id = row
@@ -289,7 +291,7 @@ class periodical_service_bill(Thread):
                                     if last_checkout is None:
                                         last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
 
-                                    if (now - last_checkout).seconds + (now - last_checkout).days*86400 >= n:
+                                    if (now - last_checkout).seconds + (now - last_checkout).days*SECONDS_PER_DAY >= n:
                                         #Проверяем наступил ли новый период
                                         if now - datetime.timedelta(seconds=n) <= period_start:
                                             # Если начался новый период
@@ -300,7 +302,7 @@ class periodical_service_bill(Thread):
                                         
                                         # Смотрим сколько раз уже должны были снять деньги
                                         lc = now - last_checkout
-                                        last_checkout_seconds = lc.seconds + lc.days*86400
+                                        last_checkout_seconds = lc.seconds + lc.days*SECONDS_PER_DAY
                                         nums,ost = divmod(last_checkout_seconds,n)                                        
                                         chk_date = last_checkout + n_delta
                                         if nums>1:
@@ -344,7 +346,7 @@ class periodical_service_bill(Thread):
                                         #lc = period_start - last_checkout
                                         lc = now - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
-                                        nums, ost = divmod(lc.seconds + lc.days*86400, delta)
+                                        nums, ost = divmod(lc.seconds + lc.days*SECONDS_PER_DAY, delta)
                                         cash_summ = ps.cost
                                         #chk_date = last_checkout + s_delta
                                         chk_date = period_start
@@ -391,7 +393,7 @@ class periodical_service_bill(Thread):
                                     elif period_start > last_checkout:
                                         lc = period_start - last_checkout
                                         le = period_end   - last_checkout
-                                        nums, ost = divmod(le.seconds + le.days*86400, delta)
+                                        nums, ost = divmod(le.seconds + le.days*SECONDS_PER_DAY, delta)
                                         summ = ps.cost
                                         chk_date = last_checkout + s_delta
                                         if nums > 1:                                                
@@ -425,7 +427,7 @@ class periodical_service_bill(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(180-(time.clock()-a_)-random.randint(10, 120))
+            time.sleep(abs(vars.PERIODICAL_SLEEP-(time.clock()-a_)) + random.randint(0,5))
             
 class TimeAccessBill(Thread):
     """
@@ -532,7 +534,7 @@ class TimeAccessBill(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(60)
+            time.sleep(vars.TIMEACCESS_SLEEP + random.randint(0,5))
 
 
 
@@ -650,7 +652,7 @@ class limit_checker(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(110)          
+            time.sleep(vars.LIMIT_SLEEP + random.randint(0,5))          
 
 
 class settlement_period_service_dog(Thread):
@@ -812,7 +814,7 @@ class settlement_period_service_dog(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(120)
+            time.sleep(vars.SETTLEMENT_PERIOD_SLEEP + random.randint(0,5))
 
 class ipn_service(Thread):
     """
@@ -925,7 +927,7 @@ class ipn_service(Thread):
                         if 0: assert isinstance(ipnsp, IpnSpeedData)
                         if newspeed != ipnsp.speed or not ipnsp.state or recreate_speed:
                             #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-                            sended_speed = change_speed(dict,acc.account_id,acc.username,
+                            sended_speed = change_speed(vars.DICT,acc.account_id,acc.username,
                                                         acc.vpn_ip_address,acc.ipn_ip_address,
                                                         acc.ipn_mac_address,nas.ipaddress,
                                                         nas.type,nas.name,nas.login,nas.password,
@@ -952,7 +954,7 @@ class ipn_service(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(120)
+            time.sleep(vars.IPN_SLEEP + random.randint(0,5))
 
 
 #periodical function memoize class
@@ -1001,7 +1003,7 @@ class AccountServiceThread(Thread):
                 except: pass
                 break
             try: 
-                if flags.cacheFlag or (now() - cacheMaster.date).seconds > 100:
+                if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
                     run_time = time.clock()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
@@ -1066,10 +1068,8 @@ def graceful_save():
     sys.exit()
     
 def main():
-    global caches, suicideCondition, threads, cacheThr, vars, dict
+    global caches, suicideCondition, threads, cacheThr, vars
     
-    dict=dictionary.Dictionary("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-
     threads = []
     thrnames = [(check_vpn_access, 'Core VPN Thread'), (periodical_service_bill, 'Core Period. Bill Thread'), \
                 (TimeAccessBill, 'Core Time Access Thread'), (limit_checker, 'Core Limit Thread'),\
@@ -1112,7 +1112,6 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     
-    
     print "ebs: core: started"
     savepid(vars.piddir, vars.name)
     #main thread should not exit!
@@ -1128,27 +1127,26 @@ if __name__ == "__main__":
     if "-D" in sys.argv:
         daemonize("/dev/null", "log.txt", "log.txt")
        
-    vars = CoreVars()
+    
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-
-    #create logger
-    logger = isdlogger.isdlogger(config.get("core", "log_type"), loglevel=int(config.get("core", "log_level")), ident=config.get("core", "log_ident"), filename=config.get("core", "log_file")) 
-    
-    utilites.log_adapt = logger.log_adapt
-    saver.log_adapt    = logger.log_adapt
-    logger.lprint('core start')
     
     try:
+        
+        vars = CoreVars()
+        
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+        #create logger
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
+        
+        utilites.log_adapt = logger.log_adapt
+        saver.log_adapt    = logger.log_adapt
+        logger.lprint('core start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
-        transaction_number = int(config.get("core", 'transaction_number'))
-        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                         config.get("db", "host"), config.get("db", "password"))
-
         cacheMaster = CacheMaster()
         flags = CoreFlags()
-        
+        flags.writeProf = logger.writeInfoP()
         suicideCondition = {}
         #function that returns number of allowed users
         #create allowedUsers
@@ -1158,7 +1156,6 @@ if __name__ == "__main__":
         logger.info("Allowed users: %s", (allowedUsers(),))
         
         fMem = pfMemoize()    
-        
         #--------------------------------------------------
         
         print "ebs: core: configs read, about to start"

@@ -52,6 +52,8 @@ else:   w32Import = True
 #account_timeaccess_cache={}
 #account_timeaccess_cache_count=0
 
+NAME = 'rad'
+DB_NAME = 'db'
         
 def show_packet(packetobject):
     b = ''
@@ -81,7 +83,7 @@ class AsyncUDPServer(asyncore.dispatcher):
         
     def handle_read_event (self):
         try:
-            data, addr = self.socket.recvfrom(4096)
+            data, addr = self.socket.recvfrom(vars.MAX_DATAGRAM_LEN)
         except Exception, ex:            
             logger.error('Socket read error: %s \n %s', (repr(ex),traceback.format_exc()))
             return
@@ -184,7 +186,7 @@ class AsyncAuthServ(AsyncUDPServer):
             returndata = ''
             #data=self.request[0] # or recv(bufsize, flags)
             assert len(data)<=4096
-            packetobject=packet.Packet(dict=vars.dict,packet=data)
+            packetobject=packet.Packet(dict=vars.DICT,packet=data)
             nas_ip = str(packetobject['NAS-IP-Address'][0])
             access_type = get_accesstype(packetobject)
             logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
@@ -279,8 +281,8 @@ class AsyncAcctServ(AsyncUDPServer):
 
                         
             t = clock()
-            assert len(data) <= 4096
-            packetobject=packet.AcctPacket(dict=vars.dict,packet=data)
+            assert len(data) <= vars.MAX_DATAGRAM_LEN
+            packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
     
             coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
             coreconnect.caches = self.caches               
@@ -309,7 +311,7 @@ class HandleSBase(object):
         self.packetobject.username=None
         self.packetobject.password=None
         # Access denided
-        self.packetobject.code=3
+        self.packetobject.code = packet.AccessReject
         return self.packetobject
 
     # Main
@@ -405,7 +407,7 @@ class HandleSAuth(HandleSBase):
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
         self.nas_type = nas.type
-        self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.dict)
+        self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
 
         station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         user_name = str(self.packetobject['User-Name'][0])
@@ -451,7 +453,7 @@ class HandleSAuth(HandleSBase):
             return self.auth_NA(authobject) 
 
         #print common_vpn,access_type,self.access_type
-        if (not flags.common_vpn) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
+        if (not vars.COMMON_VPN) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
             logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
         
@@ -477,7 +479,7 @@ class HandleSAuth(HandleSBase):
                 return self.auth_NA(authobject) 
             
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.id):
+        if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject) 
         
@@ -566,7 +568,7 @@ class HandleHotSpotAuth(HandleSBase):
         #self.nas_id=str(row[0])
         self.nas_type = nas.type
         #self.secret = str(row[1])
-        self.replypacket=packet.Packet(secret=str(nas.secret),dict=vars.dict)
+        self.replypacket=packet.Packet(secret=str(nas.secret),dict=vars.DICT)
 
         user_name = str(self.packetobject['User-Name'][0])
 
@@ -621,7 +623,7 @@ class HandleHotSpotAuth(HandleSBase):
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
         if self.packetobject['User-Name'][0]==user_name and allow_dial and acct_card.tariff_active:
-            authobject.set_code(2)
+            authobject.set_code(packet.AccessAccept)
             self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             self.create_speed(acct_card.tarif_id, acct_card.account_id, speed='')
             return authobject, self.replypacket
@@ -651,7 +653,7 @@ class HandleSDHCP(HandleSBase):
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
         
-        self.replypacket=packet.Packet(secret=nas.secret,dict=vars.dict)
+        self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
         
         acc = self.caches.account_cache.by_ipn_mac.get(self.packetobject['User-Name'][0])
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
@@ -659,7 +661,7 @@ class HandleSDHCP(HandleSBase):
             return self.auth_NA(authobject)
         if 0: assert isinstance(acc, AccountData)
         
-        if flags.ignore_nas_for_vpn is False and int(acc.nas_id)!=int(nas.id):
+        if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
             return self.auth_NA(authobject)
 
         acstatus = (acc.allow_dhcp_null or acc.ballance>0) and \
@@ -673,7 +675,7 @@ class HandleSDHCP(HandleSBase):
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
             self.replypacket.AddAttribute('Framed-IP-Netmask', acc.netmask)
-            self.replypacket.AddAttribute('Session-Timeout',   vars.session_timeout)
+            self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)
@@ -694,14 +696,14 @@ class HandleSAcct(HandleSBase):
         self.cur = dbCur
 
     def get_bytes(self):
-        bytes_in  = self.packetobject['Acct-Input-Octets'][0]  + self.packetobject.get('Acct-Input-Gigawords', (0,))[0]*vars.gigaword
-        bytes_out = self.packetobject['Acct-Output-Octets'][0] + self.packetobject.get('Acct-Output-Gigawords', (0,))[0]*vars.gigaword
+        bytes_in  = self.packetobject['Acct-Input-Octets'][0]  + self.packetobject.get('Acct-Input-Gigawords', (0,))[0]  * vars.GIGAWORD
+        bytes_out = self.packetobject['Acct-Output-Octets'][0] + self.packetobject.get('Acct-Output-Gigawords', (0,))[0] * vars.GIGAWORD
         return (bytes_in, bytes_out)
 
     def acct_NA(self):
         """Deny access"""
         # Access denided
-        self.replypacket.code=3
+        self.replypacket.code = packet.AccessReject
         return self.replypacket
     
     def handle(self):
@@ -720,7 +722,7 @@ class HandleSAcct(HandleSBase):
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
-        self.replypacket.code=5
+        self.replypacket.code = packet.AccountingResponse
         now = datetime.datetime.now()
         
         if self.packetobject['Acct-Status-Type']==['Start']:
@@ -818,7 +820,7 @@ class CacheRoutine(Thread):
         while True:
             if suicideCondition[self.__class__.__name__]: break            
             try: 
-                if flags.cacheFlag or (now() - cacheMaster.date).seconds > 60:
+                if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
                     run_time = time.clock()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
@@ -931,8 +933,8 @@ def main():
       
     print 'caches ready'
     
-    server_auth = AsyncAuthServ("0.0.0.0", 1812)
-    server_acct = AsyncAcctServ("0.0.0.0", 1813)
+    server_auth = AsyncAuthServ("0.0.0.0", vars.AUTH_PORT)
+    server_acct = AsyncAcctServ("0.0.0.0", vars.ACCT_PORT)
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
@@ -953,42 +955,35 @@ def main():
         
 if __name__ == "__main__":
     if "-D" in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
+        pass
+        #daemonize("/dev/null", "log.txt", "log.txt")
         
-    flags = RadFlags()
-    vars  = RadVars()
-    queues= RadQueues()
-    cacheMaster = CacheMaster()
-    #cacheMaster.date = None
-    
     config = ConfigParser.ConfigParser()
-    if os.name=='nt' and w32Import:
-        setpriority(priority=4)
-    config.read("ebs_config.ini") 
     
-    vars.dict=dictionary.Dictionary("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+    config.read("ebs_config.ini")
     
-    
-    logger = isdlogger.isdlogger(config.get("radius", "log_type"), loglevel=int(config.get("radius", "log_level")), ident=config.get("radius", "log_ident"), filename=config.get("radius", "log_file")) 
-    utilites.log_adapt = logger.log_adapt
-    saver.log_adapt    = logger.log_adapt
-    logger.lprint('Radius start')
+
     
     try:
+        flags = RadFlags()
+        vars  = RadVars()
+        queues= RadQueues()
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+        
+        cacheMaster = CacheMaster()
+
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        utilites.log_adapt = logger.log_adapt
+        saver.log_adapt    = logger.log_adapt
+        logger.lprint('Radius start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info?
         flags.writeProf = logger.writeInfoP()         
 
-        vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),
-                                                                         config.get("db", "host"), config.get("db", "password"))
         suicideCondition = {}
         fMem = pfMemoize()
-    
-        flags.common_vpn = True if config.get("radius", "common_vpn") == "True" else False    
-        vars.session_timeout = int(config.get("dhcp", "session_timeout"))        
-        flags.ignore_nas_for_vpn = True if config.get("radius", "ignore_nas_for_vpn") == "True" else False
-                
+
         if not globals().has_key('_1i'):
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
