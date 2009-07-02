@@ -353,6 +353,7 @@ class periodical_service_bill(Thread):
                                             Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                             пока денег на счету не было
                                             """
+                                            chk_date = last_checkout + s_delta
                                             #Смотрим на какую сумму должны были снять денег и снимаем её                                            
                                             while chk_date <= now:
                                                 if ps.created and ps.created >= chk_date:
