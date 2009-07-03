@@ -361,7 +361,7 @@ class periodical_service_bill(Thread):
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 cur.connection.commit()
                                                 chk_date += s_delta
-                                        elif nums > 0:
+                                        else:
                                             summ = cash_summ * susp_per_mlt
                                             if (ps.created and ps.created >= chk_date) or (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
