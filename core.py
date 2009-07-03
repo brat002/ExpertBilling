@@ -340,7 +340,7 @@ class periodical_service_bill(Thread):
                                         first_time = True
                                         
                                     #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
-                                    if first_time or last_checkout <= period_start:
+                                    if first_time or last_checkout < period_start:
                                         #lc = period_start - last_checkout
                                         lc = now - last_checkout
                                         #Смотрим сколько раз должны были снять с момента последнего снятия
