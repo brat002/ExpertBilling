@@ -334,9 +334,11 @@ class periodical_service_bill(Thread):
                                     
                                     summ = 0
                                     #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+                                    if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
+                                        continue
                                     first_time = False
                                     if last_checkout is None:
-                                        last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                                        last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
                                         first_time = True
                                         
                                     #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
@@ -348,19 +350,22 @@ class periodical_service_bill(Thread):
                                         cash_summ = ps.cost
                                         #chk_date = last_checkout + s_delta
                                         chk_date = period_start
-                                        if nums > 1:
+                                        if nums > 0:
                                             """
                                             Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
                                             пока денег на счету не было
                                             """
-                                            chk_date = last_checkout + s_delta
+                                            chk_date = last_checkout
                                             #Смотрим на какую сумму должны были снять денег и снимаем её                                            
-                                            while chk_date <= now:
+                                            while chk_date <= period_start:
+                                                period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                                s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                                chk_date = period_start_ast
                                                 if ps.created and ps.created >= chk_date:
                                                     cash_summ = 0
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 cur.connection.commit()
-                                                chk_date += s_delta
+                                                chk_date += s_delta_ast
                                         else:
                                             summ = cash_summ * susp_per_mlt
                                             if (ps.created and ps.created >= chk_date) or (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
