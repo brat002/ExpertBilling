@@ -32,11 +32,14 @@ def setAllowedUsers(dbconnection, licstr):
     dbconnection.close()
     return allowedUsers
 
-def allowedUsersChecker(allowed, current):
+def allowedUsersChecker(allowed, current, exit, flags):
     if current() > allowed():
         log_error_("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed())))
         print >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
-        sys.exit()
+        flags.allowedUsersCheck = False
+        exit()
+    else:
+        flags.allowedUsersCheck = True
 
 def graceful_saver(objlists, globals_, moduleName, saveDir):
     for objlist in objlists:

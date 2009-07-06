@@ -44,7 +44,8 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfVars, NfQueues
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
+                     STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
 
 MIN_NETFLOW_PACKET_LEN = 16
@@ -56,6 +57,8 @@ FLOWCACHE_RESET_TIME = 60
 NAME = 'nf'
 DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
+MAX_PACKET_INDEX = 2147483647L
+
 
 try:    import mx.DateTime
 except: pass
@@ -240,7 +243,7 @@ class FlowDequeThread(Thread):
     
     def __init__(self):
         self.tname = self.__class__.__name__
-        Thread.__init__(self)        
+        Thread.__init__(self)
     
     def add_classes_groups(self, flow, classLst, nnode, acctf_id, has_groups, tarifGroups):
         ptime =  time.time()
@@ -351,15 +354,17 @@ class FlowDequeThread(Thread):
                         flst.append(tuple(flow)); fcnt += 1                    
                         #append to databaseQueue
                         if fcnt == vars.PACKET_PACK:
+                            flpack = struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + marshal.dumps(flst)
                             with queues.dbLock:
-                                queues.databaseQueue.append(flst)
+                                queues.databaseQueue.append(flpack)
                             flst = []; fcnt = 0
                             
                         src = False
                         
                 if len(flst) > 0:
+                    flpack = struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + marshal.dumps(flst)
                     with queues.dbLock:
-                        queues.databaseQueue.append(flst)
+                        queues.databaseQueue.append(flpack)
                     flst = []
                 del keylist
             except Exception, ex:
@@ -375,6 +380,8 @@ class NfUDPSenderThread(Thread):
         self.outbuf = []
         self.hpath = ''.join((vars.DUMP_DIR,'/',vars.PREFIX))
         Thread.__init__(self)
+        self.last_packet = None
+        self.err_count   = 0
         
     def run(self):
         addrport = vars.NFR_ADDR
@@ -384,41 +391,67 @@ class NfUDPSenderThread(Thread):
         while True:     
             try:
                 if suicideCondition[self.tname]:
-                    if errflag: dfile.close(); queues.fnameQueue.append(fname)
+                    #if errflag: dfile.close(); queues.fnameQueue.append(fname)
                     break
                 #get a bunch of packets
-                fpacket = None
-                queues.dbLock.acquire()
-                try:     fpacket = queues.databaseQueue.popleft()
-                except:  pass
-                finally: queues.dbLock.release()
-                if not fpacket: time.sleep(5); continue
+                flst = None
+                #queues.dbLock.acquire()
+                #try:     fpacket = queues.databaseQueue.popleft()
+                #except:  pass
+                #finally: queues.dbLock.release()
+                with queues.dbLock:
+                    if len(queues.databaseQueue) > 0:
+                        flst = queues.databaseQueue.popleft()
+                if not flst: time.sleep(5); continue
                 
-                flst = marshal.dumps(fpacket)
+                #flst = marshal.dumps(fpacket)
                 #send data
-                nfsock.sendto(flst,vars.NFR_ADDR)
+                #nfsock.sendto(flst,vars.NFR_ADDR)
+                nfsock.sendto(struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + flst,vars.NFR_ADDR)
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
                 #if wrong length (probably zero reply) - raise exception
-                if dtrc is None: raise Exception("Empty!")
+                if dtrc is None or len(dtrc) < 4: raise Exception("Empty!")
+                
+                if dtrc[4] != '!' and (len(flst) != int(dtrc)): raise Exception("Sizes not equal!")
+                
+                with queues.packetIndexLock:
+                    queues.packetIndex += 1
+                  
+                if   dtrc[:4] == 'BAD!':
+                    raise Exception("Bad packet flag detected!")
+                
+                self.last_packet = flst
+                self.err_count   = 0
                 
                 if dtrc[:4] == 'SLP!':
                     logger.lprint("sleepFlag detected!")
                     time.sleep(30); continue
-                
-                if (len(flst) != int(dtrc)): raise Exception("Sizes not equal!")
-                
+                elif dtrc[:4] == 'DUP!':
+                    logger.lprint("Duplicate packet flag detected!")
+                    continue
+                elif dtrc[:4] == 'ERR!':
+                    logger.lprint("Error packet flag detected!")
+                    continue     
+ 
                 #if the connection is OK but there were errors earlier
-                if errflag:
+                '''if errflag:
                     logger.info('%s errflag detected - time %d', (self.getName(), time.time()))
                     dfile.close()
                     with queues.fnameLock: queues.fnameQueue.append(fname)
                     #clear errflag
-                    errflag = 0
+                    errflag = 0'''
                     
             except Exception, ex:
                 logger.debug('%s exp: %s \n %s', (self.getName(), repr(ex), traceback.format_exc()))
                 #if no errors were detected earlier
+                if self.last_packet == flst and not isinstance(ex, socket.timeout):
+                    self.err_count += 1
+                if flst and self.err_count < 5:
+                    self.err_count == 0
+                    with queues.dbLock:
+                        queues.databaseQueue.appendleft(flst)
+                '''
                 if not errflag:
                     try:
                         errflag = 1                        
@@ -443,87 +476,117 @@ class NfUDPSenderThread(Thread):
                 except Exception, ex:
                         logger.error("%s file write exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         continue
-            del flst
-            
+                '''
+            #del flst
+ 
+def get_index_state():
+    state = STATE_OK
+    index = 0
+    with queues.packetIndexLock:
+        if queues.packetIndex > MAX_PACKET_INDEX:
+            queues.packetIndex = 0
+            state = STATE_NULLIFIED
+        index = queues.packetIndex
+    return (index, state, time.time())
+
 class NfFileReadThread(Thread):
     '''Thread that reads previously written data dumps and resends data.'''
     def __init__(self):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
         self.hpath  = ''.join((vars.READ_DIR,'/',vars.PREFIX))
+        self.prev_ps  = 1.0
+        #self.pprev_ps = 1.0
+        self.cur_ps   = 1.0
+        self.file_ps  = vars.FILE_PACK / float(vars.MAX_SENDBUF_LEN)
+        self.allow_recover = 0
+        self.allow_dump    = 0
     
     def run(self):
-        addrport = vars.NFR_ADDR
+        #addrport = vars.NFR_ADDR
         #nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         #nfsock.settimeout(vars.sockTimeout)
-        nfsock = get_socket()
+        #nfsock = get_socket()
         fname, dfile = None, None
         while True:
             try:
                 if suicideCondition[self.tname]: break
-                
                 #get a file name from a queue
                 fname = None
-                queues.fnameLock.acquire()
-                try:     fname = queues.fnameQueue.popleft()
-                except:  pass
-                finally: queues.fnameLock.release()
-                if not fname: time.sleep(240); continue
-                #open the file
-                dfile = open(fname, 'rb')
-                #read flows
-                flows = dfile.read()
-                dfile.close()
-                #create/open counter file
-                fcname  = fname + 'c'
-                flows  = flows.split('!FLW')[:-1]
-                if not os.path.exists(fcname):
-                    cfile = open(fcname, 'wb')
-                else:
-                    cfile = open(fcname, 'rb')
-                    fwrt = len(cfile.read())
-                    flows = flows[fwrt:]
-                    cfile.close()
-                    cfile = open(fcname, 'ab')
-                    
-                fcnt = 0
-                try:
-                    #send flows
-                    for flow in flows:
-                        nfsock.sendto(flow,addrport)                    
-                        dtrc, addr = nfsock.recvfrom(128)
-                        if dtrc is None: raise Exception("Empty!")
-                
-                        if dtrc[:4] == 'SLP!':
-                            logger.lprint("NfFileReadThread: sleepFlag detected!")
-                            time.sleep(10)
-                    
-                        elif (len(flow) != int(dtrc)):
-                            raise Exception("Sizes not equal!")
+                self.allow_recover = 0
+                self.allow_dump    = 0
+                dbqueue_len = 0
+                #with queues.dbLock:
+                dbqueue_len = len(queues.databaseQueue)
+                self.cur_ps = dbqueue_len / vars.MAX_SENDBUF_LEN
+                #logger.info('PPrevious dbqueue len/max percentage: %s', self.pprev_ps)
+                logger.info('Previous dbqueue len/max percentage: %s', self.prev_ps)
+                logger.info('Current dbqueue len/max percentage: %s', self.cur_ps) 
+                if self.cur_ps > 1:
+                    if self.cur_ps < 1 + self.file_ps:
+                        pass
+                    elif self.prev_ps < 1 and self.cur_ps - 1 / self.file_ps < 3:
+                        self.allow_dump = 1
+                    else:
+                        self.allow_dump = int(self.cur_ps - 1 / self.file_ps)
+                elif self.cur_ps < 1 and len(queues.fnameQueue) > 0:
+                    if self.cur_ps > 1 - self.file_ps:
+                        pass
+                    elif self.prev_ps > 1 and  1 - self.cur_ps / self.file_ps < 3:
+                        self.allow_recover = 1
+                    else:
+                        self.allow_recover = int(1 - self.cur_ps / self.file_ps)
                         
-                        fcnt += 1; cfile.write('\n')
-                        #flush every 4 packets
-                        if fcnt % 4 == 0:
-                            cfile.flush()
-                        time.sleep(0.1)
-                    cfile.close()
-                    os.remove(fname); os.remove(fcname)
-                    logger.info("NfFileReadThread: file processed: %s", (fname,))
-                except Exception, ex:
-                    #if errors - write data to another file
-                    logger.error("NfFileReadThread flowsend exception: %s \n %s", (repr(ex),traceback.format_exc()))
-                    dfile.close(); cfile.close()
-                    #append file again
-                    with queues.fnameLock: queues.fnameQueue.append(fname)
-                    #run a cleanup thread
-                    time.sleep(60)
-                    continue 
+                self.prev_ps = self.cur_ps
+                if self.allow_dump:
+                    dump_queue = None
+                    dump_index = -1 * self.allow_dump * vars.FILE_PACK
+                    with queues.databaseQueue:
+                        dump_queue = queues.databaseQueue[dump_index:]
+                        queues.databaseQueue = queues.databaseQueue[:dump_index]
+                    if dump_queue:
+                        for i in xrange(self.allow_dump):
+                            dump_out = dump_queue[:vars.FILE_PACK]
+                            dump_queue = dump_queue[vars.FILE_PACK:]
+                            if dump_out:
+                                try:
+                                    fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
+                                    dump_file = open(fname, 'wb')
+                                    marshal.dump(dump_out, dump_file)
+                                    dump_file.close()
+                                except Exception, ex:
+                                    logger.error("NfFileReadThread filewrite exception: %s \n %s", (repr(ex), traceback.format_exc()))
+                                else:
+                                    with queues.fnameLock:
+                                        queues.fnameQueue.append(fname)
+                                    logger.info("NfFileReadThread dumped %s packets to file %s", (len(dump_out), fname))
+                elif self.allow_recover:
+                    recover_list = []
+                    for i in xrange(self.allow_recover):
+                        fname = None
+                        with queues.fnameLock:
+                            if len(queues.fnameQueue) > 1:
+                                fname = queues.fnameQueue.popleft()
+                        if not fname: break
+                        try:
+                            rec_file = open(fname, 'rb')
+                            recover_list = marshal.load(rec_file)
+                        except Exception, ex:
+                            logger.error("NfFileReadThread fileread exception: %s \n %s", (repr(ex), traceback.format_exc()))
+                        finally:
+                            rec_file.close()
+                        if recover_list:
+                            with queues.dbLock:
+                                queues.databaseQueue.extend(recover_list)
+                            logger.info("NfFileReadThread read %s packets from file %s", (len(recover_list), fname))             
+                
             except Exception, ex:
                 logger.error("NfFileReadThread fileread exception: %s \n %s", (repr(ex), traceback.format_exc()))
-                with queues.fnameLock: queues.fnameQueue.append(fname)
-                return                   
+                 
+            time.sleep(240)
                            
-                    
+    
+            
 class ServiceThread(Thread):
     '''Thread that forms and renews caches.'''
     

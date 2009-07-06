@@ -5,6 +5,7 @@ from __future__ import with_statement
 import cPickle
 import random
 import signal
+import struct
 import asyncore
 import threading
 import ConfigParser
@@ -44,13 +45,15 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
+                     STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
+NFR_PACKET_HEADER_LEN = 16
 NAME = 'nfroutine'
 DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
@@ -433,9 +436,14 @@ class NetFlowRoutine(Thread):
                         queues.depickerQueue.append(queues.picker.get_data())
                         queues.picker = Picker()
                         queues.pickerTime = time.time()                    
-
-                fpacket = queues.nfIncomingQueue.popleft()
-                flows = loads(fpacket)
+                        
+                with queues.nfQueueLock:
+                    if len(queues.nfIncomingQueue) > 1:
+                        fpacket = queues.nfIncomingQueue.popleft()
+                #flows = loads(fpacket)
+                if not fpacket: time.sleep(random.randint(5,17)); continue
+                
+                flows = fpacket
                 #iterate through them
                 for pflow in flows:
                     flow = Flow5Data(False, *pflow)
@@ -680,11 +688,51 @@ class NfTwistedServer(DatagramProtocol):
     Twisted Asynchronous server that recieves datagrams with NetFlow packets
     and appends them to 'nfQueue' queue.
     '''
+    def __init__(self):
+        super(NfTwistedServer, self).__init__()
+        self.last_addr  = None
+        self.last_index = None
+        self.last_timestamp = 0
+
     def datagramReceived(self, data, addrport):
         try:
-            self.transport.write(vars.sendFlag + str(len(data)), addrport)
+            if not vars.ALLOWED_NF_IP_LIST or addrport[0] not in vars.ALLOWED_NF_IP_LIST:
+                logger.info("IP not in list, packet discarded %s", str(addrport))
+                self.transport.write('ERR!', addrport)
+                return
+            if len(data) < NFR_PACKET_HEADER_LEN:
+                logger.info("Bad packet (too small) from %s", str(addrport))
+                self.transport.write('BAD!', addrport)
+                return
+            try:
+                cur_index, cur_state, cur_timestamp = struct.unpack(NFR_PACKET_HEADER_FMT, data[:NFR_PACKET_HEADER_LEN])
+            except Exception, ex:
+                logger.info("Bad packet (strange header) from %s ; " + repr(ex), str(addrport))
+                self.transport.write('BAD!', addrport)
+                return
+            if self.last_addr != addrport[0]:
+                queues.lastPacketInfo[self.last_addr] = (self.last_index, self.last_timestamp)
+                self.last_addr = addrport[0]
+                self.last_index, self.last_timestamp = queues.lastPacketInfo[self.last_addr]
+            if self.last_index == cur_index or self.last_timestamp < cur_timestamp:
+                logger.info("Duplicate packet from %s", str(addrport))
+                self.transport.write('DUP!', addrport)
+                return            
+            try:
+                flows = loads(data[NFR_PACKET_HEADER_LEN:])
+            except Exception, ex:
+                logger.info("Bad packet (marshalling problems) from %s ; " + repr(ex), str(addrport))
+                self.transport.write('BAD!', addrport)
+                return
+                 
+            
+            self.last_index     = cur_index
+            self.last_timestamp = cur_timestamp
+            with queues.nfQueueLock:
+                queues.nfIncomingQueue.append(flows)
+            self.transport.write(vars.sendFlag + str(len(data) - NFR_PACKET_HEADER_LEN), addrport)
             #self.socket.sendto(vars.sendFlag + str(len(data)), addrport)
-            queues.nfIncomingQueue.append(data)
+            
         except:            
             logger.error("Twisted Server Error : #30210701 : %s \n %s", (repr(ex), traceback.format_exc()))
 

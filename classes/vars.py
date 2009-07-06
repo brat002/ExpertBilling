@@ -79,14 +79,15 @@ class NfVars(Vars):
     """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('HOST', 'PORT', 'NFR_HOST', 'NFR_PORT', 'NFR_ADDR', 'SOCK_TIMEOUT', 'SAVE_DIR', 'READ_DIR', 'PREFIX', 'AGGR_TIME', 'AGGR_NUM',\
-                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'DUMP_DIR', 'CACHE_DICTS', 'SOCK_TYPE', 'FILE_PACK', 'PACKET_PACK', 'CHECK_CLASSES', 'MAX_DATAGRAM_LEN', 'RECOVER_DUMP', 'NF_TIME_MOD')
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'DUMP_DIR', 'CACHE_DICTS', 'SOCK_TYPE', 'FILE_PACK', 'PACKET_PACK', 'CHECK_CLASSES', 'MAX_DATAGRAM_LEN', 'RECOVER_DUMP', 'NF_TIME_MOD',\
+                 'MAX_SENDBUF_LEN')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
         self.NFR_HOST = '127.0.0.1'
         self.NFR_PORT = 36577
         self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
-        self.SOCK_TIMEOUT = 0.1
+        self.SOCK_TIMEOUT = 5
         self.AGGR_TIME, self.AGGR_NUM = 120, 667
         self.RECOVER_DUMP = True
         self.FLOW_TYPES = {5 : (None, None)}
@@ -105,6 +106,7 @@ class NfVars(Vars):
         self.CHECK_CLASSES = 0
         self.MAX_DATAGRAM_LEN = 8192
         self.NF_TIME_MOD = 20
+        self.MAX_SENDBUF_LEN = 10000
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -156,7 +158,7 @@ class NfQueues(object):
     """('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
     __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
-                 'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')
+                 'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock', 'packetIndex', 'packetIndexLock')
     def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
         self.dcaches = [{}]*dcacheNum; self.dcacheLocks = [Lock()]*dcacheNum
@@ -164,13 +166,14 @@ class NfQueues(object):
         self.databaseQueue = deque(); self.dbLock = Lock()
         self.fnameQueue = deque(); self.fnameLock = Lock()
         self.nfQueue = deque(); self.nfqLock = Lock()
+        self.packetIndex = 0; self.packetIndexLock = Lock()
         
     
 
 class NfrVars(Vars):
     __slots__ = ('NFR_SESSION', 'HOST', 'PORT', 'ADDR', 'sendFlag', 'SAVE_DIR', 'GROUP_AGGR_TIME', 'STAT_AGGR_TIME',\
                  'STAT_DICTS', 'GROUP_DICTS', 'SOCK_TYPE', 'STORE_NA_TARIF', 'STORE_NA_ACCOUNT', 'MAX_DATAGRAM_LEN',\
-                 'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS')
+                 'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS', 'ALLOWED_NF_IP_LIST')
     
     def __init__(self):
         super(NfrVars, self).__init__()
@@ -193,6 +196,7 @@ class NfrVars(Vars):
         self.GROUPSTAT_THREADS  = 1
         self.GLOBALSTAT_THREADS = 1
         self.BILL_THREADS = 1
+        self.ALLOWED_NF_IP_LIST = ['127.0.0.1']
         
     def get_dynamic(self, **kwargs):
         super(NfrVars, self).get_dynamic(**kwargs)
@@ -226,6 +230,7 @@ class NfrVars(Vars):
         if config.has_option(name, 'groupstat_threads'):  self.GROUPSTAT_THREADS = config.getint(name, 'groupstat_threads')
         if config.has_option(name, 'globalstat_threads'): self.GLOBALSTAT_THREADS = config.getint(name, 'globalstat_threads')
         if config.has_option(name, 'bill_threads'):       self.BILL_THREADS = config.getint(name, 'bill_threads')
+        if config.has_option(name, 'allowed_nf_ip_list'): self.ALLOWED_NF_IP_LIST = config.get(name, 'allowed_nf_ip_list').split(',')
             
     def get_static(self, **kwargs):
         super(NfrVars, self).get_static(**kwargs)
@@ -239,7 +244,7 @@ class NfrVars(Vars):
 class NfrQueues(object):
     __slots__ = ('nfIncomingQueue', 'nfQueueLock', 'groupAggrDicts', 'statAggrDicts', 'groupAggrLocks', 'statAggrLocks', \
                  'groupDeque', 'groupLock', 'statDeque', 'statLock', 'depickerQueue', 'depickerLock', \
-                 'picker', 'pickerLock', 'pickerTime', 'prepaidLock')
+                 'picker', 'pickerLock', 'pickerTime', 'prepaidLock', 'lastPacketInfo')
     def __init__(self, groupDicts = 10, statDicts = 10):
         self.nfIncomingQueue = deque(); self.nfQueueLock = Lock()
         #[(1,2,3)][0][4]['INPUT']
@@ -252,11 +257,13 @@ class NfrQueues(object):
         self.depickerQueue = deque(); self.depickerLock = Lock()
         self.picker = None; self.pickerLock = Lock(); self.pickerTime = 0
         self.prepaidLock = Lock()
+        self.lastPacketInfo = defaultdict(lambda: (None,0))
         
         
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN',\
-                 'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT')
+                 'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -270,6 +277,10 @@ class RadVars(Vars):
         self.MAX_DATAGRAM_LEN = 4096
         self.AUTH_PORT = 1812
         self.ACCT_PORT = 1813
+        self.AUTH_SOCK_TIMEOUT = 5
+        self.ACCT_SOCK_TIMEOUT = 5
+        self.AUTH_THREAD_NUM = 2
+        self.ACCT_THREAD_NUM = 3
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -282,7 +293,15 @@ class RadVars(Vars):
             self.IGNORE_NAS_FOR_VPN = False if config.get(name, 'ignore_nas_for_vpn').lower() in ('false', '0') else True
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
-        self.DICT = dictionary.Dictionary(**self.DICT_LIST)
+        self.DICT = dictionary.Dictionary(*self.DICT_LIST)
+        if config.has_option(name, 'max_datagram_length'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_length')
+        if config.has_option(name, 'auth_port'): self.AUTH_PORT = config.getint(name, 'auth_port')
+        if config.has_option(name, 'acct_port'): self.ACCT_PORT = config.getint(name, 'acct_port')
+        if config.has_option(name, 'auth_sock_timeout'): self.AUTH_SOCK_TIMEOUT = config.getint(name, 'auth_sock_timeout')
+        if config.has_option(name, 'acct_sock_timeout'): self.ACCT_SOCK_TIMEOUT = config.getint(name, 'acct_sock_timeout')
+        if config.has_option(name, 'auth_thread_num'): self.AUTH_THREAD_NUM = config.getint(name, 'auth_thread_num')
+        if config.has_option(name, 'acct_thread_num'): self.ACCT_THREAD_NUM = config.getint(name, 'acct_thread_num')
+        
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RadVars, self).__slots__ + self.__slots__))
@@ -290,12 +309,15 @@ class RadVars(Vars):
 
     
 class RadQueues(object):
-    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_md5_ch', 'eap_md5_lock')
+    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_md5_ch', 'eap_md5_lock',\
+                 'authQueue', 'authQLock', 'acctQueue', 'acctQLock')
     def __init__(self):
         self.account_timeaccess_cache = {}
         self.account_timeaccess_cache_count = 0
         self.eap_md5_ch = {}
         self.eap_md5_lock = Lock()
+        self.authQueue = deque(); self.authQLock = Lock()
+        self.acctQueue = deque(); self.acctQLock = Lock()
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
@@ -311,7 +333,7 @@ class CoreVars(Vars):
         self.LIMIT_SLEEP = 110
         self.SETTLEMENT_PERIOD_SLEEP = 120
         self.IPN_SLEEP = 120
-        self.DICT_LIST = ("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+        self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
         self.DICT = None
         
     def get_dynamic(self, **kwargs):
@@ -328,7 +350,7 @@ class CoreVars(Vars):
 
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
-        self.DICT = dictionary.Dictionary(**self.DICT_LIST)
+        self.DICT = dictionary.Dictionary(*self.DICT_LIST)
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(CoreVars, self).__slots__ + self.__slots__))

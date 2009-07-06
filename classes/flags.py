@@ -1,11 +1,12 @@
 from threading import Lock
 
 class Flags(object):
-    __slots__ = ('cacheFlag', 'cacheLock', 'writeProf', )
+    __slots__ = ('cacheFlag', 'cacheLock', 'writeProf', 'allowedUsersCheck')
     def __init__(self):
         self.cacheFlag = False
         self.cacheLock = Lock()
         self.writeProf = False
+        self.allowedUsersCheck = False
         
 class CoreFlags(Flags):
     __slots__ = ()

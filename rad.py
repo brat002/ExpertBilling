@@ -39,6 +39,7 @@ from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
+from pkgutil import simplegeneric
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -52,7 +53,7 @@ else:   w32Import = True
 #account_timeaccess_cache={}
 #account_timeaccess_cache_count=0
 
-NAME = 'rad'
+NAME = 'radius'
 DB_NAME = 'db'
         
 def show_packet(packetobject):
@@ -61,7 +62,28 @@ def show_packet(packetobject):
     for key,value in packetobject.items():
         b+=str(packetobject._DecodeKey(key))+str(packetobject[packetobject._DecodeKey(key)][0])+"\n"
     return b
-        
+     
+@simplegeneric
+def sendto (self, data, addr):
+    self.outbuf.append((data, addr))
+    initiate_send(self)
+
+@simplegeneric
+def initiate_send(self):
+    b = self.outbuf
+    #self.send()
+    while len(b):
+        data, addr = b.popleft()
+        try:
+            result = self.socket.sendto (data, addr)
+            if result != len(data):
+                logger.warning('Sent packet truncated to %s bytes', result)
+        except socket.error, why:
+            if why[0] == 'EWOULDBLOCK':
+                return
+            else:
+                raise socket.error, why
+            
 class AsyncUDPServer(asyncore.dispatcher):
     ac_out_buffer_size = 8096*10
     ac_in_buffer_size = 8096*10
@@ -94,27 +116,6 @@ class AsyncUDPServer(asyncore.dispatcher):
     
     def writable (self):
         return len(self.outbuf)
-
-    def sendto (self, data, addr):
-        self.outbuf.append((data, addr))
-        self.initiate_send()
-    
-    
-    def initiate_send(self):
-        b = self.outbuf
-        #self.send()
-        while len(b):
-            data, addr = b.popleft()
-            try:
-                result = self.socket.sendto (data, addr)
-                if result != len(data):
-                    logger.warning('Sent packet truncated to %s bytes', result)
-            except socket.error, why:
-                if why[0] == 'EWOULDBLOCK':
-                    return
-                else:
-                    raise socket.error, why
-
                 
     def handle_error (self, *info):        
         logger.error('uncaptured python exception, closing channel %s \n %s', (repr(self), traceback.format_exc()))
@@ -154,99 +155,19 @@ class AsyncAuthServ(AsyncUDPServer):
         global vars
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        #self.dbconn = dbpool
-        #self.dbconn._con._con.set_isolation_level(0)
-        #self.dbconn._con._con.set_client_encoding('UTF8')
-        self.dbconn = get_connection(vars.db_dsn)
-        self.dbconn.set_isolation_level(0)
-        self.dateCache = datetime.datetime(2000, 1, 1)
-        self.caches = None
+        #self.dbconn = get_connection(vars.db_dsn)
+        #self.dbconn.set_isolation_level(0)
+        #self.dateCache = datetime.datetime(2000, 1, 1)
+        #self.caches = None
 
     def handle_readfrom(self, data, addrport):
-        global cacheMaster, queues, vars, flags, fMem
+        global queues, vars
         
-        try:     
-            #if caches were renewed, renew local copies
-            if cacheMaster.date > self.dateCache:
-                cacheMaster.lock.acquire()
-                try:
-                    self.caches = cacheMaster.cache
-                    dateAT = deepcopy(cacheMaster.date)
-                except Exception, ex:
-                    logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
-                finally:
-                    cacheMaster.lock.release()
-                    
-            if not self.caches:
-                raise Exception("Caches were not ready!")
-            
-            if 0: assert isinstance(self.caches, RadCaches)
-                        
-            t = clock()
-            returndata = ''
-            #data=self.request[0] # or recv(bufsize, flags)
-            assert len(data)<=4096
-            packetobject=packet.Packet(dict=vars.DICT,packet=data)
-            nas_ip = str(packetobject['NAS-IP-Address'][0])
-            access_type = get_accesstype(packetobject)
-            logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
-            if access_type in ['PPTP', 'PPPOE']:
-                logger.info("Auth Type %s, raw packet: %s", (access_type, data))
-                coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
-                coreconnect.nasip = nas_ip
-                coreconnect.fMem = fMem; coreconnect.caches = self.caches
-                authobject, packetfromcore=coreconnect.handle()
-                
-                if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-    
-                logger.info("Password check: %s", authobject.code)
-                #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
-                returndata=authobject.ReturnPacket(packetfromcore) 
-    
-            elif access_type in ['HotSpot']:
-                logger.info("Auth Type %s", access_type)
-                coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
-                coreconnect.nasip = nas_ip
-                coreconnect.fMem = fMem; coreconnect.caches = self.caches
-                authobject, packetfromcore=coreconnect.handle()
-                
-                if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-    
-                logger.info("Password check: %s", authobject.code)
-                returndata=authobject.ReturnPacket(packetfromcore) 
-                
-            elif access_type in ['DHCP'] :
-                coreconnect = HandleSDHCP(packetobject=packetobject)
-                coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
-                authobject, packetfromcore = coreconnect.handle()
-                if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-                returndata=authobject.ReturnPacket(packetfromcore)
-            else:
-                #-----
-                coreconnect = HandleSNA(packetobject)
-                coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
-                right, packetfromcore = coreconnect.handle()
-                if packetfromcore is None: return
-                returndata=authNA(packetfromcore)
-                 
-            logger.info("AUTH time: %s", (clock()-t))
-            if returndata:
-                self.sendto(returndata,addrport)
-                del returndata
-                     
-            del packetfromcore
-            del coreconnect
-            logger.info("ACC: %s", (clock()-t))
-                
-        except Exception, ex:
-            logger.error("Auth Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
-            if ex.__class__ in vars.db_errors:
-                time.sleep(5)
-                try:
-                    self.dbconn = get_connection(vars.db_dsn)
-                except Exception, eex:
-                    logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                    time.sleep(10)
+        if len(data) > vars.MAX_DATAGRAM_LEN:
+            logger.warning("AUTH Packet len %s bigger than MAX_DATAGRAM LEN %s. Packet discarded.", (len(data), vars.MAX_DATAGRAM_LEN))
+        else:
+            with queues.authQLock:
+                queues.authQueue.append((data, addrport))
                         
 class AsyncAcctServ(AsyncUDPServer):
     def __init__(self, host, port):
@@ -255,51 +176,199 @@ class AsyncAcctServ(AsyncUDPServer):
         #self.dbconn = dbconn
         #self.dbconn._con._con.set_isolation_level(0)
         #self.dbconn._con._con.set_client_encoding('UTF8')
-        self.dbconn = get_connection(vars.db_dsn)
-        self.dbconn.set_isolation_level(0)
-        self.dateCache = datetime.datetime(2000, 1, 1)
-        self.caches = None
+        #self.dbconn = get_connection(vars.db_dsn)
+        #self.dbconn.set_isolation_level(0)
+        #self.dateCache = datetime.datetime(2000, 1, 1)
+        #self.caches = None
 
 
     def handle_readfrom(self, data, addrport):
-        global cacheMaster, vars, fMem
-        try:  
-            if cacheMaster.date > self.dateCache:
-                cacheMaster.lock.acquire()
-                try:
-                    self.caches = cacheMaster.cache
-                    dateAT = deepcopy(cacheMaster.date)
-                except Exception, ex:
-                    logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
-                finally:
-                    cacheMaster.lock.release()
-                    
-            if not self.caches:
-                raise Exception("Caches were not ready!")
-            
-            if 0: assert isinstance(self.caches, RadCaches)
+        global queues, vars
+        
+        if len(data) > vars.MAX_DATAGRAM_LEN:
+            logger.warning("ACCT Packet len %s bigger than MAX_DATAGRAM LEN %s. Packet discarded.", (len(data), vars.MAX_DATAGRAM_LEN))
+        else:
+            with queues.authQLock:
+                queues.authQueue.append((data, addrport))
 
+
+class AuthHandler(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        global vars
+        self.outbuf = deque()
+        #AsyncUDPServer.__init__(self, host, port)
+        self.dbconn = get_connection(vars.db_dsn)
+        #self.dbconn.set_isolation_level(0)
+        self.dateCache = datetime.datetime(2000, 1, 1)
+        self.caches = None
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.socket.settimeout(vars.AUTH_SOCK_TIMEOUT)
+        
+        
+    def run(self):
+        global cacheMaster, queues, vars, flags, fMem
+        while True:
+            if suicideCondition[self.__class__.__name__]: break
+            try:     
+                #if caches were renewed, renew local copies
+                if cacheMaster.date > self.dateCache:
+                    cacheMaster.lock.acquire()
+                    try:
+                        self.caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()
+                        if 0: assert isinstance(self.caches, RadCaches)
                         
-            t = clock()
-            assert len(data) <= vars.MAX_DATAGRAM_LEN
-            packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
-    
-            coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
-            coreconnect.caches = self.caches               
-            
-            packetfromcore = coreconnect.handle()
-            
-            if packetfromcore is not None: 
-                returndat=packetfromcore.ReplyPacket()
-                self.socket.sendto(returndat,addrport)
-                del returndat
+                if not self.caches:
+                    raise Exception("Caches were not ready!")
                 
-            del packetfromcore
-            del coreconnect    
-            logger.info("ACC: %s", (clock()-t))            
-        except Exception, ex:
-            logger.error("Acc Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
+                data, addrport = None, None
+                with queues.authQLock:
+                    if len(queues.authQueue) > 1:
+                        data, addrport = queues.authQueue.popleft()
+                if not data:
+                    time.sleep(2)
+                    continue
+                            
+                t = clock()
+                returndata = ''
+                #data=self.request[0] # or recv(bufsize, flags)
+                #assert len(data)<=4096
+                packetobject=packet.Packet(dict=vars.DICT,packet=data)
+                nas_ip = str(packetobject['NAS-IP-Address'][0])
+                access_type = get_accesstype(packetobject)
+                logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
+                if access_type in ['PPTP', 'PPPOE']:
+                    logger.info("Auth Type %s, raw packet: %s", (access_type, data))
+                    coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
+                    coreconnect.nasip = nas_ip
+                    coreconnect.fMem = fMem; coreconnect.caches = self.caches
+                    authobject, packetfromcore=coreconnect.handle()
+                    
+                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+        
+                    logger.info("Password check: %s", authobject.code)
+                    #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
+                    returndata=authobject.ReturnPacket(packetfromcore) 
+        
+                elif access_type in ['HotSpot']:
+                    logger.info("Auth Type %s", access_type)
+                    coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
+                    coreconnect.nasip = nas_ip
+                    coreconnect.fMem = fMem; coreconnect.caches = self.caches
+                    authobject, packetfromcore=coreconnect.handle()
+                    
+                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+        
+                    logger.info("Password check: %s", authobject.code)
+                    returndata=authobject.ReturnPacket(packetfromcore) 
+                    
+                elif access_type in ['DHCP'] :
+                    coreconnect = HandleSDHCP(packetobject=packetobject)
+                    coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
+                    authobject, packetfromcore = coreconnect.handle()
+                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+                    returndata=authobject.ReturnPacket(packetfromcore)
+                else:
+                    #-----
+                    coreconnect = HandleSNA(packetobject)
+                    coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
+                    right, packetfromcore = coreconnect.handle()
+                    if packetfromcore is None: return
+                    returndata=authNA(packetfromcore)
+                     
+                logger.info("AUTH time: %s", (clock()-t))
+                if returndata:
+                    sendto(self, returndata, addrport)
+                    del returndata
+                         
+                del packetfromcore
+                del coreconnect
+                logger.info("ACC: %s", (clock()-t))
+                    
+            except Exception, ex:
+                logger.error("%s Packet handler exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if ex.__class__ in vars.db_errors:
+                    time.sleep(5)
+                    try:
+                        self.dbconn = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
+                        time.sleep(10)
+ 
+class AcctHandler(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.outbuf = deque()
+        #AsyncUDPServer.__init__(self, host, port)
+        #self.dbconn = dbconn
+        #self.dbconn._con._con.set_isolation_level(0)
+        #self.dbconn._con._con.set_client_encoding('UTF8')
+        self.dbconn = get_connection(vars.db_dsn)
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.socket.settimeout(vars.ACCT_SOCK_TIMEOUT)
+        #self.dbconn.set_isolation_level(0)
+        self.dateCache = datetime.datetime(2000, 1, 1)
+        self.caches = None
 
+    def run(self):
+        global cacheMaster, vars, fMem
+        while True:
+            if suicideCondition[self.__class__.__name__]: break
+            try:  
+                if cacheMaster.date > self.dateCache:
+                    cacheMaster.lock.acquire()
+                    try:
+                        self.caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()
+                        if 0: assert isinstance(self.caches, RadCaches)
+                        
+                if not self.caches:
+                    raise Exception("Caches were not ready!")
+    
+                data, addrport = None, None
+                with queues.acctQLock:
+                    if len(queues.acctQueue) > 1:
+                        data, addrport = queues.acctQueue.popleft()
+                if not data:
+                    time.sleep(2)
+                    continue
+                            
+                t = clock()
+                assert len(data) <= vars.MAX_DATAGRAM_LEN
+                packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
+        
+                coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
+                coreconnect.caches = self.caches               
+                
+                packetfromcore = coreconnect.handle()
+                
+                if packetfromcore is not None: 
+                    returndata = packetfromcore.ReplyPacket()
+                    sendto(self, returndata, addrport)
+                    #self.socket.sendto(returndat,addrport)
+                    del returndat
+                    
+                del packetfromcore
+                del coreconnect    
+                logger.info("ACC: %s", (clock()-t))            
+            except Exception, ex:
+                logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if ex.__class__ in vars.db_errors:
+                    time.sleep(5)
+                    try:
+                        self.dbconn = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
+                        time.sleep(10)
 
 class HandleSBase(object):
     __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket')
@@ -827,8 +896,9 @@ class CacheRoutine(Thread):
                     renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
                     cur.close()
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
-                    counter += 1
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), graceful_save, flags)
+                        if not flags.allowedUsersCheck: continue                    
+                        counter += 1
                     if counter == 12:
                         #nullify 
                         counter, fMem.periodCache = 0, {}
@@ -836,6 +906,8 @@ class CacheRoutine(Thread):
                         with flags.cacheLock: flags.cacheFlag = False
                     
                     logger.info("ast time : %s", time.clock() - run_time)
+                    logger.info("AUTH queue len: %s", len(queues.authQueue))
+                    logger.info("ACCT queue len: %s", len(queues.acctQueue))
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -916,14 +988,24 @@ def graceful_save():
         
 
 def main():
-    global curCachesDate, cacheThr, suicideCondition
+    global threads, curCachesDate, cacheThr, suicideCondition
+    threads = []
+    
+    for i in xrange(vars.AUTH_THREAD_NUM):
+        newAuth = AuthHandler()
+        newAuth.setName('AUTH:#%i: AuthHandler' % i)
+        threads.append(newAuth)
+    for i in xrange(vars.ACCT_THREAD_NUM):
+        newAcct = AcctHandler()
+        newAcct.setName('ACCT:#%i: AcctHandler' % i)
+        threads.append(newAcct)
     cacheThr = CacheRoutine()
     suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.setName("CacheRoutine")
     cacheThr.start()    
     
     time.sleep(2)
-    while cacheMaster.read is False:        
+    while cacheMaster.read is False or flags.allowedUsersCheck is False:        
         if not cacheThr.isAlive:
             print 'Exception in cache thread: exiting'
             sys.exit()
@@ -933,6 +1015,11 @@ def main():
       
     print 'caches ready'
     
+    for th in threads:
+        suicideCondition[th.__class__.__name__] = False
+        th.start()        
+        logger.info("NFR %s start", th.getName())
+        time.sleep(0.1)
     server_auth = AsyncAuthServ("0.0.0.0", vars.AUTH_PORT)
     server_acct = AsyncAcctServ("0.0.0.0", vars.ACCT_PORT)
     try:
@@ -992,6 +1079,6 @@ if __name__ == "__main__":
         print "ebs: rad: configs read, about to start"
         main()
     except Exception, ex:
-        print 'Exception in rpc, exiting: ', repr(ex)
+        print 'Exception in rad, exiting: ', repr(ex)
         logger.error('Exception in rpc, exiting: %s \n %s', (repr(ex), traceback.format_exc()))
         
