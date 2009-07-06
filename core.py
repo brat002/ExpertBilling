@@ -372,7 +372,7 @@ class periodical_service_bill(Thread):
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                                 cur.connection.commit()
                                                 chk_date += s_delta_ast
-                                        else:
+                                        elif nums > 0:
                                             summ = cash_summ * susp_per_mlt
                                             if (ps.created and ps.created >= chk_date) or (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
@@ -1021,7 +1021,9 @@ class AccountServiceThread(Thread):
                     cur.close()
                     #print cacheMaster.cache
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        if not flags.allowedUsersCheck: continue
+                        #flags.allowedUsersCheck = True
                     counter += 1
                     if counter == 5:
                         #nullify 
@@ -1077,6 +1079,15 @@ def graceful_save():
     logger.lprint("Core - exiting gracefully.")
     sys.exit()
     
+def ungraceful_save():
+    global cacheThr, threads, suicideCondition, vars
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
+    #rempid(vars.piddir, vars.name)
+    print "Core: exiting"
+    logger.lprint("Core exiting.")
+    sys.exit()
+    
 def main():
     global caches, suicideCondition, threads, cacheThr, vars
     
@@ -1095,9 +1106,9 @@ def main():
     cacheThr.setName('Core AccountServiceThread')
     cacheThr.start()
     
-    while cacheMaster.read is False:        
-        if not cacheThr.isAlive:
-            print 'Exception in cache thread: exiting'
+    while cacheMaster.read is False or flags.allowedUsersCheck is False:        
+        if not cacheThr.isAlive():
+            print 'Core: exiting'
             sys.exit()
         time.sleep(10)
         if not cacheMaster.read: 
@@ -1126,7 +1137,10 @@ def main():
     savepid(vars.piddir, vars.name)
     #main thread should not exit!
     while True:
-        time.sleep(300)
+        time.sleep(30)
+        if not cacheThr.isAlive():
+            print 'Core: exiting'
+            sys.exit()
         
 
 
