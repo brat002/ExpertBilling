@@ -23,6 +23,11 @@ except Exception, ex:
     print "NO SIGNALS!"
     kill = lambda x,y: None
 
+    
+STATE_OK = 0
+STATE_NULLIFIED = 1
+NFR_PACKET_HEADER_FMT = '!IId'
+
 ssh_exec = False
 #try: 
 #    from ssh_utilities import SSHClient, ssh_execute
