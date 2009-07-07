@@ -208,7 +208,7 @@ class check_vpn_access(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             time.sleep(vars.VPN_SLEEP + random.randint(0,5))
 
@@ -434,7 +434,7 @@ class periodical_service_bill(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(abs(vars.PERIODICAL_SLEEP-(time.clock()-a_)) + random.randint(0,5))
@@ -821,7 +821,7 @@ class settlement_period_service_dog(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(vars.SETTLEMENT_PERIOD_SLEEP + random.randint(0,5))
@@ -834,8 +834,10 @@ class ipn_service(Thread):
     3. Если клиент вышел за рамки разрешённого временного диапазона в тарифном плане-отключать
     """
     def __init__ (self):
+        global vars
         Thread.__init__(self)
-
+        self.connection = get_connection(vars.db_dsn)
+        
     def create_speed(self, decRec, spRec, date_):
         defaults = decRec
         speeds = spRec
@@ -854,7 +856,7 @@ class ipn_service(Thread):
 
     def run(self):
         global suicideCondition, cacheMaster, vars
-        self.connection = get_connection(vars.db_dsn)
+        
         caches = None
         dateAT = datetime.datetime(2000, 1, 1)
         while True:             
@@ -872,8 +874,8 @@ class ipn_service(Thread):
                     try:
                         caches = cacheMaster.cache
                         dateAT = deepcopy(cacheMaster.date)
-                    except Exception, ex:
-                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
+                    except Exception, cex:
+                        logger.error("%s: cache exception: %s", (self.getName, repr(cex)))
                     finally:
                         cacheMaster.lock.release()                
                 if 0: assert isinstance(caches, CoreCaches)
@@ -897,7 +899,7 @@ class ipn_service(Thread):
                         now = datetime.datetime.now()
                         if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
                             #шлём команду, на включение пользователя, account_ipn_status=True
-                            ipn_added = acc.ipn_added
+                            #ipn_added = acc.ipn_added
                             """Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled"""
                             if not acc.ipn_added:
                                 sended = cred(acc.account_id, acc.username,acc.password, access_type,
@@ -961,7 +963,7 @@ class ipn_service(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(vars.IPN_SLEEP + random.randint(0,5))
@@ -1039,7 +1041,7 @@ class AccountServiceThread(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(20)

@@ -1,6 +1,6 @@
 import struct
 import psycopg2
-from collections import deque
+from collections import deque, defaultdict
 from threading import Lock
 import dictionary
 
@@ -56,7 +56,7 @@ class Vars(object):
     def changed(self, aVars):
         assert isinstance(aVars, Vars)
         changed = set()
-        for field in self.slots:
+        for field in self.__slots__:
             if getattr(self, field, None) != getattr(aVars, field, None):
                 for key, values in self.types.iteritems():
                     if field in values:
