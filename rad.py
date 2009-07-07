@@ -355,7 +355,7 @@ class AcctHandler(Thread):
                     returndata = packetfromcore.ReplyPacket()
                     sendto(self, returndata, addrport)
                     #self.socket.sendto(returndat,addrport)
-                    del returndat
+                    del returndata
                     
                 del packetfromcore
                 del coreconnect    
@@ -499,7 +499,7 @@ class HandleSAuth(HandleSBase):
         if not process:
             logger.warning(left, ())
             logger.debug("Auth object : %s" , authobject)
-            self.cur.close()
+            #self.cur.close()
             if ok:
                 return authobject, self.replypacket
             else:

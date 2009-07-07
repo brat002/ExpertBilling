@@ -354,7 +354,7 @@ class FlowDequeThread(Thread):
                         flst.append(tuple(flow)); fcnt += 1                    
                         #append to databaseQueue
                         if fcnt == vars.PACKET_PACK:
-                            flpack = struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + marshal.dumps(flst)
+                            flpack = marshal.dumps(flst)
                             with queues.dbLock:
                                 queues.databaseQueue.append(flpack)
                             flst = []; fcnt = 0
@@ -362,7 +362,7 @@ class FlowDequeThread(Thread):
                         src = False
                         
                 if len(flst) > 0:
-                    flpack = struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + marshal.dumps(flst)
+                    flpack = marshal.dumps(flst)
                     with queues.dbLock:
                         queues.databaseQueue.append(flpack)
                     flst = []
@@ -407,7 +407,7 @@ class NfUDPSenderThread(Thread):
                 #flst = marshal.dumps(fpacket)
                 #send data
                 #nfsock.sendto(flst,vars.NFR_ADDR)
-                nfsock.sendto(struct.pack(NFR_PACKET_HEADER_FMT, *self.get_index_state()) + flst,vars.NFR_ADDR)
+                nfsock.sendto(struct.pack(NFR_PACKET_HEADER_FMT, *get_index_state()) + flst, vars.NFR_ADDR)
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
                 #if wrong length (probably zero reply) - raise exception
