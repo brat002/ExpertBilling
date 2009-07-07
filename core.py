@@ -541,7 +541,7 @@ class TimeAccessBill(Thread):
                     try:
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
             time.sleep(vars.TIMEACCESS_SLEEP + random.randint(0,5))
