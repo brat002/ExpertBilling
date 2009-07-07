@@ -11,6 +11,6 @@ done
 lint_list="core rad nf nfroutine sendmail classes/vars"
 
 for lfile in $lint_list; do
-	pylint $lfile.py > lint/$lfile.lint
+	pylint $lfile.py > lint/$lfile.lint;
 	pylint -e $lfile.py > lint/errors/$lfile.lint.errors
 done
