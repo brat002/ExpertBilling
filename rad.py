@@ -186,7 +186,6 @@ class AsyncAuthServ(AsyncUDPServer):
             packetobject=packet.Packet(dict=vars.dict,packet=data)
             nas_ip = str(packetobject['NAS-IP-Address'][0])
             access_type = get_accesstype(packetobject)
-            
             if access_type in ['PPTP', 'PPPOE']:
                 logger.info("Auth Type %s", access_type)
     
@@ -406,7 +405,7 @@ class HandleSAuth(HandleSBase):
         if 0: assert isinstance(nas, NasData)
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.dict)
-
+        #print 1
         station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         user_name = str(self.packetobject['User-Name'][0])
 
@@ -432,7 +431,7 @@ class HandleSAuth(HandleSBase):
         
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
-                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
+                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))) 
         #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)

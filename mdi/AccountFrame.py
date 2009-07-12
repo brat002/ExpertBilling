@@ -136,7 +136,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (active=TRUE) AND (get_tariff_type(id)='%s');" % self.ttype)
+        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff ORDER BY name;")
         self.connection.commit()
         for tarif in tarifs:
             self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
@@ -1256,7 +1256,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             
-            text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
+            text = QtGui.QInputDialog.getText(self,u"Введите название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
             if text[0].isEmpty()==True and text[1]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
@@ -1338,7 +1338,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text)        
+            text = QtGui.QInputDialog.text.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text,0,1000000,2)      
            
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
             
