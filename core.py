@@ -869,6 +869,7 @@ class ipn_service(Thread):
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
                         if 0: assert isinstance(accps, AccessParametersData)
+
                         sended, recreate_speed = (None, False)
     
                         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
@@ -877,24 +878,26 @@ class ipn_service(Thread):
                         if 0: assert isinstance(nas, NasData)
                         access_type = 'IPN'
                         now = datetime.datetime.now()
+                        # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
+                        if not acc.ipn_added:
+                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
+                                          acc.vpn_ip_address, acc.ipn_ip_address, 
+                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                          nas.password, format_string=nas.user_add_action)
+                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
+                                
                         if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
                             #шлём команду, на включение пользователя, account_ipn_status=True
                             ipn_added = acc.ipn_added
-                            """Если на сервере доступа ещё нет этого пользователя-значит добавляем. В следующем проходе делаем пользователя enabled"""
-                            if not acc.ipn_added:
-                                sended = cred(acc.account_id, acc.username,acc.password, access_type,
-                                              acc.vpn_ip_address, acc.ipn_ip_address, 
-                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=nas.user_add_action)
-                                if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
-                            else:
-                                sended = cred(acc.account_id, acc.username,acc.password, access_type,
-                                              acc.vpn_ip_address, acc.ipn_ip_address, 
-                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=nas.user_enable_action)
-                                recreate_speed = True                        
-                                if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
-                                
+                            """Делаем пользователя enabled"""
+
+                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
+                                          acc.vpn_ip_address, acc.ipn_ip_address, 
+                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                          nas.password, format_string=nas.user_enable_action)
+                            recreate_speed = True                        
+                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
+                            
                         elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status) and acc.ipn_status:
                             #шлём команду на отключение пользователя,account_ipn_status=False
                             sended = cred(acc.account_id, acc.username,acc.password, access_type,
