@@ -692,7 +692,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn 
     def get_tariffs(self, cur=None, connection=None):
-        cur.execute("SELECT id, name, active, get_tariff_type(id) AS ttype FROM billservice_tariff ORDER BY ttype, name;")
+        cur.execute("""SELECT id, name, active, (SELECT bsap.access_type
+                   FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff ORDER BY ttype, name;""")
         result = map(Object, cur.fetchall())
         return result
     

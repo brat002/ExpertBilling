@@ -81,8 +81,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if format_string=='' and access_type in ['pptp', 'pppoe']:
-        
+    if (format_string=='' and access_type in ['pptp', 'pppoe'] ) or access_type=='hotspot':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
@@ -91,13 +90,18 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         doc.AddAttribute('NAS-Identifier', str(nas_name))
         doc.AddAttribute('User-Name', str(account_name))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
-        doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
+        if access_type=='hotspot':
+            doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
+        else:
+            doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas_ip), 1700))
         (data, addrport) = sock.recvfrom(8192)
         doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
         sock.close()
-
+        #for attr in doc.keys():
+        #    print attr, doc[attr][0]
+            
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'pppoe']:
         #ssh
@@ -112,7 +116,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
             Закомментировано до разъяснения ситуации с ROS API
             """
             """
-            ДОбавить проверку что вернул сервер доступа
+            Добавить проверку что вернул сервер доступа
             """
             log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
@@ -137,13 +141,13 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
 def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
-    print access_type
-    if format_string=='' and access_type in ['pptp', 'pppoe']:
+
+    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
         #Send CoA
-        
+        #print 1
         #speed_string= create_speed_string(speed, coa=True)
         speed_string= create_speed_string(speed)
-        #print speed_string
+
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
@@ -152,7 +156,10 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         doc.AddAttribute('NAS-Identifier', nas_name)
         doc.AddAttribute('User-Name', account_name)
         doc.AddAttribute('Acct-Session-Id', str(session_id))
-        doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
+        if access_type=='hotspot':
+            doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
+        else:
+            doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
         doc.AddAttribute((14988,8), speed_string)
             
         doc_data=doc.RequestPacket()

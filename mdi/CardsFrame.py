@@ -329,7 +329,7 @@ class SaleCards(QtGui.QDialog):
 
 
         prepay = self.spinBox_prepay.value()
-        self.lineEdit_for_pay.setText(unicode((self.nominalsumm-discount)))
+        self.lineEdit_for_pay.setText(unicode((float(self.nominalsumm)-float(discount))))
         self.lineEdit_discount_amount.setText(unicode(discount))
         self.lineEdit_pay.setText(unicode(float(self.nominalsumm-discount)*(prepay/100.00)))
     
@@ -689,92 +689,93 @@ class AddCards(QtGui.QDialog):
         """
         понаставить проверок
         """
-        try:
-            if self.l_checkBox_pin.checkState()==0 and self.numbers_checkBox_pin.checkState()==0:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не выбрали состав PIN-кода"))
-                return
-            
-            if self.spinBox_nominal.text().toInt()[0]==0:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан номинал"))
-                return
-            
-            if self.count_spinBox.text().toInt()[0]==0:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано количество генерируемых карточек"))
-                return
-            
-            if self.pin_spinBox.text().toInt()[0]==0:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
-                return        
-
-            def get_addreses_from_pool():
-                pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-
-                pool = self.connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-                ipinuse = self.connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
-                start_pool_ip = IPy.IP(pool.start_ip).int()
-                end_pool_ip = IPy.IP(pool.end_ip).int()
-                
-                ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-                if end_pool_ip-start_pool_ip-len(ipinuse_list)<self.count_spinBox.text().toInt()[0]:
-                    QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
-                    return                    
-                find = False
-                res = []
-                x = start_pool_ip
-                while x<=end_pool_ip:
-                    if x not in ipinuse_list and len(res)<self.count_spinBox.text().toInt()[0]:
-                        res.append(transip("%s" % x))
-                    x+=1
-                return res
-            
-            
-            pin_mask = ''
-            if self.l_checkBox_pin.checkState()==2:
-                pin_mask+=string.letters
-            if self.numbers_checkBox_pin.checkState()==2:
-                pin_mask+=string.digits
-            login_mask = ''
-            if self.l_checkBox_login.checkState()==2:
-                login_mask+=string.letters
-            if self.numbers_checkBox_login.checkState()==2:
-                login_mask+=string.digits
-                
-            dnow = datetime.datetime.now()
-            tarif_id = self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
-            template_id = self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
-            ips = get_addreses_from_pool()
-            nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-            pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-            for x in xrange(0, self.count_spinBox.text().toInt()[0]):
-                model = Object()
-                #model.card_group_id = self.group
-                model.series = unicode(self.series_spinBox.text())
-                model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
-                if self.radioButton_access.isChecked()==True:
-                    model.login = "%s-%s" % (model.series, GenPasswd2(length=self.spinBox_login.text().toInt()[0]-1,chars=login_mask))
-                    model.tarif_id = tarif_id
-                    model.ip = ips[x]
-                    model.nas_id = nas_id
-                    ipinuse_model = Object()
-                    ipinuse_model.ip = model.ip
-                    ipinuse_model.pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-                    ipinuse_model.datetime = "now()"
-                    ipinuse_model.id = self.connection.save(ipinuse_model, "billservice_ipinuse")
-                model.nominal = unicode(self.spinBox_nominal.text())
-                model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
-                model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
-                model.template_id = template_id
-                model.ipinuse_id = ipinuse_model.id
-                model.created = dnow
-
-                self.connection.save(model,"billservice_card")
-            
-            self.connection.commit()
-        except Exception, ex:
-            self.connection.rollback()
-            print ex
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время генерации карт возникла непредвиденная ошибка."))
+        #try:
+        if self.l_checkBox_pin.checkState()==0 and self.numbers_checkBox_pin.checkState()==0:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не выбрали состав PIN-кода"))
             return
+        
+        if self.spinBox_nominal.text().toInt()[0]==0:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан номинал"))
+            return
+        
+        if self.count_spinBox.text().toInt()[0]==0:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано количество генерируемых карточек"))
+            return
+        
+        if self.pin_spinBox.text().toInt()[0]==0:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
+            return        
+
+        def get_addreses_from_pool():
+            pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
+
+            pool = self.connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
+            ipinuse = self.connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
+            start_pool_ip = IPy.IP(pool.start_ip).int()
+            end_pool_ip = IPy.IP(pool.end_ip).int()
+            
+            ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
+            if end_pool_ip-start_pool_ip-len(ipinuse_list)<self.count_spinBox.text().toInt()[0]:
+                QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
+                return                    
+            find = False
+            res = []
+            x = start_pool_ip
+            while x<=end_pool_ip:
+                if x not in ipinuse_list and len(res)<self.count_spinBox.text().toInt()[0]:
+                    res.append(transip("%s" % x))
+                x+=1
+            return res
+        
+        
+        pin_mask = ''
+        if self.l_checkBox_pin.checkState()==2:
+            pin_mask+=string.letters
+        if self.numbers_checkBox_pin.checkState()==2:
+            pin_mask+=string.digits
+        login_mask = ''
+        if self.l_checkBox_login.checkState()==2:
+            login_mask+=string.letters
+        if self.numbers_checkBox_login.checkState()==2:
+            login_mask+=string.digits
+            
+        dnow = datetime.datetime.now()
+        tarif_id = self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
+        template_id = self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
+        ips = get_addreses_from_pool()
+        nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+        pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
+        for x in xrange(0, self.count_spinBox.text().toInt()[0]):
+            model = Object()
+            #model.card_group_id = self.group
+            model.series = unicode(self.series_spinBox.text())
+            model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
+            if self.radioButton_access.isChecked()==True:
+                model.login = "%s-%s" % (model.series, GenPasswd2(length=self.spinBox_login.text().toInt()[0]-1,chars=login_mask))
+                model.tarif_id = tarif_id
+                model.ip = ips[x]
+                model.nas_id = nas_id
+                ipinuse_model = Object()
+                ipinuse_model.ip = model.ip
+                ipinuse_model.pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
+                ipinuse_model.datetime = "now()"
+                ipinuse_model.id = self.connection.save(ipinuse_model, "billservice_ipinuse")
+                model.ipinuse_id = ipinuse_model.id
+            model.nominal = unicode(self.spinBox_nominal.text())
+            model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
+            model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
+            model.template_id = template_id
+            
+            model.created = dnow
+
+            self.connection.save(model,"billservice_card")
+        
+        self.connection.commit()
+        #except Exception, ex:
+        #    self.connection.rollback()
+        #    print ex
+        #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время генерации карт возникла непредвиденная ошибка."))
+        #    return
 
         QtGui.QDialog.accept(self)
 
