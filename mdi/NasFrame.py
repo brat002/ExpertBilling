@@ -19,7 +19,7 @@ NAS_LIST=(
                 )
 
 actions = {
-'mikrotik2.8':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id',
+'mikrotik2.8':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
                'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
                'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
                'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
@@ -27,7 +27,7 @@ actions = {
                'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
-'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id',
+'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
                'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
                'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
                'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
@@ -35,7 +35,7 @@ actions = {
                'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
                'pod': '/interface $access_type-server remove [find user=$username]'
                },
-'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=no comment=$user_id',
+'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
                'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find comment=$username-$user_id]',
                'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
                'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',

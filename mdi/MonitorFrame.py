@@ -145,14 +145,14 @@ class MonitorEbs(ebsTableWindow):
             
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = session.nas_id 
-                  WHERE billservice_account.id>0  
+                  WHERE billservice_account.id>0 %s
                   ORDER BY session.id DESC 
                  """
         elif self.allTimeCheckbox.checkState()==0:
             sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = session.nas_id
-                  WHERE session.session_status='ACTIVE'
+                  WHERE session.session_status='ACTIVE' %s
                   ORDER BY session.id DESC
                   """
         
@@ -161,8 +161,10 @@ class MonitorEbs(ebsTableWindow):
         
         #print user
         if user!="---" and user:
-            sql+=" AND billservice_account.username='%s'" % unicode(user)
-          
+            sql= sql % (" AND billservice_account.username='%s'" % unicode(user))
+        else:
+            sql = sql % ""
+            
         sessions = self.connection.sql(sql)  
         self.connection.commit()
         i=0        
