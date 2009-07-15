@@ -55,6 +55,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 NAME = 'core'
 DB_NAME = 'db'
 SECONDS_PER_DAY = 86400
+ZERO_SUM = 0
 
 def comparator(d, s):
     for key in s:
@@ -309,13 +310,13 @@ class periodical_service_bill(Thread):
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
-                                                cash_summ = (n * transaction_number * ps.cost) / (delta * transaction_number)
+                                                cash_summ = (n * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                                                 cur.connection.commit()
                                                 chk_date += n_delta
                                         else:
                                             #make an approved transaction
-                                            cash_summ = susp_per_mlt * (n * transaction_number * ps.cost) / (delta * transaction_number)
+                                            cash_summ = susp_per_mlt * (n * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
                                             if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
                                                 #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                                                 cash_summ = 0
@@ -336,48 +337,32 @@ class periodical_service_bill(Thread):
                                     
                                     summ = 0
                                     
-                                    if not (ps.created <= period_start or ps.created is None) or (ps.created is not None and acc.datetime >= ps.created):
+                                    if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
                                         continue
-                                    #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                     first_time = False
                                     if last_checkout is None:
-                                        #last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
                                         last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
                                         first_time = True
                                         
                                     #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
                                     if first_time or last_checkout < period_start:
-                                        #lc = period_start - last_checkout
-                                        lc = now - last_checkout
-                                        #Смотрим сколько раз должны были снять с момента последнего снятия
-                                        nums, ost = divmod(lc.seconds + lc.days*SECONDS_PER_DAY, delta)
                                         cash_summ = ps.cost
-                                        #chk_date = last_checkout + s_delta
-                                        chk_date = period_start
-                                        if nums > 1:
-                                            """
-                                            Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
-                                            пока денег на счету не было
-                                            """
-                                            #Смотрим на какую сумму должны были снять денег и снимаем её                                            
-                                            chk_date = last_checkout
-                                            #while chk_date <= now:
-                                            while chk_date <= period_start:
-                                                period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                
-                                                s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                                                chk_date = period_start_ast
-                                                if ps.created and ps.created >= chk_date:
-                                                    cash_summ = 0
-                                                #cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
-                                                cur.connection.commit()
-                                                chk_date += s_delta_ast
-                                        elif nums > 0:
-                                            summ = cash_summ * susp_per_mlt
-                                            if (ps.created and ps.created >= chk_date) or (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
-                                                #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                                summ = 0
-                                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', summ, chk_date)
+                                        """
+                                        Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
+                                        пока денег на счету не было
+                                        """
+                                        chk_date = last_checkout
+                                        #Смотрим на какую сумму должны были снять денег и снимаем её                                            
+                                        while True:
+                                            period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                            s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                            chk_date = period_start_ast
+                                            if ps.created and ps.created >= chk_date:
+                                                cash_summ = 0
+                                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                                            cur.connection.commit()
+                                            chk_date += s_delta_ast
+                                            if not chk_date <= period_start: break
                                     cur.connection.commit()
                                 if ps.cash_method=="AT_END":
                                     """
@@ -385,42 +370,40 @@ class periodical_service_bill(Thread):
                                     Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
-                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)
                                     cur.connection.commit()
-                                    first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
-                                        
+                                    #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+                                    if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
+                                        continue
+                                    first_time = False
+                                    if last_checkout is None:
+                                        last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                                        first_time = True
                                     # Здесь нужно проверить сколько раз прошёл расчётный период    
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
                                     # для всех остальных False
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
-
-                                    summ = 0
-                                    if first_time: 
-                                        chk_date = now 
-                                        summ = 0
-                                        #descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"
-                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', summ, chk_date)
-                                    elif period_start > last_checkout:
-                                        lc = period_start - last_checkout
-                                        le = period_end   - last_checkout
-                                        nums, ost = divmod(le.seconds + le.days*SECONDS_PER_DAY, delta)
-                                        summ = ps.cost
-                                        chk_date = last_checkout + s_delta
-                                        if nums > 1:                                                
-                                            cash_summ = ps.cost
-                                            while chk_date <= now:
-                                                if ps.created and ps.created>chk_date:
-                                                    cash_summ=0
+                                    second_ = datetime.timedelta(seconds=1)
+                                    cash_summ = 0
+                                    if first_time or period_end > last_checkout + second_:
+                                        cash_summ = ps.cost
+                                        chk_date = last_checkout
+                                        while True:
+                                            period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                            s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                            chk_date = period_end_ast - second_
+                                            if first_time:
+                                                first_time = False
+                                                ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                                            else:
+                                                if ps.created and ps.created >= chk_date:
+                                                    cash_summ = ZERO_SUM
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
-                                                cur.connection.commit()
-                                                chk_date += s_delta                                          
+                                            cur.connection.commit()
+                                            chk_date = period_end_ast + second_
+                                            if not chk_date < period_start: break
                                             
-                                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
-                                            #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                            cash_summ = 0                                            
-                                        summ = cash_summ * susp_per_mlt
-                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', summ, chk_date)
                                     cur.connection.commit()
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
