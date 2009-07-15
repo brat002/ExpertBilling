@@ -202,8 +202,9 @@ class AuthHandler(Thread):
         #self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
-        self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.socket.settimeout(vars.AUTH_SOCK_TIMEOUT)
+        #self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        #self.socket.settimeout(vars.AUTH_SOCK_TIMEOUT)
+        #self.socket.bind(("0.0.0.0", vars.AUTH_PORT))
         
         
     def run(self):
@@ -231,7 +232,7 @@ class AuthHandler(Thread):
                     if len(queues.authQueue) > 1:
                         data, addrport = queues.authQueue.popleft()
                 if not data:
-                    time.sleep(2)
+                    time.sleep(0.05)
                     continue
                             
                 t = clock()
@@ -241,7 +242,7 @@ class AuthHandler(Thread):
                 packetobject=packet.Packet(dict=vars.DICT,packet=data)
                 nas_ip = str(packetobject['NAS-IP-Address'][0])
                 access_type = get_accesstype(packetobject)
-                logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
+                logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject))
                 if access_type in ['PPTP', 'PPPOE']:
                     logger.info("Auth Type %s, raw packet: %s", (access_type, data))
                     coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
@@ -264,7 +265,7 @@ class AuthHandler(Thread):
                     
                     if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
         
-                    logger.info("Password check: %s", authobject.code)
+                    logger.info("%s: Password check: %s", (self.getName(), authobject.code))
                     returndata=authobject.ReturnPacket(packetfromcore) 
                     
                 elif access_type in ['DHCP'] :
@@ -279,16 +280,17 @@ class AuthHandler(Thread):
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     right, packetfromcore = coreconnect.handle()
                     if packetfromcore is None: return
-                    returndata=authNA(packetfromcore)
-                     
-                logger.info("AUTH time: %s", (clock()-t))
+                    returndata=authNA(packetfromcore)                  
+                
                 if returndata:
-                    sendto(self, returndata, addrport)
+                    #sendto(self, returndata, addrport)
+                    sendto(server_auth, returndata, addrport)
                     del returndata
                          
                 del packetfromcore
                 del coreconnect
-                logger.info("ACC: %s", (clock()-t))
+                logger.info("%s: AUTH time: %s", (self.getName(), clock()-t))
+                #logger.info("ACC: %s", (clock()-t))
                     
             except Exception, ex:
                 logger.error("%s Packet handler exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -339,7 +341,7 @@ class AcctHandler(Thread):
                     if len(queues.acctQueue) > 1:
                         data, addrport = queues.acctQueue.popleft()
                 if not data:
-                    time.sleep(2)
+                    time.sleep(0.5)
                     continue
                             
                 t = clock()
@@ -359,7 +361,7 @@ class AcctHandler(Thread):
                     
                 del packetfromcore
                 del coreconnect    
-                logger.info("ACC: %s", (clock()-t))            
+                logger.info("ACCT: %s", (clock()-t))            
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1002,7 +1004,7 @@ def graceful_save():
         
 
 def main():
-    global threads, curCachesDate, cacheThr, suicideCondition
+    global threads, curCachesDate, cacheThr, suicideCondition, server_auth, server_acct
     threads = []
     
     for i in xrange(vars.AUTH_THREAD_NUM):
@@ -1064,7 +1066,8 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
     
 
-    
+    server_auth = None
+    server_acct = None
     try:
         flags = RadFlags()
         vars  = RadVars()
