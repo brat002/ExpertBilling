@@ -386,7 +386,7 @@ class periodical_service_bill(Thread):
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
                                     second_ = datetime.timedelta(seconds=1)
                                     cash_summ = 0
-                                    if first_time or period_end > last_checkout + second_:
+                                    if first_time or period_start > last_checkout:
                                         cash_summ = ps.cost
                                         chk_date = last_checkout
                                         while True:
@@ -395,6 +395,7 @@ class periodical_service_bill(Thread):
                                             chk_date = period_end_ast - second_
                                             if first_time:
                                                 first_time = False
+                                                chk_date = last_checkout
                                                 ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
                                             else:
                                                 if ps.created and ps.created >= chk_date:
@@ -1009,9 +1010,9 @@ class AccountServiceThread(Thread):
                     cur.close()
                     #print cacheMaster.cache
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        if not flags.allowedUsersCheck: continue
-                        #flags.allowedUsersCheck = True
+                        #allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        #if not flags.allowedUsersCheck: continue
+                        flags.allowedUsersCheck = True
                     counter += 1
                     if counter == 5:
                         #nullify 
