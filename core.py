@@ -384,6 +384,7 @@ class periodical_service_bill(Thread):
                                     # Для последней проводки ставим статус Approved=True
                                     # для всех остальных False
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
+                                    
                                     second_ = datetime.timedelta(seconds=1)
                                     cash_summ = 0
                                     if first_time or period_start > last_checkout:
