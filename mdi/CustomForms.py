@@ -2178,3 +2178,64 @@ class RadiusAttrsDialog(QtGui.QDialog):
             self.addrow(attr.attrid, i, 1)
             self.addrow(attr.value, i, 2)
             i+=1
+            
+
+class PSCreatedForm(QtGui.QDialog):
+    def __init__(self, date):
+        super(PSCreatedForm, self).__init__()
+        self.date = date
+        self.setObjectName("PSCreatedForm")
+        self.resize(266, 95)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.dateTimeEdit = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit.setCalendarPopup(True)
+        self.dateTimeEdit.setObjectName("dateTimeEdit")
+        self.gridLayout.addWidget(self.dateTimeEdit, 0, 0, 1, 1)
+        self.checkBox_w = QtGui.QCheckBox(self)
+        self.checkBox_w.setObjectName("checkBox")
+        self.gridLayout.addWidget(self.checkBox_w, 1, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
+
+        self.retranslateUi()
+        self.checkBoxAction()
+        self.connect(self.checkBox_w, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        #self.connect(self.checkBox, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
+        
+        #QtCore.QMetaObject.connectSlotsByName(self)
+        
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки периодической услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_w.setText(QtGui.QApplication.translate("Dialog", "С начала расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
+        
+        
+    def checkBoxAction(self):
+        if self.checkBox_w.checkState() == QtCore.Qt.Checked:
+            self.dateTimeEdit.setDisabled(True)
+        else:
+            self.dateTimeEdit.setDisabled(False)
+            
+            
+    def fixtures(self):
+        if self.date:
+            self.dateTimeEdit.setDateTime(self.date)
+        else:
+            self.checkBox_w.setChecked(True)
+            self.dateTimeEdit.setDateTime(datetime.datetime.now())
+            
+            
+    def accept(self):
+        if self.checkBox_w.checkState() == QtCore.Qt.Checked:
+            self.date = None
+        else:
+            self.date = self.dateTimeEdit.dateTime().toPyDateTime()
+        QtGui.QDialog.accept(self)
+        
