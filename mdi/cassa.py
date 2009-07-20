@@ -286,7 +286,7 @@ class CassaEbs(ebsTableWindow):
                 
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
-        tariffs = self.connection.get_models("billservice_tariff")
+        tariffs = self.connection.sql("SELECT id, name from billservice_tariff WHERE deleted IS NOT TRUE;")
         self.connection.commit()
         i=0
         for tariff in tariffs:
