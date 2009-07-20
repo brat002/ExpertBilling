@@ -60,3 +60,75 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
 ALTER FUNCTION psh_crt_pdb(date) OWNER TO ebs;
+
+
+-- 15.07.2009
+
+DROP RULE on_tariff_delete_rule ON billservice_tariff;
+
+CREATE TRIGGER clear_tariff_services_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE clear_tariff_services_trg_fn();
+  
+  
+CREATE OR REPLACE FUNCTION clear_tariff_services_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	
+	IF OLD.traffic_transmit_service_id NOTNULL THEN
+	    DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+	END IF;
+	
+	IF OLD.time_access_service_id NOTNULL THEN
+	    DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
+	RETURN OLD;
+	END IF;
+	
+	 IF OLD.access_parameters_id NOTNULL THEN
+            DELETE FROM billservice_accessparameters WHERE id=OLD.access_parameters_id;
+        END IF;
+RETURN OLD;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+CREATE TRIGGER a_set_deleted_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE set_deleted_trg_fn();
+
+
+CREATE TRIGGER a_set_deleted_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE set_deleted_trg_fn();
+  
+    
+CREATE OR REPLACE FUNCTION set_deleted_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+	IF OLD.deleted IS TRUE THEN
+	    RETURN OLD;
+	ELSE
+        UPDATE billservice_tariff SET deleted=TRUE WHERE id=OLD.id;
+	    RETURN NULL;
+	END IF;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+
+
+ALTER TABLE billservice_shedulelog DROP CONSTRAINT billservice_shedulelog_accounttarif_id_fkey;
+
+ALTER TABLE billservice_shedulelog
+  ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
+      REFERENCES billservice_accounttarif (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
