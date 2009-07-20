@@ -25,6 +25,7 @@ class CassaEbs(ebsTableWindow):
         initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,1024, 642), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
         self.printer = None
+        #self.tariffs = None
     def ebsInterInit(self, initargs):
         
         self.centralwidget = QtGui.QWidget(self)
@@ -286,7 +287,8 @@ class CassaEbs(ebsTableWindow):
                 
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
-        tariffs = self.connection.get_models("billservice_tariff")
+        #self.tariffs = self.connection.get_models("billservice_tariff")
+        tariffs = self.connection.sql("SELECT id, name from billservice_tariff WHERE deleted IS NOT TRUE;")
         self.connection.commit()
         i=0
         for tariff in tariffs:
@@ -411,7 +413,16 @@ class CassaEbs(ebsTableWindow):
     def createAccountTarif(self):
         account_id = self.getSelectedId()
         tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
-        if account_id and tarif_id and QtGui.QMessageBox.question(self, u"Произвести перевод пользователя на нвоый тарифный план?" , u"Вы уверены, что хотите перевести пользователя на выбранный тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+        '''
+        tarif_index = int(self.comboBox_tariff.currentIndex())
+        if not len(self.tariffs) > tarif_index or tarif_index < 0:
+            QMessageBox.warning(self, u"Тариф не найден!" , u"Тарифный план не найден, попробуйте обновить список тарифных планов!", QtGui.QMessageBox.Ok)
+            return
+        if self.tariffs[tarif_index].deleted:
+            QMessageBox.critical(self, u"Невозможно произвести действие!" , u"Тарифный план помечен как удаленный!", QtGui.QMessageBox.Ok)
+            return
+        '''
+        if account_id and tarif_id and QtGui.QMessageBox.question(self, u"Произвести перевод пользователя на новый тарифный план?" , u"Вы уверены, что хотите перевести пользователя на выбранный тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             dtime = self.dateTime.dateTime().toPyDateTime()
             self.connection.createAccountTarif(account_id, tarif_id, dtime)
             self.connection.commit()
