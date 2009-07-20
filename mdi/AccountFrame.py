@@ -136,7 +136,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff ORDER BY name;")
+        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY name;")
         self.connection.commit()
         for tarif in tarifs:
             self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
@@ -3479,7 +3479,7 @@ class AccountWindow(QtGui.QMainWindow):
         if self.model:
             ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name FROM billservice_accounttarif as accounttarif 
             JOIN billservice_tariff as tarif ON tarif.id=accounttarif.tarif_id
-            WHERE account_id=%d ORDER BY datetime ASC""" % self.model.id)
+            WHERE account_id=%d AND tarif.deleted IS NOT TRUE ORDER BY datetime ASC""" % self.model.id)
             self.tableWidget_accounttarif.setRowCount(len(ac))
             i=0
             #print ac
