@@ -577,4 +577,11 @@ def transip (ipstr):
     return `p4`+'.'+`p3`+'.'+`p2`+'.'+`p1`
 
 
-    
+def get_type(nas_id, tarif_id):
+    if tarif_id and not nas_id:
+        return u"HotSpot"
+    if tarif_id and nas_id:
+        return u"Карта доступа"
+    if not tarif_id and not nas_id:
+        return u"Карта предоплаты"
+            

@@ -3744,7 +3744,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             if len(accounts)>0:
 
                 tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
-                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
+                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE id <> %d AND deleted IS NOT TRUE;" % (tarif_id,))
 
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 

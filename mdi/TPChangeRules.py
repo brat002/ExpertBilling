@@ -174,7 +174,7 @@ class TPRulesAdd(QtGui.QDialog):
 
     def fixtures(self):
         self.disconnect(self.comboBox_from,QtCore.SIGNAL("currentIndexChanged(int)"),self.refreshList)
-        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff ORDER BY NAME ASC;")
+        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY NAME ASC;")
         self.connection.commit()
         i=0
         self.comboBox_from.clear()
@@ -199,7 +199,7 @@ class TPRulesAdd(QtGui.QDialog):
             
         
     def refreshList(self, i):
-        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff ORDER BY NAME ASC;")
+        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY NAME ASC;")
         self.connection.commit()
         self.listWidget_to.clear()
         for tariff in tariffs:
@@ -301,7 +301,7 @@ class TPRulesEbs(ebsTableWindow):
 
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
-        rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id) as to_tariff_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
+        rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id and deleted IS NOT TRUE ) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id and deleted IS NOT TRUE ) as to_tariff_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
         self.connection.commit()
         self.tableWidget.setRowCount(len(rules))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
