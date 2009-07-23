@@ -62,7 +62,7 @@ def show_packet(packetobject):
     for key,value in packetobject.items():
         b+=str(packetobject._DecodeKey(key))+str(packetobject[packetobject._DecodeKey(key)][0])+"\n"
     return b
-     
+
 @simplegeneric
 def sendto (self, data, addr):
     self.outbuf.append((data, addr))
@@ -474,6 +474,8 @@ class HandleSAuth(HandleSBase):
 
 
     def handle(self):
+        print show_packet(self.packetobject)
+        
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
