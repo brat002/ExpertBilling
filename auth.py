@@ -72,17 +72,17 @@ class Auth:
             self.Reply.code=self.code
             self.Reply['EAP-Message'] = self.packet['EAP-Message'][0]
             self.Reply['Message-Authenticator'] = self.packet['Message-Authenticator'][0]
-            return self.Reply.ReplyPacket()
+            return self.Reply.ReplyPacket(), self.Reply
 
         elif self._CheckAuth(code = self.code):
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                 self.Reply.AddAttribute((311,26),self._MSchapSuccess())
-            return self.Reply.ReplyPacket(self.attrs)
+            return self.Reply.ReplyPacket(self.attrs), self.Reply
 
         else:
             self.Reply.code=packet.AccessReject
-            return self.Reply.ReplyPacket()
+            return self.Reply.ReplyPacket(), self.Reply
 
     def _DetectTypeAuth(self):
         if self.packet.has_key('User-Password') and self.access_type!='DHCP':

@@ -1,4 +1,5 @@
-import commands, md5, platform, os, os.path, sys
+import commands, platform, os, os.path, sys
+from hashlib import md5
 
 def get_linux_key():
     try:
@@ -25,7 +26,7 @@ def get_linux_key():
         
     __3 = id    
     __6 = str.join('', __3)
-    __6 = md5.new(__6).hexdigest()
+    __6 = md5(__6).hexdigest()
     return __6.upper()[:-1] + 'L'
 
 def get_bsd_key():
@@ -41,7 +42,7 @@ def get_bsd_key():
         
     __3 = id    
     __6 = str.join('', __3)
-    __6 = md5.new(__6).hexdigest()
+    __6 = md5(__6).hexdigest()
     return __6.upper()[:-1] + 'D'
 
 if __name__ == '__main__':
