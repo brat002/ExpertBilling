@@ -68,8 +68,11 @@ _PROTECTION_CHUNK_1_L = r"""
         except:
             print "error 66004"; getattr(_5s, __0[16])()
         if not __3:
-            print "error 11294"; getattr(_5s, __0[16])()
-        else:
+	    __3 = filter(lambda x: getattr(getattr(__5, __0[10]), __0[11])(__0[0][:-5] + chr(105)+chr(100)+chr(47) + x) == _3f, getattr( __5, __0[4] )( __0[0][:-5] + chr(105)+chr(100)+chr(47) ))
+	    if not __3:
+	        print "error 11294"; getattr(_5s, __0[16])()
+	    __3 = __3[0].lower()
+	else:
             __3 = __3[0]
 	    
 	__6 = str.join('', __3)
