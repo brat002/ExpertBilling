@@ -15,6 +15,7 @@ sys.path = [ sys.path[ 0 ] + '/modules' ]
 from base64 import b64decode as _x_
 from zlib import decompress as _z_
 from collections import deque
+from hashlib import md5 as __hash
 _1i = lambda: ''
 def _1fi_():
         global _1i
@@ -46,7 +47,7 @@ _PROTECTION_CHUNK_1_L = r"""
 		_x_( 'b3M=' ),                             # 'os'
 		_x_( 'bGlzdGRpcg==' ),                     # 'listdir'
 		_x_( 'bWQ1' ),                             # 'md5'
-		_x_( 'aGFzaGxpYg==' ),                             # 'new'
+		_x_( 'aGFzaGxpYg==' ),                     # 'hashlib'
 		_x_( 'aGV4ZGlnZXN0' ),                     # 'hexdigest'
 		_x_( 'ZG1pZGVjb2RlIC1zIHN5c3RlbS11dWlk'),
 		_x_( 'Y29tbWFuZHM='),                      #'9' 'commands'
@@ -76,8 +77,9 @@ _PROTECTION_CHUNK_1_L = r"""
             __3 = __3[0]
 	    
 	__6 = str.join('', __3)
-	__5 = __import__(__0[6]) # import md5
-	__6 = getattr(getattr(__5, __0[5])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	#__5 = __import__(__0[6]) # import md5
+	#__6 = getattr(getattr(__5, __0[5])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 = getattr(__hash(__6), __0[7])()
 	__6 = __6[:-1] + 'L'
 	_1fi_()
 	__6 += _1i()
