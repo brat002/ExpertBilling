@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 ####################################################################################################
 """\
 This module provides a functionality that allows you
