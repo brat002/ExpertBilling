@@ -315,7 +315,8 @@ def _reset_flags():
 			'platform': None,
 			'zlib': None,
 			'base64': None,
-			'md5': None,
+			'hashlib': None,
+			'collections': None,
 		},
 		'NONLOCAL': [              # names of modules that should be treated as non-local
 			'os',
@@ -323,7 +324,8 @@ def _reset_flags():
 			'platform',
 			'zlib',
 			'base64',
-			'md5',
+			'hashlib',
+			'collections'
 		],
 		'LOCATION': os.getcwd() + os.sep, # current working directory
 		'SCRIPT_DIR': os.path.dirname( sys.modules[ __name__ ].__file__ ), # location of this script
