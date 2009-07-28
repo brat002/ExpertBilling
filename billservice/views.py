@@ -146,6 +146,7 @@ def index(request):
     else:
         tariff_flag = True 
     try:
+        ballance = user.ballance - user.credit
         ballance = u'%.2f' % user.ballance
     except:
          ballance = 0
