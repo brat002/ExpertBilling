@@ -375,7 +375,8 @@ class AuthHandler(Thread):
 
                     logger.info("Password check: %s", authobject.code)
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
-                    returndata=authobject.ReturnPacket(packetfromcore) 
+                    returndata, replypacket = authobject.ReturnPacket(packetfromcore) 
+                    logger.debug("REPLY packet: %s", repr(replypacket)) 
 
                 elif access_type in ['HotSpot']:
                     coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
