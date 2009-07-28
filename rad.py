@@ -56,7 +56,12 @@ else:   w32Import = True
 
 NAME = 'radius'
 DB_NAME = 'db'
-        
+
+
+SOCKTYPE_AUTH = 12
+SOCKTYPE_ACCT = 13
+MAX_PACKET_SIZE = 8192
+
 def show_packet(packetobject):
     b = ''
     #b = ''.join((str(packetobject._DecodeKey(key))+str(packetobject[packetobject._DecodeKey(key)][0])+"\n" for key,item in packetobject.items()))
@@ -84,160 +89,138 @@ def initiate_send(self):
                 return
             else:
                 raise socket.error, why
-            
+
 
 class RadServer(object):
-	"""BSD Radius Server class defnition
-	
-		@ivar  hosts: hosts who are allowed to talk to us
-		@type  hosts: dictionary of Host class instances
-		@ivar  pollobj: poll object for network sockets
-		@type  pollobj: select.poll class instance
-		@ivar fdmap: map of filedescriptors to network sockets
-		@type fdmap: dictionary
-	"""
-	
-	def __init__(self, addresses = [], authport = 1812, acctport = 1813, hosts = {}, dict = None):
-		"""Constructor.
-
-		@param addresses: IP addresses to listen on
-		@type  addresses: sequence of strings
-		@param  authport: port to listen on for authentication packets
-		@type   authport: integer
-		@param  acctport: port to listen on for accounting packets
-		@type   acctport: integer
-		@param     hosts: hosts who we can talk to
-		@type      hosts: dictionary mapping IP to RemoteHost class instances
-		@param      dict: RADIUS dictionary to use
-		@type       dict: Dictionary class instance
-		"""		
-		self.dict = dict
-		self.authport = authport
-		self.acctport = acctport
-		self.hosts = hosts
-
-		self.authfds = []
-		self.acctfds = []
-
-		for addr in addresses:
-			self.BindToAddress(addr)
 
 
-	
-	def BindToAddress(self, addr):
-		"""Add an address to listen to.
+    def __init__(self, addresses = [], authports = [1812], acctports = [1813], hosts = {}, dict = None, auth_queue_maxlen = 2000, acct_queue_maxlen = 10000):
 
-		An empty string indicates you want to listen on all addresses.
+        self.dict = dict
+        self.authports = authports
+        self.acctports = acctports
+        self.hosts = hosts
+        self.fdmap = {}
+        self.authfds = []
+        self.acctfds = []
+        self.pollobj = None
+        self.AUTH_QUEUE_MAXLEN = auth_queue_maxlen
+        self.ACCT_QUEUE_MAXLEN = acct_queue_maxlen
 
-		@param addr: IP address to listen on
-		@type  addr: string
-		"""
-		authfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		authfd.bind((addr, self.authport))
-
-		acctfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		acctfd.bind((addr, self.acctport))
-
-		self.authfds.append(authfd)
-		self.acctfds.append(acctfd)
+        self.acct_deque = deque()
+        self.acct_lock  = Lock()
+        self.auth_deque = deque()
+        self.auth_lock  = Lock()
+        for addr in addresses:
+            self.BindToAddress(addr)
 
 
 
-	def CreateThreads(self):
-		"""Starts all threads"""
-		# start thread which listens to sockets
-		#thread.start_new_thread(self.Listen, ())
-		tListen = ListenThread(self)
-		tListen.start()
-		
-		# start worker threads
-		numthreads = 1
-		if not main_config['SERVER']['no_threads']:
-			numthreads =  main_config['SERVER']['number_of_threads']
-		for x in range(numthreads):
-			#thread.start_new_thread(self.WorkThread, (x,))
-			tWorking = WorkingThread(self)
-			tWorking.start()
-			
+    def BindToAddress(self, addr):
+        for authport in self.authports:
+            authfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            authfd.bind((addr, authport))
+            self.authfds.append(authfd)
+
+        for acctport in self.acctports:
+            acctfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            acctfd.bind((addr, acctport))	    
+            self.acctfds.append(acctfd)
 
 
 
-	def RegisterSockets(self):
-		"""Prepare all sockets to receive packets."""
-		events = select.POLLIN | select.POLLPRI | select.POLLERR
+    def RegisterSockets(self):
+        """Prepare all sockets to receive packets."""
+        events = select.POLLIN | select.POLLPRI | select.POLLERR
 
-		# register auth sockets
-		for sock in self.authfds:
-			self.fdmap[sock.fileno()] = (sock, SOCKTYPE_AUTH)
-			self.pollobj.register(sock, events)
+        # register auth sockets
+        for sock in self.authfds:
+            self.fdmap[sock.fileno()] = (sock, SOCKTYPE_AUTH)
+            self.pollobj.register(sock, events)
 
-		# register accounting sockets
-		for sock in self.acctfds:
-			self.fdmap[sock.fileno()] = (sock, SOCKTYPE_ACCT)
-			self.pollobj.register(sock, events)
-
-
-
-	def Run(self):
-		"""Main loop.
-
-		Wait for packets to arrive via network and place them on
-		synchronization queues for other threads to process.
-		"""
-		# we map socket descriptors (integers) to their socket objects
-		# because when polling for events we only receive the
-		# descriptor int and must find which object it refers to
-		self.fdmap = {}
-		
-		# register sockets for event polling
-		self.pollobj = select.poll()
-		self.RegisterSockets()
-
-		# get queue limits
-		auth_qlen = main_config["AUTHORIZATION"]["auth_queue_maxlength"]
-		acct_qlen = main_config["ACCOUNTING"]["acct_queue_maxlength"]
-		
-		# create synchronization queue
-		self.packets = Syncdeque.RadiusDeque(auth_qlen, acct_qlen)
-
-		self.CreateThreads()
+        # register accounting sockets
+        for sock in self.acctfds:
+            self.fdmap[sock.fileno()] = (sock, SOCKTYPE_ACCT)
+            self.pollobj.register(sock, events)
 
 
 
-	def addClientHosts(self, hostsInfo):
-		"""Simplify adding client hosts.
-			Input: (dict) clients configuration data.
-				Format: {'address': {'name' : name, 'secret': secret}}
-			Output: none
-		"""
-		for address, tokens in hostsInfo.items():
-			# print what we are doing
-			if str(address) not in self.hosts:
-				debug ('Adding client %s: %s' % (address, tokens['name']))
-			else:
-				oldItem = self.hosts[str(address)]
-				if oldItem.name != tokens['name']:
-					debug ('Changing client\'s "%s" name from "%s" to "%s"' % (address, oldItem.name, tokens['name']))
-				if oldItem.secret != tokens['secret']:
-					debug ('Changing client\'s "%s" secret' % address)
-			# if we need to log from one client only let's set the needed attributes to
-			# client's host entry
-			enableLogging = False
-			if address == main_config['SERVER']['log_client']:
-				enableLogging = True
-				if address not in self.hosts:
-					debug ('Enabling unrestricted logging for client "%s"' % tokens['name'])
-				elif not self.hosts[address].enableLogging:
-					debug ('Enabling unrestricted logging for client "%s"' % tokens['name'])
-			
-			# replace old or create new client record
-			self.hosts[str(address)] = RemoteHost(address, tokens['secret'], tokens['name'], enableLogging)
+    def Run(self):
+        self.fdmap = {}
+
+        # register sockets for event polling
+        self.pollobj = select.poll()
+        self.RegisterSockets()
+
+class ListenThread(Thread):
+
+    def __init__(self, server, suicide_condition):
+        Thread.__init__(self)
+        assert isinstance(server, RadServer)
+        self.server = server
+        self.suicide_condition = suicide_condition
+
+
+
+    def run(self):
+        while True:
+            if self.suicide_condition[self.__class__.__name__]: break
+            try:
+                for (socknum, event) in self.server.pollobj.poll(1000):
+                    if event != select.POLLIN:
+                        logger.error("%s: unexpected event %s!", (self.getName(), event))
+                        continue
+    
+                    # receive packet
+                    (sock, socktype) = self.server.fdmap[socknum]
+                    (data, addr) = sock.recvfrom(MAX_PACKET_SIZE)
+
+
+                    try:
+                        self.ProcessPacket(data, addr, sock, socktype)
+                    except Exception, ex:
+                        logger.error("%s: process packet error %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            except Exception, ex:
+                logger.error("%s: thread error %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+
+
+
+    def ProcessPacket(self, data, addr, sock, socktype):
+        if socktype == SOCKTYPE_AUTH:
+            # create auth packet
+            pkt = packet.Packet(dict = self.server.dict, packet = data)
+            pkt.timestamp = time.time()
+            pkt.source = addr
+            pkt.fd = sock
+
+            if pkt.code != packet.AccessRequest:
+                logger.warning("%s :dropped auth packet: received non-AccessRequest packet %s | %s", (self.getName() ,pkt.code, repr(addr)))
+                return
+            with self.server.auth_lock:
+                self.server.auth_deque.append(pkt)
+            return
+
+        if socktype == SOCKTYPE_ACCT:
+            # create acct packet
+            pkt = packet.AcctPacket(dict = self.server.dict, packet = data)
+            pkt.timestamp = time.time()
+            pkt.source = addr
+            pkt.fd = sock			
+
+            if not pkt.code in [packet.AccountingRequest, packet.AccountingResponse]:
+                logger.warning("%s :dropped acct packet: received non-Accc Request/Response packet %s | %s", (self.getName() ,pkt.code, repr(addr)))
+                return
+
+            #dump packet if the queue is too long
+            with self.server.acct_lock:
+                self.server.acct_deque.append(pkt)
+            return
 
 
 class AsyncUDPServer(asyncore.dispatcher):
     ac_out_buffer_size = 8096*10
     ac_in_buffer_size = 8096*10
-    
+
     def __init__(self, host, port):
         self.outbuf = deque()
 
@@ -252,7 +235,7 @@ class AsyncUDPServer(asyncore.dispatcher):
         self.bind( (host, port) )
         self.set_reuse_addr()
 
-        
+
     def handle_read_event (self):
         try:
             data, addr = self.socket.recvfrom(vars.MAX_DATAGRAM_LEN)
@@ -263,19 +246,19 @@ class AsyncUDPServer(asyncore.dispatcher):
 
     def handle_readfrom(self,data, address):
         pass
-    
+
     def writable (self):
         return len(self.outbuf)
-                
+
     def handle_error (self, *info):        
         logger.error('uncaptured python exception, closing channel %s \n %s', (repr(self), traceback.format_exc()))
         self.close()
-    
+
     def handle_close(self):
         try:    self.dbconn.close()
         except: pass
         self.close()
-        
+
 def authNA(packet):
     return packet.ReplyPacket()
 
@@ -299,7 +282,7 @@ def get_accesstype(packetobject):
     except Exception, ex:
         logger.error('Packet access type error: %s \n %s', (repr(ex), repr(packetobject)))
     return
-    
+
 class AsyncAuthServ(AsyncUDPServer):
     def __init__(self, host, port):
         global vars
@@ -312,29 +295,21 @@ class AsyncAuthServ(AsyncUDPServer):
 
     def handle_readfrom(self, data, addrport):
         global queues, vars
-        
+
         if len(data) > vars.MAX_DATAGRAM_LEN:
             logger.warning("AUTH Packet len %s bigger than MAX_DATAGRAM LEN %s. Packet discarded.", (len(data), vars.MAX_DATAGRAM_LEN))
         else:
             with queues.authQLock:
                 queues.authQueue.append((data, addrport))
-                        
+
 class AsyncAcctServ(AsyncUDPServer):
     def __init__(self, host, port):
         self.outbuf = []
         AsyncUDPServer.__init__(self, host, port)
-        #self.dbconn = dbconn
-        #self.dbconn._con._con.set_isolation_level(0)
-        #self.dbconn._con._con.set_client_encoding('UTF8')
-        #self.dbconn = get_connection(vars.db_dsn)
-        #self.dbconn.set_isolation_level(0)
-        #self.dateCache = datetime.datetime(2000, 1, 1)
-        #self.caches = None
-
 
     def handle_readfrom(self, data, addrport):
         global queues, vars
-        
+
         if len(data) > vars.MAX_DATAGRAM_LEN:
             logger.warning("ACCT Packet len %s bigger than MAX_DATAGRAM LEN %s. Packet discarded.", (len(data), vars.MAX_DATAGRAM_LEN))
         else:
@@ -343,7 +318,7 @@ class AsyncAcctServ(AsyncUDPServer):
 
 
 class AuthHandler(Thread):
-    def __init__(self):
+    def __init__(self, server):
         Thread.__init__(self)
         global vars
         self.outbuf = deque()
@@ -352,11 +327,11 @@ class AuthHandler(Thread):
         #self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
-        #self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        #self.socket.settimeout(vars.AUTH_SOCK_TIMEOUT)
-        #self.socket.bind(("0.0.0.0", vars.AUTH_PORT))
-        
-        
+        self.server = server
+        assert isinstance(self.server, RadServer)
+
+
+
     def run(self):
         global cacheMaster, queues, vars, flags, fMem
         while True:
@@ -373,51 +348,46 @@ class AuthHandler(Thread):
                     finally:
                         cacheMaster.lock.release()
                         if 0: assert isinstance(self.caches, RadCaches)
-                        
+
                 if not self.caches:
                     raise Exception("Caches were not ready!")
-                
-                data, addrport = None, None
-                with queues.authQLock:
-                    if len(queues.authQueue) > 1:
-                        data, addrport = queues.authQueue.popleft()
-                if not data:
+
+                packetobject = None
+                with self.server.auth_lock:
+                    if len(self.server.auth_deque) > 1:
+                        packetobject = self.server.auth_deque.popleft()
+                if not packetobject:
                     time.sleep(0.05)
                     continue
-                            
-                t = clock()
+                if False: assert isinstance(packetobject, packet.Packet)
+                auth_time = clock()
                 returndata = ''
-                #data=self.request[0] # or recv(bufsize, flags)
-                #assert len(data)<=4096
-                packetobject=packet.Packet(dict=vars.DICT,packet=data)
                 nas_ip = str(packetobject['NAS-IP-Address'][0])
                 access_type = get_accesstype(packetobject)
-                logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject))
+                logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
                 if access_type in ['PPTP', 'PPPOE']:
-                    logger.info("Auth Type %s, raw packet: %s", (access_type, data))
                     coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
-                    
+
                     if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-        
+
                     logger.info("Password check: %s", authobject.code)
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
                     returndata=authobject.ReturnPacket(packetfromcore) 
-        
+
                 elif access_type in ['HotSpot']:
-                    logger.info("Auth Type %s", access_type)
                     coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor())
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
-                    
+
                     if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-        
+
                     logger.info("%s: Password check: %s", (self.getName(), authobject.code))
                     returndata=authobject.ReturnPacket(packetfromcore) 
-                    
+
                 elif access_type in ['DHCP'] :
                     coreconnect = HandleSDHCP(packetobject=packetobject)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
@@ -431,17 +401,15 @@ class AuthHandler(Thread):
                     right, packetfromcore = coreconnect.handle()
                     if packetfromcore is None: return
                     returndata=authNA(packetfromcore)                  
-                
+
                 if returndata:
-                    #sendto(self, returndata, addrport)
-                    sendto(server_auth, returndata, addrport)
+                    packetobject.fd.sendto(returndata, packetobject.source)
                     del returndata
-                         
+
                 del packetfromcore
                 del coreconnect
-                logger.info("%s: AUTH time: %s", (self.getName(), clock()-t))
-                #logger.info("ACC: %s", (clock()-t))
-                    
+                logger.info("%s: AUTH time: %s", (self.getName(), clock()-auth_time))
+
             except Exception, ex:
                 logger.error("%s Packet handler exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -451,21 +419,18 @@ class AuthHandler(Thread):
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
- 
+
 class AcctHandler(Thread):
-    def __init__(self):
+    def __init__(self, server):
         Thread.__init__(self)
         self.outbuf = deque()
-        #AsyncUDPServer.__init__(self, host, port)
-        #self.dbconn = dbconn
-        #self.dbconn._con._con.set_isolation_level(0)
-        #self.dbconn._con._con.set_client_encoding('UTF8')
         self.dbconn = get_connection(vars.db_dsn)
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.socket.settimeout(vars.ACCT_SOCK_TIMEOUT)
-        #self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
+        self.server = server
+        assert isinstance(self.server, RadServer)
 
     def run(self):
         global cacheMaster, vars, fMem
@@ -482,36 +447,35 @@ class AcctHandler(Thread):
                     finally:
                         cacheMaster.lock.release()
                         if 0: assert isinstance(self.caches, RadCaches)
-                        
+
                 if not self.caches:
                     raise Exception("Caches were not ready!")
-    
-                data, addrport = None, None
-                with queues.acctQLock:
-                    if len(queues.acctQueue) > 1:
-                        data, addrport = queues.acctQueue.popleft()
-                if not data:
+                
+                packetobject = None
+                with self.server.acct_lock:
+                    if len(self.server.acct_deque) > 1:
+                        packetobject = self.server.acct_deque.popleft()
+                if not packetobject:
                     time.sleep(0.5)
                     continue
-                            
-                t = clock()
-                assert len(data) <= vars.MAX_DATAGRAM_LEN
-                packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
-        
+                if False: assert isinstance(packetobject, packet.AcctPacket)
+
+                acct_time = clock()
+
                 coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
-                coreconnect.caches = self.caches               
-                
+                coreconnect.caches = self.caches          
+
                 packetfromcore = coreconnect.handle()
-                
+
                 if packetfromcore is not None: 
                     returndata = packetfromcore.ReplyPacket()
-                    sendto(self, returndata, addrport)
+                    packetobject.fd.sendto(returndata, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
-                    
+
                 del packetfromcore
                 del coreconnect    
-                logger.info("ACCT: %s", (clock()-t))            
+                logger.info("ACCT: %s", (clock()-acct_time))            
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -549,12 +513,12 @@ class HandleSNA(HandleSBase):
 
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip)       
-        
+
         if nas is not None:
             self.packetobject.secret = str(nas.secret)
             return "", self.auth_NA()
 
-        
+
 #auth_class
 class HandleSAuth(HandleSBase):
     __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'multilink', 'fMem')
@@ -571,7 +535,7 @@ class HandleSAuth(HandleSBase):
         """
         authobject.set_code(3)
         return authobject, self.packetobject
-    
+
     def add_values(self, tarif_id):
         attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
         for attr in attrs:
@@ -580,7 +544,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
-                
+
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
@@ -607,7 +571,7 @@ class HandleSAuth(HandleSBase):
                 else:
                     res=s
                 result.append(res)
-            
+
 
             correction = self.caches.speedlimit_cache.by_id.get(account_id)
             #Проводим корректировку скорости в соответствии с лимитом
@@ -616,7 +580,7 @@ class HandleSAuth(HandleSBase):
             #print "corrected", result
             if result==[]: 
                 result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                
-            
+
             result_params=create_speed_string(result)
             self.speed=result_params
         if self.nas_type[:8]==u'mikrotik' and result_params!='':
@@ -625,7 +589,7 @@ class HandleSAuth(HandleSBase):
 
     def handle(self):
         print show_packet(self.packetobject)
-        
+
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
@@ -638,17 +602,17 @@ class HandleSAuth(HandleSBase):
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         acc = self.caches.account_cache.by_username.get(user_name)
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = {'EAP-MD5': {'get': queues.eap_md5_ch.pop, 'set': queues.eap_md5_ch.__setitem__, 'lock': queues.eap_md5_lock}})
-        
+
         if acc is None:
             logger.warning("Unknown User %s", user_name)
             return self.auth_NA(authobject)  
-        
+
         if 0: assert isinstance(acc, AccountData)
         authobject.plainusername = str(acc.username)
         authobject.plainpassword = str(acc.password)
-        
+
         logger.debug("Account data : %s", repr(acc))
-        
+
         process, ok, left = authobject._HandlePacket()
         if not process:
             logger.warning(left, ())
@@ -658,8 +622,8 @@ class HandleSAuth(HandleSBase):
                 return authobject, self.replypacket
             else:
                 return self.auth_NA(authobject)
-            
-            
+
+
         process, ok, left = authobject._ProcessPacket()
         if not process:
             logger.warning(left, ())
@@ -668,7 +632,7 @@ class HandleSAuth(HandleSBase):
                 return authobject, self.replypacket
             else:
                 return self.auth_NA(authobject)
-                
+
         check_auth, left = authobject.check_auth()
         logger.debug("Auth object : %s" , authobject)
         if not check_auth:
@@ -679,7 +643,7 @@ class HandleSAuth(HandleSBase):
         if (not vars.COMMON_VPN) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
             logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
-        
+
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
                     (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status)))
@@ -687,7 +651,7 @@ class HandleSAuth(HandleSBase):
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)      
-        
+
         if nas.multilink is False:
             station_id_status = False
             if len(station_id) == 17:
@@ -696,16 +660,16 @@ class HandleSAuth(HandleSBase):
             else:
                 """IP - PPTP"""
                 station_id_status = ((str(acc.ipn_ip_address)  == station_id) or (acc.ipn_ip_address  == '0.0.0.0'))
-            
+
             if not station_id_status:
                 logger.warning("Unallowed NAS for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s ", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address))
                 return self.auth_NA(authobject) 
-            
+
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject) 
-        
+
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
@@ -723,7 +687,7 @@ class HandleSAuth(HandleSBase):
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)
-        
+
 
 #HotSpot_class
 #auth_class
@@ -735,9 +699,9 @@ class HandleHotSpotAuth(HandleSBase):
         self.access_type=access_type
         self.secret = ''
         self.cur = dbCur
-        
+
         logger.debugfun('%s', show_packet, (packetobject,))
-        
+
     def auth_NA(self, authobject):
         """
         Deny access
@@ -753,7 +717,7 @@ class HandleHotSpotAuth(HandleSBase):
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
-                    
+
     def create_speed(self, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
@@ -797,7 +761,7 @@ class HandleHotSpotAuth(HandleSBase):
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
-        
+
         #self.nas_id=str(row[0])
         self.nas_type = nas.type
         #self.secret = str(row[1])
@@ -808,7 +772,7 @@ class HandleHotSpotAuth(HandleSBase):
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         self.cur.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
         pin = self.cur.fetchone()
-        
+
         if pin == None:
             self.cur.close()
             return self.auth_NA(authobject)
@@ -817,7 +781,7 @@ class HandleHotSpotAuth(HandleSBase):
 
         authobject.plainusername = str(user_name)
         authobject.plainpassword = str(pin)
-        
+
         check_auth, left = authobject.check_auth()
         if not check_auth:
             logger.warning(left, ())
@@ -825,29 +789,29 @@ class HandleHotSpotAuth(HandleSBase):
             return self.auth_NA(authobject)   
 
         #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
-                                          
+
         self.cur.execute("""SELECT * FROM card_activate_fn(%s, %s, %s, %s::inet) AS 
-                            A(account_id int, "password" character varying, nas_id int, tarif_id int, account_status boolean, 
-                            balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
-                         """, (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
+                         A(account_id int, "password" character varying, nas_id int, tarif_id int, account_status boolean, 
+balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
+""", (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
 
         acct_card = self.cur.fetchone()
         self.cur.connection.commit()
         self.cur.close()
 
-        
+
         if acct_card is None:
             logger.warning("Unknown User %s", user_name)
             return self.auth_NA(authobject)
-        
+
         acct_card = CardActivateData(*acct_card)
 
         acstatus = acct_card.ballance >0 and not acct_card.balance_blocked and not acct_card.disabled_by_limit and acct_card.account_status
-        
+
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)       
-       
+
         if int(acct_card.nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject)
@@ -871,41 +835,41 @@ class HandleSDHCP(HandleSBase):
     __slots__ = () + ('secret', 'nas_id', 'nas_type',)
     def __init__(self,  packetobject):
         super(HandleSDHCP, self).__init__()
-        
+
         self.packetobject = packetobject
         self.secret = ""
         logger.debugfun('%s', show_packet, (packetobject,))
 
     def auth_NA(self, authobject):
         """Deny access"""
-        
+
         authobject.set_code(3)
         return authobject, self.packetobject
-    
-            
+
+
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip)
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
-        
+
         self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
-        
+
         acc = self.caches.account_cache.by_ipn_mac.get(self.packetobject['User-Name'][0])
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
         if acc is None:
             return self.auth_NA(authobject)
         if 0: assert isinstance(acc, AccountData)
-        
+
         if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
             return self.auth_NA(authobject)
         #print dir(acc)
         acstatus = (acc.assign_dhcp_null or acc.ballance>0) and \
-                   (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
-        
+                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
+
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", acc.username)
             return self.auth_NA(authobject)
-        
+
         if acc.tarif_active:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
@@ -920,7 +884,7 @@ class HandleSAcct(HandleSBase):
     """process account information after connection"""
     """ Если это аккаунтинг хотспот-сервиса, при поступлении Accounting-Start пишем в профиль пользователя IP адрес, который ему выдал микротик"""
     __slots__ = () + ('cur', 'access_type')
-    
+
     def __init__(self, packetobject, nasip, dbCur):
         super(HandleSAcct, self).__init__()
         self.packetobject=packetobject
@@ -940,12 +904,12 @@ class HandleSAcct(HandleSBase):
         # Access denided
         self.replypacket.code = packet.AccessReject
         return self.replypacket
-    
+
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip)
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
-       
+
         self.replypacket.secret=str(nas.secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         userName = self.packetobject['User-Name'][0]
@@ -959,62 +923,62 @@ class HandleSAcct(HandleSBase):
 
         self.replypacket.code = packet.AccountingResponse
         now = datetime.datetime.now()
-        
+
         if self.packetobject['Acct-Status-Type']==['Start']:
             self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
                                 nas_id=%s AND framed_protocol=%s;
                              """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
-                                 self.packetobject['Calling-Station-Id'][0],
-                                 self.packetobject['Called-Station-Id'][0], \
-                                 self.packetobject['NAS-IP-Address'][0],self.access_type,))
+                                    self.packetobject['Calling-Station-Id'][0],
+                                    self.packetobject['Called-Station-Id'][0], \
+                                    self.packetobject['NAS-IP-Address'][0],self.access_type,))
 
             allow_write = self.cur.fetchone() is None
 
             if allow_write:
                 self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
-                                           caller_id, called_id, framed_ip_address, nas_id, 
-                                           framed_protocol, session_status)
-                                           VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
+                                 caller_id, called_id, framed_ip_address, nas_id, 
+                                 framed_protocol, session_status)
+                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
-                                       self.packetobject['Calling-Station-Id'][0], 
-                                       self.packetobject['Called-Station-Id'][0], 
-                                       self.packetobject['Framed-IP-Address'][0],
-                                       self.packetobject['NAS-IP-Address'][0], self.access_type,))
-                
+      self.packetobject['Calling-Station-Id'][0], 
+      self.packetobject['Called-Station-Id'][0], 
+      self.packetobject['Framed-IP-Address'][0],
+      self.packetobject['NAS-IP-Address'][0], self.access_type,))
+
             if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
-                                           caller_id, called_id, framed_ip_address, nas_id, 
-                                           framed_protocol, checkouted_by_time, checkouted_by_trafic) 
-                                           VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s)
+                                 caller_id, called_id, framed_ip_address, nas_id, 
+                                 framed_protocol, checkouted_by_time, checkouted_by_trafic) 
+                                 VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s)
                                  """, (acc.account_id, 
-                                       self.packetobject['Acct-Session-Id'][0], now,
-                                       self.packetobject['Calling-Station-Id'][0], 
-                                       self.packetobject['Called-Station-Id'][0], 
-                                       self.packetobject['Framed-IP-Address'][0],
-                                       self.packetobject['NAS-IP-Address'][0], 
-                                       self.access_type, False, False,))
+      self.packetobject['Acct-Session-Id'][0], now,
+      self.packetobject['Calling-Station-Id'][0], 
+      self.packetobject['Called-Station-Id'][0], 
+      self.packetobject['Framed-IP-Address'][0],
+      self.packetobject['NAS-IP-Address'][0], 
+      self.access_type, False, False,))
 
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
             if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update,
-                                           caller_id, called_id, framed_ip_address, nas_id, session_time,
-                                           bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                                           VALUES ( %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s);
+                                 caller_id, called_id, framed_ip_address, nas_id, session_time,
+                                 bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+                                 VALUES ( %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s);
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
-                                 now, self.packetobject['Calling-Station-Id'][0],
-                                 self.packetobject['Called-Station-Id'][0], 
-                                 self.packetobject['Framed-IP-Address'][0],
-                                 self.packetobject['NAS-IP-Address'][0],
-                                 self.packetobject['Acct-Session-Time'][0],
-                                 bytes_in, bytes_out, self.access_type, False, False,))
-                
+      now, self.packetobject['Calling-Station-Id'][0],
+      self.packetobject['Called-Station-Id'][0], 
+      self.packetobject['Framed-IP-Address'][0],
+      self.packetobject['NAS-IP-Address'][0],
+      self.packetobject['Acct-Session-Time'][0],
+      bytes_in, bytes_out, self.access_type, False, False,))
+
             self.cur.execute("""UPDATE radius_activesession
-                                SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
-                                WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
+                             SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
+                             WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
 
 
@@ -1022,19 +986,19 @@ class HandleSAcct(HandleSBase):
             bytes_in, bytes_out=self.get_bytes()
             if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update, date_end,
-                                           caller_id, called_id, framed_ip_address, nas_id, session_time,
-                                           bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                                           VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s);
-                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
-                                 now, now, self.packetobject['Calling-Station-Id'][0],
-                                 self.packetobject['Called-Station-Id'][0], 
-                                 self.packetobject['Framed-IP-Address'][0], 
-                                 self.packetobject['NAS-IP-Address'][0],
-                                 self.packetobject['Acct-Session-Time'][0],
-                                 bytes_in, bytes_out, self.access_type, False, False,))
+                                 caller_id, called_id, framed_ip_address, nas_id, session_time,
+                                    bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
+                                    VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s);
+                                    """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
+                                          now, now, self.packetobject['Calling-Station-Id'][0],
+                                          self.packetobject['Called-Station-Id'][0], 
+                                          self.packetobject['Framed-IP-Address'][0], 
+                                          self.packetobject['NAS-IP-Address'][0],
+                                          self.packetobject['Acct-Session-Time'][0],
+                                          bytes_in, bytes_out, self.access_type, False, False,))
 
             self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
-                                WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
+                             WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
 
         self.cur.connection.commit()
@@ -1047,7 +1011,7 @@ class HandleSAcct(HandleSBase):
 class CacheRoutine(Thread):
     def __init__(self):
         Thread.__init__(self)
-        
+
     def run(self):
         #connection = pool.connection()
         #connection._con._con.set_client_encoding('UTF8')
@@ -1072,10 +1036,10 @@ class CacheRoutine(Thread):
                         counter, fMem.periodCache = 0, {}
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
-                    
+
                     logger.info("ast time : %s", time.clock() - run_time)
-                    logger.info("AUTH queue len: %s", len(queues.authQueue))
-                    logger.info("ACCT queue len: %s", len(queues.acctQueue))
+                    logger.info("AUTH queue len: %s", len(queues.server.auth_deque))
+                    logger.info("ACCT queue len: %s", len(queues.server.acct_deque))
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1087,13 +1051,13 @@ class CacheRoutine(Thread):
                         time.sleep(10)
             gc.collect()
             time.sleep(20)
-            
-    
+
+
 class pfMemoize(object):
     __slots__ = ('periodCache')
     def __init__(self):
         self.periodCache = {}
-        
+
     def in_period_(self, time_start, length, repeat_after, date_):
         res = self.periodCache.get((time_start, length, repeat_after, date_))
         if res==None:
@@ -1136,12 +1100,12 @@ def SIGHUP_handler(signum, frame):
         logger.error("SIGHUP config reread error: %s", repr(ex))
     else:
         logger.lprint("SIGHUP config reread OK")
-        
+
 def SIGUSR1_handler(signum, frame):
     global flags
     logger.lprint("SIGUSR1 recieved")
     with flags.cacheLock: flags.cacheFlag = True
-    
+
 def graceful_save():
     global  cacheThr, suicideCondition, vars
     asyncore.close_all()
@@ -1153,25 +1117,29 @@ def graceful_save():
     logger.lprint("Stopping gracefully.")
     sys.exit()
 
-        
+
 
 def main():
     global threads, curCachesDate, cacheThr, suicideCondition, server_auth, server_acct
     threads = []
     
+    for i in xrange(vars.LISTEN_THREAD_NUM):
+        newLthr = ListenThread(queues.rad_server, suicideCondition)
+        newLthr.setName('LTHR:#%i: ListenThread' % i)
+        threads.append(newLthr)
     for i in xrange(vars.AUTH_THREAD_NUM):
-        newAuth = AuthHandler()
+        newAuth = AuthHandler(queues.rad_server)
         newAuth.setName('AUTH:#%i: AuthHandler' % i)
         threads.append(newAuth)
     for i in xrange(vars.ACCT_THREAD_NUM):
-        newAcct = AcctHandler()
+        newAcct = AcctHandler(queues.rad_server)
         newAcct.setName('ACCT:#%i: AcctHandler' % i)
         threads.append(newAcct)
     cacheThr = CacheRoutine()
     suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.setName("CacheRoutine")
     cacheThr.start()    
-    
+
     time.sleep(2)
     while cacheMaster.read is False or flags.allowedUsersCheck is False:        
         if not cacheThr.isAlive:
@@ -1180,43 +1148,44 @@ def main():
         time.sleep(10)
         if not cacheMaster.read: 
             print 'caches still not read, maybe you should check the log'
-      
+
     print 'caches ready'
-    
+
+    queues.rad_server.Run()
     for th in threads:
         suicideCondition[th.__class__.__name__] = False
         th.start()        
         logger.info("NFR %s start", th.getName())
         time.sleep(0.1)
-    server_auth = AsyncAuthServ("0.0.0.0", vars.AUTH_PORT)
-    server_acct = AsyncAcctServ("0.0.0.0", vars.ACCT_PORT)
+    #server_auth = AsyncAuthServ("0.0.0.0", vars.AUTH_PORT)
+    #server_acct = AsyncAcctServ("0.0.0.0", vars.ACCT_PORT)
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
-    
+
     try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
-    
+
     try:
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
-    
+
     print "ebs: rad: started"
     savepid(vars.piddir, vars.name)
 
     while 1: 
         asyncore.poll(0.01)
-        
+
 if __name__ == "__main__":
     if "-D" in sys.argv:
         pass
         #daemonize("/dev/null", "log.txt", "log.txt")
-        
+
     config = ConfigParser.ConfigParser()
-    
+
     config.read("ebs_config.ini")
-    
+
 
     server_auth = None
     server_acct = None
@@ -1225,7 +1194,7 @@ if __name__ == "__main__":
         vars  = RadVars()
         queues= RadQueues()
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
-        
+
         cacheMaster = CacheMaster()
 
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
@@ -1239,7 +1208,7 @@ if __name__ == "__main__":
 
         suicideCondition = {}
         fMem = pfMemoize()
-
+        queues.rad_server = RadServer(addresses=['127.0.0.1'], dict=vars.DICT)
         if not globals().has_key('_1i'):
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
@@ -1248,4 +1217,5 @@ if __name__ == "__main__":
         print "ebs: rad: configs read, about to start"
         main()
     except Exception, ex:
-        print 'Exception in rad, exiting: ', repr(ex)        #logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)        #logger.error('Exception in rpc, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
+        print 'Exception in rad, exiting: ', repr(ex)
+        logger.error('Exception in rpc, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        

@@ -16,8 +16,10 @@ import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
-import Pyro.core, Pyro.protocol, Pyro.constants
+import Pyro
+import Pyro.core, Pyro.protocol, Pyro.constants, Pyro.util
 
+Pyro.config.PYRO_TRACELEVEL = 3
 import isdlogger
 import saver, utilites
 
@@ -49,12 +51,6 @@ DB_NAME = 'db'
 class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
-        '''self.connection = pool.connection()
-    #print dir(self.connection)
-    self.connection._con._con.set_client_encoding('UTF8')
-    self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)'''
-
-
 
     def acceptIdentification(self, tcpserver, conn, hash, challenge):
         try:
@@ -63,28 +59,20 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                     serv = val[0]
                     break
                 
-            '''if len(pool._connections) == maxUsers:
-                logger.error("rpc max_users depleted: %s", repr(ex))
-                conn.utoken = ''
-                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)'''
-            #print hash
             user, mdpass, role = hash.split(':')
             
             try:
-                #db_connection = pool.connection()
                 db_connection = serv.connection
                 cur = db_connection.cursor()                
                 cur.execute("SELECT host, password FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
                 host, password = cur.fetchone()
                 db_connection.commit()
                 cur.close()
-                #db_connection.close()
             except Exception, ex:
                 logger.error("acceptIdentification error: %s", repr(ex))
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
-            #print obj.id
-            #print obj.host
+            
             hostOk = self.checkIP(conn.addr[0], str(host))
 
             if hostOk and (password == mdpass):
@@ -101,13 +89,8 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
                     logger.error("acceptIdentification create connection error: %s", repr(ex))
                     conn.utoken = ''
                     return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
-                #Pyro.protocol.DefaultConnValidator.acceptIdentification(self, tcpserver, conn, hash, challenge)
-                #reread runtime options
-                #config.read("ebs_config_runtime.ini")
-                #logger.setNewLevel(int(config.get("rpc", "log_level")))
                 return(1,0)
             else:
-                #print "DENIED-----------------"
                 conn.utoken = ''
                 return (0,Pyro.constants.DENIED_SECURITY)
         except Exception, ex:
@@ -116,14 +99,11 @@ class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
             return (0,Pyro.constants.DENIED_SECURITY)
 
     def checkIP(self, ipstr, hostsstr):
-        #print "checkIP----"
-        #user IP
         userIP = IPy.IP(ipstr)
         #allowed hosts
         hosts = hostsstr.split(', ')
         hostOk = False
         for host in hosts:
-            #print host
             iprange = host.split('-')
             if len(iprange) == 1:
                 if iprange[0].find('/') != -1:
@@ -183,6 +163,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         self.ticket = ''
+        print Pyro.core.Log
 
 
     def run(self):
@@ -871,7 +852,7 @@ if __name__ == "__main__":
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
 
-        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        logger = isdlogger.pyrologger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         logger.lprint('Ebs RPC start')
@@ -889,6 +870,10 @@ if __name__ == "__main__":
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(pool.connection(), _1i())       
         allowedUsers()
+        
+        Pyro.util.Log = logger
+        Pyro.core.Log = logger
+        Pyro.protocol.Log = logger
         #-------------------
         print "ebs: rpc: configs read, about to start"
         main()

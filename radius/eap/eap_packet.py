@@ -44,7 +44,9 @@ NAME_LEN  = 32
 EAP_HEADER = "!BBH"
 EAP_TYPE = "!B"
 
-# struct.pack('!B') == chr
+EAP_TLS_FLAGS = '!B'
+
+EAP_TLS_FLAGS_START = int('00100000',2)
 
 class EAPError(Exception):
     pass
@@ -136,7 +138,46 @@ class EAP_Packet(object):
     
     def __repr__(self):
         return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
+ 
+class EAP_NAK(EAP_Packet):
+    __slots__ = ('req_auth',)
+    def __init__(self):
+        super(EAP_NAK, self).__init__()
+        self.req_auth = 0
+    def unpack(self, raw_packet):
+        super(EAP_NAK, self).unpack(raw_packet)
+        if not self.type_data:
+            raise EAPError("EAP-NAK error: no type data found!")
+        try:
+            self.req_auth = struct.unpack("!B", self.type_data[:1])[0]
+        except struct.error:
+            raise EAPError("EAP-NAK type field is corrupt! - " + repr(struct.error))
+        except IndexError:
+            raise EAPError("EAP-NAK type data retrieval error! - " + repr(IndexError))
+        
+    def __repr__(self):
+        return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(EAP_NAK, self).__slots__ + self.__slots__))
+        
+class EAP_TLS(EAP_Packet):
+    __slots__ = ()
+    def __init__(self):
+        super(EAP_TLS, self).__init__()
+        
+    def unpack(self, raw_packet):
+        super(EAP_TLS, self).unpack(raw_packet)
+        
+    @staticmethod    
+    def get_tls_start(old_eap_packet):
+        eap_packet = copy.deepcopy(old_eap_packet)
+        eap_packet.code = PW_EAP_REQUEST
+        eap_packet.type = PW_EAP_TLS
+        eap_packet.type_data = struct.pack(EAP_TLS_FLAGS, EAP_TLS_FLAGS_START)
+        eap_packet._pack()
+        return eap_packet.raw_packet, 'START'
     
+    def __repr__(self):
+        return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(EAP_TLS, self).__slots__ + self.__slots__))
+        
 class EAP_MD5(EAP_Packet):
     __slots__ = ('value', 'value_length', 'name')
     
@@ -166,10 +207,11 @@ class EAP_MD5(EAP_Packet):
             value += chr(i)
         #MD5_CHALLENGE_LEN + 1
         self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN) + value + self.name
-        
+    
     @staticmethod
     def get_challenge_reply(old_eap_packet):
         eap_packet = copy.deepcopy(old_eap_packet)
+        eap_packet.code = PW_EAP_REQUEST
         eap_packet.type = PW_EAP_MD5
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
@@ -187,7 +229,7 @@ class EAP_MD5(EAP_Packet):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(EAP_MD5, self).__slots__ + self.__slots__))
 
     
-EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_MD5: EAP_MD5}
+EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_NAK: EAP_NAK, PW_EAP_MD5: EAP_MD5, PW_EAP_TLS: EAP_TLS}
 
 
     

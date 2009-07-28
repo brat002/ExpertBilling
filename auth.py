@@ -14,13 +14,16 @@ from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
 import radius.eap.eap_packet as EAP
-from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS
+from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS
 from collections import defaultdict
 from utilites import hex_bytestring
 
 
-EAP_IDENTITY_CHECK = lambda kwargs: ('EAP-MD5', EAP_MD5.get_challenge_reply)
+#EAP_IDENTITY_CHECK = lambda kwargs: ('EAP-MD5', EAP_MD5.get_challenge_reply)
+EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)
 
+def get_eap_handlers():
+    return EAP_HANDLERS.iterkeys()
 class Auth:
     """
     Класс предназначен для реализации проверки авторизации для механизмов
@@ -133,12 +136,30 @@ class Auth:
                 eap_packet.identifier = (eap_packet.identifier + 1)  % 255
                 auth_name, auth_handler = EAP_IDENTITY_CHECK({})
                 self.packet['EAP-Message'], challenge = auth_handler(eap_packet)
-                with self.challenges[auth_name]['lock']:
-                    state = self.plainusername[:3] + '00'
-                    self.packet['State'] = state
-                    self.challenges[auth_name]['set'](self.plainusername, (challenge, eap_packet.identifier, state))
-                return False, True, 'EAP: challenge issued: %s' % self.plainusername                
-
+                state = self.plainusername[:3] + '00'
+                self.packet['State'] = state
+                if challenge:
+                    with self.challenges[auth_name]['lock']:                    
+                        self.challenges[auth_name]['set'](self.plainusername, (challenge, eap_packet.identifier, state))
+                return False, True, 'EAP: challenge issued: %s' % self.plainusername
+            elif eap_packet.type == EAP.PW_EAP_NAK:
+                self.code = packet.AccessChallenge
+                auth_name, auth_handler = EAP_IDENTITY_CHECK({})
+                with self.challenges[auth_name]['lock']:                    
+                    old_challenge, old_id, old_state = self.challenges[auth_name]['get'](self.plainusername, (None, None, None))
+                if not old_id or not ((old_id == eap_packet.identifier) or (old_id == eap_packet.identifier - 1)):
+                    return False, False, 'EAP error: wrong identifiers for user: %s old: %s new: %s' % (self.plainusername, old_id,eap_packet.identifier)
+                eap_packet.identifier = (eap_packet.identifier + 1)  % 255
+                eap_handler = EAP_HANDLERS.get(eap_packet.req_auth)
+                if not eap_handler:
+                    return False, False, 'EAP error: unknown requested auth method: %s %s' % (self.plainusername, eap_packet.req_auth)
+                self.packet['EAP-Message'], challenge = eap_handler.get_challenge_reply(eap_packet)
+                state = self.plainusername[:3] + '01'
+                self.packet['State'] = state
+                if challenge:
+                    with self.challenges[eap_packet.req_auth]['lock']:                    
+                        self.challenges[eap_packet.req_auth]['set'](self.plainusername, (challenge, eap_packet.identifier, state))
+                return False, True, 'EAP: post NAK challenge issued: %s auth type %s' % (self.plainusername, eap_packet.req_auth)
             else:
                 return True, True, ''
 
@@ -148,8 +169,8 @@ class Auth:
     def _EAP_Check(self):
         eap_packet = self.extensions.get('EAP-Packet')
         if eap_packet.type == EAP.PW_EAP_MD5:
-            with self.challenges['EAP-MD5']['lock']:
-                challenge, id, state = self.challenges['EAP-MD5']['get'](self.plainusername, (None, None, None))
+            with self.challenges[EAP.PW_EAP_MD5]['lock']:
+                challenge, id, state = self.challenges[EAP.PW_EAP_MD5]['get'](self.plainusername, (None, None, None))
             if challenge is None:
                 return False, 'EAP Password check: issued challenge not found: %s' % self.plainusername
             #print hex_bytestring(challenge)

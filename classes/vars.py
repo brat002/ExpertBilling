@@ -263,7 +263,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -281,6 +281,7 @@ class RadVars(Vars):
         self.ACCT_SOCK_TIMEOUT = 5
         self.AUTH_THREAD_NUM = 2
         self.ACCT_THREAD_NUM = 3
+        self.LISTEN_THREAD_NUM = 2
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -301,6 +302,7 @@ class RadVars(Vars):
         if config.has_option(name, 'acct_sock_timeout'): self.ACCT_SOCK_TIMEOUT = config.getint(name, 'acct_sock_timeout')
         if config.has_option(name, 'auth_thread_num'): self.AUTH_THREAD_NUM = config.getint(name, 'auth_thread_num')
         if config.has_option(name, 'acct_thread_num'): self.ACCT_THREAD_NUM = config.getint(name, 'acct_thread_num')
+        if config.has_option(name, 'listen_thread_num'): self.LISTEN_THREAD_NUM = config.getint(name, 'listen_thread_num')
         
         
     def __repr__(self):
@@ -309,15 +311,15 @@ class RadVars(Vars):
 
     
 class RadQueues(object):
-    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_md5_ch', 'eap_md5_lock',\
-                 'authQueue', 'authQLock', 'acctQueue', 'acctQLock')
+    __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_auth_chs', 'eap_auth_locks',\
+                 'rad_server', 'challenges')
     def __init__(self):
         self.account_timeaccess_cache = {}
         self.account_timeaccess_cache_count = 0
-        self.eap_md5_ch = {}
-        self.eap_md5_lock = Lock()
-        self.authQueue = deque(); self.authQLock = Lock()
-        self.acctQueue = deque(); self.acctQLock = Lock()
+        self.eap_auth_chs = {}
+        self.eap_auth_locks = {}
+        self.challenges = {}
+        self.rad_server = None
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
