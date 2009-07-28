@@ -595,6 +595,8 @@ class Transaction(models.Model):
     summ=models.FloatField(default=0, blank=True)
     description = models.TextField(default='', blank=True)
     created=models.DateTimeField(auto_now_add=True, default='')
+    promise=models.FloatField(default=0, blank=True) 
+    end_promise=models.DateTimeField(auto_now_add=True, default='')
 
 
     class Admin:
