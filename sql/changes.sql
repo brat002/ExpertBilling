@@ -1504,3 +1504,29 @@ ALTER TABLE billservice_shedulelog
   ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
       REFERENCES billservice_accounttarif (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+----28.07.2009 14:14
+ALTER TABLE billservice_account
+   ADD COLUMN associate_pptp_ipn_ip boolean;
+ALTER TABLE billservice_account
+   ALTER COLUMN associate_pptp_ipn_ip SET NOT NULL;
+ALTER TABLE billservice_account
+   ALTER COLUMN associate_pptp_ipn_ip SET DEFAULT False;
+
+ALTER TABLE billservice_account
+   ADD COLUMN associate_pppoe_mac boolean;
+ALTER TABLE billservice_account
+   ALTER COLUMN associate_pppoe_mac SET NOT NULL;
+ALTER TABLE billservice_account
+   ALTER COLUMN associate_pppoe_mac SET DEFAULT False;
+
+ALTER TABLE billservice_account
+   ADD COLUMN status integer;
+ALTER TABLE billservice_account
+   ALTER COLUMN status SET DEFAULT 1;
+UPDATE billservice_account SET status = 1;
+
+ALTER TABLE billservice_suspendedperiod
+   ALTER COLUMN end_date DROP NOT NULL;
+
+
