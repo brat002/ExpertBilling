@@ -99,10 +99,12 @@ class CassaEbs(ebsTableWindow):
         #self.dateTime.setFirstDayOfWeek(QtCore.Qt.Monday)
         self.dateTime.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridLayout_3.addWidget(self.dateTime, 0, 1, 1, 1)
+        self.toolButton_set_tarif_date  = QtGui.QToolButton(self.groupBox_tariffs)
+        self.gridLayout_3.addWidget(self.toolButton_set_tarif_date, 0, 2, 1, 1)
         self.pushButton_change_tariff = QtGui.QPushButton(self.groupBox_tariffs)
         self.pushButton_change_tariff.setMaximumSize(QtCore.QSize(75, 16777215))
         self.pushButton_change_tariff.setObjectName("pushButton_change_tariff")
-        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 3, 1, 1)
 
         self.gridLayout_4.addWidget(self.groupBox_tariffs, 2, 0, 1, 2)
         self.groupBox_payment = QtGui.QGroupBox(self.centralwidget)
@@ -137,9 +139,9 @@ class CassaEbs(ebsTableWindow):
         self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_paymend_date.setCalendarPopup(True)
         self.dateTimeEdit_paymend_date.setObjectName("dateTimeEdit_paymend_date")
-        self.checkBox_autotime = QtGui.QCheckBox(self.groupBox_payment)
+        self.toolButton_time_now = QtGui.QToolButton(self.groupBox_payment)
         self.gridLayout_6.addWidget(self.dateTimeEdit_paymend_date, 7, 1, 1, 2)
-        self.gridLayout_6.addWidget(self.checkBox_autotime, 7, 3)
+        self.gridLayout_6.addWidget(self.toolButton_time_now, 7, 3)
         self.label_promise = QtGui.QLabel(self.groupBox_payment)
         self.label_promise.setObjectName("label_promise")
         self.gridLayout_6.addWidget(self.label_promise, 8, 0, 1, 1)
@@ -160,9 +162,11 @@ class CassaEbs(ebsTableWindow):
         self.pushButton_pay = QtGui.QPushButton(self.groupBox_payment)
         self.pushButton_pay.setObjectName("pushButton_pay")
         self.gridLayout_6.addWidget(self.pushButton_pay, 10, 0, 1, 1)
-        self.checkBox = QtGui.QCheckBox(self.groupBox_payment)
-        self.checkBox.setObjectName("checkBox")
-        self.gridLayout_6.addWidget(self.checkBox, 10, 1, 1, 1)
+        self.pushButton_pay_with_cheque = QtGui.QPushButton(self.groupBox_payment)
+        self.pushButton_pay_with_cheque.setObjectName("pushButton_pay_with_cheque")
+        #self.checkBox = QtGui.QCheckBox(self.groupBox_payment)
+        #self.checkBox.setObjectName("checkBox")
+        self.gridLayout_6.addWidget(self.pushButton_pay_with_cheque, 10, 1, 1, 1)
         self.gridLayout_4.addWidget(self.groupBox_payment, 2, 2, 2, 1)
         self.groupBox_limites = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_limites.setObjectName("groupBox_limites")
@@ -206,10 +210,12 @@ class CassaEbs(ebsTableWindow):
         objDict = {self.toolBar:["setPrinter",],}
         self.actionCreator(actList, objDict)
         self.connect(self.pushButton_pay, QtCore.SIGNAL("clicked()"), self.pay)
+        self.connect(self.pushButton_pay_with_cheque, QtCore.SIGNAL("clicked()"), self.pay_with_cheque)
         self.connect(self.pushButton_search, QtCore.SIGNAL("clicked()"), self.refreshTable)
         self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
         QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
-        QtCore.QObject.connect(self.checkBox_autotime,QtCore.SIGNAL("stateChanged(int)"),self.checkAutoTime)
+        QtCore.QObject.connect(self.toolButton_time_now,QtCore.SIGNAL("clicked()"),self.setPayTime)
+        QtCore.QObject.connect(self.toolButton_set_tarif_date,QtCore.SIGNAL("clicked()"),self.setTarifTime)
         
         QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         
@@ -220,7 +226,7 @@ class CassaEbs(ebsTableWindow):
         self.refreshTariffs()
         self.fixtures()
         self.promise_actions()
-        self.checkAutoTime()
+        #self.checkAutoTime()
 
         
     def retranslateUI(self, initargs):
@@ -246,12 +252,14 @@ class CassaEbs(ebsTableWindow):
         self.label_end_promise.setText(QtGui.QApplication.translate("MainWindow", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("MainWindow", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_pay.setText(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("MainWindow", "Печать", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_pay_with_cheque.setText(QtGui.QApplication.translate("MainWindow", "Зачислить и распечатать чек", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_limites.setTitle(QtGui.QApplication.translate("MainWindow", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
         self.textEdit_limites.setPlainText(QtGui.QApplication.translate("MainWindow", "Нет данных", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_prepaid_traffic.setTitle(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.textEdit_prepaid_traffic.setPlainText(QtGui.QApplication.translate("MainWindow", "Функция недоступна", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_autotime.setText(QtGui.QApplication.translate("MainWindow", "Auto", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_time_now.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_set_tarif_date.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
+        
         
     def promise_actions(self):
         if self.checkBox_promise.isChecked():
@@ -279,12 +287,15 @@ class CassaEbs(ebsTableWindow):
             self.textEdit_limites.setPlainText(u"Нет данных")
         
     
-    def checkAutoTime(self):
-        if self.checkBox_autotime.isChecked()==True:
-            self.dateTimeEdit_paymend_date.setDisabled(True)
-        else:
-            self.dateTimeEdit_paymend_date.setDisabled(False)
+    def setPayTime(self):
+        #if self.checkBox_autotime.isChecked()==True:
+        #    self.dateTimeEdit_paymend_date.setDisabled(True)
+        #else:
+        #    self.dateTimeEdit_paymend_date.setDisabled(False)
+        self.dateTimeEdit_paymend_date.setDateTime(datetime.datetime.now())
                 
+    def setTarifTime(self):
+        self.dateTime.setDateTime(datetime.datetime.now())
     def refreshTariffs(self):
         #accounts = self.connection.get_models("billservice_account")
         #self.tariffs = self.connection.get_models("billservice_tariff")
@@ -375,11 +386,42 @@ class CassaEbs(ebsTableWindow):
             account = self.getSelectedId()
             document = unicode(self.lineEdit_document.text())
             description = unicode(self.lineEdit_description.text())
-            if self.checkBox_autotime.isChecked()==False:
-                created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
-            else:
-                created = "now()"
+
+            created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
+            
             promise = self.checkBox_promise.isChecked()
+            summ = float(unicode(self.lineEdit_summ.text()))
+            if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
+                end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
+            else:
+                end_promise = None
+
+                
+            global tr_id
+            tr_id = self.connection.pay(account, summ, document, description, created, promise, end_promise, self.systemuser_id)
+            if tr_id==False:
+                QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Возможно пропала связь с сервером."))
+            else:
+                QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
+                self.lineEdit_summ.setText("")
+                self.lineEdit_document.setText("")
+                self.lineEdit_description.setText("")
+                self.refreshTable()
+                
+            self.lineEdit_summ.setFocus(True)
+            
+    def pay_with_cheque(self):
+         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            account = self.getSelectedId()
+            document = unicode(self.lineEdit_document.text())
+            description = unicode(self.lineEdit_description.text())
+
+            created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
+
+            promise = self.checkBox_promise.isChecked()
+            if not self.lineEdit_summ.text():
+                QtGui.QMessageBox.information(self, unicode(u"Ошибка"), unicode(u"Вы не указали сумму."))
+                return
             summ = float(unicode(self.lineEdit_summ.text()))
             if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
                 end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
@@ -393,12 +435,12 @@ class CassaEbs(ebsTableWindow):
             
             if tr_id!=False:
                 QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
-                if self.checkBox.isChecked() and QtGui.QMessageBox.question(self, u"Печатать чек?" , u"Напечатать чек?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-                    if not self.printer:
-                        QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
-                        self.getPrinter()
-                    if self.printer:
-                        self.cheque_print()
+            
+                if not self.printer:
+                    QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
+                    self.getPrinter()
+                if self.printer:
+                    self.cheque_print(tr_id)
                 
                 self.lineEdit_summ.setText("")
                 self.lineEdit_document.setText("")
@@ -408,8 +450,7 @@ class CassaEbs(ebsTableWindow):
             else:
                 QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Обратитесь к администратору."))
             self.lineEdit_summ.setFocus(True)
-            
-    
+                   
     def createAccountTarif(self):
         account_id = self.getSelectedId()
         tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
@@ -430,7 +471,7 @@ class CassaEbs(ebsTableWindow):
             self.dateTime.setDateTime(datetime.datetime.now())
         
 
-    def cheque_print(self):
+    def cheque_print(self, tr_id):
         if not self.printer:
             QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
             return
@@ -441,10 +482,11 @@ class CassaEbs(ebsTableWindow):
             account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % account_id)
 
             tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            transaction = self.connection.get_model(tr_id.id, "billservice_transaction")
             self.connection.commit()
             sum = 10000
-
-            data=templ.render_unicode(account=account, tarif=tarif, transaction_id=tr_id.id, sum=unicode(self.lineEdit_summ.text()), document = unicode(self.lineEdit_document.text()), created=datetime.datetime.now().strftime(strftimeFormat))
+            transaction.summ = transaction.summ*(-1)
+            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction)
             
             #it seem that software printers can change the path!
             file= open('templates/tmp/temp.html', 'wb')

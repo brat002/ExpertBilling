@@ -1319,10 +1319,11 @@ class TemplatesWindow(QtGui.QMainWindow):
         if id==5:
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
             tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            transaction = self.connection.sql("SELECT * FROM billservice_transaction LIMIT 1")[0]
             sum = 10000
             document=u"Банковский перевод №112432"
             try:
-                data=templ.render_unicode(account=account, document=document, transaction_id=1, tarif=tarif, sum=sum,   created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(account=account, tarif = tarif, transaction = transaction)
             except Exception, e:
                 data=u"Error %s" % str(e)
             
