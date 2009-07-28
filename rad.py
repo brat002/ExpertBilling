@@ -166,7 +166,7 @@ class ListenThread(Thread):
         while True:
             if self.suicide_condition[self.__class__.__name__]: break
             try:
-                for (socknum, event) in self.server.pollobj.poll(1000):
+                for (socknum, event) in self.server.pollobj.poll(0.1):
                     if event != select.POLLIN:
                         logger.error("%s: unexpected event %s!", (self.getName(), event))
                         continue
@@ -403,7 +403,7 @@ class AuthHandler(Thread):
                     returndata=authNA(packetfromcore)                  
 
                 if returndata:
-                    packetobject.fd.sendto(returndata, packetobject.source)
+                    packetobject.fd.sendto(returndata, None, packetobject.source)
                     del returndata
 
                 del packetfromcore
@@ -469,7 +469,7 @@ class AcctHandler(Thread):
 
                 if packetfromcore is not None: 
                     returndata = packetfromcore.ReplyPacket()
-                    packetobject.fd.sendto(returndata, packetobject.source)
+                    packetobject.fd.sendto(returndata, None, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
 
