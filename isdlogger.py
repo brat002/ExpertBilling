@@ -6,9 +6,18 @@ from logging import handlers
 try: import syslog
 except ImportError, ipe: import syslog_dummy as syslog
 
+import threading
+from threading import Lock
+
 
 dateDelim = "."
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
+
+LG_DEBUG    = 0
+LG_INFO     = 1
+LG_WARNING  = 2
+LG_ERROR    = 3
+LG_CRITICAL = 4
 
 loggingLevels = {0: logging.DEBUG, 1: logging.INFO, 2: logging.WARNING, 3: logging.ERROR, 4: logging.CRITICAL}
 syslogLevels  = {0: syslog.LOG_DEBUG, 1: syslog.LOG_INFO, 2: syslog.LOG_WARNING, 3: syslog.LOG_ERR, 4 : syslog.LOG_CRIT} 
@@ -102,4 +111,38 @@ class isdlogger(object):
     '''predicate - whether level <= INFO level'''
     def writeInfoP(self):
         return self.loggingLevel <= 1
+    
+#logger compatible with PYRO
+class pyrologger(isdlogger):
+    def __init__(self, *args, **kwargs):
+        super(pyrologger, self).__init__(*args, **kwargs)
+        self.trace_on = kwargs.get('trace_on', False)
+	#self.lock = Lock()
+        
+    def _checkTraceLevel(self, level):
+	return self.trace_on
+    
+    def _logfile(self):
+	return 'pyro_log'
+    
+    def msg(self,source,*args):
+	self._trace(LG_INFO,source, args)
+    def warn(self,source,*args):
+	self._trace(LG_WARNING,source, args)
+    def error(self,source,*args):
+	self._trace(LG_ERROR,source, args)
+    def raw(self,str):
+	self.log_(self.levels[LG_WARNING], str)
+    def _trace(self, level, source, arglist):
+	if level >= self.loggingLevel:
+	    thread_name = 'NA'
+	    try:
+		thread_name = threading.currentThread().getName()
+	    except: pass
+	    
+	    self.log_(self.levels[level],  ' | '.join(('PYRO_LOG:', thread_name, str(source), \
+						       reduce(lambda x,y: str(x)+' '+str(y),arglist))))
+
+
+    
     
