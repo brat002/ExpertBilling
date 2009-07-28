@@ -404,7 +404,7 @@ class AuthHandler(Thread):
                     returndata=authNA(packetfromcore)                  
 
                 if returndata:
-                    packetobject.fd.sendto(returndata, None, packetobject.source)
+                    packetobject.fd.sendto(returndata, packetobject.source)
                     del returndata
 
                 del packetfromcore
