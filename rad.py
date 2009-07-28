@@ -21,7 +21,7 @@ import psycopg2, psycopg2.extras
 import isdlogger
 import saver, utilites
 
-from auth import Auth
+from auth import Auth, get_eap_handlers
 from time import clock
 from copy import copy, deepcopy
 from daemonize import daemonize
@@ -601,7 +601,7 @@ class HandleSAuth(HandleSBase):
 
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         acc = self.caches.account_cache.by_username.get(user_name)
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = {'EAP-MD5': {'get': queues.eap_md5_ch.pop, 'set': queues.eap_md5_ch.__setitem__, 'lock': queues.eap_md5_lock}})
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
         if acc is None:
             logger.warning("Unknown User %s", user_name)
@@ -1038,8 +1038,8 @@ class CacheRoutine(Thread):
                         with flags.cacheLock: flags.cacheFlag = False
 
                     logger.info("ast time : %s", time.clock() - run_time)
-                    logger.info("AUTH queue len: %s", len(queues.server.auth_deque))
-                    logger.info("ACCT queue len: %s", len(queues.server.acct_deque))
+                    logger.info("AUTH queue len: %s", len(queues.rad_server.auth_deque))
+                    logger.info("ACCT queue len: %s", len(queues.rad_server.acct_deque))
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1175,7 +1175,7 @@ def main():
     savepid(vars.piddir, vars.name)
 
     while 1: 
-        asyncore.poll(0.01)
+        time.sleep(300)
 
 if __name__ == "__main__":
     if "-D" in sys.argv:
@@ -1202,7 +1202,12 @@ if __name__ == "__main__":
         saver.log_adapt    = logger.log_adapt
         logger.lprint('Radius start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
-
+        for eap_handler in get_eap_handlers():
+            handler_dict = {}
+            handler_lock = Lock()
+            queues.eap_auth_chs[eap_handler]   = handler_dict
+            queues.eap_auth_locks[eap_handler] = handler_lock
+            queues.challenges[eap_handler] = {'get': handler_dict.pop, 'set': handler_dict.__setitem__, 'lock': handler_lock}
         #write profiling info?
         flags.writeProf = logger.writeInfoP()         
 
