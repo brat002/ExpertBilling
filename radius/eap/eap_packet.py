@@ -230,6 +230,7 @@ class EAP_MD5(EAP_Packet):
 
     
 EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_NAK: EAP_NAK, PW_EAP_MD5: EAP_MD5, PW_EAP_TLS: EAP_TLS}
+EAP_IDENTITY_CHECK_TYPES = {'eap-md5':(PW_EAP_MD5, EAP_MD5.get_challenge_reply), 'eap-tls': (PW_EAP_TLS, EAP_TLS.get_tls_start)}
 
 
     

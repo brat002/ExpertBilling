@@ -14,13 +14,22 @@ from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
 import radius.eap.eap_packet as EAP
-from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS
+from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
 from collections import defaultdict
 from utilites import hex_bytestring
 
 
-#EAP_IDENTITY_CHECK = lambda kwargs: ('EAP-MD5', EAP_MD5.get_challenge_reply)
+#EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_MD5, EAP_MD5.get_challenge_reply)
 EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)
+
+def set_identity_check(identity_type):
+    global EAP_IDENTITY_CHECK
+    id_type = EAP_IDENTITY_CHECK_TYPES.get(identity_type)
+    if not id_type:
+        raise Exception("AUTH exception: Unknown EAP Identity Type: %s" % identity_type)
+    id_check = lambda kwargs: id_type
+    EAP_IDENTITY_CHECK = id_check
+    
 
 def get_eap_handlers():
     return EAP_HANDLERS.iterkeys()

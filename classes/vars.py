@@ -263,7 +263,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -282,6 +282,7 @@ class RadVars(Vars):
         self.AUTH_THREAD_NUM = 2
         self.ACCT_THREAD_NUM = 3
         self.LISTEN_THREAD_NUM = 2
+        self.EAP_ID_TYPE = 'eap-md5'
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -303,7 +304,8 @@ class RadVars(Vars):
         if config.has_option(name, 'auth_thread_num'): self.AUTH_THREAD_NUM = config.getint(name, 'auth_thread_num')
         if config.has_option(name, 'acct_thread_num'): self.ACCT_THREAD_NUM = config.getint(name, 'acct_thread_num')
         if config.has_option(name, 'listen_thread_num'): self.LISTEN_THREAD_NUM = config.getint(name, 'listen_thread_num')
-        
+        if config.has_option(name, 'eap_id_type'):
+            self.EAP_ID_TYPE = config.get(name, 'eap_id_type').lower()
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RadVars, self).__slots__ + self.__slots__))

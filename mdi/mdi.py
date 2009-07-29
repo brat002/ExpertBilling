@@ -6,12 +6,17 @@ from PyQt4 import QtCore, QtGui
 from helpers import Object as Object
 from helpers import connlogin
 import Pyro.core
+import Pyro.util
 import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
 import threading
 
-
+import isdlogger
+logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
+Pyro.util.Log = logger
+Pyro.core.Log = logger
+Pyro.protocol.Log = logger
 import mdi_rc
 
 from AccountFrame import AccountsMdiEbs as AccountsMdiChild
@@ -30,25 +35,6 @@ from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
 from TPChangeRules import TPRulesEbs
 
-#add speed "Загрузка канала пользователем"
-# общая трафик/загрузка по типам
-#динамика прибыли (кредит)
-#трафик пользователей (пирог)
-#скорость по портам
-#сессии пользователей
-#загрузка канала
-#общий трафик/загрузка
-#использование канала пользователями
-'''_reportsdict = [#['report3_total.xml', ['nfs_total_traf'], 'Общий трафик'], \
-                ['report3_total_cl.xml', ['nfs_total_traf_bydir'], 'Общий трафик по типам'],\
-                ['report3_users.xml', ['nfs_u_traf'], 'Трафик пользователей'], \
-                ['report3_pie.xml', ['userstrafpie'], 'Трафик пользователей (пирог)'], \
-                #['report3_nass.xml', ['nfs_n_traf'], 'Загрузка по серверам доступа'],\
- #               ['report3_classes.xml', ['nfs_total_classes_speed'], 'Скорость по направлениям'],\
-                ['report3_multcl.xml', ['nfs_multi_classes_speed'], 'Скорость по направлениям2'],\
-                ['report3_port.xml', ['nfs_port_speed'], 'Скорость по портам'], \
-                ['report3_sess.xml', ['sessions'], 'Сессии пользователей'], \
-                ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]'''
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
