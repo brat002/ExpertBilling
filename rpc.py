@@ -32,8 +32,9 @@ from daemonize import daemonize
 from encodings import idna, ascii
 from threading import Thread, Lock
 from DBUtils.PooledDB import PooledDB
+import chartprovider.bpcdplot
 from chartprovider.bpcdplot import cdDrawer
-from chartprovider.bpplotadapter import bpplotAdapter
+#from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running
@@ -514,7 +515,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         listconnection = pool.connection()
         listconnection._con._con.set_client_encoding('UTF8')
         listcur = listconnection.cursor()
-        bpplotAdapter.rCursor = listcur
+        chartprovider.bpcdplot.bpbl.bpplotAdapter.rCursor = listcur
+        #bpplotAdapter.rCursor = listcur
         cddrawer = cdDrawer()
         imgs = cddrawer.cddraw(*args, **kwargs)
         listconnection.commit()
