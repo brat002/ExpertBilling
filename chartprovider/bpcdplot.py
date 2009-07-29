@@ -1,6 +1,7 @@
 #-*-coding=utf-8-*-
 import pychartdir
 from pychartdir import *
+import bpbl
 from bpbl import dataProvider
 import sys, copy
 from collections import defaultdict
