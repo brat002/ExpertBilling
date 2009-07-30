@@ -471,7 +471,7 @@ class AuthHandler(Thread):
 
                 packetobject = None
                 with self.server.auth_lock:
-                    if len(self.server.auth_deque) > 1:
+                    if len(self.server.auth_deque) > 0:
                         packetobject = self.server.auth_deque.popleft()
                 if not packetobject:
                     time.sleep(0.05)
@@ -571,7 +571,7 @@ class AcctHandler(Thread):
                 
                 packetobject = None
                 with self.server.acct_lock:
-                    if len(self.server.acct_deque) > 1:
+                    if len(self.server.acct_deque) > 0:
                         packetobject = self.server.acct_deque.popleft()
                 if not packetobject:
                     time.sleep(0.5)
