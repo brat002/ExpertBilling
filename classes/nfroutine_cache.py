@@ -103,4 +103,8 @@ class StoreClassCache(CacheItem):
     def transformdata(self): pass
     
     def reindex(self):
-        self.classes = set(self.data[0][0] )
+        try:
+            self.classes = set(self.data[0][0])
+        except:
+            self.classes = set()
+        

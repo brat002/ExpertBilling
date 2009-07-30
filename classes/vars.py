@@ -3,6 +3,7 @@ import psycopg2
 from collections import deque, defaultdict
 from threading import Lock
 import dictionary
+from operator import itemgetter
 
 
 class Vars(object):
@@ -263,7 +264,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -283,6 +284,8 @@ class RadVars(Vars):
         self.ACCT_THREAD_NUM = 3
         self.LISTEN_THREAD_NUM = 2
         self.EAP_ID_TYPE = 'eap-md5'
+        self.EAP_ACCESS_TYPES = {'802.1x':'eap-tls', 'PPTP':'eap-md5', 'PPPOE':'eap-md5'}
+        self.POLL_TIMEOUT = 500
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -304,9 +307,11 @@ class RadVars(Vars):
         if config.has_option(name, 'auth_thread_num'): self.AUTH_THREAD_NUM = config.getint(name, 'auth_thread_num')
         if config.has_option(name, 'acct_thread_num'): self.ACCT_THREAD_NUM = config.getint(name, 'acct_thread_num')
         if config.has_option(name, 'listen_thread_num'): self.LISTEN_THREAD_NUM = config.getint(name, 'listen_thread_num')
+        if config.has_option(name, 'poll_timeout'): self.POLL_TIMEOUT = config.getint(name, 'poll_timeout')
         if config.has_option(name, 'eap_id_type'):
             self.EAP_ID_TYPE = config.get(name, 'eap_id_type').lower()
-        
+        if config.has_option(name, 'eap_access_type'):
+            self.EAP_ACCESS_TYPE = dict((apply(lambda lst: (lst[0], lst[1].lower()), (fst.split(':'),)) for fst in config.get(name, 'eap_access_type').split(',')))
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RadVars, self).__slots__ + self.__slots__))
 
