@@ -167,7 +167,7 @@ class ListenThread(Thread):
         while True:
             if self.suicide_condition[self.__class__.__name__]: break
             try:
-                for (socknum, event) in self.server.pollobj.poll(0.1):
+                for (socknum, event) in self.server.pollobj.poll(0.5):
                     if event != select.POLLIN:
                         logger.error("%s: unexpected event %s!", (self.getName(), event))
                         continue
@@ -474,7 +474,7 @@ class AuthHandler(Thread):
                     if len(self.server.auth_deque) > 0:
                         packetobject = self.server.auth_deque.popleft()
                 if not packetobject:
-                    time.sleep(0.05)
+                    time.sleep(0.5)
                     continue
                 if False: assert isinstance(packetobject, packet.Packet)
                 auth_time = clock()
