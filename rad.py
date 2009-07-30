@@ -274,6 +274,8 @@ def get_accesstype(packetobject):
             return 'PPTP'
         elif nas_port_type == 'Ethernet' and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
             return 'PPPOE'
+        elif nas_port_type == 'Wireless-802.11':
+            return 'W802.1x'
         elif packetobject.has_key('Mikrotik-Host-IP'):
             return 'HotSpot'
         elif nas_port_type == 'Ethernet' and not packetobject.has_key('Service-Type'):
@@ -1238,7 +1240,7 @@ def main():
     global threads, curCachesDate, cacheThr, suicideCondition, server_auth, server_acct
     threads = []
     if not w32Import:
-        queues.rad_server = RadServer(addresses=['127.0.0.1'], dict=vars.DICT)
+        queues.rad_server = RadServer(addresses=['0.0.0.0'], dict=vars.DICT)
         for i in xrange(vars.LISTEN_THREAD_NUM):
             newLthr = ListenThread(queues.rad_server, suicideCondition)
             newLthr.setName('LTHR:#%i: ListenThread' % i)
