@@ -105,7 +105,7 @@ class RadServer(object):
         self.authfds = []
         self.acctfds = []
         self.pollobj = None
-        self.POLL_TIMEOUT = 500
+        self.POLL_TIMEOUT = poll_timeout
         self.AUTH_QUEUE_MAXLEN = auth_queue_maxlen
         self.ACCT_QUEUE_MAXLEN = acct_queue_maxlen
 
@@ -1272,7 +1272,7 @@ def main():
     if not w32Import:
         logger.warning("Using normal poll multithreaded server!", ())
         queues.rad_server.Run()
-        listen_sleep = float(poll_time) / (1000 * vars.LISTEN_THREAD_NUM)
+        listen_sleep = float(vars.POLL_TIMEOUT) / (1000 * vars.LISTEN_THREAD_NUM)
         for th in threads:
             suicideCondition[th.__class__.__name__] = False
             th.start()        
