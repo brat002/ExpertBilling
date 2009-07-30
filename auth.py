@@ -21,6 +21,7 @@ from utilites import hex_bytestring
 
 #EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_MD5, EAP_MD5.get_challenge_reply)
 EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)
+EAP_ACCESS_TYPES    = {'802.1x':'eap-tls', 'PPTP':'eap-md5', 'PPPOE':'eap-md5'}
 
 def set_identity_check(identity_type):
     global EAP_IDENTITY_CHECK
@@ -29,6 +30,20 @@ def set_identity_check(identity_type):
         raise Exception("AUTH exception: Unknown EAP Identity Type: %s" % identity_type)
     id_check = lambda kwargs: id_type
     EAP_IDENTITY_CHECK = id_check
+    
+def set_eap_access_types(access_types):
+    global EAP_ACCESS_TYPES
+    EAP_ACCESS_TYPES = access_types
+    
+def get_eap_access_type(access_type):
+    eap_type = EAP_ACCESS_TYPES.get(access_type)
+    if not eap_type:
+        return EAP_IDENTITY_CHECK({})
+    id_type = EAP_IDENTITY_CHECK_TYPES.get(eap_type)
+    if not id_type:
+        raise Exception("AUTH GEAT exception: Unknown EAP Identity Type: %s" % eap_type)
+    return id_type
+    
     
 
 def get_eap_handlers():
@@ -143,7 +158,7 @@ class Auth:
                 #assume that User-Name is checked as a radius attribute User-Name
                 self.code = packet.AccessChallenge
                 eap_packet.identifier = (eap_packet.identifier + 1)  % 255
-                auth_name, auth_handler = EAP_IDENTITY_CHECK({})
+                auth_name, auth_handler = get_eap_access_type(self.access_type)
                 self.packet['EAP-Message'], challenge = auth_handler(eap_packet)
                 state = self.plainusername[:3] + '00'
                 self.packet['State'] = state

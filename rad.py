@@ -95,7 +95,7 @@ def initiate_send(self):
 class RadServer(object):
 
 
-    def __init__(self, addresses = [], authports = [1812], acctports = [1813], hosts = {}, dict = None, auth_queue_maxlen = 2000, acct_queue_maxlen = 10000):
+    def __init__(self, addresses = [], authports = [1812], acctports = [1813], hosts = {}, dict = None, auth_queue_maxlen = 2000, acct_queue_maxlen = 10000, poll_timeout = 500):
 
         self.dict = dict
         self.authports = authports
@@ -105,6 +105,7 @@ class RadServer(object):
         self.authfds = []
         self.acctfds = []
         self.pollobj = None
+        self.POLL_TIMEOUT = 500
         self.AUTH_QUEUE_MAXLEN = auth_queue_maxlen
         self.ACCT_QUEUE_MAXLEN = acct_queue_maxlen
 
@@ -167,7 +168,7 @@ class ListenThread(Thread):
         while True:
             if self.suicide_condition[self.__class__.__name__]: break
             try:
-                for (socknum, event) in self.server.pollobj.poll(0.5):
+                for (socknum, event) in self.server.pollobj.poll(self.server.POLL_TIMEOUT):
                     if event != select.POLLIN:
                         logger.error("%s: unexpected event %s!", (self.getName(), event))
                         continue
@@ -1240,7 +1241,7 @@ def main():
     global threads, curCachesDate, cacheThr, suicideCondition, server_auth, server_acct
     threads = []
     if not w32Import:
-        queues.rad_server = RadServer(addresses=['0.0.0.0'], dict=vars.DICT)
+        queues.rad_server = RadServer(addresses=['0.0.0.0'], dict=vars.DICT, poll_timeout=vars.POLL_TIMEOUT)
         for i in xrange(vars.LISTEN_THREAD_NUM):
             newLthr = ListenThread(queues.rad_server, suicideCondition)
             newLthr.setName('LTHR:#%i: ListenThread' % i)
@@ -1271,11 +1272,15 @@ def main():
     if not w32Import:
         logger.warning("Using normal poll multithreaded server!", ())
         queues.rad_server.Run()
+        listen_sleep = float(poll_time) / (1000 * vars.LISTEN_THREAD_NUM)
         for th in threads:
             suicideCondition[th.__class__.__name__] = False
             th.start()        
             logger.info("NFR %s start", th.getName())
-            time.sleep(0.1)
+            if isinstance(th, ListenThread):
+                time.sleep(listen_sleep)
+            else:
+                time.sleep(0.1)
     else:
         logger.warning("Using windows server!", ())
         server_auth = AsyncAuthServ("0.0.0.0", vars.AUTH_PORT)
@@ -1298,8 +1303,9 @@ def main():
         while 1: 
             time.sleep(300)
     else:
+        poll_time = float(vars.POLL_TIMEOUT) / 1000
         while 1:
-            asyncore.poll(0.01)
+            asyncore.poll(poll_time)
 
 if __name__ == "__main__":
     if "-D" in sys.argv:
@@ -1334,6 +1340,7 @@ if __name__ == "__main__":
             queues.challenges[eap_handler] = {'get': handler_dict.pop, 'set': handler_dict.__setitem__, 'lock': handler_lock}
             
         auth.set_identity_check(vars.EAP_ID_TYPE)
+        auth.set_eap_access_types(vars.EAP_ACCESS_TYPES)
         #write profiling info?
         flags.writeProf = logger.writeInfoP()         
 
