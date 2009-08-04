@@ -80,18 +80,26 @@ core_sql = \
                         burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""",
           'ipnspeed' :"""SELECT id, account_id, speed, state, static, datetime FROM billservice_accountipnspeed;""",
           'otshist'  :"""SELECT id, accounttarif_id, onetimeservice_id FROM billservice_onetimeservicehistory WHERE ARRAY[accounttarif_id] && get_cur_acct(%s);""", 
-          'suspended':"""SELECT id, account_id FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date)""",
+          'suspended':"""SELECT id, account_id, start_date, end_date FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date);""",
           'tpnaccess':"""SELECT tpn.time_start::timestamp without time zone as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
                         JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
-                        JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id"""}
+                        JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id""",
+          'speed_lmt':"""SELECT accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
+                      speedlimit.burst_tx, speedlimit.burst_rx, 
+                      speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
+                      speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
+                      speedlimit.priority,
+                      speedlimit.min_tx, speedlimit.min_rx
+                      FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
+                      WHERE accountspeedlimit.speedlimit_id=speedlimit.id;"""                                                                             }
 rad_sql = \
         {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
                         ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                         ba.disabled_by_limit, ba.vpn_speed, bt.active, 
-                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.netmask, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block
+                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.netmask, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block, ba.associate_pptp_ipn_ip, ba.associate_pppoe_mac 
                         FROM billservice_account as ba
                         JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id

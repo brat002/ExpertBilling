@@ -90,6 +90,8 @@ class Auth:
 
         self.Reply=self.packet.CreateReply()
         self.Reply.secret = self.secret
+        #print repr(packetfromcore)
+        #print repr(self.Reply)
         if self.typeauth == 'EAP':
             if self.code == packet.AccessReject:
                 eap_packet = self.extensions.get('EAP-Packet')
@@ -106,6 +108,7 @@ class Auth:
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                 self.Reply.AddAttribute((311,26),self._MSchapSuccess())
             return self.Reply.ReplyPacket(self.attrs), self.Reply
+            #return self.Reply.ReplyPacket(), self.Reply
 
         else:
             self.Reply.code=packet.AccessReject

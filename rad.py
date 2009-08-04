@@ -763,12 +763,20 @@ class HandleSAuth(HandleSBase):
 
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
                     and \
-                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status)))
+                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
         #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)      
 
+        if self.access_type == 'PPTP' and acc.associate_pptp_ipn_ip and not (acc.ipn_ip_address == station_id):
+            logger.warning("Unallowed NAS PPTP for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
+            return self.auth_NA(authobject) 
+        
+        if self.access_type == 'PPPOE' and acc.associate_pppoe_mac and not (acc.ipn_mac_address == station_id):
+            logger.warning("Unallowed NAS PPPOE for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
+            return self.auth_NA(authobject) 
+        
         if nas.multilink is False:
             station_id_status = False
             if len(station_id) == 17:
@@ -909,8 +917,8 @@ class HandleHotSpotAuth(HandleSBase):
 
         self.cur.execute("""SELECT * FROM card_activate_fn(%s, %s, %s, %s::inet) AS 
                          A(account_id int, "password" character varying, nas_id int, tarif_id int, account_status boolean, 
-balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
-""", (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
+                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
+                        """, (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
 
         acct_card = self.cur.fetchone()
         self.cur.connection.commit()
@@ -1033,6 +1041,7 @@ class HandleSAcct(HandleSBase):
 
         acc = self.caches.account_cache.by_username.get(userName)
         if acc is None:
+            self.cur.connection.commit()
             self.cur.close()
             logger.warning("Unknown User or user tarif %s", userName)
             return self.acct_NA()
@@ -1059,10 +1068,10 @@ class HandleSAcct(HandleSBase):
                                  framed_protocol, session_status)
                                  VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
-      self.packetobject['Calling-Station-Id'][0], 
-      self.packetobject['Called-Station-Id'][0], 
-      self.packetobject['Framed-IP-Address'][0],
-      self.packetobject['NAS-IP-Address'][0], self.access_type,))
+                                        self.packetobject['Calling-Station-Id'][0], 
+                                        self.packetobject['Called-Station-Id'][0], 
+                                        self.packetobject['Framed-IP-Address'][0],
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type,))
 
             if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
@@ -1070,12 +1079,12 @@ class HandleSAcct(HandleSBase):
                                  framed_protocol, checkouted_by_time, checkouted_by_trafic) 
                                  VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s)
                                  """, (acc.account_id, 
-      self.packetobject['Acct-Session-Id'][0], now,
-      self.packetobject['Calling-Station-Id'][0], 
-      self.packetobject['Called-Station-Id'][0], 
-      self.packetobject['Framed-IP-Address'][0],
-      self.packetobject['NAS-IP-Address'][0], 
-      self.access_type, False, False,))
+                                        self.packetobject['Acct-Session-Id'][0], now,
+                                        self.packetobject['Calling-Station-Id'][0], 
+                                        self.packetobject['Called-Station-Id'][0], 
+                                        self.packetobject['Framed-IP-Address'][0],
+                                        self.packetobject['NAS-IP-Address'][0], 
+                                        self.access_type, False, False,))
 
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
@@ -1086,12 +1095,12 @@ class HandleSAcct(HandleSBase):
                                  bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
                                  VALUES ( %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s);
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
-      now, self.packetobject['Calling-Station-Id'][0],
-      self.packetobject['Called-Station-Id'][0], 
-      self.packetobject['Framed-IP-Address'][0],
-      self.packetobject['NAS-IP-Address'][0],
-      self.packetobject['Acct-Session-Time'][0],
-      bytes_in, bytes_out, self.access_type, False, False,))
+                                        now, self.packetobject['Calling-Station-Id'][0],
+                                        self.packetobject['Called-Station-Id'][0], 
+                                        self.packetobject['Framed-IP-Address'][0],
+                                        self.packetobject['NAS-IP-Address'][0],
+                                        self.packetobject['Acct-Session-Time'][0],
+                                        bytes_in, bytes_out, self.access_type, False, False,))
 
             self.cur.execute("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'

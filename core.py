@@ -123,15 +123,18 @@ class check_vpn_access(Thread):
                    
                 cur = self.connection.cursor()
                 #close frozen sessions
-                now = datetime.datetime.now()
+                #now = datetime.datetime.now()
+                now = dateAT
                 cur.execute("""UPDATE radius_activesession 
                                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
                                WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
                                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
                 cur.connection.commit()
+                #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
+                #cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL;""")
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.interrim_update <= %s;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
@@ -144,21 +147,22 @@ class check_vpn_access(Thread):
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         #print not nas or not acc or not acc.account_status
                         #print nas, acc, acc.account_status
-                        if not nas or not acc or not acc.account_status: continue
+                        if not nas or not acc or not acc.account_status == 1: continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
                         acstatus = (((not acc.allow_vpn_null and acc.ballance + acc.credit>0) or acc.allow_vpn_null) \
                                     and \
-                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status
+                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1
                         
                         #print "hotspot acstatus", acstatus
                         #print dir(caches.timeperiodaccess_cache)
                         if acstatus and caches.timeperiodaccess_cache.in_period[acc.tarif_id]:
                             #chech whether speed has changed
                             if acc.vpn_speed == '':
-                                account_limit_speed = get_limit_speed(cur, rs.account_id)
-                                cur.connection.commit()
+                                #account_limit_speed = get_limit_speed(cur, rs.account_id)
+                                #cur.connection.commit()
+                                account_limit_sleed = caches.speedlimit_cache.by_account_id.get(rs.account_id, [])
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
                                 speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
@@ -261,7 +265,8 @@ class periodical_service_bill(Thread):
                 #transactions per day              
                 n = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
                 n_delta = datetime.timedelta(seconds=n)
-                now = datetime.datetime.now()
+                #now = datetime.datetime.now()
+                now = dateAT
                 #get a list of tarifs with periodical services & loop                
                 for row in caches.periodicaltarif_cache.data:
                     tariff_id, settlement_period_id = row
@@ -271,8 +276,8 @@ class periodical_service_bill(Thread):
                         for acc in caches.account_cache.by_tarif.get(tariff_id,[]):
                             if 0: assert isinstance(acc, AccountData)
                             try:
-                                if acc.acctf_id is None or not acc.account_status: continue
-                                susp_per_mlt = 0 if caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
+                                if acc.acctf_id is None or acc.account_status == 2: continue
+                                susp_per_mlt = 0 if caches.suspended_cache.by_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
@@ -470,7 +475,7 @@ class TimeAccessBill(Thread):
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
                                  WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id NOTNULL)
-                                 ORDER BY rs.interrim_update ASC;""")
+                                  AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
@@ -482,8 +487,9 @@ class TimeAccessBill(Thread):
                     # рассчитав соотв снятия.
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     #rs_id,  account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
-                    cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time IS TRUE 
-                                   ORDER BY interrim_update DESC LIMIT 1""", (rs.sessionid,))
+                    cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time IS TRUE \
+                                   AND interrim_update < %s 
+                                   ORDER BY interrim_update DESC LIMIT 1""", (rs.sessionid, dateAT))
                     old_time = cur.fetchone()
                     old_time = old_time[0] if old_time else 0
                     
@@ -573,7 +579,7 @@ class limit_checker(Thread):
                 cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     if 0: assert isinstance(acc, AccountData)
-                    if not acc.account_status: continue
+                    if not acc.account_status == 1: continue
                     limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
                     if not limits:
                         if acc.disabled_by_limit:
@@ -702,7 +708,7 @@ class settlement_period_service_dog(Thread):
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
-                        if not acc.account_status: continue
+                        if not acc.account_status == 1: continue
                         
                         shedl = caches.shedulelog_cache.by_id.get(acc.account_id)
                         if not shedl: shedl = ShedulelogData(-1, *(None,)*8)
@@ -882,7 +888,8 @@ class ipn_service(Thread):
                         nas = caches.nas_cache.by_id[acc.nas_id]
                         if 0: assert isinstance(nas, NasData)
                         access_type = 'IPN'
-                        now = datetime.datetime.now()
+                        #now = datetime.datetime.now()
+                        now = dateAT
                         # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
                         if not acc.ipn_added:
                             sended = cred(acc.account_id, acc.username,acc.password, access_type,
@@ -891,7 +898,7 @@ class ipn_service(Thread):
                                           nas.password, format_string=nas.user_add_action)
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
                                 
-                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status and not acc.balance_blocked):
+                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked):
                             #шлём команду, на включение пользователя, account_ipn_status=True
                             #ipn_added = acc.ipn_added
                             """Делаем пользователя enabled"""
@@ -903,7 +910,7 @@ class ipn_service(Thread):
                             recreate_speed = True                        
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
                             
-                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status) and acc.ipn_status:
+                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1) and acc.ipn_status:
                             #шлём команду на отключение пользователя,account_ipn_status=False
                             sended = cred(acc.account_id, acc.username,acc.password, access_type,
                                               acc.vpn_ip_address, acc.ipn_ip_address, 
@@ -914,8 +921,9 @@ class ipn_service(Thread):
                         self.connection.commit()
     
                         if not acc.ipn_speed:    
-                            account_limit_speed = get_limit_speed(cur, acc.account_id)
-                            self.connection.commit()
+                            #account_limit_speed = get_limit_speed(cur, acc.account_id)
+                            #self.connection.commit()
+                            account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
                             speed = get_corrected_speed(speed[:6], account_limit_speed)
                         else:
@@ -1105,7 +1113,7 @@ def main():
             print 'caches still not read, maybe you should check the log'
       
     print 'caches ready'
-    
+    print repr(cacheMaster.cache)
     for th in threads:	
         suicideCondition[th.__class__.__name__] = False
         th.start()

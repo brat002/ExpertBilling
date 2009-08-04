@@ -244,8 +244,9 @@ class Packet(UserDict.UserDict):
 			attr = attr[:index] + hmac.new(self.secret, header + self.authenticator + attr).digest() + attr[index + 16:]
 		else:
 			attr=self._PktEncodeAttributes()
+			attr=attr+attrs
 			header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
-		attr=attr+attrs
+		
 		authenticator=md5.new(header[0:4] + self.authenticator
 			+ attr + self.secret).digest()
 
