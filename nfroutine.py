@@ -471,7 +471,7 @@ class NetFlowRoutine(Thread):
                     
                     #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
                     if (acc.tarif_id == None) or (not (acc.tarif_active or vars.STORE_NA_TARIF)) \
-                       or (not (acc.account_status or vars.STORE_NA_ACCOUNT)): continue                    
+                       or (not (acc.account_status == 1 or vars.STORE_NA_ACCOUNT)): continue                    
                     
                     '''Статистика по группам: 
                     аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
@@ -522,7 +522,7 @@ class NetFlowRoutine(Thread):
                     store_classes = list(caches.storeclass_cache.classes.intersection(flow.class_id))
                     #if tarif_mode is False or tarif.active = False
                     #write statistics without billing it
-                    if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status):
+                    if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status == 1):
                         #cur = connection.cursor()
                         self.cur.execute("""INSERT INTO billservice_netflowstream(
                                        nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,

@@ -1530,3 +1530,6 @@ ALTER TABLE billservice_suspendedperiod
    ALTER COLUMN end_date DROP NOT NULL;
 
 
+-- 31.07.2009 18:00
+ALTER TABLE billservice_suspendedperiod ALTER start_date TYPE timestamp without time zone;
+ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without time zone;
