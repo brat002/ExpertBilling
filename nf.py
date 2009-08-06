@@ -762,7 +762,7 @@ if __name__=='__main__':
         
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())         
+        allowedUsers = setAllowedUsers(_1i())         
         allowedUsers()
         test_now = time.time()
         #-------------------

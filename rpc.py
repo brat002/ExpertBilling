@@ -892,7 +892,7 @@ if __name__ == "__main__":
                                                                    config.get("db", "password")))
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())       
+        allowedUsers = setAllowedUsers(_1i(), pool.connection())       
         allowedUsers()
         #-------------------
         print "ebs: rpc: configs read, about to start"

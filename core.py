@@ -1152,7 +1152,7 @@ if __name__ == "__main__":
         #create allowedUsers
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
+        allowedUsers = setAllowedUsers(_1i())        
         logger.info("Allowed users: %s", (allowedUsers(),))
         
         fMem = pfMemoize()    
