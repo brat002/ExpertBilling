@@ -6,7 +6,7 @@ def log_error_(lstr, level=3):
 def log_adapt(lstr, level):
     print lstr
 
-def setAllowedUsers(dbconnection, licstr):
+def setAllowedUsers(licstr, dbconnection = None):
     def transformByte(lbytes):
         indef = lambda x: x == 'FFFF'
         if indef(lbytes): return (1 << 63) - 1
@@ -25,11 +25,12 @@ def setAllowedUsers(dbconnection, licstr):
         print "License file format error!"
         sys.exit()
     #print allowed
-    cur = dbconnection.cursor()
-    cur.callproc('crt_allowed_checker', (allowedUsers(),))
-    dbconnection.commit()
-    cur.close()
-    dbconnection.close()
+    if dbconnection:
+        cur = dbconnection.cursor()
+        cur.callproc('crt_allowed_checker', (allowedUsers(),))
+        dbconnection.commit()
+        cur.close()
+        dbconnection.close()
     return allowedUsers
 
 def allowedUsersChecker(allowed, current, exit, flags):

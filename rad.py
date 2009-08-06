@@ -43,6 +43,8 @@ from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 from pkgutil import simplegeneric
 
+from utilities import Session, data_utilities, utilities_sql
+
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -1144,6 +1146,7 @@ class CacheRoutine(Thread):
         global suicideCondition, cacheMaster, flags, vars
         self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
+        first_time = True
         while True:
             if suicideCondition[self.__class__.__name__]: break            
             try: 
@@ -1152,6 +1155,10 @@ class CacheRoutine(Thread):
                     cur = self.connection.cursor()
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
+                    if first_time:
+                        queues.sessions.get_data((cur, utilities_sql.utilites_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
+                        first_time = False
+                    cur.connection.commit()
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), graceful_save, flags)
@@ -1357,9 +1364,9 @@ if __name__ == "__main__":
         fMem = pfMemoize()
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())        
+        allowedUsers = setAllowedUsers(_1i())        
         allowedUsers()
-        
+        queues.sessions = Session.DictSession(data_utilities.get_db_data, data_utilities.simple_list_index)
         #-------------------
         print "ebs: rad: configs read, about to start"
         main()
