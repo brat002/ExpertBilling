@@ -319,7 +319,7 @@ class RadVars(Vars):
     
 class RadQueues(object):
     __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_auth_chs', 'eap_auth_locks',\
-                 'rad_server', 'challenges', 'sessions')
+                 'rad_server', 'challenges', 'sessions', 'sessions_lock')
     def __init__(self):
         self.account_timeaccess_cache = {}
         self.account_timeaccess_cache_count = 0
@@ -328,6 +328,7 @@ class RadQueues(object):
         self.challenges = {}
         self.rad_server = None
         self.sessions = None
+        self.sessions_lock = Lock()
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
