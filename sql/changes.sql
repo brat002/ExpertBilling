@@ -1533,3 +1533,7 @@ ALTER TABLE billservice_suspendedperiod
 -- 31.07.2009 18:00
 ALTER TABLE billservice_suspendedperiod ALTER start_date TYPE timestamp without time zone;
 ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without time zone;
+
+-- 07.08.2009 14:20
+
+ALTER TABLE radius_activesession ADD COLUMN nas_int_id integer;

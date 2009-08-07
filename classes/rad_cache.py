@@ -65,12 +65,15 @@ class SpeedlimitCache(SimpleDictCache):
     num = 11
    
 class NasCache(CacheItem):
-    __slots__ = ('by_ip',)
+    __slots__ = ('by_ip','by_ip_n_identify')
     datatype = NasData
     sql = rad_sql['nas']
     
     def reindex(self):
         self.by_ip = {}
+        self.by_ip_n_identify = {}
+        for nas in self.data:
+            self.by_ip_n_identify[(str(nas.ipaddress), str(nas.identify))] = nas
         for nas in self.data:
             self.by_ip[str(nas.ipaddress)] = nas
             

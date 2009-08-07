@@ -1033,7 +1033,14 @@ class HandleSAcct(HandleSBase):
         return self.replypacket
 
     def handle(self):
-        nas = self.caches.nas_cache.by_ip.get(self.nasip)
+        nas_by_int_id = False
+        nas_name = ''
+        if self.packetobject.has_key('NAS-Identifier'):
+            nas_name = self.packetobject['NAS-Identifier'][0]
+            nas = self.caches.nas_cache.by_ip_n_identify.get((self.nasip,nas_name))
+            nas_by_int_id = True
+        else:
+            nas = self.caches.nas_cache.by_ip.get(self.nasip)
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
 
@@ -1051,29 +1058,43 @@ class HandleSAcct(HandleSBase):
 
         self.replypacket.code = packet.AccountingResponse
         now = datetime.datetime.now()
-
+        
+        #packet_session = self.packetobject['Acct-Session-Id'][0]
         if self.packetobject['Acct-Status-Type']==['Start']:
-            self.cur.execute("""SELECT id FROM radius_activesession
+            if nas_by_int_id:
+                self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
-                                nas_id=%s AND framed_protocol=%s;
+                                nas_int_id=%s AND framed_protocol=%s;
                              """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                     self.packetobject['Calling-Station-Id'][0],
                                     self.packetobject['Called-Station-Id'][0], \
-                                    self.packetobject['NAS-IP-Address'][0],self.access_type,))
+                                    nas.id, self.access_type,))
+            else:                
+                self.cur.execute("""SELECT id FROM radius_activesession
+                                    WHERE account_id=%s AND sessionid=%s AND
+                                    caller_id=%s AND called_id=%s AND 
+                                    nas_id=%s AND framed_protocol=%s;
+                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
+                                        self.packetobject['Calling-Station-Id'][0],
+                                        self.packetobject['Called-Station-Id'][0], \
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type,))
 
             allow_write = self.cur.fetchone() is None
 
             if allow_write:
                 self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
                                  caller_id, called_id, framed_ip_address, nas_id, 
-                                 framed_protocol, session_status)
-                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE');
+                                 framed_protocol, session_status, nas_int_id)
+                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s);
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject['Framed-IP-Address'][0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type,))
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id))
+                if nas_by_int_id:
+                    with queues.sessions_lock:
+                        queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
 
             if acc.time_access_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
@@ -1104,7 +1125,15 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Acct-Session-Time'][0],
                                         bytes_in, bytes_out, self.access_type, False, False,))
 
-            self.cur.execute("""UPDATE radius_activesession
+            if nas_by_int_id:
+                nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
+                if nas_int_id:
+                    self.cur.execute("""UPDATE radius_activesession
+                                 SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
+                                 WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s;
+                                 """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,))
+            else:
+                self.cur.execute("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
@@ -1125,7 +1154,14 @@ class HandleSAcct(HandleSBase):
                                           self.packetobject['Acct-Session-Time'][0],
                                           bytes_in, bytes_out, self.access_type, False, False,))
 
-            self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
+            if nas_by_int_id:
+                nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
+                if nas_int_id is not None:
+                    self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
+                                 WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s;
+                                 """, (now,self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,))
+            else:
+                self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
 
