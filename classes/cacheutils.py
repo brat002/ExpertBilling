@@ -57,9 +57,10 @@ class CacheItem(object):
     def transformdata(self):
         
         if not hasattr(self.datatype, '_make'):
-            raise AttributeError("%s: datatype has no attribute '_make' => probably not a named tuple." % self.__class__.__name__)
-
+            raise AttributeError("%s: datatype has no attribute '_make' => probably not a named tuple or a named list." % self.__class__.__name__)
+        
         self.data = [self.datatype._make(row) for row in self.data]
+   
         
     
     def reindex(self):
