@@ -39,8 +39,8 @@ class DictSession(dict):
             data = self.get_data_fn(*get_data_fn_opts)
             super(DictSession, self).__init__(self.index_fn(data, *index_fn_opts))
         except Exception, ex:
-            raise "Exception in DictSession.get_data: %s \n data: %s get_data_fn: %s index_fn: %s" % \
-                  (repr(ex), data, repr(self.get_data_fn) + ' | ' + repr(get_data_fn_opts), repr(self.index_fn) + ' | ' + repr(index_fn_opts))
+            raise Exception("Exception in DictSession.get_data: %s \n data: %s get_data_fn: %s index_fn: %s" % \
+                  (repr(ex), data, repr(self.get_data_fn) + ' | ' + repr(get_data_fn_opts), repr(self.index_fn) + ' | ' + repr(index_fn_opts)))
             
         
     
