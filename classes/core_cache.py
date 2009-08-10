@@ -21,7 +21,7 @@ from core_class.IpnSpeedData import IpnSpeedData
 from core_class.SuspendedPeriodData import SuspendedPeriodData
 
 class CoreCaches(CacheCollection):
-    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache')
+    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -45,7 +45,8 @@ class CoreCaches(CacheCollection):
         self.suspended_cache = SuspendedCache(date)
         self.timeperiodaccess_cache = TimePeriodAccessCache(date, fMem)
         self.speedlimit_cache = SpeedLimitCache()
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache]
+        self.underbilled_accounts_cache = UnderbilledAccountsCache(date, self.account_cache.by_acctf)
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache]
         
 class AccountCache(CacheItem):
     __slots__ = ('by_account', 'by_tarif', 'by_acctf')
@@ -229,3 +230,33 @@ class SpeedLimitCache(CacheItem):
         self.by_account_id = {}
         for speed_l in self.data:
             self.by_account_id[speed_l[0]] = speed_l[1:]
+            
+class UnderbilledAccountsCache(CacheItem):
+    __slots__ = ('by_tarif', 'current_acctfs')
+    
+    datatype = AccountData
+    sql = core_sql['underbilled_per_accs']
+    
+    def __init__(self, date, current_acctfs):
+        super(UnderbilledAccountsCache, self).__init__()
+        self.vars = (date,)
+        self.current_acctfs = current_acctfs
+        
+    def reindex(self):
+        self.by_tarif = defaultdict(list)
+        if not self.data: return
+        account_id = self.data[0].account_id
+        next_datetime = None
+        for acct in self.data:
+            if  acct.account_id != account_id:
+                account_id = acct.account_id
+                next_datetime = None
+                
+            if next_datetime:
+                if not acct.periodical_billed:
+                    acct.end_date = next_datetime
+                    self.by_tarif[acct.tarif_id].append(acct)
+                next_datetime = acct.datetime
+
+            if self.current_acctfs.has_key(acct.acctf_id):
+                next_datetime = acct.datetime
