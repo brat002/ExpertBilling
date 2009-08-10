@@ -164,7 +164,7 @@ class check_vpn_access(Thread):
                                 #cur.connection.commit()
                                 account_limit_sleed = caches.speedlimit_cache.by_account_id.get(rs.account_id, [])
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
-                                speed = get_corrected_speed(speed[:6], account_limit_speed)
+                                speed = get_corrected_speed(speed[:6], account_limit_speed[:6])
                             else:
                                 speed=parse_custom_speed_lst(acc.vpn_speed)
 
@@ -925,7 +925,7 @@ class ipn_service(Thread):
                             #self.connection.commit()
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
-                            speed = get_corrected_speed(speed[:6], account_limit_speed)
+                            speed = get_corrected_speed(speed[:6], account_limit_speed[:6])
                         else:
                             speed = parse_custom_speed_lst(acc.ipn_speed)
     
