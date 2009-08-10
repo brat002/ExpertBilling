@@ -91,7 +91,7 @@ core_sql = \
                       speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                       speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
                       speedlimit.priority,
-                      speedlimit.min_tx, speedlimit.min_rx
+                      speedlimit.min_tx, speedlimit.min_rx, speedlimit.speed_units, speedlimit.change_speed_type
                       FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                       WHERE accountspeedlimit.speedlimit_id=speedlimit.id;"""                                                                             }
 rad_sql = \
