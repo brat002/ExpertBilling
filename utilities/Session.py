@@ -31,7 +31,7 @@ class DictSession(dict):
     def __init__(self, get_data_fn, index_fn):
         super(DictSession, self).__init__()
         self.get_data_fn = get_data_fn
-        self.index_fn = index_fn_opts
+        self.index_fn = index_fn
         
     def get_data(self, get_data_fn_opts, index_fn_opts):
         data = []
