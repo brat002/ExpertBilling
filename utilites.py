@@ -708,6 +708,10 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
         caches.getdata(cur)
         cur.connection.commit()
         caches.reindex()
+        if caches.post_caches:
+            caches.post_getdata(cur)
+            cur.connection.commit()
+            caches.post_reindex()
     except Exception, ex:
         if isinstance(ex, psycopg2.DatabaseError):
             log_error_('#30%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex)))
