@@ -2061,8 +2061,9 @@ class TarifFrame(QtGui.QDialog):
                             self.connection.save(speedlimit_model, "billservice_speedlimit")
                         elif limit.action==0:
                             self.connection.iddelete(speedlimit_model, "billservice_speedlimit")
-                    except:
-                        pass
+                    except Exception, e:
+                        print e
+
 
 
             elif self.limites_checkbox.checkState()==0:
@@ -3074,7 +3075,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_nas.clear()
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
+            self.comboBox_8021x_nas.addItem(nas.name)
             self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
+            self.comboBox_8021x_nas.setItemData(i, QtCore.QVariant(nas.id))
             if self.model:
                 if nas.id==self.model.nas_id:
                     self.comboBox_nas.setCurrentIndex(i)
@@ -3144,7 +3147,8 @@ class AccountWindow(QtGui.QMainWindow):
             
             self.lineEdit_email.setText(unicode(self.model.email))
             
-            #self.address_lineEdit.setText(unicode(self.model.address))
+            self.lineEdit_contactperson.setText(unicode(self.model.contactperson))
+            self.lineEdit_contactphone.setText(unicode(self.model.contactperson_phone))
             self.lineEdit_city.setText(unicode(self.model.city))
             self.lineEdit_postcode.setText(unicode(self.model.postcode))
             self.lineEdit_region.setText(unicode(self.model.region))
@@ -3155,6 +3159,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_room.setText(unicode(self.model.room))
             self.lineEdit_phone_h.setText(unicode(self.model.phone_h))
             self.lineEdit_phone_m.setText(unicode(self.model.phone_m))
+            self.plainTextEdit_comment.setPlainText(unicode(self.model.comment))
             
             #passport
             self.lineEdit_passport_n.setText(u"%s" % self.model.passport)
@@ -3204,6 +3209,23 @@ class AccountWindow(QtGui.QMainWindow):
             self.checkBox_allow_vpn_block.setChecked(self.model.allow_vpn_block or False)
             self.checkBox_associate_pptp_ipn_ip.setChecked(self.model.associate_pptp_ipn_ip  or False)
             self.checkBox_associate_pppoe_mac.setChecked(self.model.associate_pppoe_mac  or False)
+            
+            
+            
+            
+            x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % self.model.id)
+            
+            if x8021:
+                x8021 = x8021[0]
+                self.groupBox_8021_x.setEnabled(True)
+                for x in xrange(self.comboBox_8021x_nas.count()):
+                    if self.comboBox_8021x_nas.itemData(x).toInt()[0]==x8021.nas_id:
+                        self.comboBox_8021x_nas.setCurrentIndex(x)
+                self.lineEdit_8021x_port.setText(unicode(x8021.port  or ""))
+                self.lineEdit_vlan_accept.setText(unicode(x8021.vlan_accept  or ""))
+                self.lineEdit_vlan_reject.setText(unicode(x8021.vlan_reject  or ""))
+                self.radioButton_8021x_login_auth.setChecked(x8021.typeauth == "BY_LOGIN")
+                self.groupBox_8021_x.setChecked(True)
             organization = self.connection.get_models("billservice_organization", where={'account_id':self.model.id})
             self.connection.commit()
             if organization!=[]:
@@ -3279,6 +3301,8 @@ class AccountWindow(QtGui.QMainWindow):
             model.passport_given = unicode(self.lineEdit_passport_given.text())
             model.passport_date = self.dateEdit_passport_date.date().toPyDate()
             model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
+            model.contactperson = unicode(self.lineEdit_contactperson.text())
+            model.contactperson_phone = unicode(self.lineEdit_contactphone.text())
             #print "passport_date", self.model.passport_date
             #dateTime().toPyDateTime()
             
@@ -3400,7 +3424,7 @@ class AccountWindow(QtGui.QMainWindow):
             model.allow_vpn_block = self.checkBox_allow_vpn_block.checkState() == QtCore.Qt.Checked
             model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState() == QtCore.Qt.Checked
             model.associate_pppoe_mac = self.checkBox_associate_pppoe_mac.checkState() == QtCore.Qt.Checked
-
+            model.comment = unicode(self.plainTextEdit_comment.toPlainText())
 
             if self.model:
                 if model.ipn_ip_address!=self.model.ipn_ip_address:
@@ -3548,7 +3572,25 @@ class AccountWindow(QtGui.QMainWindow):
                     speriod.account_id = model.id
                     
                     self.connection.save(speriod, "billservice_suspendedperiod")
-
+                    
+            x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % self.model.id)
+            if self.groupBox_8021_x.isChecked():
+                if x8021:
+                    x8021_model = x8021[0]
+                else:
+                    x8021_model = Object()
+                x8021_model.account_id = model.id
+                x8021_model.nas_id = self.comboBox_8021x_nas.itemData(self.comboBox_8021x_nas.currentIndex()).toInt()[0]
+                x8021_model.port = unicode(self.lineEdit_8021x_port.text()) or None
+                x8021_model.typeauth = "BY_LOGIN" if self.radioButton_8021x_login_auth.isChecked() else "BY_MAC"
+                x8021_model.vlan_accept = unicode(self.lineEdit_vlan_accept.text()) or None
+                x8021_model.vlan_reject = unicode(self.lineEdit_vlan_reject.text()) or None
+                x8021_model.simpleauth = self.checkBox_8021x_simpleauth.isChecked()
+                self.connection.save(x8021_model, "billservice_x8021")
+            else:
+                self.connection.command("DELETE FROM billservice_x8021 WHERE account_id=%s" % model.id)
+                    
+            #x8021 = self.connection.get
             self.connection.commit()
             self.model = model
             self.fixtures()

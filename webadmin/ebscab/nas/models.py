@@ -24,6 +24,8 @@ SERVICE_LIST=(
               ('IPN', 'IPN'),
               )
 
+
+
 class Nas(models.Model):
     """
     /ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id
@@ -115,3 +117,5 @@ class TrafficNode(models.Model):
         verbose_name = u"Направление трафика"
         verbose_name_plural = u"Направления трафика"
         
+
+    

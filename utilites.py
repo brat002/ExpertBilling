@@ -652,29 +652,46 @@ def flatten(x):
             result.append(int(el))
     return result
 
+def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
+    if speed_unit=='Kbps':
+        limitspeed=limitspeed*1000
+    elif speed_unit == 'Mbps':
+        limitspeed=limitspeed*1000*1000
+    elif speed_unit == '%':
+        limitspeed == limitspeed/100
+        
+    if speed_change_type=='add':
+        return speed+limitspeed
+    elif speed_change_type == 'abs' and speed_unit == '%':
+        return limitspeed*speed
+    elif speed_change_type == 'abs':
+        return limitspeed
+         
 def correct_speed(speed, correction):
     """
     Возвращает скорректированную скорость
     """
     res = []
     #max
-    res.append("%s/%s" % (speed[0]*correction[0]/100, speed[1]*correction[1]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[0], correction[0], correction[12], correction[13]), speedlimit_logic(speed[1], correction[1], correction[12], correction[13])))
     #burst in
-    res.append("%s/%s" % (speed[2]*correction[2]/100, speed[3]*correction[3]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[2], correction[2], correction[12], correction[13]), speedlimit_logic(speed[3], correction[3], correction[12], correction[13])))
     #burst treshold
-    res.append("%s/%s" % (speed[4]*correction[4]/100, speed[5]*correction[5]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[4], correction[4], correction[12], correction[13]), speedlimit_logic(speed[5], correction[5], correction[12], correction[13])))
     #burst time
     res.append("%s/%s" % (correction[6], correction[7]))
     #priority
     res.append("%s" % correction[8])
     #min
-    res.append("%s/%s" % (speed[9]*correction[9]/100, speed[10]*correction[10]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[9], correction[9], correction[12], correction[13]), speedlimit_logic(speed[10], correction[10], correction[12], correction[13])))
     return res
 
 
 
    
 def get_corrected_speed(speed, correction):
+    #12 - speed_units
+    #13 - speed_change_type
     if correction is not None:
         return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
     else:

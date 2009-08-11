@@ -1351,10 +1351,13 @@
            <item row="5" column="0">
             <widget class="QLabel" name="label_vlan_reject">
              <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
+              <enum>Qt::LeftToRight</enum>
              </property>
              <property name="text">
               <string>VLAN Reject</string>
+             </property>
+             <property name="scaledContents">
+              <bool>false</bool>
              </property>
             </widget>
            </item>

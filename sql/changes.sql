@@ -1534,9 +1534,23 @@ ALTER TABLE billservice_suspendedperiod
 ALTER TABLE billservice_suspendedperiod ALTER start_date TYPE timestamp without time zone;
 ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without time zone;
 
--- 07.08.2009 14:20
 
+-- 07.08.2009 14:20
 ALTER TABLE radius_activesession ADD COLUMN nas_int_id integer;
+
+ALTER TABLE billservice_account   ADD COLUMN contactperson_phone character varying;ALTER TABLE billservice_account   ALTER COLUMN contactperson_phone SET DEFAULT '';CREATE TABLE billservice_x8021(  id serial NOT NULL,  account_id integer,  nas_id integer NOT NULL,  port smallint,  typeauth character varying(32) NOT NULL,  vlan_accept integer,  vlan_reject integer,  simpleauth boolean NOT NULL,  CONSTRAINT billservice_x8021_pkey PRIMARY KEY (id),  CONSTRAINT billservice_x8021_account_id_fkey FOREIGN KEY (account_id)      REFERENCES billservice_account (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,  CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id)      REFERENCES nas_nas (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)WITH (OIDS=FALSE);ALTER TABLE billservice_x8021 OWNER TO ebs;
+-- Index: billservice_x8021_account_id-- 
+DROP INDEX billservice_x8021_account_id;
+CREATE INDEX billservice_x8021_account_id  ON billservice_x8021  USING btree  (account_id);
+-- Index: billservice_x8021_nas_id-- 
+DROP INDEX billservice_x8021_nas_id;CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
+ALTER TABLE billservice_account   ADD COLUMN "comment" character varying;ALTER TABLE billservice_account   ALTERALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
+
+
+ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET STORAGE EXTENDED;ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET NOT NULL;
+ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET DEFAULT 'Kbps'::character varying;ALTER TABLE billservice_speedlimit ADD COLUMN change_speed_type character varying(20);
+ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET STORAGE EXTENDED;ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET DEFAULT 'add'::character varying;
+
 
 -- 11.08.2009 15:47
 
@@ -1545,3 +1559,7 @@ ALTER TABLE billservice_accounttarif ADD COLUMN periodical_billed boolean DEFAUL
 UPDATE billservice_accounttarif SET periodical_billed=FALSE;
 
 UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf1.id in (SELECT acctf2.id FROM billservice_accounttarif AS acctf2 WHERE acctf2.account_id=acctf1.account_id and acctf2.datetime < (SELECT datetime FROM billservice_accounttarif AS att WHERE att.account_id=acctf1.account_id and att.datetime<now()ORDER BY datetime DESC LIMIT 1));
+
+
+
+
