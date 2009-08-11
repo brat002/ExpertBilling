@@ -83,6 +83,10 @@ DIRECTIONS_LIST=(
                 (u'TRANSIT',u'Межабонентский'),
                 )
 
+AUTH_TYPES=(
+              ('BY_LOGIN', 'BY_LOGIN'),
+              ('BY_MAC', 'BY_MAC'),
+              )
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -931,4 +935,60 @@ class RadiusAttrs(models.Model):
     vendor = models.IntegerField()
     attrid = models.IntegerField()
     value = models.CharField(max_length = 255)
+    
+    
+class x8021(models.Model):
+    account = models.ForeignKey(Account, blank = True)
+    nas = models.ForeignKey(Nas)
+    port = models.SmallIntegerField()
+    typeauth = models.CharField(verbose_name=u"Способ авторизации", choices=AUTH_TYPES, max_length=32)
+    vlan_accept = models.IntegerField()
+    vlan_reject = models.IntegerField()
+    simpleauth = models.BooleanField()
+    
+class AddonService(models.Model):
+    name = models.CharField(max_length=255)
+    allow_activation = models.BooleanField(default = False)
+    service_type = models.CharField(choices=((u"Разовая услуга","onetime"),(u"Периодическая услуга","periodical",),))
+    sp_type = models.CharField(choices=((u"В начале расчётного периода","AT_START"),(u"В конце расчётного периода","AT_END"),(u"На протяжении расчётного периода","GRADUAL"),))
+    sp_period = models.ForeignKey(SettlementPeriod)
+    timeperiod = models.ForeignKey(TimePeriod)
+    cost = models.DecimalField()
+    cancel_subscription = models.BooleanField(default = True)
+    wyte_period = models.ForeignKey(SettlementPeriod)
+    wyte_cost = models.DecimalField()
+    action = models.BooleanField()
+    nas = models.ForeignKey(Nas)
+    service_activation_action = models.CharField(max_length = 2048)
+    service_deactivation_action = models.CharField(max_length = 2048)
+    deactivate_service_for_blocked_account = models.BooleanField()
+    change_speed = models.BooleanField()
+    change_sped_type = models.CharField(choices=(("Add","add",), ("abs","abs",),))
+    speed_units = models.CharField(max_length = 32)
+    max_tx = models.IntegerField()
+    max_rx = models.IntegerField()
+    burst_tx = models.IntegerField()
+    burst_rx = models.IntegerField()
+    burst_treshold_tx = models.IntegerField()
+    burst_treshold_rx = models.IntegerField()
+    burst_time_tx = models.IntegerField()
+    burst_time_rx = models.IntegerField()
+    min_tx = models.IntegerField()
+    min_rx = models.IntegerField()
+    priority = models.IntegerField()
+    
+class AddonServiceTarif(models.Model):
+    tarif = models.ForeignKey(Tariff)
+    service = models.ForeignKey(AddonService)
+    activation_acount = models.IntegerField()
+    activation_acount_period = models.ForeignKey(SettlementPeriod)
+    
+class AccountAddonService(models.Model):
+    service = models.ForeignKey(AddonService)
+    account = models.ForeignKey(Account)
+    activated = models.DateTimeField()
+    deactivated = models.DateTimeField()
+    action_status = models.BooleanField()
+    speed_status = models.BooleanField()
+    
     
