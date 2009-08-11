@@ -16,6 +16,7 @@ import socket
 import isdlogger
 import utilites, saver
 
+import itertools
 import db, utilites
 
 from decimal import Decimal
@@ -273,15 +274,18 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
                         if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
-                        for acc in caches.account_cache.by_tarif.get(tariff_id,[]):
+                        for acc in itertools.chain(caches.account_cache.by_tarif.get(tariff_id,[]), \
+                                                   caches.underbilled_accounts_cache.by_tarif.get(tarif_id, [])):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or acc.account_status == 2: continue
-                                susp_per_mlt = 0 if caches.suspended_cache.by_id.has_key(acc.account_id) else 1
+                                susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
+                                
+                                now = dateAT if acc.current_acctf else acc.end_date
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-                                period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, dateAT)                                
+                                period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, now)                                
                                 # Проверка на расчётный период без повторения
                                 if period_end < now: continue
                                 
@@ -293,7 +297,7 @@ class periodical_service_bill(Thread):
                                     # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)                                    
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
                                     if last_checkout is None:
                                         last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
 
@@ -311,7 +315,7 @@ class periodical_service_bill(Thread):
                                         last_checkout_seconds = lc.seconds + lc.days*SECONDS_PER_DAY
                                         nums,ost = divmod(last_checkout_seconds,n)                                        
                                         chk_date = last_checkout + n_delta
-                                        if nums>1:
+                                        if nums>1 or not acc.current_acctf:
                                             #Смотрим на какую сумму должны были снять денег и снимаем её
                                             while chk_date <= now:    
                                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
@@ -333,7 +337,7 @@ class periodical_service_bill(Thread):
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                     не платили-производим снятие.
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
                                     # Здесь нужно проверить сколько раз прошёл расчётный период
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -375,7 +379,7 @@ class periodical_service_bill(Thread):
                                     Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
                                     cur.connection.commit()
                                     #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
                                     if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
@@ -416,6 +420,10 @@ class periodical_service_bill(Thread):
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
+                if caches.underbilled_accounts_cache.underbilled_acctfs:
+                    cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""",\
+                                ' ,'.join((str(i) for i in caches.underbilled_accounts_cache.underbilled_acctfs)))
+                    cur.connection.commit()
                 cur.close()
                 logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:

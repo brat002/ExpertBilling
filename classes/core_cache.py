@@ -48,6 +48,7 @@ class CoreCaches(CacheCollection):
         self.underbilled_accounts_cache = UnderbilledAccountsCache(date, self.account_cache.by_acctf)
         self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache]
         
+        
 class AccountCache(CacheItem):
     __slots__ = ('by_account', 'by_tarif', 'by_acctf')
     
@@ -237,7 +238,7 @@ class SpeedLimitCache(CacheItem):
             self.by_account_id[speed_l[0]] = speed_l[1:]
             
 class UnderbilledAccountsCache(CacheItem):
-    __slots__ = ('by_tarif', 'current_acctfs')
+    __slots__ = ('by_tarif', 'current_acctfs', 'underbilled_acctfs')
     
     datatype = AccountData
     sql = core_sql['underbilled_per_accs']
@@ -246,6 +247,7 @@ class UnderbilledAccountsCache(CacheItem):
         super(UnderbilledAccountsCache, self).__init__()
         self.vars = (date,)
         self.current_acctfs = current_acctfs
+        self.underbilled_acctfs = []
         
     def reindex(self):
         self.by_tarif = defaultdict(list)
@@ -261,6 +263,7 @@ class UnderbilledAccountsCache(CacheItem):
                 if not acct.periodical_billed:
                     acct.end_date = next_datetime
                     self.by_tarif[acct.tarif_id].append(acct)
+                    self.underbilled_acctfs.append(acct.acctf_if)
                 next_datetime = acct.datetime
 
             if self.current_acctfs.has_key(acct.acctf_id):

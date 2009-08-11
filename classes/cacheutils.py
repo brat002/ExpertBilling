@@ -14,11 +14,12 @@ class DefaultNamedTuple(tuple):
 
     
 class CacheCollection(object):
-    __slots__ = ('date', 'cursor', 'caches')
+    __slots__ = ('date', 'cursor', 'caches', 'post_caches')
     
     def ___init__(self, date):
         self.date = date
         #self.cursor = cursor
+        self.post_caches = []
         
     def getdata(self, cursor):
         for cache in self.caches:
@@ -28,6 +29,13 @@ class CacheCollection(object):
         for cache in self.caches:
             cache.reindex()
             
+    def post_getdata(self, cursor):
+        for cache in self.post_caches:
+            cache.getdata(cursor)
+            
+    def post_reindex(self):
+        for cache in self.post_caches:
+            cache.reindex()       
     def __repr__(self):
         return self.__class__.__name__ + '\n' + '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
 
