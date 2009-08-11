@@ -1244,7 +1244,7 @@ class TarifFrame(QtGui.QDialog):
             child = SpeedLimitDialog(self.connection, model)
             
             if child.exec_()==1 and child.model:
-                self.addrow(self.limit_tableWidget, u"%s%%/%s%% %s%%/%s%% %s%%/%s%% %s/%s %s %s%%/%s%%" % (child.model.max_tx, child.model.max_rx, child.model.burst_tx, child.model.burst_rx, child.model.burst_treshold_tx, child.model.burst_treshold_rx, child.model.burst_time_tx, child.model.burst_time_rx, child.model.priority, child.model.min_tx, child.model.min_rx) , y,x)
+                self.addrow(self.limit_tableWidget, u"%s/%s %s/%s %s/%s %s/%s %s %s/%s" % (child.model.max_tx, child.model.max_rx, child.model.burst_tx, child.model.burst_rx, child.model.burst_treshold_tx, child.model.burst_treshold_rx, child.model.burst_time_tx, child.model.burst_time_rx, child.model.priority, child.model.min_tx, child.model.min_rx) , y,x)
                 self.limit_tableWidget.item(y,x).model = child.model
                 self.limit_tableWidget.resizeColumnsToContents()
                 self.limit_tableWidget.resizeRowsToContents()
