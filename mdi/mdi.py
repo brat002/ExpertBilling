@@ -34,6 +34,7 @@ from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
 from TPChangeRules import TPRulesEbs
+from AddonServiceFrame import AddonServiceEbs
 
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
@@ -217,6 +218,16 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     @connlogin
+    def addonservice(self):
+        child = AddonServiceEbs(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+
+    @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, u"О программе",
                                 u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
@@ -246,6 +257,8 @@ class MainWindow(QtGui.QMainWindow):
         child = NetFlowReport(connection = connection)
         self.workspace.addWindow(child)
         child.show()
+        
+        
 
     def relogin(self):
         global connection
@@ -386,6 +399,9 @@ class MainWindow(QtGui.QMainWindow):
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.tpchangeAct, QtCore.SIGNAL("triggered()"), self.tpchangerules)
 
+        self.addonserviceAct = QtGui.QAction(u"Подключаемые услуги", self)
+        #self.reloginAct.setStatusTip(self.tr("Reconnect"))
+        self.connect(self.addonserviceAct, QtCore.SIGNAL("triggered()"), self.addonservice)
         self.reportActs = []
         i = 0
         
@@ -480,6 +496,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.sqlDialogAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.tpchangeAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.addonserviceAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
