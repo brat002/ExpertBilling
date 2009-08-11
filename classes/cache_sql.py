@@ -72,7 +72,7 @@ core_sql = \
           'tlimits'  :"""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
                         trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
                         trafficlimit."mode", trafficlimit.action,
-                        speedlimit.id
+                        speedlimit.id, speedlimit.speed_units, speedlimit.change_speed_type 
                         FROM billservice_trafficlimit as trafficlimit
                         LEFT JOIN billservice_speedlimit as speedlimit ON speedlimit.limit_id=trafficlimit.id
                         ORDER BY trafficlimit.size DESC;""",
