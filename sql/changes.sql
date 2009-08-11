@@ -1537,3 +1537,11 @@ ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without ti
 -- 07.08.2009 14:20
 
 ALTER TABLE radius_activesession ADD COLUMN nas_int_id integer;
+
+-- 11.08.2009 15:47
+
+ALTER TABLE billservice_accounttarif ADD COLUMN periodical_billed boolean DEFAULT FALSE;
+
+UPDATE billservice_accounttarif SET periodical_billed=FALSE;
+
+UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf1.id in (SELECT acctf2.id FROM billservice_accounttarif AS acctf2 WHERE acctf2.account_id=acctf1.account_id and acctf2.datetime < (SELECT datetime FROM billservice_accounttarif AS att WHERE att.account_id=acctf1.account_id and att.datetime<now()ORDER BY datetime DESC LIMIT 1));

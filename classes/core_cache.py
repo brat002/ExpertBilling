@@ -57,13 +57,18 @@ class AccountCache(CacheItem):
     def __init__(self, date):
         super(AccountCache, self).__init__()
         self.vars = (date,)
-        
-    def reindex(self):
         self.by_account = {}
         #index on accounttarif.id
         self.by_acctf = {}
         #index on tariff_id
         self.by_tarif = defaultdict(list)
+        
+    def reindex(self):
+        self.by_account.clear()
+        #index on accounttarif.id
+        self.by_acctf.clear()
+        #index on tariff_id
+        self.by_tarif.clear()
         for acct in self.data:
             self.by_account[acct.account_id]  = acct
             if acct[4]:
