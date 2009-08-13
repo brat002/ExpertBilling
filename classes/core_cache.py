@@ -21,7 +21,7 @@ from core_class.IpnSpeedData import IpnSpeedData
 from core_class.SuspendedPeriodData import SuspendedPeriodData
 
 class CoreCaches(CacheCollection):
-    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache')
+    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -263,7 +263,7 @@ class UnderbilledAccountsCache(CacheItem):
                 if not acct.periodical_billed:
                     acct.end_date = next_datetime
                     self.by_tarif[acct.tarif_id].append(acct)
-                    self.underbilled_acctfs.append(acct.acctf_if)
+                    self.underbilled_acctfs.append(acct.acctf_id)
                 next_datetime = acct.datetime
 
             if self.current_acctfs.has_key(acct.acctf_id):

@@ -120,7 +120,7 @@ class NfVars(Vars):
         if config.has_option(name, 'cachedicts'): self.CACHE_DICTS = config.getint(name, 'cachedicts')
         if config.has_option(name, 'port'): self.PORT = config.getint(name, 'port')
         if config.has_option(name, 'host'): self.HOST = config.get(name, 'host')
-        self.SOCK_TYPE = config.getint(net_name, "usock")
+        self.SOCK_TYPE = config.getint(net_name, "sock_type")
         if self.SOCK_TYPE == 0:
             self.NFR_HOST = config.get(net_name + "_inet", "host")
             self.NFR_PORT = config.getint(net_name + "_inet", "port")
@@ -207,7 +207,7 @@ class NfrVars(Vars):
         db_name = kwargs['db_name']
         if config.has_option(name, 'statdicts'): self.STAT_DICTS = config.getint(name, 'statdicts')
         if config.has_option(name, 'groupdicts'): self.GROUP_DICTS = config.getint(name, 'groupdicts')
-        self.SOCK_TYPE = config.getint(net_name, "usock")
+        self.SOCK_TYPE = config.getint(net_name, "sock_type")
         if self.SOCK_TYPE == 0:
             self.HOST = config.get(net_name + "_inet", "host")
             self.PORT = config.getint(net_name + "_inet", "port")
@@ -268,9 +268,9 @@ class RadVars(Vars):
     
     def __init__(self):
         super(RadVars, self).__init__()
-        self.name = 'rad'
-        self.SESSION_TIMEOUT = 86400
+        self.name = 'rad'        
         self.GIGAWORD = 4294967296
+        self.SESSION_TIMEOUT = 86400
         self.DICT_LIST = ("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
         self.DICT = None
         self.COMMON_VPN = False
