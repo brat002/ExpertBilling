@@ -136,7 +136,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
     
     access_type = access_type.lower()
 
-    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
+    if (format_string!='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)
@@ -146,10 +146,13 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
-        doc.AddAttribute('NAS-IP-Address', nas_ip)
-        doc.AddAttribute('NAS-Identifier', nas_name)
-        doc.AddAttribute('User-Name', account_name)
+
+        doc.AddAttribute('NAS-IP-Address', str(nas_ip))
+        doc.AddAttribute('NAS-Identifier', str(nas_name))
+        doc.AddAttribute('User-Name', str(account_name))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
+        
+       
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
         else:

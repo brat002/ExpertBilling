@@ -49,8 +49,8 @@ def check_speed(speed):
 
 
 
-from utilites import in_period
-from utilites import in_period_info
+from period_utilities import in_period
+from period_utilities import in_period_info
 
 data = []
 #1 Каждый день
@@ -92,3 +92,8 @@ for d in data:
     for n in d[3]:
         print in_period_info(d[0], d[1], d[2], n[0])
         
+
+from period_utilities import settlement_period_info
+print "sp"
+#time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False
+print settlement_period_info(datetime.datetime(2009, 01, 01, 0,0,1), "MONTH", 0, now=datetime.datetime(2009, 02, 01, 0,0,1))

@@ -132,3 +132,29 @@ ALTER TABLE billservice_shedulelog
   ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
       REFERENCES billservice_accounttarif (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
+      
+---07.08.2009 16:22
+ALTER TABLE billservice_speedlimit
+   ADD COLUMN unit character;
+ALTER TABLE billservice_speedlimit
+   ALTER COLUMN unit SET NOT NULL;
+ALTER TABLE billservice_speedlimit
+   ALTER COLUMN unit SET DEFAULT 'kbps';
+
+
+ALTER TABLE billservice_speedlimit
+   ADD COLUMN change_sped_type character varying(20);
+ALTER TABLE billservice_speedlimit
+   ALTER COLUMN change_sped_type SET DEFAULT 'add';
+
+ALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
+ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET STORAGE EXTENDED;
+ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET NOT NULL;
+ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET DEFAULT 'Kbps'::character varying;
+
+
+ALTER TABLE billservice_speedlimit ADD COLUMN change_speed_type character varying(20);
+ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET STORAGE EXTENDED;
+ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET DEFAULT 'add'::character varying;
+

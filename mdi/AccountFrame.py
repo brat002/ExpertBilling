@@ -27,7 +27,7 @@ from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog
+from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import IPy
@@ -790,7 +790,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         
         self.periodical_tableWidget.clear()
-        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость', u"Условие"]
+        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость', u"Условие", u"Начало списаний"]
         
         makeHeaders(columns, self.periodical_tableWidget)
         
@@ -974,12 +974,13 @@ class TarifFrame(QtGui.QDialog):
         current_row = self.periodical_tableWidget.rowCount()
         self.periodical_tableWidget.insertRow(current_row)
         self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 5)
-        if QtGui.QMessageBox.question(self, u"Внимание!!!" , 
-                                            u'''Вы хотите, чтобы по новой периодической услуге были поизведены списания с начала текущего расчётного периода?''', \
-                                            QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
-            self.periodical_tableWidget.item(current_row,5).created='now()'
-        else:
-            self.periodical_tableWidget.item(current_row,5).created=None
+        self.addrow(self.periodical_tableWidget, '', current_row, 6)
+        #if QtGui.QMessageBox.question(self, u"Внимание!!!" , 
+        #                                    u'''Вы хотите, чтобы по новой периодической услуге были поизведены списания с начала текущего расчётного периода?''', \
+        #                                    QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
+        #    self.periodical_tableWidget.item(current_row,5).created='now()'
+        #else:
+        #    self.periodical_tableWidget.item(current_row,5).created=None
         self.periodical_tableWidget.item(current_row,5).selected_id=0
         
         
@@ -991,7 +992,7 @@ class TarifFrame(QtGui.QDialog):
             self.connection.iddelete(id, "billservice_periodicalservice")
   
         self.periodical_tableWidget.removeRow(current_row)
-        
+
     #-----------------------------
     def onAccessTypeChange(self, *args):
         if args[0] == "IPN":
@@ -1007,7 +1008,7 @@ class TarifFrame(QtGui.QDialog):
             if not self.ipn_for_vpn.isEnabled():
                 self.ipn_for_vpn.setEnabled(True)
                 self.ipn_for_vpn.setCheckState(self.ipn_for_vpn_state)
-                
+
     #---------Local Logic
     def filterSettlementPeriods(self):
         
@@ -1238,7 +1239,7 @@ class TarifFrame(QtGui.QDialog):
                 model = item.model
             except:
                 model = None
-            print "speedlimit_model=", model
+            #print "speedlimit_model=", model
             #print "speedmodel=", model
             child = SpeedLimitDialog(self.connection, model)
             
@@ -1256,7 +1257,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=u""
             
-            text = QtGui.QInputDialog.getText(self,u"Введите название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
+            text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QtGui.QLineEdit.Normal, default_text)        
             if text[0].isEmpty()==True and text[1]:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
                 return
@@ -1338,7 +1339,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             
-            text = QtGui.QInputDialog.text.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text,0,1000000,2)      
+            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text,0,1000000,2)      
            
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
             
@@ -1359,9 +1360,7 @@ class TarifFrame(QtGui.QDialog):
                 default_text=float(item.text())
             except:
                 default_text=0
-            
             text = QtGui.QInputDialog.getDouble(self, u"До (МБ):", u"Укажите верхнюю границу в МБ, до которой настройки цены будут актуальны", default_text)        
-           
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
     def periodicalServicesEdit(self,y,x):
@@ -1434,6 +1433,26 @@ class TarifFrame(QtGui.QDialog):
                 self.periodical_tableWidget.item(y,x).selected_id=child.selected_id
             #print "created=", self.periodical_tableWidget.item(y,x).selected_id
 
+
+        if x==6:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text = item.created
+            except:
+                default_text = None
+                
+            print "default_text", default_text
+            child = PSCreatedForm(date = default_text )
+            #self.connection.commit()
+            if child.exec_()==1:
+                print "child.date", child.date
+                if child.date:
+                    self.periodical_tableWidget.item(y,x).setText(child.date.strftime(strftimeFormat))
+                else:
+                    self.periodical_tableWidget.item(y,x).setText(u"С начала расчётного периода")
+                self.periodical_tableWidget.item(y,x).created=child.date
+            #print "created=", self.periodical_tableWidget.item(y,x).selected_id
+            
     def getIdFromtable(self, tablewidget, row=0):
         tmp=tablewidget.item(row, 0)
         if tmp is not None:
@@ -1605,8 +1624,12 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.periodical_tableWidget, node.cost,i, 4)
                     self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 5)
                     self.periodical_tableWidget.item(i, 5).selected_id = node.condition
-                    self.periodical_tableWidget.item(i, 5).created = node.created
-                    print "node created", node.created
+                    if node.created:
+                        self.addrow(self.periodical_tableWidget, node.created.strftime(strftimeFormat),i, 6)
+                    else:
+                        self.addrow(self.periodical_tableWidget, u"С начала расчётного периода",i, 6)
+                    self.periodical_tableWidget.item(i, 6).created = node.created
+                    #print "node created", node.created
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
             
@@ -1975,7 +1998,7 @@ class TarifFrame(QtGui.QDialog):
                     #print 2
                     id = self.getIdFromtable(self.periodical_tableWidget, i)
                     
-                    if self.periodical_tableWidget.item(i, 1)==None or self.periodical_tableWidget.item(i, 2)==None or self.periodical_tableWidget.item(i, 3)==None or self.periodical_tableWidget.item(i, 4)==None:
+                    if self.periodical_tableWidget.item(i, 1)==None or self.periodical_tableWidget.item(i, 2)==None or self.periodical_tableWidget.item(i, 3)==None or self.periodical_tableWidget.item(i, 4)==None or self.periodical_tableWidget.item(i, 6)==None:
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки периодических услуг")
                         self.connection.rollback()
                         return
@@ -1991,7 +2014,7 @@ class TarifFrame(QtGui.QDialog):
                     periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
                     periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
                     periodical_service.condition = self.periodical_tableWidget.item(i,5).selected_id
-                    periodical_service.created = self.periodical_tableWidget.item(i,5).created
+                    periodical_service.created = self.periodical_tableWidget.item(i,6).created
                     
                     self.connection.save(periodical_service, "billservice_periodicalservice")    
                       
@@ -3721,7 +3744,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             if len(accounts)>0:
 
                 tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
-                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE (id <> %d) AND (active=TRUE) AND (get_tariff_type(id)='%s');" % (tarif_id, tarif_type))
+                tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE id <> %d AND deleted IS NOT TRUE;" % (tarif_id,))
 
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
@@ -4018,8 +4041,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.refresh()
         else:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-    
-    
+
+
     def addNodeLocalAction(self):
         super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction])
     def delNodeLocalAction(self):
