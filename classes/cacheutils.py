@@ -16,7 +16,7 @@ class DefaultNamedTuple(tuple):
 class CacheCollection(object):
     __slots__ = ('date', 'cursor', 'caches', 'post_caches')
     
-    def ___init__(self, date):
+    def __init__(self, date):
         self.date = date
         #self.cursor = cursor
         self.post_caches = []

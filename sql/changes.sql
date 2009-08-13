@@ -1508,6 +1508,8 @@ ALTER TABLE billservice_shedulelog
 ----28.07.2009 14:14
 ALTER TABLE billservice_account
    ADD COLUMN associate_pptp_ipn_ip boolean;
+
+--UPDATE billservice_account SET associate_pptp_ipn_ip=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pptp_ipn_ip SET NOT NULL;
 ALTER TABLE billservice_account
@@ -1515,13 +1517,15 @@ ALTER TABLE billservice_account
 
 ALTER TABLE billservice_account
    ADD COLUMN associate_pppoe_mac boolean;
+
+--UPDATE billservice_account SET associate_pppoe_mac=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pppoe_mac SET NOT NULL;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pppoe_mac SET DEFAULT False;
 
-ALTER TABLE billservice_account
-   ADD COLUMN status integer;
+ALTER TABLE billservice_account ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE billservice_account ALTER COLUMN status TYPE int  USING case when status then 1 else 2 end;
 ALTER TABLE billservice_account
    ALTER COLUMN status SET DEFAULT 1;
 UPDATE billservice_account SET status = 1;
@@ -1542,10 +1546,10 @@ ALTER TABLE billservice_account   ADD COLUMN contactperson_phone character varyi
 ALTER TABLE billservice_account   ALTER COLUMN contactperson_phone SET DEFAULT '';
 CREATE TABLE billservice_x8021(  id serial NOT NULL,  account_id integer,  nas_id integer NOT NULL,  port smallint,  typeauth character varying(32) NOT NULL,  vlan_accept integer,  vlan_reject integer,  simpleauth boolean NOT NULL,  CONSTRAINT billservice_x8021_pkey PRIMARY KEY (id),  CONSTRAINT billservice_x8021_account_id_fkey FOREIGN KEY (account_id)      REFERENCES billservice_account (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,  CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id)      REFERENCES nas_nas (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)WITH (OIDS=FALSE);ALTER TABLE billservice_x8021 OWNER TO ebs;
 -- Index: billservice_x8021_account_id-- 
-DROP INDEX billservice_x8021_account_id;
+--DROP INDEX billservice_x8021_account_id;
 CREATE INDEX billservice_x8021_account_id  ON billservice_x8021  USING btree  (account_id);
 -- Index: billservice_x8021_nas_id-- 
-DROP INDEX billservice_x8021_nas_id;CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
+--DROP INDEX billservice_x8021_nas_id;CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
 ALTER TABLE billservice_account   ADD COLUMN "comment" character varying;
 ALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
 

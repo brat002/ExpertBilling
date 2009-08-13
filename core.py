@@ -165,7 +165,7 @@ class check_vpn_access(Thread):
                                 #cur.connection.commit()
                                 account_limit_sleed = caches.speedlimit_cache.by_account_id.get(rs.account_id, [])
                                 speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
-                                speed = get_corrected_speed(speed[:6], account_limit_speed[:6])
+                                speed = get_corrected_speed(speed[:6], account_limit_speed)
                             else:
                                 speed=parse_custom_speed_lst(acc.vpn_speed)
 
@@ -275,7 +275,7 @@ class periodical_service_bill(Thread):
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
                         if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
                         for acc in itertools.chain(caches.account_cache.by_tarif.get(tariff_id,[]), \
-                                                   caches.underbilled_accounts_cache.by_tarif.get(tarif_id, [])):
+                                                   caches.underbilled_accounts_cache.by_tarif.get(tariff_id, [])):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or acc.account_status == 2: continue
@@ -421,7 +421,8 @@ class periodical_service_bill(Thread):
                                 if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 if caches.underbilled_accounts_cache.underbilled_acctfs:
-                    cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""",\
+                    print caches.underbilled_accounts_cache.underbilled_acctfs
+                    cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""" % \
                                 ' ,'.join((str(i) for i in caches.underbilled_accounts_cache.underbilled_acctfs)))
                     cur.connection.commit()
                 cur.close()
@@ -933,7 +934,7 @@ class ipn_service(Thread):
                             #self.connection.commit()
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
-                            speed = get_corrected_speed(speed[:6], account_limit_speed[:6])
+                            speed = get_corrected_speed(speed[:6], account_limit_speed)
                         else:
                             speed = parse_custom_speed_lst(acc.ipn_speed)
     
