@@ -19,9 +19,12 @@ from core_class.OneTimeServiceData import OneTimeServiceData
 from core_class.AccessParametersData import AccessParametersData
 from core_class.IpnSpeedData import IpnSpeedData
 from core_class.SuspendedPeriodData import SuspendedPeriodData
+from common.AddonServiceData import AddonServiceData
+from common.AddonServiceTarifData import AddonServiceTarifData
+from common.AccountAddonServiceData import AccountAddonServiceData
 
 class CoreCaches(CacheCollection):
-    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache')
+    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -46,7 +49,10 @@ class CoreCaches(CacheCollection):
         self.timeperiodaccess_cache = TimePeriodAccessCache(date, fMem)
         self.speedlimit_cache = SpeedLimitCache()
         self.underbilled_accounts_cache = UnderbilledAccountsCache(date, self.account_cache.by_acctf)
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache]
+        self.addonservice_cache = AddonServiceCache()
+        self.addontarifservice_cache = AddonServiceTarifCache()
+        self.accountaddonservice_cache = AccountAddonServiceCache()
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache]
         
         
 class AccountCache(CacheItem):
@@ -268,3 +274,57 @@ class UnderbilledAccountsCache(CacheItem):
 
             if self.current_acctfs.has_key(acct.acctf_id):
                 next_datetime = acct.datetime
+                
+class AddonServiceCache(SimpleDictCache):
+    '''By id'''
+    __slots__ = ()
+    datatype = AddonServiceData
+    sql = core_sql['addon_service']
+
+class AddonServiceTarifCache(CacheItem):
+    __slots__ = ('by_id', 'by_tarif', 'by_service')
+    
+    datatype = AddonServiceTarifData
+    sql = core_sql['addon_tarif']
+    
+    def __init__(self):
+        super(AddonServiceTarifCache, self).__init__()
+        self.by_id = {}
+        self.by_service = defaultdict(list)
+        #index on tariff_id
+        self.by_tarif = defaultdict(list)
+        
+    def reindex(self):
+        self.by_id.clear()
+        #index on accounttarif.id
+        self.by_service.clear()
+        #index on tariff_id
+        self.by_tarif.clear()
+        for addon in self.data:
+            self.by_id[addon.id]  = addon
+            self.by_tarif[addon.tarif_id].append(addon)
+            self.by_service[addon.service_id].append(addon)
+            
+class AccountAddonServiceCache(CacheItem):
+    __slots__ = ('by_id', 'by_account', 'by_service')
+    
+    datatype = AccountAddonServiceData
+    sql = core_sql['addon_account']
+    
+    def __init__(self):
+        super(AccountAddonServiceCache, self).__init__()
+        self.by_id = {}
+        self.by_service = defaultdict(list)
+        #index on tariff_id
+        self.by_account = defaultdict(list)
+        
+    def reindex(self):
+        self.by_id.clear()
+        #index on accounttarif.id
+        self.by_service.clear()
+        #index on tariff_id
+        self.by_account.clear()
+        for addon in self.data:
+            self.by_id[addon.id]  = addon
+            self.by_account[addon.account_id].append(addon)
+            self.by_service[addon.service_id].append(addon)

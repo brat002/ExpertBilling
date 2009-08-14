@@ -98,7 +98,23 @@ core_sql = \
                       speedlimit.priority,
                       speedlimit.min_tx, speedlimit.min_rx, speedlimit.speed_units, speedlimit.change_speed_type
                       FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
-                      WHERE accountspeedlimit.speedlimit_id=speedlimit.id;"""                                                                             }
+                      WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
+          'addon_service':
+                      """SELECT id, "name", allow_activation, service_type, sp_type, sp_period_id, 
+                                timeperiod_id, "cost", cancel_subscription, wyte_period_id, wyte_cost, 
+                                "action", nas_id, service_activation_action, service_deactivation_action, 
+                                deactivate_service_for_blocked_account, change_speed, change_speed_type, 
+                                speed_units, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, 
+                                burst_treshold_rx, burst_time_tx, burst_time_rx, min_tx, min_rx, 
+                                priority
+                           FROM billservice_addonservice;""",
+          'addon_tarif':
+                      """SELECT id, tarif_id, service_id, activation_count, activation_count_period_id
+                           FROM billservice_addonservicetarif;""",
+          'addon_account':
+                      """SELECT id, service_id, account_id, activated, deactivated, action_status, 
+                                speed_status, temporary_blocked 
+                           FROM billservice_accountaddonservice;"""}
 rad_sql = \
         {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
@@ -138,4 +154,5 @@ rad_sql = \
                         speedlimit.min_tx, speedlimit.min_rx, accountspeedlimit.account_id, speedlimit.speed_units, speedlimit.change_speed_type
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
-         'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;"""}
+         'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;""",
+}
