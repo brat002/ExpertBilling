@@ -1,0 +1,1 @@
+import collectionsclass FileSaveDeque(collections.deque):    pass

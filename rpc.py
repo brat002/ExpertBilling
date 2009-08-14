@@ -870,7 +870,7 @@ if __name__ == "__main__":
         
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(pool.connection(), _1i())       
+        allowedUsers = setAllowedUsers(_1i(), pool.connection())       
         allowedUsers()
         
         Pyro.util.Log = logger
