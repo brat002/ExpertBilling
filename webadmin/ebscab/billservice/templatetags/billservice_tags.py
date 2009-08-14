@@ -20,7 +20,6 @@ def writen_of_time(session, user):
 @register.inclusion_tag('accounts/tags/writen_of_traffic.html')
 def writen_of_traffic(session, user):
     """
-    """
     type = TransactionType.objects.get(internal_name='NETFLOW_BILL')
     if session.date_end:
         transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
@@ -111,11 +110,11 @@ def traffic_limit_row(trafficlimit, user, iter_nom, last=False):
                         """, (trafficlimit.group_id, user.id, settlement_period_start,  settlement_period_end))
     summ = cursor.fetchone()
     try:
-        summ = summ[0]/1024000
+        summ = summ[0]/(1024*1024)
     except:
         summ = 0 
     try:
-        stay = trafficlimit.size/1024000
+        stay = trafficlimit.size/(1024*1024)
     except:
         stay = 0
     return {

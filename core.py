@@ -666,6 +666,123 @@ class limit_checker(Thread):
             time.sleep(vars.LIMIT_SLEEP + random.randint(0,5))          
 
 
+class addon_service(Thread):
+    """
+    Проверяет исчерпание лимитов. если лимит исчерпан-ставим соотв галочку в аккаунте
+    """
+    def __init__ (self):
+        Thread.__init__(self)
+ 
+    def run(self):
+        #connection = pool.connection()
+        #connection._con._con.set_client_encoding('UTF8')
+        global suicideCondition, cacheMaster, fMem, vars
+        self.connection = get_connection(vars.db_dsn)
+        dateAT = datetime.datetime(2000, 1, 1)
+        caches = None
+        while True:            
+            try:
+                if suicideCondition[self.__class__.__name__]:
+                    try:    self.connection.close()
+                    except: pass
+                    break
+                a = time.clock()
+                if cacheMaster.date <= dateAT:
+                    time.sleep(10); continue
+                else:
+                    cacheMaster.lock.acquire()
+                    try:
+                        caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()
+
+                if 0: assert isinstance(caches, CoreCaches)
+                
+                oldid = -1
+                cur = self.connection.cursor()
+
+                for acc in caches.account_cache.data:
+                    if 0: assert isinstance(acc, AccountData)
+                    if not acc.account_status == 1: continue
+                    limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
+                    if not limits:
+                        if acc.disabled_by_limit:
+                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
+                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
+                        cur.connection.commit()
+                        continue
+                    block, speed_changed = (False, False)
+                    for limit in limits:
+                        if 0: assert isinstance(limit, TrafficLimitData)
+                        if not limit.group_id: continue
+                        
+                        if oldid == acc.account_id and (block or speed_changed):
+                            #Т.к. Лимиты отсортированы в порядке убывания размеров,то сначала проверяются все самые большие лимиты.
+                            """
+                            Если у аккаунта уже есть одно превышение лимита или изменена скорость
+                            то больше для него лимиты не проверяем
+                            """
+                            continue
+                        
+                        sp = caches.settlementperiod_cache.by_id.get(limit.settlement_period_id)
+                        if not sp: logger.info("NOT FOUND: SP: %s",limit.settlement_period_id); continue
+                        if 0: assert isinstance(sp, SettlementPeriodData)
+                        
+                        sp_defstart = acc.datetime if sp.autostart else sp.time_start
+                        sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
+                        if sp_start < acc.datetime: sp_start = acc.datetime
+                        #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
+                        if limit.mode:
+                            now = dateAT
+                            sp_start = now - datetime.timedelta(seconds=delta)
+                            sp_end   = now
+                        
+                        cur.connection.commit()        
+                        cur.execute("""SELECT sum(bytes) AS size FROM billservice_groupstat
+                                       WHERE group_id=%s AND account_id=%s AND datetime>%s AND datetime<%s
+                                    """ , (limit.group_id, acc.account_id, sp_start, sp_end,)) 
+                        sizes = cur.fetchone()
+                        cur.connection.commit()
+                        
+                        tsize = sizes[0] if sizes[0] else 0
+                        #limit_size = Decimal("%s" % limit.size)
+                        #100% trace through!
+                        if tsize > limit.size and limit.action==0:
+                            block = True
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))                            
+                        elif tsize > limit.size and limit.action == 1 and limit.speedlimit_id:
+                            #Меняем скорость
+                            cur.execute("SELECT speedlimit_ins_fn(%s, %s);", (limit.speedlimit_id, acc.account_id,))
+                            speed_changed, block = (True, False)
+                        elif tsize < limit.size:
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
+                        cur.connection.commit()
+                        
+                        oldid = acc.account_id
+                        if acc.disabled_by_limit != block:
+                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;
+                                        """ , (block, acc.account_id,))
+                            cur.connection.commit()
+                            logger.info("set user %s new limit %s state %s", (acc.account_id, limit.trafficlimit_id, block))
+    
+                cur.connection.commit()
+                cur.close()                
+                logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
+            except Exception, ex:
+                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                if ex.__class__ in vars.db_errors:
+                    time.sleep(5)
+                    try:
+                        self.connection = get_connection(vars.db_dsn)
+                    except Exception, eex:
+                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
+                        time.sleep(10)
+            gc.collect()
+            time.sleep(vars.LIMIT_SLEEP + random.randint(0,5))     
+            
 class settlement_period_service_dog(Thread):
     """
     Для каждого пользователя по тарифному плану в конце расчётного периода производит

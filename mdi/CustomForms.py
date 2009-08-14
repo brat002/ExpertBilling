@@ -125,7 +125,12 @@ class ComboBoxDialog(QtGui.QDialog):
             self.comboBox.setItemData(i, QtCore.QVariant(item.id))
             if unicode(item.name) == unicode(self.selected_item):
                 self.comboBox.setCurrentIndex(i)
-                
+            try:
+                if unicode(item.id) == unicode(self.selected_item):
+                    self.comboBox.setCurrentIndex(i)
+            except:
+                pass
+                 
             i+=1
             
     def accept(self):
@@ -282,9 +287,9 @@ class TransactionForm(QtGui.QDialog):
         self.label_promise = QtGui.QLabel(self.groupBox)
         self.label_promise.setObjectName("label_promise")
         self.gridLayout.addWidget(self.label_promise, 4, 0, 1, 1)
-        self.checkBox_promise = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_promise.setObjectName("checkBox_promise")
-        self.gridLayout.addWidget(self.checkBox_promise, 4, 1, 1, 1)
+        self.checkBox_temporary_blocked_promise = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_temporary_blocked_promise.setObjectName("checkBox_promise")
+        self.gridLayout.addWidget(self.checkBox_temporary_blocked_promise, 4, 1, 1, 1)
         self.label_end_promise = QtGui.QLabel(self.groupBox)
         self.label_end_promise.setObjectName("label_end_promise")
         self.gridLayout.addWidget(self.label_end_promise, 5, 0, 1, 1)
@@ -292,9 +297,9 @@ class TransactionForm(QtGui.QDialog):
         self.dateTimeEdit_end_promise.setCalendarPopup(True)
         self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
         self.gridLayout.addWidget(self.dateTimeEdit_end_promise, 5, 1, 1, 1)
-        self.checkBox_promise_infinite = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_promise_infinite.setObjectName("checkBox_promise_infinite")
-        self.gridLayout.addWidget(self.checkBox_promise_infinite, 5, 2, 1, 1)
+        self.checkBox_temporary_blocked_promise_infinite = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_temporary_blocked_promise_infinite.setObjectName("checkBox_promise_infinite")
+        self.gridLayout.addWidget(self.checkBox_temporary_blocked_promise_infinite, 5, 2, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox, 1, 0, 1, 3)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -306,8 +311,8 @@ class TransactionForm(QtGui.QDialog):
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
-        QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        QtCore.QObject.connect(self.checkBox_temporary_blocked_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        QtCore.QObject.connect(self.checkBox_temporary_blocked_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         
         #QtCore.QObject.connect(self.pushButton_cheque_print,QtCore.SIGNAL("clicked()"),self.cheque_print)
         
@@ -330,9 +335,9 @@ class TransactionForm(QtGui.QDialog):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
         self.label_paymend_date.setText(QtGui.QApplication.translate("Dialog", "Дата платежа", None, QtGui.QApplication.UnicodeUTF8))
         self.label_promise.setText(QtGui.QApplication.translate("Dialog", "Обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_promise.setText(QtGui.QApplication.translate("Dialog", "Да", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_temporary_blocked_promise.setText(QtGui.QApplication.translate("Dialog", "Да", None, QtGui.QApplication.UnicodeUTF8))
         self.label_end_promise.setText(QtGui.QApplication.translate("Dialog", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("Dialog", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_temporary_blocked_promise_infinite.setText(QtGui.QApplication.translate("Dialog", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
     
     def fixtures(self):
         now = datetime.datetime.now()
@@ -343,15 +348,15 @@ class TransactionForm(QtGui.QDialog):
         self.payed_type_edit.setItemData(1, QtCore.QVariant(1))
         
     def promise_actions(self):
-        if self.checkBox_promise.isChecked():
+        if self.checkBox_temporary_blocked_promise.isChecked():
             self.dateTimeEdit_end_promise.setEnabled(True)
-            self.checkBox_promise_infinite.setEnabled(True)
-            if self.checkBox_promise_infinite.isChecked():
+            self.checkBox_temporary_blocked_promise_infinite.setEnabled(True)
+            if self.checkBox_temporary_blocked_promise_infinite.isChecked():
                 self.dateTimeEdit_end_promise.setEnabled(False)
             
         else:
             self.dateTimeEdit_end_promise.setEnabled(False)
-            self.checkBox_promise_infinite.setEnabled(False)
+            self.checkBox_temporary_blocked_promise_infinite.setEnabled(False)
             
     def accept(self):
         #print self.payed_type_edit.itemData(self.payed_type_edit.currentIndex()).toInt()[0]
@@ -370,8 +375,8 @@ class TransactionForm(QtGui.QDialog):
         transaction.systemuser_id = self.systemuser_id
         transaction.created = self.dateTimeEdit_paymend_date.dateTime().toPyDateTime()
         
-        transaction.promise = self.checkBox_promise.isChecked()
-        if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
+        transaction.promise = self.checkBox_temporary_blocked_promise.isChecked()
+        if self.checkBox_temporary_blocked_promise.isChecked() and not self.checkBox_temporary_blocked_promise_infinite.isChecked():
             transaction.end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
 
             
@@ -2342,9 +2347,9 @@ class PSCreatedForm(QtGui.QDialog):
         self.dateTimeEdit.setCalendarPopup(True)
         self.dateTimeEdit.setObjectName("dateTimeEdit")
         self.gridLayout.addWidget(self.dateTimeEdit, 0, 0, 1, 1)
-        self.checkBox_w = QtGui.QCheckBox(self)
-        self.checkBox_w.setObjectName("checkBox")
-        self.gridLayout.addWidget(self.checkBox_w, 1, 0, 1, 1)
+        self.checkBox_temporary_blocked_w = QtGui.QCheckBox(self)
+        self.checkBox_temporary_blocked_w.setObjectName("checkBox")
+        self.gridLayout.addWidget(self.checkBox_temporary_blocked_w, 1, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
@@ -2352,11 +2357,11 @@ class PSCreatedForm(QtGui.QDialog):
         self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
 
         self.retranslateUi()
-        self.checkBoxAction()
-        self.connect(self.checkBox_w, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
+        self.checkBox_temporary_blockedAction()
+        self.connect(self.checkBox_temporary_blocked_w, QtCore.SIGNAL("stateChanged(int)"), self.checkBox_temporary_blockedAction)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
-        #self.connect(self.checkBox, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
+        #self.connect(self.checkBox_temporary_blocked, QtCore.SIGNAL("stateChanged(int)"), self.checkBox_temporary_blockedAction)
         
         #QtCore.QMetaObject.connectSlotsByName(self)
         
@@ -2364,11 +2369,11 @@ class PSCreatedForm(QtGui.QDialog):
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки периодической услуги", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_w.setText(QtGui.QApplication.translate("Dialog", "С начала расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_temporary_blocked_w.setText(QtGui.QApplication.translate("Dialog", "С начала расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
         
         
     def checkBoxAction(self):
-        if self.checkBox_w.checkState() == QtCore.Qt.Checked:
+        if self.checkBox_temporary_blocked_w.checkState() == QtCore.Qt.Checked:
             self.dateTimeEdit.setDisabled(True)
         else:
             self.dateTimeEdit.setDisabled(False)
@@ -2378,14 +2383,162 @@ class PSCreatedForm(QtGui.QDialog):
         if self.date:
             self.dateTimeEdit.setDateTime(self.date)
         else:
-            self.checkBox_w.setChecked(True)
+            self.checkBox_temporary_blocked_w.setChecked(True)
             self.dateTimeEdit.setDateTime(datetime.datetime.now())
             
             
     def accept(self):
-        if self.checkBox_w.checkState() == QtCore.Qt.Checked:
+        if self.checkBox_temporary_blocked_w.checkState() == QtCore.Qt.Checked:
             self.date = None
         else:
             self.date = self.dateTimeEdit.dateTime().toPyDateTime()
         QtGui.QDialog.accept(self)
+        
+        
+class AccountAddonServiceEdit(QtGui.QDialog):
+    def __init__(self, connection, model=None, account_model = None):
+        super(AccountAddonServiceEdit, self).__init__()
+        self.setObjectName("AccountAddonServiceEdit")
+        self.model = model
+        self.account_model = account_model
+        self.connection = connection
+        self.resize(437, 194)
+        self.gridLayout_2 = QtGui.QGridLayout(self)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label_service = QtGui.QLabel(self.groupBox)
+        self.label_service.setObjectName("label_service")
+        self.gridLayout.addWidget(self.label_service, 0, 0, 1, 1)
+        self.comboBox_service = QtGui.QComboBox(self.groupBox)
+        self.comboBox_service.setObjectName("comboBox_service")
+        self.gridLayout.addWidget(self.comboBox_service, 0, 1, 1, 2)
+        self.label_activation = QtGui.QLabel(self.groupBox)
+        self.label_activation.setObjectName("label_activation")
+        self.gridLayout.addWidget(self.label_activation, 1, 0, 1, 1)
+        self.dateTimeEdit_activation = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_activation.setCalendarPopup(True)
+        self.dateTimeEdit_activation.setObjectName("dateTimeEdit_activation")
+        self.gridLayout.addWidget(self.dateTimeEdit_activation, 1, 1, 1, 2)
+        self.toolButton_activation_now = QtGui.QToolButton(self.groupBox)
+        self.toolButton_activation_now.setObjectName("toolButton_activation_now")
+        self.gridLayout.addWidget(self.toolButton_activation_now, 1, 3, 1, 1)
+        self.groupBox_2 = QtGui.QGroupBox(self.groupBox)
+        self.groupBox_2.setCheckable(True)
+        self.groupBox_2.setChecked(False)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_2)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.label_deactivation = QtGui.QLabel(self.groupBox_2)
+        self.label_deactivation.setObjectName("label_deactivation")
+        self.gridLayout_3.addWidget(self.label_deactivation, 0, 0, 1, 1)
+        self.dateTimeEdit_deactivation = QtGui.QDateTimeEdit(self.groupBox_2)
+        self.dateTimeEdit_deactivation.setMinimumSize(QtCore.QSize(230, 0))
+        self.dateTimeEdit_deactivation.setCalendarPopup(True)
+        self.dateTimeEdit_deactivation.setObjectName("dateTimeEdit_deactivation")
+        self.gridLayout_3.addWidget(self.dateTimeEdit_deactivation, 0, 1, 1, 1)
+        self.toolButton_deactivation = QtGui.QToolButton(self.groupBox_2)
+        self.toolButton_deactivation.setObjectName("toolButton_deactivation")
+        self.gridLayout_3.addWidget(self.toolButton_deactivation, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_2, 3, 0, 1, 4)
+        self.checkBox_temporary_blocked = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_temporary_blocked.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.checkBox_temporary_blocked.setObjectName("checkBox")
+        self.gridLayout.addWidget(self.checkBox_temporary_blocked, 2, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 2, 0, 1, 1)
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.toolButton_activation_now,QtCore.SIGNAL("clicked()"),self.setActivatedTime)
+        QtCore.QObject.connect(self.toolButton_deactivation,QtCore.SIGNAL("clicked()"),self.setDeactivatedTime)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры подключаемой услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры подключаемой услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_service.setText(QtGui.QApplication.translate("Dialog", "Услуга", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_activation.setText(QtGui.QApplication.translate("Dialog", "Дата активаци", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_activation_now.setText(QtGui.QApplication.translate("Dialog", "N", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Закончить действие услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_deactivation.setText(QtGui.QApplication.translate("Dialog", "Дата деактивации", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_deactivation.setText(QtGui.QApplication.translate("Dialog", "N", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_temporary_blocked.setText(QtGui.QApplication.translate("Dialog", "Временная блокировка", None, QtGui.QApplication.UnicodeUTF8))
+    
+    def fixtures(self):
+        addonservices = self.connection.get_models("billservice_addonservice")
+        self.connection.commit()
+        i=0
+        for adds in addonservices:
+           self.comboBox_service.addItem(unicode(adds.name))
+           self.comboBox_service.setItemData(i, QtCore.QVariant(adds.id))
+           i+=1
+        
+        if self.model:
+            for i in xrange(self.comboBox_service.count()):
+                if self.comboBox_service.itemData(i).toInt()[0]==self.model.service_id:
+                    self.comboBox_service.setCurrentIndex(i)
+                       
+
+            self.checkBox_temporary_blocked.setChecked(self.model.temporary_blocked is not None)
+            if self.model.deactivated:
+                self.groupBox_2.setDisabled(True)
+            self.dateTimeEdit_activation.setDateTime(self.model.activated)
+            
+            if self.model.deactivated:
+                self.dateTimeEdit_deactivation.setDateTime(self.model.deactivated)
+                self.dateTimeEdit_deactivation.setDisabled(True)
+                
+            self.comboBox_service.setDisabled(True)
+        else:
+            self.dateTimeEdit_activation.setDateTime(datetime.datetime.now())
+            self.dateTimeEdit_deactivation.setDateTime(datetime.datetime.now())
+            
+    def accept(self):
+        if self.model:
+            model = self.model
+        else:
+            model = Object()
+            
+        model.account_id = self.account_model.id
+        model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
+        model.activated = self.dateTimeEdit_activation.dateTime().toPyDateTime()
+        if self.model:
+            if not self.model.temporary_blocked:
+                model.temporary_blocked = "now()" if   self.checkBox_temporary_blocked.isChecked()==True else None
+            elif self.checkBox_temporary_blocked.isChecked()==False:
+                model.temporary_blocked = None
+        else:
+            model.temporary_blocked = "now()" if   self.checkBox_temporary_blocked.isChecked()==True else None
+            
+        
+        if self.groupBox_2.isChecked()==True:
+            if self.dateTimeEdit_deactivation.dateTime().toPyDateTime()<model.activated:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Дата окончания действия услуги не должна быть меньше даты начала действия"))
+                return                
+            model.deactivated = self.dateTimeEdit_deactivation.dateTime().toPyDateTime()
+            
+        try:
+            self.connection.save(model, "billservice_accountaddonservice")
+            self.connection.commit()
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Возникла непредвиденная ошибка"))
+            return
+            
+        
+        QtGui.QDialog.accept(self)
+    
+    def setActivatedTime(self):
+        self.dateTimeEdit_activation.setDateTime(datetime.datetime.now())
+
+    def setDeactivatedTime(self):
+        self.dateTimeEdit_deactivation.setDateTime(datetime.datetime.now())
         
