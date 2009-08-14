@@ -27,7 +27,7 @@ from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
 from CustomForms import tableImageWidget
-from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm
+from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import IPy
@@ -269,7 +269,7 @@ class TarifFrame(QtGui.QDialog):
         self.ipn_for_vpn.setObjectName("ipn_for_vpn")
         
         self.components_groupBox = QtGui.QGroupBox(self.tab_1)
-        self.components_groupBox.setGeometry(QtCore.QRect(420,60,184,159))
+        self.components_groupBox.setGeometry(QtCore.QRect(420,60,184,179))
         self.components_groupBox.setObjectName("components_groupBox")
 
         self.widget = QtGui.QWidget(self.components_groupBox)
@@ -298,7 +298,10 @@ class TarifFrame(QtGui.QDialog):
         self.limites_checkbox = QtGui.QCheckBox(self.widget)
         self.limites_checkbox.setObjectName("limites_checkbox")
         self.vboxlayout.addWidget(self.limites_checkbox)
-        
+
+        self.checkBox_addon_services = QtGui.QCheckBox(self.widget)
+        self.checkBox_addon_services.setObjectName("checkBox_addon_services")
+        self.vboxlayout.addWidget(self.checkBox_addon_services)        
 
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -585,6 +588,36 @@ class TarifFrame(QtGui.QDialog):
         self.add_limit_button.setGeometry(QtCore.QRect(6,3,24,20))
         self.add_limit_button.setObjectName("add_limit_button")
         self.tabWidget.addTab(self.tab_7,"")
+        
+#
+        self.tab_8 = QtGui.QWidget()
+        self.tab_8.setObjectName("tab_8")
+
+        self.tableWidget_addonservices = QtGui.QTableWidget(self.tab_8)
+        self.tableWidget_addonservices.setGeometry(QtCore.QRect(10,40,597,486))
+        #--------------------
+        #self.limit_tableWidget = tableFormat(self.limit_tableWidget)
+
+
+        self.panel_addonservice = QtGui.QFrame(self.tab_8)
+        self.panel_addonservice.setGeometry(QtCore.QRect(10,10,596,27))
+        self.panel_addonservice.setFrameShape(QtGui.QFrame.Box)
+        self.panel_addonservice.setFrameShadow(QtGui.QFrame.Raised)
+        self.panel_addonservice.setObjectName("limit_panel")
+
+        self.del_addonservice_button = QtGui.QToolButton(self.panel_addonservice)
+        self.del_addonservice_button.setGeometry(QtCore.QRect(40,3,25,20))
+        self.del_addonservice_button.setObjectName("del_addonservice_button")
+
+        self.add_addonservice_button = QtGui.QToolButton(self.panel_addonservice)
+        self.add_addonservice_button.setGeometry(QtCore.QRect(6,3,24,20))
+        self.add_addonservice_button.setObjectName("add_addonservice_button")
+        self.tabWidget.addTab(self.tab_8,"")
+#        
+        
+        
+        
+        
         self.tarif_description_label.setBuddy(self.tarif_description_edit)
         self.speed_burst_label.setBuddy(self.speed_burst_in_edit)
         self.speed_burst_time_label.setBuddy(self.speed_burst_time_in_edit)
@@ -603,6 +636,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
         self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget, no_vsection_size=True)
         self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget, no_vsection_size=True)
+        self.tableWidget_addonservices = tableFormat(self.tableWidget_addonservices, no_vsection_size=True)
         self.tabWidget.setCurrentIndex(0)
         
 #------------Connects
@@ -623,6 +657,8 @@ class TarifFrame(QtGui.QDialog):
         
         
         QtCore.QObject.connect(self.speed_table, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.speedEdit)
+        
+        QtCore.QObject.connect(self.tableWidget_addonservices, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.addonserviceEdit)
         
         QtCore.QObject.connect(self.add_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.addTrafficCostRow)
         QtCore.QObject.connect(self.del_traffic_cost_button, QtCore.SIGNAL("clicked()"), self.delTrafficCostRow)
@@ -645,6 +681,9 @@ class TarifFrame(QtGui.QDialog):
         
         QtCore.QObject.connect(self.add_periodical_button, QtCore.SIGNAL("clicked()"), self.addPeriodicalRow)
         QtCore.QObject.connect(self.del_periodical_button, QtCore.SIGNAL("clicked()"), self.delPeriodicalRow)   
+
+        QtCore.QObject.connect(self.add_addonservice_button, QtCore.SIGNAL("clicked()"), self.addAddonServiceRow)
+        QtCore.QObject.connect(self.del_addonservice_button, QtCore.SIGNAL("clicked()"), self.delAddonServiceRow)   
         
         QtCore.QObject.connect(self.sp_type_edit, QtCore.SIGNAL("stateChanged(int)"), self.filterSettlementPeriods)
         
@@ -657,6 +696,7 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.periodical_services_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.periodicalServicesTabActivityActions)
         
         QtCore.QObject.connect(self.limites_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.limitTabActivityActions)
+        QtCore.QObject.connect(self.checkBox_addon_services, QtCore.SIGNAL("stateChanged(int)"), self.addonservicesTabActivityActions)
         QtCore.QObject.connect(self.ipn_for_vpn, QtCore.SIGNAL("stateChanged(int)"), self.ipn_for_vpnActions)
 
         QtCore.QObject.connect(self.sp_name_edit, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.spChangedActions)
@@ -725,6 +765,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.periodical_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.limites_checkbox.setText(QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_addon_services.setText(QtGui.QApplication.translate("Dialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_access_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки скорости по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_burst_label.setText(QtGui.QApplication.translate("Dialog", "Burst", None, QtGui.QApplication.UnicodeUTF8))
@@ -807,6 +848,15 @@ class TarifFrame(QtGui.QDialog):
         self.add_limit_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
         
+
+        columns=[u'#', u'Название', u'Количество активаций', u'За период времени']
+        
+        makeHeaders(columns, self.tableWidget_addonservices)
+        
+        self.del_addonservice_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
+        self.add_addonservice_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_8), QtGui.QApplication.translate("Dialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+
         
     def spChangedActions(self, text):
         if text == '':
@@ -993,6 +1043,21 @@ class TarifFrame(QtGui.QDialog):
   
         self.periodical_tableWidget.removeRow(current_row)
 
+         
+    def addAddonServiceRow(self):
+        current_row = self.tableWidget_addonservices.rowCount()
+        self.tableWidget_addonservices.insertRow(current_row)
+        
+        
+    def delAddonServiceRow(self):
+        current_row = self.tableWidget_addonservices.currentRow()
+        id = self.getIdFromtable(self.tableWidget_addonservices, current_row)
+        
+        if id!=-1:
+            self.connection.iddelete(id, "billservice_addonservicetarif")
+  
+        self.tableWidget_addonservices.removeRow(current_row)
+        
     #-----------------------------
     def onAccessTypeChange(self, *args):
         if args[0] == "IPN":
@@ -1081,6 +1146,14 @@ class TarifFrame(QtGui.QDialog):
             #self.retranslateUi()        
             #-------------------
 
+    def addonservicesTabActivityActions(self):
+        if self.checkBox_addon_services.checkState()!=2:
+            self.tab_8.setDisabled(True)
+            #self.tabWidget.removeTab(self.tabWidget.indexOf(self.tab_7))
+        else:
+            self.tab_8.setDisabled(False)
+            #self.tabWidget.insertTab(7, self.tab_7,"")
+            #self.retranslateUi()    
 
 
     #-----------------------------Обработка редактирования таблиц
@@ -1441,11 +1514,11 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text = None
                 
-            print "default_text", default_text
+
             child = PSCreatedForm(date = default_text )
             #self.connection.commit()
             if child.exec_()==1:
-                print "child.date", child.date
+
                 if child.date:
                     self.periodical_tableWidget.item(y,x).setText(child.date.strftime(strftimeFormat))
                 else:
@@ -1453,6 +1526,46 @@ class TarifFrame(QtGui.QDialog):
                 self.periodical_tableWidget.item(y,x).created=child.date
             #print "created=", self.periodical_tableWidget.item(y,x).selected_id
             
+   
+    
+    
+    def addonserviceEdit(self,y,x):
+
+        if x==1:
+            item = self.tableWidget_addonservices.item(y,x)
+            try:
+                default_text = item.id
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=self.connection.get_models("billservice_addonservice"), selected_item = default_text )
+
+            if child.exec_()==1:
+                self.addrow(self.tableWidget_addonservices, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)  
+
+        if x==2:
+            item = self.tableWidget_addonservices.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0
+            
+            text = QtGui.QInputDialog.getInteger(self, u"Количество активаций:", u"Количество активаций", default_text)        
+           
+            #self.tableWidget_addonservices.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+            self.addrow(self.tableWidget_addonservices, text[0], y, x, id=unicode(text[0]))
+            
+        if x==3:
+            item = self.tableWidget_addonservices.item(y,x)
+            try:
+                default_text = item.id
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=self.connection.get_models("billservice_settlementperiod"), selected_item = default_text )
+            
+            if child.exec_()==1:
+                self.addrow(self.tableWidget_addonservices, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)  
+            
+    
     def getIdFromtable(self, tablewidget, row=0):
         tmp=tablewidget.item(row, 0)
         if tmp is not None:
@@ -1677,7 +1790,7 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.limit_tableWidget, la_list[node.action],i, 6, id = node.action)
                     if len(speedmodel)>0:
                         #print "speedmodel", speedmodel
-                        self.addrow(self.limit_tableWidget, u"%s%%/%s%% %s%%/%s%% %s%%/%s%% %s/%s %s %s%%/%s%%" % (speedmodel[0].max_tx, speedmodel[0].max_rx, speedmodel[0].burst_tx, speedmodel[0].burst_rx, speedmodel[0].burst_treshold_tx, speedmodel[0].burst_treshold_rx, speedmodel[0].burst_time_tx, speedmodel[0].burst_time_rx, speedmodel[0].priority, speedmodel[0].min_tx, speedmodel[0].min_rx),i, 7)
+                        self.addrow(self.limit_tableWidget, u"%s/%s %s/%s %s/%s %s/%s %s %s/%s" % (speedmodel[0].max_tx, speedmodel[0].max_rx, speedmodel[0].burst_tx, speedmodel[0].burst_rx, speedmodel[0].burst_treshold_tx, speedmodel[0].burst_treshold_rx, speedmodel[0].burst_time_tx, speedmodel[0].burst_time_rx, speedmodel[0].priority, speedmodel[0].min_tx, speedmodel[0].min_rx),i, 7)
                         self.limit_tableWidget.item(i, 7).model = speedmodel[0]
                         #for x in speedmodel[0].__dict__:
                         #    print x, speedmodel[0].__dict__[x]
@@ -1690,6 +1803,36 @@ class TarifFrame(QtGui.QDialog):
                     self.limit_tableWidget.resizeColumnsToContents()
                     self.limit_tableWidget.resizeRowsToContents()
             self.limit_tableWidget.setColumnHidden(0, True)
+            
+            
+            #billservice_addonservicetarif
+            #AddonServices
+            addon_services = self.connection.sql(""" SELECT addonservicetarif.*, settlementperiod.name as settlement_period_name, settlementperiod.id as settlementperiod_id, adds.name as addonservice_name, adds.id as addonservice_id
+            FROM billservice_addonservicetarif as addonservicetarif
+            LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id=addonservicetarif.activation_count_period_id
+            LEFT JOIN billservice_addonservice AS adds ON adds.id=addonservicetarif.service_id
+            WHERE addonservicetarif.tarif_id=%d
+            """ % self.model.id)
+             
+            self.connection.commit()
+            if len(addon_services)>0:
+
+                self.checkBox_addon_services.setChecked(True)
+                nodes = addon_services
+                self.tableWidget_addonservices.setRowCount(len(nodes))
+                i=0
+                for node in nodes:
+                    
+                    self.addrow(self.tableWidget_addonservices, node.id,i, 0)
+                    self.addrow(self.tableWidget_addonservices, node.addonservice_name,i, 1, id=node.addonservice_id)
+                    self.addrow(self.tableWidget_addonservices, node.activation_count if node.activation_count!=0  else 'unlimited',i, 2, id = node.activation_count)
+                    self.addrow(self.tableWidget_addonservices, node.settlement_period_name,i, 3, id= node.settlementperiod_id)
+                    
+                    i+=1
+                    self.tableWidget_addonservices.resizeColumnsToContents()
+                    self.tableWidget_addonservices.resizeRowsToContents()
+            self.tableWidget_addonservices.setColumnHidden(0, True)
+                        
             
             #print "self.model.traffic_transmit_service_id=", self.model.traffic_transmit_service_id 
             #Prepaid Traffic
@@ -2021,7 +2164,7 @@ class TarifFrame(QtGui.QDialog):
             elif self.periodical_services_checkbox.checkState()==0:
                     self.connection.iddelete(model.id, "billservice_periodicalservice") 
                 
-    
+
             #Лимиты
             if self.limit_tableWidget.rowCount()>0 and self.limites_checkbox.checkState()==2:
                 for i in xrange(0, self.limit_tableWidget.rowCount()):
@@ -2071,6 +2214,39 @@ class TarifFrame(QtGui.QDialog):
                 d.tarif_id = model.id
                 self.connection.delete(d, "billservice_trafficlimit")
 
+            #Подключаемые услуги
+            if self.tableWidget_addonservices.rowCount()>0 and self.checkBox_addon_services.checkState()==2:
+                for i in xrange(0, self.tableWidget_addonservices.rowCount()):
+                    #print 2
+                    id = self.getIdFromtable(self.tableWidget_addonservices, i)
+                    
+                    if self.tableWidget_addonservices.item(i, 1)==None and (self.tableWidget_addonservices.item(i, 3)!=None and self.tableWidget_addonservices.item(i, 2) in [None, 0]):
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки подключаемых услуг")
+                        self.connection.rollback()
+                        return
+                    
+                    if id!=-1:
+                        addon_service = self.connection.get_model(id, "billservice_addonservicetarif")
+                    else:
+                        addon_service = Object()
+                    
+                    addon_service.tarif_id = model.id
+                    addon_service.service_id=unicode(self.tableWidget_addonservices.item(i, 1).id)
+                    if self.tableWidget_addonservices.item(i, 2):
+                        addon_service.activation_count = unicode(self.tableWidget_addonservices.item(i, 2).id)
+                    else:
+                        addon_service.activation_count = 0
+                    if self.tableWidget_addonservices.item(i, 3):
+                        addon_service.activation_count_period_id = unicode(self.tableWidget_addonservices.item(i, 3).id)
+                    else:
+                        addon_service.activation_count_period_id = None
+
+                    
+                    self.connection.save(addon_service, "billservice_addonservicetarif")    
+                      
+            elif self.periodical_services_checkbox.checkState()==0:
+                    self.connection.iddelete(model.id, "billservice_addonservicetarif") 
+                    
                                 
             #Доступ по трафику 
             if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
@@ -2733,14 +2909,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.tableWidget_suspended = QtGui.QTableWidget(self.tab_suspended)
         self.tableWidget_suspended.setObjectName("tableWidget_suspended")
-        self.tableWidget_suspended.setColumnCount(3)
-        self.tableWidget_suspended.setRowCount(0)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_suspended.setHorizontalHeaderItem(0, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_suspended.setHorizontalHeaderItem(1, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_suspended.setHorizontalHeaderItem(2, item)
         self.gridLayout_5.addWidget(self.tableWidget_suspended, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_suspended, "")
         self.tab_tarifs = QtGui.QWidget()
@@ -2749,16 +2917,18 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.tableWidget_accounttarif = QtGui.QTableWidget(self.tab_tarifs)
         self.tableWidget_accounttarif.setObjectName("tableWidget_accounttarif")
-        self.tableWidget_accounttarif.setColumnCount(3)
-        self.tableWidget_accounttarif.setRowCount(0)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_accounttarif.setHorizontalHeaderItem(0, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_accounttarif.setHorizontalHeaderItem(1, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget_accounttarif.setHorizontalHeaderItem(2, item)
         self.gridLayout_6.addWidget(self.tableWidget_accounttarif, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_tarifs, "")
+        self.tab_addonservice = QtGui.QWidget()
+        self.tab_addonservice.setObjectName("tab_addonservice")
+        self.gridLayout_7 = QtGui.QGridLayout(self.tab_addonservice)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.tableWidget_addonservice = QtGui.QTableWidget(self.tab_addonservice)
+        self.tableWidget_addonservice.setObjectName("tableWidget_addonservice")
+        self.gridLayout_7.addWidget(self.tableWidget_addonservice, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_addonservice, "")
+        
+        
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.toolBar = QtGui.QToolBar(self)
@@ -2801,6 +2971,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.actionSave, QtCore.SIGNAL("triggered()"),  self.accept)
         self.connect(self.checkBox_assign_ipn_ip_from_dhcp, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
         self.connect(self.tableWidget_accounttarif, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
+        self.connect(self.tableWidget_addonservice, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
         
         self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_action)
         self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_action)
@@ -2930,7 +3101,7 @@ class AccountWindow(QtGui.QMainWindow):
         #self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_downtime), QtGui.QApplication.translate("MainWindow", "Периоды простоя", None, QtGui.QApplication.UnicodeUTF8))
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_tarifs), QtGui.QApplication.translate("MainWindow", "Тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_addonservice), QtGui.QApplication.translate("MainWindow", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
         #self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_documents), QtGui.QApplication.translate("MainWindow", "Документы", None, QtGui.QApplication.UnicodeUTF8))
         #self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
@@ -2959,6 +3130,11 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_accounttarif = tableFormat(self.tableWidget_accounttarif)
         makeHeaders(columns, self.tableWidget_accounttarif)
 
+
+        columns=[u'#', u'Название услуги', u'Дата активации', u'Дата окончания', u'Активирована на сервере доступа', u"Временная блокировка"]
+        self.tableWidget_addonservice = tableFormat(self.tableWidget_addonservice)
+        makeHeaders(columns, self.tableWidget_addonservice)
+        
         #columns = ["#", u"С", u"По", u"Списано"]
         #makeHeaders(columns, self.tableWidget_downtime)
                 
@@ -3252,6 +3428,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.groupBox_urdata.setChecked(False)
             self.accountTarifRefresh()
             self.suspendedPeriodRefresh()
+            self.accountAddonServiceRefresh()
 
     def accept(self):
         """
@@ -3639,7 +3816,36 @@ class AccountWindow(QtGui.QMainWindow):
                     self.addrow(self.tableWidget_suspended, u"Не закончен", i, 2)
                 i+=1
             self.tableWidget_suspended.setColumnHidden(0, True)
-            
+      
+      
+    def accountAddonServiceRefresh(self):
+        if self.model:
+            sp = self.connection.sql("""
+            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id FROM billservice_accountaddonservice as accadd
+            JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
+            WHERE account_id=%s ORDER BY id DESC
+            """ % self.model.id)
+            self.connection.commit()
+            self.tableWidget_addonservice.clearContents()
+            self.tableWidget_addonservice.setRowCount(len(sp))
+            i=0
+            for a in sp:
+                self.addrow(self.tableWidget_addonservice, a.id, i, 0)
+                self.addrow(self.tableWidget_addonservice, a.addonservice_name, i, 1)
+                self.addrow(self.tableWidget_addonservice, a.activated.strftime(strftimeFormat), i, 2)
+                try:
+                    self.addrow(self.tableWidget_addonservice, a.deactivated.strftime(strftimeFormat), i, 3)
+                except:
+                    self.addrow(self.tableWidget_addonservice, u"Не закончен", i, 3)
+                self.addrow(self.tableWidget_addonservice, a.action_status, i, 4)
+                try:
+                    self.addrow(self.tableWidget_addonservice, a.temporary_blocked.strftime(strftimeFormat), i, 5)
+                except:
+                    pass
+                i+=1
+            self.tableWidget_addonservice.setColumnHidden(0, True)
+            self.tableWidget_addonservice.resizeColumnsToContents()
+                  
     def addrow(self, widget, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
@@ -3661,6 +3867,8 @@ class AccountWindow(QtGui.QMainWindow):
             self.add_accounttarif()
         elif self.tabWidget.currentIndex()==2:
             self.add_suspendedperiod()
+        elif self.tabWidget.currentIndex()==4:
+            self.addAddonService()
     
     def del_action(self):
         if self.tabWidget.currentIndex()==3:
@@ -3675,6 +3883,23 @@ class AccountWindow(QtGui.QMainWindow):
         if child.exec_()==1:
             self.accountTarifRefresh()
 
+    def addAddonService(self):
+        i=self.getSelectedId(self.tableWidget_addonservice)
+        child = AccountAddonServiceEdit(connection=self.connection, account_model = self.model)
+        if child.exec_()==1:
+            self.accountAddonServiceRefresh()
+        
+    def editAddonService(self):
+        i=self.getSelectedId(self.tableWidget_addonservice)
+        try:
+            model = self.connection.get_model(i, "billservice_accountaddonservice")
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+        child = AccountAddonServiceEdit(connection=self.connection, model=model, account_model = self.model)
+        if child.exec_()==1:
+            self.accountAddonServiceRefresh()
+        
     def del_accounttarif(self):
         i=self.getSelectedId(self.tableWidget_accounttarif)
         try:

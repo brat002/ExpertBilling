@@ -1570,3 +1570,178 @@ UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf
 
 
 
+CREATE TABLE billservice_addonservice
+(
+  id serial NOT NULL,
+  "name" character varying(255) NOT NULL,
+  allow_activation boolean NOT NULL,
+  service_type character varying(32) NOT NULL,
+  sp_type character varying(32) DEFAULT '',
+  sp_period_id integer NOT NULL,
+  timeperiod_id integer NOT NULL,
+  "cost" numeric(60,10) NOT NULL,
+  cancel_subscription boolean NOT NULL,
+  wyte_period_id integer NOT NULL,
+  wyte_cost numeric(60,10) NOT NULL,
+  "action" boolean NOT NULL,
+  nas_id integer DEFAULT NULL,
+  service_activation_action character varying(8000) NOT NULL,
+  service_deactivation_action character varying(8000) NOT NULL,
+  deactivate_service_for_blocked_account boolean NOT NULL,
+  change_speed boolean NOT NULL,
+  change_sped_type character varying(32) NOT NULL,
+  speed_units character varying(32) NOT NULL,
+  max_tx integer DEFAULT 0,
+  max_rx integer DEFAULT 0,
+  burst_tx integer DEFAULT 0,
+  burst_rx integer DEFAULT 0,
+  burst_treshold_tx integer DEFAULT 0,
+  burst_treshold_rx integer DEFAULT 0,
+  burst_time_tx integer DEFAULT 0,
+  burst_time_rx integer DEFAULT 0,
+  min_tx integer DEFAULT 0,
+  min_rx integer DEFAULT 0,
+  priority integer DEFAULT 8,
+  CONSTRAINT billservice_addonservice_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_addonservice_nas_id_fkey FOREIGN KEY (nas_id)
+      REFERENCES nas_nas (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservice_sp_period_id_fkey FOREIGN KEY (sp_period_id)
+      REFERENCES billservice_settlementperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservice_timeperiod_id_fkey FOREIGN KEY (timeperiod_id)
+      REFERENCES billservice_timeperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservice_wyte_period_id_fkey FOREIGN KEY (wyte_period_id)
+      REFERENCES billservice_settlementperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_addonservice OWNER TO ebs;
+
+-- Index: billservice_addonservice_nas_id
+
+-- DROP INDEX billservice_addonservice_nas_id;
+
+CREATE INDEX billservice_addonservice_nas_id
+  ON billservice_addonservice
+  USING btree
+  (nas_id);
+
+-- Index: billservice_addonservice_sp_period_id
+
+-- DROP INDEX billservice_addonservice_sp_period_id;
+
+CREATE INDEX billservice_addonservice_sp_period_id
+  ON billservice_addonservice
+  USING btree
+  (sp_period_id);
+
+-- Index: billservice_addonservice_timeperiod_id
+
+-- DROP INDEX billservice_addonservice_timeperiod_id;
+
+CREATE INDEX billservice_addonservice_timeperiod_id
+  ON billservice_addonservice
+  USING btree
+  (timeperiod_id);
+
+-- Index: billservice_addonservice_wyte_period_id
+
+-- DROP INDEX billservice_addonservice_wyte_period_id;
+
+CREATE INDEX billservice_addonservice_wyte_period_id
+  ON billservice_addonservice
+  USING btree
+  (wyte_period_id);
+
+
+CREATE TABLE billservice_addonservicetarif
+(
+  id serial NOT NULL,
+  tarif_id integer NOT NULL,
+  service_id integer NOT NULL,
+  activation_count integer DEFAULT 0,
+  activation_count_period_id integer DEFAULT NULL,
+  CONSTRAINT billservice_addonservicetarif_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_addonservicetarif_activation_acount_period_id_fkey FOREIGN KEY (activation_acount_period_id)
+      REFERENCES billservice_settlementperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetarif_service_id_fkey FOREIGN KEY (service_id)
+      REFERENCES billservice_addonservice (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetarif_tarif_id_fkey FOREIGN KEY (tarif_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_addonservicetarif OWNER TO ebs;
+
+-- Index: billservice_addonservicetarif_activation_acount_period_id
+
+-- DROP INDEX billservice_addonservicetarif_activation_acount_period_id;
+
+CREATE INDEX billservice_addonservicetarif_activation_acount_period_id
+  ON billservice_addonservicetarif
+  USING btree
+  (activation_acount_period_id);
+
+-- Index: billservice_addonservicetarif_service_id
+
+-- DROP INDEX billservice_addonservicetarif_service_id;
+
+CREATE INDEX billservice_addonservicetarif_service_id
+  ON billservice_addonservicetarif
+  USING btree
+  (service_id);
+
+-- Index: billservice_addonservicetarif_tarif_id
+
+-- DROP INDEX billservice_addonservicetarif_tarif_id;
+
+CREATE INDEX billservice_addonservicetarif_tarif_id
+  ON billservice_addonservicetarif
+  USING btree
+  (tarif_id);
+
+
+CREATE TABLE billservice_accountaddonservice
+(
+  id serial NOT NULL,
+  service_id integer NOT NULL,
+  account_id integer NOT NULL,
+  activated timestamp without time zone NOT NULL,
+  deactivated timestamp without time zone NOT NULL,
+  action_status boolean DEFAULT False,
+  speed_status boolean DEFAULT False,
+  CONSTRAINT billservice_accountaddonservice_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_accountaddonservice_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_accountaddonservice_service_id_fkey FOREIGN KEY (service_id)
+      REFERENCES billservice_addonservice (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_accountaddonservice OWNER TO ebs;
+
+-- Index: billservice_accountaddonservice_account_id
+
+-- DROP INDEX billservice_accountaddonservice_account_id;
+
+CREATE INDEX billservice_accountaddonservice_account_id
+  ON billservice_accountaddonservice
+  USING btree
+  (account_id);
+
+-- Index: billservice_accountaddonservice_service_id
+
+-- DROP INDEX billservice_accountaddonservice_service_id;
+
+CREATE INDEX billservice_accountaddonservice_service_id
+  ON billservice_accountaddonservice
+  USING btree
+  (service_id);
+
+
+

@@ -653,17 +653,20 @@ def flatten(x):
     return result
 
 def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
+    print limitspeed
     if speed_unit=='Kbps':
         limitspeed=limitspeed*1000
     elif speed_unit == 'Mbps':
         limitspeed=limitspeed*1000*1000
     elif speed_unit == '%':
-        limitspeed == limitspeed/100
-        
+        limitspeed = limitspeed/100.000
+    
+
+    
     if speed_change_type=='add':
         return speed+limitspeed
     elif speed_change_type == 'abs' and speed_unit == '%':
-        return limitspeed*speed
+        return int(limitspeed*speed)
     elif speed_change_type == 'abs':
         return limitspeed
          
