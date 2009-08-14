@@ -391,22 +391,15 @@ class NfUDPSenderThread(Thread):
         while True:     
             try:
                 if suicideCondition[self.tname]:
-                    #if errflag: dfile.close(); queues.fnameQueue.append(fname)
                     break
                 #get a bunch of packets
                 flst = None
-                #queues.dbLock.acquire()
-                #try:     fpacket = queues.databaseQueue.popleft()
-                #except:  pass
-                #finally: queues.dbLock.release()
+
                 with queues.dbLock:
                     if len(queues.databaseQueue) > 0:
                         flst = queues.databaseQueue.popleft()
                 if not flst: time.sleep(5); continue
                 
-                #flst = marshal.dumps(fpacket)
-                #send data
-                #nfsock.sendto(flst,vars.NFR_ADDR)
                 nfsock.sendto(struct.pack(NFR_PACKET_HEADER_FMT, *get_index_state()) + flst, vars.NFR_ADDR)
                 #recover reply
                 dtrc, addr = nfsock.recvfrom(128)
@@ -433,51 +426,22 @@ class NfUDPSenderThread(Thread):
                 elif dtrc[:4] == 'ERR!':
                     logger.lprint("Error packet flag detected!")
                     continue     
- 
-                #if the connection is OK but there were errors earlier
-                '''if errflag:
-                    logger.info('%s errflag detected - time %d', (self.getName(), time.time()))
-                    dfile.close()
-                    with queues.fnameLock: queues.fnameQueue.append(fname)
-                    #clear errflag
-                    errflag = 0'''
                     
             except Exception, ex:
                 logger.debug('%s exp: %s \n %s', (self.getName(), repr(ex), traceback.format_exc()))
                 #if no errors were detected earlier
                 if self.last_packet == flst and not isinstance(ex, socket.timeout):
                     self.err_count += 1
+                else:
+                    self.last_packet = flst
+                    self.err_count = 0
                 if flst and self.err_count < 5:
-                    self.err_count == 0
+                    #self.err_count == 0
                     with queues.dbLock:
                         queues.databaseQueue.appendleft(flst)
-                '''
-                if not errflag:
-                    try:
-                        errflag = 1                        
-                        #open a new file
-                        fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
-                        dfile = open(fname, 'ab')
-                        logger.info('%s: opened a new file: %s', (self.getName(), fname))
-                    except Exception, ex:
-                        logger.error("%s file creation exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                        continue
-                try:   
-                    #append data
-                    dfile.write(flst); dfile.write('!FLW')
-                    flnumpack += 1
-                    #if got enough packets - open a new file
-                    if flnumpack == vars.FILE_PACK:
-                        flnumpack = 0
-                        dfile.close()
-                        with queues.fnameLock: queues.fnameQueue.append(fname)
-                        fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
-                        dfile = open(fname, 'ab')
-                except Exception, ex:
-                        logger.error("%s file write exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                        continue
-                '''
-            #del flst
+                elif flst:
+                    logger.warning("%s: Packet dropped!", self.getName())
+
  
 def get_index_state():
     state = STATE_OK
@@ -503,10 +467,6 @@ class NfFileReadThread(Thread):
         self.allow_dump    = 0
     
     def run(self):
-        #addrport = vars.NFR_ADDR
-        #nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        #nfsock.settimeout(vars.sockTimeout)
-        #nfsock = get_socket()
         fname, dfile = None, None
         while True:
             try:
