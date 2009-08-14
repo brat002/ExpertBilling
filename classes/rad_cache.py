@@ -9,6 +9,11 @@ from rad_class.SpeedData import SpeedData
 from rad_class.SpeedlimitData import SpeedlimitData
 from rad_class.RadiusAttrsData import RadiusAttrsData
 from core_cache import TimePeriodAccessCache as PeriodCache
+#from common.AddonServiceData import AddonServiceData
+#from common.AddonServiceTarifData import AddonServiceTarifData
+#from common.AccountAddonServiceData import AccountAddonServiceData
+
+from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache')
@@ -83,3 +88,6 @@ class RadiusAttrsCache(SimpleDefDictCache):
     datatype = RadiusAttrsData
     sql = rad_sql['attrs']
     num = 3
+
+    
+    
