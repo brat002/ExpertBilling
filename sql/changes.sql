@@ -134,27 +134,20 @@ ALTER TABLE billservice_shedulelog
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
       
----07.08.2009 16:22
-ALTER TABLE billservice_speedlimit
-   ADD COLUMN unit character;
-ALTER TABLE billservice_speedlimit
-   ALTER COLUMN unit SET NOT NULL;
-ALTER TABLE billservice_speedlimit
-   ALTER COLUMN unit SET DEFAULT 'kbps';
-
-
-ALTER TABLE billservice_speedlimit
-   ADD COLUMN change_sped_type character varying(20);
-ALTER TABLE billservice_speedlimit
-   ALTER COLUMN change_sped_type SET DEFAULT 'add';
-
-ALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
-ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET STORAGE EXTENDED;
-ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET NOT NULL;
-ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET DEFAULT 'Kbps'::character varying;
-
-
-ALTER TABLE billservice_speedlimit ADD COLUMN change_speed_type character varying(20);
-ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET STORAGE EXTENDED;
-ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET DEFAULT 'add'::character varying;
-
+---16.08.2009 16:22
+ CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS 
+ $$ 
+ DECLARE counted_num_ bigint;              
+ allowed_num_ bigint := 0;              
+ BEGIN                  
+ allowed_num_ := return_allowed();                
+ SELECT count(*) INTO counted_num_ FROM billservice_account;                
+ IF counted_num_ + 1 > allowed_num_ THEN                    
+ RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
+ ELSE                    
+ RETURN NEW;                
+ END IF;                 
+ END; 
+ $$    
+ LANGUAGE plpgsql;
+ 
