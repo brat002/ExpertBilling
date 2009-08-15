@@ -7,7 +7,7 @@ def get_linux_key():
         id = filter(lambda x: os.path.realpath('/dev/disk/by-uuid/' + x) == fsys_name, os.listdir('/dev/disk/by-uuid'))
     except:
         print "error 66004"; sys.exit()
-        
+
     try:
         check_id = filter(lambda x: os.path.realpath('/dev/disk/by-id/' + x) == fsys_name, os.listdir('/dev/disk/by-id'))
     except:
@@ -15,17 +15,17 @@ def get_linux_key():
     if not check_id:
         print "error 11794"; sys.exit()
     else:
-        check_id = check_id[0].lower()        
+        check_id = check_id[0].lower()
     if not id:
         id = check_id
     else:
         id = id[0]
     if not id: print "error 11873"; sys.exit() #can't identify hardware
-    
+
     if (check_id.find('vmware') != -1) or (check_id.find('virtual') != -1):
         print "error 11669"; sys.exit()
-        
-    __3 = id    
+
+    __3 = id
     __6 = str.join('', __3)
     __6 = md5(__6).hexdigest()
     return __6.upper()[:-1] + 'L'
@@ -40,8 +40,8 @@ def get_bsd_key():
         id = id.split(': ')[1]
     except:
         print "error 77004"; sys.exit()
-        
-    __3 = id    
+
+    __3 = id
     __6 = str.join('', __3)
     __6 = md5(__6).hexdigest()
     return __6.upper()[:-1] + 'D'
@@ -53,5 +53,5 @@ if __name__ == '__main__':
         key = get_bsd_key()
     else:
         print "error 00497"; sys.exit()
-        
+
     print key

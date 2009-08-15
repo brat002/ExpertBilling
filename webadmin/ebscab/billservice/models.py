@@ -929,4 +929,6 @@ class RadiusAttrs(models.Model):
     vendor = models.IntegerField()
     attrid = models.IntegerField()
     value = models.CharField(max_length = 255)
-    
+
+12
+

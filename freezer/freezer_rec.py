@@ -223,11 +223,11 @@ def rec_exec(loaddq, lcount):
 		sys.exit(1)
 		
 	loadm = loaddq.popleft()
-	print loadm.__name__
+	
 	localcount = lcount
         try:	        
 	        exec getattr( loadm, '__code__') in loadm.__dict__
-	        print "loaded"
+	
 	except ImportError, ierr:
 	        loaddq.append(loadm)
 		localcount += 1
