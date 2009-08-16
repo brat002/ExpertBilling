@@ -272,8 +272,10 @@ class periodical_service_bill(Thread):
                                 susp_per_mlt = 0 if caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
+                                
+                                now = dateAT
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-                                period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, dateAT)                                
+                                period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, now)                                
                                 # Проверка на расчётный период без повторения
                                 if period_end < now: continue
                                 
