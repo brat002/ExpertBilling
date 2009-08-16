@@ -258,7 +258,8 @@ class periodical_service_bill(Thread):
                 #transactions per day              
                 n=(86400)/transaction_number
                 n_delta = datetime.timedelta(seconds=n)
-                now=datetime.datetime.now()
+                #now=datetime.datetime.now()
+                now = dateAT
                 #get a list of tarifs with periodical services & loop                
                 for row in caches.periodicaltarif_cache.data:
                     tariff_id, settlement_period_id = row
