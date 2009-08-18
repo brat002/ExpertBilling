@@ -481,9 +481,9 @@ class TimeAccessBill(Thread):
                 cur = self.connection.cursor()
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
                                  FROM radius_session AS rs
-                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
+                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT True FROM billservice_account where id=rs.account_id and status=1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id NOTNULL)
+                                 WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id is NOT NULL)
                                   AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -707,66 +707,43 @@ class addon_service(Thread):
                 for acc in caches.account_cache.data:
                     if 0: assert isinstance(acc, AccountData)
                     if not acc.account_status == 1: continue
-                    limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
-                    if not limits:
-                        if acc.disabled_by_limit:
-                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
-                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                        cur.connection.commit()
-                        continue
-                    block, speed_changed = (False, False)
-                    for limit in limits:
-                        if 0: assert isinstance(limit, TrafficLimitData)
-                        if not limit.group_id: continue
+                    #limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
+                    #print acc
+                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id)
+                    #print services
+                    #time.sleep(1)
+                    #continue
+                    nas = caches.nas_cache.by_id.get(acc.nas_id)
+                    for accservice in accservices:
+                        if 0: assert isinstance(service, AccountAddonServiceData)
                         
-                        if oldid == acc.account_id and (block or speed_changed):
-                            #Т.к. Лимиты отсортированы в порядке убывания размеров,то сначала проверяются все самые большие лимиты.
-                            """
-                            Если у аккаунта уже есть одно превышение лимита или изменена скорость
-                            то больше для него лимиты не проверяем
-                            """
-                            continue
+                        #if not service.group_id: continue
+                        if accservice.service_type=='onetime':
+                            service = caches.addonservice_cache.by_id.get(accservice.service_id)
+                            sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
+                            # Получаем delta
+                            sp_start, sp_end, delta = fMem.settlement_period_(accservice.activated, sp.length_in, sp.length, dateAT)
+                            tdelta = dateAT-accservice.activated
+                            
+                            if (tdelta.days*86400+tdelta.seconds)>=delta:
+                                service.deactivated = dateAT
+                            
+                        if accservice.deactivated is None and (accservice.action and not accservice.action_status):
+                            #выполняем service_activation_action
+                            sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
+                                          acc.vpn_ip_address, acc.ipn_ip_address, 
+                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                          nas.password, format_string=service.service_activation_action)
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, acc.account_id))
                         
-                        sp = caches.settlementperiod_cache.by_id.get(limit.settlement_period_id)
-                        if not sp: logger.info("NOT FOUND: SP: %s",limit.settlement_period_id); continue
-                        if 0: assert isinstance(sp, SettlementPeriodData)
+                        if accservice.deactivated and accservice.action_status==True:
+                            #выполняем service_deactivation_action
+                            sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
+                                          acc.vpn_ip_address, acc.ipn_ip_address, 
+                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                          nas.password, format_string=service.service_deactivation_action)
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, acc.account_id))
                         
-                        sp_defstart = acc.datetime if sp.autostart else sp.time_start
-                        sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
-                        if sp_start < acc.datetime: sp_start = acc.datetime
-                        #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
-                        if limit.mode:
-                            now = dateAT
-                            sp_start = now - datetime.timedelta(seconds=delta)
-                            sp_end   = now
-                        
-                        cur.connection.commit()        
-                        cur.execute("""SELECT sum(bytes) AS size FROM billservice_groupstat
-                                       WHERE group_id=%s AND account_id=%s AND datetime>%s AND datetime<%s
-                                    """ , (limit.group_id, acc.account_id, sp_start, sp_end,)) 
-                        sizes = cur.fetchone()
-                        cur.connection.commit()
-                        
-                        tsize = sizes[0] if sizes[0] else 0
-                        #limit_size = Decimal("%s" % limit.size)
-                        #100% trace through!
-                        if tsize > limit.size and limit.action==0:
-                            block = True
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))                            
-                        elif tsize > limit.size and limit.action == 1 and limit.speedlimit_id:
-                            #Меняем скорость
-                            cur.execute("SELECT speedlimit_ins_fn(%s, %s);", (limit.speedlimit_id, acc.account_id,))
-                            speed_changed, block = (True, False)
-                        elif tsize < limit.size:
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                        cur.connection.commit()
-                        
-                        oldid = acc.account_id
-                        if acc.disabled_by_limit != block:
-                            cur.execute("""UPDATE billservice_account SET disabled_by_limit=%s WHERE id=%s;
-                                        """ , (block, acc.account_id,))
-                            cur.connection.commit()
-                            logger.info("set user %s new limit %s state %s", (acc.account_id, limit.trafficlimit_id, block))
     
                 cur.connection.commit()
                 cur.close()                
@@ -956,21 +933,44 @@ class ipn_service(Thread):
         Thread.__init__(self)
         self.connection = get_connection(vars.db_dsn)
         
-    def create_speed(self, decRec, spRec, date_):
-        defaults = decRec
-        speeds = spRec
-        min_from_start=0
-        f_speed = None
-        for speed in speeds:
-            tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
-            if from_start<min_from_start or min_from_start == 0:
-                        min_from_start, f_speed = from_start, speed
-        if f_speed != None:
-            for i in range(6):
-                    speedi = f_speed[i]
-                    if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
-                        defaults[i] = speedi
-        return defaults
+    def create_speed(self, default, speeds,  correction, speed, date_):
+        result_params=speeds
+        if speed=='':
+            defaults = default
+            speeds   = result_params
+            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]
+            result=[]
+            min_delta, minimal_period = -1, []
+            now=datetime.datetime.now()
+            for speed in speeds:
+                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+
+                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
+                #print "res=",res
+                if res==True and (delta<min_delta or min_delta==-1):
+                    minimal_period=speed
+                    min_delta=delta
+            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
+
+            for k in xrange(0, 6):
+                s=minimal_period[k]
+                if s=='0/0' or s=='/' or s=='':
+                    res=defaults[k]
+                else:
+                    res=s
+                result.append(res)
+
+            #Проводим корректировку скорости в соответствии с лимитом
+            #print self.caches.speedlimit_cache
+            result = get_corrected_speed(result, correction)
+            #print "corrected", result
+            if result==[]: 
+                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                
+
+            result_params=create_speed_string(result)
+
+            
+        return result_params
 
     def run(self):
         global suicideCondition, cacheMaster, vars
@@ -1050,11 +1050,21 @@ class ipn_service(Thread):
                             #account_limit_speed = get_limit_speed(cur, acc.account_id)
                             #self.connection.commit()
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                            speed = self.create_speed(list(caches.defspeed_cache.by_id[acc.tarif_id]), caches.speed_cache.by_id[acc.tarif_id], dateAT)
-                            speed = get_corrected_speed(speed[:6], account_limit_speed)
+                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??
+                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id),account_limit_speed, acc.ipn_speed, dateAT)
+                            #speed = get_corrected_speed(speed[:6], account_limit_speed)
+                            print speed
                         else:
                             speed = parse_custom_speed_lst(acc.ipn_speed)
-    
+                        
+                        accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id)
+                        
+                        for accservice in accservices:
+                            
+                            if accservice.deactivated is None and (accservice.change_speed and not accservice.speed_status):
+                                service = caches.addonservice_cache.by_id.get(accservice.service_id)
+                                addonservicespeed=(service.change_speed_type, service.speed_units, service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority,)
+                        
                         newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                         
                         ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
@@ -1218,7 +1228,7 @@ def main():
     threads = []
     thrnames = [(check_vpn_access, 'Core VPN Thread'), (periodical_service_bill, 'Core Period. Bill Thread'), \
                 (TimeAccessBill, 'Core Time Access Thread'), (limit_checker, 'Core Limit Thread'),\
-                (settlement_period_service_dog, 'Core Settlement Per. Thread'), (ipn_service, 'Core IPN Thread')]
+                (settlement_period_service_dog, 'Core Settlement Per. Thread'), (ipn_service, 'Core IPN Thread'),(addon_service, 'Addon Service Thread'),]
 
 
     for thClass, thName in thrnames:
@@ -1239,7 +1249,7 @@ def main():
             print 'caches still not read, maybe you should check the log'
       
     print 'caches ready'
-    print repr(cacheMaster.cache)
+    #print repr(cacheMaster.cache)
     for th in threads:	
         suicideCondition[th.__class__.__name__] = False
         th.start()

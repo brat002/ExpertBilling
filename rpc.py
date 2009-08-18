@@ -721,7 +721,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #print model
         sql = model.save(table)
         #print sql
-        print sql
+        #print sql
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id
