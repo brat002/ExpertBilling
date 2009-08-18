@@ -18,9 +18,10 @@ from core_class.TimeAccessServiceData import TimeAccessServiceData
 from core_class.OneTimeServiceData import OneTimeServiceData
 from core_class.AccessParametersData import AccessParametersData
 from core_class.IpnSpeedData import IpnSpeedData
+from core_class.SuspendedPeriodData import SuspendedPeriodData
 
 class CoreCaches(CacheCollection):
-    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache')
+    __slots__ = ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -43,7 +44,9 @@ class CoreCaches(CacheCollection):
         self.onetimehistory_cache = OnetimeHistoryCache(date)
         self.suspended_cache = SuspendedCache(date)
         self.timeperiodaccess_cache = TimePeriodAccessCache(date, fMem)
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache]
+        self.speedlimit_cache = SpeedLimitCache()
+        self.underbilled_accounts_cache = UnderbilledAccountsCache(date, self.account_cache.by_acctf)
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache]
         
 class AccountCache(CacheItem):
     __slots__ = ('by_account', 'by_tarif', 'by_acctf')
@@ -54,13 +57,18 @@ class AccountCache(CacheItem):
     def __init__(self, date):
         super(AccountCache, self).__init__()
         self.vars = (date,)
-        
-    def reindex(self):
         self.by_account = {}
         #index on accounttarif.id
         self.by_acctf = {}
         #index on tariff_id
         self.by_tarif = defaultdict(list)
+        
+    def reindex(self):
+        self.by_account.clear()
+        #index on accounttarif.id
+        self.by_acctf.clear()
+        #index on tariff_id
+        self.by_tarif.clear()
         for acct in self.data:
             self.by_account[acct.account_id]  = acct
             if acct[4]:
@@ -185,18 +193,14 @@ class OnetimeHistoryCache(CacheItem):
         for otsh in self.data:
             self.by_acctf_ots_id[(otsh[1], otsh[2])] = otsh[0]
             
-class SuspendedCache(CacheItem):
-    __slots__ = ('by_account_id',)
-    datatype = dict
+class SuspendedCache(SimpleDefDictCache):
+    __slots__ = ()
+    datatype = SuspendedPeriodData
     sql = core_sql['suspended']
+    num = 1
     def __init__(self, date):
         super(SuspendedCache, self).__init__()
         self.vars = (date,)
-    def transformdata(self): pass
-    def reindex(self):
-        self.by_account_id = {}
-        for susp in self.data:
-            self.by_account_id[susp[1]] = susp[0]
             
 class TimePeriodAccessCache(CacheItem):
     __slots__ = ('in_period', 'fMem', 'date')
@@ -214,3 +218,46 @@ class TimePeriodAccessCache(CacheItem):
         for tpnap in self.data:
             self.in_period[tpnap[3]] = self.in_period[tpnap[3]] or self.fMem.in_period_(tpnap[0], tpnap[1], tpnap[2], self.date)[3]
                     
+class SpeedLimitCache(CacheItem):
+    __slots__ = ('by_account_id',)
+    datatype = dict
+    sql = core_sql['speed_lmt']
+    
+    def transformdata(self): pass
+    
+    def reindex(self):
+        self.by_account_id = {}
+        for speed_l in self.data:
+            self.by_account_id[speed_l[0]] = speed_l[1:]
+            
+class UnderbilledAccountsCache(CacheItem):
+    __slots__ = ('by_tarif', 'current_acctfs', 'underbilled_acctfs')
+    
+    datatype = AccountData
+    sql = core_sql['underbilled_per_accs']
+    
+    def __init__(self, date, current_acctfs):
+        super(UnderbilledAccountsCache, self).__init__()
+        self.vars = (date,)
+        self.current_acctfs = current_acctfs
+        self.underbilled_acctfs = []
+        
+    def reindex(self):
+        self.by_tarif = defaultdict(list)
+        if not self.data: return
+        account_id = self.data[0].account_id
+        next_datetime = None
+        for acct in self.data:
+            if  acct.account_id != account_id:
+                account_id = acct.account_id
+                next_datetime = None
+                
+            if next_datetime:
+                if not acct.periodical_billed:
+                    acct.end_date = next_datetime
+                    self.by_tarif[acct.tarif_id].append(acct)
+                    self.underbilled_acctfs.append(acct.acctf_id)
+                next_datetime = acct.datetime
+
+            if self.current_acctfs.has_key(acct.acctf_id):
+                next_datetime = acct.datetime

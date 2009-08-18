@@ -713,7 +713,7 @@ if __name__=='__main__':
     logger.lprint('Nf start')
     
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()

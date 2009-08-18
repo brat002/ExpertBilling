@@ -7,6 +7,7 @@ import hmac
 import zlib
 import signal
 import random
+import itertools
 import threading
 import dictionary
 import ConfigParser
@@ -51,6 +52,11 @@ from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+
+NAME = 'core'
+DB_NAME = 'db'
+SECONDS_PER_DAY = 86400
+ZERO_SUM = 0
 
 
 
@@ -266,15 +272,16 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
                         if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
-                        for acc in caches.account_cache.by_tarif.get(tariff_id,[]):
+                        for acc in itertools.chain(caches.account_cache.by_tarif.get(tariff_id,[]), \
+                                                   caches.underbilled_accounts_cache.by_tarif.get(tariff_id, [])):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or not acc.account_status: continue
-                                susp_per_mlt = 0 if caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
+                                susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
                                 
-                                now = dateAT
+                                now = dateAT if acc.current_acctf else acc.end_date
                                 #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
                                 period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, now)                                
                                 # Проверка на расчётный период без повторения
@@ -288,7 +295,7 @@ class periodical_service_bill(Thread):
                                     # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
                                     # а остальные помечаем неактивными и уведомляем администратора
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)                                    
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
                                     if last_checkout is None:
                                         last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
 
@@ -328,7 +335,7 @@ class periodical_service_bill(Thread):
                                     Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
                                     не платили-производим снятие.
                                     """
-                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
                                     # Здесь нужно проверить сколько раз прошёл расчётный период
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
@@ -370,46 +377,51 @@ class periodical_service_bill(Thread):
                                     Если завершился - считаем сколько уже их завершилось.    
                                     для остальных со статусом False
                                     """
-                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id)
+                                    last_checkout=get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
                                     cur.connection.commit()
-                                    first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
-                                        
+                                    
+                                    if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
+                                        continue
+                                    first_time = False
+                                    if last_checkout is None:
+                                        last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                                        first_time = True
                                     # Здесь нужно проверить сколько раз прошёл расчётный период    
                                     # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
                                     # Для последней проводки ставим статус Approved=True
                                     # для всех остальных False
                                     # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
 
-                                    summ = 0
-                                    if first_time: 
-                                        chk_date = now 
-                                        cash_summ = 0
-                                        #descr=u"Фиктивная проводка по периодической услуге со снятием суммы в конце периода"
-                                    elif period_start > last_checkout:
-                                        lc = period_start - last_checkout
-                                        le = period_end   - last_checkout
-                                        nums, ost = divmod(le.seconds + le.days*86400, delta)
-                                        summ = ps.cost
-                                        chk_date = last_checkout + s_delta
-                                        if nums > 1:                                                
-                                            cash_summ = ps.cost
-                                            while chk_date <= now:
-                                                if ps.created and ps.created>chk_date:
-                                                    cash_summ=0
+                                    second_ = datetime.timedelta(seconds=1)
+                                    cash_summ = 0
+                                    if first_time or period_start > last_checkout:
+                                        cash_summ = ps.cost
+                                        chk_date = last_checkout
+                                        while True:
+                                            period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                            s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                            chk_date = period_end_ast - second_
+                                            if first_time:
+                                                first_time = False
+                                                chk_date = last_checkout
+                                                ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                                            else:
+                                                if ps.created and ps.created >= chk_date:
+                                                    cash_summ = ZERO_SUM
                                                 cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
-                                                cur.connection.commit()
-                                                chk_date += s_delta                                          
-                                            
-                                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
-                                            #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                                            cash_summ = 0                                            
-                                        summ = cash_summ * susp_per_mlt
-                                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', summ, chk_date)
+                                            cur.connection.commit()
+                                            chk_date = period_end_ast + second_
+                                            if not chk_date < period_start: break
                                     cur.connection.commit()
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
+                if caches.underbilled_accounts_cache.underbilled_acctfs:
+                    print caches.underbilled_accounts_cache.underbilled_acctfs
+                    cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""" % \
+                                ' ,'.join((str(i) for i in caches.underbilled_accounts_cache.underbilled_acctfs)))
+                    cur.connection.commit()
                 cur.close()
                 logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:
@@ -1141,7 +1153,7 @@ if __name__ == "__main__":
     logger.lprint('core start')
     
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
         transaction_number = int(config.get("core", 'transaction_number'))
         vars.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get("db", "name"), config.get("db", "username"),

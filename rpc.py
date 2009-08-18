@@ -874,7 +874,7 @@ if __name__ == "__main__":
     logger.lprint('Ebs RPC start')
     
     try:
-        if check_running(getpid(vars.piddir, vars.name)): raise Exception ('%s already running, exiting' % vars.name)
+        if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         maxUsers = int(config.get("rpc", "max_users"))
     
