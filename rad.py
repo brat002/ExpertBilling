@@ -696,7 +696,7 @@ class HandleSAuth(HandleSBase):
 
             correction = self.caches.speedlimit_cache.by_id.get(account_id)
             #Проводим корректировку скорости в соответствии с лимитом
-            print self.caches.speedlimit_cache
+            #print self.caches.speedlimit_cache
             result = get_corrected_speed(result, correction)
             #print "corrected", result
             if result==[]: 

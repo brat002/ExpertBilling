@@ -328,3 +328,4 @@ class AccountAddonServiceCache(CacheItem):
             self.by_id[addon.id]  = addon
             self.by_account[addon.account_id].append(addon)
             self.by_service[addon.service_id].append(addon)
+            
