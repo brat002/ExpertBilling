@@ -113,10 +113,10 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         #print command_string
         if nas_type=='mikrotik3' and False:
             """
-            Р—Р°РєРѕРјРјРµРЅС‚РёСЂРѕРІР°РЅРѕ РґРѕ СЂР°Р·СЉСЏСЃРЅРµРЅРёСЏ СЃРёС‚СѓР°С†РёРё СЃ ROS API
+            Закомментировано до разъяснения ситуации с ROS API
             """
             """
-            Р”РѕР±Р°РІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ С‡С‚Рѕ РІРµСЂРЅСѓР» СЃРµСЂРІРµСЂ РґРѕСЃС‚СѓРїР°
+            Добавить проверку что вернул сервер доступа
             """
             log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
@@ -213,7 +213,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
 
 def cred(account_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
         """
-        Р¤СѓРЅРєС†РёСЏ РґР»СЏ РІРєР»СЋРµРЅРёСЏ/РІС‹РєР»СЋС‡РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»Р№ РЅР° СЃРµСЂРІРµСЂРµ РґРѕСЃС‚СѓРїР°
+        Функция для вклюения/выключения пользователй на сервере доступа
         """
         command_dict={'access_type':access_type,
                       'password':account_password, 'username': account_name, 'user_id':account_id,        
@@ -672,7 +672,7 @@ def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
          
 def correct_speed(speed, correction):
     """
-    Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅРЅСѓСЋ СЃРєРѕСЂРѕСЃС‚СЊ
+    Возвращает скорректированную скорость
     """
     res = []
     #max
