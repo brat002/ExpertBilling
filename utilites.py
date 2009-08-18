@@ -13,6 +13,7 @@ import socket
 import cPickle
 import logging
 import psycopg2
+import commands
 import traceback
 import datetime, calendar, time
 import os, os.path, sys, time, md5, binascii, socket, select
@@ -21,6 +22,9 @@ try:
 except Exception, ex:
     print "NO SIGNALS!"
     kill = lambda x,y: None
+STATE_OK = 0
+STATE_NULLIFIED = 1
+NFR_PACKET_HEADER_FMT = '!IId'
 
 ssh_exec = False
 #try: 
@@ -136,7 +140,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
     
     access_type = access_type.lower()
 
-    if (format_string!='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
+    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)
@@ -649,23 +653,40 @@ def flatten(x):
             result.append(int(el))
     return result
 
+def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
+    print limitspeed
+    if speed_unit=='Kbps':
+        limitspeed=limitspeed*1000
+    elif speed_unit == 'Mbps':
+        limitspeed=limitspeed*1000*1000
+    elif speed_unit == '%':
+        limitspeed = limitspeed/100.000
+    
+
+    
+    if speed_change_type=='add':
+        return speed+limitspeed
+    elif speed_change_type == 'abs' and speed_unit == '%':
+        return int(limitspeed*speed)
+    elif speed_change_type == 'abs':
+        return limitspeed
 def correct_speed(speed, correction):
     """
     Возвращает скорректированную скорость
     """
     res = []
     #max
-    res.append("%s/%s" % (speed[0]*correction[0]/100, speed[1]*correction[1]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[0], correction[0], correction[12], correction[13]), speedlimit_logic(speed[1], correction[1], correction[12], correction[13])))
     #burst in
-    res.append("%s/%s" % (speed[2]*correction[2]/100, speed[3]*correction[3]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[2], correction[2], correction[12], correction[13]), speedlimit_logic(speed[3], correction[3], correction[12], correction[13])))
     #burst treshold
-    res.append("%s/%s" % (speed[4]*correction[4]/100, speed[5]*correction[5]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[4], correction[4], correction[12], correction[13]), speedlimit_logic(speed[5], correction[5], correction[12], correction[13])))
     #burst time
     res.append("%s/%s" % (correction[6], correction[7]))
     #priority
     res.append("%s" % correction[8])
     #min
-    res.append("%s/%s" % (speed[9]*correction[9]/100, speed[10]*correction[10]/100))
+    res.append("%s/%s" % (speedlimit_logic(speed[9], correction[9], correction[12], correction[13]), speedlimit_logic(speed[10], correction[10], correction[12], correction[13])))
     return res
 
 
@@ -688,6 +709,10 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
         caches.getdata(cur)
         cur.connection.commit()
         caches.reindex()
+        if caches.post_caches:
+            caches.post_getdata(cur)
+            cur.connection.commit()
+            caches.post_reindex()
     except Exception, ex:
         if isinstance(ex, psycopg2.DatabaseError):
             log_error_('#30%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex)))
@@ -740,7 +765,14 @@ def getpid(piddir, procname):
     except:
         return None
     
-def check_running(pid):
+def check_running(pid, name):
+    by_pid = check_running_by_pid(pid)
+    if by_pid:
+        by_name = check_running_by_name(pid, name)
+        return by_name
+    return False
+
+def check_running_by_pid(pid):
     if not pid:
         return False
     else:
@@ -752,6 +784,12 @@ def check_running(pid):
             return False
         else:
             return True
+def check_running_by_name(pid, name):
+    by_name = commands.getstatusoutput('ps -p %d -o comm=' % pid)
+    if by_name[0] == 0:
+        return by_name[1] == name
+    else:
+        return False
         
 def get_connection(dsn, session = []):
     conn = psycopg2.connect(dsn)
@@ -764,3 +802,5 @@ def get_connection(dsn, session = []):
         conn.commit()
     return conn
         
+def hex_bytestring(bstr):
+    return reduce(lambda x,y: x+y, ("%x" % ord(cbyte) for cbyte in bstr), '')
