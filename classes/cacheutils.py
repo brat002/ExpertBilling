@@ -35,7 +35,8 @@ class CacheCollection(object):
             
     def post_reindex(self):
         for cache in self.post_caches:
-            cache.reindex()       
+            cache.reindex()     
+            
     def __repr__(self):
         return self.__class__.__name__ + '\n' + '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
 

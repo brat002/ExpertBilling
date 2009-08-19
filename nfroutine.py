@@ -126,9 +126,13 @@ class DepickerThread(Thread):
                     #except: pass
                     try: 
                         time.sleep(3)
+                        self.cur.connection.commit()
                         self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
                         try:
                             self.connection = get_connection(vars.db_dsn)
                             self.cur = self.connection.cursor()
@@ -248,9 +252,13 @@ class groupDequeThread(Thread):
                         
                     try: 
                         time.sleep(3)
+                        self.cur.connection.commit()
                         self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
                         try:
                             self.connection = get_connection(vars.db_dsn)
                             self.cur = self.connection.cursor()
@@ -349,9 +357,13 @@ class statDequeThread(Thread):
                         
                     try: 
                         time.sleep(3)
+                        self.cur.connection.commit()
                         self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
                         try:
                             self.connection = get_connection(vars.db_dsn)
                             self.cur = self.connection.cursor()
@@ -593,9 +605,13 @@ class NetFlowRoutine(Thread):
                 if ex.__class__ in vars.db_errors:
                     try: 
                         time.sleep(3)
+                        self.cur.connection.commit()
                         self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
                         try:
                             self.connection = get_connection(vars.db_dsn, vars.NFR_SESSION)
                             self.cur = self.connection.cursor()
