@@ -709,7 +709,7 @@ class addon_service(Thread):
                     if not acc.account_status == 1: continue
                     #limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
                     #print acc
-                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id)
+                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])
                     #print services
                     #time.sleep(1)
                     #continue
