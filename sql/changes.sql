@@ -96,19 +96,7 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
   
-CREATE TRIGGER a_set_deleted_trg
-  BEFORE DELETE
-  ON billservice_tariff
-  FOR EACH ROW
-  EXECUTE PROCEDURE set_deleted_trg_fn();
-
-
-CREATE TRIGGER a_set_deleted_trg
-  BEFORE DELETE
-  ON billservice_tariff
-  FOR EACH ROW
-  EXECUTE PROCEDURE set_deleted_trg_fn();
-  
+ 
     
 CREATE OR REPLACE FUNCTION set_deleted_trg_fn()
   RETURNS trigger AS
@@ -125,6 +113,18 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
 
+CREATE TRIGGER a_set_deleted_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE set_deleted_trg_fn();
+
+
+CREATE TRIGGER a_set_deleted_trg
+  BEFORE DELETE
+  ON billservice_tariff
+  FOR EACH ROW
+  EXECUTE PROCEDURE set_deleted_trg_fn();
 
 ALTER TABLE billservice_shedulelog DROP CONSTRAINT billservice_shedulelog_accounttarif_id_fkey;
 
@@ -134,8 +134,15 @@ ALTER TABLE billservice_shedulelog
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
       
+---11.08.2009
+ALTER TABLE billservice_accounttarif ADD COLUMN periodical_billed boolean DEFAULT FALSE;
+
+UPDATE billservice_accounttarif SET periodical_billed=FALSE;
+
+UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf1.id in (SELECT acctf2.id FROM billservice_accounttarif AS acctf2 WHERE acctf2.account_id=acctf1.account_id and acctf2.datetime < (SELECT datetime FROM billservice_accounttarif AS att WHERE att.account_id=acctf1.account_id and att.datetime<now()ORDER BY datetime DESC LIMIT 1));
+
 ---16.08.2009 16:22
- CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS 
+ CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger AS 
  $$ 
  DECLARE counted_num_ bigint;              
  allowed_num_ bigint := 0;              
