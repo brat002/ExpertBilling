@@ -145,9 +145,6 @@ class groupDequeThread(Thread):
         self.tname = self.__class__.__name__
 
     def run(self):
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
         global queues, flags, vars
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
@@ -252,8 +249,6 @@ class groupDequeThread(Thread):
                                     grec[0][gclass]['INPUT']  += class_io['INPUT']
                                     grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
                         
-                    #try: cur = connection.cursor()
-                    #except: time.sleep(20)
                     try: 
                         time.sleep(3)
                         self.cur.connection.commit()
@@ -279,9 +274,6 @@ class statDequeThread(Thread):
 
     def run(self):
         global queues, flags, vars
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        #cur = connection.cursor()
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
         
