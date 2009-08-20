@@ -478,7 +478,7 @@ class TimeAccessBill(Thread):
                 cur = self.connection.cursor()
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
                                  FROM radius_session AS rs
-                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT status FROM billservice_account where id=rs.account_id) 
+                                 JOIN billservice_accounttarif AS acc_t ON acc_t.account_id=rs.account_id AND (SELECT True FROM billservice_account where id=rs.account_id and status=1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
                                  WHERE (NOT rs.checkouted_by_time) and (rs.date_start IS NULL) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id NOTNULL)
                                  ORDER BY rs.interrim_update ASC;""")
