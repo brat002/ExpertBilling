@@ -67,6 +67,8 @@ class ClassCache(CacheItem):
     
     def reindex(self):
         self.classes = [[0, []]]
+        if not self.data:
+            return
         tc_id = self.data[0][1]
         for nnode in self.data:
             if nnode[1] != tc_id:

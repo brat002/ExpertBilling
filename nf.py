@@ -552,7 +552,8 @@ class ServiceThread(Thread):
                     counter += 1
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
-                    
+                    if not cacheMaster.cache.class_cache.data:
+                        logger.warning("NO CLASSES/CLASSNODES FOUND! THE DAEMON IS IDLE!", ())
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30110004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
