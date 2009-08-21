@@ -37,8 +37,9 @@ from chartprovider.bpcdplot import cdDrawer
 #from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running
+from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period_info
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
+
 try:    import mx.DateTime
 except: print 'cannot import mx'
 from classes.vars import RpcVars
@@ -748,7 +749,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         account = Object(r[0]) 
         
         #Получаем нужные параметры услуги
-        sql = "SELECT id, allow_activation FROM billservice_addonservice WHERE id = %s" % service_id
+        sql = "SELECT id, allow_activation,timeperiod_id FROM billservice_addonservice WHERE id = %s" % service_id
         cur.execute(sql)
         connection.commit()
         result=[]
@@ -761,10 +762,29 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 
         service = Object(r[0]) 
         
+        sql = "SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)" % timeperiod_id
+        cur.execute(sql)
+        connection.commit()
+
+        timeperiods = map(Object, cur.fetchall())
+        
+        res = False
+        for timeperiod in timeperiods:
+            if in_period_info(timeperiod.time_start, timeperiod.length, timeperiod.repeat_after):
+                res=True
+        
+        if res == False:
+            return "NOT_IN_PERIOD"
+
+        if service.change_speed:
+            cur.execute("SELECT id FROM billservice_accountaddonservice WHERE service_id IN (SELECT id FROM billservice_addonservice WHERE speed_change=True) and deactivated is not Null and account_id=%s" % account.id)
+            if cur.fetchall():
+                return "ALERADY_HAVE_SPEED_SERVICE"
+            
         # Проверка на возможность активации услуги при наличии блокировок
         if ignore_locks:
             if service.allow_activation==False and (account.ballance<=0 or account.balance_blocked==True or account.disabled_by_limit==True or account_status!=1):
-                return None
+                return "ACCOUNT_BLOCKED"
         
         
         #Получаем нужные параметры услуги из тарифного плана
@@ -824,6 +844,96 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             logger.error("Error add addonservice to account, %s", e)
             connection.rollback()
             return False
+        
+        
+    @authentconn
+    def del_addonservice(self, account_id, account_service_id, cur=None, connection=None):
+ 
+ 
+ 
+        #Получаем нужные параметры аккаунта
+        sql = "SELECT acc.*,get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarf WHERE account_id=acc.id ORDER BY datetime DESC LIMIT 1) as accounttarif_id   FROM billservice_account as acc WHERE id = %s" % account_id
+        cur.execute(sql)
+        connection.commit()
+        result=[]
+        r=cur.fetchall()
+        if len(r)>1:
+            raise Exception
+
+        if r==[]:
+            return None
+                
+        account = Object(r[0]) 
+               
+        #Получаем нужные параметры услуги абонента
+        sql = "SELECT id, service_id, account_id, activated, deactivated, action_status FROM billservice_accountaddonservice  WHERE id = %s" % account_service_id
+        cur.execute(sql)
+        connection.commit()
+        result=[]
+        r=cur.fetchall()
+        if len(r)>1:
+            raise Exception
+
+        if r==[]:
+            return None
+                
+        accountservice = Object(r[0]) 
+
+       
+        #Получаем нужные параметры услуги
+        sql = "SELECT id, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = (SELECT service_id FROM billservice_accountaddonservice WHERE id=%s)" % accountservice.service_id
+        cur.execute(sql)
+        connection.commit()
+        result=[]
+        r=cur.fetchall()
+        if len(r)>1:
+            raise Exception
+
+        if r==[]:
+            return None
+                
+        service = Object(r[0]) 
+        
+        
+        if service.cancel_subscription:
+
+            sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % service.wyte_period_id
+            cur.execute(sql)
+            connection.commit()
+            result=[]
+            r=cur.fetchall()
+            if len(r)>1:
+                raise Exception
+    
+            if r==[]:
+                return None
+                    
+            settlement_period = Object(r[0]) 
+            settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length, autostart = settlement_period.autostart)
+            now = datetime.datetime.now()
+            if ((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta:
+                model = Object()
+                model.bill=''
+                model.account_id = account_id
+                model.type_id = 'ADDONSERVICE_WYTE_PAY'
+                model.approved = True
+                model.tarif_id = account.tarif_id
+                model.summ = service.wyte_cost
+
+                model.created = "now()"
+                model.accounttarif_id = accounttarif_id
+                model.account_addonservice_id = account_service_id
+                sql = model.save("billservice_transaction")
+                cur.execute(sql)
+            #Отключаем услугу
+            
+            sql = "UPDATE billservice_accountaddonservice SET deactivated=now() WHERE id=%s" % accountservice.id
+            cur.execute(sql)
+            connection.commit()
+
+            return True
+        return False
+
         
     @authentconn
     def get_allowed_users(self, cur=None, connection=None):
@@ -966,7 +1076,8 @@ if __name__ == "__main__":
         
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(_1i(), pool.connection())               allowedUsers()        
+        allowedUsers = setAllowedUsers(_1i(), pool.connection())               
+        allowedUsers()        
         Pyro.util.Log = logger
         Pyro.core.Log = logger
         Pyro.protocol.Log = logger

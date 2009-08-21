@@ -103,6 +103,7 @@ INSTALLED_APPS = (
     'nas',
     'billservice',
     'lib',
+    'hotspot',
 )
 
 AUTHENTICATION_BACKENDS = (

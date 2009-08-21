@@ -23,7 +23,7 @@ except Exception, ex:
     print "NO SIGNALS!"
     kill = lambda x,y: None
 
-    
+
 STATE_OK = 0
 STATE_NULLIFIED = 1
 NFR_PACKET_HEADER_FMT = '!IId'
@@ -113,10 +113,10 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         #print command_string
         if nas_type=='mikrotik3' and False:
             """
-            Закомментировано до разъяснения ситуации с ROS API
+            пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ ROS API
             """
             """
-            Добавить проверку что вернул сервер доступа
+            пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             """
             log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
@@ -213,7 +213,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
 
 def cred(account_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
         """
-        Функция для вклюения/выключения пользователй на сервере доступа
+        пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         """
         command_dict={'access_type':access_type,
                       'password':account_password, 'username': account_name, 'user_id':account_id,        
@@ -672,7 +672,7 @@ def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
          
 def correct_speed(speed, correction):
     """
-    Возвращает скорректированную скорость
+    
     """
     res = []
     #max
@@ -695,7 +695,7 @@ def correct_speed(speed, correction):
 def get_corrected_speed(speed, correction):
     #12 - speed_units
     #13 - speed_change_type
-    if correction is not None:
+    if correction:
         return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
     else:
         return speed
