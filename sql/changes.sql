@@ -1544,7 +1544,9 @@ CREATE TABLE billservice_x8021(  id serial NOT NULL,  account_id integer,  nas_i
 --DROP INDEX billservice_x8021_account_id;
 CREATE INDEX billservice_x8021_account_id  ON billservice_x8021  USING btree  (account_id);
 -- Index: billservice_x8021_nas_id-- 
---DROP INDEX billservice_x8021_nas_id;CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
+--
+DROP INDEX billservice_x8021_nas_id;
+CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
 ALTER TABLE billservice_account   ADD COLUMN "comment" character varying;
 ALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
 
@@ -1740,19 +1742,36 @@ CREATE INDEX billservice_accountaddonservice_service_id
 
 
 
----16.08.2009 16:22^
- CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS.
-  $$.
-   DECLARE counted_num_ bigint;..............
-    allowed_num_ bigint := 0;..............
-     BEGIN..................
-      allowed_num_ := return_allowed();................
-       SELECT count(*) INTO counted_num_ FROM billservice_account;................
-        IF counted_num_ + 1 > allowed_num_ THEN....................
-         RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
-          ELSE....................
-           RETURN NEW;................
-            END IF;.................
-             END;.
-              $$....
-               LANGUAGE plpgsql;
+---16.08.2009 16:22
+CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS.
+$$.
+DECLARE counted_num_ bigint;
+  allowed_num_ bigint := 0;
+BEGIN
+  allowed_num_ := return_allowed();
+  SELECT count(*) INTO counted_num_ FROM billservice_account;
+  IF counted_num_ + 1 > allowed_num_ THEN
+  RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
+  ELSE
+  RETURN NEW;
+  END IF;
+  END;
+$$
+LANGUAGE plpgsql;
+
+CREATE UNIQUE INDEX billservice_transactiontype_ind
+   ON billservice_transactiontype (id);
+
+
+INSERT INTO billservice_transactiontype(id,
+             "name", internal_name)
+    VALUES (11,'Списание средств за преждевременное отключение услуги абонентом', 'ADDONSERVICE_WYTE_PAY');
+
+
+ALTER TABLE billservice_transaction ADD COLUMN account_addonservice_id integer;
+ALTER TABLE billservice_transaction ALTER COLUMN account_addonservice_id SET STORAGE PLAIN;
+
+CREATE INDEX billservice_transaction_account_addonservice_id_index
+  ON billservice_transaction
+  USING btree
+  (account_addonservice_id);

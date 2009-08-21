@@ -68,21 +68,45 @@ class check_vpn_access(Thread):
     def __init__ (self):          
         Thread.__init__(self)
 
-    def create_speed(self, decRec, spRec, date_):
-        defaults, speeds = decRec, spRec
-        min_from_start, f_speed = 0, None
-        for speed in speeds:
-            tnc, tkc, from_start,result = fMem.in_period_(speed[6], speed[7], speed[8], date_)
-            if result==True and (from_start<min_from_start or min_from_start==0):
-                min_from_start=from_start
-                f_speed=speed
-              
-        if f_speed != None:
-            for i in range(6):
-                speedi = f_speed[i]
-                if (speedi != '') and (speedi != 'None') and (speedi != 'Null'):
-                    defaults[i] = speedi
-        return defaults
+    def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):          
+        if speed=='':            
+            defaults = default            
+            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
+            result=[]            
+            min_delta, minimal_period = -1, []            
+            now=date_            
+            for speed in speeds:                
+                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
+                #print "res=",res                
+                if res==True and (delta<min_delta or min_delta==-1):                    
+                    minimal_period=speed                    
+                min_delta=delta            
+            
+            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]            
+            for k in xrange(0, 6):                
+                s=minimal_period[k]                
+                if s=='0/0' or s=='/' or s=='':                    
+                    res=defaults[k]                
+                else:                    
+                    res=s                
+                result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
+            #print self.caches.speedlimit_cache            
+            result = get_corrected_speed(result, correction)            
+            if addonservicespeed:                
+                result = get_corrected_speed(result, addonservicespeed)                        
+                #print "corrected", result            
+            if result==[]:                 
+                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
+            
+            return result
+        else:
+            try:
+                return parse_custom_speed_lst(acc.ipn_speed)
+            except Exception, ex:
+                logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
+                return ["0/0","0/0","0/0","0/0","8","0/0"] 
+            
 
 
     def check_access(self):
@@ -130,12 +154,18 @@ class check_vpn_access(Thread):
                                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
                                WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
                                UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
+#===============================================================================
+#                cur.execute("""UPDATE radius_activesession 
+#                               SET session_time=extract(epoch FROM date_end-date_start), date_end=now(), session_status='NACK' 
+#                               WHERE now()-date_start>=interval '00:15:00' and interrim_update IS Null and session_status='ACTIVE' AND date_end IS Null;
+#                               UPDATE radius_activesession SET session_status='ACK' WHERE date_end IS Null AND session_status='ACTIVE');""")
+#===============================================================================
                 cur.connection.commit()
                 #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
                 #cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.interrim_update <= %s;""", (dateAT,))
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
@@ -160,14 +190,17 @@ class check_vpn_access(Thread):
                         #print dir(caches.timeperiodaccess_cache)
                         if acstatus and caches.timeperiodaccess_cache.in_period[acc.tarif_id]:
                             #chech whether speed has changed
-                            if acc.vpn_speed == '':
-                                #account_limit_speed = get_limit_speed(cur, rs.account_id)
-                                #cur.connection.commit()
-                                account_limit_sleed = caches.speedlimit_cache.by_account_id.get(rs.account_id, [])
-                                speed = self.create_speed(list(caches.defspeed_cache.by_id.get(acc.tarif_id,[])), caches.speed_cache.by_id.get(acc.tarif_id, []), dateAT)
-                                speed = get_corrected_speed(speed[:6], account_limit_speed)
-                            else:
-                                speed=parse_custom_speed_lst(acc.vpn_speed)
+                            account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
+                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
+                            accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                                                 
+                            addonservicespeed=[]                            
+                            for accservice in accservices:                                 
+                                service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                                if not accservice.deactivated  and service.change_speed:                                                                        
+                                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, 0, service.speed_units, service.change_speed_type)                                    
+                                    break                            
+                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
+
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                             #print newspeed
@@ -707,19 +740,17 @@ class addon_service(Thread):
                 for acc in caches.account_cache.data:
                     if 0: assert isinstance(acc, AccountData)
                     if not acc.account_status == 1: continue
-                    #limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
-                    #print acc
-                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])
-                    #print services
-                    #time.sleep(1)
-                    #continue
-                    nas = caches.nas_cache.by_id.get(acc.nas_id)
-                    for accservice in accservices:
-                        if 0: assert isinstance(service, AccountAddonServiceData)
+
+                    #limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])                    #print acc                    
+                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                    #print services                    #time.sleep(1)                    #continue                                     
+                    for accservice in accservices:                        
+                        if 0: assert isinstance(service, AccountAddonServiceData)                        
+
                         
-                        #if not service.group_id: continue
-                        if accservice.service_type=='onetime':
-                            service = caches.addonservice_cache.by_id.get(accservice.service_id)
+                        service = caches.addonservice_cache.by_id.get(accservice.service_id)
+                        #Проверка на требование отключения услуги
+                        if service.service_type=='onetime':
+                            
                             sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
                             # Получаем delta
                             sp_start, sp_end, delta = fMem.settlement_period_(accservice.activated, sp.length_in, sp.length, dateAT)
@@ -727,8 +758,13 @@ class addon_service(Thread):
                             
                             if (tdelta.days*86400+tdelta.seconds)>=delta:
                                 service.deactivated = dateAT
-                            
-                        if accservice.deactivated is None and (accservice.action and not accservice.action_status):
+                        if service.action:
+                            if service.nas_id==0:
+                                nas = caches.nas_cache.by_id.get(acc.nas_id)
+                            else:
+                                nas = caches.nas_cache.by_id.get(service.nas_id)
+                                
+                        if accservice.deactivated is None and (service.action and not accservice.action_status):
                             #выполняем service_activation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
@@ -743,11 +779,11 @@ class addon_service(Thread):
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
                                           nas.password, format_string=service.service_deactivation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, acc.account_id))
-                        
+
     
                 cur.connection.commit()
                 cur.close()                
-                logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
+                logger.info("Addon Service: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -933,51 +969,56 @@ class ipn_service(Thread):
         Thread.__init__(self)
         self.connection = get_connection(vars.db_dsn)
         
-    def create_speed(self, default, speeds,  correction, speed, date_):
-        result_params=speeds
-        if speed=='':
-            defaults = default
-            speeds   = result_params
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]
-            result=[]
-            min_delta, minimal_period = -1, []
-            now=datetime.datetime.now()
-            for speed in speeds:
+    def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):        
+        result_params=speeds        
+        if speed=='':            
+            defaults = default            
+            speeds   =  result_params            
+            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
+            result=[]            
+            min_delta, minimal_period = -1, []            
+            now=date_            
+            for speed in speeds:                
                 #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
-                #print "res=",res
-                if res==True and (delta<min_delta or min_delta==-1):
-                    minimal_period=speed
-                    min_delta=delta
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
-
-            for k in xrange(0, 6):
-                s=minimal_period[k]
-                if s=='0/0' or s=='/' or s=='':
-                    res=defaults[k]
-                else:
-                    res=s
-                result.append(res)
-
-            #Проводим корректировку скорости в соответствии с лимитом
-            #print self.caches.speedlimit_cache
-            result = get_corrected_speed(result, correction)
-            #print "corrected", result
-            if result==[]: 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                
-
-            result_params=create_speed_string(result)
-
+                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
+                #print "res=",res                
+                if res==True and (delta<min_delta or min_delta==-1):                    
+                    minimal_period=speed                    
+                min_delta=delta            
             
-        return result_params
-
+            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]            
+            for k in xrange(0, 6):                
+                s=minimal_period[k]                
+                if s=='0/0' or s=='/' or s=='':                    
+                    res=defaults[k]                
+                else:                    
+                    res=s                
+                result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
+            #print self.caches.speedlimit_cache            
+            result = get_corrected_speed(result, correction)            
+            if addonservicespeed:                
+                result = get_corrected_speed(result, addonservicespeed)                        
+                #print "corrected", result            
+            if result==[]:                 
+                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
+            
+            return result
+        else:
+            try:
+                return parse_custom_speed_lst(acc.ipn_speed)
+            except Exception, ex:
+                logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
+                return ["0/0","0/0","0/0","0/0","8","0/0"]           
+           
+    
+      
     def run(self):
         global suicideCondition, cacheMaster, vars
         
         caches = None
         dateAT = datetime.datetime(2000, 1, 1)
-        while True:             
+        while True:     
+    
             try:
                 if suicideCondition[self.__class__.__name__]:
                     try: self.connection.close()
@@ -1046,31 +1087,30 @@ class ipn_service(Thread):
         
                         self.connection.commit()
     
-                        if not acc.ipn_speed:    
-                            #account_limit_speed = get_limit_speed(cur, acc.account_id)
-                            #self.connection.commit()
-                            account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??
-                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id),account_limit_speed, acc.ipn_speed, dateAT)
-                            #speed = get_corrected_speed(speed[:6], account_limit_speed)
-                            print speed
-                        else:
-                            speed = parse_custom_speed_lst(acc.ipn_speed)
-                        
-                        accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id)
-                        
-                        for accservice in accservices:
-                            
-                            if accservice.deactivated is None and (accservice.change_speed and not accservice.speed_status):
-                                service = caches.addonservice_cache.by_id.get(accservice.service_id)
-                                addonservicespeed=(service.change_speed_type, service.speed_units, service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority,)
+
+                        account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
+                        #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
+                        accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
+                        if acc.username=='user':                                
+                            pass                            
+                        addonservicespeed=[]                            
+                        for accservice in accservices:                                 
+                            service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                            if not accservice.deactivated  and service.change_speed:                                                                        
+                                addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, 0, service.speed_units, service.change_speed_type)                                    
+                                break                            
+                        speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
+                
+
+    
                         
                         newspeed = ''.join([unicode(spi) for spi in speed[:6]])
                         
                         ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
                         if 0: assert isinstance(ipnsp, IpnSpeedData)
-                        if newspeed != ipnsp.speed or not ipnsp.state or recreate_speed:
+                        if newspeed != ipnsp.speed or recreate_speed:
                             #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+
                             sended_speed = change_speed(vars.DICT,acc.account_id,acc.username,
                                                         acc.vpn_ip_address,acc.ipn_ip_address,
                                                         acc.ipn_mac_address,nas.ipaddress,

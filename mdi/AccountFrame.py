@@ -2547,6 +2547,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_urdata.setMinimumSize(QtCore.QSize(391, 0))
         self.groupBox_urdata.setMaximumSize(QtCore.QSize(16381, 16381))
         self.groupBox_urdata.setCheckable(True)
+        self.groupBox_urdata.setChecked(False)
         self.groupBox_urdata.setObjectName("groupBox_urdata")
         self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_urdata)
         self.gridLayout_7.setObjectName("gridLayout_7")
@@ -3732,7 +3733,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
             #Проверка статуса             
 
-            if not self.model.isnull("id"):
+            if not model.isnull("id"):
                 try:
                     speriod = self.connection.sql("SELECT * FROM billservice_suspendedperiod WHERE end_date is Null and account_id=%s ORDER BY start_date ASC LIMIT 1" % self.model.id)[0]
                 except:
@@ -3750,7 +3751,11 @@ class AccountWindow(QtGui.QMainWindow):
                     
                     self.connection.save(speriod, "billservice_suspendedperiod")
                     
-            x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % self.model.id)
+            if not model.isnull("id"):
+                x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % model.id)
+            else:
+                x8021 = None
+                
             if self.groupBox_8021_x.isChecked():
                 if x8021:
                     x8021_model = x8021[0]
