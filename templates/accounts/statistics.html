@@ -60,7 +60,7 @@
 					</tr>
 					{% for stream in net_flow_stream %}
 						<tr>
-							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.date_start|date:"d.m.Y  H:i" }}{{ stream.date_start|date:"d.m.Y  H:i"}}</td>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.date_start|date:"d.m.Y  H:i" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_addr }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_port }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_addr }}</td>

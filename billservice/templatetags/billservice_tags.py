@@ -19,7 +19,6 @@ def writen_of_time(session, user):
 
 @register.inclusion_tag('accounts/tags/writen_of_traffic.html')
 def writen_of_traffic(session, user):
-    """
     type = TransactionType.objects.get(internal_name='NETFLOW_BILL')
     if session.date_end:
         transactions = Transaction.objects.filter(account=user, created__gte=session.date_start, created__lte=session.date_end, type=type.internal_name)
