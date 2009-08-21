@@ -559,6 +559,11 @@ class Account(models.Model):
             transaction.summ = cost
             transaction.description = u'Снятие за первоначальную услугу'
             transaction.save()
+            
+    def is_authenticated(self):
+        """Always return True. This is a way to tell if the user has been authenticated in templates.
+        """
+        return True
 
 
 class Organization(models.Model):
@@ -935,7 +940,7 @@ class RadiusAttrs(models.Model):
     vendor = models.IntegerField()
     attrid = models.IntegerField()
     value = models.CharField(max_length = 255)
-        
+    
 class x8021(models.Model):    
     account = models.ForeignKey(Account, blank = True)    
     nas = models.ForeignKey(Nas)    
@@ -944,7 +949,7 @@ class x8021(models.Model):
     vlan_accept = models.IntegerField()    
     vlan_reject = models.IntegerField()    
     simpleauth = models.BooleanField()    
-        
+
 class AddonService(models.Model):    
     name = models.CharField(max_length=255)    
     allow_activation = models.BooleanField(default = False)    
@@ -981,7 +986,7 @@ class AddonServiceTarif(models.Model):
     service = models.ForeignKey(AddonService)    
     activation_acount = models.IntegerField()    
     activation_acount_period = models.ForeignKey(SettlementPeriod)    
-
+    
 class AccountAddonService(models.Model):    
     service = models.ForeignKey(AddonService)    
     account = models.ForeignKey(Account)    

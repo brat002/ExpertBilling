@@ -17,6 +17,7 @@ from lib.http import JsonResponse
 from django.conf import settings
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule 
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm
+from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
 from billservice.utility import is_login_user
 from nas.models import TrafficClass
@@ -71,8 +72,10 @@ def login(request):
                     return {
                             'error_message':error_message,
                             'form':form,
-                            }
+                            } 
                 if user.password == form.cleaned_data['password']:
+                    user = authenticate(username=user.username, password=form.cleaned_data['password'])
+                    log_in(request, user)
                     request.session['user'] = user
                     if not cache.get(user.id):
                         cache.set(user.id, {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
@@ -119,6 +122,7 @@ def login(request):
 def login_out(request):
     if request.session.has_key('user'):
         del request.session['user']
+    log_out(request)
     return is_login_user(request)
 
 
@@ -140,7 +144,7 @@ def index(request):
             cache.delete(user.id)
             cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
-    tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date)
+    tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
     if len(tariffs) == 0 or len(tariffs) == 1:
         tariff_flag = False
     else:
@@ -266,6 +270,7 @@ def change_password(request):
 @ajax_request
 @render_to('accounts/change_tariff.html')
 def change_tariff_form(request):
+    from datetime import datetime, date 
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     user = request.session['user']
@@ -273,13 +278,16 @@ def change_tariff_form(request):
     cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
     account_tariff_id = cursor.fetchone()[0]
     account_tariff = AccountTarif.objects.get(id=account_tariff_id)
-    from datetime import datetime, date 
+    time = (datetime.now() - account_tariff.datetime).seconds
+    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance, oldtptime__lte=time)
+    #form = ChangeTariffForm(user, account_tariff)
+    form = ChangeTariffForm(user, account_tariff)
     return {
-            'form':ChangeTariffForm(),
-            'tariff_objects':TPChangeRule.objects.all(),
+            'form': form,
+            'tariff_objects':tariffs,
             'user':request.session['user'],
             'tariff':account_tariff,
-            'time':(datetime.now() - account_tariff.datetime).seconds,
+            'time':time,
             }
 
 
@@ -290,9 +298,19 @@ def change_tariff(request):
     if request.method == 'POST':
         new_tariff_id = request.POST.get('id_tariff_id', None)
         if new_tariff_id != None:
-            print request
-            new_tariff = Tariff.objects.get(id=new_tariff_id)
+            user = request.session['user']
+            cursor = connection.cursor()
+            cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
+            account_tariff_id = cursor.fetchone()[0]
+            account_tariff = AccountTarif.objects.get(id=account_tariff_id)
             from datetime import datetime
+            time = (datetime.now() - account_tariff.datetime).seconds
+            tariffs_id =[x.to_tariff.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance, oldtptime__lte=time)]
+            new_tariff = Tariff.objects.get(id=new_tariff_id)
+            if not new_tariff.id in tariffs_id:
+                return {
+                        'error_message':u'Вы не можите перейти на выбранный тариф',
+                        }
             tariff = AccountTarif.objects.create(
                                                     account = request.session['user'],
                                                     tarif = new_tariff,

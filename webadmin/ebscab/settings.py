@@ -17,6 +17,10 @@ DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
 DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = '5432'             # Set to empty string for default. Not used with sqlite3.
 
+
+
+
+
 # Local time zone for this installation. Choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 # although not all variations may be possible on all operating systems.
@@ -43,7 +47,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/opt/ebs/web/ebscab/media'
+MEDIA_ROOT = os.path.abspath('./media')
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
@@ -87,7 +91,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '/opt/ebs/web/ebscab/templates',
+    os.path.abspath('./templates'),
 )
 
 INSTALLED_APPS = (
@@ -101,6 +105,10 @@ INSTALLED_APPS = (
     'lib',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'billservice.backend.LoginUserBackend',
+)
+
 RPC_ADDRESS = '127.0.0.1'
 RPC_USER = 'webadmin'
 RPC_PASSWORD = 'RPCwebadmin'
@@ -110,3 +118,7 @@ CACHE_BACKEND = 'locmem:///'
 BLOCKED_TIME = 30*60
 ACTIVATION_COUNT=5
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+LOGIN_REDIRECT_URL = '/login/'

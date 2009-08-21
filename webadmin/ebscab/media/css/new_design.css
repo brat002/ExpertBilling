@@ -328,10 +328,11 @@ table.statistic_table {
 .wrapper {
 	min-height: 635px;
 	height: auto !important;
-	height: 635px;
+	height: 535px;
 }
 
 .footer_bg {
+	margin-top:30px;
 	background:url(../img/design/bg_footer.gif) repeat-x;
 	height:38px;
 	padding-top:11px;
