@@ -32,4 +32,6 @@ urlpatterns += patterns('billservice.views',
      (r'^client/$', 'client'),
      (r'^traffic/limit/$', 'traffic_limit'),
      (r'^statistics/$', 'statistics'),
+     (r'^services/$', 'addon_service'),
+     (r'^service/(?P<action>set|del)/(?P<service_id>\d+)/$', 'service_action'),
 )
