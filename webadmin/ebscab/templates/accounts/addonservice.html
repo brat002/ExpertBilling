@@ -1,0 +1,75 @@
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
+
+{% block content %}
+
+{% if service_message %}
+	<h1>{{ service_message }}</h1>
+{% endif %}
+
+{% if services or user_services %}
+	<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+		{% if services %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-left">УСЛУГИ</div>
+			</th>
+		</tr>
+		<tr>
+			<td class="">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Название</th>
+						<th>Стоимость</th>
+						<th>Плата за досрочное отключение</th>
+						<th>Подключить/Отключить</th>
+					</tr>
+					{% for service in services %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{{ service.service|sevice_activation:user|safe  }}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+		
+		
+		{% if services %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-left">ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ</div>
+			</th>
+		</tr>
+		<tr>
+			<td class="">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Название</th>
+						<th>Cтоимость</th>
+						<th>Когда подключена</th>
+						<th>Когда отключена</th>
+						<th>Отключить</th>
+					</tr>
+					{% for user_service in user_services %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.name }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.cost }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.activated|date:"d.m.Y H:i"  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.deactivated|date:"d.m.Y H:i"  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{{ user_service.service|sevice_activation:user|safe  }}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</td>
+		</tr>
+		{% endif %}
+		
+	</table>
+{% else %}
+	<h2 align="center">На данный момент информации нет</h2>
+{% endif %}
+{% endblock %}

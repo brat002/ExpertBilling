@@ -2,7 +2,7 @@
 from django import template
 import datetime
 from django.db import connection
-from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService
 register = template.Library()
 
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
@@ -30,9 +30,12 @@ def writen_of_traffic(session, user):
     return {'sum':sum}
 
 @register.inclusion_tag('accounts/tags/traffic_format.html')    
-def traffic_format(value):
+def traffic_format(value, second_value=None):
     try:
-        a=float(value)
+        if second_value != None:
+            a=float(value) + float(second_value)
+        else:
+            a=float(value)
         #res = a/1024
         if a>1024 and a<(1024*1024):
             return {
@@ -134,6 +137,12 @@ def coll_bg(value):
         row_class = u'with_bg'
     return row_class
 
+@register.filter(name='sevice_activation')
+def sevice_activation(value, user=None):
+    if AccountAddonService.objects.filter(service=value, account=user).count() == 0:
+        return '<a href="/service/set/%s/">Подключить</a>' %value.id
+    else:
+        return '<a href="/service/del/%s/">Отключить</a>' %value.id
     
     
     

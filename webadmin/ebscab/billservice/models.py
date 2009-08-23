@@ -967,7 +967,7 @@ class AddonService(models.Model):
     service_deactivation_action = models.CharField(max_length = 8000)    
     deactivate_service_for_blocked_account = models.BooleanField()    
     change_speed = models.BooleanField()    
-    change_sped_type = models.CharField(max_length=32, choices=(("Add","add",), ("abs","abs",),))    
+    change_speed_type = models.CharField(max_length=32, choices=(("Add","add",), ("abs","abs",),))    
     speed_units = models.CharField(max_length = 32,choices=(("Kbps","Kbps",), ("Mbps","Mbps",),("%", "%",)))    
     max_tx = models.IntegerField()    
     max_rx = models.IntegerField()    
@@ -984,8 +984,8 @@ class AddonService(models.Model):
 class AddonServiceTarif(models.Model):    
     tarif = models.ForeignKey(Tariff)    
     service = models.ForeignKey(AddonService)    
-    activation_acount = models.IntegerField()    
-    activation_acount_period = models.ForeignKey(SettlementPeriod)    
+    activation_count = models.IntegerField()    
+    activation_count_period = models.ForeignKey(SettlementPeriod)    
     
 class AccountAddonService(models.Model):    
     service = models.ForeignKey(AddonService)    
