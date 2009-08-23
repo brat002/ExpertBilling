@@ -15,7 +15,7 @@ from django import template
 from lib.http import JsonResponse
 
 from django.conf import settings
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule 
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService 
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
@@ -506,6 +506,70 @@ def statistics(request):
             'active_session':active_session,
             }
 
+
+@render_to('accounts/addonservice.html')
+def addon_service(request):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    user = request.session['user']
+    
+    cursor = connection.cursor()
+    cursor.execute("""select tarif_id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
+    account_tariff_id = cursor.fetchone()[0]
+    
+    services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id)
+    user_services = AccountAddonService.objects.filter(account=user)
+    return_dict = {
+                   'services':services,
+                   'user_services':user_services,
+                   'user':user,
+                   }
+    if request.session.has_key('service_message'):
+        return_dict['service_message'] = request.session['service_message'] 
+    return return_dict 
+    
+def service_action(request, action, service_id):
+    if not request.session.has_key('user'):
+        return HttpResponseRedirect('/')
+    user = request.session['user']
+    
+    try:
+        connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
+        import hashlib
+        md1 = hashlib.md5(settings.RPC_PASSWORD)
+        md1.hexdigest()
+       
+        password = str(md1.hexdigest())
+        connection_server._setNewConnectionValidator(antiMungeValidator())
+        print connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
+        connection_server.test()
+    except Exception, e:
+        if isinstance(e, Pyro.errors.ConnectionDeniedError):
+            error_message = u"Отказано в авторизации."
+        else:
+            error_message  = u"Невозможно подключиться к серверу."
+    if action == u'set':
+        if AccountAddonService.objects.filter(account=user, service__change_speed=True).count() > 0:
+            request.session['service_message'] = u'Вы не можете подключить данную услугу'
+            return HttpResponseRedirect('/services/')
+        if connection_server.add_addonservice(user.id, service_id) == True:
+            request.session['service_message'] = u'Услуга подключена'
+            return HttpResponseRedirect('/services/')
+        else:
+            request.session['service_message'] = u'Услугу не возможно подключить'
+            return HttpResponseRedirect('/services/')
+    elif action == u'del':
+        if connection_server.del_addonservice(user.id, service_id) == True:
+            request.session['service_message'] = u'Услуга отключена'
+            return HttpResponseRedirect('/services/')
+        else:
+            request.session['service_message'] = u'Услугу не возможно отключить'
+            return HttpResponseRedirect('/services/')
+    else:
+        request.session['service_message'] = u'Не возможно совершить действие'
+        return HttpResponseRedirect('/services/')
+          
+    
 
 
 

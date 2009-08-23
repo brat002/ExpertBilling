@@ -77,7 +77,7 @@
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white"><a href="/session/info/">Показать всю статистику</a></div>
-				<div class="f-left">СТАТИСТИКА VPN-ПОДКЛЮЧЕНИЙ</div>
+				<div class="f-left">СТАТИСТИКА ПОДКЛЮЧЕНИЙ</div>
 			</th>
 		</tr>
 		<tr>
@@ -87,7 +87,7 @@
 						<th>Начало</th>
 						<th>Окончание</th>
 						<th>IP-адрес</th>
-						<th>Передано / Принято</th>
+						<th>Передано / Принято / Всего</th>
 						<th>Время</th>
 					</tr>
 					{% for session in active_session %}
@@ -95,7 +95,7 @@
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y H:i" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y H:i" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% traffic_format session.bytes_out %} / {% traffic_format session.bytes_in %}{% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% traffic_format session.bytes_out %} / {% traffic_format session.bytes_in %} / {% traffic_format session.bytes_in session.bytes_out %}{% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
 						</tr>
 					{% endfor %}
