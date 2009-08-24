@@ -43,8 +43,8 @@ def login(request):
                    
                     password = str(md1.hexdigest())
                     connection_server._setNewConnectionValidator(antiMungeValidator())
-                    print connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-                    connection_server.test()
+                    connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
+                    #connection_server.test()
                 except Exception, e:
                     if isinstance(e, Pyro.errors.ConnectionDeniedError):
                         error_message = u"Отказано в авторизации."
@@ -541,8 +541,8 @@ def service_action(request, action, service_id):
        
         password = str(md1.hexdigest())
         connection_server._setNewConnectionValidator(antiMungeValidator())
-        print connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-        connection_server.test()
+        connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
+        #connection_server.test()
     except Exception, e:
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
             error_message = u"Отказано в авторизации."
