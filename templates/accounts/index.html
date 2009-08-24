@@ -63,7 +63,7 @@
 		</td>
 		<td class="right_border main_table_left_border diagram_bg" align="center" valign="center">
 			<div>
-  				<img src="/client/">
+  				<img src="/client/" id="client">
   			</div>
 		</td>
 	</tr>
@@ -171,6 +171,11 @@
 {% else %}
     <h2 align="center">Вход не удался</h2>
 {% endif %}
+
+
+<script type="text/javascript">
+	jQuery('#client').attr('src', jQuery('#client').attr('src') + '?'+ Math.random());
+</script>
 
 {% endblock %}
 
