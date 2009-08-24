@@ -57,6 +57,7 @@ NAME = 'core'
 DB_NAME = 'db'
 SECONDS_PER_DAY = 86400
 ZERO_SUM = 0
+SECOND = datetime.timedelta(seconds=1)
 
 def comparator(d, s):
     for key in s:
@@ -270,7 +271,149 @@ class periodical_service_bill(Thread):
     """
     def __init__ (self):
         Thread.__init__(self)
+        self.PER_DAY = 1
+        self.PER_DAY_DELTA = 1
+        self.NOW = datetime.datetime(2000, 1, 1)
 
+    #ps_type - 1 for periodocal service, 2 - for periodical addonservice 
+    def iterate_ps(self, cur, caches, acc, ps, dateAT, ps_type):
+        susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
+        account_ballance = (acc.ballance or 0) + (acc.credit or 0)
+        time_start_ps = acc.datetime if ps.autostart else ps.time_start
+        
+        self.NOW = dateAT if acc.current_acctf else acc.end_date
+        #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
+        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW)                                
+        # Проверка на расчётный период без повторения
+        if period_end < self.NOW: return
+        
+        s_delta = datetime.timedelta(seconds=delta)
+        if ps.cash_method == "GRADUAL":
+            """
+            # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
+            # Если закончился один-снимаем всю сумму, указанную в периодической услуге
+            # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
+            # а остальные помечаем неактивными и уведомляем администратора
+            """
+            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
+            if last_checkout is None:
+                last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+
+            if (self.NOW - last_checkout).seconds + (self.NOW - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
+                #Проверяем наступил ли новый период
+                if self.NOW - self.PER_DAY_DELTA <= period_start:
+                    # Если начался новый период
+                    # Находим когда начался прошльый период
+                    # Смотрим сколько денег должны были снять за прошлый период и производим корректировку
+                    #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
+                    pass
+                
+                # Смотрим сколько раз уже должны были снять деньги
+                lc = self.NOW - last_checkout
+                last_checkout_seconds = lc.seconds + lc.days*SECONDS_PER_DAY
+                nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
+                chk_date = last_checkout + self.PER_DAY_DELTA
+                if nums>1 or not acc.current_acctf:
+                    #Смотрим на какую сумму должны были снять денег и снимаем её
+                    while chk_date <= self.NOW:    
+                        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
+                        cash_summ = (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        cur.connection.commit()
+                        chk_date += self.PER_DAY_DELTA
+                else:
+                    #make an approved transaction
+                    cash_summ = susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
+                    if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                        #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                        cash_summ = 0
+                    ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+            cur.connection.commit()
+            
+        if ps.cash_method == "AT_START":
+            """
+            Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
+            не платили-производим снятие.
+            """
+            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            # Здесь нужно проверить сколько раз прошёл расчётный период
+            # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
+            # Для последней проводки ставим статус Approved=True
+            # для всех сотальных False
+            # Если последняя проводка меньше или равно дате начала периода-делаем снятие
+            
+            summ = 0
+            
+            if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
+                return
+            first_time = False
+            if last_checkout is None:
+                last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                first_time = True
+                
+            #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
+            if first_time or last_checkout < period_start:
+                cash_summ = ps.cost
+                """
+                Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
+                пока денег на счету не было
+                """
+                chk_date = last_checkout
+                #Смотрим на какую сумму должны были снять денег и снимаем её                                            
+                while True:
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                    chk_date = period_start_ast
+                    if ps.created and ps.created >= chk_date:
+                        cash_summ = 0
+                    cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                    cur.connection.commit()
+                    chk_date += s_delta_ast
+                    if not chk_date <= period_start: break
+            cur.connection.commit()
+        if ps.cash_method=="AT_END":
+            """
+            Смотрим завершился ли хотя бы один расчётный период.
+            Если завершился - считаем сколько уже их завершилось.    
+            для остальных со статусом False
+            """
+            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            cur.connection.commit()
+            #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+            if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
+                return
+            first_time = False
+            if last_checkout is None:
+                last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                first_time = True
+            # Здесь нужно проверить сколько раз прошёл расчётный период    
+            # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
+            # Для последней проводки ставим статус Approved=True
+            # для всех остальных False
+            # Если дата начала периода больше последнего снятия или снятий не было и наступил новый период - делаем проводки
+            
+            #second_ = datetime.timedelta(seconds=1)
+            cash_summ = 0
+            if first_time or period_start > last_checkout:
+                cash_summ = ps.cost
+                chk_date = last_checkout
+                while True:
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                    chk_date = period_end_ast - SECOND
+                    if first_time:
+                        first_time = False
+                        chk_date = last_checkout
+                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                    else:
+                        if ps.created and ps.created >= chk_date:
+                            cash_summ = ZERO_SUM
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                    cur.connection.commit()
+                    chk_date = period_end_ast + SECOND
+                    if not chk_date < period_start: break
+            cur.connection.commit()
+    
     def run(self):
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
         self.connection = get_connection(vars.db_dsn)
@@ -297,10 +440,13 @@ class periodical_service_bill(Thread):
 
                 cur = self.connection.cursor()
                 #transactions per day              
-                n = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
-                n_delta = datetime.timedelta(seconds=n)
-                #now = datetime.datetime.now()
-                now = dateAT
+                #n = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
+                #n_delta = datetime.timedelta(seconds=n)
+                #now = dateAT
+                
+                self.PER_DAY = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
+                self.PER_DAY_DELTA = datetime.timedelta(seconds=self.PER_DAY)
+                self.NOW = dateAT
                 #get a list of tarifs with periodical services & loop                
                 for row in caches.periodicaltarif_cache.data:
                     tariff_id, settlement_period_id = row
@@ -312,6 +458,8 @@ class periodical_service_bill(Thread):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or acc.account_status == 2: continue
+                                self.iterate_ps(cur, caches, acc, ps, dateAT, 1)
+                                '''
                                 susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                                 time_start_ps = acc.datetime if ps.autostart else ps.time_start
@@ -448,7 +596,7 @@ class periodical_service_bill(Thread):
                                             chk_date = period_end_ast + second_
                                             if not chk_date < period_start: break
                                             
-                                    cur.connection.commit()
+                                    cur.connection.commit()'''
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
