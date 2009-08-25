@@ -223,6 +223,21 @@ def vpn_session(request):
             'user': user,
             }
     
+
+@render_to('accounts/services_info.html')    
+def services_info(request):
+    if not request.session.has_key('user'):
+        return is_login_user(request)
+    from lib.paginator import SimplePaginator
+    user = request.session['user']  
+    paginator = SimplePaginator(request, AccountAddonService.objects.filter(account=user).order_by('-activated'), 50, 'page')
+    return {
+            'services':paginator.get_page_items(),
+            'paginator': paginator,
+            'user': user,
+            }
+    
+    
 @render_to('accounts/change_password.html')
 def card_form(request):
     if not request.session.has_key('user'):
@@ -509,13 +524,15 @@ def statistics(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     user = request.session['user']
-    net_flow_streams = NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start')[:8]
-    transaction = Transaction.objects.filter(account=request.session['user']).order_by('-created')[:8]
-    active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]  
+    net_flow_streams = NetFlowStream.objects.filter(account=user).order_by('-date_start')[:8]
+    transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
+    active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
+    services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]  
     return {
             'net_flow_stream':net_flow_streams,
             'transactions':transaction,
             'active_session':active_session,
+            'services':services,
             }
 
 
