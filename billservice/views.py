@@ -530,7 +530,7 @@ def addon_service(request):
     account_tariff_id = cursor.fetchone()[0]
     
     services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id)
-    user_services = AccountAddonService.objects.filter(account=user)
+    user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
     user_services_id = [x.service.id for x in user_services if not x.deactivated]
     services = services.exclude(service__id__in=user_services_id) 
     return_dict = {
@@ -543,6 +543,12 @@ def addon_service(request):
     return return_dict 
     
 def service_action(request, action, id):
+    
+    """
+    в случее set id являеться идентификатором добавляемой услуги
+    в случее del id являеться идентификатором accountaddon_service 
+    """
+    
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     user = request.session['user']
@@ -559,10 +565,10 @@ def service_action(request, action, id):
         #connection_server.test()
     except Exception, e:
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
-            request.session['service_message'] = u"Отказано в авторизации."
+            request.session['service_message'] = u"Ошибка при подключении к серверу"
             return HttpResponseRedirect('/services/')
         else:
-            request.session['service_message']  = u"Невозможно подключиться к серверу."
+            request.session['service_message']  = u"Нет связи с сервером. Обратитесь в службу поддержки"
             return HttpResponseRedirect('/services/')
         
     if action == u'set':
@@ -571,24 +577,56 @@ def service_action(request, action, id):
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        if AccountAddonService.objects.filter(account=user, service__change_speed=True, deactivated__isnull=True).count() > 0 and account_addon_service.service.change_speed == True :
-            request.session['service_message'] = u'Вы не можете подключить данную услугу'
-            return HttpResponseRedirect('/services/')
-        if connection_server.add_addonservice(user.id, id) == True:
+        result = connection_server.add_addonservice(user.id, id) 
+        if result == True:
             request.session['service_message'] = u'Услуга подключена'
+            return HttpResponseRedirect('/services/')
+        elif result == 'ACCOUNT_DOES_NOT_EXIST':
+            request.session['service_message'] = u'Указанный пользователь не найден'
+            return HttpResponseRedirect('/services/') 
+        elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
+            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'  
+            return HttpResponseRedirect('/services/')   
+        elif result == 'NOT_IN_PERIOD':
+            request.session['service_message'] = u'Активация выбранной услуги в данный момент не доступна'  
+            return HttpResponseRedirect('/services/') 
+        elif result == 'ALERADY_HAVE_SPEED_SERVICE':
+            request.session['service_message'] = u'У вас уже подключенны изменяющие скорость услуги'  
+            return HttpResponseRedirect('/services/')  
+        elif result == 'ACCOUNT_BLOCKED':
+            request.session['service_message'] = u'Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в службу поддержки'  
+            return HttpResponseRedirect('/services/') 
+        elif result == 'ADDONSERVICE_TARIF_DOES_NOT_ALLOWED':
+            request.session['service_message'] = u'На вашем тарифном плане активация выбранной услуги невозможна'  
+            return HttpResponseRedirect('/services/')     
+        elif result == 'TOO_MUCH_ACTIVATIONS':
+            request.session['service_message'] = u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки'  
             return HttpResponseRedirect('/services/')
         else:
             request.session['service_message'] = u'Услугу не возможно подключить'
             return HttpResponseRedirect('/services/')
     elif action == u'del':
-        if connection_server.del_addonservice(user.id, id) == True:
+        result = connection_server.del_addonservice(user.id, id)
+        if result == True:
             request.session['service_message'] = u'Услуга отключена'
             return HttpResponseRedirect('/services/')
+        elif result == 'ACCOUNT_DOES_NOT_EXIST':
+            request.session['service_message'] = u'Указанный пользователь не найден'
+            return HttpResponseRedirect('/services/') 
+        elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
+            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'  
+            return HttpResponseRedirect('/services/')   
+        elif result == 'ACCOUNT_ADDON_SERVICE_DOES_NOT_EXIST':
+            request.session['service_message'] = u'Вы не можите отключить выбранную услугу'  
+            return HttpResponseRedirect('/services/') 
+        elif result == 'NO_CANCEL_SUBSCRIPTION':
+            request.session['service_message'] = u'Даннная услуга не может быть отключена. Обратитесь в службу поддержки'  
+            return HttpResponseRedirect('/services/')  
         else:
             request.session['service_message'] = u'Услугу не возможно отключить'
             return HttpResponseRedirect('/services/')
     else:
-        request.session['service_message'] = u'Не возможно совершить действие'
+        request.session['service_message'] = u'Невозможно совершить действие'
         return HttpResponseRedirect('/services/')
           
     
