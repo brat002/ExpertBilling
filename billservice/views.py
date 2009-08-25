@@ -544,6 +544,7 @@ def service_action(request, action, service_id):
         connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
         #connection_server.test()
     except Exception, e:
+        print e
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
             error_message = u"Отказано в авторизации."
         else:
