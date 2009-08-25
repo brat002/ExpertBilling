@@ -783,10 +783,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         if service.change_speed:
             print 5.5
             try:
-                cur.execute("SELECT id FROM billservice_accountaddonservice WHERE deactivated is not Null and service_id IN (SELECT id FROM billservice_addonservice WHERE change_speed=True) and deactivated is not Null and account_id=%s" % account.id)
+                cur.execute("SELECT id FROM billservice_accountaddonservice WHERE deactivated is Null and service_id IN (SELECT id FROM billservice_addonservice WHERE change_speed=True) and account_id=%s" % account.id)
+                print 5.6
             except Exception, e:
                 print e
             if cur.fetchall():
+                print 5.7
                 return "ALERADY_HAVE_SPEED_SERVICE"
         print 6
         # Проверка на возможность активации услуги при наличии блокировок
@@ -903,8 +905,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         print 6
         #print accounservice
         #Получаем нужные параметры услуги
-        sql = "SELECT id, service_type, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = (SELECT service_id FROM billservice_accountaddonservice WHERE id=%s)" % accountservice.service_id
+        sql = "SELECT id, service_type, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = %s" % accountservice.service_id
         print 7
+        print sql
         cur.execute(sql)
         print 8
         connection.commit()
@@ -920,7 +923,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 
         service = Object(r[0]) 
         
-        print 7
+        print 10
         if service.cancel_subscription:
 
             sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % service.wyte_period_id
@@ -928,7 +931,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             connection.commit()
             result=[]
             r=cur.fetchall()
-            print 8
+            print 11
             print r
             if len(r)>1:
                 raise Exception
@@ -937,7 +940,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 return None
                     
             settlement_period = Object(r[0]) 
-            print 9
+            print 12
             try:
                 settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
             except Exception, e:
@@ -945,21 +948,26 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             print "delta", delta
             now = datetime.datetime.now()
             if ((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta:
-                model = Object()
-                model.account_id = account_id
-                model.type_id = 'ADDONSERVICE_WYTE_PAY'
-                model.summ = service.wyte_cost
-                model.service_id = service.id
-                model.service_type = service.service_type
-                model.created = "now()"
-                model.summ = service.wyte_cost
-                model.accounttarif_id = accounttarif_id
-                model.account_addonservice_id = account_service_id
+                print 16
+                try:
+                    model = Object()
+                    model.account_id = account_id
+                    model.type_id = 'ADDONSERVICE_WYTE_PAY'
+                    model.summ = service.wyte_cost
+                    model.service_id = service.id
+                    model.service_type = service.service_type
+                    model.created = "now()"
+                    model.summ = service.wyte_cost
+                    model.accounttarif_id = account.accounttarif_id
+                    model.accountaddonservice_id = account_service_id
+                except Exception, e:
+                    print e
                 print "transaction"
                 sql = model.save("billservice_addonservicetransaction")
+                print sql
                 cur.execute(sql)
             #Отключаем услугу
-            
+
             sql = "UPDATE billservice_accountaddonservice SET deactivated=now() WHERE id=%s" % accountservice.id
             cur.execute(sql)
             connection.commit()

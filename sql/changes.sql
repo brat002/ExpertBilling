@@ -1866,3 +1866,16 @@ ALTER TABLE billservice_addonservice
 ALTER TABLE billservice_addonservice
    ALTER COLUMN allow_activation DROP NOT NULL;
 
+
+ALTER TABLE billservice_addonservicetransaction
+   DROP COLUMN type_id;
+   
+ALTER TABLE billservice_addonservicetransaction
+   ADD COLUMN type_id character varying(255);
+ALTER TABLE billservice_addonservicetransaction
+   ALTER COLUMN type_id SET NOT NULL;
+
+ALTER TABLE billservice_addonservicetransaction ADD CONSTRAINT billservice_addonservicetransaction_type_id_fkey FOREIGN KEY (type_id) REFERENCES billservice_transactiontype (internal_name)
+   ON UPDATE NO ACTION ON DELETE SET NULL;
+CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey ON billservice_addonservicetransaction(type_id);
+

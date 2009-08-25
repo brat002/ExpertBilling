@@ -567,7 +567,7 @@ def service_action(request, action, id):
             return HttpResponseRedirect('/services/')
     if action == u'set':
         try:
-            account_addon_service = AccountAddonService.objects.get(id=id)
+            account_addon_service = AddonService.objects.get(id=id)
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
