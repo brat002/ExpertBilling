@@ -745,7 +745,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
         print 2
@@ -759,7 +759,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ADDON_SERVICE_DOES_NOT_EXIST'
                 
         service = Object(r[0]) 
         print 3
@@ -807,7 +807,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ADDONSERVICE_TARIF_DOES_NOT_ALLOWED'
         print 8
         tarif_service = Object(r[0]) 
         print 8.1
@@ -887,7 +887,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
         print 3
@@ -903,7 +903,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ACCOUNT_ADDON_SERVICE_DOES_NOT_EXIST'
         print 5        
         accountservice = Object(r[0]) 
         print 6
@@ -923,7 +923,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             raise Exception
 
         if r==[]:
-            return None
+            return 'ADDON_SERVICE_DOES_NOT_EXIST'
                 
         service = Object(r[0]) 
         
@@ -977,6 +977,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             connection.commit()
 
             return True
+        else:
+            return 'NO_CANCEL_SUBSCRIPTION'
         return False
 
         
