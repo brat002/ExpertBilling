@@ -1,16 +1,17 @@
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+
 <script>
 	var obj_arr = new Array();
 	var tariff = {{ tariff.id }};
 	{% for tariff_object in tariff_objects  %}
 		obj_arr[{{ tariff_object.from_tariff.id }}] = new Array();
-		obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.to_tariff.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }}, {{ tariff_object.oldtptime }});
+		obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }});
 	{% endfor %}
 	
 	
 	function change_tariff() {
 		var new_tariff = document.getElementById("id_tariff_id");
 		var message=document.getElementById("error_message");
-		var message=document.getElementById("ok_message");
 	 	jQuery.ajax({
         	type: "POST",
         	cache: false,
@@ -42,7 +43,6 @@
 		var send_button = document.getElementById("send_button");
 		try {
 			var ballance = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][0]');
-			var seconds = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][2]');
 			var price = {{ user.ballance }}-ballance;
 			send_button.style.visibility = 'visible';
 			if (price >= 0) {
@@ -53,10 +53,6 @@
 			}
 			need_cost.innerHTML = '<h2>'+eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'</h2>';
 			error_message.innerHTML = '';
-			if ({{ time }} < seconds) {
-				error_message.innerHTML = '<div class="red">Вы мало пользовались предыдущим тарифным планом!</div>';
-				send_button.style.visibility = 'hidden'; 
-			}
 			return true;
 		} catch(err) {
 			error_message.innerHTML = '<div class="red">Вы не можите перейти на данный тарифный план</div>';
