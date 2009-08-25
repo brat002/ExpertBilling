@@ -2542,3 +2542,40 @@ class AccountAddonServiceEdit(QtGui.QDialog):
     def setDeactivatedTime(self):
         self.dateTimeEdit_deactivation.setDateTime(datetime.datetime.now())
         
+class IPAddressSelectForm(object):
+    def __init__(self, connection):
+        self.connection = connection
+        from PyQt4.uic import loadUi
+        self.form=loadUi('dialog_table.ui')
+        self.form.tableWidget = tableFormat(self.form.tableWidget)
+        columns=['#', 'IP']
+        makeHeaders(columns, self.form.tableWidget)
+        self.refresh()
+        
+    def exec_(self):
+        self.form.exec_()
+        
+    def addrow(self, value, x, y):
+        headerItem = QtGui.QTableWidgetItem()
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/tp_small.png"))
+        if y==0:
+            headerItem.id=value
+            headerItem.setCheckState(QtCore.Qt.Unchecked)
+        if y!=0:
+            headerItem.setText(unicode(value))
+        self.form.tableWidget.setItem(x,y,headerItem)
+        
+    def refresh(self):
+        items = self.connection.get_models("billservice_ipinuse")
+        self.connection.commit()
+        self.form.tableWidget.setRowCount(len(items))
+        i=0
+        for item in items:
+            self.addrow('', i, 0)
+            self.addrow(item.ip, i, 1)
+            i+=1
+            
+        self.form.tableWidget.resizeColumnsToContents()
+            
+        

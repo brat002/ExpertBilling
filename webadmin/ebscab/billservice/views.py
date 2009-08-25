@@ -558,13 +558,13 @@ def service_action(request, action, id):
         connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
         #connection_server.test()
     except Exception, e:
-        print e
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
             request.session['service_message'] = u"Отказано в авторизации."
             return HttpResponseRedirect('/services/')
         else:
             request.session['service_message']  = u"Невозможно подключиться к серверу."
             return HttpResponseRedirect('/services/')
+        
     if action == u'set':
         try:
             account_addon_service = AddonService.objects.get(id=id)

@@ -8,7 +8,7 @@ from db import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
 
-from ebsWindow import ebsTableWindow
+from ebsWindow import ebsTableWindow, ebsTabs_n_TablesWindow
 
 poolt_types=['VPN', 'IPN']
 

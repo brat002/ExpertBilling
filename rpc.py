@@ -834,19 +834,23 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length, autostart = settlement_period.autostart)
                 
                 sql = "SELECT count(*) as cnt FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s and activated>'%s' and activated<'%s'" % (account.id, service.id, settlement_period_start, settlement_period_end,)
-                cur.execute(sql)
-                connection.commit()
-                result=[]
-                r=cur.fetchall()
-                if len(r)>1:
-                    raise Exception
-        
-                if r==[]:
-                    return None
-                        
-                activations_count = Object(r[0]) 
-                if activations_count.cnt>=tarif_service.activation_count: return None
-        print 12
+            else:
+                sql = "SELECT count(*) as cnt FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s" % (account.id, service.id,)
+            
+            cur.execute(sql)
+            connection.commit()
+            result=[]
+            r=cur.fetchall()
+            if len(r)>1:
+                raise Exception
+    
+            if r==[]:
+                return None
+                    
+            activations_count = Object(r[0]) 
+            if activations_count.cnt>=tarif_service.activation_count: return "TOO_MUCH_ACTIVATIONS"
+            
+
         if activation_date:
             print 13
             sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,'%s')" % (service.id, account.id, activation_date)
