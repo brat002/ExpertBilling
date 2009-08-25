@@ -139,10 +139,10 @@ def coll_bg(value):
 
 @register.filter(name='sevice_activation')
 def sevice_activation(value, user=None):
-    if AccountAddonService.objects.filter(service=value, account=user).count() == 0:
-        return '<a href="/service/set/%s/">Подключить</a>' %value.id
-    else:
+    if AccountAddonService.objects.filter(id=value.id, account=user, deactivated__isnull=False).count() == 0:
         return '<a href="/service/del/%s/">Отключить</a>' %value.id
+    else:
+        return '&nbsp;'
     
     
     

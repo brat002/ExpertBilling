@@ -19,7 +19,7 @@ from billservice.models import Account, AccountTarif, NetFlowStream, Transaction
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
-from billservice.utility import is_login_user
+from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
 
 from lib.decorators import render_to, ajax_request
@@ -278,8 +278,8 @@ def change_tariff_form(request):
     cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
     account_tariff_id = cursor.fetchone()[0]
     account_tariff = AccountTarif.objects.get(id=account_tariff_id)
-    time = (datetime.now() - account_tariff.datetime).seconds
-    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance, oldtptime__lte=time)
+    #time = (datetime.now() - account_tariff.datetime).seconds
+    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance)
     #form = ChangeTariffForm(user, account_tariff)
     form = ChangeTariffForm(user, account_tariff)
     return {
@@ -287,33 +287,45 @@ def change_tariff_form(request):
             'tariff_objects':tariffs,
             'user':request.session['user'],
             'tariff':account_tariff,
-            'time':time,
+            #'time':time,
             }
 
 
 @ajax_request
 def change_tariff(request):
+    """
+        settlement_period_info
+        1 - дата начала действия тарифа
+        
+    """
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     if request.method == 'POST':
-        new_tariff_id = request.POST.get('id_tariff_id', None)
-        if new_tariff_id != None:
+        rule_id = request.POST.get('id_tariff_id', None)
+        if rule_id != None:
             user = request.session['user']
             cursor = connection.cursor()
-            cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
+            cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id))
             account_tariff_id = cursor.fetchone()[0]
             account_tariff = AccountTarif.objects.get(id=account_tariff_id)
             from datetime import datetime
-            time = (datetime.now() - account_tariff.datetime).seconds
-            tariffs_id =[x.to_tariff.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance, oldtptime__lte=time)]
-            new_tariff = Tariff.objects.get(id=new_tariff_id)
-            if not new_tariff.id in tariffs_id:
+            rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
+            rule = TPChangeRule.objects.get(id=rule_id)
+            #settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False)
+            if rule.settlement_period:
+                td = settlement_period_info(account_tariff.datetime, rule.settlement_period.length_in, rule.settlement_period.length)
+                delta = (datetime.now() - account_tariff.datetime).seconds - td[2]
+                if delta < 0:
+                    return {
+                            'error_message':u'Вы не можите перейти на выбранный тариф',
+                            }
+            if not rule.id in rules_id:
                 return {
                         'error_message':u'Вы не можите перейти на выбранный тариф',
                         }
             tariff = AccountTarif.objects.create(
                                                     account = request.session['user'],
-                                                    tarif = new_tariff,
+                                                    tarif = rule.to_tariff,
                                                     datetime = datetime.now(), 
                                                  )
             return {
@@ -519,6 +531,8 @@ def addon_service(request):
     
     services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id)
     user_services = AccountAddonService.objects.filter(account=user)
+    user_services_id = [x.service.id for x in user_services if not x.deactivated]
+    services = services.exclude(service__id__in=user_services_id) 
     return_dict = {
                    'services':services,
                    'user_services':user_services,
@@ -546,11 +560,13 @@ def service_action(request, action, service_id):
     except Exception, e:
         print e
         if isinstance(e, Pyro.errors.ConnectionDeniedError):
-            error_message = u"Отказано в авторизации."
+            request.session['service_message'] = u"Отказано в авторизации."
+            return HttpResponseRedirect('/services/')
         else:
-            error_message  = u"Невозможно подключиться к серверу."
+            request.session['service_message']  = u"Невозможно подключиться к серверу."
+            return HttpResponseRedirect('/services/')
     if action == u'set':
-        if AccountAddonService.objects.filter(account=user, service__change_speed=True).count() > 0:
+        if AccountAddonService.objects.filter(account=user, service__change_speed=True, deactivated__isnull=True).count() > 0:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
         if connection_server.add_addonservice(user.id, service_id) == True:

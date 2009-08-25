@@ -4,7 +4,7 @@
 {% block content %}
 
 {% if service_message %}
-	<h1>{{ service_message }}</h1>
+	<h1 align="center">{{ service_message }}</h1>
 {% endif %}
 
 {% if services or user_services %}
@@ -29,7 +29,7 @@
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost  }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{{ service.service|sevice_activation:user|safe  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center"><a href="/service/set/{{ service.service.id }}/">Подключить</a></td>
 						</tr>
 					{% endfor %}
 				</table>
