@@ -380,3 +380,11 @@ table.statistic_table {
 .tariff_activate a:Hover {
 	text-decoration:underline;
 }
+
+.bg_padding {
+	background-position:bottom;
+	height:40px;
+	*height:25px;
+	padding-top:17px;
+	*padding-top:-10px;
+}
