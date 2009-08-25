@@ -542,7 +542,7 @@ def addon_service(request):
         return_dict['service_message'] = request.session['service_message'] 
     return return_dict 
     
-def service_action(request, action, service_id):
+def service_action(request, action, id):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     user = request.session['user']
@@ -566,17 +566,22 @@ def service_action(request, action, service_id):
             request.session['service_message']  = u"Невозможно подключиться к серверу."
             return HttpResponseRedirect('/services/')
     if action == u'set':
-        if AccountAddonService.objects.filter(account=user, service__change_speed=True, deactivated__isnull=True).count() > 0:
+        try:
+            account_addon_service = AccountAddonService.objects.get(id=id)
+        except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        if connection_server.add_addonservice(user.id, service_id) == True:
+        if AccountAddonService.objects.filter(account=user, service__change_speed=True, deactivated__isnull=True).count() > 0 and account_addon_service.service.change_speed == True :
+            request.session['service_message'] = u'Вы не можете подключить данную услугу'
+            return HttpResponseRedirect('/services/')
+        if connection_server.add_addonservice(user.id, id) == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')
         else:
             request.session['service_message'] = u'Услугу не возможно подключить'
             return HttpResponseRedirect('/services/')
     elif action == u'del':
-        if connection_server.del_addonservice(user.id, service_id) == True:
+        if connection_server.del_addonservice(user.id, id) == True:
             request.session['service_message'] = u'Услуга отключена'
             return HttpResponseRedirect('/services/')
         else:
