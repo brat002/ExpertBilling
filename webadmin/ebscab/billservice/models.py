@@ -994,3 +994,15 @@ class AccountAddonService(models.Model):
     deactivated = models.DateTimeField()    
     action_status = models.BooleanField()    
     speed_status = models.BooleanField()        
+
+class AddonServiceTransaction(models.Model):
+    service = models.ForeignKey(AddonService)
+    service_type = models.CharField(max_length=32)#onetime, periodical   
+    account = models.ForeignKey(Account)
+    accountaddonservice = models.ForeignKey(AccountAddonService)
+    accounttarif = models.ForeignKey(AccountTarif)
+    type = models.ForeignKey(TransactionType)
+    summ = models.IntegerField()
+    created = models.DateTimeField()
+    
+    

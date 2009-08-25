@@ -1767,11 +1767,102 @@ INSERT INTO billservice_transactiontype(id,
              "name", internal_name)
     VALUES (11,'Списание средств за преждевременное отключение услуги абонентом', 'ADDONSERVICE_WYTE_PAY');
 
+CREATE TABLE "billservice_addonservicetransaction" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "service_id" integer NOT NULL REFERENCES "billservice_addonservice" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+    "service_type" varchar(32) NOT NULL,
+    "account_id" integer NOT NULL REFERENCES "billservice_account" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+    "accountaddonservice_id" integer NOT NULL REFERENCES "billservice_accountaddonservice" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+    "accounttarif_id" integer NOT NULL REFERENCES "billservice_accounttarif" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+    "type_id" integer NOT NULL REFERENCES "billservice_transactiontype" ("id")  MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+    "summ" numeric NOT NULL,
+    "created" timestamp without time zone NOT NULL
+);
+CREATE INDEX "billservice_addonservicetransaction_service_id" ON "billservice_addonservicetransaction" ("service_id");
+CREATE INDEX "billservice_addonservicetransaction_account_id" ON "billservice_addonservicetransaction" ("account_id");
+CREATE INDEX "billservice_addonservicetransaction_accounttarif_id" ON "billservice_addonservicetransaction" ("accounttarif_id");
+CREATE INDEX "billservice_addonservicetransaction_type_id" ON "billservice_addonservicetransaction" ("type_id");
+CREATE INDEX "billservice_addonservicetransaction_accountaddonservice_id" ON "billservice_addonservicetransaction" ("accountaddonservice_id");
+CREATE TRIGGER adds_trans_trg
+  AFTER INSERT OR UPDATE OR DELETE
+  ON billservice_addonservicetransaction
+  FOR EACH ROW
+  EXECUTE PROCEDURE account_transaction_trg_fn();
+  
+  
+ALTER TABLE billservice_tpchangerule
+   ADD COLUMN settlement_period_id integer;
+ALTER TABLE billservice_tpchangerule
+   DROP COLUMN oldtptime;
+   
+   
+CREATE INDEX billservice_tpchangerule_settlement_period_id_index
+   ON billservice_tpchangerule (settlement_period_id);
 
-ALTER TABLE billservice_transaction ADD COLUMN account_addonservice_id integer;
-ALTER TABLE billservice_transaction ALTER COLUMN account_addonservice_id SET STORAGE PLAIN;
+ALTER TABLE billservice_tpchangerule ADD CONSTRAINT billservice_tpchangerule_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod (id)
+   ON UPDATE NO ACTION ON DELETE SET NULL;
 
-CREATE INDEX billservice_transaction_account_addonservice_id_index
-  ON billservice_transaction
-  USING btree
-  (account_addonservice_id);
+ALTER TABLE billservice_tpchangerule
+   ALTER COLUMN settlement_period_id SET DEFAULT 0;
+
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN wyte_period_id DROP NOT NULL;
+ALTER TABLE billservice_addonservice ALTER wyte_cost TYPE numeric(60, 10);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN wyte_cost DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice ALTER service_activation_action TYPE character varying(8000);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN service_activation_action SET DEFAULT '';
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN service_activation_action DROP NOT NULL;
+
+
+ALTER TABLE billservice_addonservice ALTER service_deactivation_action TYPE character varying(8000);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN service_deactivation_action SET DEFAULT '';
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN service_deactivation_action DROP NOT NULL;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN deactivate_service_for_blocked_account SET DEFAULT False;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN deactivate_service_for_blocked_account DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN change_speed SET DEFAULT False;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN change_speed DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice ALTER change_speed_type TYPE character varying(32);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN change_speed_type SET DEFAULT 'abs';
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN change_speed_type DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice ALTER speed_units TYPE character varying(32);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN speed_units SET DEFAULT 'Kbps';
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN speed_units DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN "action" SET DEFAULT False;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN "action" DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN cancel_subscription SET DEFAULT False;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN cancel_subscription DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice ALTER "cost" TYPE numeric(60, 10);
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN "cost" SET DEFAULT 0;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN "cost" DROP NOT NULL;
+
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN allow_activation SET DEFAULT False;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN allow_activation DROP NOT NULL;
+
