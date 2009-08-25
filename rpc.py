@@ -734,9 +734,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def add_addonservice(self, account_id, service_id, ignore_locks = False, activation_date = None, cur=None, connection=None):
-        
+        print 1
         #Получаем параметры абонента
-        sql = "SELECT id, ballance, balance_blocked, disabled_by_limit, status, get_tarif(id) as tarif_id FROM billservice_account WHERE id=%s" %account_id
+        sql = "SELECT id, ballance, balance_blocked, disabled_by_limit, status, get_tarif(id) as tarif_id,(SELECT datetime FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_date FROM billservice_account as acc WHERE id=%s" %account_id
         cur.execute(sql)
         connection.commit()
         result=[]
@@ -748,9 +748,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return None
                 
         account = Object(r[0]) 
-        
+        print 2
         #Получаем нужные параметры услуги
-        sql = "SELECT id, allow_activation,timeperiod_id FROM billservice_addonservice WHERE id = %s" % service_id
+        sql = "SELECT id, allow_activation,timeperiod_id, change_speed FROM billservice_addonservice WHERE id = %s" % service_id
         cur.execute(sql)
         connection.commit()
         result=[]
@@ -762,32 +762,39 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return None
                 
         service = Object(r[0]) 
-        
-        sql = "SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)" % timeperiod_id
+        print 3
+
+        sql = "SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)" % service.timeperiod_id
+
+        print sql
         cur.execute(sql)
         connection.commit()
 
         timeperiods = map(Object, cur.fetchall())
-        
+        print timeperiods
         res = False
         for timeperiod in timeperiods:
             if in_period_info(timeperiod.time_start, timeperiod.length, timeperiod.repeat_after):
                 res=True
-        
+        print 4
         if res == False:
             return "NOT_IN_PERIOD"
-
+        print 5
         if service.change_speed:
-            cur.execute("SELECT id FROM billservice_accountaddonservice WHERE service_id IN (SELECT id FROM billservice_addonservice WHERE speed_change=True) and deactivated is not Null and account_id=%s" % account.id)
+            print 5.5
+            try:
+                cur.execute("SELECT id FROM billservice_accountaddonservice WHERE deactivated is not Null and service_id IN (SELECT id FROM billservice_addonservice WHERE change_speed=True) and deactivated is not Null and account_id=%s" % account.id)
+            except Exception, e:
+                print e
             if cur.fetchall():
                 return "ALERADY_HAVE_SPEED_SERVICE"
-            
+        print 6
         # Проверка на возможность активации услуги при наличии блокировок
         if ignore_locks:
             if service.allow_activation==False and (account.ballance<=0 or account.balance_blocked==True or account.disabled_by_limit==True or account_status!=1):
                 return "ACCOUNT_BLOCKED"
         
-        
+        print 7
         #Получаем нужные параметры услуги из тарифного плана
         sql = "SELECT id, activation_count, activation_count_period_id FROM billservice_addonservicetarif WHERE tarif_id=%s and service_id = %s" % (account.tarif_id, service_id)
         cur.execute(sql)
@@ -799,12 +806,15 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         if r==[]:
             return None
-                
+        print 8
         tarif_service = Object(r[0]) 
-        
+        print 8.1
         if tarif_service.activation_count!=0:
+            print 8.2
             if tarif_service.activation_count_period_id:
+                print 8.5
                 sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % tarif_service.activation_count_period_id
+                print sql
                 cur.execute(sql)
                 connection.commit()
                 result=[]
@@ -814,8 +824,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
                 if r==[]:
                     return None
-                        
+                print 9
                 settlement_period = Object(r[0]) 
+                if settlement_period.autostart:
+                    settlement_period.time_start = account.accounttarif_date
+                    
                 settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length, autostart = settlement_period.autostart)
                 
                 sql = "SELECT count(*) as cnt FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s and activated>'%s' and activated<'%s'" % (account.id, service.id, settlement_period_start, settlement_period_end,)
@@ -831,17 +844,21 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                         
                 activations_count = Object(r[0]) 
                 if activations_count.cnt>=tarif_service.activation_count: return None
-        
+        print 12
         if activation_date:
-            sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,now())" % (service.id, account.id,)
-        else:
+            print 13
             sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,'%s')" % (service.id, account.id, activation_date)
-        
+        else:
+            print 14
+            
+            sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,now())" % (service.id, account.id,)
+        print sql
         try:
             cur.execute(sql)
             connection.commit()
             return True
         except Exception, e:
+            print e
             logger.error("Error add addonservice to account, %s", e)
             connection.rollback()
             return False
@@ -850,7 +867,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def del_addonservice(self, account_id, account_service_id, cur=None, connection=None):
  
- 
+        print "account_id, account_service_id", account_id, account_service_id
  
         #Получаем нужные параметры аккаунта
         cur.connection.commit()
@@ -875,7 +892,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         print 4
         result=[]
         r=cur.fetchall()
-        print r
+        print "4",r
         if len(r)>1:
             raise Exception
 
