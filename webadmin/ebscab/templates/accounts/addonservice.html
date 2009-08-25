@@ -27,8 +27,8 @@
 					{% for service in services %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost|floatformat:2 }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost|floatformat:2  }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center"><a href="/service/set/{{ service.service.id }}/">Подключить</a></td>
 						</tr>
 					{% endfor %}
@@ -57,10 +57,10 @@
 					{% for user_service in user_services %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.name }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.cost }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.cost|floatformat:2 }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.activated|date:"d.m.Y H:i"  }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.deactivated|date:"d.m.Y H:i"  }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{{ user_service.service|sevice_activation:user|safe  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{% if not user_service.deactivated %}<a href="/service/del/{{ user_service.id }}/">Отключить</a>{% endif %}</td>
 						</tr>
 					{% endfor %}
 				</table>
