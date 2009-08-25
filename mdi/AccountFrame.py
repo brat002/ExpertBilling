@@ -26,7 +26,7 @@ from Reports import TransactionsReportEbs as TransactionsReport
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
-from CustomForms import tableImageWidget
+from CustomForms import tableImageWidget, IPAddressSelectForm
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -4304,6 +4304,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
             
     def refresh(self, item=None, k=''):
+        a = IPAddressSelectForm(self.connection)
+        a.exec_()
         self.tableWidget.setSortingEnabled(False)
         #print item
         if item:
