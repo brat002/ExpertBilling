@@ -2,7 +2,7 @@
 from django import template
 import datetime
 from django.db import connection
-from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction
 register = template.Library()
 
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
@@ -144,5 +144,14 @@ def sevice_activation(value, user=None):
         return '<a href="/service/del/%s/">Отключить</a>' %account_addon_service.id
     except:
         return '&nbsp;'
-          
+
+@register.filter(name='service_cost')          
+def service_cost(value):
+    symm = 0
+    for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=value):
+        symm += transaction.summ 
+    return symm 
+    
+    
+    
     
