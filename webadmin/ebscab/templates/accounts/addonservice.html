@@ -12,7 +12,7 @@
 		{% if services %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
-				<div class="f-left">УСЛУГИ</div>
+				<div class="f-left">СПИСОК ДОСТУПНЫХ УСЛУГ</div>
 			</th>
 		</tr>
 		<tr>
@@ -22,6 +22,7 @@
 						<th>Название</th>
 						<th>Стоимость</th>
 						<th>Плата за досрочное отключение</th>
+						<th>Минимальный период</th>
 						<th>Подключить/Отключить</th>
 					</tr>
 					{% for service in services %}
@@ -29,6 +30,7 @@
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost|floatformat:2 }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost|floatformat:2  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.wyte_period.name|slice:"1:" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center"><a href="/service/set/{{ service.service.id }}/">Подключить</a></td>
 						</tr>
 					{% endfor %}
@@ -41,7 +43,7 @@
 		{% if services %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
-				<div class="f-left">ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ</div>
+				<div class="f-left">ПОДКЛЮЧЕННЫЕ УСЛУГИ</div>
 			</th>
 		</tr>
 		<tr>
