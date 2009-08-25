@@ -26,10 +26,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
     #print "repeat_after_seconds=",repeat_after_seconds
     if repeat_after_seconds>0:
         #print 1
-        if prev==False:
-            delta_days=now - time_start
-        else:
-            delta_days=now-datetime.timedelta(seconds=repeat_after_seconds) - time_start
+        delta_days = (now - time_start) if not prev else (now-datetime.timedelta(seconds=repeat_after_seconds) - time_start)
         length=repeat_after_seconds
         if repeat_after!='DONT_REPEAT':
             #Когда будет начало в текущем периоде.
@@ -41,10 +38,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         else:
             return (time_start,time_start+datetime.timedelta(seconds=repeat_after_seconds), repeat_after_seconds)
     elif repeat_after=='DAY':
-        if prev==False:
-            delta_days=now - time_start
-        else:
-            delta_days=now-datetime.timedelta(seconds=86400) - time_start
+        delta_days = (now - time_start) if not prev else (now-datetime.timedelta(seconds=86400) - time_start)
         length=86400
         #Когда будет начало в текущем периоде.
         nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
@@ -54,10 +48,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         return (tnc, tkc, length)
 
     elif repeat_after=='WEEK':
-        if prev==False:
-            delta_days=now - time_start
-        else:
-            delta_days=now-datetime.timedelta(seconds=604800) - time_start
+        delta_days = (now - time_start) if not prev else (now-datetime.timedelta(seconds=604800) - time_start)
         length=604800
         #Когда будет начало в текущем периоде.
         nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
@@ -66,11 +57,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
 
         return (tnc, tkc, length)
     elif repeat_after=='MONTH':
-        if prev==False:
-            rdelta = relativedelta(now, time_start)
-        else:
-            rdelta=relativedelta(now-relativedelta(months=1),time_start)
-        #print "time_start, rdelta=", time_start, rdelta
+        rdelta = relativedelta(now, time_start) if not prev else relativedelta(now-relativedelta(months=1),time_start)
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
         tkc=tnc+relativedelta(months=1)
         delta=tkc-tnc
