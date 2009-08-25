@@ -721,6 +721,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def save(self, model, table, cur=None, connection=None):
         #print model
         sql = model.save(table)
+
         #print sql
         #print sql
         cur.execute(sql)
@@ -852,11 +853,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
  
  
         #Получаем нужные параметры аккаунта
-        sql = "SELECT acc.*,get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarf WHERE account_id=acc.id ORDER BY datetime DESC LIMIT 1) as accounttarif_id   FROM billservice_account as acc WHERE id = %s" % account_id
-        cur.execute(sql)
-        connection.commit()
+        cur.connection.commit()
+        cur.execute("SELECT acc.id, get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_id FROM billservice_account as acc WHERE id = %s;", (account_id,))
+        
         result=[]
         r=cur.fetchall()
+        print "r=", r
+        cur.connection.commit()
         if len(r)>1:
             raise Exception
 
@@ -864,28 +867,34 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return None
                 
         account = Object(r[0]) 
-               
+        print 3
         #Получаем нужные параметры услуги абонента
         sql = "SELECT id, service_id, account_id, activated, deactivated, action_status FROM billservice_accountaddonservice  WHERE id = %s" % account_service_id
         cur.execute(sql)
         connection.commit()
+        print 4
         result=[]
         r=cur.fetchall()
+        print r
         if len(r)>1:
             raise Exception
 
         if r==[]:
             return None
-                
+        print 5        
         accountservice = Object(r[0]) 
-
-       
+        print 6
+        #print accounservice
         #Получаем нужные параметры услуги
-        sql = "SELECT id, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = (SELECT service_id FROM billservice_accountaddonservice WHERE id=%s)" % accountservice.service_id
+        sql = "SELECT id, service_type, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = (SELECT service_id FROM billservice_accountaddonservice WHERE id=%s)" % accountservice.service_id
+        print 7
         cur.execute(sql)
+        print 8
         connection.commit()
         result=[]
         r=cur.fetchall()
+        print 9
+        print r
         if len(r)>1:
             raise Exception
 
@@ -894,7 +903,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 
         service = Object(r[0]) 
         
-        
+        print 7
         if service.cancel_subscription:
 
             sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % service.wyte_period_id
@@ -902,6 +911,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             connection.commit()
             result=[]
             r=cur.fetchall()
+            print 8
+            print r
             if len(r)>1:
                 raise Exception
     
@@ -909,21 +920,26 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 return None
                     
             settlement_period = Object(r[0]) 
-            settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length, autostart = settlement_period.autostart)
+            print 9
+            try:
+                settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
+            except Exception, e:
+                print e
+            print "delta", delta
             now = datetime.datetime.now()
             if ((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta:
                 model = Object()
-                model.bill=''
                 model.account_id = account_id
                 model.type_id = 'ADDONSERVICE_WYTE_PAY'
-                model.approved = True
-                model.tarif_id = account.tarif_id
                 model.summ = service.wyte_cost
-
+                model.service_id = service.id
+                model.service_type = service.service_type
                 model.created = "now()"
+                model.summ = service.wyte_cost
                 model.accounttarif_id = accounttarif_id
                 model.account_addonservice_id = account_service_id
-                sql = model.save("billservice_transaction")
+                print "transaction"
+                sql = model.save("billservice_addonservicetransaction")
                 cur.execute(sql)
             #Отключаем услугу
             

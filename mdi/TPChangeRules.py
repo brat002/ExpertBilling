@@ -39,10 +39,9 @@ class TPRulesAdd(QtGui.QDialog):
         self.label_oldtptime = QtGui.QLabel(self.groupBox)
         self.label_oldtptime.setObjectName("label_oldtptime")
         self.gridLayout.addWidget(self.label_oldtptime, 2, 0, 1, 1)
-        self.spinBox_oldtptime = QtGui.QSpinBox(self.groupBox)
-        self.spinBox_oldtptime.setObjectName("spinBox_oldtptime")
-        self.spinBox_oldtptime.setMaximum(999999999)
-        self.gridLayout.addWidget(self.spinBox_oldtptime, 2, 1, 1, 1)
+        self.comboBox_oldtptime = QtGui.QComboBox(self.groupBox)
+        self.comboBox_oldtptime.setObjectName("comboBox_oldtptime")
+        self.gridLayout.addWidget(self.comboBox_oldtptime, 2, 1, 1, 1)
         self.label_balance_min = QtGui.QLabel(self.groupBox)
         self.label_balance_min.setObjectName("label_balance_min")
         self.gridLayout.addWidget(self.label_balance_min, 3, 0, 1, 1)
@@ -87,7 +86,7 @@ class TPRulesAdd(QtGui.QDialog):
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки смены тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.label_from.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
         self.label_cost.setText(QtGui.QApplication.translate("Dialog", "Стоимость перехода", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_oldtptime.setText(QtGui.QApplication.translate("Dialog", "Не менее c. на старом тарифе", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_oldtptime.setText(QtGui.QApplication.translate("Dialog", "Миниальное время на старом тарифном план", None, QtGui.QApplication.UnicodeUTF8))
         self.label_balance_min.setText(QtGui.QApplication.translate("Dialog", "Минимум на балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.label_to.setText(QtGui.QApplication.translate("Dialog", "На", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_bidirectional.setText(QtGui.QApplication.translate("Dialog", "Двунаправленная связь", None, QtGui.QApplication.UnicodeUTF8))
@@ -138,8 +137,10 @@ class TPRulesAdd(QtGui.QDialog):
         else:
             model.ballance_min=float(unicode(self.lineEdit_balance_min.text()))
             
+
         model.disabled = self.checkBox_disable.checkState()==2
-        model.oldtptime = self.spinBox_oldtptime.value()
+        model.settlement_period_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
+        print "model.settlement_period_id", model.settlement_period_id
         from_id = self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]
         self.connection.commit()
         for i in xrange(self.listWidget_to.count()):
@@ -190,11 +191,27 @@ class TPRulesAdd(QtGui.QDialog):
             
         self.connect(self.comboBox_from,QtCore.SIGNAL("currentIndexChanged(int)"),self.refreshList)
 
+        items = self.connection.get_models("billservice_settlementperiod", where={'autostart':True,})
+        self.connection.commit()
+        self.comboBox_oldtptime.addItem(u"--нет--")
+        self.comboBox_oldtptime.setItemData(0, QtCore.QVariant(0))
+        i = 1
+        for item in items:
+            self.comboBox_oldtptime.addItem(item.name)
+            self.comboBox_oldtptime.setItemData(i, QtCore.QVariant(item.id))
+            i+=1
+
+
+            
         if self.model:
             self.lineEdit_balance_min.setText(unicode(self.model.ballance_min))
             self.lineEdit_cost.setText(unicode(self.model.cost))
-            self.spinBox_oldtptime.setValue(int(self.model.oldtptime))
+            
             self.checkBox_disable.setChecked(self.model.disabled)
+            for i in xrange(self.comboBox_oldtptime.count()):
+                if self.comboBox_oldtptime.itemData(i).toInt()[0]==self.model.settlement_period_id:
+                    self.comboBox_oldtptime.setCurrentIndex(i)    
+                    
         self.refreshList(0)
 
             
@@ -226,7 +243,7 @@ class TPRulesAdd(QtGui.QDialog):
 
 class TPRulesEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'С', u'На', u'Временно запрещено', u'Стоимость', u'Минимум на балансе', u"Минимум на старом ТП, ч."]
+        columns=['#', u'С', u'На', u'Временно запрещено', u'Стоимость', u'Минимум на балансе', u"Минимум на старом ТП"]
         initargs = {"setname":"tprules_frame", "objname":"TPRulesEbs", "winsize":(0,0,827,476), "wintitle":"Правила смены тарифных планов", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(TPRulesEbs, self).__init__(connection, initargs)
         
@@ -302,7 +319,7 @@ class TPRulesEbs(ebsTableWindow):
 
     def refresh(self):
         self.tableWidget.setSortingEnabled(False)
-        rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id and deleted IS NOT TRUE ) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id and deleted IS NOT TRUE ) as to_tariff_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
+        rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id and deleted IS NOT TRUE ) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id and deleted IS NOT TRUE ) as to_tariff_name, (SELECT name FROM billservice_settlementperiod WHERE id=tpch.settlement_period_id) as settlement_period_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
         self.connection.commit()
         self.tableWidget.setRowCount(len(rules))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
@@ -314,7 +331,7 @@ class TPRulesEbs(ebsTableWindow):
             self.addrow(rule.disabled, i,3)
             self.addrow(rule.cost, i,4)
             self.addrow(rule.ballance_min, i,5)
-            self.addrow(rule.oldtptime, i,6)
+            self.addrow("" if rule.settlement_period_name == None else rule.settlement_period_name, i,6)
             #self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
             #self.addrow(period.length_in, i,4)            
             #self.addrow(period.length, i,5)

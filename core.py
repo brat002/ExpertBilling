@@ -898,7 +898,18 @@ class addon_service(Thread):
                         service = caches.addonservice_cache.by_id.get(accservice.service_id)
                         #Проверка на требование отключения услуги
                         if service.service_type=='onetime':
-                            
+                            if not accservice.last_checkout:
+                                cur.execute("""
+                                INSERT INTO billservice_addonservicetransaction(
+                                            service_id, service_type, account_id, accountaddonservice_id, 
+                                            accounttarif_id, type_id, summ, created)
+                                    VALUES (%s, '%s', %s, %s, 
+                                            %s, "%s", %s, %s)
+
+                                """, (service.id, service.service_type, acc.account_id, accservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
+                                )
+                                cur.connection.commit()
+                                
                             sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
                             # Получаем delta
                             sp_start, sp_end, delta = fMem.settlement_period_(accservice.activated, sp.length_in, sp.length, dateAT)
