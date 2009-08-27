@@ -22,19 +22,18 @@
                 {% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %}
             </div> 
 
-        {% if not user.status %}
+        {% if not user.account_status %}
         <div style="float:right; margin-top: -5px">
         <img align="right" style="float:right" src="/media/img/design/account_blocked.png">
         </div>
         {% endif %}
-
 
         {% if user.balance_blocked or user.ballance_isnt_good %}
         <div style="float:right; margin-top: -5px">
         <img align="right" style="float:right" src="/media/img/design/no_money.png">
         </div>
         {% endif %}
-        111{{user.disabled_by_limit}}111
+        
         {% if user.disabled_by_limit %}
         <div style="float:right; margin-top: -5px">
         <img align="right" style="float:right" src="/media/img/design/limit_blocked.png">

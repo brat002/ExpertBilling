@@ -17,6 +17,7 @@ class PasswordForm(forms.Form):
     
 class CardForm(forms.Form):
     series = forms.IntegerField(label=u"Введите серию", required = True, error_messages={'required':u'Обязательное поле!'})
+    card_id = forms.IntegerField(label=u"Введите ID карты", required = True, error_messages={'required':u'Обязательное поле!'})
     pin = forms.CharField(label=u"ПИН", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'})
     
 class ChangeTariffForm(forms.Form):
