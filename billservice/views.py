@@ -51,8 +51,10 @@ def login(request):
                     else:
                         error_message  = u"Невозможно подключиться к серверу."
                 message_type = connection_server.activate_card(user, pin)
+                ok_message = False
                 if message_type == 1:
                     message = u'Карточка успешно активирована. <br>  Выш логин %s <br> ваш пароль %s' % (user, pin)
+                    ok_message = True
                 if message_type == 2:
                     message = u'Не верно введен логин или пароль'
                 if message_type == 3:
@@ -61,6 +63,7 @@ def login(request):
             return {
                     'form':form,
                     'message':message,
+                    'ok_message':ok_message,
                     }
         form = LoginForm(request.POST)
         if form.is_valid():
