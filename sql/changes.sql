@@ -1888,3 +1888,8 @@ ALTER TABLE billservice_addonservice
 ALTER TABLE billservice_addonservice
    ALTER COLUMN "comment" SET DEFAULT '';
 
+-- 27.08.2009 23:02
+
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание по подключаемой периодической услуге', 'ADDONSERVICE_PERIODICAL');

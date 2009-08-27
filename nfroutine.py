@@ -44,6 +44,7 @@ from decimal import Decimal
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
+import classes.vars as vars_
 from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \

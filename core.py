@@ -37,7 +37,7 @@ from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id 
-from db import timetransaction, transaction, set_account_deleted, get_limit_speed
+from db import timetransaction, transaction, set_account_deleted, get_limit_speed, get_last_addon_checkout, addon_history
 
 try:    import mx.DateTime
 except: print 'cannot import mx'
@@ -58,7 +58,8 @@ DB_NAME = 'db'
 SECONDS_PER_DAY = 86400
 ZERO_SUM = 0
 SECOND = datetime.timedelta(seconds=1)
-
+PERIOD = 1
+ADDON  = 2
 def comparator(d, s):
     for key in s:
         if s[key]!='' and s[key]!='Null' and s[key]!='None':
@@ -276,17 +277,31 @@ class periodical_service_bill(Thread):
         self.NOW = datetime.datetime(2000, 1, 1)
 
     #ps_type - 1 for periodocal service, 2 - for periodical addonservice 
-    def iterate_ps(self, cur, caches, acc, ps, dateAT, ps_type):
-        susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
+    def iterate_ps(self, cur, caches, acc, ps, dateAT, pss_type):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
-        time_start_ps = acc.datetime if ps.autostart else ps.time_start
-        
-        self.NOW = dateAT if acc.current_acctf else acc.end_date
-        #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW)                                
-        # Проверка на расчётный период без повторения
-        if period_end < self.NOW: return
-        
+        susp_per_mlt = 1
+        if pss_type == PERIOD:
+            susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
+            
+            time_start_ps = acc.datetime if ps.autostart else ps.time_start
+            
+            self.NOW = dateAT if acc.current_acctf else acc.end_date
+            #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
+            period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW)                                
+            # Проверка на расчётный период без повторения
+            if period_end < self.NOW: return
+            get_last_checkout_ = get_last_checkout
+            acc_end_date = acc.end_date
+        elif pss_type == ADDON:
+            if ps.temporary_blocked:
+                susp_per_mlt = 0
+            time_start_ps = ps.created
+            self.NOW = dateAT if not ps.deactivated else ps.deactivated
+            period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW) 
+            get_last_checkout_ = get_last_addon_checkout
+            acc_end_date = None
+        else:
+            return
         s_delta = datetime.timedelta(seconds=delta)
         if ps.cash_method == "GRADUAL":
             """
@@ -295,9 +310,12 @@ class periodical_service_bill(Thread):
             # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
             # а остальные помечаем неактивными и уведомляем администратора
             """
-            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc_end_date)                                    
             if last_checkout is None:
-                last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                if pss_type == PERIOD:
+                    last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                elif pss_type == ADDON:
+                    last_checkout = ps.created
 
             if (self.NOW - last_checkout).seconds + (self.NOW - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
                 #Проверяем наступил ли новый период
@@ -318,16 +336,25 @@ class periodical_service_bill(Thread):
                     while chk_date <= self.NOW:    
                         period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
                         cash_summ = (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        if pss_type == PERIOD:
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        elif pss_type == ADDON:
+                            cash_summ = cash_summ * susp_per_mlt
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
                         cur.connection.commit()
                         chk_date += self.PER_DAY_DELTA
                 else:
                     #make an approved transaction
                     cash_summ = susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
-                    if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
-                        #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                        cash_summ = 0
-                    ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+                    if pss_type == PERIOD:
+                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                            #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+                            cash_summ = 0
+                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+                    elif pss_type == ADDON:
+                        cash_summ = cash_summ * susp_per_mlt
+                        addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
+            
             cur.connection.commit()
             
         if ps.cash_method == "AT_START":
@@ -335,7 +362,7 @@ class periodical_service_bill(Thread):
             Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
             не платили-производим снятие.
             """
-            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc_end_date)
             # Здесь нужно проверить сколько раз прошёл расчётный период
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
@@ -343,13 +370,18 @@ class periodical_service_bill(Thread):
             # Если последняя проводка меньше или равно дате начала периода-делаем снятие
             
             summ = 0
-            
-            if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
-                return
-            first_time = False
-            if last_checkout is None:
-                last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
-                first_time = True
+            if pss_type == PERIOD:
+                if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
+                    return
+                first_time = False
+                if last_checkout is None:
+                    last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                    first_time = True
+            elif pss_type == ADDON:
+                first_time = False
+                if last_checkout is None:
+                    last_checkout = ps.created
+                    first_time = True
                 
             #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
             if first_time or last_checkout < period_start:
@@ -366,7 +398,11 @@ class periodical_service_bill(Thread):
                     chk_date = period_start_ast
                     if ps.created and ps.created >= chk_date:
                         cash_summ = 0
-                    cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                    if pss_type == PERIOD:
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                    elif pss_type == ADDON:
+                        cash_summ = cash_summ * susp_per_mlt
+                        addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                     cur.connection.commit()
                     chk_date += s_delta_ast
                     if not chk_date <= period_start: break
@@ -377,15 +413,21 @@ class periodical_service_bill(Thread):
             Если завершился - считаем сколько уже их завершилось.    
             для остальных со статусом False
             """
-            last_checkout = get_last_checkout(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)
             cur.connection.commit()
             #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
-            if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
-                return
-            first_time = False
-            if last_checkout is None:
-                last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
-                first_time = True
+            if pss_type == PERIOD:
+                if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
+                    return
+                first_time = False
+                if last_checkout is None:
+                    last_checkout = acc.datetime if ps.created is None or ps.created < acc.datetime else ps.created
+                    first_time = True
+            elif pss_type == ADDON:
+                first_time = False
+                if last_checkout is None:
+                    last_checkout = ps.created
+                    first_time = True
             # Здесь нужно проверить сколько раз прошёл расчётный период    
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
@@ -404,14 +446,26 @@ class periodical_service_bill(Thread):
                     if first_time:
                         first_time = False
                         chk_date = last_checkout
-                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                        if pss_type == PERIOD:
+                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                        elif pss_type == ADDON:
+                            cash_summ = cash_summ * susp_per_mlt
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, chk_date)
                     else:
                         if ps.created and ps.created >= chk_date:
                             cash_summ = ZERO_SUM
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                        if pss_type == PERIOD:
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                        elif pss_type == ADDON:
+                            cash_summ = cash_summ * susp_per_mlt
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, chk_date)
                     cur.connection.commit()
                     chk_date = period_end_ast + SECOND
                     if not chk_date < period_start: break
+            cur.connection.commit()
+            
+        if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
+            cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = deactivated WHERE id=%s", ps.ps_id)
             cur.connection.commit()
     
     def run(self):
@@ -458,7 +512,7 @@ class periodical_service_bill(Thread):
                             if 0: assert isinstance(acc, AccountData)
                             try:
                                 if acc.acctf_id is None or acc.account_status == 2: continue
-                                self.iterate_ps(cur, caches, acc, ps, dateAT, 1)
+                                self.iterate_ps(cur, caches, acc, ps, dateAT, PERIOD)
                                 '''
                                 susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
                                 account_ballance = (acc.ballance or 0) + (acc.credit or 0)
@@ -601,6 +655,18 @@ class periodical_service_bill(Thread):
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
+                for addon_ps in caches.addonperiodical_cache.data:
+                    if 0: assert isinstance(addon_ps, AddonPeriodicalData)
+                    acc = caches.account_cache.by_account.get(addon_ps.account_id)
+                    if not acc:
+                        logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
+                    try:
+                        self.iterate_ps(cur, caches, acc, addon_ps, dateAT, ADDON)
+                    except Exception, ex:
+                                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                                if ex.__class__ in vars.db_errors: raise ex
+                        
+                
                 if caches.underbilled_accounts_cache.underbilled_acctfs:
                     print caches.underbilled_accounts_cache.underbilled_acctfs
                     cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""" % \

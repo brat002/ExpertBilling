@@ -48,6 +48,7 @@ from classes.nf_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
+import classes.vars as vars_
 from classes.vars import NfVars, NfQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
@@ -162,6 +163,7 @@ class SendPacketStream(Thread):
         
     def run(self):
         while True:
+            if suicideCondition[self.tname]: break
             if self.PAUSED:
                 time.sleep(5); continue
             send_packet = False
@@ -804,13 +806,17 @@ class ServiceThread(Thread):
                             #logger.info("len flowCache %s", len(queues.dcache))
                             logger.info("len flowQueue %s", len(queues.flowQueue))
                             logger.info("len dbQueue: %s", len(queues.databaseQueue))
-                            logger.info("len fnameQueue: %s", len(queues.fnameQueue))
+                            logger.info("len fnameQueue: %s", len(queues.databaseQueue.file_queue))
                             logger.info("len nfqueue: %s", len(queues.nfQueue))
+                            
+                        if not cacheMaster.cache.class_cache.data:
+                            logger.warning("NO CLASSES/CLASSNODES FOUND! THE DAEMON IS IDLE!", ())
+                            
+                        queues.databaseQueue.sui_check()
                     counter += 1
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
-                    if not cacheMaster.cache.class_cache.data:
-                        logger.warning("NO CLASSES/CLASSNODES FOUND! THE DAEMON IS IDLE!", ())
+                    
                     logger.info("ast time : %s", time.clock() - run_time)
             except Exception, ex:
                 logger.error("%s : #30110004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -833,10 +839,10 @@ class RecoveryThread(Thread):
     def run(self):
         global vars,queues
         try:
-            fllist = glob.glob(''.join((vars.DUMP_DIR, '/', vars.PREFIX + '*.dmp')))
+            fllist = glob.glob(''.join((vars.READ_DIR, '/', vars.PREFIX + '*.dmp')))
             if fllist:
-                with queues.fnameLock:
-                    for fl in fllist: queues.fnameQueue.appendleft(fl)
+                with queues.databaseQueue.file_lock:
+                    for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
         except Exception, ex:
             logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
         
@@ -912,8 +918,7 @@ def main ():
     '''thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
                 (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]'''
     
-    thrnames = [(NfFileReadThread, 'NfFileReadThread'), \
-                (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]
+    thrnames = [(FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]
     for thClass, thName in thrnames:
         threads.append(thClass())
         threads[-1].setName(thName)
@@ -987,13 +992,13 @@ if __name__=='__main__':
     try:
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
         
-        queues = NfQueues(vars.CACHE_DICTS)
+        queues = NfQueues(vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, logger, dcacheNum=vars.CACHE_DICTS)
         queues.nfFlowCache = FlowCache()
         
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
-        
+        vars_.logger = logger
         logger.info("Config variables: %s", repr(vars))
         logger.lprint('Nf start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)

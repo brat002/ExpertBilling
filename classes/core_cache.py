@@ -22,9 +22,10 @@ from core_class.SuspendedPeriodData import SuspendedPeriodData
 from common.AddonServiceData import AddonServiceData
 from common.AddonServiceTarifData import AddonServiceTarifData
 from common.AccountAddonServiceData import AccountAddonServiceData
+from core_class.AddonPeriodicalData import AddonPeriodicalData
 
 class CoreCaches(CacheCollection):
-    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache')
+    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache', 'addonperiodical_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -52,7 +53,8 @@ class CoreCaches(CacheCollection):
         self.addonservice_cache = AddonServiceCache()
         self.addontarifservice_cache = AddonServiceTarifCache()
         self.accountaddonservice_cache = AccountAddonServiceCache()
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache]
+        self.addonperiodical_cache = AddonPeriodicalCache()
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache]
         
         
 class AccountCache(CacheItem):
@@ -328,4 +330,9 @@ class AccountAddonServiceCache(CacheItem):
             self.by_id[addon.id]  = addon
             self.by_account[addon.account_id].append(addon)
             self.by_service[addon.service_id].append(addon)
+            
+class AddonPeriodicalCache(CacheItem):
+    __slots__ = ()
+    datatype = AddonPeriodicalData
+    sql = core_sql['addon_periodical']
             
