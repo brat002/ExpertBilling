@@ -528,6 +528,21 @@ class Account(models.Model):
     Для ipn_pool предлагать только пулы с service=ipn
     """
 
+    def get_actual_ballance(self):
+        return self.ballance+self.credit
+    
+    def ballance_isnt_good(self):
+        if self.ballance+self.credit<=0:
+            return True
+        else:
+            return False
+    
+    def status(self):
+        if self.status==1:
+            return True
+        else: 
+            return False    
+    
     class Admin:
         ordering = ['user']
         #list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
@@ -604,7 +619,7 @@ class Transaction(models.Model):
     summ=models.FloatField(default=0, blank=True)
     description = models.TextField(default='', blank=True)
     created=models.DateTimeField(auto_now_add=True, default='')
-    promise=models.FloatField(default=0, blank=True) 
+    promise=models.BooleanField(default=False) 
     end_promise=models.DateTimeField(auto_now_add=True, default='')
 
 

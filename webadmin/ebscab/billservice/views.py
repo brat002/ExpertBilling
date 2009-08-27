@@ -406,12 +406,13 @@ def card_acvation(request):
                 #user.save()
                 request.session['user'] = user
                 request.session.modified = True
-                transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now())
+                transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now(), promise=False)
                 transaction.save()
                 cache.delete(user.id)
                 cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
                 #return HttpResponseRedirect('/index/')
-            except: 
+            except Exception, e: 
+                print e
                 if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
                     cache.delete(user.id)
                     count = int(int(cache_user['count']))
