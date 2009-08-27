@@ -43,5 +43,5 @@ class AccountAddonServiceData(tuple):
     action_status = property(itemgetter(5))
     speed_status = property(itemgetter(6))
     temporary_blocked = property(itemgetter(7))
-    last_checkout = property(itemgetter(9))
+    last_checkout = property(itemgetter(8))
     

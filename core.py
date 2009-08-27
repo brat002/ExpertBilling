@@ -898,17 +898,22 @@ class addon_service(Thread):
                         service = caches.addonservice_cache.by_id.get(accservice.service_id)
                         #Проверка на требование отключения услуги
                         if service.service_type=='onetime':
-                            if not accservice.last_checkout:
-                                cur.execute("""
+                            
+                            cur.execute("SELECT id FROM billservice_addonservicetransaction WHERE type_id ='ADDONSERVICE_ONETIME' and accountaddonservice_id=%s", (accservice.id,))
+                            transactions = cur.fetchall()
+                            if not transactions and accservice.activated<=dateAT:
+                                sql = """
                                 INSERT INTO billservice_addonservicetransaction(
                                             service_id, service_type, account_id, accountaddonservice_id, 
                                             accounttarif_id, type_id, summ, created)
-                                    VALUES (%s, '%s', %s, %s, 
-                                            %s, "%s", %s, %s)
+                                    VALUES (%s, 'onetime', %s, %s, 
+                                            %s, '%s', %s, '%s')
 
-                                """, (service.id, service.service_type, acc.account_id, accservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
-                                )
-                                cur.connection.commit()
+                                """ % (service.id, acc.account_id, accservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
+                                #print sql
+                                cur.execute(sql)
+                                cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accservice.id))
+
                                 
                             sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
                             # Получаем delta
@@ -944,6 +949,7 @@ class addon_service(Thread):
                 cur.close()                
                 logger.info("Addon Service: %s: run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
+                cur.connection.rollback()
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)

@@ -10,10 +10,10 @@ from helpers import makeHeaders, dateDelim
 from time import mktime
 from CustomForms import ComboBoxDialog, CardPreviewDialog
 import datetime, calendar
-from helpers import transaction
+from helpers import transaction, get_free_addreses_from_pool
 from helpers import HeaderUtil, SplitterUtil
 from helpers import write_cards, get_type
-import IPy
+
 import os, datetime
 from randgen import GenPasswd2
 import string
@@ -723,26 +723,7 @@ class AddCards(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
             return        
 
-        def get_addreses_from_pool():
-            pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-
-            pool = self.connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-            ipinuse = self.connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
-            start_pool_ip = IPy.IP(pool.start_ip).int()
-            end_pool_ip = IPy.IP(pool.end_ip).int()
-            
-            ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-            if end_pool_ip-start_pool_ip-len(ipinuse_list)<self.count_spinBox.text().toInt()[0]:
-                QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
-                return                    
-            find = False
-            res = []
-            x = start_pool_ip
-            while x<=end_pool_ip:
-                if x not in ipinuse_list and len(res)<self.count_spinBox.text().toInt()[0]:
-                    res.append(transip("%s" % x))
-                x+=1
-            return res
+######################33
         
         
         pin_mask = ''
@@ -767,7 +748,7 @@ class AddCards(QtGui.QDialog):
         
         if self.radioButton_access.isChecked():
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-            ips = get_addreses_from_pool()
+            ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
             
         for x in xrange(0, self.count_spinBox.text().toInt()[0]):
             model = Object()

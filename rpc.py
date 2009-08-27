@@ -37,7 +37,7 @@ from chartprovider.bpcdplot import cdDrawer
 #from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period_info
+from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 
 try:    import mx.DateTime
@@ -766,37 +766,36 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         sql = "SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)" % service.timeperiod_id
 
-        print sql
         cur.execute(sql)
         connection.commit()
 
         timeperiods = map(Object, cur.fetchall())
-        print timeperiods
+
         res = False
         for timeperiod in timeperiods:
-            if in_period_info(timeperiod.time_start, timeperiod.length, timeperiod.repeat_after):
+            if res==True or in_period(timeperiod.time_start, timeperiod.length, timeperiod.repeat_after):
                 res=True
-        print 4
-        if res == False:
+
+        if res == False and ignore_locks==False:
             return "NOT_IN_PERIOD"
-        print 5
-        if service.change_speed:
-            print 5.5
+
+        if service.change_speed and ignore_locks==False:
+
             try:
                 cur.execute("SELECT id FROM billservice_accountaddonservice WHERE deactivated is Null and service_id IN (SELECT id FROM billservice_addonservice WHERE change_speed=True) and account_id=%s" % account.id)
-                print 5.6
+
             except Exception, e:
                 print e
             if cur.fetchall():
-                print 5.7
+
                 return "ALERADY_HAVE_SPEED_SERVICE"
-        print 6
+
         # Проверка на возможность активации услуги при наличии блокировок
-        if ignore_locks:
-            if service.allow_activation==False and (account.ballance<=0 or account.balance_blocked==True or account.disabled_by_limit==True or account_status!=1):
+        if not ignore_locks:
+            if service.allow_activation==False and (account.ballance<=0 or account.balance_blocked==True or account.disabled_by_limit==True or account.status!=1):
                 return "ACCOUNT_BLOCKED"
         
-        print 7
+
         #Получаем нужные параметры услуги из тарифного плана
         sql = "SELECT id, activation_count, activation_count_period_id FROM billservice_addonservicetarif WHERE tarif_id=%s and service_id = %s" % (account.tarif_id, service_id)
         cur.execute(sql)
@@ -808,15 +807,15 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         if r==[]:
             return 'ADDONSERVICE_TARIF_DOES_NOT_ALLOWED'
-        print 8
+
         tarif_service = Object(r[0]) 
-        print 8.1
-        if tarif_service.activation_count!=0:
-            print 8.2
+
+        if tarif_service.activation_count!=0 and innore_locks==False:
+
             if tarif_service.activation_count_period_id:
-                print 8.5
+
                 sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % tarif_service.activation_count_period_id
-                print sql
+
                 cur.execute(sql)
                 connection.commit()
                 result=[]
@@ -826,7 +825,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
                 if r==[]:
                     return None
-                print 9
+
                 settlement_period = Object(r[0]) 
                 if settlement_period.autostart:
                     settlement_period.time_start = account.accounttarif_date
@@ -852,13 +851,9 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
 
         if activation_date:
-            print 13
             sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,'%s')" % (service.id, account.id, activation_date)
         else:
-            print 14
-            
             sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,now())" % (service.id, account.id,)
-        print sql
         try:
             cur.execute(sql)
             connection.commit()
@@ -873,15 +868,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     @authentconn
     def del_addonservice(self, account_id, account_service_id, cur=None, connection=None):
  
-        print "account_id, account_service_id", account_id, account_service_id
- 
         #Получаем нужные параметры аккаунта
         cur.connection.commit()
         cur.execute("SELECT acc.id, get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_id FROM billservice_account as acc WHERE id = %s;", (account_id,))
         
         result=[]
         r=cur.fetchall()
-        print "r=", r
         cur.connection.commit()
         if len(r)>1:
             raise Exception
@@ -890,35 +882,25 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
-        print 3
         #Получаем нужные параметры услуги абонента
         sql = "SELECT id, service_id, account_id, activated, deactivated, action_status FROM billservice_accountaddonservice  WHERE id = %s" % account_service_id
         cur.execute(sql)
         connection.commit()
-        print 4
         result=[]
         r=cur.fetchall()
-        print "4",r
         if len(r)>1:
             raise Exception
 
         if r==[]:
             return 'ACCOUNT_ADDON_SERVICE_DOES_NOT_EXIST'
-        print 5        
         accountservice = Object(r[0]) 
-        print 6
         #print accounservice
         #Получаем нужные параметры услуги
         sql = "SELECT id, service_type, cancel_subscription, wyte_period_id, wyte_cost FROM billservice_addonservice WHERE id = %s" % accountservice.service_id
-        print 7
-        print sql
         cur.execute(sql)
-        print 8
         connection.commit()
         result=[]
         r=cur.fetchall()
-        print 9
-        print r
         if len(r)>1:
             raise Exception
 
@@ -927,32 +909,30 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 
         service = Object(r[0]) 
         
-        print 10
         if service.cancel_subscription:
-
-            sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % service.wyte_period_id
-            cur.execute(sql)
-            connection.commit()
-            result=[]
-            r=cur.fetchall()
-            print 11
-            print r
-            if len(r)>1:
-                raise Exception
-    
-            if r==[]:
-                return None
-                    
-            settlement_period = Object(r[0]) 
-            print 12
-            try:
-                settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
-            except Exception, e:
-                print e
-            print "delta", delta
+            
+            if service.wyte_period_id:
+                sql = "SELECT time_start, length, length_in, autostart  FROM billservice_settlementperiod WHERE id = %s" % service.wyte_period_id
+                cur.execute(sql)
+                connection.commit()
+                result=[]
+                r=cur.fetchall()
+                if len(r)>1:
+                    raise Exception
+        
+                if r==[]:
+                    return None
+                        
+                settlement_period = Object(r[0]) 
+                try:
+                    settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
+                except Exception, e:
+                    print e
+            else:
+                delta = 0
             now = datetime.datetime.now()
-            if ((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta:
-                print 16
+            
+            if (((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta) or (service.wyte_cost and delta == 0):
                 try:
                     model = Object()
                     model.account_id = account_id
@@ -966,9 +946,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                     model.accountaddonservice_id = account_service_id
                 except Exception, e:
                     print e
-                print "transaction"
                 sql = model.save("billservice_addonservicetransaction")
-                print sql
                 cur.execute(sql)
             #Отключаем услугу
 

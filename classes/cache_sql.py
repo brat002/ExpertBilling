@@ -116,7 +116,7 @@ core_sql = \
                                 speed_status, temporary_blocked, last_checkout
                            FROM billservice_accountaddonservice as accs 
                            WHERE (deactivated is Null or (last_checkout<deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
-                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='onetime' and (action_status=True))) and temporary_blocked is Null;"""}
+                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (action_status=True or last_checkout is Null))) and temporary_blocked is Null;"""}
 rad_sql = \
         {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 

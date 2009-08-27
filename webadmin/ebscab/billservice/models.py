@@ -952,6 +952,7 @@ class x8021(models.Model):
 
 class AddonService(models.Model):    
     name = models.CharField(max_length=255)    
+    comment = models.CharField(max_length=255, default='')
     allow_activation = models.BooleanField(default = False)    
     service_type = models.CharField(max_length=32, choices=((u"Разовая услуга","onetime"),(u"Периодическая услуга","periodical",),))    
     sp_type = models.CharField(max_length=32, choices=((u"В начале расчётного периода","AT_START"),(u"В конце расчётного периода","AT_END"),(u"На протяжении расчётного периода","GRADUAL"),))    

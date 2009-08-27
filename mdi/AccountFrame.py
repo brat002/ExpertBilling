@@ -3184,52 +3184,16 @@ class AccountWindow(QtGui.QMainWindow):
     def get_ipn_from_pool(self):
         pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
         if pool_id!=0:
-            pool = self.connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-            ipinuse = self.connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
-            start_pool_ip = IPy.IP(pool.start_ip).int()
-            end_pool_ip = IPy.IP(pool.end_ip).int()
-            
-            ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-            print ipinuse_list
-            find = False
-            x = start_pool_ip
-            while x<=end_pool_ip:
-                if x not in ipinuse_list: find = True; break
-                x+=1
-                
-            if find==False:
-                QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"В выбранном пуле отсутствуют свободные IP адреса."))
-                return
-            
-            new_ip = transip("%s" % x)
-            self.lineEdit_ipn_ip_address.setText(new_ip)
+            child = IPAddressSelectForm(self.connection, pool_id)
+            if child.exec_()==1:
+                self.lineEdit_ipn_ip_address.setText(child.selected_ip)
                 
     def get_vpn_from_pool(self):
         pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
         if pool_id!=0:
-            pool = self.connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-            ipinuse = self.connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
-            start_pool_ip = IPy.IP(pool.start_ip).int()
-            end_pool_ip = IPy.IP(pool.end_ip).int()
-            
-            ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-            a = start_pool_ip
-            find = False
-            print start_pool_ip, end_pool_ip
-            #for x in xrange(start_pool_ip, end_pool_ip+long(1)):
-            #    if x not in ipinuse_list: find = True; break
-                
-            x = start_pool_ip
-            while x<=end_pool_ip:
-                if x not in ipinuse_list: find = True; break
-                x+=1
-            
-            if find==False:
-                QtGui.QMessageBox.warning(self, u"Внимание!", unicode(u"В выбранном пуле отсутствуют свободные IP адреса."))
-                return
-            
-            new_ip = transip("%s" % x)
-            self.lineEdit_vpn_ip_address.setText(new_ip)
+            child = IPAddressSelectForm(self.connection, pool_id)
+            if child.exec_()==1:
+                self.lineEdit_vpn_ip_address.setText(child.selected_ip)
             
   
     def generate_login(self):
@@ -3456,6 +3420,9 @@ class AccountWindow(QtGui.QMainWindow):
                 model.ipn_ipinuse_id = None
                 
             model.username = unicode(self.lineEdit_username.text())
+            if model.username=='':
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не указали имя пользователя."))
+                return 
             #print 1
             model.password = unicode(self.lineEdit_password.text())
             model.fullname = unicode(self.lineEdit_name.text())
@@ -3688,10 +3655,11 @@ class AccountWindow(QtGui.QMainWindow):
                         model.ipn_ipinuse_id = None
                 
                     self.connection.save(model, "billservice_account")
-            except:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
-                    self.connection.rollback()
-                    return 
+            except Exception:
+                print e
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
+                self.connection.rollback()
+                return 
 
              #Операции с пулом    
             try:
@@ -4304,8 +4272,6 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
             
     def refresh(self, item=None, k=''):
-        a = IPAddressSelectForm(self.connection)
-        a.exec_()
         self.tableWidget.setSortingEnabled(False)
         #print item
         if item:
