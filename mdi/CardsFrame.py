@@ -690,7 +690,7 @@ class AddCards(QtGui.QDialog):
         
         if self.radioButton_prepaid.isChecked()==True:
             self.comboBox_tarif.setDisabled(True)
-            #self.spinBox_login.setDisabled(True)
+            self.spinBox_login.setDisabled(True)
             self.comboBox_ippool.setDisabled(True)
             self.comboBox_nas.setDisabled(True)
 
