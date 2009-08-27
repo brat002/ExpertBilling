@@ -20,7 +20,9 @@
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Название</th>
+                        <th>Описание</th>
 						<th>Стоимость</th>
+                        <th>Можно активировать</th>
 						<th>Плата за досрочное отключение</th>
 						<th>Минимальный период</th>
 						<th>Подключить/Отключить</th>
@@ -28,7 +30,9 @@
 					{% for service in services %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
+                            <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.comment }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.cost|floatformat:2 }}</td>
+                            <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.timeperiod}}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost|floatformat:2  }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.wyte_period.name|slice:"1:" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center"><a href="/service/set/{{ service.service.id }}/">Подключить</a></td>
@@ -51,17 +55,19 @@
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Название</th>
+                        <th>Описание</th>
 						<th>Cтоимость</th>
 						<th>Когда подключена</th>
-						<th>Когда отключена</th>
+						<th>Стоимость отключения</th>
 						<th>Отключить</th>
 					</tr>
 					{% for user_service in user_services %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.name }}</td>
+                            <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.comment}}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.cost|floatformat:2 }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.activated|date:"d.m.Y H:i"  }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.deactivated|date:"d.m.Y H:i"  }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ user_service.service.wyte_cost  }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{% if not user_service.deactivated %}<a href="/service/del/{{ user_service.id }}/">Отключить</a>{% endif %}</td>
 						</tr>
 					{% endfor %}
