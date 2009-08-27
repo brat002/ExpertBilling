@@ -329,7 +329,14 @@ def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created
     cursor.execute("""
                    INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, datetime) VALUES (%s, %s, %s, %s, %s, %s);
                    """, (ps_id, accounttarif, account_id, type_id, summ, created,))
-
+def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
+    if not created:
+        created=datetime.datetime.now()
+    cursor.execute("""
+                   INSERT INTO billservice_addonservicetransaction(service_id, service_type, account_id, accountaddonservice_id, 
+            accounttarif_id, summ, created, type_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+                   """, (addon_id, service_type, account_id, ps_id, accounttarif, account_id, summ, created, type_id))
+    
 def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     if co_datetime:
         cursor.execute("""
@@ -341,6 +348,18 @@ def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
                    SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory
                     WHERE service_id=%s AND accounttarif_id=%s ORDER BY datetime DESC LIMIT 1
                     """ , (ps_id, accounttarif,))
+    try:
+        return cursor.fetchone()[0]
+    except:
+        return None
+    
+def get_last_addon_checkout(cursor, ps_id, accounttarif, co_datetime=None):
+
+    cursor.execute("""
+                    SELECT datetime::timestamp without time zone FROM billservice_addonservicetransaction
+                    WHERE accountaddonservice_id=%s AND accounttarif_id=%s ORDER BY created DESC LIMIT 1
+                    """ , (ps_id, accounttarif))
+
     try:
         return cursor.fetchone()[0]
     except:

@@ -116,7 +116,12 @@ core_sql = \
                                 speed_status, temporary_blocked, last_checkout
                            FROM billservice_accountaddonservice as accs 
                            WHERE (deactivated is Null or (last_checkout<deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
-                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (action_status=True or last_checkout is Null))) and temporary_blocked is Null;"""}
+                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (action_status=True or last_checkout is Null))) and temporary_blocked is Null;""",
+          'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, sp.time_start,
+                        sp.length, sp.length_in, sp.autostart,
+                        accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id 
+                        FROM billservice_addonservice AS ads JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
+                        WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);"""}
 rad_sql = \
         {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 

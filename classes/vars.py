@@ -4,7 +4,8 @@ from collections import deque, defaultdict
 from threading import Lock
 import dictionary
 from operator import itemgetter
-
+from system.PersistentQueues import FileSaveDeque
+logger = None
 
 class Vars(object):
     __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types')
@@ -161,11 +162,13 @@ class NfQueues(object):
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
     __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock', 'packetIndex', 'packetIndexLock')
-    def __init__(self, dcacheNum = 10):
+    def __init__(self, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, fsd_logger, dcacheNum = 10, fsd_name = 'NF_SEND_FSD'):
         self.nfFlowCache = None
         self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
         self.flowQueue = deque(); self.fqueueLock = Lock()
-        self.databaseQueue = deque(); self.dbLock = Lock()
+        #self.databaseQueue = deque(); self.dbLock = Lock()
+        self.dbLock = Lock()
+        self.databaseQueue = FileSaveDeque(fsd_name, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, self.dbLock, fsd_logger)
         self.fnameQueue = deque(); self.fnameLock = Lock()
         self.nfQueue = deque(); self.nfqLock = Lock()
         self.packetIndex = 0; self.packetIndexLock = Lock()
