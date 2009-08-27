@@ -487,6 +487,39 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #del sql
         return
 
+
+    @authentconn
+    def activate_pay_card(self, account_id, serial, card_id, pin, cur=None, connection=None):
+        status_ok = 1
+        status_bad_userpassword = 2
+        status_card_was_activated =3
+        now = datetime.datetime.now()
+        try:
+            if serial and pin and card_id and account_id:
+                cur.execute("SELECT * FROM billservice_card WHERE id=%s and series=%s and pin=%s and disabled=False;",  (card_id, serial, pin ))
+                card = cur.fetchone()
+                if not card: return "CARD_NOT_FOUND"
+                
+                if card["sold"] is None: return "CARD_NOT_SOLD"
+                print "card['activated']", card['activated']
+                if card['activated']: return "CARD_ALREADY_ACTIVATED"
+                
+                if card['start_date']>now or card['end_date']<now: return "CARD_EXPIRED"
+                                
+                cur.execute(u"""
+                INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
+                VALUES('Активация карты оплаты', %s, 'PAY_CARD', True, %s, %s*(-1),'', %s);
+                """, (account_id, card["tarif_id"], card['nominal'], now))
+        
+                cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
+                connection.commit()
+                return  "CARD_ACTIVATED"
+        except Exception, e:
+            print e
+            connection.rollback()
+            return "CARD_ACTIVATION_ERROR"
+                            
+    
     @authentconn
     def iddelete(self, id, table, cur=None, connection=None):
         sql = u"DELETE FROM %s where id=%d" % (table, id)

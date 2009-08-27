@@ -8,11 +8,12 @@
 		var pin=document.getElementById("id_pin");
 		var series=document.getElementById("id_series");
 		var message=document.getElementById("message");
+        var card_id=document.getElementById("id_card_id");
 	 	jQuery.ajax({
         	type: "POST",
         	cache: false,
         	url: '/card/activation/',
-        	data: { 'series': series.value, 'pin': pin.value},
+        	data: { 'series': series.value, 'pin': pin.value, 'card_id': card_id.value},
         	timeout: 15000,
 			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         	//beforeSend: function(XMLHttpRequest){},
@@ -24,6 +25,7 @@
 				message.innerHTML = ret['error_message'];
 				pin.value='';
 				series.value='';
+                card_id.value='';
 				if (ret['error_message'] == 'True') {
 					window.location.reload();
 				}

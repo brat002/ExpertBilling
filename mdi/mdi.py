@@ -604,7 +604,7 @@ def login():
         if child.exec_()==1:
             #waitchild = ConnectionWaiting()
             #waitchild.show()
-            global splash
+            global splash, username, server_ip
             pixmap = QtGui.QPixmap("splash.png")
             splash = QtGui.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
             splash.setMask(pixmap.mask()) # this is usefull if the splashscreen is not a regular ractangle...
@@ -617,6 +617,8 @@ def login():
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 password = unicode(child.password.toHex())
                 connection._setNewConnectionValidator(antiMungeValidator())
+                username = str(child.name)
+                server_ip = unicode(child.address)
                 connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
                 connection.test()
                 #waitchild.hide()
@@ -638,7 +640,7 @@ def login():
 if __name__ == "__main__":
     global app
     app = QtGui.QApplication(sys.argv)
-    global connection
+    global connection, username, server_ip
     connection = login() 
        
     if connection is None:
@@ -649,7 +651,8 @@ if __name__ == "__main__":
         mainwindow = MainWindow()
         splash.finish(mainwindow) 
         mainwindow.show()
-        #app.setStyle("cleanlooks")
+        mainwindow.setWindowTitle("ExpertBilling administrator interface #%s - %s" % (username, server_ip))  
+        app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("./style.qss","r").read())
         sys.exit(app.exec_())
