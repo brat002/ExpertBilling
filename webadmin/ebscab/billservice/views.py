@@ -56,7 +56,7 @@ def login(request):
                 if message_type == 2:
                     message = u'Не верно введен логин или пароль'
                 if message_type == 3:
-                    message = u'Карточка уже была активирована' 
+                    message = u'Карточка уже была активирована'
             form = LoginForm()
             return {
                     'form':form,
@@ -557,7 +557,8 @@ def addon_service(request):
                    'user':user,
                    }
     if request.session.has_key('service_message'):
-        return_dict['service_message'] = request.session['service_message'] 
+        return_dict['service_message'] = request.session['service_message']
+        del(request.session['service_message']) 
     return return_dict 
     
 def service_action(request, action, id):

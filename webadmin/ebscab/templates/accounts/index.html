@@ -24,6 +24,7 @@
 				message.innerHTML = ret['error_message'];
 				pin.value='';
 				series.value='';
+				window.location.reload();
 			},
         	error: function(data, status){
 				var ret = eval('('+data+')'); 
