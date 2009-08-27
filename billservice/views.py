@@ -394,42 +394,69 @@ def card_acvation(request):
                     'redirect':'/',
                    }
             #HttpResponseRedirect('/index/')
+    
     if request.method == 'POST':
         form = CardForm(request.POST)
+        
         if form.is_valid():
             try:
-                card = Card.objects.get(series=form.cleaned_data['series'], pin=form.cleaned_data['pin'], sold__isnull=False, start_date__lte=datetime.datetime.now(), end_date__gte=datetime.datetime.now(), activated__isnull=True)
+                print form.cleaned_data['series'], form.cleaned_data['pin'], form.cleaned_data['card_id']
+                #card = Card.objects.get(series=form.cleaned_data['series'], pin=form.cleaned_data['pin'], sold__isnull=False, start_date__lte=datetime.datetime.now(), end_date__gte=datetime.datetime.now(), activated__isnull=True)
                 
-                card.activated=datetime.datetime.now()
-                card.activated_by = user
-                card.save()
-                summ = -card.nominal
-                type = TransactionType.objects.get(internal_name=u'ACTIVATION_CARD')
+                #card.activated=datetime.datetime.now()
+                #card.activated_by = user
+                #card.save()
+                #summ = -card.nominal
+                #type = TransactionType.objects.get(internal_name=u'ACTIVATION_CARD')
                 #user.ballance = user.ballance-summ
                 #user.save()
-                request.session['user'] = user
-                request.session.modified = True
-                transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now(), promise=False)
-                transaction.save()
-                cache.delete(user.id)
-                cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
+                #request.session['user'] = user
+                #request.session.modified = True
+                #transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now(), promise=False)
+                #transaction.save()
+                #cache.delete(user.id)
+                #cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
                 #return HttpResponseRedirect('/index/')
+                connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
+                import hashlib
+                md1 = hashlib.md5(settings.RPC_PASSWORD)
+                md1.hexdigest()
+               
+                password = str(md1.hexdigest())
+                connection_server._setNewConnectionValidator(antiMungeValidator())
+                connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
+
+                res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
+                print "res=", res
+
+                if res == 'CARD_NOT_FOUND':
+                    error_message = u'Ошибка активаци. Карта не найдена.'
+                elif res == 'CARD_NOT_SOLD':
+                    error_message = u'Ошибка активации. Карта не была продана.'
+                elif res == 'CARD_ALREADY_ACTIVATED':
+                    error_message = u'Ошибка активации. Карта была активирована раньше.'
+                elif res == 'CARD_EXPIRED':
+                    error_message = u'Ошибка активации. Срок действия карты истёк.'
+                elif res == 'CARD_ACTIVATED':
+                    error_message = u'Карта успешно активирована.'
+                elif res == 'CARD_ACTIVATION_ERROR':
+                    error_message = u'Ошибка активации карты.'
             except Exception, e: 
                 print e
-                if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
-                    cache.delete(user.id)
-                    count = int(int(cache_user['count']))
-                    cache.set(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
-                form = CardForm(request.POST)
-                return {
-                        'error_message':u"Ваша карточка не может быть активирована!",
-                        #'form': form,
-                        }
+            #if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
+            #    cache.delete(user.id)
+            #    count = int(int(cache_user['count']))
+            #    cache.set(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
+            #form = CardForm(request.POST)
+            return {
+                    'error_message':error_message,
+                    #'form': form,
+                    }
         else:
-            count = int(cache_user['count'])
-            if int(cache_user['count']) < settings.ACTIVATION_COUNT+1:
-                cache.delete(user.id)
-                cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
+            #count = int(cache_user['count'])
+            #if int(cache_user['count']) < settings.ACTIVATION_COUNT+1:
+            #    cache.delete(user.id)
+            #    cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
             return {
                     'error_message': u"Проверьте заполнение формы",
                     #'form': form,
@@ -552,7 +579,27 @@ def addon_service(request):
     
     services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id)
     user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
-    user_services_id = [x.service.id for x in user_services if not x.deactivated]
+    accountservices = []
+    for uservice in user_services:
+        print uservice.service.wyte_period_id, uservice.service.name
+        if uservice.service.wyte_period_id:
+            delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
+            print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
+            if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
+                uservice.wyte = True
+                print 11
+                uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
+            else:
+                print 33
+                uservice.wyte = False
+        elif uservice.service.wyte_cost:
+            uservice.wyte = True
+        else:
+            uservice.wyte = False
+            print 22
+        accountservices.append(uservice)  
+        
+    user_services_id = [x.service.id for x in accountservices if not x.deactivated]
     services = services.exclude(service__id__in=user_services_id) 
     return_dict = {
                    'services':services,

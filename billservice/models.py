@@ -537,7 +537,7 @@ class Account(models.Model):
         else:
             return False
     
-    def status(self):
+    def account_status(self):
         if self.status==1:
             return True
         else: 
