@@ -1362,6 +1362,7 @@ class AccountServiceThread(Thread):
                     if counter == 0:
                         #allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
                         #if not flags.allowedUsersCheck: continue
+                        counter = 0
                         flags.allowedUsersCheck = True
                     counter += 1
                     if counter == 5:

@@ -31,13 +31,18 @@ from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 
 import twisted.internet
+#import twisted.protocols.ftp
+from twisted.protocols.basic import implements, interfaces, defer
 from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.protocol import Protocol, ReconnectingClientFactory
+
 try:
     from twisted.internet import pollreactor
     pollreactor.install()
 except:
     print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
+from twisted.internet.protocol import ClientCreator, ClientFactory
 
 from classes.nf_cache import *
 from classes.common.Flow5Data import Flow5Data
@@ -59,11 +64,13 @@ DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
 MAX_PACKET_INDEX = 2147483647L
 
+NOT_TRASMITTED = 0
+WRITE_OK = 1
 
 try:    import mx.DateTime
 except: pass
 
-class Reception(DatagramProtocol):
+class Reception_UDP(DatagramProtocol):
     '''
     Twisted Asynchronous server that recieves datagrams with NetFlow packets
     and appends them to 'nfQueue' queue.
@@ -73,7 +80,220 @@ class Reception(DatagramProtocol):
             queues.nfQueue.append((data, addrport))
         else:
             logger.error("NF server exception: packet %s <= %s", (len(data), vars.MAX_DATAGRAM_LEN))
-             
+            
+class SendPacketProducer(object):
+
+    implements(interfaces.IPullProducer)
+
+    def __init__(self, packet_queue, packet_lock, consumer, delimeter):
+        
+        self.packet_queue = packet_queue
+        self.packet_lock = packet_lock
+        self.consumer = consumer
+        self.consumer.registerProducer(self, False)
+        self.delimeter = delimeter
+        self.delim_len = len(self.delimeter)
+        
+    def pauseProducing(self):
+        pass
+
+    def stopProducing(self):
+        logger.warning("Sender consumer asked producer to stop!", ())
+        
+    def resumeProducing(self):
+        send_packet = False
+        packet_status = 0
+        '''
+        while True:
+            if len(self.packet_queue) > 0:
+                with self.packet_lock:
+                    if len(self.packet_queue) > 0:
+                        send_packet = self.packet_queue.popleft()
+            if not send_packet: 
+                time.sleep(5); continue
+            
+        '''
+        if len(self.packet_queue) > 0:
+            with self.packet_lock:
+                if len(self.packet_queue) > 0:
+                    send_packet = self.packet_queue.popleft()
+        if not send_packet:
+            self.pauseProducing()
+            #return
+            #self.consumer.write('')
+        else:        
+            packet_len = len(send_packet) + 5 + self.delim_len
+            str_len = str(packet_len)[:5]
+            formatted_packet = '0' * (len(str_len) - 5) + str_len + send_packet + self.delimeter
+            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
+                with self.packet_lock:
+                    self.packet_queue.appendleft(send_packet)         
+        ''''''
+
+class SendPacketStream(Thread):
+
+    implements(interfaces.IProducer)
+
+    def __init__(self, packet_queue, packet_lock, delimeter):
+        self.tname = self.__class__.__name__
+        Thread.__init__(self)
+        
+        self.packet_queue = packet_queue
+        self.packet_lock = packet_lock
+
+        self.delimeter = delimeter
+        self.delim_len = len(self.delimeter)
+        self.PAUSED = True
+        
+    def registerConsumer_(self, consumer):
+        self.consumer = consumer
+        self.consumer.registerProducer(self, True)
+        self.resumeProducing()
+        
+    def pauseProducing(self):
+        self.PAUSED = True
+
+    def stopProducing(self):
+        self.PAUSED = True
+        logger.warning("Sender consumer asked producer to stop!", ())
+        
+    def resumeProducing(self):
+        self.PAUSED = False
+        
+    def run(self):
+        while True:
+            if self.PAUSED:
+                time.sleep(5); continue
+            send_packet = False
+            packet_status = 0
+            if len(self.packet_queue) > 0:
+                with self.packet_lock:
+                    if len(self.packet_queue) > 0:
+                        send_packet = self.packet_queue.popleft()
+            if not send_packet: 
+                time.sleep(5)
+                continue
+            print len(send_packet)
+            packet_len = len(send_packet) + 5
+            str_len = str(packet_len)[:5]
+            formatted_packet = '0' * (5 - len(str_len)) + str_len + send_packet + self.delimeter
+            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
+                with self.packet_lock:
+                    self.packet_queue.appendleft(send_packet)
+            
+        '''
+        while True:
+            if len(self.packet_queue) > 0:
+                with self.packet_lock:
+                    if len(self.packet_queue) > 0:
+                        send_packet = self.packet_queue.popleft()
+            if not send_packet: 
+                time.sleep(5); continue
+            
+        
+        if len(self.packet_queue) > 0:
+            with self.packet_lock:
+                if len(self.packet_queue) > 0:
+                    send_packet = self.packet_queue.popleft()
+        if not send_packet:
+            self.pauseProducing()
+            #return
+            #self.consumer.write('')
+        else:        
+            packet_len = len(send_packet) + 5 + self.delim_len
+            str_len = str(packet_len)[:5]
+            formatted_packet = '0' * (len(str_len) - 5) + str_len + send_packet + self.delimeter
+            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
+                with self.packet_lock:
+                    self.packet_queue.appendleft(send_packet)         
+        '''
+class TCPSender(Protocol):
+    implements(interfaces.IConsumer)
+    
+    isConnected = False
+    
+    def __init__(self, producer):
+        #super(TCPSender, self).__init__()
+        self.producer = producer
+
+    def connectionMade(self):
+        self.isConnected = True
+        self.transport.bufferSize = 8192
+        #self.producer_ = self.producer(queues.databaseQueue, queues.dbLock, self, vars.NFR_DELIMITER)
+        self.producer.registerConsumer_(self)
+        
+    def connectionLost(self, reason):
+        self.isConnected = False
+    def dataReceived(self, data):
+        print 'datarecieved'
+        if data == '!SLP':
+            time.sleep(30)
+            
+    def registerProducer(self, producer, streaming):
+        return self.transport.registerProducer(producer, streaming)
+
+    def unregisterProducer(self):
+        self.transport.unregisterProducer()
+        self.transport.loseConnection()
+
+    def write(self, formatted_packet):
+        if self.isConnected:
+            print 'SENT LINE: ', formatted_packet[:6], '|', formatted_packet[-6:]
+            self.transport.write(formatted_packet)
+            '''
+            try:
+                packet_status = 0
+                packet_len = len(formatted_packet)
+                
+                while True:
+                    formatted_packet = formatted_packet[packet_status:]
+                    packet_status = self.transport.write(formatted_packet)
+                    if not packet_status or packet_status == len(formatted_packet):
+                        break
+                return WRITE_OK
+            except Exception, ex:
+                logger.error("PROTOCOL WRITE ERROR: %s", repr(ex))
+                return NOT_TRASMITTED'''
+        else:
+            return NOT_TRASMITTED
+
+
+    def resumeProducing(self):
+        self.transport.resumeProducing()
+
+    def pauseProducing(self):
+        self.transport.pauseProducing()
+
+    def stopProducing(self):
+        self.transport.stopProducing()
+
+    
+            
+class TCPSender_ClientFactory(ReconnectingClientFactory):
+    protocol = TCPSender
+    def __init__(self, producer):
+        #super(TCPSender_ClientFactory, self).__init__()
+        self.Producer = producer
+        
+    def startedConnecting(self, connector):
+        logger.info('SENDER: Started connecting.', ())
+
+    def buildProtocol(self, addr):
+        logger.info('SENDER: Connected.', ())
+        self.resetDelay()
+        return TCPSender(self.Producer)
+        #tcs.producer = self.producer
+        #return tcs
+
+    def clientConnectionLost(self, connector, reason):
+        logger.info('SENDER: Lost connection.  Reason: %s', reason)
+        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        logger.info('SENDER: Connection failed. Reason:', reason)
+        ReconnectingClientFactory.clientConnectionFailed(self, connector,
+                                                         reason)
+
 class nfDequeThread(Thread):
     '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
     that gets flows and caches them.'''
@@ -501,7 +721,7 @@ class NfFileReadThread(Thread):
                 if self.allow_dump:
                     dump_queue = None
                     dump_index = -1 * self.allow_dump * vars.FILE_PACK
-                    with queues.databaseQueue:
+                    with queues.dbLock:
                         dump_queue = queues.databaseQueue[dump_index:]
                         queues.databaseQueue = queues.databaseQueue[:dump_index]
                     if dump_queue:
@@ -575,7 +795,10 @@ class ServiceThread(Thread):
                     renewCaches(cur, cacheMaster, NfCaches, 11)
                     cur.close()
                     if counter % 5 == 0 or time_run:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data)); counter = 0
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        #if not flags.allowedUsersCheck: continue
+                        counter = 0
+                        flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:
                             #logger.info("len flowCache %s", len(queues.dcache))
@@ -601,7 +824,9 @@ class ServiceThread(Thread):
             gc.collect()
             time.sleep(20)
     
-
+def ungraceful_save():
+    logger.warning("UNGRACEFUL SAVE NOT IMPLEMENTED!", ())
+    
 class RecoveryThread(Thread):
     def __init__(self):
         Thread.__init__(self)
@@ -684,13 +909,18 @@ def main ():
         time.sleep(0.5)
         
     threads = []
-    thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
-                (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]
+    '''thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
+                (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]'''
     
+    thrnames = [(NfFileReadThread, 'NfFileReadThread'), \
+                (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]
     for thClass, thName in thrnames:
         threads.append(thClass())
         threads[-1].setName(thName)
 
+    senderThread = SendPacketStream(queues.databaseQueue, queues.dbLock, vars.NFR_DELIMITER)
+    senderThread.setName('SenderStream')
+    threads.append(senderThread)
     #-----
     cacheThr = ServiceThread()
     suicideCondition[cacheThr.__class__.__name__] = False
@@ -729,7 +959,13 @@ def main ():
 
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
-    reactor.listenUDP(vars.PORT, Reception())
+    
+    
+    reactor.listenUDP(vars.PORT, Reception_UDP())
+    
+    sender_factory = TCPSender_ClientFactory(senderThread)
+    reactor.connectTCP(vars.NFR_HOST, vars.NFR_PORT, sender_factory)
+    #
     savepid(vars.piddir, vars.name)
     print "ebs: nf: started"    
     reactor.run(installSignalHandlers=False)
@@ -779,7 +1015,7 @@ if __name__=='__main__':
 
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())         
+        allowedUsers = setAllowedUsers(_1i())         
         allowedUsers()
         #-------------------
         print "ebs: nf: configs read, about to start"

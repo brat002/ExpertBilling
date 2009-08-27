@@ -81,7 +81,7 @@ class NfVars(Vars):
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('HOST', 'PORT', 'NFR_HOST', 'NFR_PORT', 'NFR_ADDR', 'SOCK_TIMEOUT', 'SAVE_DIR', 'READ_DIR', 'PREFIX', 'AGGR_TIME', 'AGGR_NUM',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'DUMP_DIR', 'CACHE_DICTS', 'SOCK_TYPE', 'FILE_PACK', 'PACKET_PACK', 'CHECK_CLASSES', 'MAX_DATAGRAM_LEN', 'RECOVER_DUMP', 'NF_TIME_MOD',\
-                 'MAX_SENDBUF_LEN')
+                 'MAX_SENDBUF_LEN', 'NFR_DELIMITER')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -89,7 +89,7 @@ class NfVars(Vars):
         self.NFR_PORT = 36577
         self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
         self.SOCK_TIMEOUT = 5
-        self.AGGR_TIME, self.AGGR_NUM = 120, 667
+        self.AGGR_TIME, self.AGGR_NUM = 120, 200
         self.RECOVER_DUMP = True
         self.FLOW_TYPES = {5 : (None, None)}
         self.flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
@@ -103,11 +103,12 @@ class NfVars(Vars):
         self.HOST = '0.0.0.0'
         self.SOCK_TYPE = 0
         self.FILE_PACK = 300
-        self.PACKET_PACK = 37
+        self.PACKET_PACK = 32
         self.CHECK_CLASSES = 0
         self.MAX_DATAGRAM_LEN = 8192
         self.NF_TIME_MOD = 20
         self.MAX_SENDBUF_LEN = 10000
+        self.NFR_DELIMITER = '--NFRP--'
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -133,7 +134,7 @@ class NfVars(Vars):
             self.RECOVER_DUMP = False if config.get(name, 'recover_dump').lower() in ('false', '0') else True
         if config.has_option(name, 'sock_timeout'): self.SOCK_TIMEOUT = config.getint(name, 'sock_timeout')
         if config.has_option(name, 'aggrtime'):     self.AGGR_TIME = config.getint(name, 'aggrtime')
-        if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum')
+        if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum') % 500
         if config.has_option(name, 'checkclasses'): self.CHECK_CLASSES = config.getint(name, 'checkclasses')
         if config.has_option(name, 'file_pack'):    self.FILE_PACK = config.getint(name, 'file_pack')
         if config.has_option(name, 'packet_pack'):  self.PACKET_PACK = config.getint(name, 'packet_pack')
@@ -162,7 +163,7 @@ class NfQueues(object):
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock', 'packetIndex', 'packetIndexLock')
     def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
-        self.dcaches = [{}]*dcacheNum; self.dcacheLocks = [Lock()]*dcacheNum
+        self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
         self.flowQueue = deque(); self.fqueueLock = Lock()
         self.databaseQueue = deque(); self.dbLock = Lock()
         self.fnameQueue = deque(); self.fnameLock = Lock()
@@ -174,7 +175,8 @@ class NfQueues(object):
 class NfrVars(Vars):
     __slots__ = ('NFR_SESSION', 'HOST', 'PORT', 'ADDR', 'sendFlag', 'SAVE_DIR', 'GROUP_AGGR_TIME', 'STAT_AGGR_TIME',\
                  'STAT_DICTS', 'GROUP_DICTS', 'SOCK_TYPE', 'STORE_NA_TARIF', 'STORE_NA_ACCOUNT', 'MAX_DATAGRAM_LEN',\
-                 'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS', 'ALLOWED_NF_IP_LIST')
+                 'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS',\
+                 'ALLOWED_NF_IP_LIST', 'NFR_DELIMITER')
     
     def __init__(self):
         super(NfrVars, self).__init__()
@@ -198,6 +200,7 @@ class NfrVars(Vars):
         self.GLOBALSTAT_THREADS = 1
         self.BILL_THREADS = 1
         self.ALLOWED_NF_IP_LIST = ['127.0.0.1']
+        self.NFR_DELIMITER = '--NFRP--'
         
     def get_dynamic(self, **kwargs):
         super(NfrVars, self).get_dynamic(**kwargs)
@@ -251,8 +254,8 @@ class NfrQueues(object):
         #[(1,2,3)][0][4]['INPUT']
         #[(1,2, )][1] = group info
         #lambda: [defaultdict(lambda: {'INPUT':0, 'OUTPUT':0}), None])
-        self.groupAggrDicts = [{}]*groupDicts;     self.statAggrDicts = [{}]*statDicts
-        self.groupAggrLocks = [Lock()]*groupDicts; self.statAggrLocks = [Lock()]*statDicts
+        self.groupAggrDicts = [{} for i in xrange(groupDicts)];     self.statAggrDicts = [{} for i in xrange(statDicts)]
+        self.groupAggrLocks = [Lock() for i in xrange(groupDicts)]; self.statAggrLocks = [Lock() for i in xrange(statDicts)]
         self.groupDeque = deque(); self.groupLock = Lock()
         self.statDeque =  deque(); self.statLock = Lock()
         self.depickerQueue = deque(); self.depickerLock = Lock()

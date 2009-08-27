@@ -31,7 +31,8 @@ from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, gracefu
 from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
 import twisted.internet
-from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.protocol import DatagramProtocol, Factory
+from twisted.protocols.basic import LineReceiver
 try:
     from twisted.internet import pollreactor
     pollreactor.install()
@@ -53,10 +54,13 @@ except: print 'cannot import mx'
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
-NFR_PACKET_HEADER_LEN = 16
+NFR_PACKET_HEADER_LEN  = 16
+TCP_PACKET_SIZE_HEADER = 5
 NAME = 'nfroutine'
 DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
+
+INT_ME_FN = lambda xt, y: (xt[0] + (ord(y) - 48) * xt[1], xt[1] * 10)
 
 class Picker(object):
     __slots__= ('data',)
@@ -658,12 +662,15 @@ class AccountServiceThread(Thread):
                     renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
                     cur.close()
                     if counter == 0 or time_run:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data))
+                        #allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        #if not flags.allowedUsersCheck: continue
+                        counter = 0
+                        flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:        
                             logger.info("incoming queue len: %s", len(queues.nfIncomingQueue))
                             logger.info("groupDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.groupAggrDicts)) + ')')
-                            logger.info("groupDequeLen: %s", len(queues.groupDeque))
+                            logger.info("groupDequeLen: %s \n %s", (len(queues.groupDeque), '\n'.join((repr(agdict) for agdict in queues.groupAggrDicts))))
                             logger.info("statDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.statAggrDicts)) + ')')
                             logger.info("statDequeLen: %s", len(queues.statDeque))
                             
@@ -752,7 +759,24 @@ class NfTwistedServer(DatagramProtocol):
         except:            
             logger.error("Twisted Server Error : #30210701 : %s \n %s", (repr(ex), traceback.format_exc()))
 
-        
+class TCP_LineReciever(LineReceiver):
+    delimiter = '--NFRP--'
+    
+    def lineReceived(self, line):
+        recieved_len = len(line)
+        declared_len = reduce(INT_ME_FN, line[:TCP_PACKET_SIZE_HEADER][::-1], (0,1))[0]
+        if recieved_len != declared_len:
+            logger.warning('Packet consumer: declared %s and recieved %s packet lengths do not match! Packet dropped!', (declared_len, recieved_len))
+            return
+        try:
+            flows = loads(line[TCP_PACKET_SIZE_HEADER:])
+        except Exception, ex:
+            logger.info("Bad packet (marshalling problems):%s ; ",repr(ex))
+            return
+             
+        print 'GOT LINE: ', line[:6], '|', line[-12:], ' ||  ', len(line), ' # ', len(flows)
+        with queues.nfQueueLock:
+            queues.nfIncomingQueue.append(flows)
 
 def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
@@ -824,6 +848,9 @@ def graceful_recover():
                     queues, 'nfroutine_', vars.SAVE_DIR)
     
 
+def ungraceful_save():
+    logger.warning("UNGRACEFUL SAVE NOT IMPLEMENTED!", ())
+
 def main():
     if vars.RECOVER:
         graceful_recover()
@@ -885,7 +912,10 @@ def main():
     except: logger.lprint('NO SIGTERM!')
     
     if   vars.SOCK_TYPE == 0:
-        reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+        #reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+        fact = Factory()
+        fact.protocol = TCP_LineReciever
+        reactor.listenTCP(vars.PORT, fact)
     elif vars.SOCK_TYPE == 1:
         reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
     else: 
@@ -939,7 +969,7 @@ if __name__ == "__main__":
         #create allowedUsers
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(get_connection(vars.db_dsn), _1i())       
+        allowedUsers = setAllowedUsers(_1i())       
         allowedUsers()
         
         fMem = pfMemoize()    
