@@ -1879,3 +1879,12 @@ ALTER TABLE billservice_addonservicetransaction ADD CONSTRAINT billservice_addon
    ON UPDATE NO ACTION ON DELETE SET NULL;
 CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey ON billservice_addonservicetransaction(type_id);
 
+
+ALTER TABLE billservice_addonservice ALTER "cost" TYPE numeric;
+ALTER TABLE billservice_addonservice ALTER wyte_cost TYPE numeric;
+
+ALTER TABLE billservice_addonservice
+   ADD COLUMN "comment" character varying;
+ALTER TABLE billservice_addonservice
+   ALTER COLUMN "comment" SET DEFAULT '';
+

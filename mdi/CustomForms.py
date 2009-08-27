@@ -6,10 +6,11 @@ from Reports import TransactionsReport
 from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import tableHeight
-from helpers import sqliteDbAccess, connectDBName
+from helpers import sqliteDbAccess, connectDBName , get_free_addreses_from_pool
 from db import Object as Object
 from helpers import dateDelim
 from mako.template import Template
+
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
 from decimal import Decimal
@@ -2542,40 +2543,66 @@ class AccountAddonServiceEdit(QtGui.QDialog):
     def setDeactivatedTime(self):
         self.dateTimeEdit_deactivation.setDateTime(datetime.datetime.now())
         
-class IPAddressSelectForm(object):
-    def __init__(self, connection):
+class IPAddressSelectForm(QtGui.QDialog):
+    def __init__(self, connection, pool_id):
+        super(IPAddressSelectForm, self).__init__()
         self.connection = connection
-        from PyQt4.uic import loadUi
-        self.form=loadUi('dialog_table.ui')
-        self.form.tableWidget = tableFormat(self.form.tableWidget)
+        self.pool_id = pool_id
+        self.selected_ip = None
+        self.setObjectName("IPAddressSelectForm")
+        self.resize(400, 300)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setContentsMargins(0, 0, 0, -1)
+        self.gridLayout.setObjectName("gridLayout")
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setColumnCount(0)
+        self.tableWidget.setRowCount(0)
+        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Свободные IP адреса в выбранном пуле", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.tableWidget = tableFormat(self.tableWidget)
         columns=['#', 'IP']
-        makeHeaders(columns, self.form.tableWidget)
+        makeHeaders(columns, self.tableWidget)
         self.refresh()
+
         
-    def exec_(self):
-        self.form.exec_()
-        
+    def accept(self):
+        self.selected_ip = unicode(self.tableWidget.item(self.tableWidget.currentRow(),1).text())
+        QtGui.QDialog.accept(self)
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/tp_small.png"))
         if y==0:
             headerItem.id=value
-            headerItem.setCheckState(QtCore.Qt.Unchecked)
+            #headerItem.setCheckState(QtCore.Qt.Unchecked)
         if y!=0:
             headerItem.setText(unicode(value))
-        self.form.tableWidget.setItem(x,y,headerItem)
+        self.tableWidget.setItem(x,y,headerItem)
         
     def refresh(self):
-        items = self.connection.get_models("billservice_ipinuse")
+        items = get_free_addreses_from_pool(self.connection, self.pool_id)
         self.connection.commit()
-        self.form.tableWidget.setRowCount(len(items))
+        self.tableWidget.setRowCount(len(items))
         i=0
         for item in items:
             self.addrow('', i, 0)
-            self.addrow(item.ip, i, 1)
+            self.addrow(item, i, 1)
             i+=1
             
-        self.form.tableWidget.resizeColumnsToContents()
+        self.tableWidget.resizeColumnsToContents()
             
         

@@ -8,6 +8,7 @@ import os
 import time
 import string
 import traceback
+import IPy
 dateDelim = "."
 connectDBName = "exbillusers"
 tableHeight = 17
@@ -585,3 +586,33 @@ def get_type(nas_id, tarif_id):
     if not tarif_id and not nas_id:
         return u"Карта предоплаты"
             
+            
+def get_free_addreses_from_pool(connection, pool_id, count=-1):
+    pool = connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
+    ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
+    accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_account")
+    connection.commit()
+    accounts_used_ip = []
+    for accip in accounts_ip:
+        accounts_used_ip.append(IPy.IP(accip.ipn_ip_address).int())
+        accounts_used_ip.append(IPy.IP(accip.vpn_ip_address).int())
+        
+    
+    start_pool_ip = IPy.IP(pool.start_ip).int()
+    end_pool_ip = IPy.IP(pool.end_ip).int()
+    
+    ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
+    ipinuse_list+= accounts_used_ip
+    if count!=-1:
+        if end_pool_ip-start_pool_ip-len(ipinuse_list)<count:
+            QtGui.QMessageBox.warning(None, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
+            return                    
+    find = False
+    res = []
+    x = start_pool_ip
+    while x<=end_pool_ip:
+        if x not in ipinuse_list and (len(res)<count or count==-1):
+            res.append(transip("%s" % x))
+        x+=1
+    return res
+        
