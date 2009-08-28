@@ -935,6 +935,10 @@ def main():
         #reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
         fact = Factory()
         fact.protocol = TCP_LineReciever
+        try:
+            os.unlink(vars.HOST)
+        except:
+            logger.warning('NFR: previous unix socket removal status: %s', repr(ex))
         reactor.listenUNIX(vars.HOST, fact)
     else: 
         raise Exception("Unknown socket type!")
