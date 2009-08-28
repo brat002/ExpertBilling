@@ -108,7 +108,7 @@ class NfVars(Vars):
         self.CHECK_CLASSES = 0
         self.MAX_DATAGRAM_LEN = 8192
         self.NF_TIME_MOD = 20
-        self.MAX_SENDBUF_LEN = 10000
+        self.MAX_SENDBUF_LEN = 600
         self.NFR_DELIMITER = '--NFRP--'
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\

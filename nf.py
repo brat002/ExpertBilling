@@ -992,13 +992,14 @@ if __name__=='__main__':
     try:
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
         
-        queues = NfQueues(vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, logger, dcacheNum=vars.CACHE_DICTS)
-        queues.nfFlowCache = FlowCache()
+        
         
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
         vars_.logger = logger
+        queues = NfQueues(vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, logger, dcacheNum=vars.CACHE_DICTS)
+        queues.nfFlowCache = FlowCache()
         logger.info("Config variables: %s", repr(vars))
         logger.lprint('Nf start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
