@@ -335,7 +335,7 @@ def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_i
     cursor.execute("""
                    INSERT INTO billservice_addonservicetransaction(service_id, service_type, account_id, accountaddonservice_id, 
             accounttarif_id, summ, created, type_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-                   """, (addon_id, service_type, account_id, ps_id, accounttarif, account_id, summ, created, type_id))
+                   """, (addon_id, service_type, account_id, ps_id, accounttarif, summ, created, type_id))
     
 def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     if co_datetime:
@@ -356,7 +356,7 @@ def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
 def get_last_addon_checkout(cursor, ps_id, accounttarif, co_datetime=None):
 
     cursor.execute("""
-                    SELECT datetime::timestamp without time zone FROM billservice_addonservicetransaction
+                    SELECT created FROM billservice_addonservicetransaction
                     WHERE accountaddonservice_id=%s AND accounttarif_id=%s ORDER BY created DESC LIMIT 1
                     """ , (ps_id, accounttarif))
 
