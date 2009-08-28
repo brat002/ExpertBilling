@@ -175,7 +175,7 @@ class SendPacketStream(Thread):
             if not send_packet: 
                 time.sleep(5)
                 continue
-            print len(send_packet)
+            #print len(send_packet)
             packet_len = len(send_packet) + 5
             str_len = str(packet_len)[:5]
             formatted_packet = '0' * (5 - len(str_len)) + str_len + send_packet + self.delimeter
