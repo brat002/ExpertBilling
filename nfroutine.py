@@ -663,10 +663,10 @@ class AccountServiceThread(Thread):
                     renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
                     cur.close()
                     if counter == 0 or time_run:
-                        #allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        #if not flags.allowedUsersCheck: continue
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        if not flags.allowedUsersCheck: continue
                         counter = 0
-                        flags.allowedUsersCheck = True
+                        #flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:        
                             logger.info("incoming queue len: %s", len(queues.nfIncomingQueue))
@@ -775,7 +775,7 @@ class TCP_LineReciever(LineReceiver):
             logger.info("Bad packet (marshalling problems):%s ; ",repr(ex))
             return
              
-        print 'GOT LINE: ', line[:6], '|', line[-12:], ' ||  ', len(line), ' # ', len(flows)
+        #print 'GOT LINE: ', line[:6], '|', line[-12:], ' ||  ', len(line), ' # ', len(flows)
         with queues.nfQueueLock:
             queues.nfIncomingQueue.append(flows)
 
@@ -850,8 +850,19 @@ def graceful_recover():
     
 
 def ungraceful_save():
-    logger.warning("UNGRACEFUL SAVE NOT IMPLEMENTED!", ())
-
+    global cacheThr, threads, suicideCondition, vars
+    from twisted.internet import reactor
+    reactor.callFromThread(reactor.disconnectAll)
+    reactor.callFromThread(reactor.stop)
+    reactor._started = False
+    suicideCondition[cacheThr.tname] = True
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
+    rempid(vars.piddir, vars.name)
+    print "NFR: exiting"
+    logger.lprint("NFR exiting.")
+    sys.exit()
+    
 def main():
     if vars.RECOVER:
         graceful_recover()
@@ -918,7 +929,10 @@ def main():
         fact.protocol = TCP_LineReciever
         reactor.listenTCP(vars.PORT, fact)
     elif vars.SOCK_TYPE == 1:
-        reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+        #reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+        fact = Factory()
+        fact.protocol = TCP_LineReciever
+        reactor.listenUNIX(vars.HOST, fact)
     else: 
         raise Exception("Unknown socket type!")
     

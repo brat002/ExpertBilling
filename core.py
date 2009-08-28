@@ -391,10 +391,11 @@ class periodical_service_bill(Thread):
                 chk_date = last_checkout
                 #Смотрим на какую сумму должны были снять денег и снимаем её                                            
                 while True:
+                    cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_start_ast
-                    if ps.created and ps.created >= chk_date:
+                    if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
                     if pss_type == PERIOD:
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
@@ -438,6 +439,7 @@ class periodical_service_bill(Thread):
                 cash_summ = ps.cost
                 chk_date = last_checkout
                 while True:
+                    cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_end_ast - SECOND
@@ -447,8 +449,7 @@ class periodical_service_bill(Thread):
                         if pss_type == PERIOD:
                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
                         elif pss_type == ADDON:
-                            cash_summ = cash_summ * susp_per_mlt
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, chk_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, chk_date)
                     else:
                         if ps.created and ps.created >= chk_date:
                             cash_summ = ZERO_SUM
@@ -1426,10 +1427,10 @@ class AccountServiceThread(Thread):
                     cur.close()
                     #print cacheMaster.cache
                     if counter == 0:
-                        #allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        #if not flags.allowedUsersCheck: continue
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        if not flags.allowedUsersCheck: continue
                         counter = 0
-                        flags.allowedUsersCheck = True
+                        #flags.allowedUsersCheck = True
                     counter += 1
                     if counter == 5:
                         #nullify 
@@ -1489,7 +1490,7 @@ def ungraceful_save():
     global cacheThr, threads, suicideCondition, vars
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
-    #rempid(vars.piddir, vars.name)
+    rempid(vars.piddir, vars.name)
     print "Core: exiting"
     logger.lprint("Core exiting.")
     sys.exit()

@@ -1197,7 +1197,7 @@ class CacheRoutine(Thread):
                     cur.connection.commit()
                     cur.close()
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), graceful_save, flags)
+                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
                         if not flags.allowedUsersCheck: continue                    
                         counter += 1
                     if counter == 12:
@@ -1287,7 +1287,15 @@ def graceful_save():
     logger.lprint("Stopping gracefully.")
     sys.exit()
 
-
+def ungraceful_save():
+    global suicideCondition
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
+    rempid(vars.piddir, vars.name)
+    asyncore.close_all()
+    print "RAD: exiting"
+    logger.lprint("RAD exiting.")
+    sys.exit()
 
 def main():
     global threads, curCachesDate, cacheThr, suicideCondition, server_auth, server_acct

@@ -240,7 +240,7 @@ class TCPSender(Protocol):
 
     def write(self, formatted_packet):
         if self.isConnected:
-            print 'SENT LINE: ', formatted_packet[:6], '|', formatted_packet[-6:]
+            #print 'SENT LINE: ', formatted_packet[:6], '|', formatted_packet[-6:]
             self.transport.write(formatted_packet)
             '''
             try:
@@ -798,9 +798,9 @@ class ServiceThread(Thread):
                     cur.close()
                     if counter % 5 == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        #if not flags.allowedUsersCheck: continue
+                        if not flags.allowedUsersCheck: continue
                         counter = 0
-                        flags.allowedUsersCheck = True
+                        #flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:
                             #logger.info("len flowCache %s", len(queues.dcache))
@@ -830,8 +830,21 @@ class ServiceThread(Thread):
             gc.collect()
             time.sleep(20)
     
+
 def ungraceful_save():
-    logger.warning("UNGRACEFUL SAVE NOT IMPLEMENTED!", ())
+    global suicideCondition
+    global cacheThr, threads, suicideCondition, vars
+    from twisted.internet import reactor
+    reactor.callFromThread(reactor.disconnectAll)
+    reactor.callFromThread(reactor.stop)
+    reactor._started = False
+    suicideCondition[cacheThr.tname] = True
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
+    rempid(vars.piddir, vars.name)
+    print "NF: exiting"
+    logger.lprint("NF exiting.")
+    sys.exit()
     
 class RecoveryThread(Thread):
     def __init__(self):
@@ -969,7 +982,12 @@ def main ():
     reactor.listenUDP(vars.PORT, Reception_UDP())
     
     sender_factory = TCPSender_ClientFactory(senderThread)
-    reactor.connectTCP(vars.NFR_HOST, vars.NFR_PORT, sender_factory)
+    if vars.SOCK_TYPE == 0:
+        reactor.connectTCP(vars.NFR_HOST, vars.NFR_PORT, sender_factory)
+    elif vars.SOCK_TYPE == 1:
+        reactor.connectUNIX(vars.NFR_HOST, sender_factory)
+    else: 
+        raise Exception("Unknown socket type!")
     #
     savepid(vars.piddir, vars.name)
     print "ebs: nf: started"    
