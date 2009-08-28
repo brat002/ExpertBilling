@@ -774,10 +774,13 @@ class TCP_LineReciever(LineReceiver):
         except Exception, ex:
             logger.info("Bad packet (marshalling problems):%s ; ",repr(ex))
             return
-             
-        #print 'GOT LINE: ', line[:6], '|', line[-12:], ' ||  ', len(line), ' # ', len(flows)
+        
         with queues.nfQueueLock:
             queues.nfIncomingQueue.append(flows)
+        '''    
+        if vars.sendFlag:
+            self.transport.write(vars.sendFlag)'''
+        
 
 def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
