@@ -1125,7 +1125,7 @@ class CardsChildEbs(ebsTableWindow):
         
     def refresh(self, widget=None):
         
-        
+        self.statusBar().showMessage(u"Ожидание ответа")
         sql = """SELECT * FROM billservice_card"""
         if self.checkBox_filter.checkState()==2:
             start_date = self.date_start.dateTime().toPyDateTime()
@@ -1184,6 +1184,7 @@ class CardsChildEbs(ebsTableWindow):
             self.addrow(node.end_date.strftime(self.strftimeFormat), i,11, status = node.disabled, activated=node.activated)
             i+=1
             
+        self.statusBar().showMessage(u"Данные получены")
         self.tableWidget.setColumnHidden(0, False)
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)

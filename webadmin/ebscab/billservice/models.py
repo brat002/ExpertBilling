@@ -493,7 +493,7 @@ class Account(models.Model):
     ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(u'MAC адрес клиента', max_length=32, help_text=u'Для IPN тарифных планов', blank=True, default='')
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
-    status=models.BooleanField(verbose_name=u'Статус пользователя', default=False)
+    status=models.IntegerField(verbose_name=u'Статус пользователя', default=1)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True, default='')
     #NOTE: baLance

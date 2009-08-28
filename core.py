@@ -32,7 +32,7 @@ from collections import defaultdict
 from constants import rules
 from saver import allowedUsersChecker, setAllowedUsers
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred
-from utilites import rosClient, SSHClient,settlement_period_info, in_period, in_period_info
+from utilites import rosClient, settlement_period_info, in_period, in_period_info
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
@@ -967,7 +967,7 @@ class addon_service(Thread):
                             
                             cur.execute("SELECT id FROM billservice_addonservicetransaction WHERE type_id ='ADDONSERVICE_ONETIME' and accountaddonservice_id=%s", (accservice.id,))
                             transactions = cur.fetchall()
-                            if not transactions and accservice.activated<=dateAT:
+                            if not transactions and accservice.activated<=dateAT and not accservice.temporary_blocked:
                                 sql = """
                                 INSERT INTO billservice_addonservicetransaction(
                                             service_id, service_type, account_id, accountaddonservice_id, 
@@ -994,7 +994,7 @@ class addon_service(Thread):
                             else:
                                 nas = caches.nas_cache.by_id.get(service.nas_id)
                                 
-                        if accservice.deactivated is None and (service.action and not accservice.action_status):
+                        if accservice.deactivated is None and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
                             #выполняем service_activation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
@@ -1002,7 +1002,7 @@ class addon_service(Thread):
                                           nas.password, format_string=service.service_activation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, acc.account_id))
                         
-                        if accservice.deactivated and accservice.action_status==True:
+                        if (accservice.deactivated or accservice.temporary_blocked) and accservice.action_status==True:
                             #выполняем service_deactivation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
@@ -1010,7 +1010,7 @@ class addon_service(Thread):
                                           nas.password, format_string=service.service_deactivation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, acc.account_id))
 
-    
+
                 cur.connection.commit()
                 cur.close()                
                 logger.info("Addon Service: %s: run time: %s", (self.getName(), time.clock() - a))
