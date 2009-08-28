@@ -291,7 +291,6 @@ class periodical_service_bill(Thread):
             # Проверка на расчётный период без повторения
             if period_end < self.NOW: return
             get_last_checkout_ = get_last_checkout
-            acc_end_date = acc.end_date
         elif pss_type == ADDON:
             if ps.temporary_blocked:
                 susp_per_mlt = 0
@@ -299,7 +298,6 @@ class periodical_service_bill(Thread):
             self.NOW = dateAT if not ps.deactivated else ps.deactivated
             period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW) 
             get_last_checkout_ = get_last_addon_checkout
-            acc_end_date = None
         else:
             return
         s_delta = datetime.timedelta(seconds=delta)
@@ -310,7 +308,7 @@ class periodical_service_bill(Thread):
             # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
             # а остальные помечаем неактивными и уведомляем администратора
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc_end_date)                                    
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
             if last_checkout is None:
                 if pss_type == PERIOD:
                     last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
@@ -362,7 +360,7 @@ class periodical_service_bill(Thread):
             Смотрим когда в последний раз платили по услуге. Если в текущем расчётном периоде
             не платили-производим снятие.
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc_end_date)
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)
             # Здесь нужно проверить сколько раз прошёл расчётный период
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
@@ -462,11 +460,11 @@ class periodical_service_bill(Thread):
                     cur.connection.commit()
                     chk_date = period_end_ast + SECOND
                     if not chk_date < period_start: break
-            cur.connection.commit()
+            #cur.connection.commit()
             
         if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
-            cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = deactivated WHERE id=%s", ps.ps_id)
-            cur.connection.commit()
+            cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = deactivated WHERE id=%s", (ps.ps_id,))
+            #cur.connection.commit()
     
     def run(self):
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
@@ -654,6 +652,7 @@ class periodical_service_bill(Thread):
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
+                            cur.connection.commit()
                 cur.connection.commit()
                 for addon_ps in caches.addonperiodical_cache.data:
                     if 0: assert isinstance(addon_ps, AddonPeriodicalData)
@@ -665,6 +664,7 @@ class periodical_service_bill(Thread):
                     except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
+                    cur.connection.commit()
                         
                 
                 if caches.underbilled_accounts_cache.underbilled_acctfs:

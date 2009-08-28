@@ -1893,3 +1893,13 @@ ALTER TABLE billservice_addonservice
 INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Списание по подключаемой периодической услуге', 'ADDONSERVICE_PERIODICAL');
+
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание по подключаемой периодической услуге со снятием денег в течении периода', 'ADDONSERVICE_PERIODICAL_GRADUAL');
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание по подключаемой периодической услуге со снятием денег в начале периода', 'ADDONSERVICE_PERIODICAL_AT_START');
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание по подключаемой периодической услуге со снятием денег в конце периода', 'ADDONSERVICE_PERIODICAL_AT_END');
