@@ -671,7 +671,7 @@ class AccountServiceThread(Thread):
                         if flags.writeProf:        
                             logger.info("incoming queue len: %s", len(queues.nfIncomingQueue))
                             logger.info("groupDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.groupAggrDicts)) + ')')
-                            logger.info("groupDequeLen: %s \n %s", (len(queues.groupDeque), '\n'.join((repr(agdict) for agdict in queues.groupAggrDicts))))
+                            logger.info("groupDequeLen: %s", (len(queues.groupDeque)))
                             logger.info("statDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.statAggrDicts)) + ')')
                             logger.info("statDequeLen: %s", len(queues.statDeque))
                             
