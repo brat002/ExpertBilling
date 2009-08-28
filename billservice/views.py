@@ -68,7 +68,9 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
+                print form.cleaned_data['username']
                 user = Account.objects.get(username=form.cleaned_data['username'])
+                print "user=", user
                 if not user.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'
@@ -76,6 +78,7 @@ def login(request):
                             'error_message':error_message,
                             'form':form,
                             } 
+                print user.password, form.cleaned_data['password']
                 if user.password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
@@ -258,10 +261,15 @@ def change_password(request):
         if form.is_valid():
             try:
                 user = request.session['user']
+                print 1
                 user = Account.objects.get(username=user.username)
+                print 2
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
+                    print 3
                     user.password = form.cleaned_data['new_password']
+                    print 4
                     user.save()
+                    print 5
                     return {
                             'error_message': u'Пароль успешно изменен',
                             'ok':'ok',
@@ -270,9 +278,10 @@ def change_password(request):
                     return {
                             'error_message': u'Проверьте пароль',
                             }
-            except:
+            except Exception, e:
+                print e
                 return {
-                        'error_message': u'Проверьте пароль',
+                        'error_message': u'Возникла ошибка. Обратитесь к администратору.',
                         }
         else:
             return {
@@ -330,16 +339,16 @@ def change_tariff(request):
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
             rule = TPChangeRule.objects.get(id=rule_id)
             #settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False)
-            if rule.settlement_period:
+            if rule.settlement_period_id:
                 td = settlement_period_info(account_tariff.datetime, rule.settlement_period.length_in, rule.settlement_period.length)
-                delta = (datetime.now() - account_tariff.datetime).seconds - td[2]
+                delta = (datetime.now() - account_tariff.datetime).seconds+(datetime.now() - account_tariff.datetime).days*86400 - td[2]
                 if delta < 0:
                     return {
-                            'error_message':u'Вы не можите перейти на выбранный тариф',
+                            'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
                             }
             if not rule.id in rules_id:
                 return {
-                        'error_message':u'Вы не можите перейти на выбранный тариф',
+                        'error_message':u'Вы не можете перейти на выбранный тариф',
                         }
             tariff = AccountTarif.objects.create(
                                                     account = request.session['user'],
@@ -581,7 +590,6 @@ def addon_service(request):
     user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
     accountservices = []
     for uservice in user_services:
-        print uservice.service.wyte_period_id, uservice.service.name
         if uservice.service.wyte_period_id:
             delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
             print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
