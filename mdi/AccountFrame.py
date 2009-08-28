@@ -46,10 +46,10 @@ la_list = [u"Заблокировать пользователя", u"Измен�
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
 ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе"]
 class AddAccountTarif(QtGui.QDialog):
-    def __init__(self, connection,ttype, account=None, model=None):
+    def __init__(self, connection, account=None, get_info=False, model=None):
         super(AddAccountTarif, self).__init__()
         self.model=model
-        self.ttype = ttype
+        self.get_info = get_info
         self.account=account
         self.connection = connection
         self.connection.commit()
@@ -105,23 +105,24 @@ class AddAccountTarif(QtGui.QDialog):
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
 
     def accept(self):
-        date=self.date_edit.dateTime().toPyDateTime()
-        if self.model:
-            model=self.model
-            model.datetime = date
-        else:
-            model = Object()
-            model.account_id = self.account.id
-            model.tarif_id =self.tarif_edit.itemData(self.tarif_edit.currentIndex()).toInt()[0]
-            model.datetime = date
-            
-            #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
-        try:
-            self.connection.save(model,"billservice_accounttarif")
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.conection.rollback()
+        if self.get_info==False:
+            date=self.date_edit.dateTime().toPyDateTime()
+            if self.model:
+                model=self.model
+                model.datetime = date
+            else:
+                model = Object()
+                model.account_id = self.account.id
+                model.tarif_id =self.tarif_edit.itemData(self.tarif_edit.currentIndex()).toInt()[0]
+                model.datetime = date
+                
+                #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+            try:
+                self.connection.save(model,"billservice_accounttarif")
+                self.connection.commit()
+            except Exception, e:
+                print e
+                self.conection.rollback()
         QtGui.QDialog.accept(self)
 
 
@@ -3851,7 +3852,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
     def add_accounttarif(self):
 
-        child=AddAccountTarif(connection=self.connection,ttype=self.ttype, account=self.model)
+        child=AddAccountTarif(connection=self.connection, account=self.model)
         
         if child.exec_()==1:
             self.accountTarifRefresh()
@@ -3965,7 +3966,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif),\
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
                  ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
-                 ("actOfProvidedServices", "Акт выполненных работ", "", self.pass_),\
+                 ("actionChangeTarif", "Сменить тарифный план", "", self.changeTariff),\
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
@@ -3977,7 +3978,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
-                   self.menu       :["connectionAgreementAction", "separator", "actOfProvidedServices", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
+                   self.menu       :["connectionAgreementAction", "separator", "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -3988,7 +3989,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.toolBar.setIconSize(QtCore.QSize(18,18))
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
-        self.connect(self.tableWidget, QtCore.SIGNAL("itemClicked(QTableWidgetItem *)"), self.delNodeLocalAction)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
         self.tb.setMenu(self.menu)
         #self.tb.setDisabled(True)
         self.toolBar.addWidget(self.tb)
@@ -4014,6 +4015,19 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #print datetime.datetime.now()
             self.refreshTree()
             self.refresh()
+        
+    def changeTariff(self):
+        ids = []
+        for r in self.tableWidget.selectedItems():
+            if r.column()==0:
+                ids.append(r.id)
+         
+            
+        child=AddAccountTarif(connection=self.connection, account=None, get_info = True)
+        if child.exec_()==1:
+            tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
+            date = child.date_edit.dateTime().toPyDateTime()
+            print tarif_id, date
         
     def limit_info(self):
         id = self.getSelectedId()
@@ -4047,7 +4061,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             except Exception, e:
                 print "can not convert transaction id to int"      
                 
-        print ids
+        #print ids
         child=SuspendedPeriodForm()
 
         if child.exec_()==1:
@@ -4065,7 +4079,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def delTarif(self):
         tarif_id = self.getTarifId()
         if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            print 1
+            #print 1
             accounts=self.connection.sql("""SELECT account.id 
                     FROM billservice_account as account
                     JOIN billservice_accounttarif as accounttarif ON accounttarif.id=(SELECT id FROM billservice_accounttarif WHERE account_id=account.id AND datetime<now() ORDER BY datetime DESC LIMIT 1 )
@@ -4092,7 +4106,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     
                     
                         #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
-                        self.connection.iddelete(tarif_id, "billservice_tariff")
+                        self.connection.sql("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
                         self.connection.commit()
                     except Exception, e:
                         print e
@@ -4273,6 +4287,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     def refresh(self, item=None, k=''):
         self.tableWidget.setSortingEnabled(False)
+        self.statusBar().showMessage(u"Ожидание ответа")
         #print item
         if item:
             id=item.id
@@ -4283,7 +4298,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 return
 
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
-        print self.getTarifId()
+        #print self.getTarifId()
         self.connection.commit()
         #self.connection.commit()
         #print accounts
@@ -4291,6 +4306,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print "after acc"
         self.tableWidget.setRowCount(len(accounts))
         
+        m_ballance = 0
         
         i=0
         for a in accounts:            
@@ -4311,7 +4327,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
             self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
             #self.addrow(a.created, i,11, enabled=a.status)
-            
+            m_ballance += float(a.ballance)
             #self.tableWidget.setRowHeight(i, 17)
             
             if self.selected_account:
@@ -4319,6 +4335,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
             
+        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts))))
         self.tableWidget.setColumnHidden(0, False)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
@@ -4376,6 +4393,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     
     def addNodeLocalAction(self):
         super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction])
+        
     def delNodeLocalAction(self):
         super(AccountsMdiEbs, self).delNodeLocalAction([self.delAction,self.transactionAction,self.transactionReportAction])
         

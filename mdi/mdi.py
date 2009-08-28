@@ -263,6 +263,9 @@ class MainWindow(QtGui.QMainWindow):
     def relogin(self):
         global connection
         connection = login()
+        global mainwindow
+        mainwindow.setWindowTitle("ExpertBilling administrator interface #%s - %s" % (username, server_ip)) 
+        
 
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)

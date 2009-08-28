@@ -34,7 +34,7 @@ ssh_exec = False
 #    ssh_exec = True
 #except:
 #    print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
-from ssh_paramiko import SSHClient
+from ssh_paramiko import ssh_client
 
 def log_info_(lstr, level=1):
     log_adapt(lstr, level)
@@ -112,12 +112,6 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                              'account_mac_address':account_mac_address,'session': session_id})
         #print command_string
         if nas_type=='mikrotik3' and False:
-            """
-            ���������������� �� ����������� �������� � ROS API
-            """
-            """
-            �������� �������� ��� ������ ������ �������
-            """
             log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
             return True
@@ -127,10 +121,9 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
                     log_debug_('PoD ssh %s' % sshclient)
                 else:
-                    sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                    sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
                     log_debug_('ssh connected')
-                    res=sshclient.send_command(command_string)
-                    sshclient.close_channel()
+                    del sshclient
                 
                 log_debug_('POD SSH')
                 return True
@@ -201,10 +194,9 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
                     sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
                     log_debug_('Change speed SSH reply: %s' % sshclient)
             else:
-                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
                 log_debug_('ssh connected')
-                res=sshclient.send_command(command_string)
-                sshclient.close_channel()
+                del sshclient
             return True
         except Exception, e:
             log_error_('Change Speed ssh exception %s' % repr(e))
@@ -213,7 +205,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
 
 def cred(account_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
         """
-        ������� ��� ��������/���������� ������������ �� ������� �������
+        
         """
         command_dict={'access_type':access_type,
                       'password':account_password, 'username': account_name, 'user_id':account_id,        
@@ -227,10 +219,9 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
                 sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
                 log_debug_('CRED ssh reply: %s' % sshclient)
             else:
-                sshclient=SSHClient(host=nas_ip, port=22, username=nas_login, password=nas_password)
+                sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
                 log_debug_('CRED ssh connected')
-                res=sshclient.send_command(command_string)
-                sshclient.close_channel()
+                del sshclient
             return True
         except Exception, e:
             log_error_('CRED ssh error: %s' % repr(e))
@@ -527,9 +518,8 @@ def get_sessions_for_nas(nas):
                 sessions=ActiveSessionsParser(sshclient.split(':')[1].strip()).parse()
         else:
             try:            
-                ssh=SSHClient(host=nas['ipaddress'], port=22, username=nas['login'], password=nas['password'])
-                response=ssh.send_command("/ppp active print terse without-paging")[0]
-                response = response.readlines()
+                response=ssh_client(host=nas['ipaddress'], username=nas['login'], password=nas['password'], command = "/ppp active print terse without-paging")[0]
+                
                 log_info_('Get sessions for nas SSH sshclient reply: %s' % response)
             except Exception, e:
                 log_error_('Get sessions for nas SSH error: %s' % repr(e))
@@ -538,7 +528,8 @@ def get_sessions_for_nas(nas):
             #print response
             if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
                 sessions=ActiveSessionsParser(response).parse()
-            ssh.close_channel()
+
+
         
     elif nas['type']==u'mikrotik3':
         #Use ROS API for fetching sessions

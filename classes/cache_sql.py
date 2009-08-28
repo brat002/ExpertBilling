@@ -116,8 +116,8 @@ core_sql = \
                                 speed_status, temporary_blocked, last_checkout
                            FROM billservice_accountaddonservice as accs 
                            WHERE (deactivated is Null or (last_checkout<deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
-                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (action_status=True or last_checkout is Null))) and temporary_blocked is Null;""",
-          'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, sp.time_start,
+                           ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (action_status=True or last_checkout is Null)));""",
+        'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, sp.time_start,
                         sp.length, sp.length_in, sp.autostart,
                         accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id 
                         FROM billservice_addonservice AS ads JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 

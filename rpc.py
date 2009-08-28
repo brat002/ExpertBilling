@@ -25,7 +25,7 @@ import saver, utilites
 
 from IPy import intToIp
 from hashlib import md5
-from utilites import PoD, cred, SSHClient
+from utilites import PoD, cred, ssh_client
 from decimal import Decimal
 from db import Object as Object
 from daemonize import daemonize
@@ -188,8 +188,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def testCredentials(self, host, login, password, cur=None, connection=None):
         try:
             #print host, login, password
-            a=SSHClient(host, 22,login, password)
-            a.close()
+            a=ssh_client(host, login, password, '')
         except Exception, e:
             print e
             return False
@@ -252,10 +251,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         #print confstring
         try:
-            a=SSHClient(row["ipaddress"], 22,row["login"], row["password"])
-            #print configuration
-            a.send_command(confstring)
-            a.close()
+            a=ssh_client(row["ipaddress"],row["login"], row["password"], confstring)
         except Exception, e:
             logger.error("configureNAS exception %s:", repr(e))
             return False
@@ -462,11 +458,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
             # 0 -VPN, 1 - IPN
             if pool['type']==1:
-                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
-                VALUES(%s, %s, %s, %s, False, True, now(), False, True, True, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+                VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
             else:
-                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
-                VALUES(%s, %s, %s, %s, False, True, now(), False, True, True, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+                VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
                 
             account_id = cur.fetchone()['id']
     
@@ -486,7 +482,21 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #connection.commit()
         #del sql
         return
-
+    
+    @authentconn
+    def change_tarif(self, accounts, tarif, date, cur=None, connection=None):
+        cur.connection.commit()
+        for account in accounts:
+            try:
+                cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, datetime))
+            except Exception, e:
+                cur.connection.rollback()
+                logger.error("Error change tarif for account %s, %s", (account, e))
+                return False
+        cur.connection.commit()
+        return True
+                
+            
 
     @authentconn
     def activate_pay_card(self, account_id, serial, card_id, pin, cur=None, connection=None):
@@ -703,7 +713,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
         cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
         FROM billservice_account AS acc 
-        WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        WHERE %s=get_tarif(acc.id) and deleted = False ORDER BY acc.username ASC;""", (tarif_id,))
         result = map(Object, cur.fetchall())
         return result
 
@@ -767,7 +777,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
     @authentconn
     def add_addonservice(self, account_id, service_id, ignore_locks = False, activation_date = None, cur=None, connection=None):
-        print 1
         #Получаем параметры абонента
         sql = "SELECT id, ballance, balance_blocked, disabled_by_limit, status, get_tarif(id) as tarif_id,(SELECT datetime FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_date FROM billservice_account as acc WHERE id=%s" %account_id
         cur.execute(sql)
@@ -781,7 +790,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
-        print 2
         #Получаем нужные параметры услуги
         sql = "SELECT id, allow_activation,timeperiod_id, change_speed FROM billservice_addonservice WHERE id = %s" % service_id
         cur.execute(sql)
@@ -795,7 +803,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return 'ADDON_SERVICE_DOES_NOT_EXIST'
                 
         service = Object(r[0]) 
-        print 3
 
         sql = "SELECT time_start, length, repeat_after FROM billservice_timeperiodnode WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)" % service.timeperiod_id
 

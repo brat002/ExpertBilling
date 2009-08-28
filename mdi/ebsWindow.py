@@ -512,7 +512,15 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         SplitterUtil.saveSplitter(self.splname, self.splitter)
             
     def delNodeLocalAction(self, actList):
-        if self.tableWidget.currentRow()==-1:
+        disable = False
+        
+        rows = 0
+        for r in self.tableWidget.selectedRanges():
+            rows += r.rowCount() 
+        if rows>1:
+            disable=True
+                
+        if self.tableWidget.currentRow()==-1 or disable==True:
             for actObj in actList:
                 actObj.setDisabled(True)
         else:
