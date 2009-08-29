@@ -4,7 +4,7 @@
 {% block content %}
 
 {% if service_message %}
-	<h1 align="center">{{ service_message }}</h1>
+	<h2 align="center" id="error_message">{{ service_message }}</h2>
 {% endif %}
 
 {% if services or user_services%}
