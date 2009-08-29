@@ -2139,3 +2139,26 @@ INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Оплата по карте экспресс-оплаты', 'PAY_CARD');
     
+
+ALTER TABLE billservice_account DROP COLUMN status;
+ALTER TABLE billservice_account ADD COLUMN status integer;
+ALTER TABLE billservice_account ALTER COLUMN status SET STORAGE PLAIN;
+ALTER TABLE billservice_account ALTER COLUMN status SET DEFAULT 1;
+ALTER TABLE billservice_account ADD COLUMN contactperson character varying;
+ALTER TABLE billservice_account ALTER COLUMN contactperson SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN contactperson SET DEFAULT ''::character varying;
+ALTER TABLE billservice_account ADD COLUMN contactperson_phone character varying;
+ALTER TABLE billservice_account ALTER COLUMN contactperson_phone SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN contactperson_phone SET DEFAULT ''::character varying;
+ALTER TABLE billservice_account ADD COLUMN "comment" character varying;
+ALTER TABLE billservice_account ALTER COLUMN "comment" SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN "comment" SET DEFAULT ''::character varying;
+
+ALTER TABLE billservice_account ADD COLUMN "row" character varying;
+ALTER TABLE billservice_account ALTER COLUMN "row" SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN "row" SET DEFAULT ''::character varying;
+
+ALTER TABLE billservice_account ADD COLUMN elevator_direction character varying;
+ALTER TABLE billservice_account ALTER COLUMN elevator_direction SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN elevator_direction SET DEFAULT ''::character varying;
+
