@@ -1890,9 +1890,6 @@ ALTER TABLE billservice_addonservice
 
 -- 27.08.2009 23:02
 
-INSERT INTO billservice_transactiontype(
-            "name", internal_name)
-    VALUES ('Списание по подключаемой периодической услуге', 'ADDONSERVICE_PERIODICAL');
 
 ALTER TABLE billservice_account
    ADD COLUMN "row" character varying;
@@ -1915,3 +1912,15 @@ INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Списание по подключаемой периодической услуге со снятием денег в конце периода', 'ADDONSERVICE_PERIODICAL_AT_END');
     
+    
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание средств за преждевременное отключение услуги абонентом', 'ADDONSERVICE_WYTE_PAY');
+    
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Списание по разовой услуге за подключаемую услугу', 'ADDONSERVICE_ONETIME');
+    
+INSERT INTO billservice_transactiontype(
+            "name", internal_name)
+    VALUES ('Оплата по карте экспресс-оплаты', 'PAY_CARD');
