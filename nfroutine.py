@@ -180,7 +180,7 @@ class groupDequeThread(Thread):
 
                 #get data
                 account_id, kgroup_id, gtime = gkey 
-                dkey = (int(gtime) + account_id) % vars.GROUP_DICTS
+                dkey = (int(gtime / 667) + account_id) % vars.GROUP_DICTS
                 aggrgDict = queues.groupAggrDicts[dkey]
                 aggrgLock = queues.groupAggrLocks[dkey]
                 with aggrgLock:
@@ -305,7 +305,7 @@ class statDequeThread(Thread):
                 if not skey: time.sleep(30); continue
                 
                 account_id, stime = skey 
-                dkey = (int(stime) + account_id) % vars.STAT_DICTS
+                dkey = (int(stime / 667) + account_id) % vars.STAT_DICTS
                 aggrsDict = queues.statAggrDicts[dkey]
                 aggrsLock = queues.statAggrLocks[dkey]
                 with aggrsLock:
