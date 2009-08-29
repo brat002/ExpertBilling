@@ -98,7 +98,8 @@ ALTER TABLE billservice_transaction
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
       
 
-INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'Операция проведена кассиром', 'CASSA_TRANSACTION');INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
+INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'Операция проведена кассиром', 'CASSA_TRANSACTION');
+INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
 
 
 --14.04.2009
@@ -893,12 +894,60 @@ ALTER TABLE billservice_tariff
    ALTER COLUMN require_tarif_cost SET DEFAULT False;
    
 -- 15.05.2009
-CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS $$BEGIN    RETURN 0;END;$$    LANGUAGE plpgsql;
- CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS $$ DECLARE counted_num_ bigint;              allowed_num_ bigint := 0;              BEGIN              	allowed_num_ := return_allowed();                SELECT count(*) INTO counted_num_ FROM billservice_account;                IF counted_num_ + 1 > allowed_num_ THEN                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;                ELSE                     RETURN NEW;                END IF;                 END; $$    LANGUAGE plpgsql;
-CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void    AS $$DECLARE    allowed_ text := allowed::text;    prev_ bigint  := 0;    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    fn_bd_tx1_ text := ' BEGIN RETURN ';    fn_bd_tx2_ text := '; END;';    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';BEGIN        prev_ := return_allowed();    IF prev_ != allowed THEN    	EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    END IF;    RETURN;END;$$    LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS 
+$$
+BEGIN    
+RETURN 0;
+END;$$    
+LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS 
+$$ 
+DECLARE 
+counted_num_ bigint;              
+allowed_num_ bigint := 0;              
+BEGIN              	
+allowed_num_ := return_allowed();                
+SELECT count(*) INTO counted_num_ FROM billservice_account;                
+IF counted_num_ + 1 > allowed_num_ THEN  
+RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;                
+ELSE                     
+RETURN NEW;                
+END IF;                 
+END; 
+$$    
+LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void    AS 
+$$
+DECLARE    
+allowed_ text := allowed::text;    
+prev_ bigint  := 0;    
+fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    
+fn_bd_tx1_ text := ' BEGIN RETURN ';    
+fn_bd_tx2_ text := '; END;';    
+fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+BEGIN        
+prev_ := return_allowed();    
+IF prev_ != allowed THEN    	
+EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    
+END IF;    
+RETURN;
+END;
+$$    
+LANGUAGE plpgsql;
 
 -- 18.05.2009
-ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS$BODY$BEGIN    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);EXCEPTION WHEN unique_violation THEN    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;END;$BODY$  LANGUAGE 'plpgsql' VOLATILE  COST 100;  
+ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;
+ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];
+DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
+CREATE OR REPLACE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer)  RETURNS void AS
+$BODY$
+BEGIN    
+INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
+EXCEPTION WHEN unique_violation THEN    
+UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
+END;
+$BODY$  
+LANGUAGE 'plpgsql' VOLATILE  COST 100;  
 
 DROP FUNCTION group_type2_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
 
@@ -1507,6 +1556,7 @@ ALTER TABLE billservice_account
 --UPDATE billservice_account SET associate_pptp_ipn_ip=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pptp_ipn_ip SET NOT NULL;
+   
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pptp_ipn_ip SET DEFAULT False;
 
@@ -1516,13 +1566,17 @@ ALTER TABLE billservice_account
 --UPDATE billservice_account SET associate_pppoe_mac=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pppoe_mac SET NOT NULL;
+   
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pppoe_mac SET DEFAULT False;
 
 ALTER TABLE billservice_account ALTER COLUMN status DROP DEFAULT;
+
 ALTER TABLE billservice_account ALTER COLUMN status TYPE int  USING case when status then 1 else 2 end;
+
 ALTER TABLE billservice_account
    ALTER COLUMN status SET DEFAULT 1;
+   
 UPDATE billservice_account SET status = 1;
 
 ALTER TABLE billservice_suspendedperiod
@@ -1531,6 +1585,7 @@ ALTER TABLE billservice_suspendedperiod
 
 -- 31.07.2009 18:00
 ALTER TABLE billservice_suspendedperiod ALTER start_date TYPE timestamp without time zone;
+
 ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without time zone;
 
 
@@ -1538,21 +1593,44 @@ ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without ti
 ALTER TABLE radius_activesession ADD COLUMN nas_int_id integer;
 
 ALTER TABLE billservice_account   ADD COLUMN contactperson_phone character varying;
+
 ALTER TABLE billservice_account   ALTER COLUMN contactperson_phone SET DEFAULT '';
-CREATE TABLE billservice_x8021(  id serial NOT NULL,  account_id integer,  nas_id integer NOT NULL,  port smallint,  typeauth character varying(32) NOT NULL,  vlan_accept integer,  vlan_reject integer,  simpleauth boolean NOT NULL,  CONSTRAINT billservice_x8021_pkey PRIMARY KEY (id),  CONSTRAINT billservice_x8021_account_id_fkey FOREIGN KEY (account_id)      REFERENCES billservice_account (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,  CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id)      REFERENCES nas_nas (id) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)WITH (OIDS=FALSE);ALTER TABLE billservice_x8021 OWNER TO ebs;
+
+CREATE TABLE billservice_x8021(  
+id serial NOT NULL,  
+account_id integer,  
+nas_id integer NOT NULL,  
+port smallint,  
+typeauth character varying(32) NOT NULL,  
+vlan_accept integer,  
+vlan_reject integer,  
+simpleauth boolean NOT NULL,  
+CONSTRAINT billservice_x8021_pkey PRIMARY KEY (id),  
+CONSTRAINT billservice_x8021_account_id_fkey FOREIGN KEY (account_id)      
+    REFERENCES billservice_account (id) MATCH SIMPLE      
+    ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,  
+CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id)      
+    REFERENCES nas_nas (id) MATCH SIMPLE      
+    ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)WITH (OIDS=FALSE);ALTER TABLE billservice_x8021 OWNER TO ebs;
+    
 -- Index: billservice_x8021_account_id-- 
 --DROP INDEX billservice_x8021_account_id;
 CREATE INDEX billservice_x8021_account_id  ON billservice_x8021  USING btree  (account_id);
 -- Index: billservice_x8021_nas_id-- 
 --
 DROP INDEX billservice_x8021_nas_id;
+
 CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
+
 ALTER TABLE billservice_account   ADD COLUMN "comment" character varying;
+
 ALTER TABLE billservice_speedlimit ADD COLUMN speed_units character varying(10);
 
 
 ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET STORAGE EXTENDED;ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET NOT NULL;
+
 ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET DEFAULT 'Kbps'::character varying;ALTER TABLE billservice_speedlimit ADD COLUMN change_speed_type character varying(20);
+
 ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET STORAGE EXTENDED;ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET DEFAULT 'add'::character varying;
 
 
@@ -1563,6 +1641,7 @@ ALTER TABLE billservice_accounttarif ADD COLUMN periodical_billed boolean DEFAUL
 UPDATE billservice_accounttarif SET periodical_billed=FALSE;
 
 UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf1.id in (SELECT acctf2.id FROM billservice_accounttarif AS acctf2 WHERE acctf2.account_id=acctf1.account_id and acctf2.datetime < (SELECT datetime FROM billservice_accounttarif AS att WHERE att.account_id=acctf1.account_id and att.datetime<now()ORDER BY datetime DESC LIMIT 1));
+
 
 
 
@@ -1653,6 +1732,7 @@ CREATE INDEX billservice_addonservice_wyte_period_id
   (wyte_period_id);
 
 
+
 CREATE TABLE billservice_addonservicetarif
 (
   id serial NOT NULL,
@@ -1661,7 +1741,7 @@ CREATE TABLE billservice_addonservicetarif
   activation_count integer DEFAULT 0,
   activation_count_period_id integer DEFAULT NULL,
   CONSTRAINT billservice_addonservicetarif_pkey PRIMARY KEY (id),
-  CONSTRAINT billservice_addonservicetarif_activation_acount_period_id_fkey FOREIGN KEY (activation_acount_period_id)
+  CONSTRAINT billservice_addonservicetarif_activation_count_period_id_fkey FOREIGN KEY (activation_count_period_id)
       REFERENCES billservice_settlementperiod (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
   CONSTRAINT billservice_addonservicetarif_service_id_fkey FOREIGN KEY (service_id)
@@ -1700,6 +1780,7 @@ CREATE INDEX billservice_addonservicetarif_tarif_id
   ON billservice_addonservicetarif
   USING btree
   (tarif_id);
+  
 
 
 CREATE TABLE billservice_accountaddonservice
@@ -1743,8 +1824,8 @@ CREATE INDEX billservice_accountaddonservice_service_id
 
 
 ---16.08.2009 16:22
-CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS.
-$$.
+CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS
+$$
 DECLARE counted_num_ bigint;
   allowed_num_ bigint := 0;
 BEGIN
@@ -1767,27 +1848,93 @@ INSERT INTO billservice_transactiontype(id,
              "name", internal_name)
     VALUES (11,'Списание средств за преждевременное отключение услуги абонентом', 'ADDONSERVICE_WYTE_PAY');
 
-CREATE TABLE "billservice_addonservicetransaction" (
-    "id" serial NOT NULL PRIMARY KEY,
-    "service_id" integer NOT NULL REFERENCES "billservice_addonservice" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
-    "service_type" varchar(32) NOT NULL,
-    "account_id" integer NOT NULL REFERENCES "billservice_account" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
-    "accountaddonservice_id" integer NOT NULL REFERENCES "billservice_accountaddonservice" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
-    "accounttarif_id" integer NOT NULL REFERENCES "billservice_accounttarif" ("id") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
-    "type_id" integer NOT NULL REFERENCES "billservice_transactiontype" ("id")  MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
-    "summ" numeric NOT NULL,
-    "created" timestamp without time zone NOT NULL
-);
-CREATE INDEX "billservice_addonservicetransaction_service_id" ON "billservice_addonservicetransaction" ("service_id");
-CREATE INDEX "billservice_addonservicetransaction_account_id" ON "billservice_addonservicetransaction" ("account_id");
-CREATE INDEX "billservice_addonservicetransaction_accounttarif_id" ON "billservice_addonservicetransaction" ("accounttarif_id");
-CREATE INDEX "billservice_addonservicetransaction_type_id" ON "billservice_addonservicetransaction" ("type_id");
-CREATE INDEX "billservice_addonservicetransaction_accountaddonservice_id" ON "billservice_addonservicetransaction" ("accountaddonservice_id");
+CREATE TABLE billservice_addonservicetransaction
+(
+  id serial NOT NULL,
+  service_id integer NOT NULL,
+  service_type character varying(32) NOT NULL,
+  account_id integer NOT NULL,
+  accountaddonservice_id integer NOT NULL,
+  accounttarif_id integer NOT NULL,
+  summ numeric NOT NULL,
+  created timestamp without time zone NOT NULL,
+  type_id character varying(255) NOT NULL,
+  CONSTRAINT billservice_addonservicetransaction_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_addonservicetransaction_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetransaction_accountaddonservice_id_fkey FOREIGN KEY (accountaddonservice_id)
+      REFERENCES billservice_accountaddonservice (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetransaction_accounttarif_id_fkey FOREIGN KEY (accounttarif_id)
+      REFERENCES billservice_accounttarif (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetransaction_service_id_fkey FOREIGN KEY (service_id)
+      REFERENCES billservice_addonservice (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_addonservicetransaction_type_id_fkey FOREIGN KEY (type_id)
+      REFERENCES billservice_transactiontype (internal_name) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_addonservicetransaction OWNER TO mikrobill;
+
+-- Index: billservice_addonservicetransaction_account_id
+
+-- DROP INDEX billservice_addonservicetransaction_account_id;
+
+CREATE INDEX billservice_addonservicetransaction_account_id
+  ON billservice_addonservicetransaction
+  USING btree
+  (account_id);
+
+-- Index: billservice_addonservicetransaction_accountaddonservice_id
+
+-- DROP INDEX billservice_addonservicetransaction_accountaddonservice_id;
+
+CREATE INDEX billservice_addonservicetransaction_accountaddonservice_id
+  ON billservice_addonservicetransaction
+  USING btree
+  (accountaddonservice_id);
+
+-- Index: billservice_addonservicetransaction_accounttarif_id
+
+-- DROP INDEX billservice_addonservicetransaction_accounttarif_id;
+
+CREATE INDEX billservice_addonservicetransaction_accounttarif_id
+  ON billservice_addonservicetransaction
+  USING btree
+  (accounttarif_id);
+
+-- Index: billservice_addonservicetransaction_service_id
+
+-- DROP INDEX billservice_addonservicetransaction_service_id;
+
+CREATE INDEX billservice_addonservicetransaction_service_id
+  ON billservice_addonservicetransaction
+  USING btree
+  (service_id);
+
+-- Index: fki_billservice_addonservicetransaction_type_id_fkey
+
+-- DROP INDEX fki_billservice_addonservicetransaction_type_id_fkey;
+
+CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey
+  ON billservice_addonservicetransaction
+  USING btree
+  (type_id);
+
+
+-- Trigger: adds_trans_trg on billservice_addonservicetransaction
+
+-- DROP TRIGGER adds_trans_trg ON billservice_addonservicetransaction;
+
 CREATE TRIGGER adds_trans_trg
   AFTER INSERT OR UPDATE OR DELETE
   ON billservice_addonservicetransaction
   FOR EACH ROW
   EXECUTE PROCEDURE account_transaction_trg_fn();
+  
   
   
 ALTER TABLE billservice_tpchangerule
@@ -1819,12 +1966,16 @@ ALTER TABLE billservice_addonservice
 
 
 ALTER TABLE billservice_addonservice ALTER service_deactivation_action TYPE character varying(8000);
+
 ALTER TABLE billservice_addonservice
    ALTER COLUMN service_deactivation_action SET DEFAULT '';
+   
 ALTER TABLE billservice_addonservice
    ALTER COLUMN service_deactivation_action DROP NOT NULL;
+   
 ALTER TABLE billservice_addonservice
    ALTER COLUMN deactivate_service_for_blocked_account SET DEFAULT False;
+   
 ALTER TABLE billservice_addonservice
    ALTER COLUMN deactivate_service_for_blocked_account DROP NOT NULL;
 
@@ -1924,3 +2075,4 @@ INSERT INTO billservice_transactiontype(
 INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Оплата по карте экспресс-оплаты', 'PAY_CARD');
+    
