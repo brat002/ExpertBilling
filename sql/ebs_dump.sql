@@ -1,3 +1,8 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Started on 2009-08-29 17:07:17
 
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
@@ -5,6 +10,10 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
 
+--
+-- TOC entry 728 (class 2612 OID 4630615)
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: ebs
+--
 
 CREATE PROCEDURAL LANGUAGE plpgsql;
 
@@ -17,10 +26,1491 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+--
+-- TOC entry 1942 (class 1259 OID 4630735)
+-- Dependencies: 6
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_group (
+    id integer NOT NULL,
+    name character varying(80) NOT NULL
+);
+
+
+ALTER TABLE public.auth_group OWNER TO ebs;
+
+--
+-- TOC entry 1944 (class 1259 OID 4630740)
+-- Dependencies: 6
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_group_permissions (
+    id integer NOT NULL,
+    group_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.auth_group_permissions OWNER TO ebs;
+
+--
+-- TOC entry 1946 (class 1259 OID 4630745)
+-- Dependencies: 6
+-- Name: auth_message; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_message (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    message text NOT NULL
+);
+
+
+ALTER TABLE public.auth_message OWNER TO ebs;
+
+--
+-- TOC entry 1948 (class 1259 OID 4630753)
+-- Dependencies: 6
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_permission (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    content_type_id integer NOT NULL,
+    codename character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.auth_permission OWNER TO ebs;
+
+--
+-- TOC entry 1950 (class 1259 OID 4630758)
+-- Dependencies: 6
+-- Name: auth_user; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_user (
+    id integer NOT NULL,
+    username character varying(30) NOT NULL,
+    first_name character varying(30) NOT NULL,
+    last_name character varying(30) NOT NULL,
+    email character varying(75) NOT NULL,
+    password character varying(128) NOT NULL,
+    is_staff boolean NOT NULL,
+    is_active boolean NOT NULL,
+    is_superuser boolean NOT NULL,
+    last_login timestamp without time zone NOT NULL,
+    date_joined timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.auth_user OWNER TO ebs;
+
+--
+-- TOC entry 1951 (class 1259 OID 4630761)
+-- Dependencies: 6
+-- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_user_groups (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    group_id integer NOT NULL
+);
+
+
+ALTER TABLE public.auth_user_groups OWNER TO ebs;
+
+--
+-- TOC entry 1954 (class 1259 OID 4630768)
+-- Dependencies: 6
+-- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE auth_user_user_permissions (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.auth_user_user_permissions OWNER TO ebs;
+
+--
+-- TOC entry 1956 (class 1259 OID 4630773)
+-- Dependencies: 2387 2388 2389 2390 2391 2392 2393 6
+-- Name: billservice_accessparameters; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accessparameters (
+    id integer NOT NULL,
+    access_type character varying(255) NOT NULL,
+    access_time_id integer NOT NULL,
+    max_limit character varying(64) DEFAULT ''::character varying,
+    min_limit character varying(64) DEFAULT ''::character varying,
+    burst_limit character varying(64) DEFAULT ''::character varying,
+    burst_treshold character varying(64) DEFAULT ''::character varying,
+    burst_time character varying(64) DEFAULT ''::character varying,
+    priority integer DEFAULT 8,
+    ipn_for_vpn boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_accessparameters OWNER TO ebs;
+
+--
+-- TOC entry 1958 (class 1259 OID 4630788)
+-- Dependencies: 2395 2396 2397 2398 2399 2400 2401 2402 2403 2404 2405 2406 2407 2408 2409 2410 2411 2412 2413 2414 2415 2416 2417 2418 2419 2420 2421 2422 2423 2424 2425 2426 2427 2428 2429 2431 2432 2433 2434 2435 2436 2437 2438 6
+-- Name: billservice_account; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_account (
+    id integer NOT NULL,
+    username character varying(200) NOT NULL,
+    password character varying(200) DEFAULT ''::character varying,
+    fullname character varying(200) DEFAULT ''::character varying,
+    email character varying(200) DEFAULT ''::character varying,
+    address text DEFAULT ''::text,
+    nas_id integer NOT NULL,
+    vpn_ip_address inet DEFAULT '0.0.0.0'::inet,
+    assign_ipn_ip_from_dhcp boolean DEFAULT false,
+    ipn_ip_address inet DEFAULT '0.0.0.0'::inet,
+    ipn_mac_address character varying(32) DEFAULT ''::character varying,
+    ipn_status boolean DEFAULT false,
+    status integer DEFAULT 1,
+    suspended boolean DEFAULT true,
+    created timestamp without time zone DEFAULT now(),
+    ballance numeric DEFAULT 0,
+    credit numeric DEFAULT 0,
+    disabled_by_limit boolean DEFAULT false,
+    balance_blocked boolean DEFAULT false,
+    ipn_speed character varying(96) DEFAULT ''::character varying,
+    vpn_speed character varying(96) DEFAULT ''::character varying,
+    netmask inet DEFAULT '0.0.0.0/0'::inet,
+    ipn_added boolean DEFAULT false,
+    city character varying(255) DEFAULT ''::character varying,
+    postcode character varying(255) DEFAULT ''::character varying,
+    region character varying(255) DEFAULT ''::character varying,
+    street character varying(255) DEFAULT ''::character varying,
+    house character varying(255) DEFAULT ''::character varying,
+    house_bulk character varying(255) DEFAULT ''::character varying,
+    entrance character varying(255) DEFAULT ''::character varying,
+    room character varying(255) DEFAULT ''::character varying,
+    vlan integer,
+    allow_webcab boolean DEFAULT true,
+    allow_expresscards boolean DEFAULT true,
+    assign_dhcp_null boolean DEFAULT true,
+    assign_dhcp_block boolean DEFAULT true,
+    allow_vpn_null boolean DEFAULT true,
+    allow_vpn_block boolean DEFAULT true,
+    passport character varying(255) DEFAULT ''::character varying,
+    passport_date timestamp without time zone,
+    passport_given character varying(255) DEFAULT ''::character varying,
+    phone_h character varying DEFAULT ''::character varying,
+    phone_m character varying DEFAULT ''::character varying,
+    vpn_ipinuse_id integer,
+    ipn_ipinuse_id integer,
+    associate_pptp_ipn_ip boolean DEFAULT false NOT NULL,
+    associate_pppoe_mac boolean DEFAULT false NOT NULL,
+    contactperson_phone character varying DEFAULT ''::character varying,
+    comment character varying,
+    "row" character varying DEFAULT ''::character varying,
+    elevator_direction character varying DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_account OWNER TO ebs;
+
+--
+-- TOC entry 2085 (class 1259 OID 4632768)
+-- Dependencies: 2603 2604 6
+-- Name: billservice_accountaddonservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accountaddonservice (
+    id integer NOT NULL,
+    service_id integer NOT NULL,
+    account_id integer NOT NULL,
+    activated timestamp without time zone NOT NULL,
+    deactivated timestamp without time zone,
+    action_status boolean DEFAULT false,
+    speed_status boolean DEFAULT false,
+    temporary_blocked timestamp without time zone,
+    last_checkout timestamp without time zone
+);
+
+
+ALTER TABLE public.billservice_accountaddonservice OWNER TO ebs;
+
+--
+-- TOC entry 1960 (class 1259 OID 4630834)
+-- Dependencies: 2439 2440 2441 2442 6
+-- Name: billservice_accountipnspeed; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accountipnspeed (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    speed character varying(32) DEFAULT ''::character varying,
+    state boolean DEFAULT false,
+    static boolean DEFAULT false,
+    datetime timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.billservice_accountipnspeed OWNER TO ebs;
+
+--
+-- TOC entry 1962 (class 1259 OID 4630843)
+-- Dependencies: 2444 2445 6
+-- Name: billservice_accountprepaystime; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accountprepaystime (
+    id integer NOT NULL,
+    account_tarif_id integer NOT NULL,
+    prepaid_time_service_id integer NOT NULL,
+    size integer DEFAULT 0,
+    datetime timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.billservice_accountprepaystime OWNER TO ebs;
+
+--
+-- TOC entry 1964 (class 1259 OID 4630850)
+-- Dependencies: 2447 2449 6
+-- Name: billservice_accountprepaystrafic; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accountprepaystrafic (
+    id integer NOT NULL,
+    account_tarif_id integer NOT NULL,
+    prepaid_traffic_id integer NOT NULL,
+    size bigint DEFAULT 0,
+    datetime timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.billservice_accountprepaystrafic OWNER TO ebs;
+
+--
+-- TOC entry 1966 (class 1259 OID 4630857)
+-- Dependencies: 6
+-- Name: billservice_accountspeedlimit; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accountspeedlimit (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    speedlimit_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_accountspeedlimit OWNER TO ebs;
+
+--
+-- TOC entry 1968 (class 1259 OID 4630862)
+-- Dependencies: 2452 6
+-- Name: billservice_accounttarif; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_accounttarif (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    datetime timestamp without time zone,
+    periodical_billed boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_accounttarif OWNER TO ebs;
+
+--
+-- TOC entry 2081 (class 1259 OID 4632694)
+-- Dependencies: 2577 2578 2579 2580 2581 2582 2583 2584 2585 2586 2587 2588 2589 2590 2591 2592 2593 2594 2595 2596 2597 2598 2599 6
+-- Name: billservice_addonservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_addonservice (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    allow_activation boolean DEFAULT false,
+    service_type character varying(32) NOT NULL,
+    sp_type character varying(32) DEFAULT ''::character varying,
+    sp_period_id integer NOT NULL,
+    timeperiod_id integer NOT NULL,
+    cost numeric DEFAULT 0,
+    cancel_subscription boolean DEFAULT false,
+    wyte_period_id integer,
+    wyte_cost numeric,
+    action boolean DEFAULT false,
+    nas_id integer,
+    service_activation_action character varying(8000) DEFAULT ''::character varying,
+    service_deactivation_action character varying(8000) DEFAULT ''::character varying,
+    deactivate_service_for_blocked_account boolean DEFAULT false,
+    change_speed boolean DEFAULT false,
+    change_speed_type character varying(32) DEFAULT 'abs'::character varying,
+    speed_units character varying(32) DEFAULT 'Kbps'::character varying,
+    max_tx integer DEFAULT 0,
+    max_rx integer DEFAULT 0,
+    burst_tx integer DEFAULT 0,
+    burst_rx integer DEFAULT 0,
+    burst_treshold_tx integer DEFAULT 0,
+    burst_treshold_rx integer DEFAULT 0,
+    burst_time_tx integer DEFAULT 0,
+    burst_time_rx integer DEFAULT 0,
+    min_tx integer DEFAULT 0,
+    min_rx integer DEFAULT 0,
+    priority integer DEFAULT 8,
+    comment character varying DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_addonservice OWNER TO ebs;
+
+--
+-- TOC entry 2083 (class 1259 OID 4632741)
+-- Dependencies: 2601 6
+-- Name: billservice_addonservicetarif; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_addonservicetarif (
+    id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    service_id integer NOT NULL,
+    activation_count integer DEFAULT 0,
+    activation_count_period_id integer
+);
+
+
+ALTER TABLE public.billservice_addonservicetarif OWNER TO ebs;
+
+--
+-- TOC entry 2087 (class 1259 OID 4632791)
+-- Dependencies: 6
+-- Name: billservice_addonservicetransaction; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE TABLE billservice_addonservicetransaction (
+    id integer NOT NULL,
+    service_id integer NOT NULL,
+    service_type character varying(32) NOT NULL,
+    account_id integer NOT NULL,
+    accountaddonservice_id integer NOT NULL,
+    accounttarif_id integer NOT NULL,
+    summ numeric NOT NULL,
+    created timestamp without time zone NOT NULL,
+    type_id character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.billservice_addonservicetransaction OWNER TO mikrobill;
+
+--
+-- TOC entry 1970 (class 1259 OID 4630867)
+-- Dependencies: 2454 2455 2456 2457 6
+-- Name: billservice_bankdata; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_bankdata (
+    id integer NOT NULL,
+    bank character varying(255) DEFAULT ''::character varying,
+    bankcode character varying(40) DEFAULT ''::character varying,
+    rs character varying(60) DEFAULT ''::character varying,
+    currency character varying(40) DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_bankdata OWNER TO ebs;
+
+--
+-- TOC entry 1972 (class 1259 OID 4630872)
+-- Dependencies: 2458 2459 2460 2462 6
+-- Name: billservice_card; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_card (
+    id integer NOT NULL,
+    series integer NOT NULL,
+    pin character varying(255) DEFAULT ''::character varying NOT NULL,
+    sold timestamp without time zone,
+    nominal numeric DEFAULT 0,
+    activated timestamp without time zone,
+    activated_by_id integer,
+    start_date timestamp without time zone,
+    end_date timestamp without time zone,
+    disabled boolean DEFAULT false,
+    created timestamp without time zone,
+    template_id integer,
+    account_id integer,
+    tarif_id integer,
+    nas_id integer,
+    login character varying DEFAULT ''::character varying,
+    ip character varying,
+    ipinuse_id integer
+);
+
+
+ALTER TABLE public.billservice_card OWNER TO ebs;
+
+--
+-- TOC entry 1974 (class 1259 OID 4630884)
+-- Dependencies: 2463 2464 6
+-- Name: billservice_dealer; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_dealer (
+    id integer NOT NULL,
+    organization character varying(400) NOT NULL,
+    unp character varying(255) NOT NULL,
+    okpo character varying(255) NOT NULL,
+    contactperson character varying(255) NOT NULL,
+    director character varying(255) NOT NULL,
+    phone character varying(255) NOT NULL,
+    fax character varying(255) NOT NULL,
+    postaddress character varying(400) NOT NULL,
+    uraddress character varying(400) NOT NULL,
+    email character varying(255) NOT NULL,
+    bank_id integer NOT NULL,
+    prepayment numeric,
+    paydeffer integer,
+    discount numeric,
+    always_sell_cards boolean DEFAULT false NOT NULL,
+    deleted boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_dealer OWNER TO ebs;
+
+--
+-- TOC entry 1976 (class 1259 OID 4630894)
+-- Dependencies: 6
+-- Name: billservice_dealerpay; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_dealerpay (
+    id integer NOT NULL,
+    dealer_id integer NOT NULL,
+    pay numeric NOT NULL,
+    salecard_id integer,
+    created timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.billservice_dealerpay OWNER TO ebs;
+
+--
+-- TOC entry 1978 (class 1259 OID 4630899)
+-- Dependencies: 6
+-- Name: billservice_document; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_document (
+    id integer NOT NULL,
+    account_id integer,
+    type_id integer NOT NULL,
+    body text NOT NULL
+);
+
+
+ALTER TABLE public.billservice_document OWNER TO ebs;
+
+--
+-- TOC entry 1980 (class 1259 OID 4630907)
+-- Dependencies: 6
+-- Name: billservice_documenttype; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_documenttype (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.billservice_documenttype OWNER TO ebs;
+
+--
+-- TOC entry 1982 (class 1259 OID 4630912)
+-- Dependencies: 2469 2470 6
+-- Name: billservice_globalstat; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_globalstat (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    bytes_in bigint DEFAULT 0 NOT NULL,
+    bytes_out bigint DEFAULT 0 NOT NULL,
+    datetime timestamp without time zone NOT NULL,
+    nas_id integer NOT NULL,
+    classes integer[],
+    classbytes bigint[]
+);
+
+
+ALTER TABLE public.billservice_globalstat OWNER TO ebs;
+
+--
+-- TOC entry 1984 (class 1259 OID 4630922)
+-- Dependencies: 6
+-- Name: billservice_group; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_group (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    direction integer NOT NULL,
+    type integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_group OWNER TO ebs;
+
+--
+-- TOC entry 1986 (class 1259 OID 4630927)
+-- Dependencies: 6
+-- Name: billservice_group_trafficclass; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_group_trafficclass (
+    id integer NOT NULL,
+    group_id integer NOT NULL,
+    trafficclass_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_group_trafficclass OWNER TO ebs;
+
+--
+-- TOC entry 1937 (class 1259 OID 4630644)
+-- Dependencies: 6
+-- Name: billservice_groupstat; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_groupstat (
+    id integer NOT NULL,
+    group_id integer NOT NULL,
+    account_id integer NOT NULL,
+    bytes bigint NOT NULL,
+    datetime timestamp without time zone NOT NULL,
+    classes integer[],
+    classbytes bigint[],
+    max_class integer
+);
+
+
+ALTER TABLE public.billservice_groupstat OWNER TO ebs;
+
+--
+-- TOC entry 1989 (class 1259 OID 4630934)
+-- Dependencies: 6
+-- Name: billservice_ipinuse; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_ipinuse (
+    id integer NOT NULL,
+    pool_id integer NOT NULL,
+    ip character varying(255) NOT NULL,
+    datetime timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.billservice_ipinuse OWNER TO ebs;
+
+--
+-- TOC entry 1991 (class 1259 OID 4630939)
+-- Dependencies: 6
+-- Name: billservice_ippool; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_ippool (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    type integer NOT NULL,
+    start_ip inet NOT NULL,
+    end_ip inet NOT NULL
+);
+
+
+ALTER TABLE public.billservice_ippool OWNER TO ebs;
+
+--
+-- TOC entry 1938 (class 1259 OID 4630663)
+-- Dependencies: 2355 2356 2357 6
+-- Name: billservice_netflowstream; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_netflowstream (
+    id integer NOT NULL,
+    nas_id integer,
+    account_id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    date_start timestamp without time zone DEFAULT now(),
+    src_addr inet NOT NULL,
+    traffic_class_id integer[],
+    direction character varying(32) NOT NULL,
+    traffic_transmit_node_id integer,
+    dst_addr inet NOT NULL,
+    octets bigint NOT NULL,
+    src_port integer NOT NULL,
+    dst_port integer NOT NULL,
+    protocol integer NOT NULL,
+    checkouted boolean DEFAULT false,
+    for_checkout boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_netflowstream OWNER TO ebs;
+
+--
+-- TOC entry 1994 (class 1259 OID 4630949)
+-- Dependencies: 6
+-- Name: billservice_onetimeservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_onetimeservice (
+    id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    cost numeric NOT NULL
+);
+
+
+ALTER TABLE public.billservice_onetimeservice OWNER TO ebs;
+
+--
+-- TOC entry 1996 (class 1259 OID 4630954)
+-- Dependencies: 6
+-- Name: billservice_onetimeservicehistory; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_onetimeservicehistory (
+    id integer NOT NULL,
+    accounttarif_id integer NOT NULL,
+    onetimeservice_id integer,
+    datetime timestamp without time zone NOT NULL,
+    transaction_id integer,
+    summ numeric,
+    account_id integer
+);
+
+
+ALTER TABLE public.billservice_onetimeservicehistory OWNER TO ebs;
+
+--
+-- TOC entry 1998 (class 1259 OID 4630959)
+-- Dependencies: 6
+-- Name: billservice_operator; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_operator (
+    id integer NOT NULL,
+    organization character varying(255) NOT NULL,
+    unp character varying(40) NOT NULL,
+    okpo character varying(40) NOT NULL,
+    contactperson character varying(255) NOT NULL,
+    director character varying(255) NOT NULL,
+    phone character varying(40) NOT NULL,
+    postaddress character varying(255) NOT NULL,
+    uraddress character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    fax character varying(40) NOT NULL,
+    bank_id integer
+);
+
+
+ALTER TABLE public.billservice_operator OWNER TO ebs;
+
+--
+-- TOC entry 2000 (class 1259 OID 4630967)
+-- Dependencies: 2479 2480 2481 2482 2483 2484 6
+-- Name: billservice_organization; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_organization (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    name character varying(255) DEFAULT ''::character varying,
+    uraddress character varying(255) DEFAULT ''::character varying,
+    okpo character varying(255) DEFAULT ''::character varying,
+    unp character varying(255) DEFAULT ''::character varying,
+    bank_id integer NOT NULL,
+    phone character varying(255) DEFAULT ''::character varying,
+    fax character varying(255) DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_organization OWNER TO ebs;
+
+--
+-- TOC entry 2002 (class 1259 OID 4630981)
+-- Dependencies: 2486 6
+-- Name: billservice_periodicalservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_periodicalservice (
+    id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    settlement_period_id integer NOT NULL,
+    cost numeric NOT NULL,
+    cash_method character varying(255) NOT NULL,
+    condition integer DEFAULT 0 NOT NULL,
+    created timestamp without time zone
+);
+
+
+ALTER TABLE public.billservice_periodicalservice OWNER TO ebs;
+
+--
+-- TOC entry 1940 (class 1259 OID 4630696)
+-- Dependencies: 2368 6
+-- Name: billservice_periodicalservicehistory; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_periodicalservicehistory (
+    id integer NOT NULL,
+    service_id integer,
+    transaction_id integer,
+    datetime timestamp without time zone DEFAULT now(),
+    accounttarif_id integer,
+    summ numeric,
+    account_id integer,
+    type_id character varying
+);
+
+
+ALTER TABLE public.billservice_periodicalservicehistory OWNER TO ebs;
+
+--
+-- TOC entry 2005 (class 1259 OID 4630992)
+-- Dependencies: 2488 2489 6
+-- Name: billservice_ports; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_ports (
+    id integer NOT NULL,
+    port integer NOT NULL,
+    protocol integer NOT NULL,
+    name character varying(64) DEFAULT ''::character varying,
+    description character varying(255) DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_ports OWNER TO ebs;
+
+--
+-- TOC entry 2007 (class 1259 OID 4630999)
+-- Dependencies: 2492 6
+-- Name: billservice_prepaidtraffic; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_prepaidtraffic (
+    id integer NOT NULL,
+    traffic_transmit_service_id integer NOT NULL,
+    size bigint DEFAULT 0,
+    group_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_prepaidtraffic OWNER TO ebs;
+
+--
+-- TOC entry 2077 (class 1259 OID 4632564)
+-- Dependencies: 2574 6
+-- Name: billservice_radiusattrs; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE TABLE billservice_radiusattrs (
+    id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    vendor integer DEFAULT 0,
+    attrid integer NOT NULL,
+    value character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.billservice_radiusattrs OWNER TO mikrobill;
+
+--
+-- TOC entry 2009 (class 1259 OID 4631005)
+-- Dependencies: 6
+-- Name: billservice_salecard; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_salecard (
+    id integer NOT NULL,
+    dealer_id integer NOT NULL,
+    sum_for_pay numeric NOT NULL,
+    paydeffer integer NOT NULL,
+    discount numeric NOT NULL,
+    discount_sum numeric NOT NULL,
+    prepayment numeric NOT NULL,
+    created timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.billservice_salecard OWNER TO ebs;
+
+--
+-- TOC entry 2010 (class 1259 OID 4631008)
+-- Dependencies: 6
+-- Name: billservice_salecard_cards; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_salecard_cards (
+    id integer NOT NULL,
+    salecard_id integer NOT NULL,
+    card_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_salecard_cards OWNER TO ebs;
+
+--
+-- TOC entry 2013 (class 1259 OID 4631015)
+-- Dependencies: 2495 2496 6
+-- Name: billservice_settlementperiod; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_settlementperiod (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    time_start timestamp without time zone NOT NULL,
+    length integer NOT NULL,
+    length_in character varying(255) DEFAULT ''::character varying,
+    autostart boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_settlementperiod OWNER TO ebs;
+
+--
+-- TOC entry 2015 (class 1259 OID 4631025)
+-- Dependencies: 6
+-- Name: billservice_shedulelog; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE billservice_shedulelog (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    ballance_checkout timestamp without time zone,
+    prepaid_traffic_reset timestamp without time zone,
+    prepaid_traffic_accrued timestamp without time zone,
+    prepaid_time_reset timestamp without time zone,
+    prepaid_time_accrued timestamp without time zone,
+    balance_blocked timestamp without time zone,
+    accounttarif_id integer
+);
+
+
+ALTER TABLE public.billservice_shedulelog OWNER TO postgres;
+
+--
+-- TOC entry 2017 (class 1259 OID 4631030)
+-- Dependencies: 2500 2501 6
+-- Name: billservice_speedlimit; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_speedlimit (
+    id integer NOT NULL,
+    limit_id integer NOT NULL,
+    max_tx integer NOT NULL,
+    max_rx integer NOT NULL,
+    burst_tx integer NOT NULL,
+    burst_rx integer NOT NULL,
+    burst_treshold_tx integer NOT NULL,
+    burst_treshold_rx integer NOT NULL,
+    burst_time_tx integer NOT NULL,
+    burst_time_rx integer NOT NULL,
+    min_tx integer NOT NULL,
+    min_rx integer NOT NULL,
+    priority integer NOT NULL,
+    speed_units character varying(10) DEFAULT 'Kbps'::character varying NOT NULL,
+    change_speed_type character varying(20) DEFAULT 'add'::character varying
+);
+
+
+ALTER TABLE public.billservice_speedlimit OWNER TO ebs;
+
+--
+-- TOC entry 2019 (class 1259 OID 4631035)
+-- Dependencies: 6
+-- Name: billservice_suspendedperiod; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_suspendedperiod (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    start_date timestamp without time zone NOT NULL,
+    end_date timestamp without time zone
+);
+
+
+ALTER TABLE public.billservice_suspendedperiod OWNER TO ebs;
+
+--
+-- TOC entry 2021 (class 1259 OID 4631040)
+-- Dependencies: 2503 2504 2505 2506 6
+-- Name: billservice_systemuser; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_systemuser (
+    id integer NOT NULL,
+    username character varying(255) NOT NULL,
+    password character varying(255) DEFAULT ''::character varying,
+    last_ip character varying(64),
+    last_login timestamp without time zone,
+    description text DEFAULT ''::text,
+    created timestamp without time zone,
+    status boolean DEFAULT false,
+    host character varying(255) DEFAULT '0.0.0.0/0'::character varying,
+    role integer
+);
+
+
+ALTER TABLE public.billservice_systemuser OWNER TO ebs;
+
+--
+-- TOC entry 1939 (class 1259 OID 4630677)
+-- Dependencies: 2359 2360 2361 2362 2363 2364 2366 2367 6
+-- Name: billservice_tariff; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_tariff (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text DEFAULT ''::text,
+    access_parameters_id integer NOT NULL,
+    time_access_service_id integer,
+    traffic_transmit_service_id integer,
+    cost numeric DEFAULT 0,
+    reset_tarif_cost boolean DEFAULT false,
+    settlement_period_id integer,
+    ps_null_ballance_checkout boolean DEFAULT false,
+    active boolean DEFAULT false,
+    deleted boolean DEFAULT false,
+    allow_express_pay boolean DEFAULT true,
+    require_tarif_cost boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_tariff OWNER TO ebs;
+
+--
+-- TOC entry 2024 (class 1259 OID 4631054)
+-- Dependencies: 6
+-- Name: billservice_template; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_template (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    type_id integer NOT NULL,
+    body text NOT NULL
+);
+
+
+ALTER TABLE public.billservice_template OWNER TO ebs;
+
+--
+-- TOC entry 2026 (class 1259 OID 4631062)
+-- Dependencies: 2510 6
+-- Name: billservice_timeaccessnode; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timeaccessnode (
+    id integer NOT NULL,
+    time_access_service_id integer NOT NULL,
+    time_period_id integer NOT NULL,
+    cost numeric DEFAULT 0
+);
+
+
+ALTER TABLE public.billservice_timeaccessnode OWNER TO ebs;
+
+--
+-- TOC entry 2028 (class 1259 OID 4631068)
+-- Dependencies: 2511 2512 6
+-- Name: billservice_timeaccessservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timeaccessservice (
+    id integer NOT NULL,
+    prepaid_time integer DEFAULT 0,
+    reset_time boolean DEFAULT false
+);
+
+
+ALTER TABLE public.billservice_timeaccessservice OWNER TO ebs;
+
+--
+-- TOC entry 2030 (class 1259 OID 4631075)
+-- Dependencies: 6
+-- Name: billservice_timeperiod; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timeperiod (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+ALTER TABLE public.billservice_timeperiod OWNER TO ebs;
+
+--
+-- TOC entry 2032 (class 1259 OID 4631080)
+-- Dependencies: 6
+-- Name: billservice_timeperiod_time_period_nodes; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timeperiod_time_period_nodes (
+    id integer NOT NULL,
+    timeperiod_id integer NOT NULL,
+    timeperiodnode_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO ebs;
+
+--
+-- TOC entry 2034 (class 1259 OID 4631085)
+-- Dependencies: 2516 2517 6
+-- Name: billservice_timeperiodnode; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timeperiodnode (
+    id integer NOT NULL,
+    name character varying(255) DEFAULT ''::character varying,
+    time_start timestamp without time zone NOT NULL,
+    length integer NOT NULL,
+    repeat_after character varying(255) DEFAULT ''::character varying
+);
+
+
+ALTER TABLE public.billservice_timeperiodnode OWNER TO ebs;
+
+--
+-- TOC entry 2036 (class 1259 OID 4631095)
+-- Dependencies: 2519 2520 2521 2522 2523 2524 6
+-- Name: billservice_timespeed; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timespeed (
+    id integer NOT NULL,
+    access_parameters_id integer NOT NULL,
+    time_id integer NOT NULL,
+    max_limit character varying(64) DEFAULT ''::character varying,
+    min_limit character varying(64) DEFAULT ''::character varying,
+    burst_limit character varying(64) DEFAULT ''::character varying,
+    burst_treshold character varying(64) DEFAULT ''::character varying,
+    burst_time character varying(64) DEFAULT ''::character varying,
+    priority integer DEFAULT 8
+);
+
+
+ALTER TABLE public.billservice_timespeed OWNER TO ebs;
+
+--
+-- TOC entry 2073 (class 1259 OID 4632062)
+-- Dependencies: 6
+-- Name: billservice_timetransaction; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_timetransaction (
+    id integer NOT NULL,
+    timeaccessservice_id integer NOT NULL,
+    account_id integer,
+    accounttarif_id integer NOT NULL,
+    summ numeric NOT NULL,
+    datetime timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.billservice_timetransaction OWNER TO ebs;
+
+--
+-- TOC entry 2075 (class 1259 OID 4632150)
+-- Dependencies: 2572 6
+-- Name: billservice_tpchangerule; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE TABLE billservice_tpchangerule (
+    id integer NOT NULL,
+    from_tariff_id integer NOT NULL,
+    to_tariff_id integer NOT NULL,
+    disabled boolean NOT NULL,
+    cost numeric NOT NULL,
+    ballance_min double precision NOT NULL,
+    settlement_period_id integer DEFAULT 0
+);
+
+
+ALTER TABLE public.billservice_tpchangerule OWNER TO mikrobill;
+
+--
+-- TOC entry 2038 (class 1259 OID 4631106)
+-- Dependencies: 6
+-- Name: billservice_trafficlimit; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_trafficlimit (
+    id integer NOT NULL,
+    tarif_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    settlement_period_id integer,
+    size bigint NOT NULL,
+    mode boolean NOT NULL,
+    group_id integer NOT NULL,
+    action integer
+);
+
+
+ALTER TABLE public.billservice_trafficlimit OWNER TO ebs;
+
+--
+-- TOC entry 2040 (class 1259 OID 4631111)
+-- Dependencies: 6
+-- Name: billservice_trafficlimit_traffic_class; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_trafficlimit_traffic_class (
+    id integer NOT NULL,
+    trafficlimit_id integer NOT NULL,
+    trafficclass_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO ebs;
+
+--
+-- TOC entry 2071 (class 1259 OID 4632039)
+-- Dependencies: 6
+-- Name: billservice_traffictransaction; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_traffictransaction (
+    id integer NOT NULL,
+    traffictransmitservice_id integer,
+    account_id integer,
+    accounttarif_id integer NOT NULL,
+    summ numeric NOT NULL,
+    datetime timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.billservice_traffictransaction OWNER TO ebs;
+
+--
+-- TOC entry 2042 (class 1259 OID 4631116)
+-- Dependencies: 2528 2529 2531 6
+-- Name: billservice_traffictransmitnodes; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_traffictransmitnodes (
+    id integer NOT NULL,
+    traffic_transmit_service_id integer NOT NULL,
+    cost numeric DEFAULT 0,
+    edge_start double precision DEFAULT 0,
+    edge_end double precision DEFAULT 0,
+    group_id integer
+);
+
+
+ALTER TABLE public.billservice_traffictransmitnodes OWNER TO ebs;
+
+--
+-- TOC entry 2044 (class 1259 OID 4631124)
+-- Dependencies: 6
+-- Name: billservice_traffictransmitnodes_time_nodes; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_traffictransmitnodes_time_nodes (
+    id integer NOT NULL,
+    traffictransmitnodes_id integer NOT NULL,
+    timeperiod_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO ebs;
+
+--
+-- TOC entry 2046 (class 1259 OID 4631129)
+-- Dependencies: 6
+-- Name: billservice_traffictransmitnodes_traffic_class; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_traffictransmitnodes_traffic_class (
+    id integer NOT NULL,
+    traffictransmitnodes_id integer NOT NULL,
+    trafficclass_id integer NOT NULL
+);
+
+
+ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO ebs;
+
+--
+-- TOC entry 2048 (class 1259 OID 4631134)
+-- Dependencies: 2534 2535 2536 6
+-- Name: billservice_traffictransmitservice; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_traffictransmitservice (
+    id integer NOT NULL,
+    reset_traffic boolean DEFAULT false,
+    cash_method character varying(32) DEFAULT 'SUMM'::character varying,
+    period_check character varying(32) DEFAULT 'SP_START'::character varying
+);
+
+
+ALTER TABLE public.billservice_traffictransmitservice OWNER TO ebs;
+
+--
+-- TOC entry 2050 (class 1259 OID 4631142)
+-- Dependencies: 2539 2540 6
+-- Name: billservice_transaction; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_transaction (
+    id integer NOT NULL,
+    bill character varying(255),
+    account_id integer,
+    type_id character varying,
+    approved boolean,
+    tarif_id integer,
+    summ numeric,
+    description text,
+    created timestamp without time zone,
+    systemuser_id integer,
+    promise boolean DEFAULT false,
+    end_promise timestamp without time zone,
+    promise_expired boolean DEFAULT false,
+    accounttarif_id integer
+);
+
+
+ALTER TABLE public.billservice_transaction OWNER TO ebs;
+
+--
+-- TOC entry 2052 (class 1259 OID 4631150)
+-- Dependencies: 6
+-- Name: billservice_transactiontype; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_transactiontype (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    internal_name character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.billservice_transactiontype OWNER TO ebs;
+
+--
+-- TOC entry 2079 (class 1259 OID 4632662)
+-- Dependencies: 6
+-- Name: billservice_x8021; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE billservice_x8021 (
+    id integer NOT NULL,
+    account_id integer,
+    nas_id integer NOT NULL,
+    port smallint,
+    typeauth character varying(32) NOT NULL,
+    vlan_accept integer,
+    vlan_reject integer,
+    simpleauth boolean NOT NULL
+);
+
+
+ALTER TABLE public.billservice_x8021 OWNER TO ebs;
+
+--
+-- TOC entry 2054 (class 1259 OID 4631155)
+-- Dependencies: 2543 6
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE django_admin_log (
+    id integer NOT NULL,
+    action_time timestamp without time zone NOT NULL,
+    user_id integer NOT NULL,
+    content_type_id integer,
+    object_id text,
+    object_repr character varying(200) NOT NULL,
+    action_flag smallint NOT NULL,
+    change_message text NOT NULL,
+    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
+);
+
+
+ALTER TABLE public.django_admin_log OWNER TO ebs;
+
+--
+-- TOC entry 2056 (class 1259 OID 4631164)
+-- Dependencies: 6
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE django_content_type (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    app_label character varying(100) NOT NULL,
+    model character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.django_content_type OWNER TO ebs;
+
+--
+-- TOC entry 2058 (class 1259 OID 4631169)
+-- Dependencies: 6
+-- Name: django_session; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE django_session (
+    session_key character varying(40) NOT NULL,
+    session_data text NOT NULL,
+    expire_date timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.django_session OWNER TO ebs;
+
+--
+-- TOC entry 2059 (class 1259 OID 4631175)
+-- Dependencies: 6
+-- Name: django_site; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE django_site (
+    id integer NOT NULL,
+    domain character varying(100) NOT NULL,
+    name character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.django_site OWNER TO ebs;
+
+--
+-- TOC entry 452 (class 0 OID 0)
+-- Name: ghstore; Type: SHELL TYPE; Schema: public; Owner: valera
+--
+
+CREATE TYPE ghstore;
+
+
+--
+-- TOC entry 37 (class 1255 OID 283087)
+-- Dependencies: 6 452
+-- Name: ghstore_in(cstring); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_in(cstring) RETURNS ghstore
+    AS '$libdir/hstore', 'ghstore_in'
+    LANGUAGE c STRICT;
+
+
+ALTER FUNCTION public.ghstore_in(cstring) OWNER TO valera;
+
+--
+-- TOC entry 38 (class 1255 OID 283088)
+-- Dependencies: 6 452
+-- Name: ghstore_out(ghstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_out(ghstore) RETURNS cstring
+    AS '$libdir/hstore', 'ghstore_out'
+    LANGUAGE c STRICT;
+
+
+ALTER FUNCTION public.ghstore_out(ghstore) OWNER TO valera;
+
+--
+-- TOC entry 451 (class 1247 OID 283086)
+-- Dependencies: 6 38 37
+-- Name: ghstore; Type: TYPE; Schema: public; Owner: valera
+--
+
+CREATE TYPE ghstore (
+    INTERNALLENGTH = variable,
+    INPUT = ghstore_in,
+    OUTPUT = ghstore_out,
+    ALIGNMENT = int4,
+    STORAGE = plain
+);
+
+
+ALTER TYPE public.ghstore OWNER TO valera;
+
+--
+-- TOC entry 413 (class 0 OID 0)
+-- Name: hstore; Type: SHELL TYPE; Schema: public; Owner: valera
+--
+
+CREATE TYPE hstore;
+
+
+--
+-- TOC entry 20 (class 1255 OID 283060)
+-- Dependencies: 6 413
+-- Name: hstore_in(cstring); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION hstore_in(cstring) RETURNS hstore
+    AS '$libdir/hstore', 'hstore_in'
+    LANGUAGE c STRICT;
+
+
+ALTER FUNCTION public.hstore_in(cstring) OWNER TO valera;
+
+--
+-- TOC entry 21 (class 1255 OID 283061)
+-- Dependencies: 6 413
+-- Name: hstore_out(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION hstore_out(hstore) RETURNS cstring
+    AS '$libdir/hstore', 'hstore_out'
+    LANGUAGE c STRICT;
+
+
+ALTER FUNCTION public.hstore_out(hstore) OWNER TO valera;
+
+--
+-- TOC entry 412 (class 1247 OID 283059)
+-- Dependencies: 6 21 20
+-- Name: hstore; Type: TYPE; Schema: public; Owner: valera
+--
+
+CREATE TYPE hstore (
+    INTERNALLENGTH = variable,
+    INPUT = hstore_in,
+    OUTPUT = hstore_out,
+    ALIGNMENT = int4,
+    STORAGE = extended
+);
+
+
+ALTER TYPE public.hstore OWNER TO valera;
+
+--
+-- TOC entry 457 (class 0 OID 0)
+-- Name: intbig_gkey; Type: SHELL TYPE; Schema: public; Owner: ebs
+--
 
 CREATE TYPE intbig_gkey;
 
 
+--
+-- TOC entry 95 (class 1255 OID 283218)
+-- Dependencies: 6 457
+-- Name: _intbig_in(cstring); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _intbig_in(cstring) RETURNS intbig_gkey
     AS '$libdir/_int', '_intbig_in'
@@ -29,6 +1519,11 @@ CREATE FUNCTION _intbig_in(cstring) RETURNS intbig_gkey
 
 ALTER FUNCTION public._intbig_in(cstring) OWNER TO ebs;
 
+--
+-- TOC entry 81 (class 1255 OID 283219)
+-- Dependencies: 6 457
+-- Name: _intbig_out(intbig_gkey); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _intbig_out(intbig_gkey) RETURNS cstring
     AS '$libdir/_int', '_intbig_out'
@@ -37,6 +1532,11 @@ CREATE FUNCTION _intbig_out(intbig_gkey) RETURNS cstring
 
 ALTER FUNCTION public._intbig_out(intbig_gkey) OWNER TO ebs;
 
+--
+-- TOC entry 456 (class 1247 OID 283217)
+-- Dependencies: 6 81 95
+-- Name: intbig_gkey; Type: TYPE; Schema: public; Owner: ebs
+--
 
 CREATE TYPE intbig_gkey (
     INTERNALLENGTH = variable,
@@ -49,10 +1549,91 @@ CREATE TYPE intbig_gkey (
 
 ALTER TYPE public.intbig_gkey OWNER TO ebs;
 
+--
+-- TOC entry 2061 (class 1259 OID 4631181)
+-- Dependencies: 2546 2547 2548 2549 2550 2551 2552 2553 2554 6
+-- Name: nas_nas; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE nas_nas (
+    id integer NOT NULL,
+    type character varying(32) NOT NULL,
+    name character varying(255) NOT NULL,
+    ipaddress character varying(255) NOT NULL,
+    secret character varying(255) NOT NULL,
+    login character varying(255) DEFAULT 'admin'::character varying,
+    password character varying(255) NOT NULL,
+    allow_pptp boolean DEFAULT true,
+    allow_pppoe boolean DEFAULT true,
+    allow_ipn boolean DEFAULT true,
+    user_add_action text,
+    user_enable_action text,
+    user_disable_action text,
+    user_delete_action text,
+    vpn_speed_action text DEFAULT ''::text,
+    ipn_speed_action text DEFAULT ''::text,
+    reset_action text DEFAULT ''::text,
+    confstring text DEFAULT ''::text,
+    multilink boolean DEFAULT false,
+    identify character varying
+);
+
+
+ALTER TABLE public.nas_nas OWNER TO ebs;
+
+--
+-- TOC entry 2063 (class 1259 OID 4631198)
+-- Dependencies: 2556 2557 2558 6
+-- Name: nas_trafficclass; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE nas_trafficclass (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    weight integer NOT NULL,
+    color character varying(16) DEFAULT '#FFFFFF'::character varying,
+    store boolean DEFAULT true,
+    passthrough boolean DEFAULT true
+);
+
+
+ALTER TABLE public.nas_trafficclass OWNER TO ebs;
+
+--
+-- TOC entry 2065 (class 1259 OID 4631206)
+-- Dependencies: 2560 2561 2562 2563 2564 2565 6
+-- Name: nas_trafficnode; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE nas_trafficnode (
+    id integer NOT NULL,
+    traffic_class_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    direction character varying(32) NOT NULL,
+    protocol integer DEFAULT 0,
+    src_ip inet DEFAULT '0.0.0.0/0'::inet,
+    src_port integer DEFAULT 0,
+    dst_ip inet DEFAULT '0.0.0.0/0'::inet,
+    dst_port integer DEFAULT 0,
+    next_hop inet DEFAULT '0.0.0.0'::inet
+);
+
+
+ALTER TABLE public.nas_trafficnode OWNER TO ebs;
+
+--
+-- TOC entry 455 (class 0 OID 0)
+-- Name: query_int; Type: SHELL TYPE; Schema: public; Owner: ebs
+--
 
 CREATE TYPE query_int;
 
 
+--
+-- TOC entry 82 (class 1255 OID 283150)
+-- Dependencies: 6 455
+-- Name: bqarr_in(cstring); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION bqarr_in(cstring) RETURNS query_int
     AS '$libdir/_int', 'bqarr_in'
@@ -61,6 +1642,11 @@ CREATE FUNCTION bqarr_in(cstring) RETURNS query_int
 
 ALTER FUNCTION public.bqarr_in(cstring) OWNER TO ebs;
 
+--
+-- TOC entry 55 (class 1255 OID 283151)
+-- Dependencies: 6 455
+-- Name: bqarr_out(query_int); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION bqarr_out(query_int) RETURNS cstring
     AS '$libdir/_int', 'bqarr_out'
@@ -69,6 +1655,11 @@ CREATE FUNCTION bqarr_out(query_int) RETURNS cstring
 
 ALTER FUNCTION public.bqarr_out(query_int) OWNER TO ebs;
 
+--
+-- TOC entry 454 (class 1247 OID 283149)
+-- Dependencies: 55 82 6
+-- Name: query_int; Type: TYPE; Schema: public; Owner: ebs
+--
 
 CREATE TYPE query_int (
     INTERNALLENGTH = variable,
@@ -81,39 +1672,113 @@ CREATE TYPE query_int (
 
 ALTER TYPE public.query_int OWNER TO ebs;
 
+--
+-- TOC entry 2067 (class 1259 OID 4631222)
+-- Dependencies: 2567 6
+-- Name: radius_activesession; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE radius_activesession (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    sessionid character varying(255),
+    interrim_update timestamp without time zone,
+    date_start timestamp without time zone,
+    date_end timestamp without time zone,
+    caller_id character varying(255),
+    called_id character varying(255),
+    nas_id character varying(255) NOT NULL,
+    session_time integer DEFAULT 0,
+    framed_protocol character varying(32) NOT NULL,
+    bytes_in bigint,
+    bytes_out bigint,
+    session_status character varying(32),
+    speed_string character varying(255),
+    framed_ip_address character varying(255),
+    nas_int_id integer
+);
+
+
+ALTER TABLE public.radius_activesession OWNER TO ebs;
+
+--
+-- TOC entry 1941 (class 1259 OID 4630711)
+-- Dependencies: 2370 2371 2372 2373 2374 2375 2376 2377 2378 6
+-- Name: radius_session; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE TABLE radius_session (
+    id integer NOT NULL,
+    account_id integer NOT NULL,
+    sessionid character varying(32) DEFAULT ''::character varying,
+    interrim_update timestamp without time zone DEFAULT now(),
+    date_start timestamp without time zone,
+    date_end timestamp without time zone,
+    caller_id character varying(255) DEFAULT ''::character varying,
+    called_id character varying(255) DEFAULT ''::character varying,
+    nas_id character varying(255) NOT NULL,
+    session_time integer DEFAULT 0,
+    framed_protocol character varying(32) NOT NULL,
+    bytes_in integer DEFAULT 0,
+    bytes_out integer DEFAULT 0,
+    checkouted_by_time boolean DEFAULT false,
+    checkouted_by_trafic boolean DEFAULT false,
+    disconnect_status character varying(32),
+    framed_ip_address character varying(255),
+    transaction_id bigint
+);
+
+
+ALTER TABLE public.radius_session OWNER TO ebs;
+
+--
+-- TOC entry 460 (class 1247 OID 4630620)
+-- Dependencies: 6 1935
+-- Name: targetinfo; Type: TYPE; Schema: public; Owner: postgres
+--
 
 CREATE TYPE targetinfo AS (
-    target oid,
-    schema oid,
-    nargs integer,
-    argtypes oidvector,
-    targetname name,
-    argmodes "char"[],
-    argnames text[],
-    targetlang oid,
-    fqname text,
-    returnsset boolean,
-    returntype oid
+	target oid,
+	schema oid,
+	nargs integer,
+	argtypes oidvector,
+	targetname name,
+	argmodes "char"[],
+	argnames text[],
+	targetlang oid,
+	fqname text,
+	returnsset boolean,
+	returntype oid
 );
 
 
 ALTER TYPE public.targetinfo OWNER TO postgres;
 
+--
+-- TOC entry 462 (class 1247 OID 4630623)
+-- Dependencies: 6 1936
+-- Name: var; Type: TYPE; Schema: public; Owner: postgres
+--
 
 CREATE TYPE var AS (
-    name text,
-    varclass character(1),
-    linenumber integer,
-    isunique boolean,
-    isconst boolean,
-    isnotnull boolean,
-    dtype oid,
-    value text
+	name text,
+	varclass character(1),
+	linenumber integer,
+	isunique boolean,
+	isconst boolean,
+	isnotnull boolean,
+	dtype oid,
+	value text
 );
 
 
 ALTER TYPE public.var OWNER TO postgres;
 
+--
+-- TOC entry 49 (class 1255 OID 283159)
+-- Dependencies: 6
+-- Name: _int_contained(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_contained(integer[], integer[]) RETURNS boolean
     AS '$libdir/_int', '_int_contained'
@@ -122,10 +1787,20 @@ CREATE FUNCTION _int_contained(integer[], integer[]) RETURNS boolean
 
 ALTER FUNCTION public._int_contained(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3124 (class 0 OID 0)
+-- Dependencies: 49
+-- Name: FUNCTION _int_contained(integer[], integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION _int_contained(integer[], integer[]) IS 'contained in';
 
 
+--
+-- TOC entry 53 (class 1255 OID 283158)
+-- Dependencies: 6
+-- Name: _int_contains(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_contains(integer[], integer[]) RETURNS boolean
     AS '$libdir/_int', '_int_contains'
@@ -134,10 +1809,20 @@ CREATE FUNCTION _int_contains(integer[], integer[]) RETURNS boolean
 
 ALTER FUNCTION public._int_contains(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3125 (class 0 OID 0)
+-- Dependencies: 53
+-- Name: FUNCTION _int_contains(integer[], integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION _int_contains(integer[], integer[]) IS 'contains';
 
 
+--
+-- TOC entry 92 (class 1255 OID 283162)
+-- Dependencies: 6
+-- Name: _int_different(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_different(integer[], integer[]) RETURNS boolean
     AS '$libdir/_int', '_int_different'
@@ -146,10 +1831,20 @@ CREATE FUNCTION _int_different(integer[], integer[]) RETURNS boolean
 
 ALTER FUNCTION public._int_different(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3126 (class 0 OID 0)
+-- Dependencies: 92
+-- Name: FUNCTION _int_different(integer[], integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION _int_different(integer[], integer[]) IS 'different';
 
 
+--
+-- TOC entry 57 (class 1255 OID 283164)
+-- Dependencies: 6
+-- Name: _int_inter(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_inter(integer[], integer[]) RETURNS integer[]
     AS '$libdir/_int', '_int_inter'
@@ -158,6 +1853,11 @@ CREATE FUNCTION _int_inter(integer[], integer[]) RETURNS integer[]
 
 ALTER FUNCTION public._int_inter(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 52 (class 1255 OID 283160)
+-- Dependencies: 6
+-- Name: _int_overlap(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_overlap(integer[], integer[]) RETURNS boolean
     AS '$libdir/_int', '_int_overlap'
@@ -166,10 +1866,20 @@ CREATE FUNCTION _int_overlap(integer[], integer[]) RETURNS boolean
 
 ALTER FUNCTION public._int_overlap(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3127 (class 0 OID 0)
+-- Dependencies: 52
+-- Name: FUNCTION _int_overlap(integer[], integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION _int_overlap(integer[], integer[]) IS 'overlaps';
 
 
+--
+-- TOC entry 59 (class 1255 OID 283161)
+-- Dependencies: 6
+-- Name: _int_same(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_same(integer[], integer[]) RETURNS boolean
     AS '$libdir/_int', '_int_same'
@@ -178,10 +1888,20 @@ CREATE FUNCTION _int_same(integer[], integer[]) RETURNS boolean
 
 ALTER FUNCTION public._int_same(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3128 (class 0 OID 0)
+-- Dependencies: 59
+-- Name: FUNCTION _int_same(integer[], integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION _int_same(integer[], integer[]) IS 'same as';
 
 
+--
+-- TOC entry 56 (class 1255 OID 283163)
+-- Dependencies: 6
+-- Name: _int_union(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION _int_union(integer[], integer[]) RETURNS integer[]
     AS '$libdir/_int', '_int_union'
@@ -190,6 +1910,11 @@ CREATE FUNCTION _int_union(integer[], integer[]) RETURNS integer[]
 
 ALTER FUNCTION public._int_union(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 96 (class 1255 OID 4630624)
+-- Dependencies: 6 728
+-- Name: account_transaction_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION account_transaction_trg_fn() RETURNS trigger
     AS $$
@@ -214,8 +1939,58 @@ $$
 
 ALTER FUNCTION public.account_transaction_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 162 (class 1255 OID 4632125)
+-- Dependencies: 728 6
+-- Name: accountipnspeed_ins_fn(integer, character varying, boolean, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION accountipnspeed_ins_fn(account_id_ integer, speed_ character varying, state_ boolean, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_accountipnspeed SET speed=speed_, state=state_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_accountipnspeed(account_id, speed, state, datetime) VALUES(account_id_, speed_, state_, datetime_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
 
 
+ALTER FUNCTION public.accountipnspeed_ins_fn(account_id_ integer, speed_ character varying, state_ boolean, datetime_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 32 (class 1255 OID 283081)
+-- Dependencies: 6 412
+-- Name: akeys(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION akeys(hstore) RETURNS text[]
+    AS '$libdir/hstore', 'akeys'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.akeys(hstore) OWNER TO valera;
+
+--
+-- TOC entry 33 (class 1255 OID 283082)
+-- Dependencies: 412 6
+-- Name: avals(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION avals(hstore) RETURNS text[]
+    AS '$libdir/hstore', 'avals'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.avals(hstore) OWNER TO valera;
+
+--
+-- TOC entry 97 (class 1255 OID 4630625)
+-- Dependencies: 6 728
+-- Name: block_balance(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
 CREATE FUNCTION block_balance(account_id integer) RETURNS void
     AS $$
@@ -229,6 +2004,11 @@ $$
 
 ALTER FUNCTION public.block_balance(account_id integer) OWNER TO postgres;
 
+--
+-- TOC entry 54 (class 1255 OID 283154)
+-- Dependencies: 454 6
+-- Name: boolop(integer[], query_int); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION boolop(integer[], query_int) RETURNS boolean
     AS '$libdir/_int', 'boolop'
@@ -237,10 +2017,20 @@ CREATE FUNCTION boolop(integer[], query_int) RETURNS boolean
 
 ALTER FUNCTION public.boolop(integer[], query_int) OWNER TO ebs;
 
+--
+-- TOC entry 3129 (class 0 OID 0)
+-- Dependencies: 54
+-- Name: FUNCTION boolop(integer[], query_int); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION boolop(integer[], query_int) IS 'boolean operation with array';
 
 
+--
+-- TOC entry 175 (class 1255 OID 4630626)
+-- Dependencies: 6 728
+-- Name: card_activate_fn(character varying, character varying, integer, inet); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet) RETURNS record
     AS $$
@@ -254,19 +2044,28 @@ DECLARE
     account_data_ record;
     tmp record;
 BEGIN
+    -- Получаем финормацию о карточке, которая прдана и у которой не истёк срок годности
     SELECT id, sold, activated, activated_by_id, nominal, tarif_id INTO card_data_ FROM billservice_card WHERE "login"=login_ and pin=pin_ and sold is not Null and now() between start_date and end_date;
+    -- Если карты нету - return
     IF card_data_ is NULL THEN
-    RETURN tmp;
+	RETURN tmp;
+    -- Если карта уже продана, но ещё не активирвоана
     ELSIF card_data_.activated_by_id IS NULL and card_data_.sold is not NULL THEN
-        INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null)
-        VALUES(login_, pin_, nas_id_, account_ip_, False, True, now(), False, True, True, False) RETURNING id INTO account_id_;
+	-- Создаём пользователя
+        INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+        VALUES(login_, pin_, nas_id_, account_ip_, False, True, now(), False, True, True, False, False, False, False) RETURNING id INTO account_id_;
       
+	-- Добавлеяем пользователю тариф
         INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(account_id_, card_data_.tarif_id, now());
+        -- Пополняем счёт
         INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
         VALUES('Карта доступа', account_id_, 'ACCESS_CARD', True, card_data_.tarif_id, card_data_.nominal*(-1),'', now());
+	-- Обновляем информацию о карточке
 	UPDATE billservice_card SET activated = now(), activated_by_id = account_id_ WHERE id = card_data_.id;
 	
+	-- Обновляем информацию о IP-адресе пользователя
 	UPDATE billservice_account SET ipn_ip_address = account_ip_ WHERE id = account_id_;
+	-- Выбираем нужную информацию
 	SELECT account.id, account.password, account.nas_id, bsat.tarif_id,  account.status, 
 	account.balance_blocked, (account.ballance+account.credit) as ballance, account.disabled_by_limit, 
 	tariff.active INTO account_data_ 
@@ -277,6 +2076,7 @@ BEGIN
 	account.ballance+account.credit>0
 	ORDER BY bsat.datetime DESC LIMIT 1;
 	RETURN account_data_;
+    -- Если карта продана и уже активирована
     ELSIF (card_data_.sold is not Null) AND (card_data_.activated_by_id is not Null) THEN
 	SELECT account.id, account.password, account.nas_id, bsat.tarif_id,  account.status, 
 	account.balance_blocked, (account.ballance+account.credit) as ballance, account.disabled_by_limit, 
@@ -300,68 +2100,100 @@ $$
 
 ALTER FUNCTION public.card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet) OWNER TO ebs;
 
+--
+-- TOC entry 98 (class 1255 OID 4630627)
+-- Dependencies: 728 6
+-- Name: check_allowed_users_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION check_allowed_users_trg_fn() RETURNS trigger
-    AS $$ DECLARE counted_num_ int; 
-             allowed_num_ int := 0; 
-             BEGIN 
-                SELECT count(*) INTO counted_num_ FROM billservice_account;
-                IF counted_num_ + 1 > allowed_num_ THEN
-                    RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
-                ELSE 
-                    RETURN NEW;
-                END IF; 
-                END; $$
+    AS $$
+DECLARE counted_num_ bigint;
+  allowed_num_ bigint := 0;
+BEGIN
+  allowed_num_ := return_allowed();
+  SELECT count(*) INTO counted_num_ FROM billservice_account;
+  IF counted_num_ + 1 > allowed_num_ THEN
+  RAISE EXCEPTION 'Amount of users[% + 1] will exceed allowed[%] for the license file!', counted_num_, allowed_num_;
+  ELSE
+  RETURN NEW;
+  END IF;
+  END;
+$$
     LANGUAGE plpgsql;
 
 
 ALTER FUNCTION public.check_allowed_users_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 155 (class 1255 OID 4631997)
+-- Dependencies: 728 6
+-- Name: clear_tariff_services_trg_fn(); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE FUNCTION credit_account(account_id integer, sum double precision) RETURNS void
+CREATE FUNCTION clear_tariff_services_trg_fn() RETURNS trigger
     AS $$
 BEGIN
-    UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
+	
+	IF OLD.traffic_transmit_service_id NOTNULL THEN
+	    DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+	END IF;
+	
+	IF OLD.time_access_service_id NOTNULL THEN
+	    DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
+	RETURN OLD;
+	END IF;
+	
+	 IF OLD.access_parameters_id NOTNULL THEN
+            DELETE FROM billservice_accessparameters WHERE id=OLD.access_parameters_id;
+        END IF;
+RETURN OLD;
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.clear_tariff_services_trg_fn() OWNER TO postgres;
+
+--
+-- TOC entry 168 (class 1255 OID 4632554)
+-- Dependencies: 6 728
+-- Name: credit_account(integer, numeric); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION credit_account(account_id integer, sum numeric) RETURNS void
+    AS $$
+BEGIN
+	UPDATE billservice_account SET ballance=ballance-sum WHERE id=account_id;
 RETURN;
 END;
 $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.credit_account(account_id integer, sum double precision) OWNER TO postgres;
+ALTER FUNCTION public.credit_account(account_id integer, sum numeric) OWNER TO postgres;
 
+--
+-- TOC entry 101 (class 1255 OID 4630629)
+-- Dependencies: 6 728
+-- Name: crt_allowed_checker(bigint); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION crt_allowed_checker(allowed bigint) RETURNS void
     AS $$
-DECLARE
-
-    allowed_ text := allowed::text;
-
-
-    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn () RETURNS trigger AS ';
-
-
-    fn_bd_tx1_ text := ' DECLARE counted_num_ bigint; 
-                         allowed_num_ bigint := ';
-    fn_bd_tx2_ text := '; 
-			 BEGIN 
-				SELECT count(*) INTO counted_num_ FROM billservice_account;
-				IF counted_num_ + 1 > allowed_num_ THEN
-				    RAISE EXCEPTION ';
-    fn_bd_tx3_ text := 			    ', counted_num_, allowed_num_;
-				ELSE 
-				    RETURN NEW;
-				END IF; 
-				END; ';
-
-
-    fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
-
-    exception_ text := 'Amount of users[% + 1] will exceed allowed[%] for the license file!';
-BEGIN    
-    EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ || quote_literal(exception_) || fn_bd_tx3_) || fn_tx2_;
-    RETURN;
-
+DECLARE    
+allowed_ text := allowed::text;    
+prev_ bigint  := 0;    
+fn_tx1_    text := 'CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint AS ';    
+fn_bd_tx1_ text := ' BEGIN RETURN ';    
+fn_bd_tx2_ text := '; END;';    
+fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+BEGIN        
+prev_ := return_allowed();    
+IF prev_ != allowed THEN    	
+EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || allowed_ || fn_bd_tx2_ ) || fn_tx2_;    
+END IF;    
+RETURN;
 END;
 $$
     LANGUAGE plpgsql;
@@ -369,19 +2201,42 @@ $$
 
 ALTER FUNCTION public.crt_allowed_checker(allowed bigint) OWNER TO ebs;
 
+--
+-- TOC entry 169 (class 1255 OID 4632555)
+-- Dependencies: 6 728
+-- Name: debit_account(integer, numeric); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE FUNCTION debit_account(account_id integer, sum double precision) RETURNS void
+CREATE FUNCTION debit_account(account_id integer, sum numeric) RETURNS void
     AS $$
 BEGIN
-    UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
+	UPDATE billservice_account SET ballance=ballance+sum WHERE id=account_id;
 RETURN;
 END;
 $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.debit_account(account_id integer, sum double precision) OWNER TO postgres;
+ALTER FUNCTION public.debit_account(account_id integer, sum numeric) OWNER TO postgres;
 
+--
+-- TOC entry 26 (class 1255 OID 283069)
+-- Dependencies: 6 412
+-- Name: defined(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION defined(hstore, text) RETURNS boolean
+    AS '$libdir/hstore', 'defined'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.defined(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 99 (class 1255 OID 4630631)
+-- Dependencies: 6 728
+-- Name: del_nfs_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION del_nfs_trg_fn() RETURNS trigger
     AS $$
@@ -399,6 +2254,63 @@ $$
 
 ALTER FUNCTION public.del_nfs_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 27 (class 1255 OID 283070)
+-- Dependencies: 6 412 412
+-- Name: delete(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION delete(hstore, text) RETURNS hstore
+    AS '$libdir/hstore', 'delete'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.delete(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 36 (class 1255 OID 283085)
+-- Dependencies: 6 412
+-- Name: each(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION each(hs hstore, OUT key text, OUT value text) RETURNS SETOF record
+    AS '$libdir/hstore', 'each'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.each(hs hstore, OUT key text, OUT value text) OWNER TO valera;
+
+--
+-- TOC entry 24 (class 1255 OID 283066)
+-- Dependencies: 412 6
+-- Name: exist(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION exist(hstore, text) RETURNS boolean
+    AS '$libdir/hstore', 'exists'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.exist(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 22 (class 1255 OID 283063)
+-- Dependencies: 412 6
+-- Name: fetchval(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION fetchval(hstore, text) RETURNS text
+    AS '$libdir/hstore', 'fetchval'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.fetchval(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 102 (class 1255 OID 4630632)
+-- Dependencies: 6 728
+-- Name: free_unused_account_ip_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION free_unused_account_ip_trg_fn() RETURNS trigger
     AS $$
@@ -434,6 +2346,11 @@ $$
 
 ALTER FUNCTION public.free_unused_account_ip_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 103 (class 1255 OID 4630633)
+-- Dependencies: 728 6
+-- Name: free_unused_card_ip_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION free_unused_card_ip_trg_fn() RETURNS trigger
     AS $$
@@ -452,6 +2369,11 @@ $$
 
 ALTER FUNCTION public.free_unused_card_ip_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 104 (class 1255 OID 4630634)
+-- Dependencies: 728 6
+-- Name: free_unused_ip_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION free_unused_ip_trg_fn() RETURNS trigger
     AS $$
@@ -470,6 +2392,11 @@ $$
 
 ALTER FUNCTION public.free_unused_ip_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 58 (class 1255 OID 283195)
+-- Dependencies: 6
+-- Name: g_int_compress(internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_compress(internal) RETURNS internal
     AS '$libdir/_int', 'g_int_compress'
@@ -478,6 +2405,11 @@ CREATE FUNCTION g_int_compress(internal) RETURNS internal
 
 ALTER FUNCTION public.g_int_compress(internal) OWNER TO ebs;
 
+--
+-- TOC entry 75 (class 1255 OID 283194)
+-- Dependencies: 6
+-- Name: g_int_consistent(internal, integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_consistent(internal, integer[], integer) RETURNS boolean
     AS '$libdir/_int', 'g_int_consistent'
@@ -486,6 +2418,11 @@ CREATE FUNCTION g_int_consistent(internal, integer[], integer) RETURNS boolean
 
 ALTER FUNCTION public.g_int_consistent(internal, integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 74 (class 1255 OID 283196)
+-- Dependencies: 6
+-- Name: g_int_decompress(internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_decompress(internal) RETURNS internal
     AS '$libdir/_int', 'g_int_decompress'
@@ -494,6 +2431,11 @@ CREATE FUNCTION g_int_decompress(internal) RETURNS internal
 
 ALTER FUNCTION public.g_int_decompress(internal) OWNER TO ebs;
 
+--
+-- TOC entry 76 (class 1255 OID 283197)
+-- Dependencies: 6
+-- Name: g_int_penalty(internal, internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_penalty(internal, internal, internal) RETURNS internal
     AS '$libdir/_int', 'g_int_penalty'
@@ -502,6 +2444,11 @@ CREATE FUNCTION g_int_penalty(internal, internal, internal) RETURNS internal
 
 ALTER FUNCTION public.g_int_penalty(internal, internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 77 (class 1255 OID 283198)
+-- Dependencies: 6
+-- Name: g_int_picksplit(internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_picksplit(internal, internal) RETURNS internal
     AS '$libdir/_int', 'g_int_picksplit'
@@ -510,6 +2457,11 @@ CREATE FUNCTION g_int_picksplit(internal, internal) RETURNS internal
 
 ALTER FUNCTION public.g_int_picksplit(internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 78 (class 1255 OID 283200)
+-- Dependencies: 6
+-- Name: g_int_same(integer[], integer[], internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_same(integer[], integer[], internal) RETURNS internal
     AS '$libdir/_int', 'g_int_same'
@@ -518,6 +2470,11 @@ CREATE FUNCTION g_int_same(integer[], integer[], internal) RETURNS internal
 
 ALTER FUNCTION public.g_int_same(integer[], integer[], internal) OWNER TO ebs;
 
+--
+-- TOC entry 80 (class 1255 OID 283199)
+-- Dependencies: 6
+-- Name: g_int_union(internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_int_union(internal, internal) RETURNS integer[]
     AS '$libdir/_int', 'g_int_union'
@@ -526,6 +2483,11 @@ CREATE FUNCTION g_int_union(internal, internal) RETURNS integer[]
 
 ALTER FUNCTION public.g_int_union(internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 79 (class 1255 OID 283222)
+-- Dependencies: 6
+-- Name: g_intbig_compress(internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_compress(internal) RETURNS internal
     AS '$libdir/_int', 'g_intbig_compress'
@@ -534,6 +2496,11 @@ CREATE FUNCTION g_intbig_compress(internal) RETURNS internal
 
 ALTER FUNCTION public.g_intbig_compress(internal) OWNER TO ebs;
 
+--
+-- TOC entry 84 (class 1255 OID 283221)
+-- Dependencies: 6
+-- Name: g_intbig_consistent(internal, internal, integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_consistent(internal, internal, integer) RETURNS boolean
     AS '$libdir/_int', 'g_intbig_consistent'
@@ -542,6 +2509,11 @@ CREATE FUNCTION g_intbig_consistent(internal, internal, integer) RETURNS boolean
 
 ALTER FUNCTION public.g_intbig_consistent(internal, internal, integer) OWNER TO ebs;
 
+--
+-- TOC entry 83 (class 1255 OID 283223)
+-- Dependencies: 6
+-- Name: g_intbig_decompress(internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_decompress(internal) RETURNS internal
     AS '$libdir/_int', 'g_intbig_decompress'
@@ -550,6 +2522,11 @@ CREATE FUNCTION g_intbig_decompress(internal) RETURNS internal
 
 ALTER FUNCTION public.g_intbig_decompress(internal) OWNER TO ebs;
 
+--
+-- TOC entry 85 (class 1255 OID 283224)
+-- Dependencies: 6
+-- Name: g_intbig_penalty(internal, internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_penalty(internal, internal, internal) RETURNS internal
     AS '$libdir/_int', 'g_intbig_penalty'
@@ -558,6 +2535,11 @@ CREATE FUNCTION g_intbig_penalty(internal, internal, internal) RETURNS internal
 
 ALTER FUNCTION public.g_intbig_penalty(internal, internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 86 (class 1255 OID 283225)
+-- Dependencies: 6
+-- Name: g_intbig_picksplit(internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_picksplit(internal, internal) RETURNS internal
     AS '$libdir/_int', 'g_intbig_picksplit'
@@ -566,6 +2548,11 @@ CREATE FUNCTION g_intbig_picksplit(internal, internal) RETURNS internal
 
 ALTER FUNCTION public.g_intbig_picksplit(internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 87 (class 1255 OID 283227)
+-- Dependencies: 6
+-- Name: g_intbig_same(internal, internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_same(internal, internal, internal) RETURNS internal
     AS '$libdir/_int', 'g_intbig_same'
@@ -574,6 +2561,11 @@ CREATE FUNCTION g_intbig_same(internal, internal, internal) RETURNS internal
 
 ALTER FUNCTION public.g_intbig_same(internal, internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 89 (class 1255 OID 283226)
+-- Dependencies: 6
+-- Name: g_intbig_union(internal, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION g_intbig_union(internal, internal) RETURNS integer[]
     AS '$libdir/_int', 'g_intbig_union'
@@ -582,6 +2574,11 @@ CREATE FUNCTION g_intbig_union(internal, internal) RETURNS integer[]
 
 ALTER FUNCTION public.g_intbig_union(internal, internal) OWNER TO ebs;
 
+--
+-- TOC entry 105 (class 1255 OID 4630635)
+-- Dependencies: 728 6
+-- Name: get_cur_acct(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
 CREATE FUNCTION get_cur_acct(dateat timestamp without time zone) RETURNS integer[]
     AS $$
@@ -594,6 +2591,11 @@ $$
 
 ALTER FUNCTION public.get_cur_acct(dateat timestamp without time zone) OWNER TO postgres;
 
+--
+-- TOC entry 106 (class 1255 OID 4630636)
+-- Dependencies: 6 728
+-- Name: get_tarif(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
 CREATE FUNCTION get_tarif(acc_id integer) RETURNS integer
     AS $$
@@ -610,6 +2612,11 @@ $$
 
 ALTER FUNCTION public.get_tarif(acc_id integer) OWNER TO postgres;
 
+--
+-- TOC entry 107 (class 1255 OID 4630637)
+-- Dependencies: 6 728
+-- Name: get_tariff_type(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
 CREATE FUNCTION get_tariff_type(tarif_id integer) RETURNS character varying
     AS $$
@@ -629,6 +2636,141 @@ $$
 
 ALTER FUNCTION public.get_tariff_type(tarif_id integer) OWNER TO postgres;
 
+--
+-- TOC entry 39 (class 1255 OID 283090)
+-- Dependencies: 6
+-- Name: ghstore_compress(internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_compress(internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_compress'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_compress(internal) OWNER TO valera;
+
+--
+-- TOC entry 45 (class 1255 OID 283096)
+-- Dependencies: 6
+-- Name: ghstore_consistent(internal, internal, integer); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_consistent(internal, internal, integer) RETURNS boolean
+    AS '$libdir/hstore', 'ghstore_consistent'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_consistent(internal, internal, integer) OWNER TO valera;
+
+--
+-- TOC entry 40 (class 1255 OID 283091)
+-- Dependencies: 6
+-- Name: ghstore_decompress(internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_decompress(internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_decompress'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_decompress(internal) OWNER TO valera;
+
+--
+-- TOC entry 41 (class 1255 OID 283092)
+-- Dependencies: 6
+-- Name: ghstore_penalty(internal, internal, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_penalty(internal, internal, internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_penalty'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.ghstore_penalty(internal, internal, internal) OWNER TO valera;
+
+--
+-- TOC entry 42 (class 1255 OID 283093)
+-- Dependencies: 6
+-- Name: ghstore_picksplit(internal, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_picksplit(internal, internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_picksplit'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_picksplit(internal, internal) OWNER TO valera;
+
+--
+-- TOC entry 44 (class 1255 OID 283095)
+-- Dependencies: 6
+-- Name: ghstore_same(internal, internal, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_same(internal, internal, internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_same'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_same(internal, internal, internal) OWNER TO valera;
+
+--
+-- TOC entry 43 (class 1255 OID 283094)
+-- Dependencies: 6
+-- Name: ghstore_union(internal, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION ghstore_union(internal, internal) RETURNS internal
+    AS '$libdir/hstore', 'ghstore_union'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.ghstore_union(internal, internal) OWNER TO valera;
+
+--
+-- TOC entry 48 (class 1255 OID 283111)
+-- Dependencies: 6
+-- Name: gin_consistent_hstore(internal, smallint, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION gin_consistent_hstore(internal, smallint, internal) RETURNS internal
+    AS '$libdir/hstore', 'gin_consistent_hstore'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.gin_consistent_hstore(internal, smallint, internal) OWNER TO valera;
+
+--
+-- TOC entry 46 (class 1255 OID 283109)
+-- Dependencies: 6
+-- Name: gin_extract_hstore(internal, internal); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION gin_extract_hstore(internal, internal) RETURNS internal
+    AS '$libdir/hstore', 'gin_extract_hstore'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.gin_extract_hstore(internal, internal) OWNER TO valera;
+
+--
+-- TOC entry 47 (class 1255 OID 283110)
+-- Dependencies: 6
+-- Name: gin_extract_hstore_query(internal, internal, smallint); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION gin_extract_hstore_query(internal, internal, smallint) RETURNS internal
+    AS '$libdir/hstore', 'gin_extract_hstore_query'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.gin_extract_hstore_query(internal, internal, smallint) OWNER TO valera;
+
+--
+-- TOC entry 88 (class 1255 OID 283245)
+-- Dependencies: 6
+-- Name: ginint4_consistent(internal, smallint, internal); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION ginint4_consistent(internal, smallint, internal) RETURNS internal
     AS '$libdir/_int', 'ginint4_consistent'
@@ -637,6 +2779,11 @@ CREATE FUNCTION ginint4_consistent(internal, smallint, internal) RETURNS interna
 
 ALTER FUNCTION public.ginint4_consistent(internal, smallint, internal) OWNER TO ebs;
 
+--
+-- TOC entry 91 (class 1255 OID 283244)
+-- Dependencies: 6
+-- Name: ginint4_queryextract(internal, internal, smallint); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION ginint4_queryextract(internal, internal, smallint) RETURNS internal
     AS '$libdir/_int', 'ginint4_queryextract'
@@ -645,6 +2792,11 @@ CREATE FUNCTION ginint4_queryextract(internal, internal, smallint) RETURNS inter
 
 ALTER FUNCTION public.ginint4_queryextract(internal, internal, smallint) OWNER TO ebs;
 
+--
+-- TOC entry 108 (class 1255 OID 4630638)
+-- Dependencies: 728 6
+-- Name: global_stat_fn(integer, bigint, bigint, timestamp without time zone, integer, integer[], bigint[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION global_stat_fn(account_id_ integer, bytes_in_ bigint, bytes_out_ bigint, datetime_ timestamp without time zone, nas_id_ integer, classes_ integer[], classbytes_ bigint[]) RETURNS void
     AS $$
@@ -687,6 +2839,11 @@ $$
 
 ALTER FUNCTION public.global_stat_fn(account_id_ integer, bytes_in_ bigint, bytes_out_ bigint, datetime_ timestamp without time zone, nas_id_ integer, classes_ integer[], classbytes_ bigint[]) OWNER TO ebs;
 
+--
+-- TOC entry 109 (class 1255 OID 4630639)
+-- Dependencies: 6 728
+-- Name: gpst_crt_cur_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -753,6 +2910,11 @@ $$
 
 ALTER FUNCTION public.gpst_crt_cur_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 110 (class 1255 OID 4630640)
+-- Dependencies: 728 6
+-- Name: gpst_crt_pdb(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_crt_pdb(datetx date) RETURNS integer
     AS $$
@@ -815,6 +2977,11 @@ $$
 
 ALTER FUNCTION public.gpst_crt_pdb(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 111 (class 1255 OID 4630641)
+-- Dependencies: 728 6
+-- Name: gpst_crt_prev_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
     AS $$
@@ -866,6 +3033,11 @@ $$
 
 ALTER FUNCTION public.gpst_crt_prev_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 112 (class 1255 OID 4630642)
+-- Dependencies: 728 6
+-- Name: gpst_cur_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_cur_datechk(gpst_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700201'+ interval '1 month')::date; BEGIN IF    gpst_date < d_s_ THEN RETURN -1; ELSIF gpst_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -874,6 +3046,11 @@ CREATE FUNCTION gpst_cur_datechk(gpst_date timestamp without time zone) RETURNS 
 
 ALTER FUNCTION public.gpst_cur_datechk(gpst_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 113 (class 1255 OID 4630643)
+-- Dependencies: 728 6
+-- Name: gpst_cur_dt(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_cur_dt() RETURNS date
     AS $$ BEGIN RETURN  DATE '19700201'; END; $$
@@ -882,25 +3059,11 @@ CREATE FUNCTION gpst_cur_dt() RETURNS date
 
 ALTER FUNCTION public.gpst_cur_dt() OWNER TO ebs;
 
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
-
-CREATE TABLE billservice_groupstat (
-    id integer NOT NULL,
-    group_id integer NOT NULL,
-    account_id integer NOT NULL,
-    bytes integer NOT NULL,
-    datetime timestamp without time zone NOT NULL,
-    classes integer[],
-    classbytes integer[],
-    max_class integer
-);
-
-
-ALTER TABLE public.billservice_groupstat OWNER TO ebs;
-
+--
+-- TOC entry 114 (class 1255 OID 4630650)
+-- Dependencies: 464 6 728
+-- Name: gpst_cur_ins(billservice_groupstat); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_cur_ins(gpstr billservice_groupstat) RETURNS void
     AS $$BEGIN 
@@ -910,6 +3073,11 @@ CREATE FUNCTION gpst_cur_ins(gpstr billservice_groupstat) RETURNS void
 
 ALTER FUNCTION public.gpst_cur_ins(gpstr billservice_groupstat) OWNER TO ebs;
 
+--
+-- TOC entry 115 (class 1255 OID 4630651)
+-- Dependencies: 6 728
+-- Name: gpst_del_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_del_trg_fn() RETURNS trigger
     AS $$
@@ -923,6 +3091,11 @@ $$
 
 ALTER FUNCTION public.gpst_del_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 116 (class 1255 OID 4630652)
+-- Dependencies: 6 728
+-- Name: gpst_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_ins_trg_fn() RETURNS trigger
     AS $$
@@ -968,6 +3141,11 @@ $$
 
 ALTER FUNCTION public.gpst_ins_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 117 (class 1255 OID 4630653)
+-- Dependencies: 728 6 464
+-- Name: gpst_inserter(billservice_groupstat); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_inserter(gpstr billservice_groupstat) RETURNS void
     AS $$
@@ -1008,6 +3186,11 @@ $$
 
 ALTER FUNCTION public.gpst_inserter(gpstr billservice_groupstat) OWNER TO ebs;
 
+--
+-- TOC entry 118 (class 1255 OID 4630654)
+-- Dependencies: 6 728
+-- Name: gpst_prev_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_prev_datechk(gpst_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700201'+ interval '1 month')::date; BEGIN IF    gpst_date < d_s_ THEN RETURN -1; ELSIF gpst_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -1016,6 +3199,11 @@ CREATE FUNCTION gpst_prev_datechk(gpst_date timestamp without time zone) RETURNS
 
 ALTER FUNCTION public.gpst_prev_datechk(gpst_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 119 (class 1255 OID 4630655)
+-- Dependencies: 6 464 728
+-- Name: gpst_prev_ins(billservice_groupstat); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION gpst_prev_ins(gpstr billservice_groupstat) RETURNS void
     AS $$BEGIN 
@@ -1025,35 +3213,46 @@ CREATE FUNCTION gpst_prev_ins(gpstr billservice_groupstat) RETURNS void
 
 ALTER FUNCTION public.gpst_prev_ins(gpstr billservice_groupstat) OWNER TO ebs;
 
+--
+-- TOC entry 166 (class 1255 OID 4632146)
+-- Dependencies: 6 728
+-- Name: group_type1_fn(integer, integer, bigint, timestamp without time zone, integer[], bigint[], integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ integer, datetime_ timestamp without time zone, classes_ integer[], classbytes_ integer[], max_class_ integer) RETURNS void
+CREATE FUNCTION group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer) RETURNS void
     AS $$
-BEGIN
-    INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
-EXCEPTION WHEN unique_violation THEN
-    UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
+BEGIN    
+INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
+EXCEPTION WHEN unique_violation THEN    
+UPDATE billservice_groupstat SET bytes=bytes+octets_ WHERE group_id=group_id_ AND account_id=account_id_ AND datetime=datetime_;
 END;
 $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.group_type1_fn(group_id_ integer, account_id_ integer, octets_ integer, datetime_ timestamp without time zone, classes_ integer[], classbytes_ integer[], max_class_ integer) OWNER TO ebs;
+ALTER FUNCTION public.group_type1_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer) OWNER TO postgres;
 
+--
+-- TOC entry 167 (class 1255 OID 4632147)
+-- Dependencies: 6 728
+-- Name: group_type2_fn(integer, integer, bigint, timestamp without time zone, integer[], bigint[], integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
-CREATE FUNCTION group_type2_fn(group_id_ integer, account_id_ integer, octets_ integer, datetime_ timestamp without time zone, classes_ integer[], classbytes_ integer[], max_class_ integer) RETURNS void
+CREATE FUNCTION group_type2_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer) RETURNS void
     AS $$
 DECLARE
     old_classes_ int[];
-    old_classbytes_  int[];
+    old_classbytes_  bigint[];
 
 
     i int;
     ilen int;
     j int;
-    max_ int;
+    max_ bigint;
     maxclass_ int;
-    nbytes int;
+    nbytes bigint;
     nclass int;
+    --jlen int;
 BEGIN
     INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
 EXCEPTION WHEN unique_violation THEN
@@ -1061,6 +3260,7 @@ EXCEPTION WHEN unique_violation THEN
     ilen := icount(classes_);
     max_ := 0;
     maxclass_ := NULL;
+    --jlen := icount(old_classes_);
     FOR i IN 1..ilen LOOP
         nclass := classes_[i];
         nbytes := classbytes_[i];
@@ -1086,8 +3286,52 @@ $$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.group_type2_fn(group_id_ integer, account_id_ integer, octets_ integer, datetime_ timestamp without time zone, classes_ integer[], classbytes_ integer[], max_class_ integer) OWNER TO ebs;
+ALTER FUNCTION public.group_type2_fn(group_id_ integer, account_id_ integer, octets_ bigint, datetime_ timestamp without time zone, classes_ integer[], classbytes_ bigint[], max_class_ integer) OWNER TO postgres;
 
+--
+-- TOC entry 28 (class 1255 OID 283071)
+-- Dependencies: 6 412 412 412
+-- Name: hs_concat(hstore, hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION hs_concat(hstore, hstore) RETURNS hstore
+    AS '$libdir/hstore', 'hs_concat'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.hs_concat(hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 30 (class 1255 OID 283074)
+-- Dependencies: 412 6 412
+-- Name: hs_contained(hstore, hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION hs_contained(hstore, hstore) RETURNS boolean
+    AS '$libdir/hstore', 'hs_contained'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.hs_contained(hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 29 (class 1255 OID 283073)
+-- Dependencies: 6 412 412
+-- Name: hs_contains(hstore, hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION hs_contains(hstore, hstore) RETURNS boolean
+    AS '$libdir/hstore', 'hs_contains'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.hs_contains(hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 90 (class 1255 OID 283171)
+-- Dependencies: 6
+-- Name: icount(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION icount(integer[]) RETURNS integer
     AS '$libdir/_int', 'icount'
@@ -1096,6 +3340,11 @@ CREATE FUNCTION icount(integer[]) RETURNS integer
 
 ALTER FUNCTION public.icount(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 61 (class 1255 OID 283178)
+-- Dependencies: 6
+-- Name: idx(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION idx(integer[], integer) RETURNS integer
     AS '$libdir/_int', 'idx'
@@ -1104,6 +3353,11 @@ CREATE FUNCTION idx(integer[], integer) RETURNS integer
 
 ALTER FUNCTION public.idx(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 66 (class 1255 OID 4630610)
+-- Dependencies: 6
+-- Name: int_agg_final_array(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION int_agg_final_array(integer[]) RETURNS integer[]
     AS '$libdir/int_aggregate', 'int_agg_final_array'
@@ -1112,6 +3366,11 @@ CREATE FUNCTION int_agg_final_array(integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.int_agg_final_array(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 93 (class 1255 OID 4630609)
+-- Dependencies: 6
+-- Name: int_agg_state(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION int_agg_state(integer[], integer) RETURNS integer[]
     AS '$libdir/int_aggregate', 'int_agg_state'
@@ -1120,6 +3379,11 @@ CREATE FUNCTION int_agg_state(integer[], integer) RETURNS integer[]
 
 ALTER FUNCTION public.int_agg_state(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 100 (class 1255 OID 4630612)
+-- Dependencies: 6
+-- Name: int_array_enum(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION int_array_enum(integer[]) RETURNS SETOF integer
     AS '$libdir/int_aggregate', 'int_enum'
@@ -1128,6 +3392,11 @@ CREATE FUNCTION int_array_enum(integer[]) RETURNS SETOF integer
 
 ALTER FUNCTION public.int_array_enum(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 94 (class 1255 OID 283186)
+-- Dependencies: 6
+-- Name: intarray_del_elem(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intarray_del_elem(integer[], integer) RETURNS integer[]
     AS '$libdir/_int', 'intarray_del_elem'
@@ -1136,6 +3405,11 @@ CREATE FUNCTION intarray_del_elem(integer[], integer) RETURNS integer[]
 
 ALTER FUNCTION public.intarray_del_elem(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 71 (class 1255 OID 283184)
+-- Dependencies: 6
+-- Name: intarray_push_array(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intarray_push_array(integer[], integer[]) RETURNS integer[]
     AS '$libdir/_int', 'intarray_push_array'
@@ -1144,6 +3418,11 @@ CREATE FUNCTION intarray_push_array(integer[], integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.intarray_push_array(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 70 (class 1255 OID 283182)
+-- Dependencies: 6
+-- Name: intarray_push_elem(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intarray_push_elem(integer[], integer) RETURNS integer[]
     AS '$libdir/_int', 'intarray_push_elem'
@@ -1152,6 +3431,11 @@ CREATE FUNCTION intarray_push_elem(integer[], integer) RETURNS integer[]
 
 ALTER FUNCTION public.intarray_push_elem(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 69 (class 1255 OID 283170)
+-- Dependencies: 6
+-- Name: intset(integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intset(integer) RETURNS integer[]
     AS '$libdir/_int', 'intset'
@@ -1160,6 +3444,11 @@ CREATE FUNCTION intset(integer) RETURNS integer[]
 
 ALTER FUNCTION public.intset(integer) OWNER TO ebs;
 
+--
+-- TOC entry 60 (class 1255 OID 283191)
+-- Dependencies: 6
+-- Name: intset_subtract(integer[], integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intset_subtract(integer[], integer[]) RETURNS integer[]
     AS '$libdir/_int', 'intset_subtract'
@@ -1168,6 +3457,11 @@ CREATE FUNCTION intset_subtract(integer[], integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.intset_subtract(integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 73 (class 1255 OID 283188)
+-- Dependencies: 6
+-- Name: intset_union_elem(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION intset_union_elem(integer[], integer) RETURNS integer[]
     AS '$libdir/_int', 'intset_union_elem'
@@ -1176,6 +3470,37 @@ CREATE FUNCTION intset_union_elem(integer[], integer) RETURNS integer[]
 
 ALTER FUNCTION public.intset_union_elem(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 25 (class 1255 OID 283068)
+-- Dependencies: 6 412
+-- Name: isdefined(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION isdefined(hstore, text) RETURNS boolean
+    AS '$libdir/hstore', 'defined'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.isdefined(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 23 (class 1255 OID 283065)
+-- Dependencies: 412 6
+-- Name: isexists(hstore, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION isexists(hstore, text) RETURNS boolean
+    AS '$libdir/hstore', 'exists'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.isexists(hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 120 (class 1255 OID 4630658)
+-- Dependencies: 6 728
+-- Name: nfs_crt_cur_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -1244,6 +3569,11 @@ $$
 
 ALTER FUNCTION public.nfs_crt_cur_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 121 (class 1255 OID 4630659)
+-- Dependencies: 728 6
+-- Name: nfs_crt_pdb(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_crt_pdb(datetx date) RETURNS integer
     AS $$
@@ -1303,6 +3633,11 @@ $$
 
 ALTER FUNCTION public.nfs_crt_pdb(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 122 (class 1255 OID 4630660)
+-- Dependencies: 6 728
+-- Name: nfs_crt_prev_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_crt_prev_ins(datetx date) RETURNS void
     AS $$
@@ -1360,6 +3695,11 @@ $$
 
 ALTER FUNCTION public.nfs_crt_prev_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 123 (class 1255 OID 4630661)
+-- Dependencies: 728 6
+-- Name: nfs_cur_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_cur_datechk(nfs_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700102'; d_e_ date := (DATE '19700102'+ interval '1 day')::date; BEGIN IF    nfs_date < d_s_ THEN RETURN -1; ELSIF nfs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -1368,6 +3708,11 @@ CREATE FUNCTION nfs_cur_datechk(nfs_date timestamp without time zone) RETURNS in
 
 ALTER FUNCTION public.nfs_cur_datechk(nfs_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 124 (class 1255 OID 4630662)
+-- Dependencies: 6 728
+-- Name: nfs_cur_dt(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_cur_dt() RETURNS date
     AS $$ BEGIN RETURN  DATE '19700102'; END; $$
@@ -1376,29 +3721,11 @@ CREATE FUNCTION nfs_cur_dt() RETURNS date
 
 ALTER FUNCTION public.nfs_cur_dt() OWNER TO ebs;
 
-
-CREATE TABLE billservice_netflowstream (
-    id integer NOT NULL,
-    nas_id integer,
-    account_id integer NOT NULL,
-    tarif_id integer NOT NULL,
-    date_start timestamp without time zone DEFAULT now(),
-    src_addr inet NOT NULL,
-    traffic_class_id integer[],
-    direction character varying(32) NOT NULL,
-    traffic_transmit_node_id integer,
-    dst_addr inet NOT NULL,
-    octets bigint NOT NULL,
-    src_port integer NOT NULL,
-    dst_port integer NOT NULL,
-    protocol integer NOT NULL,
-    checkouted boolean DEFAULT false,
-    for_checkout boolean DEFAULT false
-);
-
-
-ALTER TABLE public.billservice_netflowstream OWNER TO ebs;
-
+--
+-- TOC entry 125 (class 1255 OID 4630672)
+-- Dependencies: 6 466 728
+-- Name: nfs_cur_ins(billservice_netflowstream); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_cur_ins(nfsr billservice_netflowstream) RETURNS void
     AS $$BEGIN 
@@ -1408,6 +3735,11 @@ CREATE FUNCTION nfs_cur_ins(nfsr billservice_netflowstream) RETURNS void
 
 ALTER FUNCTION public.nfs_cur_ins(nfsr billservice_netflowstream) OWNER TO ebs;
 
+--
+-- TOC entry 126 (class 1255 OID 4630673)
+-- Dependencies: 728 6
+-- Name: nfs_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_ins_trg_fn() RETURNS trigger
     AS $$
@@ -1453,6 +3785,11 @@ $$
 
 ALTER FUNCTION public.nfs_ins_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 127 (class 1255 OID 4630674)
+-- Dependencies: 728 466 6
+-- Name: nfs_inserter(billservice_netflowstream); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_inserter(nfsr billservice_netflowstream) RETURNS void
     AS $$
@@ -1481,6 +3818,11 @@ $$
 
 ALTER FUNCTION public.nfs_inserter(nfsr billservice_netflowstream) OWNER TO ebs;
 
+--
+-- TOC entry 128 (class 1255 OID 4630675)
+-- Dependencies: 728 6
+-- Name: nfs_prev_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_prev_datechk(nfs_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700101'; d_e_ date := (DATE '19700101'+ interval '1 day')::date; BEGIN IF    nfs_date < d_s_ THEN RETURN -1; ELSIF nfs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -1489,6 +3831,11 @@ CREATE FUNCTION nfs_prev_datechk(nfs_date timestamp without time zone) RETURNS i
 
 ALTER FUNCTION public.nfs_prev_datechk(nfs_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 129 (class 1255 OID 4630676)
+-- Dependencies: 6 728 466
+-- Name: nfs_prev_ins(billservice_netflowstream); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION nfs_prev_ins(nfsr billservice_netflowstream) RETURNS void
     AS $$BEGIN 
@@ -1498,26 +3845,11 @@ CREATE FUNCTION nfs_prev_ins(nfsr billservice_netflowstream) RETURNS void
 
 ALTER FUNCTION public.nfs_prev_ins(nfsr billservice_netflowstream) OWNER TO ebs;
 
-
-CREATE TABLE billservice_tariff (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    description text DEFAULT ''::text,
-    access_parameters_id integer NOT NULL,
-    time_access_service_id integer,
-    traffic_transmit_service_id integer,
-    cost double precision DEFAULT 0,
-    reset_tarif_cost boolean DEFAULT false,
-    settlement_period_id integer,
-    ps_null_ballance_checkout boolean DEFAULT false,
-    active boolean DEFAULT false,
-    deleted boolean DEFAULT false,
-    allow_express_pay boolean DEFAULT true
-);
-
-
-ALTER TABLE public.billservice_tariff OWNER TO ebs;
-
+--
+-- TOC entry 130 (class 1255 OID 4630690)
+-- Dependencies: 469 6 728
+-- Name: on_tariff_delete_fun(billservice_tariff); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION on_tariff_delete_fun(oldrow billservice_tariff) RETURNS record
     AS $$
@@ -1543,6 +3875,36 @@ $$
 
 ALTER FUNCTION public.on_tariff_delete_fun(oldrow billservice_tariff) OWNER TO ebs;
 
+--
+-- TOC entry 170 (class 1255 OID 4632556)
+-- Dependencies: 728 6
+-- Name: periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer) RETURNS void
+    AS $$
+DECLARE
+    new_summ_ decimal;
+BEGIN
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
+    IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    END IF; 
+    INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer) OWNER TO postgres;
+
+--
+-- TOC entry 156 (class 1255 OID 4630691)
+-- Dependencies: 728 6
+-- Name: psh_crt_cur_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -1556,9 +3918,9 @@ DECLARE
     fn_bd_tx1_ text := 'BEGIN 
                          INSERT INTO psh';
                          
-    fn_bd_tx2_ text := '(service_id, transaction_id, datetime, accounttarif_id)
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id, type_id, summ, datetime)
                           VALUES 
-                         (pshr.service_id, pshr.transaction_id, pshr.datetime, pshr.accounttarif_id); RETURN; END;';
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.type_id, pshr.summ, pshr.datetime); RETURN; END;';
                           
     fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
@@ -1609,6 +3971,11 @@ $$
 
 ALTER FUNCTION public.psh_crt_cur_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 177 (class 1255 OID 4630692)
+-- Dependencies: 6 728
+-- Name: psh_crt_pdb(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_crt_pdb(datetx date) RETURNS integer
     AS $$
@@ -1635,7 +4002,8 @@ DECLARE
                      WITH (OIDS=FALSE);                     
                      CREATE INDEX psh#rpdate#_datetime_id ON psh#rpdate# USING btree (datetime);
                      CREATE INDEX psh#rpdate#_service_id ON psh#rpdate# USING btree (service_id);
-                     CREATE INDEX psh#rpdate#_transaction_id ON psh#rpdate# USING btree (transaction_id);
+                     CREATE INDEX psh#rpdate#_accounttarif_id ON psh#rpdate# USING btree (accounttarif_id);
+                     CREATE TRIGGER acc_psh_trg AFTER UPDATE OR DELETE ON psh#rpdate# FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();
                      ';
                      
     at_tx1_ text := 'ALTER TABLE psh#rpdate# ALTER COLUMN id SET DEFAULT nextval(#qseqname#::regclass);';
@@ -1670,6 +4038,11 @@ $$
 
 ALTER FUNCTION public.psh_crt_pdb(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 134 (class 1255 OID 4630693)
+-- Dependencies: 728 6
+-- Name: psh_crt_prev_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_crt_prev_ins(datetx date) RETURNS void
     AS $$
@@ -1683,9 +4056,9 @@ DECLARE
     fn_bd_tx1_ text := 'BEGIN 
                          INSERT INTO psh';
                          
-    fn_bd_tx2_ text := '(service_id, transaction_id, datetime, accounttarif_id)
+    fn_bd_tx2_ text := '(service_id, account_id, accounttarif_id,type_id, summ, datetime)
                           VALUES 
-                         (pshr.service_id, pshr.transaction_id, pshr.datetime, pshr.accounttarif_id); RETURN; END;';
+                         (pshr.service_id, pshr.account_id, pshr.accounttarif_id, pshr.type_id, pshr.summ, pshr.datetime); RETURN; END;';
                           
     fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
 
@@ -1720,6 +4093,11 @@ $$
 
 ALTER FUNCTION public.psh_crt_prev_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 135 (class 1255 OID 4630694)
+-- Dependencies: 728 6
+-- Name: psh_cur_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_cur_datechk(psh_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700101'+ interval '1 month')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -1728,6 +4106,11 @@ CREATE FUNCTION psh_cur_datechk(psh_date timestamp without time zone) RETURNS in
 
 ALTER FUNCTION public.psh_cur_datechk(psh_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 131 (class 1255 OID 4630695)
+-- Dependencies: 6 728
+-- Name: psh_cur_dt(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_cur_dt() RETURNS date
     AS $$ BEGIN RETURN  DATE '19700201'; END; $$
@@ -1736,18 +4119,11 @@ CREATE FUNCTION psh_cur_dt() RETURNS date
 
 ALTER FUNCTION public.psh_cur_dt() OWNER TO ebs;
 
-
-CREATE TABLE billservice_periodicalservicehistory (
-    id integer NOT NULL,
-    service_id integer NOT NULL,
-    transaction_id integer,
-    datetime timestamp without time zone DEFAULT now(),
-    accounttarif_id integer
-);
-
-
-ALTER TABLE public.billservice_periodicalservicehistory OWNER TO ebs;
-
+--
+-- TOC entry 132 (class 1255 OID 4630700)
+-- Dependencies: 471 728 6
+-- Name: psh_cur_ins(billservice_periodicalservicehistory); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_cur_ins(pshr billservice_periodicalservicehistory) RETURNS void
     AS $$BEGIN 
@@ -1757,6 +4133,11 @@ CREATE FUNCTION psh_cur_ins(pshr billservice_periodicalservicehistory) RETURNS v
 
 ALTER FUNCTION public.psh_cur_ins(pshr billservice_periodicalservicehistory) OWNER TO ebs;
 
+--
+-- TOC entry 133 (class 1255 OID 4630701)
+-- Dependencies: 6 728
+-- Name: psh_del_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_del_trg_fn() RETURNS trigger
     AS $$
@@ -1770,6 +4151,11 @@ $$
 
 ALTER FUNCTION public.psh_del_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 136 (class 1255 OID 4630702)
+-- Dependencies: 6 728
+-- Name: psh_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_ins_trg_fn() RETURNS trigger
     AS $$
@@ -1815,6 +4201,11 @@ $$
 
 ALTER FUNCTION public.psh_ins_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 140 (class 1255 OID 4630703)
+-- Dependencies: 471 6 728
+-- Name: psh_inserter(billservice_periodicalservicehistory); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_inserter(pshr billservice_periodicalservicehistory) RETURNS void
     AS $$
@@ -1830,8 +4221,8 @@ BEGIN
     ELSE
        ttrn_actfid_ := pshr.accounttarif_id::text;
     END IF;
-    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, transaction_id, datetime, accounttarif_id) VALUES (' 
-    || pshr.service_id || ',' || pshr.transaction_id || ','  || quote_literal(pshr.datetime) || ','  || ttrn_actfid_ || ');';
+    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, type_id, summ, datetime) VALUES (' 
+    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ','  || quote_literal(pshr.type_id) || ',' || pshr.summ || ','  || quote_literal(pshr.datetime) || ');';
     EXECUTE insq_;
     RETURN;
 END;
@@ -1841,6 +4232,11 @@ $$
 
 ALTER FUNCTION public.psh_inserter(pshr billservice_periodicalservicehistory) OWNER TO ebs;
 
+--
+-- TOC entry 139 (class 1255 OID 4630704)
+-- Dependencies: 728 6
+-- Name: psh_prev_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_prev_datechk(psh_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700101'; d_e_ date := (DATE '19700101'+ interval '1 month')::date; BEGIN IF    psh_date < d_s_ THEN RETURN -1; ELSIF psh_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -1849,6 +4245,11 @@ CREATE FUNCTION psh_prev_datechk(psh_date timestamp without time zone) RETURNS i
 
 ALTER FUNCTION public.psh_prev_datechk(psh_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 137 (class 1255 OID 4630705)
+-- Dependencies: 728 471 6
+-- Name: psh_prev_ins(billservice_periodicalservicehistory); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION psh_prev_ins(pshr billservice_periodicalservicehistory) RETURNS void
     AS $$BEGIN 
@@ -1858,6 +4259,11 @@ CREATE FUNCTION psh_prev_ins(pshr billservice_periodicalservicehistory) RETURNS 
 
 ALTER FUNCTION public.psh_prev_ins(pshr billservice_periodicalservicehistory) OWNER TO ebs;
 
+--
+-- TOC entry 51 (class 1255 OID 283153)
+-- Dependencies: 6 454
+-- Name: querytree(query_int); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION querytree(query_int) RETURNS text
     AS '$libdir/_int', 'querytree'
@@ -1866,6 +4272,11 @@ CREATE FUNCTION querytree(query_int) RETURNS text
 
 ALTER FUNCTION public.querytree(query_int) OWNER TO ebs;
 
+--
+-- TOC entry 50 (class 1255 OID 283155)
+-- Dependencies: 6 454
+-- Name: rboolop(query_int, integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rboolop(query_int, integer[]) RETURNS boolean
     AS '$libdir/_int', 'rboolop'
@@ -1874,10 +4285,36 @@ CREATE FUNCTION rboolop(query_int, integer[]) RETURNS boolean
 
 ALTER FUNCTION public.rboolop(query_int, integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 3130 (class 0 OID 0)
+-- Dependencies: 50
+-- Name: FUNCTION rboolop(query_int, integer[]); Type: COMMENT; Schema: public; Owner: ebs
+--
 
 COMMENT ON FUNCTION rboolop(query_int, integer[]) IS 'boolean operation with array';
 
 
+--
+-- TOC entry 163 (class 1255 OID 4632127)
+-- Dependencies: 6 728
+-- Name: return_allowed(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION return_allowed() RETURNS bigint
+    AS $$
+BEGIN    
+RETURN 0;
+END;$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.return_allowed() OWNER TO postgres;
+
+--
+-- TOC entry 138 (class 1255 OID 4630706)
+-- Dependencies: 728 6
+-- Name: rsss_crt_cur_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -1944,6 +4381,11 @@ $$
 
 ALTER FUNCTION public.rsss_crt_cur_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 141 (class 1255 OID 4630707)
+-- Dependencies: 6 728
+-- Name: rsss_crt_pdb(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_crt_pdb(datetx date) RETURNS integer
     AS $$
@@ -2004,6 +4446,11 @@ $$
 
 ALTER FUNCTION public.rsss_crt_pdb(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 142 (class 1255 OID 4630708)
+-- Dependencies: 6 728
+-- Name: rsss_crt_prev_ins(date); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_crt_prev_ins(datetx date) RETURNS void
     AS $$
@@ -2055,6 +4502,11 @@ $$
 
 ALTER FUNCTION public.rsss_crt_prev_ins(datetx date) OWNER TO ebs;
 
+--
+-- TOC entry 143 (class 1255 OID 4630709)
+-- Dependencies: 6 728
+-- Name: rsss_cur_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_cur_datechk(rsss_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700201'+ interval '1 month')::date; BEGIN IF    rsss_date < d_s_ THEN RETURN -1; ELSIF rsss_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -2063,6 +4515,11 @@ CREATE FUNCTION rsss_cur_datechk(rsss_date timestamp without time zone) RETURNS 
 
 ALTER FUNCTION public.rsss_cur_datechk(rsss_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 144 (class 1255 OID 4630710)
+-- Dependencies: 6 728
+-- Name: rsss_cur_dt(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_cur_dt() RETURNS date
     AS $$ BEGIN RETURN  DATE '19700201'; END; $$
@@ -2071,30 +4528,11 @@ CREATE FUNCTION rsss_cur_dt() RETURNS date
 
 ALTER FUNCTION public.rsss_cur_dt() OWNER TO ebs;
 
-
-CREATE TABLE radius_session (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    sessionid character varying(32) DEFAULT ''::character varying,
-    interrim_update timestamp without time zone DEFAULT now(),
-    date_start timestamp without time zone,
-    date_end timestamp without time zone,
-    caller_id character varying(255) DEFAULT ''::character varying,
-    called_id character varying(255) DEFAULT ''::character varying,
-    nas_id character varying(255) NOT NULL,
-    session_time integer DEFAULT 0,
-    framed_protocol character varying(32) NOT NULL,
-    bytes_in integer DEFAULT 0,
-    bytes_out integer DEFAULT 0,
-    checkouted_by_time boolean DEFAULT false,
-    checkouted_by_trafic boolean DEFAULT false,
-    disconnect_status character varying(32),
-    framed_ip_address character varying(255)
-);
-
-
-ALTER TABLE public.radius_session OWNER TO ebs;
-
+--
+-- TOC entry 145 (class 1255 OID 4630726)
+-- Dependencies: 473 6 728
+-- Name: rsss_cur_ins(radius_session); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_cur_ins(rsssr radius_session) RETURNS void
     AS $$BEGIN 
@@ -2104,6 +4542,11 @@ CREATE FUNCTION rsss_cur_ins(rsssr radius_session) RETURNS void
 
 ALTER FUNCTION public.rsss_cur_ins(rsssr radius_session) OWNER TO ebs;
 
+--
+-- TOC entry 146 (class 1255 OID 4630727)
+-- Dependencies: 6 728
+-- Name: rsss_del_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_del_trg_fn() RETURNS trigger
     AS $$
@@ -2117,6 +4560,11 @@ $$
 
 ALTER FUNCTION public.rsss_del_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 147 (class 1255 OID 4630728)
+-- Dependencies: 6 728
+-- Name: rsss_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_ins_trg_fn() RETURNS trigger
     AS $$
@@ -2162,6 +4610,11 @@ $$
 
 ALTER FUNCTION public.rsss_ins_trg_fn() OWNER TO ebs;
 
+--
+-- TOC entry 148 (class 1255 OID 4630729)
+-- Dependencies: 6 473 728
+-- Name: rsss_inserter(radius_session); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_inserter(rsssr radius_session) RETURNS void
     AS $$
@@ -2261,6 +4714,11 @@ $$
 
 ALTER FUNCTION public.rsss_inserter(rsssr radius_session) OWNER TO ebs;
 
+--
+-- TOC entry 149 (class 1255 OID 4630730)
+-- Dependencies: 728 6
+-- Name: rsss_prev_datechk(timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_prev_datechk(rsss_date timestamp without time zone) RETURNS integer
     AS $$ DECLARE d_s_ date := DATE '19700201'; d_e_ date := (DATE '19700201'+ interval '1 month')::date; BEGIN IF    rsss_date < d_s_ THEN RETURN -1; ELSIF rsss_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; $$
@@ -2269,6 +4727,11 @@ CREATE FUNCTION rsss_prev_datechk(rsss_date timestamp without time zone) RETURNS
 
 ALTER FUNCTION public.rsss_prev_datechk(rsss_date timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 150 (class 1255 OID 4630731)
+-- Dependencies: 473 6 728
+-- Name: rsss_prev_ins(radius_session); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION rsss_prev_ins(rsssr radius_session) RETURNS void
     AS $$BEGIN 
@@ -2278,6 +4741,193 @@ CREATE FUNCTION rsss_prev_ins(rsssr radius_session) RETURNS void
 
 ALTER FUNCTION public.rsss_prev_ins(rsssr radius_session) OWNER TO ebs;
 
+--
+-- TOC entry 178 (class 1255 OID 4632584)
+-- Dependencies: 728 6
+-- Name: set_deleted_trg_fn(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION set_deleted_trg_fn() RETURNS trigger
+    AS $$
+BEGIN
+	IF OLD.deleted IS TRUE THEN
+	    RETURN OLD;
+	ELSE
+        UPDATE billservice_tariff SET deleted=TRUE WHERE id=OLD.id;
+	    RETURN NULL;
+	END IF;
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.set_deleted_trg_fn() OWNER TO postgres;
+
+--
+-- TOC entry 172 (class 1255 OID 4632557)
+-- Dependencies: 728 6
+-- Name: shedulelog_blocked_fn(integer, integer, timestamp without time zone, numeric); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_blocked_fn(account_id_ integer, accounttarif_id_ integer, blocked_ timestamp without time zone, cost_ numeric) RETURNS void
+    AS $$ 
+BEGIN
+	UPDATE billservice_account SET balance_blocked=True WHERE id=account_id_ and ballance+credit<cost_;
+    UPDATE billservice_shedulelog SET balance_blocked=blocked_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(account_id_,accounttarif_id_, blocked_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_blocked_fn(account_id_ integer, accounttarif_id_ integer, blocked_ timestamp without time zone, cost_ numeric) OWNER TO postgres;
+
+--
+-- TOC entry 161 (class 1255 OID 4632119)
+-- Dependencies: 6 728
+-- Name: shedulelog_co_fn(integer, integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_co_fn(account_id_ integer, accounttarif_id_ integer, checkout_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_shedulelog SET ballance_checkout=checkout_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, ballance_checkout) VALUES(account_id_,accounttarif_id_, checkout_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_co_fn(account_id_ integer, accounttarif_id_ integer, checkout_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 160 (class 1255 OID 4632124)
+-- Dependencies: 728 6
+-- Name: shedulelog_time_credit_fn(integer, integer, integer, integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_time_credit_fn(account_id_ integer, accounttarif_id_ integer, taccs_id_ integer, size_ integer, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN	
+	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; -- AND??
+	IF NOT FOUND THEN
+		INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id) VALUES(accounttarif_id_, size_, datetime_, taccs_id_);
+    END IF;
+	UPDATE billservice_shedulelog SET prepaid_time_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+	IF NOT FOUND THEN
+    	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+	END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_time_credit_fn(account_id_ integer, accounttarif_id_ integer, taccs_id_ integer, size_ integer, datetime_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 165 (class 1255 OID 4632122)
+-- Dependencies: 728 6
+-- Name: shedulelog_time_reset_fn(integer, integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_time_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_time_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_time_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 174 (class 1255 OID 4632561)
+-- Dependencies: 728 6
+-- Name: shedulelog_tr_credit_fn(integer, integer, integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, datetime_ timestamp without time zone) RETURNS void
+    AS $$ 
+DECLARE
+	prepaid_tr_id_ int;
+	size_ bigint;
+	count_ int := 0;
+BEGIN
+	
+	FOR prepaid_tr_id_, size_ IN SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+		UPDATE billservice_accountprepaystrafic SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_;
+		IF NOT FOUND THEN
+			INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime) VALUES(accounttarif_id_, prepaid_tr_id_, size_, datetime_);
+        END IF;
+        count_ := count_ + 1;
+    END LOOP;
+    IF count_ > 0 THEN
+    	UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    	IF NOT FOUND THEN
+        	INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+    	END IF;
+   	END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, datetime_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 164 (class 1255 OID 4632121)
+-- Dependencies: 728 6
+-- Name: shedulelog_tr_reset_fn(integer, integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION shedulelog_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone) RETURNS void
+    AS $$ 
+BEGIN
+	DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.shedulelog_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 34 (class 1255 OID 283083)
+-- Dependencies: 6 412
+-- Name: skeys(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION skeys(hstore) RETURNS SETOF text
+    AS '$libdir/hstore', 'skeys'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.skeys(hstore) OWNER TO valera;
+
+--
+-- TOC entry 72 (class 1255 OID 283173)
+-- Dependencies: 6
+-- Name: sort(integer[], text); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION sort(integer[], text) RETURNS integer[]
     AS '$libdir/_int', 'sort'
@@ -2286,6 +4936,11 @@ CREATE FUNCTION sort(integer[], text) RETURNS integer[]
 
 ALTER FUNCTION public.sort(integer[], text) OWNER TO ebs;
 
+--
+-- TOC entry 62 (class 1255 OID 283174)
+-- Dependencies: 6
+-- Name: sort(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION sort(integer[]) RETURNS integer[]
     AS '$libdir/_int', 'sort'
@@ -2294,6 +4949,11 @@ CREATE FUNCTION sort(integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.sort(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 63 (class 1255 OID 283175)
+-- Dependencies: 6
+-- Name: sort_asc(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION sort_asc(integer[]) RETURNS integer[]
     AS '$libdir/_int', 'sort_asc'
@@ -2302,6 +4962,11 @@ CREATE FUNCTION sort_asc(integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.sort_asc(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 64 (class 1255 OID 283176)
+-- Dependencies: 6
+-- Name: sort_desc(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION sort_desc(integer[]) RETURNS integer[]
     AS '$libdir/_int', 'sort_desc'
@@ -2310,6 +4975,32 @@ CREATE FUNCTION sort_desc(integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.sort_desc(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 159 (class 1255 OID 4632118)
+-- Dependencies: 728 6
+-- Name: speedlimit_ins_fn(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION speedlimit_ins_fn(splimit_id_ integer, account_id_ integer) RETURNS void
+    AS $$ 
+BEGIN
+    UPDATE billservice_accountspeedlimit SET speedlimit_id=splimit_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_accountspeedlimit(account_id, speedlimit_id) VALUES(account_id_,splimit_id_);
+    END IF;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.speedlimit_ins_fn(splimit_id_ integer, account_id_ integer) OWNER TO postgres;
+
+--
+-- TOC entry 65 (class 1255 OID 283180)
+-- Dependencies: 6
+-- Name: subarray(integer[], integer, integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION subarray(integer[], integer, integer) RETURNS integer[]
     AS '$libdir/_int', 'subarray'
@@ -2318,6 +5009,11 @@ CREATE FUNCTION subarray(integer[], integer, integer) RETURNS integer[]
 
 ALTER FUNCTION public.subarray(integer[], integer, integer) OWNER TO ebs;
 
+--
+-- TOC entry 67 (class 1255 OID 283181)
+-- Dependencies: 6
+-- Name: subarray(integer[], integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION subarray(integer[], integer) RETURNS integer[]
     AS '$libdir/_int', 'subarray'
@@ -2326,6 +5022,154 @@ CREATE FUNCTION subarray(integer[], integer) RETURNS integer[]
 
 ALTER FUNCTION public.subarray(integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 35 (class 1255 OID 283084)
+-- Dependencies: 6 412
+-- Name: svals(hstore); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION svals(hstore) RETURNS SETOF text
+    AS '$libdir/hstore', 'svals'
+    LANGUAGE c IMMUTABLE STRICT;
+
+
+ALTER FUNCTION public.svals(hstore) OWNER TO valera;
+
+--
+-- TOC entry 31 (class 1255 OID 283079)
+-- Dependencies: 6 412
+-- Name: tconvert(text, text); Type: FUNCTION; Schema: public; Owner: valera
+--
+
+CREATE FUNCTION tconvert(text, text) RETURNS hstore
+    AS '$libdir/hstore', 'tconvert'
+    LANGUAGE c IMMUTABLE;
+
+
+ALTER FUNCTION public.tconvert(text, text) OWNER TO valera;
+
+--
+-- TOC entry 157 (class 1255 OID 4632057)
+-- Dependencies: 728 6
+-- Name: tftrans_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION tftrans_ins_trg_fn() RETURNS trigger
+    AS $$ 
+BEGIN
+    NEW.datetime := date_trunc('minute', NEW.datetime) - interval '1 min' * (date_part('min', NEW.datetime)::int % 5); 
+    UPDATE billservice_traffictransaction SET summ=summ+NEW.summ WHERE traffictransmitservice_id=NEW.traffictransmitservice_id AND account_id=NEW.account_id AND datetime=NEW.datetime;
+    IF FOUND THEN
+        RETURN NULL;
+    ELSE
+        RETURN NEW;
+    END IF;
+    
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.tftrans_ins_trg_fn() OWNER TO postgres;
+
+--
+-- TOC entry 176 (class 1255 OID 4632583)
+-- Dependencies: 728 6
+-- Name: timetransaction_insert(integer, integer, integer, numeric, timestamp without time zone, character varying, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION timetransaction_insert(taccs_id_ integer, accounttarif_id_ integer, account_id_ integer, summ_ numeric, datetime_ timestamp without time zone, sessionid_ character varying, interrim_update_ timestamp without time zone) RETURNS void
+    AS $$ 
+DECLARE
+	datetime_agg_ timestamp without time zone;
+	ins_tr_id_ int;
+BEGIN	
+
+    datetime_agg_ := date_trunc('minute', datetime_) - interval '1 min' * (date_part('min', datetime_)::int % 5); 
+    UPDATE billservice_timetransaction SET summ=summ+summ_ WHERE timeaccessservice_id=taccs_id_ AND account_id=account_id_ AND datetime=datetime_agg_ RETURNING id INTO ins_tr_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, summ, datetime) VALUES (taccs_id_, accounttarif_id_, account_id_, summ_, datetime_agg_) RETURNING id INTO ins_tr_id_;
+    END IF;
+	UPDATE radius_session SET transaction_id=ins_tr_id_ WHERE account_id=account_id_ AND sessionid=sessionid_ AND interrim_update=interrim_update_;
+    RETURN;  
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.timetransaction_insert(taccs_id_ integer, accounttarif_id_ integer, account_id_ integer, summ_ numeric, datetime_ timestamp without time zone, sessionid_ character varying, interrim_update_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 158 (class 1255 OID 4632085)
+-- Dependencies: 6 728
+-- Name: tmtrans_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION tmtrans_ins_trg_fn() RETURNS trigger
+    AS $$ 
+BEGIN
+    NEW.datetime := date_trunc('minute', NEW.datetime) - interval '1 min' * (date_part('min', NEW.datetime)::int % 5); 
+    UPDATE billservice_timetransaction SET summ=summ+NEW.summ WHERE timeaccessservice_id=NEW.timeaccessservice_id AND account_id=NEW.account_id AND datetime=NEW.datetime;
+    IF FOUND THEN
+        RETURN NULL;
+    ELSE
+        RETURN NEW;
+    END IF;
+    
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.tmtrans_ins_trg_fn() OWNER TO postgres;
+
+--
+-- TOC entry 154 (class 1255 OID 4632012)
+-- Dependencies: 728 6
+-- Name: trans_acctf_ins_trg_fn(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION trans_acctf_ins_trg_fn() RETURNS trigger
+    AS $$ 
+BEGIN
+    IF NEW.accounttarif_id IS NULL THEN
+        SELECT INTO NEW.accounttarif_id ba.id FROM billservice_accounttarif AS ba WHERE ba.account_id = NEW.account_id AND ba.datetime < NEW.created ORDER BY ba.datetime DESC LIMIT 1;
+    END IF;
+    RETURN NEW;    
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.trans_acctf_ins_trg_fn() OWNER TO postgres;
+
+--
+-- TOC entry 171 (class 1255 OID 4632559)
+-- Dependencies: 728 6
+-- Name: transaction_block_sum(integer, timestamp without time zone, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION transaction_block_sum(account_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS numeric
+    AS $$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ decimal;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (summ > 0) AND (created BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) AS ts_union ;
+    RETURN result_;
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.transaction_block_sum(account_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 151 (class 1255 OID 4630732)
+-- Dependencies: 6 728
+-- Name: transaction_fn(character varying, integer, character varying, boolean, integer, double precision, text, timestamp without time zone, integer, integer, integer); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION transaction_fn(bill_ character varying, account_id_ integer, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, ps_id_ integer, acctf_id_ integer, ps_condition_type_ integer) RETURNS void
     AS $$
@@ -2350,6 +5194,33 @@ $$
 
 ALTER FUNCTION public.transaction_fn(bill_ character varying, account_id_ integer, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, ps_id_ integer, acctf_id_ integer, ps_condition_type_ integer) OWNER TO ebs;
 
+--
+-- TOC entry 173 (class 1255 OID 4632560)
+-- Dependencies: 728 6
+-- Name: transaction_sum(integer, integer, timestamp without time zone, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION transaction_sum(account_id_ integer, acctf_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS numeric
+    AS $$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ decimal;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (created > start_date_ AND created < end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (accounttarif_id=acctf_id_) AND (summ > 0)  AND (datetime > start_date_ AND datetime < end_date_)) AS ts_union ;
+    RETURN result_;
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.transaction_sum(account_id_ integer, acctf_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone) OWNER TO postgres;
+
+--
+-- TOC entry 152 (class 1255 OID 4630733)
+-- Dependencies: 6 728
+-- Name: transaction_tarif(character varying, character varying, boolean, integer, double precision, text, timestamp without time zone, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION transaction_tarif(bill_ character varying, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, acct_datetime_ timestamp without time zone) RETURNS void
     AS $$
@@ -2366,6 +5237,11 @@ $$
 
 ALTER FUNCTION public.transaction_tarif(bill_ character varying, type_id_ character varying, approved_ boolean, tarif_id_ integer, summ_ double precision, description_ text, created_ timestamp without time zone, acct_datetime_ timestamp without time zone) OWNER TO ebs;
 
+--
+-- TOC entry 153 (class 1255 OID 4630734)
+-- Dependencies: 728 6
+-- Name: unblock_balance(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
 
 CREATE FUNCTION unblock_balance(account_id integer) RETURNS void
     AS $$
@@ -2379,6 +5255,11 @@ $$
 
 ALTER FUNCTION public.unblock_balance(account_id integer) OWNER TO postgres;
 
+--
+-- TOC entry 68 (class 1255 OID 283177)
+-- Dependencies: 6
+-- Name: uniq(integer[]); Type: FUNCTION; Schema: public; Owner: ebs
+--
 
 CREATE FUNCTION uniq(integer[]) RETURNS integer[]
     AS '$libdir/_int', 'uniq'
@@ -2387,6 +5268,11 @@ CREATE FUNCTION uniq(integer[]) RETURNS integer[]
 
 ALTER FUNCTION public.uniq(integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 729 (class 1255 OID 4630611)
+-- Dependencies: 6 93 66
+-- Name: int_array_aggregate(integer); Type: AGGREGATE; Schema: public; Owner: ebs
+--
 
 CREATE AGGREGATE int_array_aggregate(integer) (
     SFUNC = int_agg_state,
@@ -2397,6 +5283,11 @@ CREATE AGGREGATE int_array_aggregate(integer) (
 
 ALTER AGGREGATE public.int_array_aggregate(integer) OWNER TO ebs;
 
+--
+-- TOC entry 1447 (class 2617 OID 283172)
+-- Dependencies: 6 90
+-- Name: #; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR # (
     PROCEDURE = icount,
@@ -2406,6 +5297,11 @@ CREATE OPERATOR # (
 
 ALTER OPERATOR public.# (NONE, integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1448 (class 2617 OID 283179)
+-- Dependencies: 6 61
+-- Name: #; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR # (
     PROCEDURE = idx,
@@ -2416,6 +5312,11 @@ CREATE OPERATOR # (
 
 ALTER OPERATOR public.# (integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 1449 (class 2617 OID 283193)
+-- Dependencies: 57 6
+-- Name: &; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR & (
     PROCEDURE = _int_inter,
@@ -2427,6 +5328,11 @@ CREATE OPERATOR & (
 
 ALTER OPERATOR public.& (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1450 (class 2617 OID 283165)
+-- Dependencies: 52 6
+-- Name: &&; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR && (
     PROCEDURE = _int_overlap,
@@ -2440,6 +5346,11 @@ CREATE OPERATOR && (
 
 ALTER OPERATOR public.&& (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1451 (class 2617 OID 283183)
+-- Dependencies: 6 70
+-- Name: +; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR + (
     PROCEDURE = intarray_push_elem,
@@ -2450,6 +5361,11 @@ CREATE OPERATOR + (
 
 ALTER OPERATOR public.+ (integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 1452 (class 2617 OID 283185)
+-- Dependencies: 71 6
+-- Name: +; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR + (
     PROCEDURE = intarray_push_array,
@@ -2461,6 +5377,11 @@ CREATE OPERATOR + (
 
 ALTER OPERATOR public.+ (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1453 (class 2617 OID 283187)
+-- Dependencies: 94 6
+-- Name: -; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR - (
     PROCEDURE = intarray_del_elem,
@@ -2471,6 +5392,11 @@ CREATE OPERATOR - (
 
 ALTER OPERATOR public.- (integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 1454 (class 2617 OID 283192)
+-- Dependencies: 6 60
+-- Name: -; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR - (
     PROCEDURE = intset_subtract,
@@ -2481,6 +5407,44 @@ CREATE OPERATOR - (
 
 ALTER OPERATOR public.- (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1432 (class 2617 OID 283064)
+-- Dependencies: 412 6 22
+-- Name: ->; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR -> (
+    PROCEDURE = fetchval,
+    LEFTARG = hstore,
+    RIGHTARG = text
+);
+
+
+ALTER OPERATOR public.-> (hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 1437 (class 2617 OID 283075)
+-- Dependencies: 412 6 412 30
+-- Name: <@; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR <@ (
+    PROCEDURE = hs_contained,
+    LEFTARG = hstore,
+    RIGHTARG = hstore,
+    COMMUTATOR = @>,
+    RESTRICT = contsel,
+    JOIN = contjoinsel
+);
+
+
+ALTER OPERATOR public.<@ (hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 1455 (class 2617 OID 283166)
+-- Dependencies: 6 49
+-- Name: <@; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR <@ (
     PROCEDURE = _int_contained,
@@ -2494,6 +5458,61 @@ CREATE OPERATOR <@ (
 
 ALTER OPERATOR public.<@ (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1441 (class 2617 OID 283080)
+-- Dependencies: 6 412 31
+-- Name: =>; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR => (
+    PROCEDURE = tconvert,
+    LEFTARG = text,
+    RIGHTARG = text
+);
+
+
+ALTER OPERATOR public.=> (text, text) OWNER TO valera;
+
+--
+-- TOC entry 1433 (class 2617 OID 283067)
+-- Dependencies: 412 24 6
+-- Name: ?; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR ? (
+    PROCEDURE = exist,
+    LEFTARG = hstore,
+    RIGHTARG = text,
+    RESTRICT = contsel,
+    JOIN = contjoinsel
+);
+
+
+ALTER OPERATOR public.? (hstore, text) OWNER TO valera;
+
+--
+-- TOC entry 1438 (class 2617 OID 283078)
+-- Dependencies: 412 412 6 29
+-- Name: @; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR @ (
+    PROCEDURE = hs_contains,
+    LEFTARG = hstore,
+    RIGHTARG = hstore,
+    COMMUTATOR = ~,
+    RESTRICT = contsel,
+    JOIN = contjoinsel
+);
+
+
+ALTER OPERATOR public.@ (hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 1436 (class 2617 OID 283169)
+-- Dependencies: 53 6
+-- Name: @; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR @ (
     PROCEDURE = _int_contains,
@@ -2507,6 +5526,29 @@ CREATE OPERATOR @ (
 
 ALTER OPERATOR public.@ (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1435 (class 2617 OID 283076)
+-- Dependencies: 6 29 412 412
+-- Name: @>; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR @> (
+    PROCEDURE = hs_contains,
+    LEFTARG = hstore,
+    RIGHTARG = hstore,
+    COMMUTATOR = <@,
+    RESTRICT = contsel,
+    JOIN = contjoinsel
+);
+
+
+ALTER OPERATOR public.@> (hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 1439 (class 2617 OID 283167)
+-- Dependencies: 53 6
+-- Name: @>; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR @> (
     PROCEDURE = _int_contains,
@@ -2520,6 +5562,11 @@ CREATE OPERATOR @> (
 
 ALTER OPERATOR public.@> (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1442 (class 2617 OID 283157)
+-- Dependencies: 454 54 6
+-- Name: @@; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR @@ (
     PROCEDURE = boolop,
@@ -2533,6 +5580,11 @@ CREATE OPERATOR @@ (
 
 ALTER OPERATOR public.@@ (integer[], query_int) OWNER TO ebs;
 
+--
+-- TOC entry 1443 (class 2617 OID 283189)
+-- Dependencies: 6 73
+-- Name: |; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR | (
     PROCEDURE = intset_union_elem,
@@ -2543,6 +5595,11 @@ CREATE OPERATOR | (
 
 ALTER OPERATOR public.| (integer[], integer) OWNER TO ebs;
 
+--
+-- TOC entry 1444 (class 2617 OID 283190)
+-- Dependencies: 56 6
+-- Name: |; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR | (
     PROCEDURE = _int_union,
@@ -2554,6 +5611,44 @@ CREATE OPERATOR | (
 
 ALTER OPERATOR public.| (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1434 (class 2617 OID 283072)
+-- Dependencies: 412 412 6 28 412
+-- Name: ||; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR || (
+    PROCEDURE = hs_concat,
+    LEFTARG = hstore,
+    RIGHTARG = hstore
+);
+
+
+ALTER OPERATOR public.|| (hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 1440 (class 2617 OID 283077)
+-- Dependencies: 412 30 412 6
+-- Name: ~; Type: OPERATOR; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR ~ (
+    PROCEDURE = hs_contained,
+    LEFTARG = hstore,
+    RIGHTARG = hstore,
+    COMMUTATOR = @,
+    RESTRICT = contsel,
+    JOIN = contjoinsel
+);
+
+
+ALTER OPERATOR public.~ (hstore, hstore) OWNER TO valera;
+
+--
+-- TOC entry 1445 (class 2617 OID 283168)
+-- Dependencies: 6 49
+-- Name: ~; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR ~ (
     PROCEDURE = _int_contained,
@@ -2567,6 +5662,11 @@ CREATE OPERATOR ~ (
 
 ALTER OPERATOR public.~ (integer[], integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1446 (class 2617 OID 283156)
+-- Dependencies: 6 50 454
+-- Name: ~~; Type: OPERATOR; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR ~~ (
     PROCEDURE = rboolop,
@@ -2580,6 +5680,22 @@ CREATE OPERATOR ~~ (
 
 ALTER OPERATOR public.~~ (query_int, integer[]) OWNER TO ebs;
 
+--
+-- TOC entry 1684 (class 2753 OID 283246)
+-- Dependencies: 6
+-- Name: gin__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+--
+
+CREATE OPERATOR FAMILY gin__int_ops USING gin;
+
+
+ALTER OPERATOR FAMILY public.gin__int_ops USING gin OWNER TO mikrobill;
+
+--
+-- TOC entry 1570 (class 2616 OID 283247)
+-- Dependencies: 6 1684
+-- Name: gin__int_ops; Type: OPERATOR CLASS; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR CLASS gin__int_ops
     FOR TYPE integer[] USING gin AS
@@ -2599,6 +5715,41 @@ CREATE OPERATOR CLASS gin__int_ops
 
 ALTER OPERATOR CLASS public.gin__int_ops USING gin OWNER TO ebs;
 
+--
+-- TOC entry 1569 (class 2616 OID 283113)
+-- Dependencies: 6 1681 412
+-- Name: gin_hstore_ops; Type: OPERATOR CLASS; Schema: public; Owner: valera
+--
+
+CREATE OPERATOR CLASS gin_hstore_ops
+    DEFAULT FOR TYPE hstore USING gin AS
+    STORAGE text ,
+    OPERATOR 7 @>(hstore,hstore) RECHECK ,
+    OPERATOR 9 ?(hstore,text) ,
+    FUNCTION 1 bttextcmp(text,text) ,
+    FUNCTION 2 gin_extract_hstore(internal,internal) ,
+    FUNCTION 3 gin_extract_hstore_query(internal,internal,smallint) ,
+    FUNCTION 4 gin_consistent_hstore(internal,smallint,internal);
+
+
+ALTER OPERATOR CLASS public.gin_hstore_ops USING gin OWNER TO valera;
+
+--
+-- TOC entry 1682 (class 2753 OID 283201)
+-- Dependencies: 6
+-- Name: gist__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+--
+
+CREATE OPERATOR FAMILY gist__int_ops USING gist;
+
+
+ALTER OPERATOR FAMILY public.gist__int_ops USING gist OWNER TO mikrobill;
+
+--
+-- TOC entry 1571 (class 2616 OID 283202)
+-- Dependencies: 1682 6
+-- Name: gist__int_ops; Type: OPERATOR CLASS; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR CLASS gist__int_ops
     DEFAULT FOR TYPE integer[] USING gist AS
@@ -2620,6 +5771,22 @@ CREATE OPERATOR CLASS gist__int_ops
 
 ALTER OPERATOR CLASS public.gist__int_ops USING gist OWNER TO ebs;
 
+--
+-- TOC entry 1683 (class 2753 OID 283228)
+-- Dependencies: 6
+-- Name: gist__intbig_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+--
+
+CREATE OPERATOR FAMILY gist__intbig_ops USING gist;
+
+
+ALTER OPERATOR FAMILY public.gist__intbig_ops USING gist OWNER TO mikrobill;
+
+--
+-- TOC entry 1572 (class 2616 OID 283229)
+-- Dependencies: 6 1683 456
+-- Name: gist__intbig_ops; Type: OPERATOR CLASS; Schema: public; Owner: ebs
+--
 
 CREATE OPERATOR CLASS gist__intbig_ops
     FOR TYPE integer[] USING gist AS
@@ -2642,15 +5809,34 @@ CREATE OPERATOR CLASS gist__intbig_ops
 
 ALTER OPERATOR CLASS public.gist__intbig_ops USING gist OWNER TO ebs;
 
+--
+-- TOC entry 1568 (class 2616 OID 283098)
+-- Dependencies: 412 451 6 1680
+-- Name: gist_hstore_ops; Type: OPERATOR CLASS; Schema: public; Owner: valera
+--
 
-CREATE TABLE auth_group (
-    id integer NOT NULL,
-    name character varying(80) NOT NULL
-);
+CREATE OPERATOR CLASS gist_hstore_ops
+    DEFAULT FOR TYPE hstore USING gist AS
+    STORAGE ghstore ,
+    OPERATOR 7 @>(hstore,hstore) RECHECK ,
+    OPERATOR 9 ?(hstore,text) RECHECK ,
+    OPERATOR 13 @(hstore,hstore) RECHECK ,
+    FUNCTION 1 ghstore_consistent(internal,internal,integer) ,
+    FUNCTION 2 ghstore_union(internal,internal) ,
+    FUNCTION 3 ghstore_compress(internal) ,
+    FUNCTION 4 ghstore_decompress(internal) ,
+    FUNCTION 5 ghstore_penalty(internal,internal,internal) ,
+    FUNCTION 6 ghstore_picksplit(internal,internal) ,
+    FUNCTION 7 ghstore_same(internal,internal,internal);
 
 
-ALTER TABLE public.auth_group OWNER TO ebs;
+ALTER OPERATOR CLASS public.gist_hstore_ops USING gist OWNER TO valera;
 
+--
+-- TOC entry 1943 (class 1259 OID 4630738)
+-- Dependencies: 6 1942
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE auth_group_id_seq
     START WITH 1
@@ -2658,104 +5844,168 @@ CREATE SEQUENCE auth_group_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_group_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3131 (class 0 OID 0)
+-- Dependencies: 1943
+-- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_group_id_seq OWNED BY auth_group.id;
+
+
+--
+-- TOC entry 3132 (class 0 OID 0)
+-- Dependencies: 1943
+-- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_group_id_seq', 1, false);
 
-CREATE TABLE auth_group_permissions (
-    id integer NOT NULL,
-    group_id integer NOT NULL,
-    permission_id integer NOT NULL
-);
-ALTER TABLE public.auth_group_permissions OWNER TO ebs;
+
+--
+-- TOC entry 1945 (class 1259 OID 4630743)
+-- Dependencies: 1944 6
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE auth_group_permissions_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_group_permissions_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3133 (class 0 OID 0)
+-- Dependencies: 1945
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_group_permissions_id_seq OWNED BY auth_group_permissions.id;
+
+
+--
+-- TOC entry 3134 (class 0 OID 0)
+-- Dependencies: 1945
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_group_permissions_id_seq', 1, false);
 
 
+--
+-- TOC entry 1947 (class 1259 OID 4630751)
+-- Dependencies: 1946 6
+-- Name: auth_message_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE auth_message (
-    id integer NOT NULL,
-    user_id integer NOT NULL,
-    message text NOT NULL
-);
-
-
-ALTER TABLE public.auth_message OWNER TO ebs;
 CREATE SEQUENCE auth_message_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_message_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3135 (class 0 OID 0)
+-- Dependencies: 1947
+-- Name: auth_message_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_message_id_seq OWNED BY auth_message.id;
+
+
+--
+-- TOC entry 3136 (class 0 OID 0)
+-- Dependencies: 1947
+-- Name: auth_message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_message_id_seq', 1, false);
 
 
+--
+-- TOC entry 1949 (class 1259 OID 4630756)
+-- Dependencies: 1948 6
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE auth_permission (
-    id integer NOT NULL,
-    name character varying(50) NOT NULL,
-    content_type_id integer NOT NULL,
-    codename character varying(100) NOT NULL
-);
-
-
-ALTER TABLE public.auth_permission OWNER TO ebs;
 CREATE SEQUENCE auth_permission_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_permission_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3137 (class 0 OID 0)
+-- Dependencies: 1949
+-- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_permission_id_seq OWNED BY auth_permission.id;
+
+
+--
+-- TOC entry 3138 (class 0 OID 0)
+-- Dependencies: 1949
+-- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_permission_id_seq', 139, true);
 
 
+--
+-- TOC entry 1952 (class 1259 OID 4630764)
+-- Dependencies: 1951 6
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE auth_user (
-    id integer NOT NULL,
-    username character varying(30) NOT NULL,
-    first_name character varying(30) NOT NULL,
-    last_name character varying(30) NOT NULL,
-    email character varying(75) NOT NULL,
-    password character varying(128) NOT NULL,
-    is_staff boolean NOT NULL,
-    is_active boolean NOT NULL,
-    is_superuser boolean NOT NULL,
-    last_login timestamp without time zone NOT NULL,
-    date_joined timestamp without time zone NOT NULL
-);
-
-
-ALTER TABLE public.auth_user OWNER TO ebs;
-
-
-CREATE TABLE auth_user_groups (
-    id integer NOT NULL,
-    user_id integer NOT NULL,
-    group_id integer NOT NULL
-);
-
-
-ALTER TABLE public.auth_user_groups OWNER TO ebs;
 CREATE SEQUENCE auth_user_groups_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_user_groups_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3139 (class 0 OID 0)
+-- Dependencies: 1952
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_user_groups_id_seq OWNED BY auth_user_groups.id;
+
+
+--
+-- TOC entry 3140 (class 0 OID 0)
+-- Dependencies: 1952
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_user_groups_id_seq', 1, false);
 
+
+--
+-- TOC entry 1953 (class 1259 OID 4630766)
+-- Dependencies: 6 1950
+-- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE auth_user_id_seq
     START WITH 1
@@ -2763,45 +6013,67 @@ CREATE SEQUENCE auth_user_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_user_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3141 (class 0 OID 0)
+-- Dependencies: 1953
+-- Name: auth_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_user_id_seq OWNED BY auth_user.id;
+
+
+--
+-- TOC entry 3142 (class 0 OID 0)
+-- Dependencies: 1953
+-- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_user_id_seq', 1, false);
 
-CREATE TABLE auth_user_user_permissions (
-    id integer NOT NULL,
-    user_id integer NOT NULL,
-    permission_id integer NOT NULL
-);
 
+--
+-- TOC entry 1955 (class 1259 OID 4630771)
+-- Dependencies: 6 1954
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.auth_user_user_permissions OWNER TO ebs;
 CREATE SEQUENCE auth_user_user_permissions_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3143 (class 0 OID 0)
+-- Dependencies: 1955
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE auth_user_user_permissions_id_seq OWNED BY auth_user_user_permissions.id;
+
+
+--
+-- TOC entry 3144 (class 0 OID 0)
+-- Dependencies: 1955
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('auth_user_user_permissions_id_seq', 1, false);
 
 
-CREATE TABLE billservice_accessparameters (
-    id integer NOT NULL,
-    access_type character varying(255) NOT NULL,
-    access_time_id integer NOT NULL,
-    max_limit character varying(64) DEFAULT ''::character varying,
-    min_limit character varying(64) DEFAULT ''::character varying,
-    burst_limit character varying(64) DEFAULT ''::character varying,
-    burst_treshold character varying(64) DEFAULT ''::character varying,
-    burst_time character varying(64) DEFAULT ''::character varying,
-    priority integer DEFAULT 8,
-    ipn_for_vpn boolean DEFAULT false
-);
-
-
-ALTER TABLE public.billservice_accessparameters OWNER TO ebs;
-
+--
+-- TOC entry 1957 (class 1259 OID 4630786)
+-- Dependencies: 1956 6
+-- Name: billservice_accessparameters_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_accessparameters_id_seq
     START WITH 1
@@ -2813,329 +6085,572 @@ CREATE SEQUENCE billservice_accessparameters_id_seq
 
 ALTER TABLE public.billservice_accessparameters_id_seq OWNER TO ebs;
 
+--
+-- TOC entry 3145 (class 0 OID 0)
+-- Dependencies: 1957
+-- Name: billservice_accessparameters_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
 
 ALTER SEQUENCE billservice_accessparameters_id_seq OWNED BY billservice_accessparameters.id;
 
 
+--
+-- TOC entry 3146 (class 0 OID 0)
+-- Dependencies: 1957
+-- Name: billservice_accessparameters_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
 
 SELECT pg_catalog.setval('billservice_accessparameters_id_seq', 1, false);
 
 
+--
+-- TOC entry 1959 (class 1259 OID 4630832)
+-- Dependencies: 1958 6
+-- Name: billservice_account_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE billservice_account (
-    id integer NOT NULL,
-    username character varying(200) NOT NULL,
-    password character varying(200) DEFAULT ''::character varying,
-    fullname character varying(200) DEFAULT ''::character varying,
-    email character varying(200) DEFAULT ''::character varying,
-    address text DEFAULT ''::text,
-    nas_id integer NOT NULL,
-    vpn_ip_address inet DEFAULT '0.0.0.0'::inet,
-    assign_ipn_ip_from_dhcp boolean DEFAULT false,
-    ipn_ip_address inet DEFAULT '0.0.0.0'::inet,
-    ipn_mac_address character varying(32) DEFAULT ''::character varying,
-    ipn_status boolean DEFAULT false,
-    status boolean DEFAULT false,
-    suspended boolean DEFAULT true,
-    created timestamp without time zone DEFAULT now(),
-    ballance numeric DEFAULT 0,
-    credit double precision DEFAULT 0,
-    disabled_by_limit boolean DEFAULT false,
-    balance_blocked boolean DEFAULT false,
-    ipn_speed character varying(96) DEFAULT ''::character varying,
-    vpn_speed character varying(96) DEFAULT ''::character varying,
-    netmask inet DEFAULT '0.0.0.0/0'::inet,
-    ipn_added boolean DEFAULT false,
-    city character varying(255) DEFAULT ''::character varying,
-    postcode character varying(255) DEFAULT ''::character varying,
-    region character varying(255) DEFAULT ''::character varying,
-    street character varying(255) DEFAULT ''::character varying,
-    house character varying(255) DEFAULT ''::character varying,
-    house_bulk character varying(255) DEFAULT ''::character varying,
-    entrance character varying(255) DEFAULT ''::character varying,
-    room character varying(255) DEFAULT ''::character varying,
-    vlan integer,
-    allow_webcab boolean DEFAULT true,
-    allow_expresscards boolean DEFAULT true,
-    assign_dhcp_null boolean DEFAULT true,
-    assign_dhcp_block boolean DEFAULT true,
-    allow_vpn_null boolean DEFAULT true,
-    allow_vpn_block boolean DEFAULT true,
-    passport character varying(255) DEFAULT ''::character varying,
-    passport_date timestamp without time zone,
-    passport_given character varying(255) DEFAULT ''::character varying,
-    phone_h character varying DEFAULT ''::character varying,
-    phone_m character varying DEFAULT ''::character varying,
-    vpn_ipinuse_id integer,
-    ipn_ipinuse_id integer
-);
-
-
-ALTER TABLE public.billservice_account OWNER TO ebs;
 CREATE SEQUENCE billservice_account_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_account_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3147 (class 0 OID 0)
+-- Dependencies: 1959
+-- Name: billservice_account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_account_id_seq OWNED BY billservice_account.id;
+
+
+--
+-- TOC entry 3148 (class 0 OID 0)
+-- Dependencies: 1959
+-- Name: billservice_account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_account_id_seq', 1, false);
 
 
-CREATE TABLE billservice_accountipnspeed (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    speed character varying(32) DEFAULT ''::character varying,
-    state boolean DEFAULT false,
-    static boolean DEFAULT false,
-    datetime timestamp without time zone DEFAULT now()
-);
+--
+-- TOC entry 2084 (class 1259 OID 4632766)
+-- Dependencies: 2085 6
+-- Name: billservice_accountaddonservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_accountipnspeed OWNER TO ebs;
+CREATE SEQUENCE billservice_accountaddonservice_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_accountaddonservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3149 (class 0 OID 0)
+-- Dependencies: 2084
+-- Name: billservice_accountaddonservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_accountaddonservice_id_seq OWNED BY billservice_accountaddonservice.id;
+
+
+--
+-- TOC entry 3150 (class 0 OID 0)
+-- Dependencies: 2084
+-- Name: billservice_accountaddonservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_accountaddonservice_id_seq', 1, false);
+
+
+--
+-- TOC entry 1961 (class 1259 OID 4630841)
+-- Dependencies: 1960 6
+-- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_accountipnspeed_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_accountipnspeed_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3151 (class 0 OID 0)
+-- Dependencies: 1961
+-- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_accountipnspeed_id_seq OWNED BY billservice_accountipnspeed.id;
+
+
+--
+-- TOC entry 3152 (class 0 OID 0)
+-- Dependencies: 1961
+-- Name: billservice_accountipnspeed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_accountipnspeed_id_seq', 1, false);
 
 
-CREATE TABLE billservice_accountprepaystime (
-    id integer NOT NULL,
-    account_tarif_id integer NOT NULL,
-    prepaid_time_service_id integer NOT NULL,
-    size integer DEFAULT 0,
-    datetime timestamp without time zone DEFAULT now()
-);
+--
+-- TOC entry 1963 (class 1259 OID 4630848)
+-- Dependencies: 6 1962
+-- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_accountprepaystime OWNER TO ebs;
 CREATE SEQUENCE billservice_accountprepaystime_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_accountprepaystime_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3153 (class 0 OID 0)
+-- Dependencies: 1963
+-- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_accountprepaystime_id_seq OWNED BY billservice_accountprepaystime.id;
+
+
+--
+-- TOC entry 3154 (class 0 OID 0)
+-- Dependencies: 1963
+-- Name: billservice_accountprepaystime_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_accountprepaystime_id_seq', 1, false);
 
-CREATE TABLE billservice_accountprepaystrafic (
-    id integer NOT NULL,
-    account_tarif_id integer NOT NULL,
-    prepaid_traffic_id integer NOT NULL,
-    size double precision DEFAULT 0,
-    datetime timestamp without time zone DEFAULT now()
-);
 
+--
+-- TOC entry 1965 (class 1259 OID 4630855)
+-- Dependencies: 1964 6
+-- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_accountprepaystrafic OWNER TO ebs;
 CREATE SEQUENCE billservice_accountprepaystrafic_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_accountprepaystrafic_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3155 (class 0 OID 0)
+-- Dependencies: 1965
+-- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_accountprepaystrafic_id_seq OWNED BY billservice_accountprepaystrafic.id;
+
+
+--
+-- TOC entry 3156 (class 0 OID 0)
+-- Dependencies: 1965
+-- Name: billservice_accountprepaystrafic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_accountprepaystrafic_id_seq', 1, false);
 
 
+--
+-- TOC entry 1967 (class 1259 OID 4630860)
+-- Dependencies: 1966 6
+-- Name: billservice_accountspeedlimit_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE billservice_accountspeedlimit (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    speedlimit_id integer NOT NULL
-);
-
-
-ALTER TABLE public.billservice_accountspeedlimit OWNER TO ebs;
 CREATE SEQUENCE billservice_accountspeedlimit_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_accountspeedlimit_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3157 (class 0 OID 0)
+-- Dependencies: 1967
+-- Name: billservice_accountspeedlimit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_accountspeedlimit_id_seq OWNED BY billservice_accountspeedlimit.id;
+
+
+--
+-- TOC entry 3158 (class 0 OID 0)
+-- Dependencies: 1967
+-- Name: billservice_accountspeedlimit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_accountspeedlimit_id_seq', 1, false);
 
 
-CREATE TABLE billservice_accounttarif (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    tarif_id integer NOT NULL,
-    datetime timestamp without time zone
-);
+--
+-- TOC entry 1969 (class 1259 OID 4630865)
+-- Dependencies: 1968 6
+-- Name: billservice_accounttarif_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_accounttarif OWNER TO ebs;
 CREATE SEQUENCE billservice_accounttarif_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_accounttarif_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3159 (class 0 OID 0)
+-- Dependencies: 1969
+-- Name: billservice_accounttarif_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_accounttarif_id_seq OWNED BY billservice_accounttarif.id;
+
+
+--
+-- TOC entry 3160 (class 0 OID 0)
+-- Dependencies: 1969
+-- Name: billservice_accounttarif_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_accounttarif_id_seq', 1, false);
 
 
-CREATE TABLE billservice_bankdata (
-    id integer NOT NULL,
-    bank character varying(255) NOT NULL,
-    bankcode character varying(40) NOT NULL,
-    rs character varying(60) NOT NULL,
-    currency character varying(40) NOT NULL
-);
+--
+-- TOC entry 2080 (class 1259 OID 4632692)
+-- Dependencies: 6 2081
+-- Name: billservice_addonservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_bankdata OWNER TO ebs;
+CREATE SEQUENCE billservice_addonservice_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_addonservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3161 (class 0 OID 0)
+-- Dependencies: 2080
+-- Name: billservice_addonservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_addonservice_id_seq OWNED BY billservice_addonservice.id;
+
+
+--
+-- TOC entry 3162 (class 0 OID 0)
+-- Dependencies: 2080
+-- Name: billservice_addonservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_addonservice_id_seq', 1, false);
+
+
+--
+-- TOC entry 2082 (class 1259 OID 4632739)
+-- Dependencies: 6 2083
+-- Name: billservice_addonservicetarif_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
+CREATE SEQUENCE billservice_addonservicetarif_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_addonservicetarif_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3163 (class 0 OID 0)
+-- Dependencies: 2082
+-- Name: billservice_addonservicetarif_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_addonservicetarif_id_seq OWNED BY billservice_addonservicetarif.id;
+
+
+--
+-- TOC entry 3164 (class 0 OID 0)
+-- Dependencies: 2082
+-- Name: billservice_addonservicetarif_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_addonservicetarif_id_seq', 1, false);
+
+
+--
+-- TOC entry 2086 (class 1259 OID 4632789)
+-- Dependencies: 6 2087
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+--
+
+CREATE SEQUENCE billservice_addonservicetransaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_addonservicetransaction_id_seq OWNER TO mikrobill;
+
+--
+-- TOC entry 3165 (class 0 OID 0)
+-- Dependencies: 2086
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+--
+
+ALTER SEQUENCE billservice_addonservicetransaction_id_seq OWNED BY billservice_addonservicetransaction.id;
+
+
+--
+-- TOC entry 3166 (class 0 OID 0)
+-- Dependencies: 2086
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+--
+
+SELECT pg_catalog.setval('billservice_addonservicetransaction_id_seq', 1, false);
+
+
+--
+-- TOC entry 1971 (class 1259 OID 4630870)
+-- Dependencies: 6 1970
+-- Name: billservice_bankdata_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_bankdata_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_bankdata_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3167 (class 0 OID 0)
+-- Dependencies: 1971
+-- Name: billservice_bankdata_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_bankdata_id_seq OWNED BY billservice_bankdata.id;
+
+
+--
+-- TOC entry 3168 (class 0 OID 0)
+-- Dependencies: 1971
+-- Name: billservice_bankdata_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_bankdata_id_seq', 1, false);
 
 
-CREATE TABLE billservice_card (
-    id integer NOT NULL,
-    series integer NOT NULL,
-    pin character varying(255) DEFAULT ''::character varying NOT NULL,
-    sold timestamp without time zone,
-    nominal double precision DEFAULT 0,
-    activated timestamp without time zone,
-    activated_by_id integer,
-    start_date timestamp without time zone,
-    end_date timestamp without time zone,
-    disabled boolean DEFAULT false,
-    created timestamp without time zone,
-    template_id integer,
-    account_id integer,
-    tarif_id integer,
-    nas_id integer,
-    login character varying DEFAULT ''::character varying,
-    ip character varying,
-    ipinuse_id integer
-);
+--
+-- TOC entry 1973 (class 1259 OID 4630882)
+-- Dependencies: 6 1972
+-- Name: billservice_card_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_card OWNER TO ebs;
 CREATE SEQUENCE billservice_card_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_card_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3169 (class 0 OID 0)
+-- Dependencies: 1973
+-- Name: billservice_card_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_card_id_seq OWNED BY billservice_card.id;
+
+
+--
+-- TOC entry 3170 (class 0 OID 0)
+-- Dependencies: 1973
+-- Name: billservice_card_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_card_id_seq', 1, false);
 
-CREATE TABLE billservice_dealer (
-    id integer NOT NULL,
-    organization character varying(400) NOT NULL,
-    unp character varying(255) NOT NULL,
-    okpo character varying(255) NOT NULL,
-    contactperson character varying(255) NOT NULL,
-    director character varying(255) NOT NULL,
-    phone character varying(255) NOT NULL,
-    fax character varying(255) NOT NULL,
-    postaddress character varying(400) NOT NULL,
-    uraddress character varying(400) NOT NULL,
-    email character varying(255) NOT NULL,
-    bank_id integer NOT NULL,
-    prepayment real,
-    paydeffer integer,
-    discount real,
-    always_sell_cards boolean DEFAULT false NOT NULL,
-    deleted boolean DEFAULT false
-);
 
+--
+-- TOC entry 1975 (class 1259 OID 4630892)
+-- Dependencies: 6 1974
+-- Name: billservice_dealer_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_dealer OWNER TO ebs;
 CREATE SEQUENCE billservice_dealer_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_dealer_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3171 (class 0 OID 0)
+-- Dependencies: 1975
+-- Name: billservice_dealer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_dealer_id_seq OWNED BY billservice_dealer.id;
+
+
+--
+-- TOC entry 3172 (class 0 OID 0)
+-- Dependencies: 1975
+-- Name: billservice_dealer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_dealer_id_seq', 1, false);
 
 
-CREATE TABLE billservice_dealerpay (
-    id integer NOT NULL,
-    dealer_id integer NOT NULL,
-    pay double precision NOT NULL,
-    salecard_id integer,
-    created timestamp with time zone NOT NULL
-);
+--
+-- TOC entry 1977 (class 1259 OID 4630897)
+-- Dependencies: 1976 6
+-- Name: billservice_dealerpay_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_dealerpay OWNER TO ebs;
 CREATE SEQUENCE billservice_dealerpay_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_dealerpay_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3173 (class 0 OID 0)
+-- Dependencies: 1977
+-- Name: billservice_dealerpay_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_dealerpay_id_seq OWNED BY billservice_dealerpay.id;
+
+
+--
+-- TOC entry 3174 (class 0 OID 0)
+-- Dependencies: 1977
+-- Name: billservice_dealerpay_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_dealerpay_id_seq', 1, false);
 
 
-CREATE TABLE billservice_document (
-    id integer NOT NULL,
-    account_id integer,
-    type_id integer NOT NULL,
-    body text NOT NULL
-);
+--
+-- TOC entry 1979 (class 1259 OID 4630905)
+-- Dependencies: 6 1978
+-- Name: billservice_document_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_document OWNER TO ebs;
 CREATE SEQUENCE billservice_document_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_document_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3175 (class 0 OID 0)
+-- Dependencies: 1979
+-- Name: billservice_document_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_document_id_seq OWNED BY billservice_document.id;
+
+
+--
+-- TOC entry 3176 (class 0 OID 0)
+-- Dependencies: 1979
+-- Name: billservice_document_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_document_id_seq', 1, false);
 
 
-CREATE TABLE billservice_documenttype (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL
-);
-ALTER TABLE public.billservice_documenttype OWNER TO ebs;
+--
+-- TOC entry 1981 (class 1259 OID 4630910)
+-- Dependencies: 1980 6
+-- Name: billservice_documenttype_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_documenttype_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_documenttype_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3177 (class 0 OID 0)
+-- Dependencies: 1981
+-- Name: billservice_documenttype_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_documenttype_id_seq OWNED BY billservice_documenttype.id;
+
+
+--
+-- TOC entry 3178 (class 0 OID 0)
+-- Dependencies: 1981
+-- Name: billservice_documenttype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_documenttype_id_seq', 8, true);
 
 
-CREATE TABLE billservice_globalstat (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    bytes_in bigint DEFAULT 0 NOT NULL,
-    bytes_out bigint DEFAULT 0 NOT NULL,
-    datetime timestamp without time zone NOT NULL,
-    nas_id integer NOT NULL,
-    classes integer[],
-    classbytes bigint[]
-);
-
-ALTER TABLE public.billservice_globalstat OWNER TO ebs;
+--
+-- TOC entry 1983 (class 1259 OID 4630920)
+-- Dependencies: 1982 6
+-- Name: billservice_globalstat_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_globalstat_id_seq
     START WITH 1
@@ -3144,45 +6659,100 @@ CREATE SEQUENCE billservice_globalstat_id_seq
     NO MINVALUE
     CACHE 1;
 
+
 ALTER TABLE public.billservice_globalstat_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3179 (class 0 OID 0)
+-- Dependencies: 1983
+-- Name: billservice_globalstat_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_globalstat_id_seq OWNED BY billservice_globalstat.id;
+
+
+--
+-- TOC entry 3180 (class 0 OID 0)
+-- Dependencies: 1983
+-- Name: billservice_globalstat_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_globalstat_id_seq', 1, false);
 
-CREATE TABLE billservice_group (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    direction integer NOT NULL,
-    type integer NOT NULL
-);
 
-ALTER TABLE public.billservice_group OWNER TO ebs;
+--
+-- TOC entry 1985 (class 1259 OID 4630925)
+-- Dependencies: 6 1984
+-- Name: billservice_group_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_group_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_group_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3181 (class 0 OID 0)
+-- Dependencies: 1985
+-- Name: billservice_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_group_id_seq OWNED BY billservice_group.id;
+
+
+--
+-- TOC entry 3182 (class 0 OID 0)
+-- Dependencies: 1985
+-- Name: billservice_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_group_id_seq', 1, false);
 
 
-CREATE TABLE billservice_group_trafficclass (
-    id integer NOT NULL,
-    group_id integer NOT NULL,
-    trafficclass_id integer NOT NULL
-);
+--
+-- TOC entry 1987 (class 1259 OID 4630930)
+-- Dependencies: 1986 6
+-- Name: billservice_group_trafficclass_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_group_trafficclass OWNER TO ebs;
 CREATE SEQUENCE billservice_group_trafficclass_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_group_trafficclass_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3183 (class 0 OID 0)
+-- Dependencies: 1987
+-- Name: billservice_group_trafficclass_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_group_trafficclass_id_seq OWNED BY billservice_group_trafficclass.id;
+
+
+--
+-- TOC entry 3184 (class 0 OID 0)
+-- Dependencies: 1987
+-- Name: billservice_group_trafficclass_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_group_trafficclass_id_seq', 1, false);
+
+
+--
+-- TOC entry 1988 (class 1259 OID 4630932)
+-- Dependencies: 6 1937
+-- Name: billservice_groupstat_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_groupstat_id_seq
     START WITH 1
@@ -3190,47 +6760,101 @@ CREATE SEQUENCE billservice_groupstat_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_groupstat_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3185 (class 0 OID 0)
+-- Dependencies: 1988
+-- Name: billservice_groupstat_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_groupstat_id_seq OWNED BY billservice_groupstat.id;
+
+
+--
+-- TOC entry 3186 (class 0 OID 0)
+-- Dependencies: 1988
+-- Name: billservice_groupstat_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_groupstat_id_seq', 1, false);
 
 
-CREATE TABLE billservice_ipinuse (
-    id integer NOT NULL,
-    pool_id integer NOT NULL,
-    ip character varying(255) NOT NULL,
-    datetime timestamp with time zone NOT NULL
-);
+--
+-- TOC entry 1990 (class 1259 OID 4630937)
+-- Dependencies: 1989 6
+-- Name: billservice_ipinuse_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_ipinuse OWNER TO ebs;
 CREATE SEQUENCE billservice_ipinuse_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_ipinuse_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3187 (class 0 OID 0)
+-- Dependencies: 1990
+-- Name: billservice_ipinuse_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_ipinuse_id_seq OWNED BY billservice_ipinuse.id;
+
+
+--
+-- TOC entry 3188 (class 0 OID 0)
+-- Dependencies: 1990
+-- Name: billservice_ipinuse_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_ipinuse_id_seq', 1, false);
 
-CREATE TABLE billservice_ippool (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    type integer NOT NULL,
-    start_ip inet NOT NULL,
-    end_ip inet NOT NULL
-);
 
-ALTER TABLE public.billservice_ippool OWNER TO ebs;
+--
+-- TOC entry 1992 (class 1259 OID 4630945)
+-- Dependencies: 6 1991
+-- Name: billservice_ippool_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_ippool_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_ippool_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3189 (class 0 OID 0)
+-- Dependencies: 1992
+-- Name: billservice_ippool_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_ippool_id_seq OWNED BY billservice_ippool.id;
+
+
+--
+-- TOC entry 3190 (class 0 OID 0)
+-- Dependencies: 1992
+-- Name: billservice_ippool_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_ippool_id_seq', 1, false);
+
+
+--
+-- TOC entry 1993 (class 1259 OID 4630947)
+-- Dependencies: 1938 6
+-- Name: billservice_netflowstream_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_netflowstream_id_seq
     START WITH 1
@@ -3238,125 +6862,203 @@ CREATE SEQUENCE billservice_netflowstream_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_netflowstream_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3191 (class 0 OID 0)
+-- Dependencies: 1993
+-- Name: billservice_netflowstream_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_netflowstream_id_seq OWNED BY billservice_netflowstream.id;
+
+
+--
+-- TOC entry 3192 (class 0 OID 0)
+-- Dependencies: 1993
+-- Name: billservice_netflowstream_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_netflowstream_id_seq', 1, false);
 
 
-CREATE TABLE billservice_onetimeservice (
-    id integer NOT NULL,
-    tarif_id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    cost double precision NOT NULL
-);
+--
+-- TOC entry 1995 (class 1259 OID 4630952)
+-- Dependencies: 6 1994
+-- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_onetimeservice OWNER TO ebs;
 CREATE SEQUENCE billservice_onetimeservice_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_onetimeservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3193 (class 0 OID 0)
+-- Dependencies: 1995
+-- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_onetimeservice_id_seq OWNED BY billservice_onetimeservice.id;
+
+
+--
+-- TOC entry 3194 (class 0 OID 0)
+-- Dependencies: 1995
+-- Name: billservice_onetimeservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_onetimeservice_id_seq', 1, false);
 
 
-CREATE TABLE billservice_onetimeservicehistory (
-    id integer NOT NULL,
-    accounttarif_id integer NOT NULL,
-    onetimeservice_id integer NOT NULL,
-    datetime timestamp without time zone NOT NULL,
-    transaction_id integer
-);
+--
+-- TOC entry 1997 (class 1259 OID 4630957)
+-- Dependencies: 6 1996
+-- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_onetimeservicehistory OWNER TO ebs;
 CREATE SEQUENCE billservice_onetimeservicehistory_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_onetimeservicehistory_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3195 (class 0 OID 0)
+-- Dependencies: 1997
+-- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_onetimeservicehistory_id_seq OWNED BY billservice_onetimeservicehistory.id;
+
+
+--
+-- TOC entry 3196 (class 0 OID 0)
+-- Dependencies: 1997
+-- Name: billservice_onetimeservicehistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_onetimeservicehistory_id_seq', 1, false);
 
 
-CREATE TABLE billservice_operator (
-    id integer NOT NULL,
-    organization character varying(255) NOT NULL,
-    unp character varying(40) NOT NULL,
-    okpo character varying(40) NOT NULL,
-    contactperson character varying(255) NOT NULL,
-    director character varying(255) NOT NULL,
-    phone character varying(40) NOT NULL,
-    postaddress character varying(255) NOT NULL,
-    uraddress character varying(255) NOT NULL,
-    email character varying(255) NOT NULL,
-    fax character varying(40) NOT NULL,
-    bank_id integer NOT NULL
-);
+--
+-- TOC entry 1999 (class 1259 OID 4630965)
+-- Dependencies: 1998 6
+-- Name: billservice_operator_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_operator OWNER TO ebs;
 CREATE SEQUENCE billservice_operator_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_operator_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3197 (class 0 OID 0)
+-- Dependencies: 1999
+-- Name: billservice_operator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_operator_id_seq OWNED BY billservice_operator.id;
+
+
+--
+-- TOC entry 3198 (class 0 OID 0)
+-- Dependencies: 1999
+-- Name: billservice_operator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_operator_id_seq', 1, false);
 
 
-CREATE TABLE billservice_organization (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    name character varying(255) DEFAULT ''::character varying,
-    uraddress character varying(255) DEFAULT ''::character varying,
-    okpo character varying(255) DEFAULT ''::character varying,
-    unp character varying(255) DEFAULT ''::character varying,
-    bank_id integer NOT NULL,
-    phone character varying(255) DEFAULT ''::character varying,
-    fax character varying(255) DEFAULT ''::character varying
-);
+--
+-- TOC entry 2001 (class 1259 OID 4630979)
+-- Dependencies: 2000 6
+-- Name: billservice_organization_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_organization OWNER TO ebs;
 CREATE SEQUENCE billservice_organization_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_organization_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3199 (class 0 OID 0)
+-- Dependencies: 2001
+-- Name: billservice_organization_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_organization_id_seq OWNED BY billservice_organization.id;
+
+
+--
+-- TOC entry 3200 (class 0 OID 0)
+-- Dependencies: 2001
+-- Name: billservice_organization_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_organization_id_seq', 1, false);
 
 
-CREATE TABLE billservice_periodicalservice (
-    id integer NOT NULL,
-    tarif_id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    settlement_period_id integer NOT NULL,
-    cost double precision NOT NULL,
-    cash_method character varying(255) NOT NULL,
-    condition integer DEFAULT 0 NOT NULL,
-    created timestamp without time zone
-);
+--
+-- TOC entry 2003 (class 1259 OID 4630988)
+-- Dependencies: 6 2002
+-- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_periodicalservice OWNER TO ebs;
 CREATE SEQUENCE billservice_periodicalservice_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_periodicalservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3201 (class 0 OID 0)
+-- Dependencies: 2003
+-- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_periodicalservice_id_seq OWNED BY billservice_periodicalservice.id;
+
+
+--
+-- TOC entry 3202 (class 0 OID 0)
+-- Dependencies: 2003
+-- Name: billservice_periodicalservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_periodicalservice_id_seq', 1, false);
 
+
+--
+-- TOC entry 2004 (class 1259 OID 4630990)
+-- Dependencies: 1940 6
+-- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     START WITH 1
@@ -3364,72 +7066,134 @@ CREATE SEQUENCE billservice_periodicalservicehistory_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_periodicalservicehistory_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3203 (class 0 OID 0)
+-- Dependencies: 2004
+-- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_periodicalservicehistory_id_seq OWNED BY billservice_periodicalservicehistory.id;
+
+
+--
+-- TOC entry 3204 (class 0 OID 0)
+-- Dependencies: 2004
+-- Name: billservice_periodicalservicehistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_periodicalservicehistory_id_seq', 1, false);
 
-CREATE TABLE billservice_ports (
-    id integer NOT NULL,
-    port integer NOT NULL,
-    protocol integer NOT NULL,
-    name character varying(64) DEFAULT ''::character varying,
-    description character varying(255) DEFAULT ''::character varying
-);
 
-ALTER TABLE public.billservice_ports OWNER TO ebs;
+--
+-- TOC entry 2006 (class 1259 OID 4630997)
+-- Dependencies: 2005 6
+-- Name: billservice_ports_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_ports_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_ports_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3205 (class 0 OID 0)
+-- Dependencies: 2006
+-- Name: billservice_ports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_ports_id_seq OWNED BY billservice_ports.id;
+
+
+--
+-- TOC entry 3206 (class 0 OID 0)
+-- Dependencies: 2006
+-- Name: billservice_ports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_ports_id_seq', 45174, true);
 
 
-CREATE TABLE billservice_prepaidtraffic (
-    id integer NOT NULL,
-    traffic_transmit_service_id integer NOT NULL,
-    size double precision DEFAULT 0,
-    group_id integer NOT NULL
-);
+--
+-- TOC entry 2008 (class 1259 OID 4631003)
+-- Dependencies: 6 2007
+-- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_prepaidtraffic OWNER TO ebs;
 CREATE SEQUENCE billservice_prepaidtraffic_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_prepaidtraffic_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3207 (class 0 OID 0)
+-- Dependencies: 2008
+-- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_prepaidtraffic_id_seq OWNED BY billservice_prepaidtraffic.id;
+
+
+--
+-- TOC entry 3208 (class 0 OID 0)
+-- Dependencies: 2008
+-- Name: billservice_prepaidtraffic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_prepaidtraffic_id_seq', 1, false);
 
 
-CREATE TABLE billservice_salecard (
-    id integer NOT NULL,
-    dealer_id integer NOT NULL,
-    sum_for_pay double precision NOT NULL,
-    paydeffer integer NOT NULL,
-    discount double precision NOT NULL,
-    discount_sum double precision NOT NULL,
-    prepayment double precision NOT NULL,
-    created timestamp with time zone NOT NULL
-);
+--
+-- TOC entry 2076 (class 1259 OID 4632562)
+-- Dependencies: 2077 6
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+--
+
+CREATE SEQUENCE billservice_radiusattrs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
 
 
-ALTER TABLE public.billservice_salecard OWNER TO ebs;
+ALTER TABLE public.billservice_radiusattrs_id_seq OWNER TO mikrobill;
+
+--
+-- TOC entry 3209 (class 0 OID 0)
+-- Dependencies: 2076
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+--
+
+ALTER SEQUENCE billservice_radiusattrs_id_seq OWNED BY billservice_radiusattrs.id;
 
 
-CREATE TABLE billservice_salecard_cards (
-    id integer NOT NULL,
-    salecard_id integer NOT NULL,
-    card_id integer NOT NULL
-);
+--
+-- TOC entry 3210 (class 0 OID 0)
+-- Dependencies: 2076
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+--
+
+SELECT pg_catalog.setval('billservice_radiusattrs_id_seq', 1, false);
 
 
-ALTER TABLE public.billservice_salecard_cards OWNER TO ebs;
-
+--
+-- TOC entry 2011 (class 1259 OID 4631011)
+-- Dependencies: 6 2010
+-- Name: billservice_salecard_cards_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_salecard_cards_id_seq
     START WITH 1
@@ -3441,14 +7205,29 @@ CREATE SEQUENCE billservice_salecard_cards_id_seq
 
 ALTER TABLE public.billservice_salecard_cards_id_seq OWNER TO ebs;
 
+--
+-- TOC entry 3211 (class 0 OID 0)
+-- Dependencies: 2011
+-- Name: billservice_salecard_cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
 
 ALTER SEQUENCE billservice_salecard_cards_id_seq OWNED BY billservice_salecard_cards.id;
 
 
+--
+-- TOC entry 3212 (class 0 OID 0)
+-- Dependencies: 2011
+-- Name: billservice_salecard_cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
 
 SELECT pg_catalog.setval('billservice_salecard_cards_id_seq', 1, false);
 
 
+--
+-- TOC entry 2012 (class 1259 OID 4631013)
+-- Dependencies: 2009 6
+-- Name: billservice_salecard_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_salecard_id_seq
     START WITH 1
@@ -3460,80 +7239,98 @@ CREATE SEQUENCE billservice_salecard_id_seq
 
 ALTER TABLE public.billservice_salecard_id_seq OWNER TO ebs;
 
+--
+-- TOC entry 3213 (class 0 OID 0)
+-- Dependencies: 2012
+-- Name: billservice_salecard_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
 
 ALTER SEQUENCE billservice_salecard_id_seq OWNED BY billservice_salecard.id;
 
 
+--
+-- TOC entry 3214 (class 0 OID 0)
+-- Dependencies: 2012
+-- Name: billservice_salecard_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
 
 SELECT pg_catalog.setval('billservice_salecard_id_seq', 1, false);
 
 
+--
+-- TOC entry 2014 (class 1259 OID 4631023)
+-- Dependencies: 6 2013
+-- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE billservice_settlementperiod (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    time_start timestamp without time zone NOT NULL,
-    length integer NOT NULL,
-    length_in character varying(255) DEFAULT ''::character varying,
-    autostart boolean DEFAULT false
-);
-
-
-ALTER TABLE public.billservice_settlementperiod OWNER TO ebs;
 CREATE SEQUENCE billservice_settlementperiod_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_settlementperiod_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3215 (class 0 OID 0)
+-- Dependencies: 2014
+-- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_settlementperiod_id_seq OWNED BY billservice_settlementperiod.id;
+
+
+--
+-- TOC entry 3216 (class 0 OID 0)
+-- Dependencies: 2014
+-- Name: billservice_settlementperiod_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_settlementperiod_id_seq', 1, false);
 
 
+--
+-- TOC entry 2016 (class 1259 OID 4631028)
+-- Dependencies: 6 2015
+-- Name: billservice_shedulelog_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
 
-CREATE TABLE billservice_shedulelog (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    ballance_checkout timestamp without time zone,
-    prepaid_traffic_reset timestamp without time zone,
-    prepaid_traffic_accrued timestamp without time zone,
-    prepaid_time_reset timestamp without time zone,
-    prepaid_time_accrued timestamp without time zone,
-    balance_blocked timestamp without time zone,
-    accounttarif_id integer
-);
-
-
-ALTER TABLE public.billservice_shedulelog OWNER TO postgres;
 CREATE SEQUENCE billservice_shedulelog_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_shedulelog_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3217 (class 0 OID 0)
+-- Dependencies: 2016
+-- Name: billservice_shedulelog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
 ALTER SEQUENCE billservice_shedulelog_id_seq OWNED BY billservice_shedulelog.id;
+
+
+--
+-- TOC entry 3218 (class 0 OID 0)
+-- Dependencies: 2016
+-- Name: billservice_shedulelog_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
 SELECT pg_catalog.setval('billservice_shedulelog_id_seq', 1, false);
 
 
-CREATE TABLE billservice_speedlimit (
-    id integer NOT NULL,
-    limit_id integer NOT NULL,
-    max_tx integer NOT NULL,
-    max_rx integer NOT NULL,
-    burst_tx integer NOT NULL,
-    burst_rx integer NOT NULL,
-    burst_treshold_tx integer NOT NULL,
-    burst_treshold_rx integer NOT NULL,
-    burst_time_tx integer NOT NULL,
-    burst_time_rx integer NOT NULL,
-    min_tx integer NOT NULL,
-    min_rx integer NOT NULL,
-    priority integer NOT NULL
-);
+--
+-- TOC entry 2018 (class 1259 OID 4631033)
+-- Dependencies: 6 2017
+-- Name: billservice_speedlimit_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_speedlimit OWNER TO ebs;
 CREATE SEQUENCE billservice_speedlimit_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -3541,52 +7338,99 @@ CREATE SEQUENCE billservice_speedlimit_id_seq
     NO MINVALUE
     CACHE 1;
 
+
 ALTER TABLE public.billservice_speedlimit_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3219 (class 0 OID 0)
+-- Dependencies: 2018
+-- Name: billservice_speedlimit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_speedlimit_id_seq OWNED BY billservice_speedlimit.id;
+
+
+--
+-- TOC entry 3220 (class 0 OID 0)
+-- Dependencies: 2018
+-- Name: billservice_speedlimit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_speedlimit_id_seq', 1, false);
 
 
-CREATE TABLE billservice_suspendedperiod (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    start_date timestamp with time zone NOT NULL,
-    end_date timestamp with time zone NOT NULL
-);
+--
+-- TOC entry 2020 (class 1259 OID 4631038)
+-- Dependencies: 2019 6
+-- Name: billservice_suspendedperiod_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_suspendedperiod OWNER TO ebs;
 CREATE SEQUENCE billservice_suspendedperiod_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_suspendedperiod_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3221 (class 0 OID 0)
+-- Dependencies: 2020
+-- Name: billservice_suspendedperiod_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_suspendedperiod_id_seq OWNED BY billservice_suspendedperiod.id;
+
+
+--
+-- TOC entry 3222 (class 0 OID 0)
+-- Dependencies: 2020
+-- Name: billservice_suspendedperiod_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_suspendedperiod_id_seq', 1, false);
 
-CREATE TABLE billservice_systemuser (
-    id integer NOT NULL,
-    username character varying(255) NOT NULL,
-    password character varying(255) DEFAULT ''::character varying,
-    last_ip character varying(64),
-    last_login timestamp without time zone,
-    description text DEFAULT ''::text,
-    created timestamp without time zone,
-    status boolean DEFAULT false,
-    host character varying(255) DEFAULT '0.0.0.0/0'::character varying
-);
 
+--
+-- TOC entry 2022 (class 1259 OID 4631050)
+-- Dependencies: 6 2021
+-- Name: billservice_systemuser_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_systemuser OWNER TO ebs;
 CREATE SEQUENCE billservice_systemuser_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_systemuser_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3223 (class 0 OID 0)
+-- Dependencies: 2022
+-- Name: billservice_systemuser_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_systemuser_id_seq OWNED BY billservice_systemuser.id;
+
+
+--
+-- TOC entry 3224 (class 0 OID 0)
+-- Dependencies: 2022
+-- Name: billservice_systemuser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_systemuser_id_seq', 3, true);
 
+
+--
+-- TOC entry 2023 (class 1259 OID 4631052)
+-- Dependencies: 6 1939
+-- Name: billservice_tariff_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_tariff_id_seq
     START WITH 1
@@ -3594,20 +7438,33 @@ CREATE SEQUENCE billservice_tariff_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_tariff_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3225 (class 0 OID 0)
+-- Dependencies: 2023
+-- Name: billservice_tariff_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_tariff_id_seq OWNED BY billservice_tariff.id;
+
+
+--
+-- TOC entry 3226 (class 0 OID 0)
+-- Dependencies: 2023
+-- Name: billservice_tariff_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_tariff_id_seq', 1, false);
 
 
-CREATE TABLE billservice_template (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    type_id integer NOT NULL,
-    body text NOT NULL
-);
-
-
-ALTER TABLE public.billservice_template OWNER TO ebs;
+--
+-- TOC entry 2025 (class 1259 OID 4631060)
+-- Dependencies: 2024 6
+-- Name: billservice_template_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE billservice_template_id_seq
     START WITH 1
@@ -3615,466 +7472,844 @@ CREATE SEQUENCE billservice_template_id_seq
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_template_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3227 (class 0 OID 0)
+-- Dependencies: 2025
+-- Name: billservice_template_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_template_id_seq OWNED BY billservice_template.id;
+
+
+--
+-- TOC entry 3228 (class 0 OID 0)
+-- Dependencies: 2025
+-- Name: billservice_template_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_template_id_seq', 1, false);
 
 
-CREATE TABLE billservice_timeaccessnode (
-    id integer NOT NULL,
-    time_access_service_id integer NOT NULL,
-    time_period_id integer NOT NULL,
-    cost double precision DEFAULT 0
-);
+--
+-- TOC entry 2027 (class 1259 OID 4631066)
+-- Dependencies: 6 2026
+-- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_timeaccessnode OWNER TO ebs;
 CREATE SEQUENCE billservice_timeaccessnode_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timeaccessnode_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3229 (class 0 OID 0)
+-- Dependencies: 2027
+-- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timeaccessnode_id_seq OWNED BY billservice_timeaccessnode.id;
+
+
+--
+-- TOC entry 3230 (class 0 OID 0)
+-- Dependencies: 2027
+-- Name: billservice_timeaccessnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timeaccessnode_id_seq', 1, false);
 
 
-CREATE TABLE billservice_timeaccessservice (
-    id integer NOT NULL,
-    prepaid_time integer DEFAULT 0,
-    reset_time boolean DEFAULT false
-);
+--
+-- TOC entry 2029 (class 1259 OID 4631073)
+-- Dependencies: 2028 6
+-- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_timeaccessservice OWNER TO ebs;
 CREATE SEQUENCE billservice_timeaccessservice_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timeaccessservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3231 (class 0 OID 0)
+-- Dependencies: 2029
+-- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timeaccessservice_id_seq OWNED BY billservice_timeaccessservice.id;
+
+
+--
+-- TOC entry 3232 (class 0 OID 0)
+-- Dependencies: 2029
+-- Name: billservice_timeaccessservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timeaccessservice_id_seq', 1, false);
 
 
-CREATE TABLE billservice_timeperiod (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL
-);
+--
+-- TOC entry 2031 (class 1259 OID 4631078)
+-- Dependencies: 6 2030
+-- Name: billservice_timeperiod_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_timeperiod OWNER TO ebs;
 CREATE SEQUENCE billservice_timeperiod_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timeperiod_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3233 (class 0 OID 0)
+-- Dependencies: 2031
+-- Name: billservice_timeperiod_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timeperiod_id_seq OWNED BY billservice_timeperiod.id;
+
+
+--
+-- TOC entry 3234 (class 0 OID 0)
+-- Dependencies: 2031
+-- Name: billservice_timeperiod_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timeperiod_id_seq', 6, true);
 
 
+--
+-- TOC entry 2033 (class 1259 OID 4631083)
+-- Dependencies: 6 2032
+-- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE billservice_timeperiod_time_period_nodes (
-    id integer NOT NULL,
-    timeperiod_id integer NOT NULL,
-    timeperiodnode_id integer NOT NULL
-);
-
-ALTER TABLE public.billservice_timeperiod_time_period_nodes OWNER TO ebs;
 CREATE SEQUENCE billservice_timeperiod_time_period_nodes_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timeperiod_time_period_nodes_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3235 (class 0 OID 0)
+-- Dependencies: 2033
+-- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timeperiod_time_period_nodes_id_seq OWNED BY billservice_timeperiod_time_period_nodes.id;
+
+
+--
+-- TOC entry 3236 (class 0 OID 0)
+-- Dependencies: 2033
+-- Name: billservice_timeperiod_time_period_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timeperiod_time_period_nodes_id_seq', 11, true);
 
 
-CREATE TABLE billservice_timeperiodnode (
-    id integer NOT NULL,
-    name character varying(255) DEFAULT ''::character varying,
-    time_start timestamp without time zone NOT NULL,
-    length integer NOT NULL,
-    repeat_after character varying(255) DEFAULT ''::character varying
-);
+--
+-- TOC entry 2035 (class 1259 OID 4631093)
+-- Dependencies: 2034 6
+-- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_timeperiodnode OWNER TO ebs;
 CREATE SEQUENCE billservice_timeperiodnode_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timeperiodnode_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3237 (class 0 OID 0)
+-- Dependencies: 2035
+-- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timeperiodnode_id_seq OWNED BY billservice_timeperiodnode.id;
+
+
+--
+-- TOC entry 3238 (class 0 OID 0)
+-- Dependencies: 2035
+-- Name: billservice_timeperiodnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timeperiodnode_id_seq', 11, true);
 
 
+--
+-- TOC entry 2037 (class 1259 OID 4631104)
+-- Dependencies: 2036 6
+-- Name: billservice_timespeed_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE billservice_timespeed (
-    id integer NOT NULL,
-    access_parameters_id integer NOT NULL,
-    time_id integer NOT NULL,
-    max_limit character varying(64) DEFAULT ''::character varying,
-    min_limit character varying(64) DEFAULT ''::character varying,
-    burst_limit character varying(64) DEFAULT ''::character varying,
-    burst_treshold character varying(64) DEFAULT ''::character varying,
-    burst_time character varying(64) DEFAULT ''::character varying,
-    priority integer DEFAULT 8
-);
-
-
-ALTER TABLE public.billservice_timespeed OWNER TO ebs;
 CREATE SEQUENCE billservice_timespeed_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_timespeed_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3239 (class 0 OID 0)
+-- Dependencies: 2037
+-- Name: billservice_timespeed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_timespeed_id_seq OWNED BY billservice_timespeed.id;
+
+
+--
+-- TOC entry 3240 (class 0 OID 0)
+-- Dependencies: 2037
+-- Name: billservice_timespeed_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_timespeed_id_seq', 1, false);
 
 
-CREATE TABLE billservice_trafficlimit (
-    id integer NOT NULL,
-    tarif_id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    settlement_period_id integer,
-    size double precision NOT NULL,
-    mode boolean NOT NULL,
-    group_id integer NOT NULL,
-    action integer
-);
+--
+-- TOC entry 2072 (class 1259 OID 4632060)
+-- Dependencies: 2073 6
+-- Name: billservice_timetransaction_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_trafficlimit OWNER TO ebs;
+CREATE SEQUENCE billservice_timetransaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_timetransaction_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3241 (class 0 OID 0)
+-- Dependencies: 2072
+-- Name: billservice_timetransaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_timetransaction_id_seq OWNED BY billservice_timetransaction.id;
+
+
+--
+-- TOC entry 3242 (class 0 OID 0)
+-- Dependencies: 2072
+-- Name: billservice_timetransaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_timetransaction_id_seq', 1, false);
+
+
+--
+-- TOC entry 2074 (class 1259 OID 4632148)
+-- Dependencies: 2075 6
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+--
+
+CREATE SEQUENCE billservice_tpchangerule_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_tpchangerule_id_seq OWNER TO mikrobill;
+
+--
+-- TOC entry 3243 (class 0 OID 0)
+-- Dependencies: 2074
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+--
+
+ALTER SEQUENCE billservice_tpchangerule_id_seq OWNED BY billservice_tpchangerule.id;
+
+
+--
+-- TOC entry 3244 (class 0 OID 0)
+-- Dependencies: 2074
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+--
+
+SELECT pg_catalog.setval('billservice_tpchangerule_id_seq', 1, false);
+
+
+--
+-- TOC entry 2039 (class 1259 OID 4631109)
+-- Dependencies: 6 2038
+-- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_trafficlimit_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_trafficlimit_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3245 (class 0 OID 0)
+-- Dependencies: 2039
+-- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_trafficlimit_id_seq OWNED BY billservice_trafficlimit.id;
+
+
+--
+-- TOC entry 3246 (class 0 OID 0)
+-- Dependencies: 2039
+-- Name: billservice_trafficlimit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_trafficlimit_id_seq', 1, false);
 
 
-CREATE TABLE billservice_trafficlimit_traffic_class (
-    id integer NOT NULL,
-    trafficlimit_id integer NOT NULL,
-    trafficclass_id integer NOT NULL
-);
+--
+-- TOC entry 2041 (class 1259 OID 4631114)
+-- Dependencies: 6 2040
+-- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.billservice_trafficlimit_traffic_class OWNER TO ebs;
 CREATE SEQUENCE billservice_trafficlimit_traffic_class_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_trafficlimit_traffic_class_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3247 (class 0 OID 0)
+-- Dependencies: 2041
+-- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_trafficlimit_traffic_class_id_seq OWNED BY billservice_trafficlimit_traffic_class.id;
+
+
+--
+-- TOC entry 3248 (class 0 OID 0)
+-- Dependencies: 2041
+-- Name: billservice_trafficlimit_traffic_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_trafficlimit_traffic_class_id_seq', 1, false);
 
 
-CREATE TABLE billservice_traffictransmitnodes (
-    id integer NOT NULL,
-    traffic_transmit_service_id integer NOT NULL,
-    cost double precision DEFAULT 0,
-    edge_start double precision DEFAULT 0,
-    edge_end double precision DEFAULT 0,
-    group_id integer
-);
+--
+-- TOC entry 2070 (class 1259 OID 4632037)
+-- Dependencies: 2071 6
+-- Name: billservice_traffictransaction_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_traffictransmitnodes OWNER TO ebs;
+CREATE SEQUENCE billservice_traffictransaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_traffictransaction_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3249 (class 0 OID 0)
+-- Dependencies: 2070
+-- Name: billservice_traffictransaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_traffictransaction_id_seq OWNED BY billservice_traffictransaction.id;
+
+
+--
+-- TOC entry 3250 (class 0 OID 0)
+-- Dependencies: 2070
+-- Name: billservice_traffictransaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_traffictransaction_id_seq', 1, false);
+
+
+--
+-- TOC entry 2043 (class 1259 OID 4631122)
+-- Dependencies: 6 2042
+-- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE billservice_traffictransmitnodes_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_traffictransmitnodes_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3251 (class 0 OID 0)
+-- Dependencies: 2043
+-- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_traffictransmitnodes_id_seq OWNED BY billservice_traffictransmitnodes.id;
+
+
+--
+-- TOC entry 3252 (class 0 OID 0)
+-- Dependencies: 2043
+-- Name: billservice_traffictransmitnodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_id_seq', 1, false);
 
 
-CREATE TABLE billservice_traffictransmitnodes_time_nodes (
-    id integer NOT NULL,
-    traffictransmitnodes_id integer NOT NULL,
-    timeperiod_id integer NOT NULL
-);
+--
+-- TOC entry 2045 (class 1259 OID 4631127)
+-- Dependencies: 6 2044
+-- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_traffictransmitnodes_time_nodes OWNER TO ebs;
 CREATE SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_traffictransmitnodes_time_nodes_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3253 (class 0 OID 0)
+-- Dependencies: 2045
+-- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_traffictransmitnodes_time_nodes_id_seq OWNED BY billservice_traffictransmitnodes_time_nodes.id;
+
+
+--
+-- TOC entry 3254 (class 0 OID 0)
+-- Dependencies: 2045
+-- Name: billservice_traffictransmitnodes_time_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_time_nodes_id_seq', 1, false);
 
 
-CREATE TABLE billservice_traffictransmitnodes_traffic_class (
-    id integer NOT NULL,
-    traffictransmitnodes_id integer NOT NULL,
-    trafficclass_id integer NOT NULL
-);
+--
+-- TOC entry 2047 (class 1259 OID 4631132)
+-- Dependencies: 6 2046
+-- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_traffictransmitnodes_traffic_class OWNER TO ebs;
 CREATE SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_traffictransmitnodes_traffic_class_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3255 (class 0 OID 0)
+-- Dependencies: 2047
+-- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_traffictransmitnodes_traffic_class_id_seq OWNED BY billservice_traffictransmitnodes_traffic_class.id;
+
+
+--
+-- TOC entry 3256 (class 0 OID 0)
+-- Dependencies: 2047
+-- Name: billservice_traffictransmitnodes_traffic_class_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_traffictransmitnodes_traffic_class_id_seq', 1, false);
 
 
-CREATE TABLE billservice_traffictransmitservice (
-    id integer NOT NULL,
-    reset_traffic boolean DEFAULT false,
-    cash_method character varying(32) DEFAULT 'SUMM'::character varying,
-    period_check character varying(32) DEFAULT 'SP_START'::character varying
-);
+--
+-- TOC entry 2049 (class 1259 OID 4631140)
+-- Dependencies: 2048 6
+-- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_traffictransmitservice OWNER TO ebs;
 CREATE SEQUENCE billservice_traffictransmitservice_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_traffictransmitservice_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3257 (class 0 OID 0)
+-- Dependencies: 2049
+-- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_traffictransmitservice_id_seq OWNED BY billservice_traffictransmitservice.id;
+
+
+--
+-- TOC entry 3258 (class 0 OID 0)
+-- Dependencies: 2049
+-- Name: billservice_traffictransmitservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_traffictransmitservice_id_seq', 1, false);
 
 
-CREATE TABLE billservice_transaction (
-    id integer NOT NULL,
-    bill character varying(255),
-    account_id integer NOT NULL,
-    type_id character varying,
-    approved boolean,
-    tarif_id integer,
-    summ double precision,
-    description text,
-    created timestamp without time zone
-);
+--
+-- TOC entry 2051 (class 1259 OID 4631148)
+-- Dependencies: 2050 6
+-- Name: billservice_transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_transaction OWNER TO ebs;
 CREATE SEQUENCE billservice_transaction_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.billservice_transaction_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3259 (class 0 OID 0)
+-- Dependencies: 2051
+-- Name: billservice_transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_transaction_id_seq OWNED BY billservice_transaction.id;
+
+
+--
+-- TOC entry 3260 (class 0 OID 0)
+-- Dependencies: 2051
+-- Name: billservice_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('billservice_transaction_id_seq', 1, false);
 
 
-CREATE TABLE billservice_transactiontype (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    internal_name character varying(32) NOT NULL
-);
+--
+-- TOC entry 2053 (class 1259 OID 4631153)
+-- Dependencies: 6 2052
+-- Name: billservice_transactiontype_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.billservice_transactiontype OWNER TO ebs;
 CREATE SEQUENCE billservice_transactiontype_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
 
+
 ALTER TABLE public.billservice_transactiontype_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3261 (class 0 OID 0)
+-- Dependencies: 2053
+-- Name: billservice_transactiontype_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE billservice_transactiontype_id_seq OWNED BY billservice_transactiontype.id;
-SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 11, true);
 
 
-CREATE TABLE django_admin_log (
-    id integer NOT NULL,
-    action_time timestamp without time zone NOT NULL,
-    user_id integer NOT NULL,
-    content_type_id integer,
-    object_id text,
-    object_repr character varying(200) NOT NULL,
-    action_flag smallint NOT NULL,
-    change_message text NOT NULL,
-    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
-);
+--
+-- TOC entry 3262 (class 0 OID 0)
+-- Dependencies: 2053
+-- Name: billservice_transactiontype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.django_admin_log OWNER TO ebs;
+SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 18, true);
+
+
+--
+-- TOC entry 2078 (class 1259 OID 4632660)
+-- Dependencies: 6 2079
+-- Name: billservice_x8021_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
+CREATE SEQUENCE billservice_x8021_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billservice_x8021_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3263 (class 0 OID 0)
+-- Dependencies: 2078
+-- Name: billservice_x8021_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
+ALTER SEQUENCE billservice_x8021_id_seq OWNED BY billservice_x8021.id;
+
+
+--
+-- TOC entry 3264 (class 0 OID 0)
+-- Dependencies: 2078
+-- Name: billservice_x8021_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
+SELECT pg_catalog.setval('billservice_x8021_id_seq', 1, false);
+
+
+--
+-- TOC entry 2055 (class 1259 OID 4631162)
+-- Dependencies: 2054 6
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
+
 CREATE SEQUENCE django_admin_log_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.django_admin_log_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3265 (class 0 OID 0)
+-- Dependencies: 2055
+-- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE django_admin_log_id_seq OWNED BY django_admin_log.id;
+
+
+--
+-- TOC entry 3266 (class 0 OID 0)
+-- Dependencies: 2055
+-- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('django_admin_log_id_seq', 1, false);
 
 
-CREATE TABLE django_content_type (
-    id integer NOT NULL,
-    name character varying(100) NOT NULL,
-    app_label character varying(100) NOT NULL,
-    model character varying(100) NOT NULL
-);
+--
+-- TOC entry 2057 (class 1259 OID 4631167)
+-- Dependencies: 2056 6
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.django_content_type OWNER TO ebs;
 CREATE SEQUENCE django_content_type_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.django_content_type_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3267 (class 0 OID 0)
+-- Dependencies: 2057
+-- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE django_content_type_id_seq OWNED BY django_content_type.id;
+
+
+--
+-- TOC entry 3268 (class 0 OID 0)
+-- Dependencies: 2057
+-- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('django_content_type_id_seq', 60, true);
 
 
-CREATE TABLE django_session (
-    session_key character varying(40) NOT NULL,
-    session_data text NOT NULL,
-    expire_date timestamp without time zone NOT NULL
-);
+--
+-- TOC entry 2060 (class 1259 OID 4631178)
+-- Dependencies: 2059 6
+-- Name: django_site_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.django_session OWNER TO ebs;
-
-
-CREATE TABLE django_site (
-    id integer NOT NULL,
-    domain character varying(100) NOT NULL,
-    name character varying(50) NOT NULL
-);
-
-ALTER TABLE public.django_site OWNER TO ebs;
 CREATE SEQUENCE django_site_id_seq
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.django_site_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3269 (class 0 OID 0)
+-- Dependencies: 2060
+-- Name: django_site_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE django_site_id_seq OWNED BY django_site.id;
+
+
+--
+-- TOC entry 3270 (class 0 OID 0)
+-- Dependencies: 2060
+-- Name: django_site_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('django_site_id_seq', 2, true);
 
 
-ALTER TABLE billservice_groupstat ALTER COLUMN id SET DEFAULT nextval('billservice_groupstat_id_seq'::regclass);
+--
+-- TOC entry 2062 (class 1259 OID 4631196)
+-- Dependencies: 6 2061
+-- Name: nas_nas_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE nas_nas (
-    id integer NOT NULL,
-    type character varying(32) NOT NULL,
-    name character varying(255) NOT NULL,
-    ipaddress character varying(255) NOT NULL,
-    secret character varying(255) NOT NULL,
-    login character varying(255) DEFAULT 'admin'::character varying,
-    password character varying(255) NOT NULL,
-    allow_pptp boolean DEFAULT true,
-    allow_pppoe boolean DEFAULT true,
-    allow_ipn boolean DEFAULT true,
-    user_add_action text,
-    user_enable_action text,
-    user_disable_action text,
-    user_delete_action text,
-    vpn_speed_action text DEFAULT ''::text,
-    ipn_speed_action text DEFAULT ''::text,
-    reset_action text DEFAULT ''::text,
-    confstring text DEFAULT ''::text,
-    multilink boolean DEFAULT false,
-    identify character varying
-);
-
-
-ALTER TABLE public.nas_nas OWNER TO ebs;
 CREATE SEQUENCE nas_nas_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.nas_nas_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3271 (class 0 OID 0)
+-- Dependencies: 2062
+-- Name: nas_nas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE nas_nas_id_seq OWNED BY nas_nas.id;
+
+
+--
+-- TOC entry 3272 (class 0 OID 0)
+-- Dependencies: 2062
+-- Name: nas_nas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('nas_nas_id_seq', 1, false);
 
 
-CREATE TABLE nas_trafficclass (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    weight integer NOT NULL,
-    color character varying(16) DEFAULT '#FFFFFF'::character varying,
-    store boolean DEFAULT true,
-    passthrough boolean DEFAULT true
-);
+--
+-- TOC entry 2064 (class 1259 OID 4631204)
+-- Dependencies: 2063 6
+-- Name: nas_trafficclass_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-ALTER TABLE public.nas_trafficclass OWNER TO ebs;
 CREATE SEQUENCE nas_trafficclass_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.nas_trafficclass_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3273 (class 0 OID 0)
+-- Dependencies: 2064
+-- Name: nas_trafficclass_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE nas_trafficclass_id_seq OWNED BY nas_trafficclass.id;
+
+
+--
+-- TOC entry 3274 (class 0 OID 0)
+-- Dependencies: 2064
+-- Name: nas_trafficclass_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('nas_trafficclass_id_seq', 1, false);
 
 
-CREATE TABLE nas_trafficnode (
-    id integer NOT NULL,
-    traffic_class_id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    direction character varying(32) NOT NULL,
-    protocol integer DEFAULT 0,
-    src_ip inet DEFAULT '0.0.0.0/0'::inet,
-    src_port integer DEFAULT 0,
-    dst_ip inet DEFAULT '0.0.0.0/0'::inet,
-    dst_port integer DEFAULT 0,
-    next_hop inet DEFAULT '0.0.0.0'::inet
-);
+--
+-- TOC entry 2066 (class 1259 OID 4631218)
+-- Dependencies: 6 2065
+-- Name: nas_trafficnode_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-
-ALTER TABLE public.nas_trafficnode OWNER TO ebs;
 CREATE SEQUENCE nas_trafficnode_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
     NO MINVALUE
     CACHE 1;
+
+
 ALTER TABLE public.nas_trafficnode_id_seq OWNER TO ebs;
 
+--
+-- TOC entry 3275 (class 0 OID 0)
+-- Dependencies: 2066
+-- Name: nas_trafficnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
 
 ALTER SEQUENCE nas_trafficnode_id_seq OWNED BY nas_trafficnode.id;
+
+
+--
+-- TOC entry 3276 (class 0 OID 0)
+-- Dependencies: 2066
+-- Name: nas_trafficnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('nas_trafficnode_id_seq', 1, false);
 
-ALTER TABLE billservice_netflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_netflowstream_id_seq'::regclass);
 
-ALTER TABLE billservice_periodicalservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservicehistory_id_seq'::regclass);
+--
+-- TOC entry 2068 (class 1259 OID 4631230)
+-- Dependencies: 2067 6
+-- Name: radius_activesession_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
-CREATE TABLE radius_activesession (
-    id integer NOT NULL,
-    account_id integer NOT NULL,
-    sessionid character varying(255),
-    interrim_update timestamp without time zone DEFAULT now(),
-    date_start timestamp without time zone,
-    date_end timestamp without time zone,
-    caller_id character varying(255),
-    called_id character varying(255),
-    nas_id character varying(255) NOT NULL,
-    session_time integer DEFAULT 0,
-    framed_protocol character varying(32) NOT NULL,
-    bytes_in bigint,
-    bytes_out bigint,
-    session_status character varying(32),
-    speed_string character varying(255),
-    framed_ip_address character varying(255)
-);
-
-ALTER TABLE public.radius_activesession OWNER TO ebs;
 CREATE SEQUENCE radius_activesession_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -4082,10 +8317,32 @@ CREATE SEQUENCE radius_activesession_id_seq
     NO MINVALUE
     CACHE 1;
 
+
 ALTER TABLE public.radius_activesession_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3277 (class 0 OID 0)
+-- Dependencies: 2068
+-- Name: radius_activesession_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE radius_activesession_id_seq OWNED BY radius_activesession.id;
+
+
+--
+-- TOC entry 3278 (class 0 OID 0)
+-- Dependencies: 2068
+-- Name: radius_activesession_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('radius_activesession_id_seq', 1, false);
 
+
+--
+-- TOC entry 2069 (class 1259 OID 4631232)
+-- Dependencies: 6 1941
+-- Name: radius_session_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
+--
 
 CREATE SEQUENCE radius_session_id_seq
     START WITH 1
@@ -4094,81 +8351,737 @@ CREATE SEQUENCE radius_session_id_seq
     NO MINVALUE
     CACHE 1;
 
+
 ALTER TABLE public.radius_session_id_seq OWNER TO ebs;
+
+--
+-- TOC entry 3279 (class 0 OID 0)
+-- Dependencies: 2069
+-- Name: radius_session_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
+--
+
 ALTER SEQUENCE radius_session_id_seq OWNED BY radius_session.id;
+
+
+--
+-- TOC entry 3280 (class 0 OID 0)
+-- Dependencies: 2069
+-- Name: radius_session_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
+--
+
 SELECT pg_catalog.setval('radius_session_id_seq', 1, false);
 
-ALTER TABLE radius_session ALTER COLUMN id SET DEFAULT nextval('radius_session_id_seq'::regclass);
+
+--
+-- TOC entry 2380 (class 2604 OID 4631235)
+-- Dependencies: 1943 1942
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE auth_group ALTER COLUMN id SET DEFAULT nextval('auth_group_id_seq'::regclass);
+
+
+--
+-- TOC entry 2381 (class 2604 OID 4631236)
+-- Dependencies: 1945 1944
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('auth_group_permissions_id_seq'::regclass);
+
+
+--
+-- TOC entry 2382 (class 2604 OID 4631237)
+-- Dependencies: 1947 1946
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_message ALTER COLUMN id SET DEFAULT nextval('auth_message_id_seq'::regclass);
+
+
+--
+-- TOC entry 2383 (class 2604 OID 4631238)
+-- Dependencies: 1949 1948
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_permission ALTER COLUMN id SET DEFAULT nextval('auth_permission_id_seq'::regclass);
+
+
+--
+-- TOC entry 2384 (class 2604 OID 4631239)
+-- Dependencies: 1953 1950
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_user ALTER COLUMN id SET DEFAULT nextval('auth_user_id_seq'::regclass);
+
+
+--
+-- TOC entry 2385 (class 2604 OID 4631240)
+-- Dependencies: 1952 1951
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_user_groups ALTER COLUMN id SET DEFAULT nextval('auth_user_groups_id_seq'::regclass);
+
+
+--
+-- TOC entry 2386 (class 2604 OID 4631241)
+-- Dependencies: 1955 1954
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE auth_user_user_permissions ALTER COLUMN id SET DEFAULT nextval('auth_user_user_permissions_id_seq'::regclass);
+
+
+--
+-- TOC entry 2394 (class 2604 OID 4631242)
+-- Dependencies: 1957 1956
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accessparameters ALTER COLUMN id SET DEFAULT nextval('billservice_accessparameters_id_seq'::regclass);
+
+
+--
+-- TOC entry 2430 (class 2604 OID 4631243)
+-- Dependencies: 1959 1958
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_account ALTER COLUMN id SET DEFAULT nextval('billservice_account_id_seq'::regclass);
+
+
+--
+-- TOC entry 2602 (class 2604 OID 4632771)
+-- Dependencies: 2084 2085 2085
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_accountaddonservice ALTER COLUMN id SET DEFAULT nextval('billservice_accountaddonservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2443 (class 2604 OID 4631244)
+-- Dependencies: 1961 1960
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accountipnspeed ALTER COLUMN id SET DEFAULT nextval('billservice_accountipnspeed_id_seq'::regclass);
+
+
+--
+-- TOC entry 2446 (class 2604 OID 4631245)
+-- Dependencies: 1963 1962
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accountprepaystime ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystime_id_seq'::regclass);
+
+
+--
+-- TOC entry 2448 (class 2604 OID 4631246)
+-- Dependencies: 1965 1964
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accountprepaystrafic ALTER COLUMN id SET DEFAULT nextval('billservice_accountprepaystrafic_id_seq'::regclass);
+
+
+--
+-- TOC entry 2450 (class 2604 OID 4631247)
+-- Dependencies: 1967 1966
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accountspeedlimit ALTER COLUMN id SET DEFAULT nextval('billservice_accountspeedlimit_id_seq'::regclass);
+
+
+--
+-- TOC entry 2451 (class 2604 OID 4631248)
+-- Dependencies: 1969 1968
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_accounttarif ALTER COLUMN id SET DEFAULT nextval('billservice_accounttarif_id_seq'::regclass);
+
+
+--
+-- TOC entry 2576 (class 2604 OID 4632697)
+-- Dependencies: 2081 2080 2081
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_addonservice ALTER COLUMN id SET DEFAULT nextval('billservice_addonservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2600 (class 2604 OID 4632744)
+-- Dependencies: 2083 2082 2083
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_addonservicetarif ALTER COLUMN id SET DEFAULT nextval('billservice_addonservicetarif_id_seq'::regclass);
+
+
+--
+-- TOC entry 2605 (class 2604 OID 4632794)
+-- Dependencies: 2087 2086 2087
+-- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE billservice_addonservicetransaction ALTER COLUMN id SET DEFAULT nextval('billservice_addonservicetransaction_id_seq'::regclass);
+
+
+--
+-- TOC entry 2453 (class 2604 OID 4631249)
+-- Dependencies: 1971 1970
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_bankdata ALTER COLUMN id SET DEFAULT nextval('billservice_bankdata_id_seq'::regclass);
+
+
+--
+-- TOC entry 2461 (class 2604 OID 4631250)
+-- Dependencies: 1973 1972
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_card ALTER COLUMN id SET DEFAULT nextval('billservice_card_id_seq'::regclass);
+
+
+--
+-- TOC entry 2465 (class 2604 OID 4631251)
+-- Dependencies: 1975 1974
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_dealer ALTER COLUMN id SET DEFAULT nextval('billservice_dealer_id_seq'::regclass);
+
+
+--
+-- TOC entry 2466 (class 2604 OID 4631252)
+-- Dependencies: 1977 1976
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_dealerpay ALTER COLUMN id SET DEFAULT nextval('billservice_dealerpay_id_seq'::regclass);
+
+
+--
+-- TOC entry 2467 (class 2604 OID 4631253)
+-- Dependencies: 1979 1978
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_document ALTER COLUMN id SET DEFAULT nextval('billservice_document_id_seq'::regclass);
+
+
+--
+-- TOC entry 2468 (class 2604 OID 4631254)
+-- Dependencies: 1981 1980
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_documenttype ALTER COLUMN id SET DEFAULT nextval('billservice_documenttype_id_seq'::regclass);
+
+
+--
+-- TOC entry 2471 (class 2604 OID 4631255)
+-- Dependencies: 1983 1982
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_globalstat ALTER COLUMN id SET DEFAULT nextval('billservice_globalstat_id_seq'::regclass);
+
+
+--
+-- TOC entry 2472 (class 2604 OID 4631256)
+-- Dependencies: 1985 1984
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_group ALTER COLUMN id SET DEFAULT nextval('billservice_group_id_seq'::regclass);
+
+
+--
+-- TOC entry 2473 (class 2604 OID 4631257)
+-- Dependencies: 1987 1986
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_group_trafficclass ALTER COLUMN id SET DEFAULT nextval('billservice_group_trafficclass_id_seq'::regclass);
+
+
+--
+-- TOC entry 2354 (class 2604 OID 4631180)
+-- Dependencies: 1988 1937
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_groupstat ALTER COLUMN id SET DEFAULT nextval('billservice_groupstat_id_seq'::regclass);
+
+
+--
+-- TOC entry 2474 (class 2604 OID 4631258)
+-- Dependencies: 1990 1989
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_ipinuse ALTER COLUMN id SET DEFAULT nextval('billservice_ipinuse_id_seq'::regclass);
+
+
+--
+-- TOC entry 2475 (class 2604 OID 4631259)
+-- Dependencies: 1992 1991
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_ippool ALTER COLUMN id SET DEFAULT nextval('billservice_ippool_id_seq'::regclass);
+
+
+--
+-- TOC entry 2358 (class 2604 OID 4631220)
+-- Dependencies: 1993 1938
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_netflowstream ALTER COLUMN id SET DEFAULT nextval('billservice_netflowstream_id_seq'::regclass);
+
+
+--
+-- TOC entry 2476 (class 2604 OID 4631260)
+-- Dependencies: 1995 1994
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_onetimeservice ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2477 (class 2604 OID 4631261)
+-- Dependencies: 1997 1996
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_onetimeservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_onetimeservicehistory_id_seq'::regclass);
+
+
+--
+-- TOC entry 2478 (class 2604 OID 4631262)
+-- Dependencies: 1999 1998
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_operator ALTER COLUMN id SET DEFAULT nextval('billservice_operator_id_seq'::regclass);
+
+
+--
+-- TOC entry 2485 (class 2604 OID 4631263)
+-- Dependencies: 2001 2000
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_organization ALTER COLUMN id SET DEFAULT nextval('billservice_organization_id_seq'::regclass);
+
+
+--
+-- TOC entry 2487 (class 2604 OID 4631264)
+-- Dependencies: 2003 2002
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_periodicalservice ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2369 (class 2604 OID 4631221)
+-- Dependencies: 2004 1940
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_periodicalservicehistory ALTER COLUMN id SET DEFAULT nextval('billservice_periodicalservicehistory_id_seq'::regclass);
+
+
+--
+-- TOC entry 2490 (class 2604 OID 4631265)
+-- Dependencies: 2006 2005
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_ports ALTER COLUMN id SET DEFAULT nextval('billservice_ports_id_seq'::regclass);
+
+
+--
+-- TOC entry 2491 (class 2604 OID 4631266)
+-- Dependencies: 2008 2007
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_prepaidtraffic ALTER COLUMN id SET DEFAULT nextval('billservice_prepaidtraffic_id_seq'::regclass);
+
+
+--
+-- TOC entry 2573 (class 2604 OID 4632567)
+-- Dependencies: 2076 2077 2077
+-- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE billservice_radiusattrs ALTER COLUMN id SET DEFAULT nextval('billservice_radiusattrs_id_seq'::regclass);
+
+
+--
+-- TOC entry 2493 (class 2604 OID 4631267)
+-- Dependencies: 2012 2009
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_salecard ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_id_seq'::regclass);
+
+
+--
+-- TOC entry 2494 (class 2604 OID 4631268)
+-- Dependencies: 2011 2010
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_salecard_cards ALTER COLUMN id SET DEFAULT nextval('billservice_salecard_cards_id_seq'::regclass);
+
+
+--
+-- TOC entry 2497 (class 2604 OID 4631269)
+-- Dependencies: 2014 2013
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_settlementperiod ALTER COLUMN id SET DEFAULT nextval('billservice_settlementperiod_id_seq'::regclass);
+
+
+--
+-- TOC entry 2498 (class 2604 OID 4631270)
+-- Dependencies: 2016 2015
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
 ALTER TABLE billservice_shedulelog ALTER COLUMN id SET DEFAULT nextval('billservice_shedulelog_id_seq'::regclass);
+
+
+--
+-- TOC entry 2499 (class 2604 OID 4631271)
+-- Dependencies: 2018 2017
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_speedlimit ALTER COLUMN id SET DEFAULT nextval('billservice_speedlimit_id_seq'::regclass);
+
+
+--
+-- TOC entry 2502 (class 2604 OID 4631272)
+-- Dependencies: 2020 2019
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_suspendedperiod ALTER COLUMN id SET DEFAULT nextval('billservice_suspendedperiod_id_seq'::regclass);
+
+
+--
+-- TOC entry 2507 (class 2604 OID 4631273)
+-- Dependencies: 2022 2021
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_systemuser ALTER COLUMN id SET DEFAULT nextval('billservice_systemuser_id_seq'::regclass);
+
+
+--
+-- TOC entry 2365 (class 2604 OID 4631274)
+-- Dependencies: 2023 1939
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_tariff ALTER COLUMN id SET DEFAULT nextval('billservice_tariff_id_seq'::regclass);
+
+
+--
+-- TOC entry 2508 (class 2604 OID 4631275)
+-- Dependencies: 2025 2024
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_template ALTER COLUMN id SET DEFAULT nextval('billservice_template_id_seq'::regclass);
+
+
+--
+-- TOC entry 2509 (class 2604 OID 4631276)
+-- Dependencies: 2027 2026
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timeaccessnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessnode_id_seq'::regclass);
+
+
+--
+-- TOC entry 2513 (class 2604 OID 4631277)
+-- Dependencies: 2029 2028
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timeaccessservice ALTER COLUMN id SET DEFAULT nextval('billservice_timeaccessservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2514 (class 2604 OID 4631278)
+-- Dependencies: 2031 2030
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timeperiod ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_id_seq'::regclass);
+
+
+--
+-- TOC entry 2515 (class 2604 OID 4631279)
+-- Dependencies: 2033 2032
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timeperiod_time_period_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiod_time_period_nodes_id_seq'::regclass);
+
+
+--
+-- TOC entry 2518 (class 2604 OID 4631280)
+-- Dependencies: 2035 2034
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timeperiodnode ALTER COLUMN id SET DEFAULT nextval('billservice_timeperiodnode_id_seq'::regclass);
+
+
+--
+-- TOC entry 2525 (class 2604 OID 4631281)
+-- Dependencies: 2037 2036
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_timespeed ALTER COLUMN id SET DEFAULT nextval('billservice_timespeed_id_seq'::regclass);
+
+
+--
+-- TOC entry 2570 (class 2604 OID 4632065)
+-- Dependencies: 2072 2073 2073
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_timetransaction ALTER COLUMN id SET DEFAULT nextval('billservice_timetransaction_id_seq'::regclass);
+
+
+--
+-- TOC entry 2571 (class 2604 OID 4632153)
+-- Dependencies: 2074 2075 2075
+-- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE billservice_tpchangerule ALTER COLUMN id SET DEFAULT nextval('billservice_tpchangerule_id_seq'::regclass);
+
+
+--
+-- TOC entry 2526 (class 2604 OID 4631282)
+-- Dependencies: 2039 2038
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_trafficlimit ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_id_seq'::regclass);
+
+
+--
+-- TOC entry 2527 (class 2604 OID 4631283)
+-- Dependencies: 2041 2040
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_trafficlimit_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_trafficlimit_traffic_class_id_seq'::regclass);
+
+
+--
+-- TOC entry 2569 (class 2604 OID 4632042)
+-- Dependencies: 2071 2070 2071
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_traffictransaction ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransaction_id_seq'::regclass);
+
+
+--
+-- TOC entry 2530 (class 2604 OID 4631284)
+-- Dependencies: 2043 2042
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_traffictransmitnodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_id_seq'::regclass);
+
+
+--
+-- TOC entry 2532 (class 2604 OID 4631285)
+-- Dependencies: 2045 2044
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_traffictransmitnodes_time_nodes ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_time_nodes_id_seq'::regclass);
+
+
+--
+-- TOC entry 2533 (class 2604 OID 4631286)
+-- Dependencies: 2047 2046
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_traffictransmitnodes_traffic_class ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitnodes_traffic_class_id_seq'::regclass);
+
+
+--
+-- TOC entry 2537 (class 2604 OID 4631287)
+-- Dependencies: 2049 2048
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_traffictransmitservice ALTER COLUMN id SET DEFAULT nextval('billservice_traffictransmitservice_id_seq'::regclass);
+
+
+--
+-- TOC entry 2538 (class 2604 OID 4631288)
+-- Dependencies: 2051 2050
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_transaction ALTER COLUMN id SET DEFAULT nextval('billservice_transaction_id_seq'::regclass);
+
+
+--
+-- TOC entry 2541 (class 2604 OID 4631289)
+-- Dependencies: 2053 2052
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE billservice_transactiontype ALTER COLUMN id SET DEFAULT nextval('billservice_transactiontype_id_seq'::regclass);
 
 
+--
+-- TOC entry 2575 (class 2604 OID 4632665)
+-- Dependencies: 2078 2079 2079
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE billservice_x8021 ALTER COLUMN id SET DEFAULT nextval('billservice_x8021_id_seq'::regclass);
+
+
+--
+-- TOC entry 2542 (class 2604 OID 4631290)
+-- Dependencies: 2055 2054
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE django_admin_log ALTER COLUMN id SET DEFAULT nextval('django_admin_log_id_seq'::regclass);
+
+
+--
+-- TOC entry 2544 (class 2604 OID 4631291)
+-- Dependencies: 2057 2056
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE django_content_type ALTER COLUMN id SET DEFAULT nextval('django_content_type_id_seq'::regclass);
+
+
+--
+-- TOC entry 2545 (class 2604 OID 4631292)
+-- Dependencies: 2060 2059
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE django_site ALTER COLUMN id SET DEFAULT nextval('django_site_id_seq'::regclass);
+
+
+--
+-- TOC entry 2555 (class 2604 OID 4631293)
+-- Dependencies: 2062 2061
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE nas_nas ALTER COLUMN id SET DEFAULT nextval('nas_nas_id_seq'::regclass);
+
+
+--
+-- TOC entry 2559 (class 2604 OID 4631294)
+-- Dependencies: 2064 2063
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE nas_trafficclass ALTER COLUMN id SET DEFAULT nextval('nas_trafficclass_id_seq'::regclass);
 
 
+--
+-- TOC entry 2566 (class 2604 OID 4631295)
+-- Dependencies: 2066 2065
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE nas_trafficnode ALTER COLUMN id SET DEFAULT nextval('nas_trafficnode_id_seq'::regclass);
+
+
+--
+-- TOC entry 2568 (class 2604 OID 4631296)
+-- Dependencies: 2068 2067
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE radius_activesession ALTER COLUMN id SET DEFAULT nextval('radius_activesession_id_seq'::regclass);
 
 
+--
+-- TOC entry 2379 (class 2604 OID 4631234)
+-- Dependencies: 2069 1941
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE radius_session ALTER COLUMN id SET DEFAULT nextval('radius_session_id_seq'::regclass);
+
+
+--
+-- TOC entry 3048 (class 0 OID 4630735)
+-- Dependencies: 1942
+-- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_group (id, name) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3049 (class 0 OID 4630740)
+-- Dependencies: 1944
+-- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_group_permissions (id, group_id, permission_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3050 (class 0 OID 4630745)
+-- Dependencies: 1946
+-- Data for Name: auth_message; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_message (id, user_id, message) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3051 (class 0 OID 4630753)
+-- Dependencies: 1948
+-- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 1	Can add permission	1	add_permission
@@ -4308,6 +9221,203 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 138	Can delete dealer	46	delete_dealer
 \.
 
+
+--
+-- TOC entry 3052 (class 0 OID 4630758)
+-- Dependencies: 1950
+-- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_user (id, username, first_name, last_name, email, password, is_staff, is_active, is_superuser, last_login, date_joined) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3053 (class 0 OID 4630761)
+-- Dependencies: 1951
+-- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_user_groups (id, user_id, group_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3054 (class 0 OID 4630768)
+-- Dependencies: 1954
+-- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3055 (class 0 OID 4630773)
+-- Dependencies: 1956
+-- Data for Name: billservice_accessparameters; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accessparameters (id, access_type, access_time_id, max_limit, min_limit, burst_limit, burst_treshold, burst_time, priority, ipn_for_vpn) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3056 (class 0 OID 4630788)
+-- Dependencies: 1958
+-- Data for Name: billservice_account; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_account (id, username, password, fullname, email, address, nas_id, vpn_ip_address, assign_ipn_ip_from_dhcp, ipn_ip_address, ipn_mac_address, ipn_status, status, suspended, created, ballance, credit, disabled_by_limit, balance_blocked, ipn_speed, vpn_speed, netmask, ipn_added, city, postcode, region, street, house, house_bulk, entrance, room, vlan, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block, passport, passport_date, passport_given, phone_h, phone_m, vpn_ipinuse_id, ipn_ipinuse_id, associate_pptp_ipn_ip, associate_pppoe_mac, contactperson_phone, comment, "row", elevator_direction) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3117 (class 0 OID 4632768)
+-- Dependencies: 2085
+-- Data for Name: billservice_accountaddonservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accountaddonservice (id, service_id, account_id, activated, deactivated, action_status, speed_status, temporary_blocked, last_checkout) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3057 (class 0 OID 4630834)
+-- Dependencies: 1960
+-- Data for Name: billservice_accountipnspeed; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accountipnspeed (id, account_id, speed, state, static, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3058 (class 0 OID 4630843)
+-- Dependencies: 1962
+-- Data for Name: billservice_accountprepaystime; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accountprepaystime (id, account_tarif_id, prepaid_time_service_id, size, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3059 (class 0 OID 4630850)
+-- Dependencies: 1964
+-- Data for Name: billservice_accountprepaystrafic; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accountprepaystrafic (id, account_tarif_id, prepaid_traffic_id, size, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3060 (class 0 OID 4630857)
+-- Dependencies: 1966
+-- Data for Name: billservice_accountspeedlimit; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accountspeedlimit (id, account_id, speedlimit_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3061 (class 0 OID 4630862)
+-- Dependencies: 1968
+-- Data for Name: billservice_accounttarif; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_accounttarif (id, account_id, tarif_id, datetime, periodical_billed) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3115 (class 0 OID 4632694)
+-- Dependencies: 2081
+-- Data for Name: billservice_addonservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_addonservice (id, name, allow_activation, service_type, sp_type, sp_period_id, timeperiod_id, cost, cancel_subscription, wyte_period_id, wyte_cost, action, nas_id, service_activation_action, service_deactivation_action, deactivate_service_for_blocked_account, change_speed, change_speed_type, speed_units, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, min_tx, min_rx, priority, comment) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3116 (class 0 OID 4632741)
+-- Dependencies: 2083
+-- Data for Name: billservice_addonservicetarif; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_addonservicetarif (id, tarif_id, service_id, activation_count, activation_count_period_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3118 (class 0 OID 4632791)
+-- Dependencies: 2087
+-- Data for Name: billservice_addonservicetransaction; Type: TABLE DATA; Schema: public; Owner: mikrobill
+--
+
+COPY billservice_addonservicetransaction (id, service_id, service_type, account_id, accountaddonservice_id, accounttarif_id, summ, created, type_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3062 (class 0 OID 4630867)
+-- Dependencies: 1970
+-- Data for Name: billservice_bankdata; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_bankdata (id, bank, bankcode, rs, currency) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3063 (class 0 OID 4630872)
+-- Dependencies: 1972
+-- Data for Name: billservice_card; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_card (id, series, pin, sold, nominal, activated, activated_by_id, start_date, end_date, disabled, created, template_id, account_id, tarif_id, nas_id, login, ip, ipinuse_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3064 (class 0 OID 4630884)
+-- Dependencies: 1974
+-- Data for Name: billservice_dealer; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_dealer (id, organization, unp, okpo, contactperson, director, phone, fax, postaddress, uraddress, email, bank_id, prepayment, paydeffer, discount, always_sell_cards, deleted) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3065 (class 0 OID 4630894)
+-- Dependencies: 1976
+-- Data for Name: billservice_dealerpay; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_dealerpay (id, dealer_id, pay, salecard_id, created) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3066 (class 0 OID 4630899)
+-- Dependencies: 1978
+-- Data for Name: billservice_document; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_document (id, account_id, type_id, body) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3067 (class 0 OID 4630907)
+-- Dependencies: 1980
+-- Data for Name: billservice_documenttype; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
 COPY billservice_documenttype (id, name) FROM stdin;
 1	Договор на подключение физ. лиц
 2	Договор на подключение юр. лиц
@@ -4317,6 +9427,143 @@ COPY billservice_documenttype (id, name) FROM stdin;
 6	Накладная на карточки экспресс-оплаты
 7	Карты экспресс-оплаты
 \.
+
+
+--
+-- TOC entry 3068 (class 0 OID 4630912)
+-- Dependencies: 1982
+-- Data for Name: billservice_globalstat; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_globalstat (id, account_id, bytes_in, bytes_out, datetime, nas_id, classes, classbytes) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3069 (class 0 OID 4630922)
+-- Dependencies: 1984
+-- Data for Name: billservice_group; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_group (id, name, direction, type) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3070 (class 0 OID 4630927)
+-- Dependencies: 1986
+-- Data for Name: billservice_group_trafficclass; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_group_trafficclass (id, group_id, trafficclass_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3043 (class 0 OID 4630644)
+-- Dependencies: 1937
+-- Data for Name: billservice_groupstat; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_groupstat (id, group_id, account_id, bytes, datetime, classes, classbytes, max_class) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3071 (class 0 OID 4630934)
+-- Dependencies: 1989
+-- Data for Name: billservice_ipinuse; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_ipinuse (id, pool_id, ip, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3072 (class 0 OID 4630939)
+-- Dependencies: 1991
+-- Data for Name: billservice_ippool; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_ippool (id, name, type, start_ip, end_ip) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3044 (class 0 OID 4630663)
+-- Dependencies: 1938
+-- Data for Name: billservice_netflowstream; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_netflowstream (id, nas_id, account_id, tarif_id, date_start, src_addr, traffic_class_id, direction, traffic_transmit_node_id, dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3073 (class 0 OID 4630949)
+-- Dependencies: 1994
+-- Data for Name: billservice_onetimeservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_onetimeservice (id, tarif_id, name, cost) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3074 (class 0 OID 4630954)
+-- Dependencies: 1996
+-- Data for Name: billservice_onetimeservicehistory; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_onetimeservicehistory (id, accounttarif_id, onetimeservice_id, datetime, transaction_id, summ, account_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3075 (class 0 OID 4630959)
+-- Dependencies: 1998
+-- Data for Name: billservice_operator; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_operator (id, organization, unp, okpo, contactperson, director, phone, postaddress, uraddress, email, fax, bank_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3076 (class 0 OID 4630967)
+-- Dependencies: 2000
+-- Data for Name: billservice_organization; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_organization (id, account_id, name, uraddress, okpo, unp, bank_id, phone, fax) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3077 (class 0 OID 4630981)
+-- Dependencies: 2002
+-- Data for Name: billservice_periodicalservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_periodicalservice (id, tarif_id, name, settlement_period_id, cost, cash_method, condition, created) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3046 (class 0 OID 4630696)
+-- Dependencies: 1940
+-- Data for Name: billservice_periodicalservicehistory; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_periodicalservicehistory (id, service_id, transaction_id, datetime, accounttarif_id, summ, account_id, type_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3078 (class 0 OID 4630992)
+-- Dependencies: 2005
+-- Data for Name: billservice_ports; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 38801	1	6	tcpmux	TCP Port Service Multiplexer rfc-1078
@@ -10692,10 +15939,151 @@ COPY billservice_ports (id, port, protocol, name, description) FROM stdin;
 45173	65301	6	pcanywhere	Used sometimes by PCAnywhere
 \.
 
-COPY billservice_systemuser (id, username, password, last_ip, last_login, description, created, status, host) FROM stdin;
-1	admin	21232f297a57a5a743894a0e4a801fc3	\N	2008-08-21 14:28:22.10	Default admin account	\N	t	0.0.0.0/0
-2	webadmin	d316aa00ff0c50b26f09cdebe3177769	\N	\N		\N	t	0.0.0.0/0
+
+--
+-- TOC entry 3079 (class 0 OID 4630999)
+-- Dependencies: 2007
+-- Data for Name: billservice_prepaidtraffic; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_prepaidtraffic (id, traffic_transmit_service_id, size, group_id) FROM stdin;
 \.
+
+
+--
+-- TOC entry 3113 (class 0 OID 4632564)
+-- Dependencies: 2077
+-- Data for Name: billservice_radiusattrs; Type: TABLE DATA; Schema: public; Owner: mikrobill
+--
+
+COPY billservice_radiusattrs (id, tarif_id, vendor, attrid, value) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3080 (class 0 OID 4631005)
+-- Dependencies: 2009
+-- Data for Name: billservice_salecard; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_salecard (id, dealer_id, sum_for_pay, paydeffer, discount, discount_sum, prepayment, created) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3081 (class 0 OID 4631008)
+-- Dependencies: 2010
+-- Data for Name: billservice_salecard_cards; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_salecard_cards (id, salecard_id, card_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3082 (class 0 OID 4631015)
+-- Dependencies: 2013
+-- Data for Name: billservice_settlementperiod; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_settlementperiod (id, name, time_start, length, length_in, autostart) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3083 (class 0 OID 4631025)
+-- Dependencies: 2015
+-- Data for Name: billservice_shedulelog; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY billservice_shedulelog (id, account_id, ballance_checkout, prepaid_traffic_reset, prepaid_traffic_accrued, prepaid_time_reset, prepaid_time_accrued, balance_blocked, accounttarif_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3084 (class 0 OID 4631030)
+-- Dependencies: 2017
+-- Data for Name: billservice_speedlimit; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_speedlimit (id, limit_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, min_tx, min_rx, priority, speed_units, change_speed_type) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3085 (class 0 OID 4631035)
+-- Dependencies: 2019
+-- Data for Name: billservice_suspendedperiod; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_suspendedperiod (id, account_id, start_date, end_date) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3086 (class 0 OID 4631040)
+-- Dependencies: 2021
+-- Data for Name: billservice_systemuser; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_systemuser (id, username, password, last_ip, last_login, description, created, status, host, role) FROM stdin;
+1	admin	21232f297a57a5a743894a0e4a801fc3	\N	2008-08-21 14:28:22.10	Default admin account	\N	t	0.0.0.0/0	0
+2	webadmin	d316aa00ff0c50b26f09cdebe3177769	\N	\N		\N	t	0.0.0.0/0	0
+\.
+
+
+--
+-- TOC entry 3045 (class 0 OID 4630677)
+-- Dependencies: 1939
+-- Data for Name: billservice_tariff; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_tariff (id, name, description, access_parameters_id, time_access_service_id, traffic_transmit_service_id, cost, reset_tarif_cost, settlement_period_id, ps_null_ballance_checkout, active, deleted, allow_express_pay, require_tarif_cost) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3087 (class 0 OID 4631054)
+-- Dependencies: 2024
+-- Data for Name: billservice_template; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_template (id, name, type_id, body) FROM stdin;
+4	Акт выполненных работ	4	Акт выполненных работ
+5	Счет фактура	3	Счет фактура
+6	Договор на подключение юр. лиц	2	<html>\n            <head>\n            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n            </head>\n            <body>\n            Имя: ${account.username}  <br>\n${organization.name} \n${bank.bankcode} \n            </body>\n            </html>
+7	Кассовый чек	5	<html>\n <head>\n <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />\n <style>\n   td{\n        FONT: 9px Times New Roman;\n    }\n    h1{\n        FONT: 9px Arial;\n    }\n  </style>\n </head>\n <body>\n  <table align=center width="85%">\n    <tr>\n     <td>\n       <h1 align=center> <b> Квитанция об оплате услуг № ${transaction_id} </b> </h1>\n       <strong>Абонент:</strong> ${account.fullname} <br>\n       <strong>Тарифный план:</strong> ${tarif.name} <br>\n       <strong>Логин:</strong> ${account.username}<br>\n       <strong>Сумма:</strong> ${sum}<br>\n       <strong>Дата приема платежа:</strong> ${created}<br>\n    </td>\n   </tr>\n  </table>\n </body>\n</html>\n
+2	Договор	1	<html>\n            <head>\n            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />\n            </head>\n            <body>\n${account.id}<br />\n${account.username}<br />\n${account.password}<br />\n${account.fullname}<br />\n${account.email}<br />\n${account.address}<br />\n${account.nas_id}<br />\n${account.vpn_ip_address}<br />\n${account.assign_ipn_ip_from_dhcp}<br />\n${account.ipn_ip_address}<br />\n${account.ipn_mac_address}<br />\n${account.ipn_status}<br />\n${account.status}<br />\n${account.suspended}<br />\n${account.created}<br />\n${account.ballance}<br />\n${account.credit}<br />\n${account.disabled_by_limit}<br />\n${account.balance_blocked}<br />\n${account.ipn_speed}<br />\n${account.vpn_speed}<br />\n${account.netmask}<br />\n${account.ipn_added}<br />\n${account.city}<br />\n${account.postcode}<br />\n${account.region}<br />\n${account.street}<br />\n${account.house}<br />\n${account.house_bulk}<br />\n${account.entrance}<br />\n${account.room}<br />\n${account.vlan}<br />\n${account.allow_webcab}<br />\n${account.allow_expresscards}<br />\n${account.assign_dhcp_null}<br />\n${account.assign_dhcp_block}<br />\n${account.allow_vpn_null}<br />\n${account.allow_vpn_block}<br />\n${account.passport}<br />\n${account.passport_date}<br />\n${account.passport_given}<br />\n\n${tarif.name}<br />\n\n\n${created}<br />\n            \n            \n            \n            </body>\n            </html>\n
+8	Накладная на карты экспресс-оплаты	6	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"\n"http://www.w3.org/TR/html4/loose.dtd">\n<html>\n<head>\n<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n</head>\n\n<body>\n<div style="width:100%; "> \n<div style="float:right ">\n<span style="font-weight:bold; ">Дилер</span><br>\t\t\nОрганизация: ${dealer.organization}<br>\t\nДиректор: ${dealer.director}<br>\t\nЮр адрес: ${dealer.uraddress}<br>\t\nр/с: ${dealer.rs}<br>\t\nУНН: ${dealer.unp}<br>\t\nОКПО: ${dealer.okpo}<br>\t\nБанк: ${dealer.bank}, код ${dealer.bankcode}<br>\t\n</div>\n\n<div style="float:left ">\n\t<span style="font-weight:bold; ">Оператор</span><br>\t\n\tОрганизация: ${operator.organization}<br>\t\n\tДиректор: ${operator.director}<br>\t\n\tЮр адрес: ${operator.uraddress}<br>\n  р/с: ${operator.rs}\t<br>\t\n\tУНН: ${operator.unp}<br>\t\n\tОКПО: ${operator.okpo}<br>\t\n\tБанк: ${operator.bank}, Код ${operator.bankcode}<br>\t\n</div>\n</div>\n\n<div style="font-weight:bold; float:left; width:100%; text-align:center; margin-bottom:20px; margin-top:20px; ">Накладная от ${created}</div>\n\n<div style="clear:both "></div>\n<table border="1" align="center" style="width:100%">\n\t<tr>\n\t\t<td>ID карты</td>\n\t\t<td>Серия</td>\n\t\t<td>Номинал</td>\n\t\t<td>Активировать С</td>\n\t\t<td>Активировать По</td>\n\t</tr>\n\t\n\t% for card in cards:\n\t<tr>\n\t   <td>${card.id}</td>\n\t   <td>${card.series}</td>\n\t   <td>${card.nominal}</td>\n\t   <td>${card.start_date}</td>\n\t   <td>${card.end_date}</td>\n\t</tr>\n\t% endfor\n</table>\n\nИтого ${cardcount} карт на сумму: ${sum_for_pay}<br>\t\nСкидка: ${discount} на сумму ${discount_sum}<br>\t\nОплачено: ${pay}<br>\t\nОплатить до:${paydeffer}\n\n</body>\n</html>
+9	Шаблон карты экспресс-оплаты	7	<div style="position:relative; display:block; width:255px; height:143px; font-face:Arial;">\n<img src="img/card_blue.gif" style="border:none;">\n\t<div style="position:absolute; display:block; top:60px; left:16px; font-size:32px;">${card.nominal}</div>\n\t<div style="position:absolute; display:block; top:96px; left:3px; font-size:10px;">PIN: ${card.pin}</div>\n\t<div style="position:absolute; display:block; top:96px; left:175px; font-size:10px;">Серия: ${card.series}</div>\n\t<div style="position:absolute; display:block; top:118px; left:3px; font-size:6px;">Активировать c ${card.start_date} по ${card.end_date} </div>\n\t<div style="position:absolute; display:block; top:128px; left:3px; font-size:6px;">${operator.organization}. Тел. ${operator.phone}</div>\n</div>\n
+\.
+
+
+--
+-- TOC entry 3088 (class 0 OID 4631062)
+-- Dependencies: 2026
+-- Data for Name: billservice_timeaccessnode; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_timeaccessnode (id, time_access_service_id, time_period_id, cost) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3089 (class 0 OID 4631068)
+-- Dependencies: 2028
+-- Data for Name: billservice_timeaccessservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_timeaccessservice (id, prepaid_time, reset_time) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3090 (class 0 OID 4631075)
+-- Dependencies: 2030
+-- Data for Name: billservice_timeperiod; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY billservice_timeperiod (id, name) FROM stdin;
 1	Круглосуточно
@@ -10704,6 +16092,13 @@ COPY billservice_timeperiod (id, name) FROM stdin;
 4	Рабочая неделя
 5	Weekend
 \.
+
+
+--
+-- TOC entry 3091 (class 0 OID 4631080)
+-- Dependencies: 2032
+-- Data for Name: billservice_timeperiod_time_period_nodes; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY billservice_timeperiod_time_period_nodes (id, timeperiod_id, timeperiodnode_id) FROM stdin;
 1	1	1
@@ -10715,6 +16110,13 @@ COPY billservice_timeperiod_time_period_nodes (id, timeperiod_id, timeperiodnode
 9	5	9
 10	5	10
 \.
+
+
+--
+-- TOC entry 3092 (class 0 OID 4631085)
+-- Dependencies: 2034
+-- Data for Name: billservice_timeperiodnode; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY billservice_timeperiodnode (id, name, time_start, length, repeat_after) FROM stdin;
 4	Понедельник	2008-01-07 00:00:00	86400	WEEK
@@ -10728,6 +16130,121 @@ COPY billservice_timeperiodnode (id, name, time_start, length, repeat_after) FRO
 \.
 
 
+--
+-- TOC entry 3093 (class 0 OID 4631095)
+-- Dependencies: 2036
+-- Data for Name: billservice_timespeed; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_timespeed (id, access_parameters_id, time_id, max_limit, min_limit, burst_limit, burst_treshold, burst_time, priority) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3111 (class 0 OID 4632062)
+-- Dependencies: 2073
+-- Data for Name: billservice_timetransaction; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_timetransaction (id, timeaccessservice_id, account_id, accounttarif_id, summ, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3112 (class 0 OID 4632150)
+-- Dependencies: 2075
+-- Data for Name: billservice_tpchangerule; Type: TABLE DATA; Schema: public; Owner: mikrobill
+--
+
+COPY billservice_tpchangerule (id, from_tariff_id, to_tariff_id, disabled, cost, ballance_min, settlement_period_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3094 (class 0 OID 4631106)
+-- Dependencies: 2038
+-- Data for Name: billservice_trafficlimit; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_trafficlimit (id, tarif_id, name, settlement_period_id, size, mode, group_id, action) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3095 (class 0 OID 4631111)
+-- Dependencies: 2040
+-- Data for Name: billservice_trafficlimit_traffic_class; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_trafficlimit_traffic_class (id, trafficlimit_id, trafficclass_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3110 (class 0 OID 4632039)
+-- Dependencies: 2071
+-- Data for Name: billservice_traffictransaction; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_traffictransaction (id, traffictransmitservice_id, account_id, accounttarif_id, summ, datetime) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3096 (class 0 OID 4631116)
+-- Dependencies: 2042
+-- Data for Name: billservice_traffictransmitnodes; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_traffictransmitnodes (id, traffic_transmit_service_id, cost, edge_start, edge_end, group_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3097 (class 0 OID 4631124)
+-- Dependencies: 2044
+-- Data for Name: billservice_traffictransmitnodes_time_nodes; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_traffictransmitnodes_time_nodes (id, traffictransmitnodes_id, timeperiod_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3098 (class 0 OID 4631129)
+-- Dependencies: 2046
+-- Data for Name: billservice_traffictransmitnodes_traffic_class; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_traffictransmitnodes_traffic_class (id, traffictransmitnodes_id, trafficclass_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3099 (class 0 OID 4631134)
+-- Dependencies: 2048
+-- Data for Name: billservice_traffictransmitservice; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_traffictransmitservice (id, reset_traffic, cash_method, period_check) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3100 (class 0 OID 4631142)
+-- Dependencies: 2050
+-- Data for Name: billservice_transaction; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_transaction (id, bill, account_id, type_id, approved, tarif_id, summ, description, created, systemuser_id, promise, end_promise, promise_expired, accounttarif_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3101 (class 0 OID 4631150)
+-- Dependencies: 2052
+-- Data for Name: billservice_transactiontype; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY billservice_transactiontype (id, name, internal_name) FROM stdin;
 1	Периодическая услуга со снятием денег в течении расчётного периода	PS_GRADUAL
@@ -10740,7 +16257,40 @@ COPY billservice_transactiontype (id, name, internal_name) FROM stdin;
 8	Карта экспресс-оплаты	ACTIVATION_CARD
 9	Разовая услуга	ONETIME_SERVICE
 10	Оплата через ОСМП	OSMP_BILL
+11	Списание средств за преждевременное отключение услуги абонентом	ADDONSERVICE_WYTE_PAY
+13	Списание по подключаемой периодической услуге со снятием денег в течении периода	ADDONSERVICE_PERIODICAL_GRADUAL
+14	Списание по подключаемой периодической услуге со снятием денег в начале периода	ADDONSERVICE_PERIODICAL_AT_START
+15	Списание по подключаемой периодической услуге со снятием денег в конце периода	ADDONSERVICE_PERIODICAL_AT_END
+17	Списание по разовой услуге за подключаемую услугу	ADDONSERVICE_ONETIME
+18	Оплата по карте экспресс-оплаты	PAY_CARD
 \.
+
+
+--
+-- TOC entry 3114 (class 0 OID 4632662)
+-- Dependencies: 2079
+-- Data for Name: billservice_x8021; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY billservice_x8021 (id, account_id, nas_id, port, typeauth, vlan_accept, vlan_reject, simpleauth) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3102 (class 0 OID 4631155)
+-- Dependencies: 2054
+-- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY django_admin_log (id, action_time, user_id, content_type_id, object_id, object_repr, action_flag, change_message) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3103 (class 0 OID 4631164)
+-- Dependencies: 2056
+-- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: ebs
+--
 
 COPY django_content_type (id, name, app_label, model) FROM stdin;
 1	permission	auth	permission
@@ -10803,586 +16353,2037 @@ COPY django_content_type (id, name, app_label, model) FROM stdin;
 \.
 
 
+--
+-- TOC entry 3104 (class 0 OID 4631169)
+-- Dependencies: 2058
+-- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY django_session (session_key, session_data, expire_date) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3105 (class 0 OID 4631175)
+-- Dependencies: 2059
+-- Data for Name: django_site; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
 COPY django_site (id, domain, name) FROM stdin;
 1	example.com	example.com
 \.
 
 
+--
+-- TOC entry 3106 (class 0 OID 4631181)
+-- Dependencies: 2061
+-- Data for Name: nas_nas; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY nas_nas (id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, identify) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3107 (class 0 OID 4631198)
+-- Dependencies: 2063
+-- Data for Name: nas_trafficclass; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY nas_trafficclass (id, name, weight, color, store, passthrough) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3108 (class 0 OID 4631206)
+-- Dependencies: 2065
+-- Data for Name: nas_trafficnode; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY nas_trafficnode (id, traffic_class_id, name, direction, protocol, src_ip, src_port, dst_ip, dst_port, next_hop) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3109 (class 0 OID 4631222)
+-- Dependencies: 2067
+-- Data for Name: radius_activesession; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY radius_activesession (id, account_id, sessionid, interrim_update, date_start, date_end, caller_id, called_id, nas_id, session_time, framed_protocol, bytes_in, bytes_out, session_status, speed_string, framed_ip_address, nas_int_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 3047 (class 0 OID 4630711)
+-- Dependencies: 1941
+-- Data for Name: radius_session; Type: TABLE DATA; Schema: public; Owner: ebs
+--
+
+COPY radius_session (id, account_id, sessionid, interrim_update, date_start, date_end, caller_id, called_id, nas_id, session_time, framed_protocol, bytes_in, bytes_out, checkouted_by_time, checkouted_by_trafic, disconnect_status, framed_ip_address, transaction_id) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2634 (class 2606 OID 4631298)
+-- Dependencies: 1942 1942
+-- Name: auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_name_key UNIQUE (name);
 
+
+--
+-- TOC entry 2638 (class 2606 OID 4631300)
+-- Dependencies: 1944 1944 1944
+-- Name: auth_group_permissions_group_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_key UNIQUE (group_id, permission_id);
+
+
+--
+-- TOC entry 2640 (class 2606 OID 4631302)
+-- Dependencies: 1944 1944
+-- Name: auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2636 (class 2606 OID 4631304)
+-- Dependencies: 1942 1942
+-- Name: auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_group
     ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2642 (class 2606 OID 4631306)
+-- Dependencies: 1946 1946
+-- Name: auth_message_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2646 (class 2606 OID 4631308)
+-- Dependencies: 1948 1948 1948
+-- Name: auth_permission_content_type_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_content_type_id_key UNIQUE (content_type_id, codename);
 
 
+--
+-- TOC entry 2648 (class 2606 OID 4631310)
+-- Dependencies: 1948 1948
+-- Name: auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2654 (class 2606 OID 4631312)
+-- Dependencies: 1951 1951
+-- Name: auth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2656 (class 2606 OID 4631314)
+-- Dependencies: 1951 1951 1951
+-- Name: auth_user_groups_user_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_key UNIQUE (user_id, group_id);
+
+
+--
+-- TOC entry 2650 (class 2606 OID 4631316)
+-- Dependencies: 1950 1950
+-- Name: auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2658 (class 2606 OID 4631318)
+-- Dependencies: 1954 1954
+-- Name: auth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2660 (class 2606 OID 4631320)
+-- Dependencies: 1954 1954 1954
+-- Name: auth_user_user_permissions_user_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_key UNIQUE (user_id, permission_id);
 
+
+--
+-- TOC entry 2652 (class 2606 OID 4631322)
+-- Dependencies: 1950 1950
+-- Name: auth_user_username_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY auth_user
     ADD CONSTRAINT auth_user_username_key UNIQUE (username);
+
+
+--
+-- TOC entry 2663 (class 2606 OID 4631324)
+-- Dependencies: 1956 1956
+-- Name: billservice_accessparameters_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2667 (class 2606 OID 4631326)
+-- Dependencies: 1958 1958
+-- Name: billservice_account_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2669 (class 2606 OID 4631328)
+-- Dependencies: 1958 1958
+-- Name: billservice_account_username_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_username_key UNIQUE (username);
 
+
+--
+-- TOC entry 2900 (class 2606 OID 4632775)
+-- Dependencies: 2085 2085
+-- Name: billservice_accountaddonservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_accountaddonservice
+    ADD CONSTRAINT billservice_accountaddonservice_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2675 (class 2606 OID 4631330)
+-- Dependencies: 1960 1960
+-- Name: billservice_accountipnspeed_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2678 (class 2606 OID 4631332)
+-- Dependencies: 1962 1962
+-- Name: billservice_accountprepaystime_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2682 (class 2606 OID 4631334)
+-- Dependencies: 1964 1964
+-- Name: billservice_accountprepaystrafic_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2686 (class 2606 OID 4631336)
+-- Dependencies: 1966 1966
+-- Name: billservice_accountspeedlimit_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_accountspeedlimit
     ADD CONSTRAINT billservice_accountspeedlimit_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2689 (class 2606 OID 4631340)
+-- Dependencies: 1968 1968 1968
+-- Name: billservice_accounttarif_acc_dt_uq_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_accounttarif
+    ADD CONSTRAINT billservice_accounttarif_acc_dt_uq_key UNIQUE (account_id, datetime);
+
+
+--
+-- TOC entry 2692 (class 2606 OID 4631338)
+-- Dependencies: 1968 1968
+-- Name: billservice_accounttarif_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_pkey PRIMARY KEY (id);
-    
-ALTER TABLE billservice_accounttarif
-   ADD CONSTRAINT billservice_accounttarif_acc_dt_uq_key UNIQUE(account_id, datetime);
 
+
+--
+-- TOC entry 2889 (class 2606 OID 4632714)
+-- Dependencies: 2081 2081
+-- Name: billservice_addonservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_addonservice
+    ADD CONSTRAINT billservice_addonservice_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2895 (class 2606 OID 4632747)
+-- Dependencies: 2083 2083
+-- Name: billservice_addonservicetarif_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_addonservicetarif
+    ADD CONSTRAINT billservice_addonservicetarif_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2906 (class 2606 OID 4632799)
+-- Dependencies: 2087 2087
+-- Name: billservice_addonservicetransaction_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2695 (class 2606 OID 4631342)
+-- Dependencies: 1970 1970
+-- Name: billservice_bankdata_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_bankdata
     ADD CONSTRAINT billservice_bankdata_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2698 (class 2606 OID 4631344)
+-- Dependencies: 1972 1972
+-- Name: billservice_card_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2703 (class 2606 OID 4631346)
+-- Dependencies: 1974 1974
+-- Name: billservice_dealer_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_dealer
     ADD CONSTRAINT billservice_dealer_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2706 (class 2606 OID 4631348)
+-- Dependencies: 1976 1976
+-- Name: billservice_dealerpay_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_dealerpay
     ADD CONSTRAINT billservice_dealerpay_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2710 (class 2606 OID 4631350)
+-- Dependencies: 1978 1978
+-- Name: billservice_document_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_document
     ADD CONSTRAINT billservice_document_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2713 (class 2606 OID 4631352)
+-- Dependencies: 1980 1980
+-- Name: billservice_documenttype_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_documenttype
     ADD CONSTRAINT billservice_documenttype_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2716 (class 2606 OID 4631354)
+-- Dependencies: 1982 1982 1982
+-- Name: billservice_globalstat_acc_dt_uq_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_globalstat
     ADD CONSTRAINT billservice_globalstat_acc_dt_uq_key UNIQUE (account_id, datetime);
 
 
+--
+-- TOC entry 2720 (class 2606 OID 4631356)
+-- Dependencies: 1982 1982
+-- Name: billservice_globalstat_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_globalstat
     ADD CONSTRAINT billservice_globalstat_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2722 (class 2606 OID 4631358)
+-- Dependencies: 1984 1984
+-- Name: billservice_group_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_group
     ADD CONSTRAINT billservice_group_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2724 (class 2606 OID 4631360)
+-- Dependencies: 1986 1986 1986
+-- Name: billservice_group_trafficclass_group_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_group_trafficclass
     ADD CONSTRAINT billservice_group_trafficclass_group_id_key UNIQUE (group_id, trafficclass_id);
 
 
+--
+-- TOC entry 2726 (class 2606 OID 4631362)
+-- Dependencies: 1986 1986
+-- Name: billservice_group_trafficclass_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_group_trafficclass
     ADD CONSTRAINT billservice_group_trafficclass_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2607 (class 2606 OID 4631364)
+-- Dependencies: 1937 1937 1937 1937
+-- Name: billservice_groupstat_group_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_groupstat
     ADD CONSTRAINT billservice_groupstat_group_id_key UNIQUE (group_id, account_id, datetime);
 
 
+--
+-- TOC entry 2609 (class 2606 OID 4631366)
+-- Dependencies: 1937 1937
+-- Name: billservice_groupstat_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_groupstat
     ADD CONSTRAINT billservice_groupstat_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2728 (class 2606 OID 4631368)
+-- Dependencies: 1989 1989
+-- Name: billservice_ipinuse_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_ipinuse
     ADD CONSTRAINT billservice_ipinuse_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2733 (class 2606 OID 4631370)
+-- Dependencies: 1991 1991
+-- Name: billservice_ippool_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_ippool
     ADD CONSTRAINT billservice_ippool_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2613 (class 2606 OID 4631372)
+-- Dependencies: 1938 1938
+-- Name: billservice_netflowstream_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2735 (class 2606 OID 4631374)
+-- Dependencies: 1994 1994
+-- Name: billservice_onetimeservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_onetimeservice
     ADD CONSTRAINT billservice_onetimeservice_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2740 (class 2606 OID 4631376)
+-- Dependencies: 1996 1996
+-- Name: billservice_onetimeservicehistory_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2743 (class 2606 OID 4631378)
+-- Dependencies: 1998 1998
+-- Name: billservice_operator_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_operator
     ADD CONSTRAINT billservice_operator_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2746 (class 2606 OID 4631380)
+-- Dependencies: 2000 2000
+-- Name: billservice_organization_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_organization
     ADD CONSTRAINT billservice_organization_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2748 (class 2606 OID 4631382)
+-- Dependencies: 2002 2002
+-- Name: billservice_periodicalservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2626 (class 2606 OID 4631384)
+-- Dependencies: 1940 1940
+-- Name: billservice_periodicalservicehistory_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_periodicalservicehistory
     ADD CONSTRAINT billservice_periodicalservicehistory_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2752 (class 2606 OID 4631386)
+-- Dependencies: 2005 2005
+-- Name: billservice_ports_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_ports
     ADD CONSTRAINT billservice_ports_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2754 (class 2606 OID 4631388)
+-- Dependencies: 2007 2007
+-- Name: billservice_prepaidtraffic_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT billservice_prepaidtraffic_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2881 (class 2606 OID 4632569)
+-- Dependencies: 2077 2077
+-- Name: billservice_radiusattrs_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+--
 
+ALTER TABLE ONLY billservice_radiusattrs
+    ADD CONSTRAINT billservice_radiusattrs_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2761 (class 2606 OID 4631390)
+-- Dependencies: 2010 2010
+-- Name: billservice_salecard_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_salecard_cards
     ADD CONSTRAINT billservice_salecard_cards_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2763 (class 2606 OID 4631392)
+-- Dependencies: 2010 2010 2010
+-- Name: billservice_salecard_cards_salecard_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_salecard_cards
     ADD CONSTRAINT billservice_salecard_cards_salecard_id_key UNIQUE (salecard_id, card_id);
 
 
+--
+-- TOC entry 2759 (class 2606 OID 4631394)
+-- Dependencies: 2009 2009
+-- Name: billservice_salecard_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_salecard
     ADD CONSTRAINT billservice_salecard_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2765 (class 2606 OID 4631396)
+-- Dependencies: 2013 2013
+-- Name: billservice_settlementperiod_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_name_key UNIQUE (name);
 
+
+--
+-- TOC entry 2767 (class 2606 OID 4631398)
+-- Dependencies: 2013 2013
+-- Name: billservice_settlementperiod_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_settlementperiod
     ADD CONSTRAINT billservice_settlementperiod_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2769 (class 2606 OID 4631400)
+-- Dependencies: 2015 2015
+-- Name: billservice_shedulelog_account_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_key UNIQUE (account_id);
 
 
+--
+-- TOC entry 2771 (class 2606 OID 4631402)
+-- Dependencies: 2015 2015
+-- Name: billservice_shedulelog_accounttarif_id; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_accounttarif_id UNIQUE (accounttarif_id);
+
+
+--
+-- TOC entry 2773 (class 2606 OID 4631404)
+-- Dependencies: 2015 2015
+-- Name: billservice_shedulelog_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2776 (class 2606 OID 4631406)
+-- Dependencies: 2017 2017
+-- Name: billservice_speedlimit_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_speedlimit
     ADD CONSTRAINT billservice_speedlimit_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2779 (class 2606 OID 4631408)
+-- Dependencies: 2019 2019
+-- Name: billservice_suspendedperiod_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_suspendedperiod
     ADD CONSTRAINT billservice_suspendedperiod_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2781 (class 2606 OID 4631410)
+-- Dependencies: 2021 2021
+-- Name: billservice_systemuser_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_systemuser
     ADD CONSTRAINT billservice_systemuser_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2783 (class 2606 OID 4631412)
+-- Dependencies: 2021 2021
+-- Name: billservice_systemuser_username_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_systemuser
     ADD CONSTRAINT billservice_systemuser_username_key UNIQUE (username);
 
 
+--
+-- TOC entry 2619 (class 2606 OID 4631414)
+-- Dependencies: 1939 1939
+-- Name: billservice_tariff_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_name_key UNIQUE (name);
 
 
+--
+-- TOC entry 2621 (class 2606 OID 4631416)
+-- Dependencies: 1939 1939
+-- Name: billservice_tariff_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2785 (class 2606 OID 4631418)
+-- Dependencies: 2024 2024
+-- Name: billservice_template_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_template
     ADD CONSTRAINT billservice_template_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2788 (class 2606 OID 4631420)
+-- Dependencies: 2026 2026
+-- Name: billservice_timeaccessnode_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2792 (class 2606 OID 4631422)
+-- Dependencies: 2028 2028
+-- Name: billservice_timeaccessservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_timeaccessservice
     ADD CONSTRAINT billservice_timeaccessservice_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2794 (class 2606 OID 4631424)
+-- Dependencies: 2030 2030
+-- Name: billservice_timeperiod_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_name_key UNIQUE (name);
 
+
+--
+-- TOC entry 2796 (class 2606 OID 4631426)
+-- Dependencies: 2030 2030
+-- Name: billservice_timeperiod_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_timeperiod
     ADD CONSTRAINT billservice_timeperiod_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2798 (class 2606 OID 4631428)
+-- Dependencies: 2032 2032
+-- Name: billservice_timeperiod_time_period_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2800 (class 2606 OID 4631430)
+-- Dependencies: 2032 2032 2032
+-- Name: billservice_timeperiod_time_period_nodes_timeperiod_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_key UNIQUE (timeperiod_id, timeperiodnode_id);
 
+
+--
+-- TOC entry 2802 (class 2606 OID 4631432)
+-- Dependencies: 2034 2034
+-- Name: billservice_timeperiodnode_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_timeperiodnode
     ADD CONSTRAINT billservice_timeperiodnode_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2805 (class 2606 OID 4631434)
+-- Dependencies: 2036 2036
+-- Name: billservice_timespeed_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2872 (class 2606 OID 4632067)
+-- Dependencies: 2073 2073
+-- Name: billservice_timetransaction_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_timetransaction
+    ADD CONSTRAINT billservice_timetransaction_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2876 (class 2606 OID 4632159)
+-- Dependencies: 2075 2075
+-- Name: billservice_tpchangerule_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_tpchangerule
+    ADD CONSTRAINT billservice_tpchangerule_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2808 (class 2606 OID 4631436)
+-- Dependencies: 2038 2038
+-- Name: billservice_trafficlimit_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2812 (class 2606 OID 4631438)
+-- Dependencies: 2040 2040
+-- Name: billservice_trafficlimit_traffic_class_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2814 (class 2606 OID 4631440)
+-- Dependencies: 2040 2040 2040
+-- Name: billservice_trafficlimit_traffic_class_trafficlimit_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_key UNIQUE (trafficlimit_id, trafficclass_id);
+
+
+--
+-- TOC entry 2868 (class 2606 OID 4632044)
+-- Dependencies: 2071 2071
+-- Name: billservice_traffictransaction_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_traffictransaction
+    ADD CONSTRAINT billservice_traffictransaction_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2816 (class 2606 OID 4631442)
+-- Dependencies: 2042 2042
+-- Name: billservice_traffictransmitnodes_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnodes_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2819 (class 2606 OID 4631444)
+-- Dependencies: 2044 2044 2044
+-- Name: billservice_traffictransmitnodes_ti_traffictransmitnodes_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_ti_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, timeperiod_id);
+
+
+--
+-- TOC entry 2821 (class 2606 OID 4631446)
+-- Dependencies: 2044 2044
+-- Name: billservice_traffictransmitnodes_time_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2823 (class 2606 OID 4631448)
+-- Dependencies: 2046 2046 2046
+-- Name: billservice_traffictransmitnodes_tr_traffictransmitnodes_id_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_tr_traffictransmitnodes_id_key UNIQUE (traffictransmitnodes_id, trafficclass_id);
+
+
+--
+-- TOC entry 2825 (class 2606 OID 4631450)
+-- Dependencies: 2046 2046
+-- Name: billservice_traffictransmitnodes_traffic_class_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_class_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2827 (class 2606 OID 4631452)
+-- Dependencies: 2048 2048
+-- Name: billservice_traffictransmitservice_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_traffictransmitservice
     ADD CONSTRAINT billservice_traffictransmitservice_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2830 (class 2606 OID 4631454)
+-- Dependencies: 2050 2050
+-- Name: billservice_transaction_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2835 (class 2606 OID 4631456)
+-- Dependencies: 2052 2052
+-- Name: billservice_transactiontype_internal_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_internal_name_key UNIQUE (internal_name);
+
+
+--
+-- TOC entry 2837 (class 2606 OID 4631458)
+-- Dependencies: 2052 2052
+-- Name: billservice_transactiontype_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_name_key UNIQUE (name);
 
+
+--
+-- TOC entry 2839 (class 2606 OID 4631460)
+-- Dependencies: 2052 2052
+-- Name: billservice_transactiontype_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY billservice_transactiontype
     ADD CONSTRAINT billservice_transactiontype_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2886 (class 2606 OID 4632667)
+-- Dependencies: 2079 2079
+-- Name: billservice_x8021_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
+ALTER TABLE ONLY billservice_x8021
+    ADD CONSTRAINT billservice_x8021_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2842 (class 2606 OID 4631462)
+-- Dependencies: 2054 2054
+-- Name: django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2845 (class 2606 OID 4631464)
+-- Dependencies: 2056 2056 2056
+-- Name: django_content_type_app_label_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_app_label_key UNIQUE (app_label, model);
+
+
+--
+-- TOC entry 2847 (class 2606 OID 4631466)
+-- Dependencies: 2056 2056
+-- Name: django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY django_content_type
     ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2849 (class 2606 OID 4631468)
+-- Dependencies: 2058 2058
+-- Name: django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY django_session
     ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- TOC entry 2851 (class 2606 OID 4631470)
+-- Dependencies: 2059 2059
+-- Name: django_site_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY django_site
     ADD CONSTRAINT django_site_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2853 (class 2606 OID 4631472)
+-- Dependencies: 2061 2061
+-- Name: nas_nas_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY nas_nas
     ADD CONSTRAINT nas_nas_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2855 (class 2606 OID 4631474)
+-- Dependencies: 2063 2063
+-- Name: nas_trafficclass_name_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_name_key UNIQUE (name);
 
+
+--
+-- TOC entry 2857 (class 2606 OID 4631476)
+-- Dependencies: 2063 2063
+-- Name: nas_trafficclass_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2859 (class 2606 OID 4631478)
+-- Dependencies: 2063 2063
+-- Name: nas_trafficclass_weight_key; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY nas_trafficclass
     ADD CONSTRAINT nas_trafficclass_weight_key UNIQUE (weight);
+
+
+--
+-- TOC entry 2861 (class 2606 OID 4631480)
+-- Dependencies: 2065 2065
+-- Name: nas_trafficnode_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_pkey PRIMARY KEY (id);
 
 
+--
+-- TOC entry 2731 (class 2606 OID 4631482)
+-- Dependencies: 1989 1989 1989
+-- Name: pool_ip_unique; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY billservice_ipinuse
     ADD CONSTRAINT pool_ip_unique UNIQUE (pool_id, ip);
 
+
+--
+-- TOC entry 2865 (class 2606 OID 4631484)
+-- Dependencies: 2067 2067
+-- Name: radius_activesession_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
+
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT radius_activesession_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2632 (class 2606 OID 4631486)
+-- Dependencies: 1941 1941
+-- Name: radius_session_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
+--
 
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT radius_session_pkey PRIMARY KEY (id);
 
+
+--
+-- TOC entry 2643 (class 1259 OID 4631487)
+-- Dependencies: 1946
+-- Name: auth_message_user_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX auth_message_user_id ON auth_message USING btree (user_id);
 
+
+--
+-- TOC entry 2644 (class 1259 OID 4631488)
+-- Dependencies: 1948
+-- Name: auth_permission_content_type_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX auth_permission_content_type_id ON auth_permission USING btree (content_type_id);
+
+
+--
+-- TOC entry 2661 (class 1259 OID 4631489)
+-- Dependencies: 1956
+-- Name: billservice_accessparameters_access_time_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accessparameters_access_time_id ON billservice_accessparameters USING btree (access_time_id);
 
 
+--
+-- TOC entry 2664 (class 1259 OID 4631490)
+-- Dependencies: 1958
+-- Name: billservice_account_ipn_ip_address; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_account_ipn_ip_address ON billservice_account USING btree (ipn_ip_address);
 
 
+--
+-- TOC entry 2665 (class 1259 OID 4631491)
+-- Dependencies: 1958
+-- Name: billservice_account_nas_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_account_nas_id ON billservice_account USING btree (nas_id);
 
 
+--
+-- TOC entry 2670 (class 1259 OID 4631492)
+-- Dependencies: 1958
+-- Name: billservice_account_vpn_ip_address; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_account_vpn_ip_address ON billservice_account USING btree (vpn_ip_address);
 
 
+--
+-- TOC entry 2898 (class 1259 OID 4632786)
+-- Dependencies: 2085
+-- Name: billservice_accountaddonservice_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_accountaddonservice_account_id ON billservice_accountaddonservice USING btree (account_id);
+
+
+--
+-- TOC entry 2901 (class 1259 OID 4632787)
+-- Dependencies: 2085
+-- Name: billservice_accountaddonservice_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_accountaddonservice_service_id ON billservice_accountaddonservice USING btree (service_id);
+
+
+--
+-- TOC entry 2673 (class 1259 OID 4631493)
+-- Dependencies: 1960
+-- Name: billservice_accountipnspeed_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountipnspeed_account_id ON billservice_accountipnspeed USING btree (account_id);
 
 
+--
+-- TOC entry 2676 (class 1259 OID 4631494)
+-- Dependencies: 1962
+-- Name: billservice_accountprepaystime_account_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountprepaystime_account_tarif_id ON billservice_accountprepaystime USING btree (account_tarif_id);
 
 
+--
+-- TOC entry 2679 (class 1259 OID 4631495)
+-- Dependencies: 1962
+-- Name: billservice_accountprepaystime_prepaid_time_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountprepaystime_prepaid_time_service_id ON billservice_accountprepaystime USING btree (prepaid_time_service_id);
 
 
+--
+-- TOC entry 2680 (class 1259 OID 4631496)
+-- Dependencies: 1964
+-- Name: billservice_accountprepaystrafic_account_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountprepaystrafic_account_tarif_id ON billservice_accountprepaystrafic USING btree (account_tarif_id);
 
 
+--
+-- TOC entry 2683 (class 1259 OID 4631497)
+-- Dependencies: 1964
+-- Name: billservice_accountprepaystrafic_prepaid_traffic_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountprepaystrafic_prepaid_traffic_id ON billservice_accountprepaystrafic USING btree (prepaid_traffic_id);
 
 
+--
+-- TOC entry 2684 (class 1259 OID 4631498)
+-- Dependencies: 1966
+-- Name: billservice_accountspeedlimit_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountspeedlimit_account_id ON billservice_accountspeedlimit USING btree (account_id);
 
 
+--
+-- TOC entry 2687 (class 1259 OID 4631499)
+-- Dependencies: 1966
+-- Name: billservice_accountspeedlimit_speedlimit_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accountspeedlimit_speedlimit_id ON billservice_accountspeedlimit USING btree (speedlimit_id);
 
 
+--
+-- TOC entry 2690 (class 1259 OID 4631500)
+-- Dependencies: 1968
+-- Name: billservice_accounttarif_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accounttarif_account_id ON billservice_accounttarif USING btree (account_id);
 
 
+--
+-- TOC entry 2693 (class 1259 OID 4631501)
+-- Dependencies: 1968
+-- Name: billservice_accounttarif_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_accounttarif_tarif_id ON billservice_accounttarif USING btree (tarif_id);
 
 
+--
+-- TOC entry 2887 (class 1259 OID 4632735)
+-- Dependencies: 2081
+-- Name: billservice_addonservice_nas_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservice_nas_id ON billservice_addonservice USING btree (nas_id);
+
+
+--
+-- TOC entry 2890 (class 1259 OID 4632736)
+-- Dependencies: 2081
+-- Name: billservice_addonservice_sp_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservice_sp_period_id ON billservice_addonservice USING btree (sp_period_id);
+
+
+--
+-- TOC entry 2891 (class 1259 OID 4632737)
+-- Dependencies: 2081
+-- Name: billservice_addonservice_timeperiod_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservice_timeperiod_id ON billservice_addonservice USING btree (timeperiod_id);
+
+
+--
+-- TOC entry 2892 (class 1259 OID 4632738)
+-- Dependencies: 2081
+-- Name: billservice_addonservice_wyte_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservice_wyte_period_id ON billservice_addonservice USING btree (wyte_period_id);
+
+
+--
+-- TOC entry 2893 (class 1259 OID 4632763)
+-- Dependencies: 2083
+-- Name: billservice_addonservicetarif_activation_count_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetarif_activation_count_period_id ON billservice_addonservicetarif USING btree (activation_count_period_id);
+
+
+--
+-- TOC entry 2896 (class 1259 OID 4632764)
+-- Dependencies: 2083
+-- Name: billservice_addonservicetarif_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetarif_service_id ON billservice_addonservicetarif USING btree (service_id);
+
+
+--
+-- TOC entry 2897 (class 1259 OID 4632765)
+-- Dependencies: 2083
+-- Name: billservice_addonservicetarif_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetarif_tarif_id ON billservice_addonservicetarif USING btree (tarif_id);
+
+
+--
+-- TOC entry 2902 (class 1259 OID 4632825)
+-- Dependencies: 2087
+-- Name: billservice_addonservicetransaction_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetransaction_account_id ON billservice_addonservicetransaction USING btree (account_id);
+
+
+--
+-- TOC entry 2903 (class 1259 OID 4632826)
+-- Dependencies: 2087
+-- Name: billservice_addonservicetransaction_accountaddonservice_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetransaction_accountaddonservice_id ON billservice_addonservicetransaction USING btree (accountaddonservice_id);
+
+
+--
+-- TOC entry 2904 (class 1259 OID 4632827)
+-- Dependencies: 2087
+-- Name: billservice_addonservicetransaction_accounttarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetransaction_accounttarif_id ON billservice_addonservicetransaction USING btree (accounttarif_id);
+
+
+--
+-- TOC entry 2907 (class 1259 OID 4632828)
+-- Dependencies: 2087
+-- Name: billservice_addonservicetransaction_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_addonservicetransaction_service_id ON billservice_addonservicetransaction USING btree (service_id);
+
+
+--
+-- TOC entry 2696 (class 1259 OID 4631502)
+-- Dependencies: 1972
+-- Name: billservice_card_activated_by_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_card_activated_by_id ON billservice_card USING btree (activated_by_id);
 
 
+--
+-- TOC entry 2701 (class 1259 OID 4631503)
+-- Dependencies: 1974
+-- Name: billservice_dealer_bank_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_dealer_bank_id ON billservice_dealer USING btree (bank_id);
 
 
+--
+-- TOC entry 2704 (class 1259 OID 4631504)
+-- Dependencies: 1976
+-- Name: billservice_dealerpay_dealer_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_dealerpay_dealer_id ON billservice_dealerpay USING btree (dealer_id);
 
 
+--
+-- TOC entry 2707 (class 1259 OID 4631505)
+-- Dependencies: 1976
+-- Name: billservice_dealerpay_salecard_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_dealerpay_salecard_id ON billservice_dealerpay USING btree (salecard_id);
 
 
+--
+-- TOC entry 2708 (class 1259 OID 4631506)
+-- Dependencies: 1978
+-- Name: billservice_document_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_document_account_id ON billservice_document USING btree (account_id);
 
 
+--
+-- TOC entry 2711 (class 1259 OID 4631507)
+-- Dependencies: 1978
+-- Name: billservice_document_type_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_document_type_id ON billservice_document USING btree (type_id);
 
 
+--
+-- TOC entry 2714 (class 1259 OID 4631508)
+-- Dependencies: 1982 1982
+-- Name: billservice_globalstat_acc_dt_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_globalstat_acc_dt_id ON billservice_globalstat USING btree (account_id, datetime);
 
 
+--
+-- TOC entry 2717 (class 1259 OID 4631509)
+-- Dependencies: 1982
+-- Name: billservice_globalstat_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_globalstat_account_id ON billservice_globalstat USING btree (account_id);
 
 
+--
+-- TOC entry 2718 (class 1259 OID 4631510)
+-- Dependencies: 1982
+-- Name: billservice_globalstat_datetime; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_globalstat_datetime ON billservice_globalstat USING btree (datetime);
 
 
+--
+-- TOC entry 2729 (class 1259 OID 4631511)
+-- Dependencies: 1989
+-- Name: billservice_ipinuse_pool_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_ipinuse_pool_id ON billservice_ipinuse USING btree (pool_id);
 
+
+--
+-- TOC entry 2610 (class 1259 OID 4631512)
+-- Dependencies: 1938
+-- Name: billservice_netflowstream_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_netflowstream_account_id ON billservice_netflowstream USING btree (account_id);
+
+
+--
+-- TOC entry 2611 (class 1259 OID 4631513)
+-- Dependencies: 1938
+-- Name: billservice_netflowstream_nas_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_netflowstream_nas_id ON billservice_netflowstream USING btree (nas_id);
 
+
+--
+-- TOC entry 2614 (class 1259 OID 4631514)
+-- Dependencies: 1938
+-- Name: billservice_netflowstream_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_netflowstream_tarif_id ON billservice_netflowstream USING btree (tarif_id);
 
+
+--
+-- TOC entry 2615 (class 1259 OID 4631515)
+-- Dependencies: 1938
+-- Name: billservice_netflowstream_traffic_class_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_netflowstream_traffic_class_id ON billservice_netflowstream USING btree (traffic_class_id);
+
+
+--
+-- TOC entry 2616 (class 1259 OID 4631516)
+-- Dependencies: 1938
+-- Name: billservice_netflowstream_traffic_transmit_node_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_netflowstream_traffic_transmit_node_id ON billservice_netflowstream USING btree (traffic_transmit_node_id);
 
 
+--
+-- TOC entry 2736 (class 1259 OID 4631517)
+-- Dependencies: 1994
+-- Name: billservice_onetimeservice_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_onetimeservice_tarif_id ON billservice_onetimeservice USING btree (tarif_id);
 
 
+--
+-- TOC entry 2737 (class 1259 OID 4631518)
+-- Dependencies: 1996
+-- Name: billservice_onetimeservicehistory_accounttarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_onetimeservicehistory_accounttarif_id ON billservice_onetimeservicehistory USING btree (accounttarif_id);
+
+
+--
+-- TOC entry 2738 (class 1259 OID 4631519)
+-- Dependencies: 1996
+-- Name: billservice_onetimeservicehistory_onetimeservice_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_onetimeservicehistory_onetimeservice_id ON billservice_onetimeservicehistory USING btree (onetimeservice_id);
 
 
+--
+-- TOC entry 2749 (class 1259 OID 4631520)
+-- Dependencies: 2002
+-- Name: billservice_periodicalservice_settlement_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_periodicalservice_settlement_period_id ON billservice_periodicalservice USING btree (settlement_period_id);
 
 
+--
+-- TOC entry 2750 (class 1259 OID 4631521)
+-- Dependencies: 2002
+-- Name: billservice_periodicalservice_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_periodicalservice_tarif_id ON billservice_periodicalservice USING btree (tarif_id);
 
+
+--
+-- TOC entry 2627 (class 1259 OID 4631522)
+-- Dependencies: 1940
+-- Name: billservice_periodicalservicehistory_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_periodicalservicehistory_service_id ON billservice_periodicalservicehistory USING btree (service_id);
 
+
+--
+-- TOC entry 2628 (class 1259 OID 4631523)
+-- Dependencies: 1940
+-- Name: billservice_periodicalservicehistory_transaction_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_periodicalservicehistory_transaction_id ON billservice_periodicalservicehistory USING btree (transaction_id);
+
+
+--
+-- TOC entry 2755 (class 1259 OID 4631524)
+-- Dependencies: 2007
+-- Name: billservice_prepaidtraffic_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_prepaidtraffic_traffic_transmit_service_id ON billservice_prepaidtraffic USING btree (traffic_transmit_service_id);
 
 
+--
+-- TOC entry 2882 (class 1259 OID 4632575)
+-- Dependencies: 2077
+-- Name: billservice_radiusattrs_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_radiusattrs_tarif_id ON billservice_radiusattrs USING btree (tarif_id);
+
+
+--
+-- TOC entry 2757 (class 1259 OID 4631525)
+-- Dependencies: 2009
+-- Name: billservice_salecard_dealer_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_salecard_dealer_id ON billservice_salecard USING btree (dealer_id);
 
 
+--
+-- TOC entry 2774 (class 1259 OID 4631526)
+-- Dependencies: 2017
+-- Name: billservice_speedlimit_limit_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_speedlimit_limit_id ON billservice_speedlimit USING btree (limit_id);
 
 
+--
+-- TOC entry 2777 (class 1259 OID 4631527)
+-- Dependencies: 2019
+-- Name: billservice_suspendedperiod_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_suspendedperiod_account_id ON billservice_suspendedperiod USING btree (account_id);
 
 
+--
+-- TOC entry 2617 (class 1259 OID 4631528)
+-- Dependencies: 1939
+-- Name: billservice_tariff_access_parameters_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_tariff_access_parameters_id ON billservice_tariff USING btree (access_parameters_id);
 
+
+--
+-- TOC entry 2622 (class 1259 OID 4631529)
+-- Dependencies: 1939
+-- Name: billservice_tariff_settlement_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_tariff_settlement_period_id ON billservice_tariff USING btree (settlement_period_id);
 
+
+--
+-- TOC entry 2623 (class 1259 OID 4631530)
+-- Dependencies: 1939
+-- Name: billservice_tariff_time_access_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_tariff_time_access_service_id ON billservice_tariff USING btree (time_access_service_id);
+
+
+--
+-- TOC entry 2624 (class 1259 OID 4631531)
+-- Dependencies: 1939
+-- Name: billservice_tariff_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_tariff_traffic_transmit_service_id ON billservice_tariff USING btree (traffic_transmit_service_id);
 
 
+--
+-- TOC entry 2786 (class 1259 OID 4631532)
+-- Dependencies: 2024
+-- Name: billservice_template_type_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_template_type_id ON billservice_template USING btree (type_id);
 
 
+--
+-- TOC entry 2789 (class 1259 OID 4631533)
+-- Dependencies: 2026
+-- Name: billservice_timeaccessnode_time_access_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_timeaccessnode_time_access_service_id ON billservice_timeaccessnode USING btree (time_access_service_id);
 
+
+--
+-- TOC entry 2790 (class 1259 OID 4631534)
+-- Dependencies: 2026
+-- Name: billservice_timeaccessnode_time_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_timeaccessnode_time_period_id ON billservice_timeaccessnode USING btree (time_period_id);
+
+
+--
+-- TOC entry 2803 (class 1259 OID 4631535)
+-- Dependencies: 2036
+-- Name: billservice_timespeed_access_parameters_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_timespeed_access_parameters_id ON billservice_timespeed USING btree (access_parameters_id);
 
+
+--
+-- TOC entry 2806 (class 1259 OID 4631536)
+-- Dependencies: 2036
+-- Name: billservice_timespeed_time_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_timespeed_time_id ON billservice_timespeed USING btree (time_id);
+
+
+--
+-- TOC entry 2870 (class 1259 OID 4632083)
+-- Dependencies: 2073
+-- Name: billservice_timetransaction_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_timetransaction_account_id ON billservice_timetransaction USING btree (account_id);
+
+
+--
+-- TOC entry 2873 (class 1259 OID 4632084)
+-- Dependencies: 2073 2073 2073
+-- Name: billservice_timetransaction_traffictransmitservice_id_account_i; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_timetransaction_traffictransmitservice_id_account_i ON billservice_timetransaction USING btree (timeaccessservice_id, accounttarif_id, datetime);
+
+
+--
+-- TOC entry 2874 (class 1259 OID 4632175)
+-- Dependencies: 2075
+-- Name: billservice_tpchangerule_from_tariff_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_tpchangerule_from_tariff_id ON billservice_tpchangerule USING btree (from_tariff_id);
+
+
+--
+-- TOC entry 2877 (class 1259 OID 4632176)
+-- Dependencies: 2075
+-- Name: billservice_tpchangerule_settlement_period_id_index; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_tpchangerule_settlement_period_id_index ON billservice_tpchangerule USING btree (settlement_period_id);
+
+
+--
+-- TOC entry 2878 (class 1259 OID 4632177)
+-- Dependencies: 2075 2075
+-- Name: billservice_tpchangerule_tariff_tariff; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE UNIQUE INDEX billservice_tpchangerule_tariff_tariff ON billservice_tpchangerule USING btree (from_tariff_id, to_tariff_id);
+
+
+--
+-- TOC entry 2879 (class 1259 OID 4632178)
+-- Dependencies: 2075
+-- Name: billservice_tpchangerule_to_tariff_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX billservice_tpchangerule_to_tariff_id ON billservice_tpchangerule USING btree (to_tariff_id);
+
+
+--
+-- TOC entry 2809 (class 1259 OID 4631537)
+-- Dependencies: 2038
+-- Name: billservice_trafficlimit_settlement_period_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_trafficlimit_settlement_period_id ON billservice_trafficlimit USING btree (settlement_period_id);
 
 
+--
+-- TOC entry 2810 (class 1259 OID 4631538)
+-- Dependencies: 2038
+-- Name: billservice_trafficlimit_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_trafficlimit_tarif_id ON billservice_trafficlimit USING btree (tarif_id);
 
 
+--
+-- TOC entry 2866 (class 1259 OID 4632055)
+-- Dependencies: 2071
+-- Name: billservice_traffictransaction_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_traffictransaction_account_id ON billservice_traffictransaction USING btree (account_id);
+
+
+--
+-- TOC entry 2869 (class 1259 OID 4632056)
+-- Dependencies: 2071 2071 2071
+-- Name: billservice_traffictransaction_traffictransmitservice_id_accoun; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_traffictransaction_traffictransmitservice_id_accoun ON billservice_traffictransaction USING btree (traffictransmitservice_id, accounttarif_id, datetime);
+
+
+--
+-- TOC entry 2817 (class 1259 OID 4631539)
+-- Dependencies: 2042
+-- Name: billservice_traffictransmitnodes_traffic_transmit_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_traffictransmitnodes_traffic_transmit_service_id ON billservice_traffictransmitnodes USING btree (traffic_transmit_service_id);
 
+
+--
+-- TOC entry 2828 (class 1259 OID 4631540)
+-- Dependencies: 2050
+-- Name: billservice_transaction_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX billservice_transaction_account_id ON billservice_transaction USING btree (account_id);
+
+
+--
+-- TOC entry 2831 (class 1259 OID 4631541)
+-- Dependencies: 2050
+-- Name: billservice_transaction_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX billservice_transaction_tarif_id ON billservice_transaction USING btree (tarif_id);
 
+
+--
+-- TOC entry 2833 (class 1259 OID 4632788)
+-- Dependencies: 2052
+-- Name: billservice_transactiontype_ind; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE UNIQUE INDEX billservice_transactiontype_ind ON billservice_transactiontype USING btree (id);
+
+
+--
+-- TOC entry 2883 (class 1259 OID 4632678)
+-- Dependencies: 2079
+-- Name: billservice_x8021_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_x8021_account_id ON billservice_x8021 USING btree (account_id);
+
+
+--
+-- TOC entry 2884 (class 1259 OID 4632679)
+-- Dependencies: 2079
+-- Name: billservice_x8021_nas_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX billservice_x8021_nas_id ON billservice_x8021 USING btree (nas_id);
+
+
+--
+-- TOC entry 2840 (class 1259 OID 4631542)
+-- Dependencies: 2054
+-- Name: django_admin_log_content_type_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX django_admin_log_content_type_id ON django_admin_log USING btree (content_type_id);
+
+
+--
+-- TOC entry 2843 (class 1259 OID 4631543)
+-- Dependencies: 2054
+-- Name: django_admin_log_user_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX django_admin_log_user_id ON django_admin_log USING btree (user_id);
 
 
+--
+-- TOC entry 2671 (class 1259 OID 4631544)
+-- Dependencies: 1958
+-- Name: fki_billservice_account_ipnipinuse_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_account_ipnipinuse_fkey ON billservice_account USING btree (ipn_ipinuse_id);
 
 
+--
+-- TOC entry 2672 (class 1259 OID 4631545)
+-- Dependencies: 1958
+-- Name: fki_billservice_account_vpnipinuse_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_account_vpnipinuse_fkey ON billservice_account USING btree (vpn_ipinuse_id);
 
 
+--
+-- TOC entry 2908 (class 1259 OID 4633009)
+-- Dependencies: 2087
+-- Name: fki_billservice_addonservicetransaction_type_id_fkey; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+--
+
+CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey ON billservice_addonservicetransaction USING btree (type_id);
+
+
+--
+-- TOC entry 2699 (class 1259 OID 4631546)
+-- Dependencies: 1972
+-- Name: fki_billservice_card_account_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_card_account_fkey ON billservice_card USING btree (account_id);
 
 
+--
+-- TOC entry 2700 (class 1259 OID 4631547)
+-- Dependencies: 1972
+-- Name: fki_billservice_card_tarif_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_card_tarif_fkey ON billservice_card USING btree (tarif_id);
 
 
+--
+-- TOC entry 2741 (class 1259 OID 4631548)
+-- Dependencies: 1996
+-- Name: fki_billservice_onetimeservicehistory_transaction_id_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_onetimeservicehistory_transaction_id_fkey ON billservice_onetimeservicehistory USING btree (transaction_id);
 
 
+--
+-- TOC entry 2744 (class 1259 OID 4631549)
+-- Dependencies: 1998
+-- Name: fki_billservice_operator_bank_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_operator_bank_id ON billservice_operator USING btree (bank_id);
 
 
+--
+-- TOC entry 2756 (class 1259 OID 4631550)
+-- Dependencies: 2007
+-- Name: fki_billservice_prepaidtraffic_group_id_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX fki_billservice_prepaidtraffic_group_id_fkey ON billservice_prepaidtraffic USING btree (group_id);
 
 
+--
+-- TOC entry 2832 (class 1259 OID 4632004)
+-- Dependencies: 2050
+-- Name: fki_billservice_systemuser_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction USING btree (systemuser_id);
+
+
+--
+-- TOC entry 2862 (class 1259 OID 4631551)
+-- Dependencies: 2065
+-- Name: nas_trafficnode_traffic_class_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX nas_trafficnode_traffic_class_id ON nas_trafficnode USING btree (traffic_class_id);
 
+
+--
+-- TOC entry 2863 (class 1259 OID 4631552)
+-- Dependencies: 2067
+-- Name: radius_activesession_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
 CREATE INDEX radius_activesession_account_id ON radius_activesession USING btree (account_id);
+
+
+--
+-- TOC entry 2629 (class 1259 OID 4631553)
+-- Dependencies: 1941
+-- Name: radius_session_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
 
 CREATE INDEX radius_session_account_id ON radius_session USING btree (account_id);
 
-CREATE RULE on_tariff_delete_rule AS ON DELETE TO billservice_tariff DO SELECT on_tariff_delete_fun(old.*) AS on_tariff_delete_fun;
+
+--
+-- TOC entry 2630 (class 1259 OID 4632582)
+-- Dependencies: 1941 1941 1941
+-- Name: radius_session_account_session_interrim_idx; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
+--
+
+CREATE INDEX radius_session_account_session_interrim_idx ON radius_session USING btree (account_id, sessionid, interrim_update);
 
 
+--
+-- TOC entry 3026 (class 2620 OID 4632585)
+-- Dependencies: 1939 178
+-- Name: a_set_deleted_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
+CREATE TRIGGER a_set_deleted_trg
+    BEFORE DELETE ON billservice_tariff
+    FOR EACH ROW
+    EXECUTE PROCEDURE set_deleted_trg_fn();
+
+
+--
+-- TOC entry 3035 (class 2620 OID 4632036)
+-- Dependencies: 96 1996
+-- Name: acc_otsh_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER acc_otsh_trg
+    AFTER INSERT OR DELETE OR UPDATE ON billservice_onetimeservicehistory
+    FOR EACH ROW
+    EXECUTE PROCEDURE account_transaction_trg_fn();
+
+
+--
+-- TOC entry 3029 (class 2620 OID 4632024)
+-- Dependencies: 96 1940
+-- Name: acc_psh_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER acc_psh_trg
+    BEFORE INSERT OR DELETE OR UPDATE ON billservice_periodicalservicehistory
+    FOR EACH ROW
+    EXECUTE PROCEDURE account_transaction_trg_fn();
+
+
+--
+-- TOC entry 3039 (class 2620 OID 4632059)
+-- Dependencies: 2071 96
+-- Name: acc_tftrans_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER acc_tftrans_trg
+    AFTER INSERT OR DELETE OR UPDATE ON billservice_traffictransaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE account_transaction_trg_fn();
+
+
+--
+-- TOC entry 3041 (class 2620 OID 4632087)
+-- Dependencies: 2073 96
+-- Name: acc_tmtrans_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER acc_tmtrans_trg
+    AFTER INSERT OR DELETE OR UPDATE ON billservice_timetransaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE account_transaction_trg_fn();
+
+
+--
+-- TOC entry 3036 (class 2620 OID 4631555)
+-- Dependencies: 96 2050
+-- Name: acc_trans_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER acc_trans_trg
     AFTER INSERT OR DELETE OR UPDATE ON billservice_transaction
@@ -11390,6 +18391,35 @@ CREATE TRIGGER acc_trans_trg
     EXECUTE PROCEDURE account_transaction_trg_fn();
 
 
+--
+-- TOC entry 3042 (class 2620 OID 4632830)
+-- Dependencies: 96 2087
+-- Name: adds_trans_trg; Type: TRIGGER; Schema: public; Owner: mikrobill
+--
+
+CREATE TRIGGER adds_trans_trg
+    AFTER INSERT OR DELETE OR UPDATE ON billservice_addonservicetransaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE account_transaction_trg_fn();
+
+
+--
+-- TOC entry 3025 (class 2620 OID 4631998)
+-- Dependencies: 155 1939
+-- Name: clear_tariff_services_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER clear_tariff_services_trg
+    BEFORE DELETE ON billservice_tariff
+    FOR EACH ROW
+    EXECUTE PROCEDURE clear_tariff_services_trg_fn();
+
+
+--
+-- TOC entry 3023 (class 2620 OID 4631556)
+-- Dependencies: 99 1938
+-- Name: del_nfs_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER del_nfs_trg
     AFTER DELETE ON billservice_netflowstream
@@ -11397,6 +18427,11 @@ CREATE TRIGGER del_nfs_trg
     EXECUTE PROCEDURE del_nfs_trg_fn();
 
 
+--
+-- TOC entry 3032 (class 2620 OID 4631557)
+-- Dependencies: 102 1958
+-- Name: free_unused_account_ip_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER free_unused_account_ip_trg
     AFTER DELETE OR UPDATE ON billservice_account
@@ -11404,6 +18439,11 @@ CREATE TRIGGER free_unused_account_ip_trg
     EXECUTE PROCEDURE free_unused_account_ip_trg_fn();
 
 
+--
+-- TOC entry 3034 (class 2620 OID 4631558)
+-- Dependencies: 1972 103
+-- Name: free_unused_card_ip_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER free_unused_card_ip_trg
     AFTER DELETE ON billservice_card
@@ -11411,6 +18451,11 @@ CREATE TRIGGER free_unused_card_ip_trg
     EXECUTE PROCEDURE free_unused_card_ip_trg_fn();
 
 
+--
+-- TOC entry 3021 (class 2620 OID 4631559)
+-- Dependencies: 1937 115
+-- Name: gpst_del_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER gpst_del_trg
     AFTER DELETE ON billservice_groupstat
@@ -11418,6 +18463,11 @@ CREATE TRIGGER gpst_del_trg
     EXECUTE PROCEDURE gpst_del_trg_fn();
 
 
+--
+-- TOC entry 3022 (class 2620 OID 4631560)
+-- Dependencies: 1937 116
+-- Name: gpst_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER gpst_ins_trg
     BEFORE INSERT ON billservice_groupstat
@@ -11425,6 +18475,11 @@ CREATE TRIGGER gpst_ins_trg
     EXECUTE PROCEDURE gpst_ins_trg_fn();
 
 
+--
+-- TOC entry 3033 (class 2620 OID 4631561)
+-- Dependencies: 98 1958
+-- Name: ins_account_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER ins_account_trg
     BEFORE INSERT ON billservice_account
@@ -11432,6 +18487,11 @@ CREATE TRIGGER ins_account_trg
     EXECUTE PROCEDURE check_allowed_users_trg_fn();
 
 
+--
+-- TOC entry 3024 (class 2620 OID 4631562)
+-- Dependencies: 126 1938
+-- Name: ins_nfs_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER ins_nfs_trg
     BEFORE INSERT ON billservice_netflowstream
@@ -11439,6 +18499,11 @@ CREATE TRIGGER ins_nfs_trg
     EXECUTE PROCEDURE nfs_ins_trg_fn();
 
 
+--
+-- TOC entry 3027 (class 2620 OID 4631563)
+-- Dependencies: 1940 133
+-- Name: psh_del_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER psh_del_trg
     AFTER DELETE ON billservice_periodicalservicehistory
@@ -11446,6 +18511,11 @@ CREATE TRIGGER psh_del_trg
     EXECUTE PROCEDURE psh_del_trg_fn();
 
 
+--
+-- TOC entry 3028 (class 2620 OID 4631564)
+-- Dependencies: 1940 136
+-- Name: psh_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER psh_ins_trg
     BEFORE INSERT ON billservice_periodicalservicehistory
@@ -11453,6 +18523,11 @@ CREATE TRIGGER psh_ins_trg
     EXECUTE PROCEDURE psh_ins_trg_fn();
 
 
+--
+-- TOC entry 3030 (class 2620 OID 4631565)
+-- Dependencies: 146 1941
+-- Name: rsss_del_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER rsss_del_trg
     AFTER DELETE ON radius_session
@@ -11460,6 +18535,11 @@ CREATE TRIGGER rsss_del_trg
     EXECUTE PROCEDURE rsss_del_trg_fn();
 
 
+--
+-- TOC entry 3031 (class 2620 OID 4631566)
+-- Dependencies: 1941 147
+-- Name: rsss_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
 
 CREATE TRIGGER rsss_ins_trg
     BEFORE INSERT ON radius_session
@@ -11467,364 +18547,1177 @@ CREATE TRIGGER rsss_ins_trg
     EXECUTE PROCEDURE rsss_ins_trg_fn();
 
 
+--
+-- TOC entry 3038 (class 2620 OID 4632058)
+-- Dependencies: 157 2071
+-- Name: tftrans_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER tftrans_ins_trg
+    BEFORE INSERT ON billservice_traffictransaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE tftrans_ins_trg_fn();
+
+
+--
+-- TOC entry 3040 (class 2620 OID 4632086)
+-- Dependencies: 2073 158
+-- Name: tmtrans_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER tmtrans_ins_trg
+    BEFORE INSERT ON billservice_timetransaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE tmtrans_ins_trg_fn();
+
+
+--
+-- TOC entry 3037 (class 2620 OID 4632015)
+-- Dependencies: 154 2050
+-- Name: trans_acctf_ins_trg; Type: TRIGGER; Schema: public; Owner: ebs
+--
+
+CREATE TRIGGER trans_acctf_ins_trg
+    BEFORE INSERT ON billservice_transaction
+    FOR EACH ROW
+    EXECUTE PROCEDURE trans_acctf_ins_trg_fn();
+
+
+--
+-- TOC entry 2996 (class 2606 OID 4631567)
+-- Dependencies: 1958 2666 2067
+-- Name: account_id_refs_id_16c70393; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY radius_activesession
     ADD CONSTRAINT account_id_refs_id_16c70393 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2920 (class 2606 OID 4631572)
+-- Dependencies: 1941 2666 1958
+-- Name: account_id_refs_id_600b3363; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY radius_session
     ADD CONSTRAINT account_id_refs_id_600b3363 FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2935 (class 2606 OID 4631577)
+-- Dependencies: 2691 1968 1962
+-- Name: account_tarif_id_refs_id_48fe22d0; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT account_tarif_id_refs_id_48fe22d0 FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2937 (class 2606 OID 4631582)
+-- Dependencies: 1968 2691 1964
+-- Name: account_tarif_id_refs_id_7d07606a; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT account_tarif_id_refs_id_7d07606a FOREIGN KEY (account_tarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2922 (class 2606 OID 4631587)
+-- Dependencies: 2635 1942 1944
+-- Name: auth_group_permissions_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2923 (class 2606 OID 4631592)
+-- Dependencies: 2647 1944 1948
+-- Name: auth_group_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY auth_group_permissions
     ADD CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2924 (class 2606 OID 4631597)
+-- Dependencies: 1946 2649 1950
+-- Name: auth_message_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY auth_message
     ADD CONSTRAINT auth_message_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2926 (class 2606 OID 4631602)
+-- Dependencies: 1951 1942 2635
+-- Name: auth_user_groups_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_group_id_fkey FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2927 (class 2606 OID 4631607)
+-- Dependencies: 1950 2649 1951
+-- Name: auth_user_groups_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY auth_user_groups
     ADD CONSTRAINT auth_user_groups_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2928 (class 2606 OID 4631612)
+-- Dependencies: 1954 1948 2647
+-- Name: auth_user_user_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES auth_permission(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2929 (class 2606 OID 4631617)
+-- Dependencies: 2649 1950 1954
+-- Name: auth_user_user_permissions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY auth_user_user_permissions
     ADD CONSTRAINT auth_user_user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2930 (class 2606 OID 4631622)
+-- Dependencies: 1956 2795 2030
+-- Name: billservice_accessparameters_access_time_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_accessparameters
     ADD CONSTRAINT billservice_accessparameters_access_time_id_fkey FOREIGN KEY (access_time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2931 (class 2606 OID 4631627)
+-- Dependencies: 1958 1989 2727
+-- Name: billservice_account_ipnipinuse_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_ipnipinuse_fkey FOREIGN KEY (ipn_ipinuse_id) REFERENCES billservice_ipinuse(id) ON DELETE CASCADE;
 
 
+--
+-- TOC entry 2932 (class 2606 OID 4631632)
+-- Dependencies: 2852 1958 2061
+-- Name: billservice_account_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2933 (class 2606 OID 4631637)
+-- Dependencies: 2727 1958 1989
+-- Name: billservice_account_vpnipinuse_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_account
     ADD CONSTRAINT billservice_account_vpnipinuse_fkey FOREIGN KEY (vpn_ipinuse_id) REFERENCES billservice_ipinuse(id) ON DELETE CASCADE;
 
 
+--
+-- TOC entry 3014 (class 2606 OID 4632776)
+-- Dependencies: 2085 1958 2666
+-- Name: billservice_accountaddonservice_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_accountaddonservice
+    ADD CONSTRAINT billservice_accountaddonservice_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3015 (class 2606 OID 4632781)
+-- Dependencies: 2888 2085 2081
+-- Name: billservice_accountaddonservice_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_accountaddonservice
+    ADD CONSTRAINT billservice_accountaddonservice_service_id_fkey FOREIGN KEY (service_id) REFERENCES billservice_addonservice(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2934 (class 2606 OID 4631642)
+-- Dependencies: 2666 1958 1960
+-- Name: billservice_accountipnspeed_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accountipnspeed
     ADD CONSTRAINT billservice_accountipnspeed_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2936 (class 2606 OID 4631647)
+-- Dependencies: 1962 2791 2028
+-- Name: billservice_accountprepaystime_prepaid_time_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_accountprepaystime
     ADD CONSTRAINT billservice_accountprepaystime_prepaid_time_service_id_fkey FOREIGN KEY (prepaid_time_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2938 (class 2606 OID 4631652)
+-- Dependencies: 2007 2753 1964
+-- Name: billservice_accountprepaystrafic_prepaid_traffic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accountprepaystrafic
     ADD CONSTRAINT billservice_accountprepaystrafic_prepaid_traffic_id_fkey FOREIGN KEY (prepaid_traffic_id) REFERENCES billservice_prepaidtraffic(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2939 (class 2606 OID 4631657)
+-- Dependencies: 1966 2666 1958
+-- Name: billservice_accountspeedlimit_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accountspeedlimit
     ADD CONSTRAINT billservice_accountspeedlimit_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2940 (class 2606 OID 4631662)
+-- Dependencies: 2775 2017 1966
+-- Name: billservice_accountspeedlimit_speedlimit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accountspeedlimit
     ADD CONSTRAINT billservice_accountspeedlimit_speedlimit_id_fkey FOREIGN KEY (speedlimit_id) REFERENCES billservice_speedlimit(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2941 (class 2606 OID 4631667)
+-- Dependencies: 2666 1958 1968
+-- Name: billservice_accounttarif_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2942 (class 2606 OID 4631672)
+-- Dependencies: 2620 1939 1968
+-- Name: billservice_accounttarif_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_accounttarif
     ADD CONSTRAINT billservice_accounttarif_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 3007 (class 2606 OID 4632715)
+-- Dependencies: 2852 2061 2081
+-- Name: billservice_addonservice_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservice
+    ADD CONSTRAINT billservice_addonservice_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3008 (class 2606 OID 4632720)
+-- Dependencies: 2766 2081 2013
+-- Name: billservice_addonservice_sp_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservice
+    ADD CONSTRAINT billservice_addonservice_sp_period_id_fkey FOREIGN KEY (sp_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3009 (class 2606 OID 4632725)
+-- Dependencies: 2030 2795 2081
+-- Name: billservice_addonservice_timeperiod_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservice
+    ADD CONSTRAINT billservice_addonservice_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3010 (class 2606 OID 4632730)
+-- Dependencies: 2013 2766 2081
+-- Name: billservice_addonservice_wyte_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservice
+    ADD CONSTRAINT billservice_addonservice_wyte_period_id_fkey FOREIGN KEY (wyte_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3011 (class 2606 OID 4632748)
+-- Dependencies: 2013 2766 2083
+-- Name: billservice_addonservicetarif_activation_count_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservicetarif
+    ADD CONSTRAINT billservice_addonservicetarif_activation_count_period_id_fkey FOREIGN KEY (activation_count_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3012 (class 2606 OID 4632753)
+-- Dependencies: 2888 2081 2083
+-- Name: billservice_addonservicetarif_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservicetarif
+    ADD CONSTRAINT billservice_addonservicetarif_service_id_fkey FOREIGN KEY (service_id) REFERENCES billservice_addonservice(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3013 (class 2606 OID 4632758)
+-- Dependencies: 1939 2083 2620
+-- Name: billservice_addonservicetarif_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_addonservicetarif
+    ADD CONSTRAINT billservice_addonservicetarif_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3016 (class 2606 OID 4632800)
+-- Dependencies: 2087 1958 2666
+-- Name: billservice_addonservicetransaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3017 (class 2606 OID 4632805)
+-- Dependencies: 2899 2085 2087
+-- Name: billservice_addonservicetransaction_accountaddonservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_accountaddonservice_id_fkey FOREIGN KEY (accountaddonservice_id) REFERENCES billservice_accountaddonservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3018 (class 2606 OID 4632810)
+-- Dependencies: 2691 1968 2087
+-- Name: billservice_addonservicetransaction_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3019 (class 2606 OID 4632815)
+-- Dependencies: 2888 2081 2087
+-- Name: billservice_addonservicetransaction_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_service_id_fkey FOREIGN KEY (service_id) REFERENCES billservice_addonservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3020 (class 2606 OID 4633004)
+-- Dependencies: 2052 2087 2834
+-- Name: billservice_addonservicetransaction_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_addonservicetransaction
+    ADD CONSTRAINT billservice_addonservicetransaction_type_id_fkey FOREIGN KEY (type_id) REFERENCES billservice_transactiontype(internal_name) ON DELETE SET NULL;
+
+
+--
+-- TOC entry 2943 (class 2606 OID 4631677)
+-- Dependencies: 2666 1958 1972
+-- Name: billservice_card_account_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_account_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2944 (class 2606 OID 4631682)
+-- Dependencies: 2727 1972 1989
+-- Name: billservice_card_ipinuse_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_ipinuse_fkey FOREIGN KEY (ipinuse_id) REFERENCES billservice_ipinuse(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2945 (class 2606 OID 4631687)
+-- Dependencies: 2852 2061 1972
+-- Name: billservice_card_nas_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_nas_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2946 (class 2606 OID 4631692)
+-- Dependencies: 1972 1939 2620
+-- Name: billservice_card_tarif_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_tarif_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2947 (class 2606 OID 4631697)
+-- Dependencies: 2024 1972 2784
+-- Name: billservice_card_template_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_card
     ADD CONSTRAINT billservice_card_template_fkey FOREIGN KEY (template_id) REFERENCES billservice_template(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2948 (class 2606 OID 4631702)
+-- Dependencies: 2694 1974 1970
+-- Name: billservice_dealer_bank_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_dealer
     ADD CONSTRAINT billservice_dealer_bank_id_fkey FOREIGN KEY (bank_id) REFERENCES billservice_bankdata(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2949 (class 2606 OID 4631707)
+-- Dependencies: 1974 1976 2702
+-- Name: billservice_dealerpay_dealer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_dealerpay
     ADD CONSTRAINT billservice_dealerpay_dealer_id_fkey FOREIGN KEY (dealer_id) REFERENCES billservice_dealer(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2950 (class 2606 OID 4631712)
+-- Dependencies: 2758 1976 2009
+-- Name: billservice_dealerpay_salecard_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_dealerpay
     ADD CONSTRAINT billservice_dealerpay_salecard_id_fkey FOREIGN KEY (salecard_id) REFERENCES billservice_salecard(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2951 (class 2606 OID 4631717)
+-- Dependencies: 1978 1958 2666
+-- Name: billservice_document_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_document
     ADD CONSTRAINT billservice_document_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2952 (class 2606 OID 4631722)
+-- Dependencies: 2712 1978 1980
+-- Name: billservice_document_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_document
     ADD CONSTRAINT billservice_document_type_id_fkey FOREIGN KEY (type_id) REFERENCES billservice_documenttype(id) DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2953 (class 2606 OID 4631727)
+-- Dependencies: 1958 1982 2666
+-- Name: billservice_globalstat_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_globalstat
     ADD CONSTRAINT billservice_globalstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2954 (class 2606 OID 4631732)
+-- Dependencies: 1984 1986 2721
+-- Name: billservice_group_trafficclass_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_group_trafficclass
     ADD CONSTRAINT billservice_group_trafficclass_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2955 (class 2606 OID 4631737)
+-- Dependencies: 2063 1986 2856
+-- Name: billservice_group_trafficclass_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_group_trafficclass
     ADD CONSTRAINT billservice_group_trafficclass_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2909 (class 2606 OID 4631742)
+-- Dependencies: 1958 1937 2666
+-- Name: billservice_groupstat_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_groupstat
     ADD CONSTRAINT billservice_groupstat_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2910 (class 2606 OID 4631747)
+-- Dependencies: 2721 1937 1984
+-- Name: billservice_groupstat_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_groupstat
     ADD CONSTRAINT billservice_groupstat_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2956 (class 2606 OID 4631752)
+-- Dependencies: 1991 1989 2732
+-- Name: billservice_ipinuse_pool_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_ipinuse
     ADD CONSTRAINT billservice_ipinuse_pool_id_fkey FOREIGN KEY (pool_id) REFERENCES billservice_ippool(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2911 (class 2606 OID 4631757)
+-- Dependencies: 1958 1938 2666
+-- Name: billservice_netflowstream_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2912 (class 2606 OID 4631762)
+-- Dependencies: 1938 2061 2852
+-- Name: billservice_netflowstream_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2913 (class 2606 OID 4631767)
+-- Dependencies: 1938 1939 2620
+-- Name: billservice_netflowstream_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2914 (class 2606 OID 4631772)
+-- Dependencies: 1938 2815 2042
+-- Name: billservice_netflowstream_traffic_transmit_node_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_netflowstream
     ADD CONSTRAINT billservice_netflowstream_traffic_transmit_node_id_fkey FOREIGN KEY (traffic_transmit_node_id) REFERENCES billservice_traffictransmitnodes(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2957 (class 2606 OID 4631777)
+-- Dependencies: 1939 1994 2620
+-- Name: billservice_onetimeservice_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_onetimeservice
     ADD CONSTRAINT billservice_onetimeservice_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2960 (class 2606 OID 4632026)
+-- Dependencies: 1996 1958 2666
+-- Name: billservice_onetimeservicehistory_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_onetimeservicehistory
+    ADD CONSTRAINT billservice_onetimeservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2958 (class 2606 OID 4631782)
+-- Dependencies: 1996 1968 2691
+-- Name: billservice_onetimeservicehistory_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2961 (class 2606 OID 4632031)
+-- Dependencies: 2734 1996 1994
+-- Name: billservice_onetimeservicehistory_onetimeservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_onetimeservicehistory
+    ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2959 (class 2606 OID 4631787)
+-- Dependencies: 1996 2829 2050
+-- Name: billservice_onetimeservicehistory_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_onetimeservicehistory
     ADD CONSTRAINT billservice_onetimeservicehistory_transaction_id_fkey FOREIGN KEY (transaction_id) REFERENCES billservice_transaction(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2962 (class 2606 OID 4631792)
+-- Dependencies: 1998 2694 1970
+-- Name: billservice_operator_bank_id; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_operator
     ADD CONSTRAINT billservice_operator_bank_id FOREIGN KEY (bank_id) REFERENCES billservice_bankdata(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2963 (class 2606 OID 4631797)
+-- Dependencies: 1958 2000 2666
+-- Name: billservice_organization_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_organization
     ADD CONSTRAINT billservice_organization_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2964 (class 2606 OID 4631802)
+-- Dependencies: 2013 2766 2002
+-- Name: billservice_periodicalservice_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2965 (class 2606 OID 4631807)
+-- Dependencies: 2620 1939 2002
+-- Name: billservice_periodicalservice_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_periodicalservice
     ADD CONSTRAINT billservice_periodicalservice_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2919 (class 2606 OID 4632019)
+-- Dependencies: 1958 1940 2666
+-- Name: billservice_periodicalservicehistory_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_periodicalservicehistory
+    ADD CONSTRAINT billservice_periodicalservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2966 (class 2606 OID 4631812)
+-- Dependencies: 1984 2007 2721
+-- Name: billservice_prepaidtraffic_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT billservice_prepaidtraffic_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE;
 
 
+--
+-- TOC entry 3004 (class 2606 OID 4632570)
+-- Dependencies: 2077 1939 2620
+-- Name: billservice_radiusattrs_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_radiusattrs
+    ADD CONSTRAINT billservice_radiusattrs_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2969 (class 2606 OID 4631817)
+-- Dependencies: 2009 2758 2010
+-- Name: billservice_salecard_cards_salecard_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_salecard_cards
     ADD CONSTRAINT billservice_salecard_cards_salecard_id_fkey FOREIGN KEY (salecard_id) REFERENCES billservice_salecard(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2968 (class 2606 OID 4631822)
+-- Dependencies: 2009 1974 2702
+-- Name: billservice_salecard_dealer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_salecard
     ADD CONSTRAINT billservice_salecard_dealer_id_fkey FOREIGN KEY (dealer_id) REFERENCES billservice_dealer(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2970 (class 2606 OID 4631987)
+-- Dependencies: 2666 2015 1958
+-- Name: billservice_shedulelog_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
 
 ALTER TABLE ONLY billservice_shedulelog
     ADD CONSTRAINT billservice_shedulelog_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2971 (class 2606 OID 4632586)
+-- Dependencies: 2015 1968 2691
+-- Name: billservice_shedulelog_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
 
 ALTER TABLE ONLY billservice_shedulelog
-    ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT billservice_shedulelog_accounttarif_id_fkey FOREIGN KEY (accounttarif_id) REFERENCES billservice_accounttarif(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2972 (class 2606 OID 4631837)
+-- Dependencies: 2038 2807 2017
+-- Name: billservice_speedlimit_limit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_speedlimit
     ADD CONSTRAINT billservice_speedlimit_limit_id_fkey FOREIGN KEY (limit_id) REFERENCES billservice_trafficlimit(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2973 (class 2606 OID 4631842)
+-- Dependencies: 2666 1958 2019
+-- Name: billservice_suspendedperiod_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_suspendedperiod
     ADD CONSTRAINT billservice_suspendedperiod_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2991 (class 2606 OID 4631999)
+-- Dependencies: 2021 2780 2050
+-- Name: billservice_systemuser_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_transaction
+    ADD CONSTRAINT billservice_systemuser_fkey FOREIGN KEY (systemuser_id) REFERENCES billservice_systemuser(id) ON DELETE SET NULL DEFERRABLE;
+
+
+--
+-- TOC entry 2915 (class 2606 OID 4631847)
+-- Dependencies: 1939 2662 1956
+-- Name: billservice_tariff_access_parameters_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2916 (class 2606 OID 4631852)
+-- Dependencies: 2766 2013 1939
+-- Name: billservice_tariff_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2917 (class 2606 OID 4631857)
+-- Dependencies: 2791 2028 1939
+-- Name: billservice_tariff_time_access_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id);
+
+
+--
+-- TOC entry 2918 (class 2606 OID 4631862)
+-- Dependencies: 2048 2826 1939
+-- Name: billservice_tariff_traffic_transmit_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_tariff
     ADD CONSTRAINT billservice_tariff_traffic_transmit_service_id_fkey FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id);
 
 
+--
+-- TOC entry 2974 (class 2606 OID 4631867)
+-- Dependencies: 2024 1980 2712
+-- Name: billservice_template_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_template
     ADD CONSTRAINT billservice_template_type_id_fkey FOREIGN KEY (type_id) REFERENCES billservice_documenttype(id) DEFERRABLE INITIALLY DEFERRED;
 
 
+--
+-- TOC entry 2975 (class 2606 OID 4631872)
+-- Dependencies: 2026 2791 2028
+-- Name: billservice_timeaccessnode_time_access_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_access_service_id_fkey FOREIGN KEY (time_access_service_id) REFERENCES billservice_timeaccessservice(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2976 (class 2606 OID 4631877)
+-- Dependencies: 2030 2026 2795
+-- Name: billservice_timeaccessnode_time_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_timeaccessnode
     ADD CONSTRAINT billservice_timeaccessnode_time_period_id_fkey FOREIGN KEY (time_period_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2977 (class 2606 OID 4631882)
+-- Dependencies: 2795 2032 2030
+-- Name: billservice_timeperiod_time_period_nodes_timeperiod_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2978 (class 2606 OID 4631887)
+-- Dependencies: 2032 2034 2801
+-- Name: billservice_timeperiod_time_period_nodes_timeperiodnode_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_timeperiod_time_period_nodes
     ADD CONSTRAINT billservice_timeperiod_time_period_nodes_timeperiodnode_id_fkey FOREIGN KEY (timeperiodnode_id) REFERENCES billservice_timeperiodnode(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2979 (class 2606 OID 4631892)
+-- Dependencies: 2662 1956 2036
+-- Name: billservice_timespeed_access_parameters_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_access_parameters_id_fkey FOREIGN KEY (access_parameters_id) REFERENCES billservice_accessparameters(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2980 (class 2606 OID 4631897)
+-- Dependencies: 2030 2795 2036
+-- Name: billservice_timespeed_time_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_timespeed
     ADD CONSTRAINT billservice_timespeed_time_id_fkey FOREIGN KEY (time_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2999 (class 2606 OID 4632068)
+-- Dependencies: 1958 2666 2073
+-- Name: billservice_timetransaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_timetransaction
+    ADD CONSTRAINT billservice_timetransaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3000 (class 2606 OID 4632073)
+-- Dependencies: 2791 2073 2028
+-- Name: billservice_timetransaction_timeaccessservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_timetransaction
+    ADD CONSTRAINT billservice_timetransaction_timeaccessservice_id_fkey FOREIGN KEY (timeaccessservice_id) REFERENCES billservice_timeaccessservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3001 (class 2606 OID 4632160)
+-- Dependencies: 2620 2075 1939
+-- Name: billservice_tpchangerule_from_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_tpchangerule
+    ADD CONSTRAINT billservice_tpchangerule_from_tariff_id_fkey FOREIGN KEY (from_tariff_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3002 (class 2606 OID 4632165)
+-- Dependencies: 2075 2766 2013
+-- Name: billservice_tpchangerule_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_tpchangerule
+    ADD CONSTRAINT billservice_tpchangerule_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE SET NULL;
+
+
+--
+-- TOC entry 3003 (class 2606 OID 4632170)
+-- Dependencies: 2620 2075 1939
+-- Name: billservice_tpchangerule_to_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+--
+
+ALTER TABLE ONLY billservice_tpchangerule
+    ADD CONSTRAINT billservice_tpchangerule_to_tariff_id_fkey FOREIGN KEY (to_tariff_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2981 (class 2606 OID 4631902)
+-- Dependencies: 2038 1984 2721
+-- Name: billservice_trafficlimit_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2982 (class 2606 OID 4631907)
+-- Dependencies: 2038 2013 2766
+-- Name: billservice_trafficlimit_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_settlement_period_id_fkey FOREIGN KEY (settlement_period_id) REFERENCES billservice_settlementperiod(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2983 (class 2606 OID 4631912)
+-- Dependencies: 2038 1939 2620
+-- Name: billservice_trafficlimit_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_trafficlimit
     ADD CONSTRAINT billservice_trafficlimit_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2984 (class 2606 OID 4631917)
+-- Dependencies: 2040 2856 2063
+-- Name: billservice_trafficlimit_traffic_class_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2985 (class 2606 OID 4631922)
+-- Dependencies: 2038 2807 2040
+-- Name: billservice_trafficlimit_traffic_class_trafficlimit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_trafficlimit_traffic_class
     ADD CONSTRAINT billservice_trafficlimit_traffic_class_trafficlimit_id_fkey FOREIGN KEY (trafficlimit_id) REFERENCES billservice_trafficlimit(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2997 (class 2606 OID 4632045)
+-- Dependencies: 2071 2666 1958
+-- Name: billservice_traffictransaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_traffictransaction
+    ADD CONSTRAINT billservice_traffictransaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2998 (class 2606 OID 4632050)
+-- Dependencies: 2071 2826 2048
+-- Name: billservice_traffictransaction_traffictransmitservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_traffictransaction
+    ADD CONSTRAINT billservice_traffictransaction_traffictransmitservice_id_fkey FOREIGN KEY (traffictransmitservice_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2986 (class 2606 OID 4631927)
+-- Dependencies: 2048 2042 2826
+-- Name: billservice_traffictransmitnod_traffic_transmit_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
     ADD CONSTRAINT billservice_traffictransmitnod_traffic_transmit_service_id_fkey FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 2987 (class 2606 OID 4631992)
+-- Dependencies: 1984 2721 2042
+-- Name: billservice_traffictransmitnodes_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes
-    ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id);
+    ADD CONSTRAINT billservice_traffictransmitnodes_group_id_fkey FOREIGN KEY (group_id) REFERENCES billservice_group(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 2988 (class 2606 OID 4631937)
+-- Dependencies: 2795 2044 2030
+-- Name: billservice_traffictransmitnodes_time_nodes_timeperiod_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_traffictransmitnodes_time_nodes
     ADD CONSTRAINT billservice_traffictransmitnodes_time_nodes_timeperiod_id_fkey FOREIGN KEY (timeperiod_id) REFERENCES billservice_timeperiod(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2989 (class 2606 OID 4631942)
+-- Dependencies: 2856 2063 2046
+-- Name: billservice_traffictransmitnodes_traffic_c_trafficclass_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_traffictransmitnodes_traffic_class
     ADD CONSTRAINT billservice_traffictransmitnodes_traffic_c_trafficclass_id_fkey FOREIGN KEY (trafficclass_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2990 (class 2606 OID 4631947)
+-- Dependencies: 2666 2050 1958
+-- Name: billservice_transaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_transaction
     ADD CONSTRAINT billservice_transaction_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2992 (class 2606 OID 4632007)
+-- Dependencies: 2620 1939 2050
+-- Name: billservice_transaction_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY billservice_transaction
-    ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE CASCADE DEFERRABLE;
+    ADD CONSTRAINT billservice_transaction_tarif_id_fkey FOREIGN KEY (tarif_id) REFERENCES billservice_tariff(id) ON DELETE SET NULL DEFERRABLE;
+
+
+--
+-- TOC entry 3005 (class 2606 OID 4632668)
+-- Dependencies: 2079 2666 1958
+-- Name: billservice_x8021_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_x8021
+    ADD CONSTRAINT billservice_x8021_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3006 (class 2606 OID 4632673)
+-- Dependencies: 2852 2079 2061
+-- Name: billservice_x8021_nas_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY billservice_x8021
+    ADD CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id) REFERENCES nas_nas(id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 2925 (class 2606 OID 4631957)
+-- Dependencies: 1948 2846 2056
+-- Name: content_type_id_refs_id_728de91f; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY auth_permission
     ADD CONSTRAINT content_type_id_refs_id_728de91f FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2993 (class 2606 OID 4631962)
+-- Dependencies: 2846 2056 2054
+-- Name: django_admin_log_content_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_content_type_id_fkey FOREIGN KEY (content_type_id) REFERENCES django_content_type(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2994 (class 2606 OID 4631967)
+-- Dependencies: 2649 1950 2054
+-- Name: django_admin_log_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE DEFERRABLE;
 
+
+--
+-- TOC entry 2995 (class 2606 OID 4631972)
+-- Dependencies: 2856 2065 2063
+-- Name: nas_trafficnode_traffic_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
 ALTER TABLE ONLY nas_trafficnode
     ADD CONSTRAINT nas_trafficnode_traffic_class_id_fkey FOREIGN KEY (traffic_class_id) REFERENCES nas_trafficclass(id) ON DELETE CASCADE DEFERRABLE;
+
+
+--
+-- TOC entry 2921 (class 2606 OID 4632577)
+-- Dependencies: 1941 2073 2871
+-- Name: radius_session_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
+
+ALTER TABLE ONLY radius_session
+    ADD CONSTRAINT radius_session_transaction_id_fkey FOREIGN KEY (transaction_id) REFERENCES billservice_timetransaction(id) ON DELETE SET NULL DEFERRABLE;
+
+
+--
+-- TOC entry 2967 (class 2606 OID 4631977)
+-- Dependencies: 2826 2048 2007
+-- Name: traffic_transmit_service_id_refs_id_4797c3b9; Type: FK CONSTRAINT; Schema: public; Owner: ebs
+--
 
 ALTER TABLE ONLY billservice_prepaidtraffic
     ADD CONSTRAINT traffic_transmit_service_id_refs_id_4797c3b9 FOREIGN KEY (traffic_transmit_service_id) REFERENCES billservice_traffictransmitservice(id) ON DELETE CASCADE DEFERRABLE;
 
 
+--
+-- TOC entry 3123 (class 0 OID 0)
+-- Dependencies: 6
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+-- Completed on 2009-08-29 17:07:19
+
+--
+-- PostgreSQL database dump complete
+--
 
