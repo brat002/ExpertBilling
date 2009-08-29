@@ -1726,7 +1726,7 @@ CREATE TABLE billservice_addonservice
   service_deactivation_action character varying(8000) NOT NULL,
   deactivate_service_for_blocked_account boolean NOT NULL,
   change_speed boolean NOT NULL,
-  change_sped_type character varying(32) NOT NULL,
+  change_speed_type character varying(32) NOT NULL,
   speed_units character varying(32) NOT NULL,
   max_tx integer DEFAULT 0,
   max_rx integer DEFAULT 0,
