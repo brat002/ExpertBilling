@@ -298,7 +298,8 @@ class periodical_service_bill(Thread):
             self.NOW = dateAT if not ps.deactivated else ps.deactivated
             period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW) 
             get_last_checkout_ = get_last_addon_checkout
-            acc.end_date = 
+            #Что за хуйня тут была??? acc.end_date = равно чему?
+            acc.end_date = period_end
         else:
             return
         s_delta = datetime.timedelta(seconds=delta)

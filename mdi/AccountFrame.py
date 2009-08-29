@@ -4234,7 +4234,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.addrow(a.username, i,1, enabled=a.status)
             #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
             self.addrow(float(a.ballance), i,2, color="red", enabled=a.status)
-            self.addrow(a.credit, i,3, enabled=a.status)
+            self.addrow(float(a.credit), i,3, enabled=a.status)
             self.addrow(a.fullname, i,4, enabled=a.status)
             self.addrow(a.email, i,5, enabled=a.status)
             self.addrow(a.nas_name,i,6, enabled=a.status)
