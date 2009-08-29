@@ -144,7 +144,7 @@ class pyrologger(isdlogger):
 	           self.log_(self.levels[level],  ' | '.join(('PYRO_LOG:', thread_name, str(source), \
 						       reduce(lambda x,y: str(x)+' '+str(y),arglist))))
         except:
-            self.log_(str(arglist))
+            self.log_(self.levels[level],str(arglist))
 
 
     
