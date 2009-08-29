@@ -165,7 +165,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         self.connection._con._con.set_client_encoding('UTF8')
         self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
         self.ticket = ''
-        print Pyro.core.Log
+        #print Pyro.core.Log
 
 
     def run(self):
@@ -190,7 +190,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             #print host, login, password
             a=ssh_client(host, login, password, '')
         except Exception, e:
-            print e
+            logger.error("Can not test credentials for nas %s %s", (host, e))
             return False
         return True
 
@@ -511,7 +511,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 if not card: return "CARD_NOT_FOUND"
                 
                 if card["sold"] is None: return "CARD_NOT_SOLD"
-                print "card['activated']", card['activated']
+                
                 if card['activated']: return "CARD_ALREADY_ACTIVATED"
                 
                 if card['start_date']>now or card['end_date']<now: return "CARD_EXPIRED"
@@ -523,9 +523,10 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
                 cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
                 connection.commit()
+                logger.info("Card #%s series #%s pin #%s was activated", (card_id, serial, pin))
                 return  "CARD_ACTIVATED"
         except Exception, e:
-            print e
+            logger.error("Error activate card %s, %s", (card_id, e))
             connection.rollback()
             return "CARD_ACTIVATION_ERROR"
                             
@@ -825,7 +826,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 cur.execute("SELECT id FROM billservice_accountaddonservice WHERE deactivated is Null and service_id IN (SELECT id FROM billservice_addonservice WHERE change_speed=True) and account_id=%s" % account.id)
 
             except Exception, e:
-                print e
+                logger.error("Can not add addonservice for account %s, %s", (account_id, e))
             if cur.fetchall():
 
                 return "ALERADY_HAVE_SPEED_SERVICE"
@@ -899,7 +900,6 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             connection.commit()
             return True
         except Exception, e:
-            print e
             logger.error("Error add addonservice to account, %s", e)
             connection.rollback()
             return False
@@ -967,7 +967,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 try:
                     settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
                 except Exception, e:
-                    print e
+                    logger.error("Error cannot delete addonservice for account %s, %s", (account_id, e))
             else:
                 delta = 0
             now = datetime.datetime.now()
@@ -985,7 +985,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                     model.accounttarif_id = account.accounttarif_id
                     model.accountaddonservice_id = account_service_id
                 except Exception, e:
-                    print e
+                    logger.error("Error cannot make wyte transaction for account %s, %s", (account_id, e))
                 sql = model.save("billservice_addonservicetransaction")
                 cur.execute(sql)
             #Отключаем услугу
@@ -1107,7 +1107,7 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     #main thread should not exit!
-    print "ebs: rpc: started"
+    #print "ebs: rpc: started"
     savepid(vars.piddir, vars.name)
     while True:
         time.sleep(300)

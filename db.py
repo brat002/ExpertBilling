@@ -60,7 +60,7 @@ class Object(object):
             self.__dict__['id']
             sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
         except Exception, e:
-            print e
+            #print e
             sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
             sql = sql.replace("'None'", 'Null')
             sql = sql.replace("'Null'", 'Null')
