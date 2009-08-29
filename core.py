@@ -455,7 +455,11 @@ class periodical_service_bill(Thread):
                         if ps.created and ps.created >= chk_date:
                             cash_summ = ZERO_SUM
                         if pss_type == PERIOD:
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                            tr_date = chk_date
+                            if acc.end_date and acc.end_date < chk_date:
+                                cash_summ = 0
+                                tr_date = acc.end_date
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
                             tr_date = chk_date
