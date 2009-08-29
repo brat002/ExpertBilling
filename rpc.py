@@ -469,8 +469,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
             
             cur.execute(u"""
-            INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
-            VALUES('Активация карты доступа', %s, 'ACCESS_CARD', True, %s, %s*(-1),'', %s);
+            INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
+            VALUES('Активация карты доступа', %s, 'ACCESS_CARD', True, %s, %s*(-1),'', %s, False, Null);
             """, (account_id, card["tarif_id"], card['nominal'], now))
     
             cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
@@ -488,7 +488,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         cur.connection.commit()
         for account in accounts:
             try:
-                cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, datetime))
+                cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, date))
             except Exception, e:
                 cur.connection.rollback()
                 logger.error("Error change tarif for account %s, %s", (account, e))
@@ -517,8 +517,8 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 if card['start_date']>now or card['end_date']<now: return "CARD_EXPIRED"
                                 
                 cur.execute(u"""
-                INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
-                VALUES('Активация карты оплаты', %s, 'PAY_CARD', True, %s, %s*(-1),'', %s);
+                INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
+                VALUES('Активация карты оплаты', %s, 'PAY_CARD', True, %s, %s*(-1),'', %s, False, Null);
                 """, (account_id, card["tarif_id"], card['nominal'], now))
         
                 cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
@@ -713,14 +713,14 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
         cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
         FROM billservice_account AS acc 
-        WHERE %s=get_tarif(acc.id) and deleted = False ORDER BY acc.username ASC;""", (tarif_id,))
+        WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
         result = map(Object, cur.fetchall())
         return result
 
     @authentconn 
     def get_tariffs(self, cur=None, connection=None):
         cur.execute("""SELECT id, name, active, (SELECT bsap.access_type
-                   FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff ORDER BY ttype, name;""")
+                   FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff  WHERE tariff.deleted = False ORDER BY ttype, name;""")
         result = map(Object, cur.fetchall())
         return result
     

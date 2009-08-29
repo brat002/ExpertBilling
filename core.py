@@ -986,16 +986,18 @@ class addon_service(Thread):
                             # Получаем delta
                             sp_start, sp_end, delta = fMem.settlement_period_(accservice.activated, sp.length_in, sp.length, dateAT)
                             tdelta = dateAT-accservice.activated
-                            
-                            if (tdelta.days*86400+tdelta.seconds)>=delta:
-                                service.deactivated = dateAT
+                            deactivated = None
+                            if (tdelta.days*86400+tdelta.seconds)>=delta and not accservice.deactivated:
+                                deactivated = dateAT
+                                cur.execute("UPDATE billservice_accountaddonservice SET deactivated=%s WHERE id=%s", (dateAT,accservice.id,))
+                                
                         if service.action:
                             if service.nas_id==0:
                                 nas = caches.nas_cache.by_id.get(acc.nas_id)
                             else:
                                 nas = caches.nas_cache.by_id.get(service.nas_id)
                                 
-                        if accservice.deactivated is None and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
+                        if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
                             #выполняем service_activation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
@@ -1003,7 +1005,7 @@ class addon_service(Thread):
                                           nas.password, format_string=service.service_activation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, acc.account_id))
                         
-                        if (accservice.deactivated or accservice.temporary_blocked) and accservice.action_status==True:
+                        if (accservice.deactivated or accservice.temporary_blocked or deactivated) and accservice.action_status==True:
                             #выполняем service_deactivation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 

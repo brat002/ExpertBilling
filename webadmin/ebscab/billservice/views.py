@@ -439,7 +439,7 @@ def card_acvation(request):
                 print "res=", res
 
                 if res == 'CARD_NOT_FOUND':
-                    error_message = u'Ошибка активаци. Карта не найдена.'
+                    error_message = u'Ошибка активации. Карта не найдена.'
                 elif res == 'CARD_NOT_SOLD':
                     error_message = u'Ошибка активации. Карта не была продана.'
                 elif res == 'CARD_ALREADY_ACTIVATED':
