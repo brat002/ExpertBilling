@@ -2511,6 +2511,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.lineEdit_balance = QtGui.QLineEdit(self.groupBox_balance_info)
         self.lineEdit_balance.setMinimumSize(QtCore.QSize(0, 20))
         self.lineEdit_balance.setObjectName("lineEdit_balance")
+        self.lineEdit_balance.setDisabled(True)
         self.gridLayout_9.addWidget(self.lineEdit_balance, 0, 1, 1, 1)
         self.label_credit = QtGui.QLabel(self.groupBox_balance_info)
         self.label_credit.setObjectName("label_credit")
@@ -3165,6 +3166,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_agreement_date.setText(unicode(self.model.created.strftime(strftimeFormat)))
             
             #model.status = self.comboBox_status.itemData(self.comboBox.currentIndex()).toInt()[0]
+            #print dir(self.model)
             self.comboBox_status.setCurrentIndex(self.model.status-1)
             #self.checkBox_suspended.setChecked(self.model.suspended)
             #self.checkBox_active.setChecked(self.model.status)
@@ -3294,6 +3296,9 @@ class AccountWindow(QtGui.QMainWindow):
             self.accountTarifRefresh()
             self.suspendedPeriodRefresh()
             self.accountAddonServiceRefresh()
+        else:
+            for i in xrange(self.tableWidget.rowCount()):
+                self.addrow(self.tableWidget, '', i,1)
 
     def accept(self):
         """
@@ -3346,11 +3351,11 @@ class AccountWindow(QtGui.QMainWindow):
 #            model.passport = unicode(self.lineEdit_passport_n.text())
 #            model.passport_given = unicode(self.lineEdit_passport_given.text())
 #            model.passport_date = self.dateEdit_passport_date.date().toPyDate()
-#            model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
+#           
 #            model.contactperson = unicode(self.lineEdit_contactperson.text())
 #            model.contactperson_phone = unicode(self.lineEdit_contactphone.text())
 #===============================================================================
-
+            model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
             for i in xrange(self.tableWidget.rowCount()):
                 model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
                 #self.tableWidget.item(i,1).setText(unicode(self.model.__dict__.get(self.tableInfo[i][0])))
@@ -3619,12 +3624,13 @@ class AccountWindow(QtGui.QMainWindow):
                         speriod.end_date="now()"
                         self.connection.save(speriod, "billservice_suspendedperiod")
                             
-                if not speriod and model.status==2:
-                    speriod = Object()
-                    speriod.start_date = "now()"
-                    speriod.account_id = model.id
-                    
-                    self.connection.save(speriod, "billservice_suspendedperiod")
+                if not speriod and not model.isnull("status"):
+                    if model.status==2:
+                        speriod = Object()
+                        speriod.start_date = "now()"
+                        speriod.account_id = model.id
+                        
+                        self.connection.save(speriod, "billservice_suspendedperiod")
                     
             if not model.isnull("id"):
                 x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % model.id)
