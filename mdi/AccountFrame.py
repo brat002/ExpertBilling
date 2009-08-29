@@ -2405,8 +2405,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.organization = None
         self.bank = None
         
-        self.setObjectName("MainWindow")
-        self.resize(848, 680)
+        self.setObjectName("AccountWindow")
+        bhdr = HeaderUtil.getBinaryHeader('AccountWindow-account_info')
+        self.resize(851, 680)
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -2415,8 +2416,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.tabWidget.setObjectName("tabWidget")
         self.tab_general = QtGui.QWidget()
         self.tab_general.setObjectName("tab_general")
+        self.gridLayout_13 = QtGui.QGridLayout(self.tab_general)
+        self.gridLayout_13.setObjectName("gridLayout_13")
         self.groupBox_account_data = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_account_data.setGeometry(QtCore.QRect(9, 9, 381, 86))
         self.groupBox_account_data.setMinimumSize(QtCore.QSize(381, 82))
         self.groupBox_account_data.setMaximumSize(QtCore.QSize(381, 86))
         self.groupBox_account_data.setObjectName("groupBox_account_data")
@@ -2444,8 +2446,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolButton_generate_password = QtGui.QToolButton(self.groupBox_account_data)
         self.toolButton_generate_password.setObjectName("toolButton_generate_password")
         self.gridLayout_3.addWidget(self.toolButton_generate_password, 1, 2, 1, 1)
+        self.gridLayout_13.addWidget(self.groupBox_account_data, 0, 0, 2, 2)
         self.groupBox_agreement = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_agreement.setGeometry(QtCore.QRect(396, 10, 421, 86))
         self.groupBox_agreement.setMinimumSize(QtCore.QSize(391, 86))
         self.groupBox_agreement.setMaximumSize(QtCore.QSize(3910, 84))
         self.groupBox_agreement.setObjectName("groupBox_agreement")
@@ -2473,214 +2475,16 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolButton_agreement_print.setIcon(icon)
         self.toolButton_agreement_print.setObjectName("toolButton_agreement_print")
         self.gridLayout_4.addWidget(self.toolButton_agreement_print, 1, 2, 1, 1)
-        self.groupBox_account_info = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_account_info.setGeometry(QtCore.QRect(9, 101, 381, 241))
-        self.groupBox_account_info.setMinimumSize(QtCore.QSize(381, 211))
-        self.groupBox_account_info.setMaximumSize(QtCore.QSize(381, 16381))
-        self.groupBox_account_info.setObjectName("groupBox_account_info")
-        self.gridLayout_8 = QtGui.QGridLayout(self.groupBox_account_info)
-        self.gridLayout_8.setObjectName("gridLayout_8")
-        self.label_name = QtGui.QLabel(self.groupBox_account_info)
-        self.label_name.setObjectName("label_name")
-        self.gridLayout_8.addWidget(self.label_name, 2, 0, 1, 1)
-        self.lineEdit_name = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_name.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_name.setObjectName("lineEdit_name")
-        self.gridLayout_8.addWidget(self.lineEdit_name, 2, 1, 1, 1)
-        self.label_address = QtGui.QLabel(self.groupBox_account_info)
-        self.label_address.setObjectName("label_address")
-        self.gridLayout_8.addWidget(self.label_address, 3, 0, 1, 1)
-        self.lineEdit_email = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_email.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_email.setObjectName("lineEdit_email")
-        self.gridLayout_8.addWidget(self.lineEdit_email, 3, 1, 1, 1)
-        self.label_phone_h = QtGui.QLabel(self.groupBox_account_info)
-        self.label_phone_h.setObjectName("label_phone_h")
-        self.gridLayout_8.addWidget(self.label_phone_h, 4, 0, 1, 1)
-        self.lineEdit_phone_h = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_phone_h.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_phone_h.setObjectName("lineEdit_phone_h")
-        self.gridLayout_8.addWidget(self.lineEdit_phone_h, 4, 1, 1, 1)
-        self.label_passport_n = QtGui.QLabel(self.groupBox_account_info)
-        self.label_passport_n.setObjectName("label_passport_n")
-        self.gridLayout_8.addWidget(self.label_passport_n, 6, 0, 1, 1)
-        self.lineEdit_passport_n = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_passport_n.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_passport_n.setObjectName("lineEdit_passport_n")
-        self.gridLayout_8.addWidget(self.lineEdit_passport_n, 6, 1, 1, 1)
-        self.label_passport_give = QtGui.QLabel(self.groupBox_account_info)
-        self.label_passport_give.setObjectName("label_passport_give")
-        self.gridLayout_8.addWidget(self.label_passport_give, 7, 0, 1, 1)
-        self.lineEdit_passport_given = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_passport_given.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_passport_given.setObjectName("lineEdit_passport_given")
-        self.gridLayout_8.addWidget(self.lineEdit_passport_given, 7, 1, 1, 1)
-        self.label_passport_date = QtGui.QLabel(self.groupBox_account_info)
-        self.label_passport_date.setObjectName("label_passport_date")
-        self.gridLayout_8.addWidget(self.label_passport_date, 8, 0, 1, 1)
-        self.dateEdit_passport_date = QtGui.QDateEdit(self.groupBox_account_info)
-        self.dateEdit_passport_date.setMinimumSize(QtCore.QSize(0, 20))
-        self.dateEdit_passport_date.setObjectName("dateEdit_passport_date")
-        self.gridLayout_8.addWidget(self.dateEdit_passport_date, 8, 1, 1, 1)
-        self.lineEdit_phone_m = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_phone_m.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_phone_m.setObjectName("lineEdit_phone_m")
-        self.gridLayout_8.addWidget(self.lineEdit_phone_m, 5, 1, 1, 1)
-        self.label_phone_m = QtGui.QLabel(self.groupBox_account_info)
-        self.label_phone_m.setObjectName("label_phone_m")
-        self.gridLayout_8.addWidget(self.label_phone_m, 5, 0, 1, 1)
-        self.lineEdit_contactperson = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_contactperson.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_contactperson.setObjectName("lineEdit_contactperson")
-        self.gridLayout_8.addWidget(self.lineEdit_contactperson, 0, 1, 1, 1)
-        self.label_contactperson = QtGui.QLabel(self.groupBox_account_info)
-        self.label_contactperson.setObjectName("label_contactperson")
-        self.gridLayout_8.addWidget(self.label_contactperson, 0, 0, 1, 1)
-        self.label_contactphone = QtGui.QLabel(self.groupBox_account_info)
-        self.label_contactphone.setObjectName("label_contactphone")
-        self.gridLayout_8.addWidget(self.label_contactphone, 1, 0, 1, 1)
-        self.lineEdit_contactphone = QtGui.QLineEdit(self.groupBox_account_info)
-        self.lineEdit_contactphone.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_contactphone.setObjectName("lineEdit_contactphone")
-        self.gridLayout_8.addWidget(self.lineEdit_contactphone, 1, 1, 1, 1)
-        self.groupBox_urdata = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_urdata.setGeometry(QtCore.QRect(396, 101, 421, 241))
-        self.groupBox_urdata.setMinimumSize(QtCore.QSize(391, 0))
-        self.groupBox_urdata.setMaximumSize(QtCore.QSize(16381, 16381))
-        self.groupBox_urdata.setCheckable(True)
-        self.groupBox_urdata.setChecked(False)
-        self.groupBox_urdata.setObjectName("groupBox_urdata")
-        self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_urdata)
-        self.gridLayout_7.setObjectName("gridLayout_7")
-        self.label_organization = QtGui.QLabel(self.groupBox_urdata)
-        self.label_organization.setObjectName("label_organization")
-        self.gridLayout_7.addWidget(self.label_organization, 0, 0, 1, 1)
-        self.lineEdit_organization = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_organization.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_organization.setObjectName("lineEdit_organization")
-        self.gridLayout_7.addWidget(self.lineEdit_organization, 0, 1, 1, 4)
-        self.label_bank = QtGui.QLabel(self.groupBox_urdata)
-        self.label_bank.setObjectName("label_bank")
-        self.gridLayout_7.addWidget(self.label_bank, 10, 0, 1, 1)
-        self.lineEdit_bank = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_bank.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_bank.setObjectName("lineEdit_bank")
-        self.gridLayout_7.addWidget(self.lineEdit_bank, 10, 1, 1, 1)
-        self.lineEdit_uraddress = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_uraddress.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_uraddress.setObjectName("lineEdit_uraddress")
-        self.gridLayout_7.addWidget(self.lineEdit_uraddress, 3, 1, 1, 4)
-        self.label_uraddress = QtGui.QLabel(self.groupBox_urdata)
-        self.label_uraddress.setObjectName("label_uraddress")
-        self.gridLayout_7.addWidget(self.label_uraddress, 3, 0, 1, 1)
-        self.lineEdit_urphone = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_urphone.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_urphone.setObjectName("lineEdit_urphone")
-        self.gridLayout_7.addWidget(self.lineEdit_urphone, 4, 1, 1, 4)
-        self.label_urphone = QtGui.QLabel(self.groupBox_urdata)
-        self.label_urphone.setObjectName("label_urphone")
-        self.gridLayout_7.addWidget(self.label_urphone, 4, 0, 1, 1)
-        self.lineEdit_fax = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_fax.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_fax.setObjectName("lineEdit_fax")
-        self.gridLayout_7.addWidget(self.lineEdit_fax, 5, 1, 1, 4)
-        self.label_fax = QtGui.QLabel(self.groupBox_urdata)
-        self.label_fax.setObjectName("label_fax")
-        self.gridLayout_7.addWidget(self.label_fax, 5, 0, 1, 1)
-        self.label_bank_code = QtGui.QLabel(self.groupBox_urdata)
-        self.label_bank_code.setObjectName("label_bank_code")
-        self.gridLayout_7.addWidget(self.label_bank_code, 10, 3, 1, 1)
-        self.lineEdit_bank_code = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_bank_code.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_bank_code.setMaximumSize(QtCore.QSize(60, 16777215))
-        self.lineEdit_bank_code.setObjectName("lineEdit_bank_code")
-        self.gridLayout_7.addWidget(self.lineEdit_bank_code, 10, 4, 1, 1)
-        self.lineEdit_rs = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_rs.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_rs.setObjectName("lineEdit_rs")
-        self.gridLayout_7.addWidget(self.lineEdit_rs, 11, 1, 1, 4)
-        self.label_rs = QtGui.QLabel(self.groupBox_urdata)
-        self.label_rs.setObjectName("label_rs")
-        self.gridLayout_7.addWidget(self.label_rs, 11, 0, 1, 1)
-        self.lineEdit_unp = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_unp.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_unp.setObjectName("lineEdit_unp")
-        self.gridLayout_7.addWidget(self.lineEdit_unp, 1, 1, 1, 4)
-        self.label_unp = QtGui.QLabel(self.groupBox_urdata)
-        self.label_unp.setObjectName("label_unp")
-        self.gridLayout_7.addWidget(self.label_unp, 1, 0, 1, 1)
-        self.lineEdit_okpo = QtGui.QLineEdit(self.groupBox_urdata)
-        self.lineEdit_okpo.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_okpo.setObjectName("lineEdit_okpo")
-        self.gridLayout_7.addWidget(self.lineEdit_okpo, 2, 1, 1, 4)
-        self.label_okpo = QtGui.QLabel(self.groupBox_urdata)
-        self.label_okpo.setObjectName("label_okpo")
-        self.gridLayout_7.addWidget(self.label_okpo, 2, 0, 1, 1)
-        self.groupBox_address = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_address.setGeometry(QtCore.QRect(9, 350, 381, 181))
-        self.groupBox_address.setMinimumSize(QtCore.QSize(381, 181))
-        self.groupBox_address.setMaximumSize(QtCore.QSize(381, 16777215))
-        self.groupBox_address.setObjectName("groupBox_address")
-        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_address)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.label_city = QtGui.QLabel(self.groupBox_address)
-        self.label_city.setObjectName("label_city")
-        self.gridLayout_2.addWidget(self.label_city, 0, 0, 1, 1)
-        self.lineEdit_city = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_city.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_city.setObjectName("lineEdit_city")
-        self.gridLayout_2.addWidget(self.lineEdit_city, 0, 1, 1, 1)
-        self.label_region = QtGui.QLabel(self.groupBox_address)
-        self.label_region.setObjectName("label_region")
-        self.gridLayout_2.addWidget(self.label_region, 1, 0, 1, 1)
-        self.lineEdit_region = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_region.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_region.setObjectName("lineEdit_region")
-        self.gridLayout_2.addWidget(self.lineEdit_region, 1, 1, 1, 3)
-        self.label_street = QtGui.QLabel(self.groupBox_address)
-        self.label_street.setObjectName("label_street")
-        self.gridLayout_2.addWidget(self.label_street, 2, 0, 1, 1)
-        self.lineEdit_street = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_street.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_street.setObjectName("lineEdit_street")
-        self.gridLayout_2.addWidget(self.lineEdit_street, 2, 1, 1, 3)
-        self.label_house = QtGui.QLabel(self.groupBox_address)
-        self.label_house.setObjectName("label_house")
-        self.gridLayout_2.addWidget(self.label_house, 3, 0, 1, 1)
-        self.lineEdit_house = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_house.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_house.setObjectName("lineEdit_house")
-        self.gridLayout_2.addWidget(self.lineEdit_house, 3, 1, 1, 1)
-        self.label_house_bulk = QtGui.QLabel(self.groupBox_address)
-        self.label_house_bulk.setObjectName("label_house_bulk")
-        self.gridLayout_2.addWidget(self.label_house_bulk, 3, 2, 1, 1)
-        self.lineEdit_house_bulk = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_house_bulk.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_house_bulk.setObjectName("lineEdit_house_bulk")
-        self.gridLayout_2.addWidget(self.lineEdit_house_bulk, 3, 3, 1, 1)
-        self.label_room = QtGui.QLabel(self.groupBox_address)
-        self.label_room.setObjectName("label_room")
-        self.gridLayout_2.addWidget(self.label_room, 5, 0, 1, 1)
-        self.lineEdit_room = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_room.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_room.setObjectName("lineEdit_room")
-        self.gridLayout_2.addWidget(self.lineEdit_room, 5, 1, 1, 3)
-        self.label_20 = QtGui.QLabel(self.groupBox_address)
-        self.label_20.setObjectName("label_20")
-        self.gridLayout_2.addWidget(self.label_20, 0, 2, 1, 1)
-        self.lineEdit_postcode = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_postcode.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_postcode.setObjectName("lineEdit_postcode")
-        self.gridLayout_2.addWidget(self.lineEdit_postcode, 0, 3, 1, 1)
-        self.lineEdit_entrance = QtGui.QLineEdit(self.groupBox_address)
-        self.lineEdit_entrance.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_entrance.setObjectName("lineEdit_entrance")
-        self.gridLayout_2.addWidget(self.lineEdit_entrance, 4, 1, 1, 3)
-        self.label_entrance = QtGui.QLabel(self.groupBox_address)
-        self.label_entrance.setObjectName("label_entrance")
-        self.gridLayout_2.addWidget(self.label_entrance, 4, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.groupBox_agreement, 0, 2, 2, 1)
+        self.groupBox = QtGui.QGroupBox(self.tab_general)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_19 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_19.setObjectName("gridLayout_19")
+        self.plainTextEdit_comment = QtGui.QPlainTextEdit(self.groupBox)
+        self.plainTextEdit_comment.setObjectName("plainTextEdit_comment")
+        self.gridLayout_19.addWidget(self.plainTextEdit_comment, 0, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.groupBox, 6, 2, 2, 1)
         self.groupBox_status = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_status.setGeometry(QtCore.QRect(10, 540, 381, 61))
         self.groupBox_status.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.groupBox_status.setObjectName("groupBox_status")
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox_status)
@@ -2688,16 +2492,14 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_status = QtGui.QComboBox(self.groupBox_status)
         self.comboBox_status.setObjectName("comboBox_status")
         self.horizontalLayout.addWidget(self.comboBox_status)
-        self.groupBox = QtGui.QGroupBox(self.tab_general)
-        self.groupBox.setGeometry(QtCore.QRect(396, 460, 421, 141))
-        self.groupBox.setObjectName("groupBox")
-        self.gridLayout_19 = QtGui.QGridLayout(self.groupBox)
-        self.gridLayout_19.setObjectName("gridLayout_19")
-        self.plainTextEdit_comment = QtGui.QPlainTextEdit(self.groupBox)
-        self.plainTextEdit_comment.setObjectName("plainTextEdit_comment")
-        self.gridLayout_19.addWidget(self.plainTextEdit_comment, 0, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.groupBox_status, 7, 0, 1, 2)
+        self.tableWidget = QtGui.QTableWidget(self.tab_general)
+        self.tableWidget.setMinimumSize(QtCore.QSize(0, 300))
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.tableWidget.setObjectName("AccountWindow-account_info")
+
+        self.gridLayout_13.addWidget(self.tableWidget, 2, 0, 2, 3)
         self.groupBox_balance_info = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_balance_info.setGeometry(QtCore.QRect(396, 350, 421, 107))
         self.groupBox_balance_info.setMinimumSize(QtCore.QSize(391, 0))
         self.groupBox_balance_info.setMaximumSize(QtCore.QSize(3910, 1656465))
         self.groupBox_balance_info.setObjectName("groupBox_balance_info")
@@ -2707,7 +2509,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_balance.setObjectName("label_balance")
         self.gridLayout_9.addWidget(self.label_balance, 0, 0, 1, 1)
         self.lineEdit_balance = QtGui.QLineEdit(self.groupBox_balance_info)
-        self.lineEdit_balance.setDisabled(True)
         self.lineEdit_balance.setMinimumSize(QtCore.QSize(0, 20))
         self.lineEdit_balance.setObjectName("lineEdit_balance")
         self.gridLayout_9.addWidget(self.lineEdit_balance, 0, 1, 1, 1)
@@ -2723,7 +2524,10 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_credit.setChecked(True)
         self.checkBox_credit.setObjectName("checkBox_credit")
         self.gridLayout_9.addWidget(self.checkBox_credit, 2, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.groupBox_balance_info, 6, 0, 1, 1)
         self.tabWidget.addTab(self.tab_general, "")
+        
+        #-----
         self.tab_network_settings = QtGui.QWidget()
         self.tab_network_settings.setObjectName("tab_network_settings")
         self.gridLayout_17 = QtGui.QGridLayout(self.tab_network_settings)
@@ -2957,14 +2761,18 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionAdd)
         self.toolBar.addAction(self.actionDel)
-        self.label_name.setBuddy(self.lineEdit_name)
-        self.label_balance.setBuddy(self.lineEdit_balance)
-        self.label_credit.setBuddy(self.lineEdit_credit)
-        self.label_ipn_ip_address.setBuddy(self.lineEdit_ipn_ip_address)
-        self.label_ipn_mac_address.setBuddy(self.lineEdit_ipn_mac_address)
+        #self.label_name.setBuddy(self.lineEdit_name)
+        #self.label_balance.setBuddy(self.lineEdit_balance)
+        ##self.label_credit.setBuddy(self.lineEdit_credit)
+        #self.label_ipn_ip_address.setBuddy(self.lineEdit_ipn_ip_address)
+        #self.label_ipn_mac_address.setBuddy(self.lineEdit_ipn_mac_address)
 
         self.retranslateUi()
+        HeaderUtil.nullifySaved(self.tableWidget.objectName())
+        self.firsttime = True
+        
         self.tabWidget.setCurrentIndex(0)
+        
         QtCore.QMetaObject.connectSlotsByName(self)
 
         
@@ -2974,6 +2782,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.checkBox_assign_ipn_ip_from_dhcp, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
         self.connect(self.tableWidget_accounttarif, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
         self.connect(self.tableWidget_addonservice, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.editAccountInfo)
         
         self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_action)
         self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_action)
@@ -2983,6 +2792,13 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.toolButton_get_vpn_from_pool,QtCore.SIGNAL("clicked()"),self.get_vpn_from_pool)
         
         self.fixtures()
+        if not bhdr.isEmpty():
+            HeaderUtil.setBinaryHeader(self.tableWidget.objectName(), bhdr)
+            HeaderUtil.getHeader(self.tableWidget.objectName(), self.tableWidget)
+        else: self.firsttime = False
+        tableHeader = self.tableWidget.horizontalHeader()
+        self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        
         self.dhcpActions()
         
     def retranslateUi(self):
@@ -2995,32 +2811,34 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_agreement.setTitle(QtGui.QApplication.translate("MainWindow", "Договор", None, QtGui.QApplication.UnicodeUTF8))
         self.label_agreement_date.setText(QtGui.QApplication.translate("MainWindow", "Дата подключения", None, QtGui.QApplication.UnicodeUTF8))
         self.label_agreement_num.setText(QtGui.QApplication.translate("MainWindow", "Номер договора", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_account_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о пользователе", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_name.setText(QtGui.QApplication.translate("MainWindow", "ФИО", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_address.setText(QtGui.QApplication.translate("MainWindow", "Email", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_phone_h.setText(QtGui.QApplication.translate("MainWindow", "Телефон дом.", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_passport_n.setText(QtGui.QApplication.translate("MainWindow", "Паспорт №", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_passport_give.setText(QtGui.QApplication.translate("MainWindow", "Кем выдан", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_passport_date.setText(QtGui.QApplication.translate("MainWindow", "Когда выдан", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_phone_m.setText(QtGui.QApplication.translate("MainWindow", "Телефон моб.", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_urdata.setTitle(QtGui.QApplication.translate("MainWindow", "Юридическое лицо", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_organization.setText(QtGui.QApplication.translate("MainWindow", "Организация", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_rs.setText(QtGui.QApplication.translate("MainWindow", "Расчётный счёт", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_okpo.setText(QtGui.QApplication.translate("MainWindow", "ОКПО", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_unp.setText(QtGui.QApplication.translate("MainWindow", "УНП", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_bank.setText(QtGui.QApplication.translate("MainWindow", "Банк, код банка", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_uraddress.setText(QtGui.QApplication.translate("MainWindow", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_urphone.setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_fax.setText(QtGui.QApplication.translate("MainWindow", "Факс", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_address.setTitle(QtGui.QApplication.translate("MainWindow", "Адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_region.setText(QtGui.QApplication.translate("MainWindow", "Район", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_street.setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_house.setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_house_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_20.setText(QtGui.QApplication.translate("MainWindow", "Индекс", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_entrance.setText(QtGui.QApplication.translate("MainWindow", "Подъезд", None, QtGui.QApplication.UnicodeUTF8))
+#===============================================================================
+#        self.groupBox_account_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о пользователе", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_name.setText(QtGui.QApplication.translate("MainWindow", "ФИО", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_address.setText(QtGui.QApplication.translate("MainWindow", "Email", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_phone_h.setText(QtGui.QApplication.translate("MainWindow", "Телефон дом.", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_passport_n.setText(QtGui.QApplication.translate("MainWindow", "Паспорт №", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_passport_give.setText(QtGui.QApplication.translate("MainWindow", "Кем выдан", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_passport_date.setText(QtGui.QApplication.translate("MainWindow", "Когда выдан", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_phone_m.setText(QtGui.QApplication.translate("MainWindow", "Телефон моб.", None, QtGui.QApplication.UnicodeUTF8))
+#        self.groupBox_urdata.setTitle(QtGui.QApplication.translate("MainWindow", "Юридическое лицо", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_organization.setText(QtGui.QApplication.translate("MainWindow", "Организация", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_rs.setText(QtGui.QApplication.translate("MainWindow", "Расчётный счёт", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_okpo.setText(QtGui.QApplication.translate("MainWindow", "ОКПО", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_unp.setText(QtGui.QApplication.translate("MainWindow", "УНП", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_bank.setText(QtGui.QApplication.translate("MainWindow", "Банк, код банка", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_uraddress.setText(QtGui.QApplication.translate("MainWindow", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_urphone.setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_fax.setText(QtGui.QApplication.translate("MainWindow", "Факс", None, QtGui.QApplication.UnicodeUTF8))
+#        self.groupBox_address.setTitle(QtGui.QApplication.translate("MainWindow", "Адрес", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_region.setText(QtGui.QApplication.translate("MainWindow", "Район", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_street.setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_house.setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_house_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_20.setText(QtGui.QApplication.translate("MainWindow", "Индекс", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_entrance.setText(QtGui.QApplication.translate("MainWindow", "Подъезд", None, QtGui.QApplication.UnicodeUTF8))
+#===============================================================================
         #self.groupBox_manager.setTitle(QtGui.QApplication.translate("MainWindow", "Работа с клиентом", None, QtGui.QApplication.UnicodeUTF8))
         #self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_balance_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о балансе", None, QtGui.QApplication.UnicodeUTF8))
@@ -3032,8 +2850,75 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Основной сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_ipn.setTitle(QtGui.QApplication.translate("MainWindow", "IPN IP Адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_ip_address.setText(QtGui.QApplication.translate("MainWindow", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
+        #self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
         
+        
+        #---------
+        
+#===============================================================================
+#        self.tableWidget.item(0, 0).setText(QtGui.QApplication.translate("MainWindow", "Контактное лицо", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(1, 0).setText(QtGui.QApplication.translate("MainWindow", "Тел. Контактного лица", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(2, 0).setText(QtGui.QApplication.translate("MainWindow", "ФИО абонента", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(3, 0).setText(QtGui.QApplication.translate("MainWindow", "e-mail", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(4, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон дом.", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(5, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон моб.", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(6, 0).setText(QtGui.QApplication.translate("MainWindow", "Паспорт №", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(7, 0).setText(QtGui.QApplication.translate("MainWindow", "Кем выдан", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(8, 0).setText(QtGui.QApplication.translate("MainWindow", "Когда выдан", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(9, 0).setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(10, 0).setText(QtGui.QApplication.translate("MainWindow", "Индекс", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(11, 0).setText(QtGui.QApplication.translate("MainWindow", "Район", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(12, 0).setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(13, 0).setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(14, 0).setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(15, 0).setText(QtGui.QApplication.translate("MainWindow", "Подъезд", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(16, 0).setText(QtGui.QApplication.translate("MainWindow", "Этаж", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(17, 0).setText(QtGui.QApplication.translate("MainWindow", "Направление от лифта", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(18, 0).setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(19, 0).setText(QtGui.QApplication.translate("MainWindow", "Организация", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(20, 0).setText(QtGui.QApplication.translate("MainWindow", "УНП", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(21, 0).setText(QtGui.QApplication.translate("MainWindow", "ОКПО", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(22, 0).setText(QtGui.QApplication.translate("MainWindow", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(23, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
+#        self.tableWidget.item(24, 0).setText(QtGui.QApplication.translate("MainWindow", "Факс", None, QtGui.QApplication.UnicodeUTF8))
+#===============================================================================
+        
+        self.tableWidget.setColumnHidden(0, False)
+        columns = [u"Название", u"Значение"]
+        makeHeaders(columns, self.tableWidget)
+        #self.tableWidget.
+        
+        self.tableInfo=[
+            ['contactperson', u'Контактное лицо',''],
+            ['contactperson_phone', u'Тел. Контактного лица',''],
+            ['fullname', u'ФИО абонента',''],
+            ['email',u'e-mail',''],
+            ['phone_h',u'Телефон дом.',''],
+            ['phone_m',u'Телефон моб.',''],
+            ['passport',u'Паспорт №',''],
+            ['passport_given',u'Кем выдан',''],
+            ['passport_date',u'Когда выдан',''],
+            ['city', u'Город',''],
+            ['postcode',u'Индекс',''],
+            ['region',u'Район',''],
+            ['street',u'Улица',''],
+            ['house',u'Дом',''],
+            ['house_bulk',u'Корпус',''],
+            ['entrance',u'Подъезд',''],
+            ['row',u'Этаж',''],
+            ['elevator_direction',u'Направление от лифта',''],
+            ['room', u'Квартира',''],
+             ]
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(len(self.tableInfo))
+        i=0
+        for item in self.tableInfo:
+            self.addrow(self.tableWidget, item[1], i, 0, id=item[0])
+            i+=1
+            
+
+        #self.tableWidget.resizeColumnsToContents()
+        #------------
         self.toolButton_get_ipn_from_pool.setText(QtGui.QApplication.translate("MainWindow", "Выдать из пула", None, QtGui.QApplication.UnicodeUTF8))
         #self.label_ipn_ip_mask.setText(QtGui.QApplication.translate("MainWindow", "Маска подсети", None, QtGui.QApplication.UnicodeUTF8))
         
@@ -3051,8 +2936,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_vlan_reject.setText(QtGui.QApplication.translate("MainWindow", "VLAN Reject", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_8021x_simpleauth.setToolTip(QtGui.QApplication.translate("MainWindow", "Авторизация без применения правил и параметров тарифного плана(разрешённое время работы)", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_8021x_simpleauth.setText(QtGui.QApplication.translate("MainWindow", "Простая авторизация", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_contactperson.setText(QtGui.QApplication.translate("MainWindow", "Контактное лицо", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_contactphone.setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
+        #self.label_contactperson.setText(QtGui.QApplication.translate("MainWindow", "Контактное лицо", None, QtGui.QApplication.UnicodeUTF8))
+        #self.label_contactphone.setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_vpn.setTitle(QtGui.QApplication.translate("MainWindow", "VPN IP Адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_associate_pptp_ipn_ip.setText(QtGui.QApplication.translate("MainWindow", "Привязать PPTP авторизацию к IPN IP", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_associate_pppoe_mac.setText(QtGui.QApplication.translate("MainWindow", "Привязать PPPOE авторизацию к MAC", None, QtGui.QApplication.UnicodeUTF8))
@@ -3154,6 +3039,10 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_status.setItemData(2, QtCore.QVariant(3))
         
 
+    def saveHeader(self, *args):
+
+        HeaderUtil.saveHeader(self.tableWidget.objectName(), self.tableWidget)
+            
     def printAgreement(self):
        
         tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id = get_tarif(%s)" % self.model.id)
@@ -3283,33 +3172,42 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_username.setText(unicode(self.model.username))
             self.lineEdit_password.setText(unicode(self.model.password))
             
-            
-            self.lineEdit_name.setText(unicode(self.model.fullname))
-            
-            
-            self.lineEdit_email.setText(unicode(self.model.email))
-            
-            self.lineEdit_contactperson.setText(unicode(self.model.contactperson))
-            self.lineEdit_contactphone.setText(unicode(self.model.contactperson_phone))
-            self.lineEdit_city.setText(unicode(self.model.city))
-            self.lineEdit_postcode.setText(unicode(self.model.postcode))
-            self.lineEdit_region.setText(unicode(self.model.region))
-            self.lineEdit_street.setText(unicode(self.model.street))
-            self.lineEdit_house.setText(unicode(self.model.house))
-            self.lineEdit_house_bulk.setText(unicode(self.model.house_bulk))
-            self.lineEdit_entrance.setText(unicode(self.model.entrance))
-            self.lineEdit_room.setText(unicode(self.model.room))
-            self.lineEdit_phone_h.setText(unicode(self.model.phone_h))
-            self.lineEdit_phone_m.setText(unicode(self.model.phone_m))
+            for i in xrange(self.tableWidget.rowCount()):
+                self.addrow(self.tableWidget, unicode(self.model.__dict__.get(self.tableInfo[i][0],'')), i,1)
+
+
+            #self.tableWidget.resizeColumnsToContents()
+#===============================================================================
+#            self.lineEdit_name.setText(unicode(self.model.fullname))
+#            
+#            
+#            self.lineEdit_email.setText(unicode(self.model.email))
+#            
+#            self.lineEdit_contactperson.setText(unicode(self.model.contactperson))
+#            self.lineEdit_contactphone.setText(unicode(self.model.contactperson_phone))
+#            self.lineEdit_city.setText(unicode(self.model.city))
+#            self.lineEdit_postcode.setText(unicode(self.model.postcode))
+#            self.lineEdit_region.setText(unicode(self.model.region))
+#            self.lineEdit_street.setText(unicode(self.model.street))
+#            self.lineEdit_house.setText(unicode(self.model.house))
+#            self.lineEdit_house_bulk.setText(unicode(self.model.house_bulk))
+#            self.lineEdit_entrance.setText(unicode(self.model.entrance))
+#            self.lineEdit_room.setText(unicode(self.model.room))
+#            self.lineEdit_phone_h.setText(unicode(self.model.phone_h))
+#            self.lineEdit_phone_m.setText(unicode(self.model.phone_m))
+#===============================================================================
+
             self.plainTextEdit_comment.setPlainText(unicode(self.model.comment))
             
-            #passport
-            self.lineEdit_passport_n.setText(u"%s" % self.model.passport)
-            self.lineEdit_passport_given.setText(u"%s" % self.model.passport_given)
-            try:
-                self.dateEdit_passport_date.setDate(QtCore.QDate(self.model.passport_date.year,self.model.passport_date.month, self.model.passport_date.day))
-            except:
-                print "passport date error"
+#===============================================================================
+#            #passport
+#            self.lineEdit_passport_n.setText(u"%s" % self.model.passport)
+#            self.lineEdit_passport_given.setText(u"%s" % self.model.passport_given)
+#            try:
+#                self.dateEdit_passport_date.setDate(QtCore.QDate(self.model.passport_date.year,self.model.passport_date.month, self.model.passport_date.day))
+#            except:
+#                print "passport date error"
+#===============================================================================
             
             #self.lineEdit_ipn_ip_mask.setText(unicode(self.model.netmask))
             self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
@@ -3391,7 +3289,8 @@ class AccountWindow(QtGui.QMainWindow):
                     self.lineEdit_rs.setText(unicode(bank.rs))
             
             else:
-                self.groupBox_urdata.setChecked(False)
+                #self.groupBox_urdata.setChecked(False)
+                pass
             self.accountTarifRefresh()
             self.suspendedPeriodRefresh()
             self.accountAddonServiceRefresh()
@@ -3426,29 +3325,36 @@ class AccountWindow(QtGui.QMainWindow):
                 return 
             #print 1
             model.password = unicode(self.lineEdit_password.text())
-            model.fullname = unicode(self.lineEdit_name.text())
-            model.email = unicode(self.lineEdit_email.text())
-            
-            model.fullname = unicode(self.lineEdit_name.text())
-            
-            model.city = unicode(self.lineEdit_city.text())
-            model.postcode = unicode(self.lineEdit_postcode.text())
-            
-            model.region = unicode(self.lineEdit_region.text())
-            model.street = unicode(self.lineEdit_street.text())
-            model.house = unicode(self.lineEdit_house.text())
-            model.house_bulk = unicode(self.lineEdit_house_bulk.text())
-            model.entrance = unicode(self.lineEdit_entrance.text())
-            model.room = unicode(self.lineEdit_room.text())
-            model.phone_h = unicode(self.lineEdit_phone_h.text())
-            model.phone_m = unicode(self.lineEdit_phone_m.text())
-            #passport
-            model.passport = unicode(self.lineEdit_passport_n.text())
-            model.passport_given = unicode(self.lineEdit_passport_given.text())
-            model.passport_date = self.dateEdit_passport_date.date().toPyDate()
-            model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
-            model.contactperson = unicode(self.lineEdit_contactperson.text())
-            model.contactperson_phone = unicode(self.lineEdit_contactphone.text())
+#===============================================================================
+#            model.fullname = unicode(self.lineEdit_name.text())
+#            model.email = unicode(self.lineEdit_email.text())
+#            
+#            model.fullname = unicode(self.lineEdit_name.text())
+#            
+#            model.city = unicode(self.lineEdit_city.text())
+#            model.postcode = unicode(self.lineEdit_postcode.text())
+#            
+#            model.region = unicode(self.lineEdit_region.text())
+#            model.street = unicode(self.lineEdit_street.text())
+#            model.house = unicode(self.lineEdit_house.text())
+#            model.house_bulk = unicode(self.lineEdit_house_bulk.text())
+#            model.entrance = unicode(self.lineEdit_entrance.text())
+#            model.room = unicode(self.lineEdit_room.text())
+#            model.phone_h = unicode(self.lineEdit_phone_h.text())
+#            model.phone_m = unicode(self.lineEdit_phone_m.text())
+#            #passport
+#            model.passport = unicode(self.lineEdit_passport_n.text())
+#            model.passport_given = unicode(self.lineEdit_passport_given.text())
+#            model.passport_date = self.dateEdit_passport_date.date().toPyDate()
+#            model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
+#            model.contactperson = unicode(self.lineEdit_contactperson.text())
+#            model.contactperson_phone = unicode(self.lineEdit_contactphone.text())
+#===============================================================================
+
+            for i in xrange(self.tableWidget.rowCount()):
+                model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
+                #self.tableWidget.item(i,1).setText(unicode(self.model.__dict__.get(self.tableInfo[i][0])))
+                
             #print "passport_date", self.model.passport_date
             #dateTime().toPyDateTime()
             
@@ -3588,38 +3494,38 @@ class AccountWindow(QtGui.QMainWindow):
                 accounttarif.datetime = "now()"
                 self.connection.save(accounttarif,"billservice_accounttarif")
 
-            if self.groupBox_urdata.isChecked():
-                if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица."))
-                    return
-                if self.organization:
-                    org = self.organization
-                    bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
-                else:
-                    org = Object()
-                    bank = Object()
-                
-                bank.bank = unicode(self.lineEdit_bank.text())
-                bank.bankcode = unicode(self.lineEdit_bank_code.text())
-                bank.rs = self.lineEdit_rs.text()
-                bank.currency = ''
-                bank.id = self.connection.save(bank, "billservice_bankdata")
-                self.bank = bank
-                
-                org.name = unicode(self.lineEdit_organization.text())
-                org.uraddress = unicode(self.lineEdit_uraddress.text())
-                org.phone = unicode(self.lineEdit_urphone.text())
-                org.fax = unicode(self.lineEdit_fax.text())
-                org.okpo = unicode(self.lineEdit_okpo.text())
-                org.unp = unicode(self.lineEdit_unp.text())
-                org.account_id = model.id
-                org.bank_id = bank.id
-                org.id = self.connection.save(org, "billservice_organization")
-                self.organization = org
-                #print "save org.data"
-            else:
-                if self.organization:
-                    self.connection.iddelete(self.organization.id, "billservice_organization")    
+#            if self.groupBox_urdata.isChecked():
+#                if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
+#                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица."))
+#                    return
+#                if self.organization:
+#                    org = self.organization
+#                    bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
+#                else:
+#                    org = Object()
+#                    bank = Object()
+#                
+#                bank.bank = unicode(self.lineEdit_bank.text())
+#                bank.bankcode = unicode(self.lineEdit_bank_code.text())
+#                bank.rs = self.lineEdit_rs.text()
+#                bank.currency = ''
+#                bank.id = self.connection.save(bank, "billservice_bankdata")
+#                self.bank = bank
+#                
+#                org.name = unicode(self.lineEdit_organization.text())
+#                org.uraddress = unicode(self.lineEdit_uraddress.text())
+#                org.phone = unicode(self.lineEdit_urphone.text())
+#                org.fax = unicode(self.lineEdit_fax.text())
+#                org.okpo = unicode(self.lineEdit_okpo.text())
+#                org.unp = unicode(self.lineEdit_unp.text())
+#                org.account_id = model.id
+#                org.bank_id = bank.id
+#                org.id = self.connection.save(org, "billservice_organization")
+#                self.organization = org
+#                #print "save org.data"
+#            else:
+#                if self.organization:
+#                    self.connection.iddelete(self.organization.id, "billservice_organization")    
             
  
              #Операции с пулом    
@@ -3773,8 +3679,11 @@ class AccountWindow(QtGui.QMainWindow):
 
             self.tableWidget_accounttarif.setColumnHidden(0, True)
             self.connection.commit()
-
-
+    
+    def editAccountInfo(self, item):
+        if item.column()==1:
+            self.tableWidget.editItem(item)
+            
     def suspendedPeriodRefresh(self):
         if self.model:
             sp = self.connection.get_models("billservice_suspendedperiod", where={'account_id':self.model.id})
@@ -3820,13 +3729,17 @@ class AccountWindow(QtGui.QMainWindow):
             self.tableWidget_addonservice.setColumnHidden(0, True)
             self.tableWidget_addonservice.resizeColumnsToContents()
                   
-    def addrow(self, widget, value, x, y):
+    def addrow(self, widget, value, x, y, id=None, editable=False):
         headerItem = QtGui.QTableWidgetItem()
-        if value==None:
+        if value==None or value=="None":
             value=''
         if y==0:
             headerItem.id=value
         headerItem.setText(unicode(value))
+        if id:
+            headerItem.id=id
+            
+           
         widget.setItem(x,y,headerItem)
         
     
@@ -4016,18 +3929,25 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.refreshTree()
             self.refresh()
         
-    def changeTariff(self):
+    def get_selected_accounts(self):
         ids = []
         for r in self.tableWidget.selectedItems():
             if r.column()==0:
                 ids.append(r.id)
-         
-            
+        return ids
+    
+    def changeTariff(self):
+
+        ids = self.get_selected_accounts()
         child=AddAccountTarif(connection=self.connection, account=None, get_info = True)
         if child.exec_()==1:
             tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
             date = child.date_edit.dateTime().toPyDateTime()
-            print tarif_id, date
+        if not self.connection.change_tarif(ids, tarif_id, date):
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время выполнения операции произошла ошибка."))
+        else:
+            self.refresh()
+        
         
     def limit_info(self):
         id = self.getSelectedId()
@@ -4106,7 +4026,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     
                     
                         #self.connection.create("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
-                        self.connection.sql("UPDATE billservice_tariff SET deleted = True WHERE id=%s" % tarif_id)
+                        self.connection.sql("UPDATE billservice_tariff SET deleted = True WHERE id=%d RETURNING id" % tarif_id)
                         self.connection.commit()
                     except Exception, e:
                         print e
@@ -4344,52 +4264,43 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
 
     def accountEnable(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-
-        if self.connection.accountActions(id, 'enable'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт включён на сервере доступа."))
-            self.refresh()
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        ids = self.get_selected_accounts()
+        if not ids:return
+        
+        for id in ids:
+            if not self.connection.accountActions(id, 'enable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        self.refresh()
         
 
 
     def accountAdd(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-
-        if self.connection.accountActions(id, 'create'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт добавлен на сервер доступа."))
-            self.refresh()
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
-
+        ids = self.get_selected_accounts()
+        if not ids:return
+        
+        for id in ids:
+            if not self.connection.accountActions(id, 'create'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        self.refresh()
+        
     def accountDelete(self):
-        id=self.getSelectedId()
-        if (id==0) and (QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить аккаунт? \n После удаления станет недоступна статистика и информация о проводках.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No):
-            return
-
-        if self.connection.accountActions(id, 'delete'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт удалён с сервера доступа."))
-            self.refresh()
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа недоступен, настроен неправильно или у пользователя не указан IP адрес."))
-
+        ids = self.get_selected_accounts()
+        if not ids:return
+        
+        for id in ids:
+            if not self.connection.accountActions(id, 'delete'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        self.refresh()
 
     def accountDisable(self):
-        id=self.getSelectedId()
-        if id==0:
-            return
-
-        if self.connection.accountActions(id, 'disable'):
-            QtGui.QMessageBox.information(self, u"Ok", unicode(u"Аккаунт отключен на сервере доступа."))
-            self.refresh()
-        else:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-    
+        ids = self.get_selected_accounts()
+        if not ids:return
+        
+        for id in ids:
+            if not self.connection.accountActions(id, 'disable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        self.refresh()
+        
     
     def addNodeLocalAction(self):
         super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction])

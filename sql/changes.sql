@@ -1894,6 +1894,17 @@ INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Списание по подключаемой периодической услуге', 'ADDONSERVICE_PERIODICAL');
 
+ALTER TABLE billservice_account
+   ADD COLUMN "row" character varying;
+ALTER TABLE billservice_account
+   ALTER COLUMN "row" SET DEFAULT '';
+   
+ALTER TABLE billservice_account
+   ADD COLUMN elevator_direction character varying;
+ALTER TABLE billservice_account
+   ALTER COLUMN elevator_direction SET DEFAULT '';
+
+
 INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Списание по подключаемой периодической услуге со снятием денег в течении периода', 'ADDONSERVICE_PERIODICAL_GRADUAL');
@@ -1903,3 +1914,4 @@ INSERT INTO billservice_transactiontype(
 INSERT INTO billservice_transactiontype(
             "name", internal_name)
     VALUES ('Списание по подключаемой периодической услуге со снятием денег в конце периода', 'ADDONSERVICE_PERIODICAL_AT_END');
+    
