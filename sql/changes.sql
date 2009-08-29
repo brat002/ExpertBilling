@@ -1815,14 +1815,14 @@ CREATE TABLE billservice_addonservicetarif
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_addonservicetarif OWNER TO ebs;
 
--- Index: billservice_addonservicetarif_activation_acount_period_id
+-- Index: billservice_addonservicetarif_activation_count_period_id
 
--- DROP INDEX billservice_addonservicetarif_activation_acount_period_id;
+-- DROP INDEX billservice_addonservicetarif_activation_count_period_id;
 
-CREATE INDEX billservice_addonservicetarif_activation_acount_period_id
+CREATE INDEX billservice_addonservicetarif_activation_count_period_id
   ON billservice_addonservicetarif
   USING btree
-  (activation_acount_period_id);
+  (activation_count_period_id);
 
 -- Index: billservice_addonservicetarif_service_id
 
@@ -1850,9 +1850,11 @@ CREATE TABLE billservice_accountaddonservice
   service_id integer NOT NULL,
   account_id integer NOT NULL,
   activated timestamp without time zone NOT NULL,
-  deactivated timestamp without time zone NOT NULL,
-  action_status boolean DEFAULT False,
-  speed_status boolean DEFAULT False,
+  deactivated timestamp without time zone,
+  action_status boolean DEFAULT false,
+  speed_status boolean DEFAULT false,
+  temporary_blocked timestamp without time zone,
+  last_checkout timestamp without time zone,
   CONSTRAINT billservice_accountaddonservice_pkey PRIMARY KEY (id),
   CONSTRAINT billservice_accountaddonservice_account_id_fkey FOREIGN KEY (account_id)
       REFERENCES billservice_account (id) MATCH SIMPLE
