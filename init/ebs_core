@@ -39,6 +39,7 @@ stop)
         sleep 25
         killall -9 $NAME
 	fi
+        rm -f $PIDFILE
         ;;
 stop-force)
         echo "Stopping ebs core"
@@ -48,6 +49,7 @@ stop-force)
     else
         killall -9 $NAME
     fi
+	rm -f $PIDFILE
         ;;
 restart)
         echo "Restarting ebs core"

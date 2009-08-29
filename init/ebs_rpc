@@ -40,6 +40,7 @@ stop)
         sleep 5
         killall -9 $NAME
 	fi
+        rm -f $PIDFILE
         ;;
 stop-force)
         echo "Stopping ebs rpc"
@@ -49,6 +50,7 @@ stop-force)
     else
         killall -9 $NAME
     fi
+    rm -f $PIDFILE
         ;;
 restart)
         echo "Restarting ebs rpc"
