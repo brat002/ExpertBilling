@@ -298,6 +298,7 @@ class periodical_service_bill(Thread):
             self.NOW = dateAT if not ps.deactivated else ps.deactivated
             period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW) 
             get_last_checkout_ = get_last_addon_checkout
+            acc.end_date = 
         else:
             return
         s_delta = datetime.timedelta(seconds=delta)
@@ -457,7 +458,11 @@ class periodical_service_bill(Thread):
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, chk_date)
+                            tr_date = chk_date
+                            if ps.deactivated and ps.deactivated < chk_date:
+                                cash_summ = 0
+                                tr_date = ps.deactivated
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                     cur.connection.commit()
                     chk_date = period_end_ast + SECOND
                     if not chk_date < period_start: break
