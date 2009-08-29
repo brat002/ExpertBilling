@@ -1003,6 +1003,67 @@ $BODY$
   
 -- 19.05.2009
 
+
+CREATE TABLE billservice_tpchangerule
+(
+  id serial NOT NULL,
+  from_tariff_id integer NOT NULL,
+  to_tariff_id integer NOT NULL,
+  disabled boolean NOT NULL,
+  "cost" numeric NOT NULL,
+  ballance_min double precision NOT NULL,
+  settlement_period_id integer DEFAULT 0,
+  CONSTRAINT billservice_tpchangerule_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_tpchangerule_from_tariff_id_fkey FOREIGN KEY (from_tariff_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_tpchangerule_settlement_period_id_fkey FOREIGN KEY (settlement_period_id)
+      REFERENCES billservice_settlementperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL,
+  CONSTRAINT billservice_tpchangerule_to_tariff_id_fkey FOREIGN KEY (to_tariff_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_tpchangerule OWNER TO mikrobill;
+
+-- Index: billservice_tpchangerule_from_tariff_id
+
+-- DROP INDEX billservice_tpchangerule_from_tariff_id;
+
+CREATE INDEX billservice_tpchangerule_from_tariff_id
+  ON billservice_tpchangerule
+  USING btree
+  (from_tariff_id);
+
+-- Index: billservice_tpchangerule_settlement_period_id_index
+
+-- DROP INDEX billservice_tpchangerule_settlement_period_id_index;
+
+CREATE INDEX billservice_tpchangerule_settlement_period_id_index
+  ON billservice_tpchangerule
+  USING btree
+  (settlement_period_id);
+
+-- Index: billservice_tpchangerule_tariff_tariff
+
+-- DROP INDEX billservice_tpchangerule_tariff_tariff;
+
+CREATE UNIQUE INDEX billservice_tpchangerule_tariff_tariff
+  ON billservice_tpchangerule
+  USING btree
+  (from_tariff_id, to_tariff_id);
+
+-- Index: billservice_tpchangerule_to_tariff_id
+
+-- DROP INDEX billservice_tpchangerule_to_tariff_id;
+
+CREATE INDEX billservice_tpchangerule_to_tariff_id
+  ON billservice_tpchangerule
+  USING btree
+  (to_tariff_id);
+  
+
 ALTER TABLE billservice_account ALTER ballance TYPE decimal;
 ALTER TABLE billservice_account ALTER credit TYPE decimal;
 ALTER TABLE billservice_card ALTER nominal TYPE decimal;
