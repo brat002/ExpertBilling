@@ -134,6 +134,8 @@ class pyrologger(isdlogger):
     def raw(self,str):
 	self.log_(self.levels[LG_WARNING], str)
     def _trace(self, level, source, arglist):
+	pass
+        '''
 	if level >= self.loggingLevel:
 	    thread_name = 'NA'
 	    try:
@@ -141,10 +143,11 @@ class pyrologger(isdlogger):
 	    except: pass
 	    
         try:
-	           self.log_(self.levels[level],  ' | '.join(('PYRO_LOG:', thread_name, str(source), \
+	    self.log_(self.levels[level],  ' | '.join(('PYRO_LOG:', thread_name, str(source), \
 						       reduce(lambda x,y: str(x)+' '+str(y),arglist))))
         except:
             self.log_(self.levels[level],str(arglist))
+	 '''
 
 
     
