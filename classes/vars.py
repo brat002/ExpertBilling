@@ -17,9 +17,9 @@ class Vars(object):
         self.db_errors = (psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError, psycopg2.InternalError)
         self.db_dsn = ''
         self.db_session = []
-        self.log_type = None; self.log_ident = 'ebs'
+        self.log_type = 'logging'; self.log_ident = 'ebs'
         self.log_level = 0
-        self.log_file = None
+        self.log_file = name + '_log'
         self.log_format = '%(asctime)s %(levelname)-8s %(message)s'
         self.log_filemode = 'a+'
         self.log_maxsize = 10485760
