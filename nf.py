@@ -970,7 +970,8 @@ if __name__=='__main__':
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
         vars_.logger = logger
-        queues = NfQueues(vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, logger, dcacheNum=vars.CACHE_DICTS)
+        queues = NfQueues(dcacheNum=vars.CACHE_DICTS)
+        queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
         queues.nfFlowCache = FlowCache()
         logger.info("Config variables: %s", repr(vars))
         logger.lprint('Nf start')
