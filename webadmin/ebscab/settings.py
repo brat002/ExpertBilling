@@ -47,7 +47,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = os.path.abspath('./media')
+MEDIA_ROOT = '/opt/ebs/web/ebscab/media'
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
@@ -91,7 +91,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.abspath('./templates'),
+    '/opt/ebs/web/ebscab/templates',
 )
 
 INSTALLED_APPS = (
