@@ -489,7 +489,7 @@ class AuthHandler(Thread):
                 logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
                 user_name = ''
                 try:
-                    user_name = str(self.packetobject['User-Name'][0])
+                    user_name = str(packetobject['User-Name'][0])
                 except:
                     pass
                 if access_type in ['PPTP', 'PPPOE', 'W802.1x']:
