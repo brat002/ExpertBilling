@@ -765,7 +765,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     def save(self, model, table, cur=None, connection=None):
         #print model
         sql = model.save(table)
-        print sql
+        #print sql
 
         #print sql
         #print sql

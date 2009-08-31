@@ -2161,4 +2161,8 @@ ALTER TABLE billservice_account ALTER COLUMN "row" SET DEFAULT ''::character var
 ALTER TABLE billservice_account ADD COLUMN elevator_direction character varying;
 ALTER TABLE billservice_account ALTER COLUMN elevator_direction SET STORAGE EXTENDED;
 ALTER TABLE billservice_account ALTER COLUMN elevator_direction SET DEFAULT ''::character varying;
+ALTER TABLE billservice_account DROP COLUMN passport_date;
+ALTER TABLE billservice_account ADD COLUMN passport_date character varying;
+ALTER TABLE billservice_account ALTER COLUMN passport_date SET STORAGE EXTENDED;
+ALTER TABLE billservice_account ALTER COLUMN passport_date SET DEFAULT ''::character varying;
 
