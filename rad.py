@@ -418,8 +418,8 @@ class AsyncAcctServ(AsyncUDPServer):
             t = clock()
             assert len(data) <= vars.MAX_DATAGRAM_LEN
             packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
-    
-            coreconnect = HandleSAcct(packetobject=packetobject, dbCur=self.dbconn.cursor())
+            dbCur=self.dbconn.cursor()
+            coreconnect = HandleSAcct(packetobject=packetobject, dbCur=dbCur)
             coreconnect.caches = self.caches               
             
             packetfromcore = coreconnect.handle()
@@ -431,7 +431,9 @@ class AsyncAcctServ(AsyncUDPServer):
                 
             del packetfromcore
             del coreconnect    
-            logger.info("ACC: %s", (clock()-t))            
+            logger.info("ACC: %s", (clock()-t))
+            dbCur.connection.commit()
+            dbCur.close()
         except Exception, ex:
             logger.error("Acc Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
@@ -587,8 +589,8 @@ class AcctHandler(Thread):
                 if False: assert isinstance(packetobject, packet.AcctPacket)
 
                 acct_time = clock()
-
-                coreconnect = HandleSAcct(packetobject=packetobject, dbCur=self.dbconn.cursor())
+                dbCur = self.dbconn.cursor()
+                coreconnect = HandleSAcct(packetobject=packetobject, dbCur=dbCur)
                 coreconnect.caches = self.caches          
 
                 packetfromcore = coreconnect.handle()
@@ -598,9 +600,11 @@ class AcctHandler(Thread):
                     packetobject.fd.sendto(returndata, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
-                    del packetfromcore                  
-                
+                    del packetfromcore             
+                 
                 logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (clock()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
+                dbCur.connection.commit()
+                dbCur.close()
                 del coreconnect 
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -1054,7 +1058,7 @@ class HandleSAcct(HandleSBase):
 
         self.replypacket.secret=str(nas.secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
-        self.userName = self.packetobject['User-Name'][0]
+        self.userName = str(self.packetobject['User-Name'][0])
 
         acc = self.caches.account_cache.by_username.get(self.userName)
         if acc is None:
@@ -1173,8 +1177,7 @@ class HandleSAcct(HandleSBase):
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now,self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
 
-        self.cur.connection.commit()
-        self.cur.close()        
+               
         return self.replypacket
 
 
@@ -1292,6 +1295,7 @@ def graceful_save():
     time.sleep(5)
     #pool.close()
     rempid(vars.piddir, vars.name)
+    print "RAD: exiting"
     logger.lprint("Stopping gracefully.")
     sys.exit()
 
