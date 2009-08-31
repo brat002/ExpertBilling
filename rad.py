@@ -583,7 +583,7 @@ class AcctHandler(Thread):
 
                 acct_time = clock()
 
-                coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
+                coreconnect = HandleSAcct(packetobject=packetobject, nasip=str(packetobject['NAS-IP-Address'][0]), dbCur=self.dbconn.cursor())
                 coreconnect.caches = self.caches          
 
                 packetfromcore = coreconnect.handle()
