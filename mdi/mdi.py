@@ -13,10 +13,10 @@ import Pyro.errors
 import threading
 
 import isdlogger
-logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
-Pyro.util.Log = logger
-Pyro.core.Log = logger
-Pyro.protocol.Log = logger
+#logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
+#Pyro.util.Log = logger
+#Pyro.core.Log = logger
+#Pyro.protocol.Log = logger
 import mdi_rc
 
 from AccountFrame import AccountsMdiEbs as AccountsMdiChild

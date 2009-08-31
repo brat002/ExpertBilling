@@ -2329,7 +2329,7 @@ class RadiusAttrsDialog(QtGui.QDialog):
         self.tableWidget.setRowCount(len(attrs))
         i=0
         for attr in attrs:
-            print attr.vendor
+            #print attr.vendor
             self.addrow(attr.vendor, i, 0, id = attr.id)
             self.addrow(attr.attrid, i, 1)
             self.addrow(attr.value, i, 2)
@@ -2348,9 +2348,9 @@ class PSCreatedForm(QtGui.QDialog):
         self.dateTimeEdit.setCalendarPopup(True)
         self.dateTimeEdit.setObjectName("dateTimeEdit")
         self.gridLayout.addWidget(self.dateTimeEdit, 0, 0, 1, 1)
-        self.checkBox_temporary_blocked_w = QtGui.QCheckBox(self)
-        self.checkBox_temporary_blocked_w.setObjectName("checkBox")
-        self.gridLayout.addWidget(self.checkBox_temporary_blocked_w, 1, 0, 1, 1)
+        self.checkBox_as_start_ps = QtGui.QCheckBox(self)
+        self.checkBox_as_start_ps.setObjectName("checkBox")
+        self.gridLayout.addWidget(self.checkBox_as_start_ps, 1, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
@@ -2358,8 +2358,8 @@ class PSCreatedForm(QtGui.QDialog):
         self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
 
         self.retranslateUi()
-        self.checkBox_temporary_blockedAction()
-        self.connect(self.checkBox_temporary_blocked_w, QtCore.SIGNAL("stateChanged(int)"), self.checkBox_temporary_blockedAction)
+        self.checkBoxAction()
+        self.connect(self.checkBox_as_start_ps, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         #self.connect(self.checkBox_temporary_blocked, QtCore.SIGNAL("stateChanged(int)"), self.checkBox_temporary_blockedAction)
@@ -2370,11 +2370,11 @@ class PSCreatedForm(QtGui.QDialog):
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки периодической услуги", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_temporary_blocked_w.setText(QtGui.QApplication.translate("Dialog", "С начала расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_as_start_ps.setText(QtGui.QApplication.translate("Dialog", "С начала расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
         
         
     def checkBoxAction(self):
-        if self.checkBox_temporary_blocked_w.checkState() == QtCore.Qt.Checked:
+        if self.checkBox_as_start_ps.checkState() == QtCore.Qt.Checked:
             self.dateTimeEdit.setDisabled(True)
         else:
             self.dateTimeEdit.setDisabled(False)
@@ -2384,12 +2384,12 @@ class PSCreatedForm(QtGui.QDialog):
         if self.date:
             self.dateTimeEdit.setDateTime(self.date)
         else:
-            self.checkBox_temporary_blocked_w.setChecked(True)
+            self.checkBox_as_start_ps.setChecked(True)
             self.dateTimeEdit.setDateTime(datetime.datetime.now())
             
             
     def accept(self):
-        if self.checkBox_temporary_blocked_w.checkState() == QtCore.Qt.Checked:
+        if self.checkBox_as_start_ps.checkState() == QtCore.Qt.Checked:
             self.date = None
         else:
             self.date = self.dateTimeEdit.dateTime().toPyDateTime()
