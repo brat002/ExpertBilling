@@ -818,19 +818,7 @@ def graceful_save():
     suicideCondition[cacheThr.tname] = True
     logger.lprint("About to exit gracefully.")
     st_time = time.time()
-    time.sleep(1)
-    i = 0
-    while True:
-        if len(queues.nfIncomingQueue) > 300:  break
-        if len(queues.nfIncomingQueue) == 0:   break
-        if i == 4:                             break
-        time.sleep(1)
 
-    for thr in threads:
-        if not isinstance(thr, DepickerThread):
-            suicideCondition[thr.tname] = True
-    time.sleep(1)
-    
     for thr in threads:
             suicideCondition[thr.tname] = True
     time.sleep(2)
@@ -844,6 +832,7 @@ def graceful_save():
     queues.statLock.release()
     queues.groupLock.release()
     queues.depickerLock.release()
+    time.sleep(16)
     rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
