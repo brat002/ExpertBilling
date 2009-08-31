@@ -876,7 +876,7 @@ class addon_service(Thread):
                                           nas.password, format_string=service.service_activation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, acc.account_id))
                         
-                        if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.status!=1 ))) and accservice.action_status==True:
+                        if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
                             #выполняем service_deactivation_action
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
