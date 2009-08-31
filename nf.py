@@ -854,6 +854,8 @@ def graceful_save():
     time.sleep(10)
     #pool.close()
     #time.sleep(1)
+    queues.databaseQueue.LOCK = None
+    queues.databaseQueue.file_lock = None
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, vars.PREFIX, vars.SAVE_DIR)
     
