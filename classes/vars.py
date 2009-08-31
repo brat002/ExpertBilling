@@ -162,13 +162,14 @@ class NfQueues(object):
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
     __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock', 'packetIndex', 'packetIndexLock')
-    def __init__(self, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, fsd_logger, dcacheNum = 10, fsd_name = 'NF_SEND_FSD'):
+    def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
         self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
         self.flowQueue = deque(); self.fqueueLock = Lock()
         #self.databaseQueue = deque(); self.dbLock = Lock()
         self.dbLock = Lock()
-        self.databaseQueue = FileSaveDeque(fsd_name, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, self.dbLock, fsd_logger)
+        #self.databaseQueue = FileSaveDeque(fsd_name, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, self.dbLock, fsd_logger)
+        self.databaseQueue = FileSaveDeque()
         self.fnameQueue = deque(); self.fnameLock = Lock()
         self.nfQueue = deque(); self.nfqLock = Lock()
         self.packetIndex = 0; self.packetIndexLock = Lock()
