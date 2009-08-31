@@ -598,7 +598,7 @@ class NetFlowRoutine(Thread):
                     icount += 1
                     timecount += time.clock() - a
                     if icount == 100:                        
-                        logger.info("%s run time: %s", (self.getName(), timecount))
+                        logger.info("%s run time(100): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
                         
             except IndexError, ierr:
@@ -677,6 +677,7 @@ class AccountServiceThread(Thread):
                             
                     if counter == 5:
                         counter, fMem.periodCache = 0, {}
+                        '''
                         if (len(queues.nfIncomingQueue) > 1000) or (len(queues.statDeque) > len(cacheMaster.cache.account_cache.data) * 10):
                             if not vars.sendFlag or vars.sendFlag!='SLP!':
                                 vars.sendFlag = 'SLP!'
@@ -685,6 +686,7 @@ class AccountServiceThread(Thread):
                             if vars.sendFlag and vars.sendFlag=='SLP!':
                                 vars.sendFlag = ''
                                 logger.lprint('Sleep flag unset!')
+                        '''
                             
                         th_status = ';'.join((thrd.getName().split(' ')[0] + (thrd.isAlive() and 'OK') or 'NO' for thrd in threads + [cacheThr]))
                         logger.warning('THREAD STATUS: %s', th_status)
