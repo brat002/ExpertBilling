@@ -419,7 +419,7 @@ class AsyncAcctServ(AsyncUDPServer):
             assert len(data) <= vars.MAX_DATAGRAM_LEN
             packetobject=packet.AcctPacket(dict=vars.DICT,packet=data)
     
-            coreconnect = HandleSAcct(packetobject=packetobject, nasip=addrport[0], dbCur=self.dbconn.cursor())
+            coreconnect = HandleSAcct(packetobject=packetobject, dbCur=self.dbconn.cursor())
             coreconnect.caches = self.caches               
             
             packetfromcore = coreconnect.handle()
