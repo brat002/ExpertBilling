@@ -212,7 +212,7 @@ class ListenThread(Thread):
             pkt.fd = sock			
 
             if not pkt.code in [packet.AccountingRequest, packet.AccountingResponse]:
-                logger.warning("%s :dropped acct packet: received non-Accc Request/Response packet %s | %s", (self.getName() ,pkt.code, repr(addr)))
+                logger.warning("%s :dropped acct packet: received non-Acc Request/Response packet %s | %s", (self.getName() ,pkt.code, repr(addr)))
                 return
 
             #dump packet if the queue is too long
@@ -590,7 +590,7 @@ class AcctHandler(Thread):
 
                 if packetfromcore is not None: 
                     returndata = packetfromcore.ReplyPacket()
-                    packetobject.fd.sendto(returndata, None, packetobject.source)
+                    packetobject.fd.sendto(returndata, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
 
@@ -1041,7 +1041,8 @@ class HandleSAcct(HandleSBase):
             nas_by_int_id = True
         else:
             nas = self.caches.nas_cache.by_ip.get(self.nasip)
-        if not nas: return '',None
+        if not nas:
+            return self.acct_NA()
         if 0: assert isinstance(nas, NasData)
 
         self.replypacket.secret=str(nas.secret)        
