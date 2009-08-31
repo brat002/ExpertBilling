@@ -104,16 +104,7 @@ class SendPacketProducer(object):
     def resumeProducing(self):
         send_packet = False
         packet_status = 0
-        '''
-        while True:
-            if len(self.packet_queue) > 0:
-                with self.packet_lock:
-                    if len(self.packet_queue) > 0:
-                        send_packet = self.packet_queue.popleft()
-            if not send_packet: 
-                time.sleep(5); continue
-            
-        '''
+
         if len(self.packet_queue) > 0:
             with self.packet_lock:
                 if len(self.packet_queue) > 0:
@@ -182,33 +173,7 @@ class SendPacketStream(Thread):
             if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
                 with self.packet_lock:
                     self.packet_queue.appendleft(send_packet)
-            
-        '''
-        while True:
-            if len(self.packet_queue) > 0:
-                with self.packet_lock:
-                    if len(self.packet_queue) > 0:
-                        send_packet = self.packet_queue.popleft()
-            if not send_packet: 
-                time.sleep(5); continue
-            
-        
-        if len(self.packet_queue) > 0:
-            with self.packet_lock:
-                if len(self.packet_queue) > 0:
-                    send_packet = self.packet_queue.popleft()
-        if not send_packet:
-            self.pauseProducing()
-            #return
-            #self.consumer.write('')
-        else:        
-            packet_len = len(send_packet) + 5 + self.delim_len
-            str_len = str(packet_len)[:5]
-            formatted_packet = '0' * (len(str_len) - 5) + str_len + send_packet + self.delimeter
-            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
-                with self.packet_lock:
-                    self.packet_queue.appendleft(send_packet)         
-        '''
+
 class TCPSender(Protocol):
     implements(interfaces.IConsumer)
     
@@ -242,20 +207,7 @@ class TCPSender(Protocol):
         if self.isConnected:
             #print 'SENT LINE: ', formatted_packet[:6], '|', formatted_packet[-6:]
             self.transport.write(formatted_packet)
-            '''
-            try:
-                packet_status = 0
-                packet_len = len(formatted_packet)
-                
-                while True:
-                    formatted_packet = formatted_packet[packet_status:]
-                    packet_status = self.transport.write(formatted_packet)
-                    if not packet_status or packet_status == len(formatted_packet):
-                        break
-                return WRITE_OK
-            except Exception, ex:
-                logger.error("PROTOCOL WRITE ERROR: %s", repr(ex))
-                return NOT_TRASMITTED'''
+
         else:
             return NOT_TRASMITTED
 
@@ -369,9 +321,7 @@ def nfPacketHandle(data, addrport, flowCache):
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
         #look for account for ip address
-        '''
-        acc_acct_tf = (caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.vpn_ips.get(flow.dst_addr) \
-                    or caches.account_cache.ipn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr))'''
+
         acc_data_src = caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.src_addr)
         acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
         local = bool(acc_data_src and acc_data_dst)
@@ -913,8 +863,10 @@ def graceful_save():
     print vars.name + " stopping gracefully."
         
 def graceful_recover():
+    global vars
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
                     queues, vars.PREFIX, vars.SAVE_DIR)
+    queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
                 
 def main ():        
     global flags, queues, cacheMaster, threads, cacheThr, caches
