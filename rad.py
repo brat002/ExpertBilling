@@ -485,6 +485,11 @@ class AuthHandler(Thread):
                 nas_ip = str(packetobject['NAS-IP-Address'][0])
                 access_type = get_accesstype(packetobject)
                 logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
+                user_name = ''
+                try:
+                    user_name = str(self.packetobject['User-Name'][0])
+                except:
+                    pass
                 if access_type in ['PPTP', 'PPPOE', 'W802.1x']:
                     coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                     coreconnect.nasip = nas_ip
@@ -529,7 +534,7 @@ class AuthHandler(Thread):
 
                 del packetfromcore
                 del coreconnect
-                logger.info("%s: AUTH time: %s", (self.getName(), clock()-auth_time))
+                logger.info("%s: AUTH time: %s USER: %s NAS: %s TYPE: %s", (self.getName(), clock()-auth_time, user_name, nas_ip, access_type))
 
             except Exception, ex:
                 logger.error("%s Packet handler exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -583,7 +588,7 @@ class AcctHandler(Thread):
 
                 acct_time = clock()
 
-                coreconnect = HandleSAcct(packetobject=packetobject, nasip=str(packetobject['NAS-IP-Address'][0]), dbCur=self.dbconn.cursor())
+                coreconnect = HandleSAcct(packetobject=packetobject, dbCur=self.dbconn.cursor())
                 coreconnect.caches = self.caches          
 
                 packetfromcore = coreconnect.handle()
@@ -593,10 +598,10 @@ class AcctHandler(Thread):
                     packetobject.fd.sendto(returndata, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
-                    del packetfromcore
-                    
-                del coreconnect    
-                logger.info("ACCT: %s", (clock()-acct_time))            
+                    del packetfromcore                  
+                
+                logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (clock()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
+                del coreconnect 
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -608,7 +613,7 @@ class AcctHandler(Thread):
                         time.sleep(10)
 
 class HandleSBase(object):
-    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket')
+    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName')
 
     def auth_NA(self):
         """
@@ -1012,7 +1017,7 @@ class HandleSAcct(HandleSBase):
     """ Если это аккаунтинг хотспот-сервиса, при поступлении Accounting-Start пишем в профиль пользователя IP адрес, который ему выдал микротик"""
     __slots__ = () + ('cur', 'access_type')
 
-    def __init__(self, packetobject, nasip, dbCur):
+    def __init__(self, packetobject, dbCur):
         super(HandleSAcct, self).__init__()
         self.packetobject=packetobject
         self.nasip=packetobject['NAS-IP-Address'][0]
@@ -1020,6 +1025,7 @@ class HandleSAcct(HandleSBase):
         self.access_type=get_accesstype(packetobject)
         #print self.access_type
         self.cur = dbCur
+        self.userName = ''
 
     def get_bytes(self):
         bytes_in  = self.packetobject['Acct-Input-Octets'][0]  + self.packetobject.get('Acct-Input-Gigawords', (0,))[0]  * vars.GIGAWORD
@@ -1048,13 +1054,13 @@ class HandleSAcct(HandleSBase):
 
         self.replypacket.secret=str(nas.secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
-        userName = self.packetobject['User-Name'][0]
+        self.userName = self.packetobject['User-Name'][0]
 
-        acc = self.caches.account_cache.by_username.get(userName)
+        acc = self.caches.account_cache.by_username.get(self.userName)
         if acc is None:
             self.cur.connection.commit()
             self.cur.close()
-            logger.warning("Unknown User or user tarif %s", userName)
+            logger.warning("Unknown User or user tarif %s", self.userName)
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
