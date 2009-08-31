@@ -874,7 +874,7 @@ class addon_service(Thread):
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
                                           nas.password, format_string=service.service_activation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, acc.account_id))
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accservice.id))
                         
                         if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
                             #выполняем service_deactivation_action
@@ -882,7 +882,7 @@ class addon_service(Thread):
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
                                           nas.password, format_string=service.service_deactivation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, acc.account_id))
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
 
 
                 cur.connection.commit()
@@ -899,7 +899,8 @@ class addon_service(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(ex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(vars.LIMIT_SLEEP + random.randint(0,5))     
+            #TODO: Вынести в конфиг
+            time.sleep(120 + random.randint(0,5))     
             
 class settlement_period_service_dog(Thread):
     """
