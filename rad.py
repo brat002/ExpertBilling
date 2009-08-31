@@ -593,8 +593,8 @@ class AcctHandler(Thread):
                     packetobject.fd.sendto(returndata, packetobject.source)
                     #self.socket.sendto(returndat,addrport)
                     del returndata
-
-                del packetfromcore
+                    del packetfromcore
+                    
                 del coreconnect    
                 logger.info("ACCT: %s", (clock()-acct_time))            
             except Exception, ex:
@@ -1042,7 +1042,8 @@ class HandleSAcct(HandleSBase):
         else:
             nas = self.caches.nas_cache.by_ip.get(self.nasip)
         if not nas:
-            return self.acct_NA()
+            logger.info('ACCT: unknown NAS: %s', (self.nasip,))
+            return None
         if 0: assert isinstance(nas, NasData)
 
         self.replypacket.secret=str(nas.secret)        
