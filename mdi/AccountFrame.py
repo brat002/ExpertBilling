@@ -1498,8 +1498,8 @@ class TarifFrame(QtGui.QDialog):
                 default_text = item.text()
             except:
                 default_text=u""
-                
-                       
+
+
             child = ComboBoxDialog(items=ps_conditions, selected_item = default_text )
             self.connection.commit()
             if child.exec_()==1:
@@ -2609,9 +2609,12 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_16.setObjectName("gridLayout_16")
         self.checkBox_allow_webcab = QtGui.QCheckBox(self.groupBox_accessparameters)
         self.checkBox_allow_webcab.setObjectName("checkBox_allow_webcab")
+        self.checkBox_allow_webcab.setChecked(True)
+        
         self.gridLayout_16.addWidget(self.checkBox_allow_webcab, 3, 0, 1, 1)
         self.checkBox_allow_expresscards = QtGui.QCheckBox(self.groupBox_accessparameters)
         self.checkBox_allow_expresscards.setObjectName("checkBox_allow_expresscards")
+        self.checkBox_allow_expresscards.setChecked(True)
         self.gridLayout_16.addWidget(self.checkBox_allow_expresscards, 4, 0, 1, 1)
         self.checkBox_assign_dhcp_null = QtGui.QCheckBox(self.groupBox_accessparameters)
         self.checkBox_assign_dhcp_null.setObjectName("checkBox_assign_dhcp_null")

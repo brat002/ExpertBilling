@@ -70,7 +70,7 @@ def login(request):
             try:
                 print form.cleaned_data['username']
                 user = Account.objects.get(username=form.cleaned_data['username'])
-                print "user=", user
+                print "user=", user, user.id, user.allow_webcab
                 if not user.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'

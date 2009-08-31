@@ -20,6 +20,8 @@ import Pyro
 import Pyro.core, Pyro.protocol, Pyro.constants, Pyro.util
 
 Pyro.config.PYRO_TRACELEVEL = 3
+#print dir(Pyro.config) 
+Pyro.config.PYRO_BROKEN_MSGWAITALL = 1 
 import isdlogger
 import saver, utilites
 
