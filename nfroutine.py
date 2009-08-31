@@ -928,7 +928,7 @@ def main():
         fact.protocol = TCP_LineReciever
         try:
             os.unlink(vars.HOST)
-        except:
+        except Exception, ex:
             logger.warning('NFR: previous unix socket removal status: %s', repr(ex))
         reactor.listenUNIX(vars.HOST, fact)
     else: 
