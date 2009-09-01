@@ -48,8 +48,7 @@ from classes.nf_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
-import classes.vars as vars_
-from classes.vars import NfVars, NfQueues
+from classes.vars import NfVars, NfQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
@@ -969,7 +968,7 @@ if __name__=='__main__':
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
-        vars_.logger = logger
+        install_logger(logger)
         queues = NfQueues(dcacheNum=vars.CACHE_DICTS)
         queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
         queues.nfFlowCache = FlowCache()

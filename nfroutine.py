@@ -44,9 +44,8 @@ from decimal import Decimal
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
-import classes.vars as vars_
 from classes.flags import NfrFlags
-from classes.vars import NfrVars, NfrQueues
+from classes.vars import NfrVars, NfrQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
@@ -962,7 +961,7 @@ if __name__ == "__main__":
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
-        
+        install_logger(logger)
         logger.info("Config variables: %s", repr(vars))
         logger.lprint(vars.name + ' start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)

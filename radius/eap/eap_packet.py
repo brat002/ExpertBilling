@@ -1,39 +1,42 @@
 import struct, types, random, md5
 import copy
 
+class EAP_Codes():
+    __slots__ = ()
+    PW_MD5_CHALLENGE  = 1
+    PW_MD5_RESPONSE	  = 2
+    PW_MD5_SUCCESS	  = 3
+    PW_MD5_FAILURE	  = 4
+    PW_MD5_MAX_CODES  = 4
+    
+    PW_EAP_REQUEST   = 1
+    PW_EAP_RESPONSE  = 2
+    PW_EAP_SUCCESS   = 3
+    PW_EAP_FAILURE   = 4
+    PW_EAP_MAX_CODES = 4
+    
+    
+    PW_EAP_IDENTITY       = 1
+    PW_EAP_NOTIFICATION   = 2
+    PW_EAP_NAK            = 3
+    PW_EAP_MD5            = 4
+    PW_EAP_OTP            = 5
+    PW_EAP_GTC            = 6
+    PW_EAP_TLS            = 13
+    PW_EAP_LEAP           = 17
+    PW_EAP_SIM            = 18
+    PW_EAP_TTLS           = 21
+    PW_EAP_PEAP           = 25
+    PW_EAP_MSCHAPV2       = 26
+    PW_EAP_CISCO_MSCHAPV2 = 49
+    PW_EAP_TNC            = 38
+    PW_EAP_IKEV2          = 49
+    PW_EAP_MAX_TYPES      = 9
 
-PW_MD5_CHALLENGE  = 1
-PW_MD5_RESPONSE	  = 2
-PW_MD5_SUCCESS	  = 3
-PW_MD5_FAILURE	  = 4
-PW_MD5_MAX_CODES  = 4
+EAP = EAP_Codes()
 
 MD5_HEADER_LEN 	  = 4
 MD5_CHALLENGE_LEN = 16 
-
-PW_EAP_REQUEST   = 1
-PW_EAP_RESPONSE  = 2
-PW_EAP_SUCCESS   = 3
-PW_EAP_FAILURE   = 4
-PW_EAP_MAX_CODES = 4
-
-
-PW_EAP_IDENTITY       = 1
-PW_EAP_NOTIFICATION   = 2
-PW_EAP_NAK            = 3
-PW_EAP_MD5            = 4
-PW_EAP_OTP            = 5
-PW_EAP_GTC            = 6
-PW_EAP_TLS            = 13
-PW_EAP_LEAP           = 17
-PW_EAP_SIM            = 18
-PW_EAP_TTLS           = 21
-PW_EAP_PEAP           = 25
-PW_EAP_MSCHAPV2       = 26
-PW_EAP_CISCO_MSCHAPV2 = 49
-PW_EAP_TNC            = 38
-PW_EAP_IKEV2          = 49
-PW_EAP_MAX_TYPES      = 9
 
 EAP_HEADER_LEN  = 4
 EAP_TYPE_LEN    = 1
@@ -70,7 +73,7 @@ class EAP_Packet(object):
             self.code, self.identifier, self.length = struct.unpack(EAP_HEADER, self.raw_packet[:EAP_HEADER_LEN])
         except struct.error:
             raise EAPError("EAP message header is corrupt!: " + repr(struct.error))
-        if self.code in (PW_EAP_REQUEST, PW_EAP_RESPONSE):
+        if self.code in (EAP.PW_EAP_REQUEST, EAP.PW_EAP_RESPONSE):
             self.type, = struct.unpack(EAP_TYPE, self.raw_packet[EAP_HEADER_LEN:EAP_HEADER_LEN + EAP_TYPE_LEN])
             
     def unpack(self, raw_packet):
@@ -83,7 +86,7 @@ class EAP_Packet(object):
         if len(self.raw_packet) != self.length:
             raise EAPError("EAP message wrong length!")
         
-        if self.code in (PW_EAP_REQUEST, PW_EAP_RESPONSE) and len(raw_packet) > EAP_HEADER_LEN:
+        if self.code in (EAP.PW_EAP_REQUEST, EAP.PW_EAP_RESPONSE) and len(raw_packet) > EAP_HEADER_LEN:
             try:
                 self.type, = struct.unpack(EAP_TYPE, self.raw_packet[EAP_HEADER_LEN:EAP_HEADER_LEN + EAP_TYPE_LEN])
                 self.type_data = self.raw_packet[EAP_HEADER_LEN + EAP_TYPE_LEN:]
@@ -127,13 +130,13 @@ class EAP_Packet(object):
     @staticmethod
     def get_success_packet(id):
         eap_packet = EAP_Packet()
-        eap_packet.packs(PW_EAP_SUCCESS, id)
+        eap_packet.packs(EAP.PW_EAP_SUCCESS, id)
         return eap_packet.raw_packet
     
     @staticmethod
     def get_failure_packet(id):
         eap_packet = EAP_Packet()
-        eap_packet.packs(PW_EAP_FAILURE, id)
+        eap_packet.packs(EAP.PW_EAP_FAILURE, id)
         return eap_packet.raw_packet
     
     def __repr__(self):
@@ -169,8 +172,8 @@ class EAP_TLS(EAP_Packet):
     @staticmethod    
     def get_tls_start(old_eap_packet):
         eap_packet = copy.deepcopy(old_eap_packet)
-        eap_packet.code = PW_EAP_REQUEST
-        eap_packet.type = PW_EAP_TLS
+        eap_packet.code = EAP.PW_EAP_REQUEST
+        eap_packet.type = EAP.PW_EAP_TLS
         eap_packet.type_data = struct.pack(EAP_TLS_FLAGS, EAP_TLS_FLAGS_START)
         eap_packet._pack()
         return eap_packet.raw_packet, 'START'
@@ -201,7 +204,7 @@ class EAP_MD5(EAP_Packet):
             raise EAPError("EAP type data retrieval error! - " + repr(IndexError))
     
     def set_challenge(self):
-        self.type = PW_EAP_MD5
+        self.type = EAP.PW_EAP_MD5
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
             value += chr(i)
@@ -211,8 +214,8 @@ class EAP_MD5(EAP_Packet):
     @staticmethod
     def get_challenge_reply(old_eap_packet):
         eap_packet = copy.deepcopy(old_eap_packet)
-        eap_packet.code = PW_EAP_REQUEST
-        eap_packet.type = PW_EAP_MD5
+        eap_packet.code = EAP.PW_EAP_REQUEST
+        eap_packet.type = EAP.PW_EAP_MD5
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
             value += chr(random.randint(0,255))
@@ -229,8 +232,8 @@ class EAP_MD5(EAP_Packet):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(EAP_MD5, self).__slots__ + self.__slots__))
 
     
-EAP_HANDLERS = {PW_EAP_IDENTITY: EAP_Packet, PW_EAP_NAK: EAP_NAK, PW_EAP_MD5: EAP_MD5, PW_EAP_TLS: EAP_TLS}
-EAP_IDENTITY_CHECK_TYPES = {'eap-md5':(PW_EAP_MD5, EAP_MD5.get_challenge_reply), 'eap-tls': (PW_EAP_TLS, EAP_TLS.get_tls_start)}
+EAP_HANDLERS = {EAP.PW_EAP_IDENTITY: EAP_Packet, EAP.PW_EAP_NAK: EAP_NAK, EAP.PW_EAP_MD5: EAP_MD5, EAP.PW_EAP_TLS: EAP_TLS}
+EAP_IDENTITY_CHECK_TYPES = {'eap-md5':(EAP.PW_EAP_MD5, EAP_MD5.get_challenge_reply), 'eap-tls': (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)}
 
 
     

@@ -7,6 +7,10 @@ from operator import itemgetter
 from system.PersistentQueues import FileSaveDeque
 logger = None
 
+def install_logger(lgr):
+    global logger
+    logger = lgr
+    
 class Vars(object):
     __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types')
     def __init__(self):
@@ -19,7 +23,7 @@ class Vars(object):
         self.db_session = []
         self.log_type = 'logging'; self.log_ident = 'ebs'
         self.log_level = 0
-        self.log_file = name + '_log'
+        self.log_file = self.name + '_log'
         self.log_format = '%(asctime)s %(levelname)-8s %(message)s'
         self.log_filemode = 'a+'
         self.log_maxsize = 10485760
