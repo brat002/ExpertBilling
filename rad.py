@@ -43,8 +43,10 @@ from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 from pkgutil import simplegeneric
 
-from utilities import Session, data_utilities, utilities_sql
-
+#from utilities import Session, data_utilities, utilities_sql
+from utilities.Session import DictSession as util_DictSession
+from utilities.data_utilities import get_db_data as u_get_db_data, simple_list_index as u_simple_list_index
+from utilities.utilities_sql import utilities_sql as u_utilities_sql
 try:    import mx.DateTime
 except: print 'cannot import mx'
 
@@ -1203,7 +1205,7 @@ class CacheRoutine(Thread):
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
                     if first_time:
-                        queues.sessions.get_data((cur, utilities_sql.utilites_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
+                        queues.sessions.get_data((cur, u_utilities_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
                         first_time = False
                     cur.connection.commit()
                     cur.close()
@@ -1422,7 +1424,7 @@ if __name__ == "__main__":
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(_1i())        
         allowedUsers()
-        queues.sessions = Session.DictSession(data_utilities.get_db_data, data_utilities.simple_list_index)
+        queues.sessions = util_DictSession(u_get_db_data, u_simple_list_index)
         #-------------------
         print "ebs: rad: configs read, about to start"
         main()

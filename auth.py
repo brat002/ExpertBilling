@@ -13,8 +13,8 @@ from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
-import radius.eap.eap_packet as EAP
-from radius.eap.eap_packet import EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
+#import radius.eap.eap_packet as EAP
+from radius.eap.eap_packet import EAP, EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
 from collections import defaultdict
 from utilites import hex_bytestring
 
