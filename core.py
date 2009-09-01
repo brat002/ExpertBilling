@@ -389,7 +389,13 @@ class periodical_service_bill(Thread):
                 пока денег на счету не было
                 """
                 chk_date = last_checkout
-                #Смотрим на какую сумму должны были снять денег и снимаем её                                            
+                #Смотрим на какую сумму должны были снять денег и снимаем её 
+                if not first_time:
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                    time_start_ps = period_start_ast + s_delta_ast
+                    chk_date = period_start_ast + s_delta_ast
+                    
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
@@ -438,6 +444,11 @@ class periodical_service_bill(Thread):
             if first_time or period_start > last_checkout:
                 cash_summ = ps.cost
                 chk_date = last_checkout
+                if not first_time:
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                    chk_date = period_end_ast + s_delta_ast
+                    time_start_ps = time_start_ps + s_delta_ast
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
@@ -445,7 +456,7 @@ class periodical_service_bill(Thread):
                     chk_date = period_end_ast - SECOND
                     if first_time:
                         first_time = False
-                        chk_date = last_checkout
+                        #chk_date = last_checkout
                         if pss_type == PERIOD:
                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
                         elif pss_type == ADDON:
