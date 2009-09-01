@@ -43,7 +43,7 @@ class Vars(object):
         self.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get(db_name, "name"), config.get(db_name, "username"),
                                                                          config.get(db_name, "host"), config.get(db_name, "password"))
         if config.has_option(db_name, 'session'): self.db_session = config.get(db_name, 'session').split(',')
-        self.log_type = config.get(name, "log_type")
+        if config.has_option(name, 'log_type'): self.log_type = config.get(name, "log_type")
         if config.has_option(name, 'log_ident'): self.log_ident = config.get(name, 'log_ident')
         if config.has_option(name, 'log_level'): self.log_level = config.getint(name, 'log_level')
         if config.has_option(name, 'log_file'): self.log_file = config.get(name, 'log_file')
