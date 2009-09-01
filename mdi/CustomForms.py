@@ -2095,6 +2095,7 @@ class InfoDialog(QtGui.QDialog):
     def __init__(self, connection, type, account_id):
         super(InfoDialog, self).__init__()
         self.connection = connection
+        self.connection.commit()
         self.type = type
         self.account_id = account_id
         self.setObjectName("InfoDialog")
@@ -2160,7 +2161,7 @@ class InfoDialog(QtGui.QDialog):
             columns=["#", u"Название", u"Количество", u"Израсходовано", u"Начало", u"Окончание"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.get_limites(self.account_id)
-            
+
             self.connection.commit()
             self.tableWidget.setRowCount(len(items))
             i=0
@@ -2605,4 +2606,209 @@ class IPAddressSelectForm(QtGui.QDialog):
             
         self.tableWidget.resizeColumnsToContents()
             
+        
+class TransactionForm(QtGui.QDialog):
+    def __init__(self, connection, model=None, account=None):
+        super(TransactionForm, self).__init__()
+        self.model = model
+        self.account = account
+        self.connection = connection
+        self.transaction = None 
+        self.printer = None
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.groupBox_payment = QtGui.QGroupBox(self)
+        self.groupBox_payment.setMinimumSize(QtCore.QSize(400, 0))
+        self.groupBox_payment.setObjectName("groupBox_payment")
+        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_payment)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.summ_label = QtGui.QLabel(self.groupBox_payment)
+        self.summ_label.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.summ_label.setObjectName("summ_label")
+        self.gridLayout_6.addWidget(self.summ_label, 1, 0, 1, 1)
+        self.summ_edit = QtGui.QLineEdit(self.groupBox_payment)
+        self.summ_edit.setObjectName("summ_edit")
+        self.gridLayout_6.addWidget(self.summ_edit, 1, 1, 1, 2)
+        self.payed_document_label = QtGui.QLabel(self.groupBox_payment)
+        self.payed_document_label.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.payed_document_label.setObjectName("payed_document_label")
+        self.gridLayout_6.addWidget(self.payed_document_label, 3, 0, 1, 1)
+        self.payed_document_edit = QtGui.QLineEdit(self.groupBox_payment)
+        self.payed_document_edit.setFrame(True)
+        self.payed_document_edit.setObjectName("payed_document_edit")
+        self.gridLayout_6.addWidget(self.payed_document_edit, 3, 1, 1, 2)
+        self.label = QtGui.QLabel(self.groupBox_payment)
+        self.label.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label.setObjectName("label")
+        self.gridLayout_6.addWidget(self.label, 5, 0, 1, 1)
+        self.lineEdit = QtGui.QLineEdit(self.groupBox_payment)
+        self.lineEdit.setObjectName("lineEdit")
+        self.gridLayout_6.addWidget(self.lineEdit, 5, 1, 1, 2)
+        self.label_paymend_date = QtGui.QLabel(self.groupBox_payment)
+        self.label_paymend_date.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label_paymend_date.setObjectName("label_paymend_date")
+        self.gridLayout_6.addWidget(self.label_paymend_date, 7, 0, 1, 1)
+        self.dateTimeEdit_paymend_date = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_paymend_date.setFrame(True)
+        self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.dateTimeEdit_paymend_date.setCalendarPopup(True)
+        self.dateTimeEdit_paymend_date.setObjectName("dateTimeEdit_paymend_date")
+        self.gridLayout_6.addWidget(self.dateTimeEdit_paymend_date, 7, 1, 1, 2)
+        self.label_promise = QtGui.QLabel(self.groupBox_payment)
+        self.label_promise.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label_promise.setObjectName("label_promise")
+        self.gridLayout_6.addWidget(self.label_promise, 8, 0, 1, 1)
+        self.checkBox_promise = QtGui.QCheckBox(self.groupBox_payment)
+        self.checkBox_promise.setObjectName("checkBox_promise")
+        self.gridLayout_6.addWidget(self.checkBox_promise, 8, 1, 1, 1)
+        self.label_end_promise = QtGui.QLabel(self.groupBox_payment)
+        self.label_end_promise.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label_end_promise.setObjectName("label_end_promise")
+        self.gridLayout_6.addWidget(self.label_end_promise, 9, 0, 1, 1)
+        self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_end_promise.setCalendarPopup(True)
+        self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
+        self.gridLayout_6.addWidget(self.dateTimeEdit_end_promise, 9, 1, 1, 2)
+        self.checkBox_promise_infinite = QtGui.QCheckBox(self.groupBox_payment)
+        self.checkBox_promise_infinite.setObjectName("checkBox_promise_infinite")
+        self.gridLayout_6.addWidget(self.checkBox_promise_infinite, 9, 3, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_payment, 0, 0, 1, 1)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.pushButton_pay = QtGui.QPushButton(self)
+        self.pushButton_pay.setObjectName("pushButton_pay")
+        self.horizontalLayout.addWidget(self.pushButton_pay)
+        self.pushButton = QtGui.QPushButton(self)
+        self.pushButton.setObjectName("pushButton")
+        self.horizontalLayout.addWidget(self.pushButton)
+        self.pushButton_2 = QtGui.QPushButton(self)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.pushButton_pay,QtCore.SIGNAL("clicked()"),self.pay)
+        QtCore.QObject.connect(self.pushButton,QtCore.SIGNAL("clicked()"),self.cheque_print)
+        QtCore.QObject.connect(self.pushButton_2,QtCore.SIGNAL("clicked()"),self.reject)
+        QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        
+        #QtCore.QObject.connect(self.pushButton_cheque_print,QtCore.SIGNAL("clicked()"),self.cheque_print)
+        
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        self._name = settings.value("user", QtCore.QVariant("")).toString()
+        if self._name:
+            self.systemuser_id = self.connection.sql("SELECT id FROM billservice_systemuser WHERE username='%s'" % self._name)[0].id
+            self.connection.commit()
+
+        self.fixtures()
+        self.promise_actions()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_payment.setTitle(QtGui.QApplication.translate("Dialog", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
+        self.summ_label.setText(QtGui.QApplication.translate("Dialog", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
+        self.payed_document_label.setText(QtGui.QApplication.translate("Dialog", "На основании док", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_paymend_date.setText(QtGui.QApplication.translate("Dialog", "Дата платежа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_promise.setText(QtGui.QApplication.translate("Dialog", "Обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_promise.setText(QtGui.QApplication.translate("Dialog", "Да", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_end_promise.setText(QtGui.QApplication.translate("Dialog", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("Dialog", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_pay.setText(QtGui.QApplication.translate("Dialog", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("Dialog", "Печать чека", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_2.setText(QtGui.QApplication.translate("Dialog", "Закрыть", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setDisabled(True)
+
+    def fixtures(self):
+        now = datetime.datetime.now()
+        self.dateTimeEdit_paymend_date.setDateTime(now)
+        self.dateTimeEdit_end_promise.setDateTime(now)
+    
+        #self.payed_type_edit.setItemData(0, QtCore.QVariant(0))
+        #self.payed_type_edit.setItemData(1, QtCore.QVariant(1))
+        
+    def promise_actions(self):
+        if self.checkBox_promise.isChecked():
+            self.dateTimeEdit_end_promise.setEnabled(True)
+            self.checkBox_promise_infinite.setEnabled(True)
+            if self.checkBox_promise_infinite.isChecked():
+                self.dateTimeEdit_end_promise.setEnabled(False)
+            
+        else:
+            self.dateTimeEdit_end_promise.setEnabled(False)
+            self.checkBox_promise_infinite.setEnabled(False)
+            
+    def pay(self):
+        #print self.payed_type_edit.itemData(self.payed_type_edit.currentIndex()).toInt()[0]
+        
+        self.result = Decimal("%s" % self.summ_edit.text()) * (-1)
+        
+        transaction = Object()
+        transaction.account_id=self.account.id
+        transaction.type_id = "MANUAL_TRANSACTION"
+        transaction.approved = True
+        transaction.description = unicode(self.lineEdit.text())
+        transaction.summ=self.result
+        transaction.bill=unicode(self.payed_document_edit.text())
+        transaction.systemuser_id = self.systemuser_id
+        transaction.created = self.dateTimeEdit_paymend_date.dateTime().toPyDateTime()
+        
+        transaction.promise = self.checkBox_promise.isChecked()
+        if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
+            transaction.end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
+
+
+        try:
+            
+            transaction.id = self.connection.save(transaction, "billservice_transaction")
+            self.transaction = transaction
+            self.connection.commit()
+            self.pushButton_pay.setDisabled(True)
+            self.pushButton.setDisabled(False)
+        except Exception, e:
+            print "Exception", e
+            self.connection.rollback()
+        #
+        
+    def reject(self):
+        QtGui.QDialog.accept(self)
+        
+    def cheque_print(self):
+        if not self.printer:
+            #QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
+            self.getPrinter()
+        
+        template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
+        templ = Template(unicode(template.body), input_encoding='utf-8')
+        account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % self.transaction.account_id)
+
+        tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+        transaction = self.transaction
+        self.connection.commit()
+        sum = 10000
+        transaction.summ = transaction.summ*(-1)
+        try:
+            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction)
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
+            return
+        
+        #it seem that software printers can change the path!
+        file= open('templates/tmp/temp.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        file.close()
+        
+        a=CardPreviewDialog(url="templates/tmp/temp.html", printer=self.printer)
+        a.exec_()
+            
+    def getPrinter(self):
+        printer = QtGui.QPrinter()
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Печать"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        self.printer = printer
         

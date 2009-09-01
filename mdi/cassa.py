@@ -12,7 +12,8 @@ from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import HeaderUtil
 from CustomForms import CardPreviewDialog
-from CustomForms import ConnectDialog, ConnectionWaiting
+from CustomForms import ConnectDialog, ConnectionWaiting, InfoDialog, TransactionForm
+from AccountFrame import AddAccountTarif
 from helpers import dateDelim
 from mako.template import Template
 from ebsWindow import ebsTableWindow
@@ -30,8 +31,8 @@ class CassaEbs(ebsTableWindow):
         
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout_4 = QtGui.QGridLayout(self.centralwidget)
-        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.gridLayout_3 = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout_3.setObjectName("gridLayout_3")
         self.groupBox_filter = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_filter.setObjectName("groupBox_filter")
         self.gridLayout = QtGui.QGridLayout(self.groupBox_filter)
@@ -81,113 +82,47 @@ class CassaEbs(ebsTableWindow):
         self.lineEdit_room = QtGui.QLineEdit(self.groupBox_filter)
         self.lineEdit_room.setObjectName("lineEdit_room")
         self.gridLayout.addWidget(self.lineEdit_room, 2, 4, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_filter, 1, 0, 1, 3)
-
-        self.gridLayout_4.addWidget(self.tableWidget, 0, 0, 1, 3)
-        self.groupBox_tariffs = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_tariffs.setMinimumSize(QtCore.QSize(450, 0))
-        self.groupBox_tariffs.setMaximumSize(QtCore.QSize(16777215, 60))
-        self.groupBox_tariffs.setObjectName("groupBox_tariffs")
-        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_tariffs)
-        self.gridLayout_3.setObjectName("gridLayout_3")
-        self.comboBox_tariff = QtGui.QComboBox(self.groupBox_tariffs)
-        self.comboBox_tariff.setObjectName("comboBox_tariff")
-        self.gridLayout_3.addWidget(self.comboBox_tariff, 0, 0, 1, 1)
-        self.dateTime = QtGui.QDateTimeEdit(self.groupBox_tariffs)
-        self.dateTime.setCalendarPopup(True)
-        self.dateTime.setDateTime(datetime.datetime.now())
-        #self.dateTime.setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.dateTime.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.gridLayout_3.addWidget(self.dateTime, 0, 1, 1, 1)
-        self.toolButton_set_tarif_date  = QtGui.QToolButton(self.groupBox_tariffs)
-        self.gridLayout_3.addWidget(self.toolButton_set_tarif_date, 0, 2, 1, 1)
-        self.pushButton_change_tariff = QtGui.QPushButton(self.groupBox_tariffs)
-        self.pushButton_change_tariff.setMaximumSize(QtCore.QSize(75, 16777215))
-        self.pushButton_change_tariff.setObjectName("pushButton_change_tariff")
-        self.gridLayout_3.addWidget(self.pushButton_change_tariff, 0, 3, 1, 1)
-
-        self.gridLayout_4.addWidget(self.groupBox_tariffs, 2, 0, 1, 2)
-        self.groupBox_payment = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_payment.setMinimumSize(QtCore.QSize(400, 0))
-        self.groupBox_payment.setObjectName("groupBox_payment")
-        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_payment)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.summ_label = QtGui.QLabel(self.groupBox_payment)
-        self.summ_label.setObjectName("summ_label")
-        self.gridLayout_6.addWidget(self.summ_label, 1, 0, 1, 1)
-        self.lineEdit_summ = QtGui.QLineEdit(self.groupBox_payment)
-        self.lineEdit_summ.setObjectName("lineEdit_summ")
-        self.gridLayout_6.addWidget(self.lineEdit_summ, 1, 1, 1, 2)
-        self.payed_document_label = QtGui.QLabel(self.groupBox_payment)
-        self.payed_document_label.setObjectName("payed_document_label")
-        self.gridLayout_6.addWidget(self.payed_document_label, 3, 0, 1, 1)
-        self.lineEdit_document = QtGui.QLineEdit(self.groupBox_payment)
-        self.lineEdit_document.setFrame(True)
-        self.lineEdit_document.setObjectName("lineEdit_document")
-        self.gridLayout_6.addWidget(self.lineEdit_document, 3, 1, 1, 2)
-        self.label = QtGui.QLabel(self.groupBox_payment)
-        self.label.setObjectName("label")
-        self.gridLayout_6.addWidget(self.label, 5, 0, 1, 1)
-        self.lineEdit_description= QtGui.QLineEdit(self.groupBox_payment)
-        self.lineEdit_description.setObjectName("lineEdit_description")
-        self.gridLayout_6.addWidget(self.lineEdit_description, 5, 1, 1, 2)
-        self.label_paymend_date = QtGui.QLabel(self.groupBox_payment)
-        self.label_paymend_date.setObjectName("label_paymend_date")
-        self.gridLayout_6.addWidget(self.label_paymend_date, 7, 0, 1, 1)
-        self.dateTimeEdit_paymend_date = QtGui.QDateTimeEdit(self.groupBox_payment)
-        self.dateTimeEdit_paymend_date.setFrame(True)
-        self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
-        self.dateTimeEdit_paymend_date.setCalendarPopup(True)
-        self.dateTimeEdit_paymend_date.setObjectName("dateTimeEdit_paymend_date")
-        self.toolButton_time_now = QtGui.QToolButton(self.groupBox_payment)
-        self.gridLayout_6.addWidget(self.dateTimeEdit_paymend_date, 7, 1, 1, 2)
-        self.gridLayout_6.addWidget(self.toolButton_time_now, 7, 3)
-        self.label_promise = QtGui.QLabel(self.groupBox_payment)
-        self.label_promise.setObjectName("label_promise")
-        self.gridLayout_6.addWidget(self.label_promise, 8, 0, 1, 1)
-        self.checkBox_promise = QtGui.QCheckBox(self.groupBox_payment)
-        self.checkBox_promise.setObjectName("checkBox_promise")
-        self.gridLayout_6.addWidget(self.checkBox_promise, 8, 1, 1, 1)
-        self.label_end_promise = QtGui.QLabel(self.groupBox_payment)
-        self.label_end_promise.setObjectName("label_end_promise")
-        self.gridLayout_6.addWidget(self.label_end_promise, 9, 0, 1, 1)
-        self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox_payment)
-        self.dateTimeEdit_end_promise.setCalendarPopup(True)
-        self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
-        
-        self.gridLayout_6.addWidget(self.dateTimeEdit_end_promise, 9, 1, 1, 2)
-        self.checkBox_promise_infinite = QtGui.QCheckBox(self.groupBox_payment)
-        self.checkBox_promise_infinite.setObjectName("checkBox_promise_infinite")
-        self.gridLayout_6.addWidget(self.checkBox_promise_infinite, 9, 3, 1, 1)
-        self.pushButton_pay = QtGui.QPushButton(self.groupBox_payment)
-        self.pushButton_pay.setObjectName("pushButton_pay")
-        self.gridLayout_6.addWidget(self.pushButton_pay, 10, 0, 1, 1)
-        self.pushButton_pay_with_cheque = QtGui.QPushButton(self.groupBox_payment)
-        self.pushButton_pay_with_cheque.setObjectName("pushButton_pay_with_cheque")
-        #self.checkBox = QtGui.QCheckBox(self.groupBox_payment)
-        #self.checkBox.setObjectName("checkBox")
-        self.gridLayout_6.addWidget(self.pushButton_pay_with_cheque, 10, 1, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_payment, 2, 2, 2, 1)
-        self.groupBox_limites = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_limites.setObjectName("groupBox_limites")
-        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_limites)
-        self.gridLayout_5.setObjectName("gridLayout_5")
-        #self.label_limites = QtGui.QLabel(self.groupBox_limites)
-        #self.label_limites.setObjectName("label_limites")
-        #self.label_limites.setMaximumWidth(275)
-        #self.label_limites.setMinimumWidth(275)
-        self.textEdit_limites = QtGui.QTextEdit(self.groupBox_limites)
-        self.textEdit_limites.setDisabled(True)
-        self.gridLayout_5.addWidget(self.textEdit_limites, 0, 0, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_limites, 3, 0, 1, 1)
-        self.groupBox_prepaid_traffic = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_prepaid_traffic.setObjectName("groupBox_prepaid_traffic")
-        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_prepaid_traffic)
+        self.gridLayout_3.addWidget(self.groupBox_filter, 0, 0, 1, 1)
+        self.tableWidget = QtGui.QTableWidget(self.centralwidget)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridLayout_3.addWidget(self.tableWidget, 1, 0, 1, 1)
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.textEdit_prepaid_traffic = QtGui.QTextEdit(self.groupBox_limites)
-        self.textEdit_prepaid_traffic.setDisabled(True)
-        self.gridLayout_2.addWidget(self.textEdit_prepaid_traffic, 0, 0, 1, 1)
-        self.gridLayout_4.addWidget(self.groupBox_prepaid_traffic, 3, 1, 1, 1)
+        self.commandLinkButton = QtGui.QCommandLinkButton(self.groupBox)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("images/money.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton.setIcon(icon)
+        self.commandLinkButton.setObjectName("commandLinkButton")
+        self.gridLayout_2.addWidget(self.commandLinkButton, 0, 0, 1, 1)
+        self.commandLinkButton_traffic_limit = QtGui.QCommandLinkButton(self.groupBox)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("images/traffic_limit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_traffic_limit.setIcon(icon1)
+        self.commandLinkButton_traffic_limit.setIconSize(QtCore.QSize(20, 20))
+        self.commandLinkButton_traffic_limit.setObjectName("commandLinkButton_traffic_limit")
+        self.gridLayout_2.addWidget(self.commandLinkButton_traffic_limit, 0, 1, 1, 1)
+        self.commandLinkButton_prepaid_traffic = QtGui.QCommandLinkButton(self.groupBox)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap("images/prepaid_traffic.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_prepaid_traffic.setIcon(icon2)
+        self.commandLinkButton_prepaid_traffic.setObjectName("commandLinkButton_prepaid_traffic")
+        self.gridLayout_2.addWidget(self.commandLinkButton_prepaid_traffic, 0, 2, 1, 1)
+        self.commandLinkButton_change_tarif = QtGui.QCommandLinkButton(self.groupBox)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("images/tarif_change.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_change_tarif.setIcon(icon3)
+        self.commandLinkButton_change_tarif.setObjectName("commandLinkButton_change_tarif")
+        self.gridLayout_2.addWidget(self.commandLinkButton_change_tarif, 0, 3, 1, 1)
+        self.commandLinkButton_addonservice = QtGui.QCommandLinkButton(self.groupBox)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap("images/addonservices.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton_addonservice.setIcon(icon4)
+        self.commandLinkButton_addonservice.setObjectName("commandLinkButton_addonservice")
+        self.gridLayout_2.addWidget(self.commandLinkButton_addonservice, 0, 4, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox, 2, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
@@ -209,23 +144,28 @@ class CassaEbs(ebsTableWindow):
         actList=[("setPrinter", "Настроить принтер", "images/printer.png", self.getPrinter)]
         objDict = {self.toolBar:["setPrinter",],}
         self.actionCreator(actList, objDict)
-        self.connect(self.pushButton_pay, QtCore.SIGNAL("clicked()"), self.pay)
-        self.connect(self.pushButton_pay_with_cheque, QtCore.SIGNAL("clicked()"), self.pay_with_cheque)
+        #self.connect(self.pushButton_pay, QtCore.SIGNAL("clicked()"), self.pay)
+        #self.connect(self.pushButton_pay_with_cheque, QtCore.SIGNAL("clicked()"), self.pay_with_cheque)
         self.connect(self.pushButton_search, QtCore.SIGNAL("clicked()"), self.refreshTable)
-        self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
-        QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
-        QtCore.QObject.connect(self.toolButton_time_now,QtCore.SIGNAL("clicked()"),self.setPayTime)
-        QtCore.QObject.connect(self.toolButton_set_tarif_date,QtCore.SIGNAL("clicked()"),self.setTarifTime)
         
-        QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        self.connect(self.commandLinkButton_traffic_limit, QtCore.SIGNAL("clicked()"), self.account_limit_info)
+        self.connect(self.commandLinkButton_prepaid_traffic, QtCore.SIGNAL("clicked()"), self.prepaid_traffic_info)
+        self.connect(self.commandLinkButton_change_tarif, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
+        self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.pay)
+        #self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
+        #QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        #QtCore.QObject.connect(self.toolButton_time_now,QtCore.SIGNAL("clicked()"),self.setPayTime)
+        #QtCore.QObject.connect(self.toolButton_set_tarif_date,QtCore.SIGNAL("clicked()"),self.setTarifTime)
         
-        QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemSelectionChanged()"), self.update_info)
+        #QtCore.QObject.connect(self.checkBox_promise_infinite,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
+        
+        #QtCore.QObject.connect(self.tableWidget,QtCore.SIGNAL("itemSelectionChanged()"), self.update_info)
         
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.restoreWindow()
-        self.refreshTariffs()
-        self.fixtures()
-        self.promise_actions()
+        #self.refreshTariffs()
+        #self.fixtures()
+        #self.promise_actions()
         #self.checkAutoTime()
 
         
@@ -240,27 +180,54 @@ class CassaEbs(ebsTableWindow):
         self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
         self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_tariffs.setTitle(QtGui.QApplication.translate("MainWindow", "Перевести на другой тарифный план", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_change_tariff.setText(QtGui.QApplication.translate("MainWindow", "Перевести", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_payment.setTitle(QtGui.QApplication.translate("MainWindow", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
-        self.summ_label.setText(QtGui.QApplication.translate("MainWindow", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
-        self.payed_document_label.setText(QtGui.QApplication.translate("MainWindow", "На основании док.", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_paymend_date.setText(QtGui.QApplication.translate("MainWindow", "Дата платежа", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_promise.setText(QtGui.QApplication.translate("MainWindow", "Обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_promise.setText(QtGui.QApplication.translate("MainWindow", "Да", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_end_promise.setText(QtGui.QApplication.translate("MainWindow", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("MainWindow", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_pay.setText(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_pay_with_cheque.setText(QtGui.QApplication.translate("MainWindow", "Зачислить и распечатать чек", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_limites.setTitle(QtGui.QApplication.translate("MainWindow", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
-        self.textEdit_limites.setPlainText(QtGui.QApplication.translate("MainWindow", "Нет данных", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_prepaid_traffic.setTitle(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
-        self.textEdit_prepaid_traffic.setPlainText(QtGui.QApplication.translate("MainWindow", "Функция недоступна", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_time_now.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_set_tarif_date.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
+#===============================================================================
+#        self.groupBox_tariffs.setTitle(QtGui.QApplication.translate("MainWindow", "Перевести на другой тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+#        self.pushButton_change_tariff.setText(QtGui.QApplication.translate("MainWindow", "Перевести", None, QtGui.QApplication.UnicodeUTF8))
+#        self.groupBox_payment.setTitle(QtGui.QApplication.translate("MainWindow", "Платёжные данные", None, QtGui.QApplication.UnicodeUTF8))
+#        self.summ_label.setText(QtGui.QApplication.translate("MainWindow", "Сумма", None, QtGui.QApplication.UnicodeUTF8))
+#        self.payed_document_label.setText(QtGui.QApplication.translate("MainWindow", "На основании док.", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label.setText(QtGui.QApplication.translate("MainWindow", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_paymend_date.setText(QtGui.QApplication.translate("MainWindow", "Дата платежа", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_promise.setText(QtGui.QApplication.translate("MainWindow", "Обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
+#        self.checkBox_promise.setText(QtGui.QApplication.translate("MainWindow", "Да", None, QtGui.QApplication.UnicodeUTF8))
+#        self.label_end_promise.setText(QtGui.QApplication.translate("MainWindow", "Истекает", None, QtGui.QApplication.UnicodeUTF8))
+#        self.checkBox_promise_infinite.setText(QtGui.QApplication.translate("MainWindow", "Никогда", None, QtGui.QApplication.UnicodeUTF8))
+#        self.pushButton_pay.setText(QtGui.QApplication.translate("MainWindow", "Зачислить", None, QtGui.QApplication.UnicodeUTF8))
+#        self.pushButton_pay_with_cheque.setText(QtGui.QApplication.translate("MainWindow", "Зачислить и распечатать чек", None, QtGui.QApplication.UnicodeUTF8))
+#        self.groupBox_limites.setTitle(QtGui.QApplication.translate("MainWindow", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
+#        self.textEdit_limites.setPlainText(QtGui.QApplication.translate("MainWindow", "Нет данных", None, QtGui.QApplication.UnicodeUTF8))
+#        self.groupBox_prepaid_traffic.setTitle(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+#        self.textEdit_prepaid_traffic.setPlainText(QtGui.QApplication.translate("MainWindow", "Функция недоступна", None, QtGui.QApplication.UnicodeUTF8))
+#        self.toolButton_time_now.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
+#        self.toolButton_set_tarif_date.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
+#===============================================================================
+        self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Действия", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton.setText(QtGui.QApplication.translate("MainWindow", "Пополнить баланс", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton.setDescription(QtGui.QApplication.translate("MainWindow", "Пополнить лицевой счёт", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_traffic_limit.setText(QtGui.QApplication.translate("MainWindow", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_traffic_limit.setDescription(QtGui.QApplication.translate("MainWindow", "Состояние лимитов", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_prepaid_traffic.setText(QtGui.QApplication.translate("MainWindow", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_prepaid_traffic.setDescription(QtGui.QApplication.translate("MainWindow", "Остаток трафика", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_change_tarif.setText(QtGui.QApplication.translate("MainWindow", "Сменить тариф", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_change_tarif.setDescription(QtGui.QApplication.translate("MainWindow", "Сменить тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_addonservice.setText(QtGui.QApplication.translate("MainWindow", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_addonservice.setDescription(QtGui.QApplication.translate("MainWindow", "Список подключенных услуг", None, QtGui.QApplication.UnicodeUTF8))
         
         
+    def account_limit_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="limit", account_id=id)
+            child.exec_()
+           
+ 
+    def prepaid_traffic_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="prepaidtraffic", account_id=id)
+            child.exec_()
+           
+           
     def promise_actions(self):
         if self.checkBox_promise.isChecked():
             self.dateTimeEdit_end_promise.setEnabled(True)
@@ -272,20 +239,7 @@ class CassaEbs(ebsTableWindow):
             self.dateTimeEdit_end_promise.setEnabled(False)
             self.checkBox_promise_infinite.setEnabled(False)
     
-    def update_info(self):
-        account = self.getSelectedId()
-        if account:
-            limites = self.connection.get_limites(account)
-            if not limites: self.textEdit_limites.setPlainText(u"Нет данных"); return
-            r=[]
-            for limit in limites:
-                r.append(u"Название %s Размер %s Расходовано %s Начало %s Конец %s" % (limit["limit_name"], limit["limit_size"], limit["size"] or "0", limit["settlement_period_start"].strftime(self.strftimeFormat),limit["settlement_period_end"].strftime(self.strftimeFormat) ))
-            #self.label_limites.setText('\n'.join(r))
-            self.textEdit_limites.setPlainText('\n'.join(r))
-            #prepaid = self.connection.get_prepaid(account)
-        else:
-            self.textEdit_limites.setPlainText(u"Нет данных")
-        
+ 
     
     def setPayTime(self):
         #if self.checkBox_autotime.isChecked()==True:
@@ -293,20 +247,7 @@ class CassaEbs(ebsTableWindow):
         #else:
         #    self.dateTimeEdit_paymend_date.setDisabled(False)
         self.dateTimeEdit_paymend_date.setDateTime(datetime.datetime.now())
-                
-    def setTarifTime(self):
-        self.dateTime.setDateTime(datetime.datetime.now())
-    def refreshTariffs(self):
-        #accounts = self.connection.get_models("billservice_account")
-        #self.tariffs = self.connection.get_models("billservice_tariff")
-        tariffs = self.connection.sql("SELECT id, name from billservice_tariff WHERE deleted IS NOT TRUE;")
-        self.connection.commit()
-        i=0
-        for tariff in tariffs:
-            self.comboBox_tariff.addItem("%s" % tariff.name)
-            self.comboBox_tariff.setItemData(i, QtCore.QVariant(tariff.id))
-            i+=1
-        #self.refresh()
+
             
     def fixtures(self):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -382,6 +323,15 @@ class CassaEbs(ebsTableWindow):
   
         
     def pay(self):
+        id = self.getSelectedId()
+        if id:
+            account = self.connection.get_model(id, "billservice_account")
+            self.connection.commit()
+            child = TransactionForm(self.connection, None, account)
+            if child.exec_()==1:
+                self.refreshTable()
+        return
+            
         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             account = self.getSelectedId()
             document = unicode(self.lineEdit_document.text())
@@ -410,65 +360,17 @@ class CassaEbs(ebsTableWindow):
                 
             self.lineEdit_summ.setFocus(True)
             
-    def pay_with_cheque(self):
-         if self.getSelectedId() and QtGui.QMessageBox.question(self, u"Произвести платёж?" , u"Вы уверены, что хотите произвести платёж?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            account = self.getSelectedId()
-            document = unicode(self.lineEdit_document.text())
-            description = unicode(self.lineEdit_description.text())
-
-            created = unicode(self.dateTimeEdit_paymend_date.dateTime().toPyDateTime())
-
-            promise = self.checkBox_promise.isChecked()
-            if not self.lineEdit_summ.text():
-                QtGui.QMessageBox.information(self, unicode(u"Ошибка"), unicode(u"Вы не указали сумму."))
-                return
-            summ = float(unicode(self.lineEdit_summ.text()))
-            if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
-                end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
-            else:
-                end_promise = None
-
-                
-            global tr_id
-            
-            tr_id = self.connection.pay(account, summ, document, description, created, promise, end_promise, self.systemuser_id)
-            
-            if tr_id!=False:
-                QtGui.QMessageBox.information(self, unicode(u"Ок"), unicode(u"Платёж произведён успешно."))
-            
-                if not self.printer:
-                    QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
-                    self.getPrinter()
-                if self.printer:
-                    self.cheque_print(tr_id)
-                
-                self.lineEdit_summ.setText("")
-                self.lineEdit_document.setText("")
-                self.lineEdit_description.setText("")
-                
-                self.refreshTable()
-            else:
-                QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Возникла неизвестаня ошибка. Обратитесь к администратору."))
-            self.lineEdit_summ.setFocus(True)
+ 
                    
     def createAccountTarif(self):
-        account_id = self.getSelectedId()
-        tarif_id = unicode(self.comboBox_tariff.itemData(self.comboBox_tariff.currentIndex()).toInt()[0])
-        '''
-        tarif_index = int(self.comboBox_tariff.currentIndex())
-        if not len(self.tariffs) > tarif_index or tarif_index < 0:
-            QMessageBox.warning(self, u"Тариф не найден!" , u"Тарифный план не найден, попробуйте обновить список тарифных планов!", QtGui.QMessageBox.Ok)
-            return
-        if self.tariffs[tarif_index].deleted:
-            QMessageBox.critical(self, u"Невозможно произвести действие!" , u"Тарифный план помечен как удаленный!", QtGui.QMessageBox.Ok)
-            return
-        '''
-        if account_id and tarif_id and QtGui.QMessageBox.question(self, u"Произвести перевод пользователя на новый тарифный план?" , u"Вы уверены, что хотите перевести пользователя на выбранный тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            dtime = self.dateTime.dateTime().toPyDateTime()
-            self.connection.createAccountTarif(account_id, tarif_id, dtime)
+        id = self.getSelectedId()
+        if id:
+            account = self.connection.get_model(id, "billservice_account")
             self.connection.commit()
-            self.refreshTable()
-            self.dateTime.setDateTime(datetime.datetime.now())
+            child = AddAccountTarif(self.connection, account = account)
+            if child.exec_()==1:
+                
+                self.refreshTable()
         
 
     def cheque_print(self, tr_id):
