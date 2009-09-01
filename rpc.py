@@ -7,7 +7,9 @@ import hmac
 import zlib
 import signal
 import hashlib
-import asyncore
+#import asyncore
+import socket
+socket.setdefaulttimeout(3600)
 import datetime
 import operator
 import itertools
@@ -600,7 +602,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         cur.execute("SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY ID DESC LIMIT 1", (account_id,))
         accounttarif_date = cur.fetchone()["datetime"]
-#
+        cur.connection.commit()
         res = []
         for limit in limites:
             limit_name = limit["name"]
@@ -627,7 +629,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 settlement_period_start=now-datetime.timedelta(seconds=delta)
                 settlement_period_end=now
             
-            connection.commit()
+            cur.connection.commit()
 
             #print 4
             cur.execute("""
@@ -637,7 +639,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
             size=cur.fetchone()
             res.append({'settlement_period_start':settlement_period_start, 'settlement_period_end':settlement_period_end, 'limit_name': limit_name, 'limit_size':limit_size or 0, 'size':size["size"] or 0,})
-            connection.commit()
+            cur.connection.commit()
         
         return res
 
