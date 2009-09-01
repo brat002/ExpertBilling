@@ -15,6 +15,8 @@ sys.path = [ sys.path[ 0 ] + '/modules' ]
 from base64 import b64decode as _x_
 from zlib import decompress as _z_
 from collections import deque
+from hashlib import md5 as __hash
+
 _1i = lambda: ''
 def _1fi_():
         global _1i
@@ -76,8 +78,9 @@ _PROTECTION_CHUNK_1_L = r"""
             __3 = __3[0]
 	    
 	__6 = str.join('', __3)
-	__5 = __import__(__0[6]) # import md5
-	__6 = getattr(getattr(__5, __0[5])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	#__5 = __import__(__0[6]) # import md5
+	#__6 = getattr(getattr(__5, __0[5])(__6), __0[7])() # ... = md5.new(...).hexdigest()
+	__6 = getattr(__hash(__6), __0[7])()
 	__6 = __6[:-1] + 'L'
 	_1fi_()
 	__6 += _1i()
@@ -313,7 +316,8 @@ def _reset_flags():
 			'platform': None,
 			'zlib': None,
 			'base64': None,
-			'md5': None,
+			'hashlib': None,
+			'collections': None,
 		},
 		'NONLOCAL': [              # names of modules that should be treated as non-local
 			'os',
@@ -321,7 +325,8 @@ def _reset_flags():
 			'platform',
 			'zlib',
 			'base64',
-			'md5',
+			'hashlib',
+			'collections'
 		],
 		'LOCATION': os.getcwd() + os.sep, # current working directory
 		'SCRIPT_DIR': os.path.dirname( sys.modules[ __name__ ].__file__ ), # location of this script
