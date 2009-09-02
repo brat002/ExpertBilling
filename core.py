@@ -359,12 +359,18 @@ class periodical_service_bill(Thread):
                                         пока денег на счету не было
                                         """
                                         chk_date = last_checkout
+                                        if not first_time:
+                                            period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                            s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                            time_start_ps = period_start_ast + s_delta_ast
+                                            chk_date = period_start_ast + s_delta_ast
                                         #Смотрим на какую сумму должны были снять денег и снимаем её                                            
                                         while True:
+                                            cash_summ = ps.cost
                                             period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                                             s_delta_ast = datetime.timedelta(seconds=delta_ast)
                                             chk_date = period_start_ast
-                                            if ps.created and ps.created >= chk_date:
+                                            if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                                                 cash_summ = 0
                                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                                             cur.connection.commit()
@@ -397,18 +403,30 @@ class periodical_service_bill(Thread):
                                     if first_time or period_start > last_checkout:
                                         cash_summ = ps.cost
                                         chk_date = last_checkout
+                                        if not first_time:
+                                            period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                                            s_delta_ast = datetime.timedelta(seconds=delta_ast)
+                                            chk_date = period_end_ast + second_
+                                            time_start_ps = time_start_ps + s_delta_ast
                                         while True:
+                                            cash_summ = ps.cost
                                             period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                                             s_delta_ast = datetime.timedelta(seconds=delta_ast)
                                             chk_date = period_end_ast - second_
                                             if first_time:
                                                 first_time = False
                                                 chk_date = last_checkout
-                                                ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                                                tr_date = period_start_ast - second_
+                                                ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
+                                                
                                             else:
-                                                if ps.created and ps.created >= chk_date:
+                                                if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                                                     cash_summ = ZERO_SUM
-                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, chk_date, ps.condition))
+                                                tr_date = chk_date
+                                                if acc.end_date and acc.end_date < chk_date:
+                                                    cash_summ = 0
+                                                    tr_date = acc.end_date
+                                                cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                                             cur.connection.commit()
                                             chk_date = period_end_ast + second_
                                             if not chk_date < period_start: break
