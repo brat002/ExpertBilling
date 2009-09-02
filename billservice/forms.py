@@ -10,6 +10,9 @@ class LoginForm(forms.Form):
     password = forms.CharField(label=u"пароль", widget=forms.PasswordInput, required = False)
     pin = forms.CharField(label=u"пин", widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
     
+class PromiseForm(forms.Form):
+    sum = forms.FloatField(label=u"Сумма", required = True, error_messages={'required':u'Вы не указали размер платежа!'})
+    
 class PasswordForm(forms.Form):
     old_password = forms.CharField(label=u"Старый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
     new_password = forms.CharField(label=u"Новый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
