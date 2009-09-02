@@ -621,6 +621,7 @@ class Transaction(models.Model):
     created=models.DateTimeField(auto_now_add=True, default='')
     promise=models.BooleanField(default=False) 
     end_promise=models.DateTimeField(auto_now_add=True, default='')
+    promise_expired = models.BooleanField(default=False)
 
 
     class Admin:
@@ -641,6 +642,8 @@ class Transaction(models.Model):
         self.account.save()
         super(Transaction, self).delete()
 
+    def human_sum(self):
+        return self.summ*(-1)
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.tarif, self.created)
 

@@ -2846,6 +2846,7 @@ class AccountWindow(QtGui.QMainWindow):
         #self.groupBox_manager.setTitle(QtGui.QApplication.translate("MainWindow", "Работа с клиентом", None, QtGui.QApplication.UnicodeUTF8))
         #self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_balance_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
         self.label_balance.setText(QtGui.QApplication.translate("MainWindow", "Текущий баланс", None, QtGui.QApplication.UnicodeUTF8))
         self.label_credit.setText(QtGui.QApplication.translate("MainWindow", "Максимальный кредит", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_credit.setText(QtGui.QApplication.translate("MainWindow", "Работать в кредит", None, QtGui.QApplication.UnicodeUTF8))
@@ -2893,6 +2894,7 @@ class AccountWindow(QtGui.QMainWindow):
         #self.tableWidget.
         
         self.tableInfo=[
+            #['ur', u'Юридическое лицо','checkbox'],
             ['contactperson', u'Контактное лицо',''],
             ['contactperson_phone', u'Тел. Контактного лица',''],
             ['fullname', u'ФИО абонента',''],
@@ -2918,6 +2920,8 @@ class AccountWindow(QtGui.QMainWindow):
         i=0
         for item in self.tableInfo:
             self.addrow(self.tableWidget, item[1], i, 0, id=item[0])
+            if item[2]:
+                self.addrow(self.tableWidget, '', i, 1, widget_type = item[2])
             i+=1
             
 
@@ -3738,8 +3742,10 @@ class AccountWindow(QtGui.QMainWindow):
             self.tableWidget_addonservice.setColumnHidden(0, True)
             self.tableWidget_addonservice.resizeColumnsToContents()
                   
-    def addrow(self, widget, value, x, y, id=None, editable=False):
+    def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
         headerItem = QtGui.QTableWidgetItem()
+        if widget_type == 'checkbox':
+            headerItem.setCheckState(QtCore.Qt.Unchecked)
         if value==None or value=="None":
             value=''
         if y==0:

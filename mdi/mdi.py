@@ -3,6 +3,8 @@
 import sys
 from PyQt4 import QtCore, QtGui
 
+#import socket
+#socket.setdefaulttimeout(None)
 from helpers import Object as Object
 from helpers import connlogin
 import Pyro.core
@@ -10,8 +12,11 @@ import Pyro.util
 import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
+import Pyro.configuration
 import threading
+import Pyro
 
+Pyro.config.PYRO_BROKEN_MSGWAITALL = 1
 import isdlogger
 #logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
 #Pyro.util.Log = logger
