@@ -209,29 +209,34 @@ def netflowstream_info(request):
 def get_promise(request):
     if not request.session.has_key('user'):
         return is_login_user(request)
+    if settings.ALLOW_PROMISE==False:
+        return HttpResponseRedirect('/')
     user = request.session['user']
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = settings.LEFT_PROMISE_DAYS)
-    last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-    print last_promises
+    
     cursor = connection.cursor()
     cursor.execute("""SELECT True FROM billservice_transaction WHERE account_id=%s and promise=True and promise_expired=False""" % (user.id))
     #print "cursor.fetchone()", cursor.fetchone()
     if cursor.fetchone():
+        last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
         return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, }        
     print 1
     if request.method == 'POST':
         rf = PromiseForm(request.POST)
         if not rf.is_valid():
+            last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Проверьте введённые в поля данные"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
         print 2
         sum=rf.cleaned_data.get("sum", 0)
         if sum>settings.MAX_PROMISE_SUM:
+            last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Вы превысили максимальный размер обещанного платежа"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
         print 3
         if sum<=0:
+            last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Сумма обещанного платежа должна быть положительной"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
         cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired) 
@@ -241,6 +246,7 @@ def get_promise(request):
         
         return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises,}
     else:
+        last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE}     
             
         
