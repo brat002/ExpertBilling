@@ -189,7 +189,7 @@ class NfrVars(Vars):
     def __init__(self):
         super(NfrVars, self).__init__()
         self.name = 'nfroutine'
-        self.HOST, self.PORT = '127.0.0.1', 9997
+        self.HOST, self.PORT = '0.0.0.0', 36577
         self.NFR_SESSION = ["SET synchronous_commit TO OFF;"]
         self.ADDR = (self.HOST, self.PORT)
         self.sendFlag = ''
@@ -220,11 +220,11 @@ class NfrVars(Vars):
         if config.has_option(name, 'groupdicts'): self.GROUP_DICTS = config.getint(name, 'groupdicts')
         self.SOCK_TYPE = config.getint(net_name, "sock_type")
         if self.SOCK_TYPE == 0:
-            self.HOST = config.get(net_name + "_inet", "host")
-            self.PORT = config.getint(net_name + "_inet", "port")
+            if config.has_option(net_name + "_inet", "nfr_host"): self.HOST = config.get(net_name + "_inet", "nfr_host")
+            if config.has_option(net_name + "_inet", "nfr_port"): self.PORT = config.getint(net_name + "_inet", "nfr_port")
             self.ADDR = (self.HOST, self.PORT)
         elif self.SOCK_TYPE == 1:
-            self.HOST = config.get(net_name + "_unix", "host")
+            if config.has_option(net_name + "_unix", "nfr_host"): self.HOST = config.get(net_name + "_unix", "nfr_host")
             self.PORT = None
             self.ADDR = self.HOST
 
