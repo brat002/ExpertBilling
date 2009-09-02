@@ -447,7 +447,7 @@ class periodical_service_bill(Thread):
                 if not first_time:
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    chk_date = period_end_ast + s_delta_ast
+                    chk_date = period_end_ast + SECOND
                     time_start_ps = time_start_ps + s_delta_ast
                 while True:
                     cash_summ = ps.cost
@@ -456,13 +456,14 @@ class periodical_service_bill(Thread):
                     chk_date = period_end_ast - SECOND
                     if first_time:
                         first_time = False
-                        #chk_date = last_checkout
+                        chk_date = last_checkout
+                        tr_date = period_start_ast - SECOND
                         if pss_type == PERIOD:
-                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, chk_date)
+                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
                         elif pss_type == ADDON:
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, chk_date)
                     else:
-                        if ps.created and ps.created >= chk_date:
+                        if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                             cash_summ = ZERO_SUM
                         if pss_type == PERIOD:
                             tr_date = chk_date
