@@ -764,16 +764,20 @@ class NfTwistedServer(DatagramProtocol):
 class TCP_LineReciever(LineReceiver):
     delimiter = '--NFRP--'
     
+    '''
+    def connectionMade(self):
+        print 'conn', self, self.transport.getHost(), self.transport.getPeer(), self.transport.hostname
+    '''    
     def lineReceived(self, line):
         recieved_len = len(line)
         declared_len = reduce(INT_ME_FN, line[:TCP_PACKET_SIZE_HEADER][::-1], (0,1))[0]
         if recieved_len != declared_len:
-            logger.warning('Packet consumer: declared %s and recieved %s packet lengths do not match! Packet dropped!', (declared_len, recieved_len))
+            logger.warning('Packet consumer: host: %s |peer: %s declared %s and recieved %s packet lengths do not match! Packet dropped!', (self.transport.getHost(), self.transport.getPeer(), declared_len, recieved_len))
             return
         try:
             flows = loads(line[TCP_PACKET_SIZE_HEADER:])
         except Exception, ex:
-            logger.info("Bad packet (marshalling problems):%s ; ",repr(ex))
+            logger.info("Packet consumer: host: %s |peer: %s Bad packet (marshalling problems):%s ; ",(self.transport.getHost(), self.transport.getPeer(), repr(ex)))
             return
         
         with queues.nfQueueLock:
@@ -920,7 +924,8 @@ def main():
         #reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
         fact = Factory()
         fact.protocol = TCP_LineReciever
-        reactor.listenTCP(vars.PORT, fact)
+        p = reactor.listenTCP(vars.PORT, fact)
+        logger.info("Listening on: %s", p.getHost())
     elif vars.SOCK_TYPE == 1:
         #reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
         fact = Factory()
@@ -936,6 +941,7 @@ def main():
     print "ebs: nfroutine: started"
     savepid(vars.piddir, vars.name)
     reactor.run(installSignalHandlers=False)
+
 #===============================================================================
 
     
