@@ -1,7 +1,7 @@
 import paramiko
 import logging
-import socket
-socket.setdefaulttimeout(20)
+#import socket
+#socket.setdefaulttimeout(20)
 paramiko.common.logging.root.setLevel(logging.WARNING)
 
 

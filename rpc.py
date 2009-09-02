@@ -8,8 +8,8 @@ import zlib
 import signal
 import hashlib
 #import asyncore
-import socket
-socket.setdefaulttimeout(3600)
+#import socket
+#socket.setdefaulttimeout(3600)
 import datetime
 import operator
 import itertools
@@ -21,9 +21,9 @@ import time, datetime, os, sys, gc, traceback
 import Pyro
 import Pyro.core, Pyro.protocol, Pyro.constants, Pyro.util
 
-Pyro.config.PYRO_TRACELEVEL = 3
+#Pyro.config.PYRO_TRACELEVEL = 3
 #print dir(Pyro.config) 
-Pyro.config.PYRO_BROKEN_MSGWAITALL = 1 
+#Pyro.config.PYRO_BROKEN_MSGWAITALL = 0
 import isdlogger
 import saver, utilites
 
