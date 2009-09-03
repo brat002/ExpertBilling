@@ -790,18 +790,6 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed NAS PPPOE for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
             return self.auth_NA(authobject) 
         
-        if nas.multilink is False:
-            station_id_status = False
-            if len(station_id) == 17:
-                """MAC - PPPOE"""
-                station_id_status = ((str(acc.ipn_mac_address) == station_id) or (acc.ipn_mac_address == ''))
-            else:
-                """IP - PPTP"""
-                station_id_status = ((str(acc.ipn_ip_address)  == station_id) or (acc.ipn_ip_address  == '0.0.0.0'))
-
-            if not station_id_status:
-                logger.warning("Unallowed NAS for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s ", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address))
-                return self.auth_NA(authobject) 
 
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
         if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
