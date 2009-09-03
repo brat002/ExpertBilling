@@ -200,7 +200,7 @@ class check_vpn_access(Thread):
                     
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                        if isinstance(ex, vars.db_dsn): raise ex
+                        if isinstance(ex, vars.db_errors): raise ex
                     
                 cur.connection.commit()   
                 cur.close()
