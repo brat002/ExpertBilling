@@ -158,3 +158,10 @@ UPDATE billservice_accounttarif as acctf1 SET periodical_billed=TRUE WHERE acctf
  $$    
  LANGUAGE plpgsql;
  
+ CREATE UNIQUE INDEX billservice_transactiontype_ind
+   ON billservice_transactiontype (id);
+
+INSERT INTO billservice_transactiontype(id,
+             "name", internal_name)
+    VALUES (11,'Списание средств за преждевременное отключение услуги абонентом', 'ADDONSERVICE_WYTE_PAY');
+
