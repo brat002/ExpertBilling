@@ -105,7 +105,7 @@ def login(request):
                             'error_message':error_message,
                             'form':form,
                             }
-            except:
+            except :
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
                 error_message = u'Проверьте введенные данные'
                 return {
