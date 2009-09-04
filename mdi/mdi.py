@@ -16,6 +16,7 @@ import Pyro.configuration
 import threading
 import Pyro
 
+
 Pyro.config.PYRO_BROKEN_MSGWAITALL = 1
 import isdlogger
 #logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
@@ -656,6 +657,8 @@ if __name__ == "__main__":
     connection.commit()
     try:
         global mainwindow
+        print connection.list_logfiles()
+        print connection.get_tail_log("core_log", 200)
         mainwindow = MainWindow()
         splash.finish(mainwindow) 
         mainwindow.show()

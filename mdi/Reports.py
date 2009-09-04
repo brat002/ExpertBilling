@@ -46,8 +46,8 @@ class TransactionsReportEbs(ebsTableWindow):
         self.account = account
         columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
-        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время"]
-        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction",]
+        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
+        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -126,6 +126,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.columns["billservice_onetimeservicehistory"]=['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
         self.columns["billservice_traffictransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
         self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'ID сессии', u'Сумма', u'Дата']
+        self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
         self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
 
        
@@ -386,6 +387,45 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(u"Итого", i, 3)
             self.addrow(sum, i, 4)                                 
         self.tableWidget.setColumnHidden(0, True)
+        
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
+            #print 111
+            tr_types = self.connection.get_models("billservice_transactiontype")
+            t = {}
+            for x in tr_types:
+                t[x.internal_name] = x.name
+                               
+            #print (start_date, end_date,)
+            sql = """
+            select addst.id, (SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as service_name, addst.summ, addst.created, addst.type_id, (SELECT username FROM billservice_account WHERE id=addst.account_id) as username
+            FROM billservice_addonservicetransaction as addst
+            WHERE addst.created>='%s' and addst.created<='%s' %%s ORDER BY created ASC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and addst.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items)+1)
+            i=0
+            sum = 0
+            ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
+            for item in items:
+                self.addrow(i, i, 0, id = item.id)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.service_name, i, 2)
+                self.addrow(t[item.type_id], i, 3)
+                self.addrow(item.summ, i, 4)
+                self.addrow(item.created.strftime(self.strftimeFormat), i, 5)
+                i+=1
+                sum +=item.summ
+            self.addrow(u"Итого", i, 3)
+            self.addrow(sum, i, 4)                                 
+        self.tableWidget.setColumnHidden(0, True)
+        
                 
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")

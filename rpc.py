@@ -43,7 +43,7 @@ from db import delete_transaction, get_default_speed_parameters, get_speed_param
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-
+import commands
 try:    import mx.DateTime
 except: print 'cannot import mx'
 from classes.vars import RpcVars
@@ -442,6 +442,18 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         del sql
         return
 
+    @authentconn
+    def list_logfiles(self, cur=None, connection=None):
+        return os.listdir('log/')
+        #print sql
+        #cur.execute(sql)
+        #connection.commit()
+        #del sql
+        
+    def get_tail_log(self, log_name, count=10):
+        #a=file("log/%s", 'r')
+        #strs = a.re
+        return commands.getstatusoutput("tail -n %s log/%s" % (count, log_name))
     @authentconn
     def activate_card(self, login, pin, cur=None, connection=None):
         status_ok = 1
