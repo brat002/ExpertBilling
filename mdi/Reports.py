@@ -2459,6 +2459,7 @@ class LogViewWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.centralwidget)
         
         self.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.get_tail)
+        self.connect(self.checkBox, QtCore.SIGNAL("stateChanged(int)"), self.checkbox_action)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
         self.fixtures()
@@ -2473,7 +2474,11 @@ class LogViewWindow(QtGui.QMainWindow):
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Получить с сервера", None, QtGui.QApplication.UnicodeUTF8))
 
 
-
+    def checkbox_action(self):
+        if self.checkBox.isChecked():
+            self.spinBox.setDisabled(True)
+        else:
+            self.spinBox.setDisabled(False)
     def fixtures(self):
         #self.connection
         

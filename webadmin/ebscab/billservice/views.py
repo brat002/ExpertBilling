@@ -221,20 +221,20 @@ def get_promise(request):
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
         return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, }        
-    print 1
+    #print 1
     if request.method == 'POST':
         rf = PromiseForm(request.POST)
         if not rf.is_valid():
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Проверьте введённые в поля данные"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        print 2
+        #print 2
         sum=rf.cleaned_data.get("sum", 0)
         if sum>settings.MAX_PROMISE_SUM:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Вы превысили максимальный размер обещанного платежа"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        print 3
+        #print 3
         if sum<=0:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Сумма обещанного платежа должна быть положительной"
@@ -384,10 +384,12 @@ def change_tariff(request):
             cursor = connection.cursor()
             cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id))
             account_tariff_id = cursor.fetchone()[0]
+            
             account_tariff = AccountTarif.objects.get(id=account_tariff_id)
             from datetime import datetime
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
             rule = TPChangeRule.objects.get(id=rule_id)
+            #cursor.execute("SELECT name FROM billservice_accountaddonservice WHERE account_id=%s and")
             #settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False)
             if rule.settlement_period_id:
                 td = settlement_period_info(account_tariff.datetime, rule.settlement_period.length_in, rule.settlement_period.length)
@@ -405,6 +407,7 @@ def change_tariff(request):
                                                     tarif = rule.to_tariff,
                                                     datetime = datetime.now(), 
                                                  )
+            cursor.execute("UPDATE billservice_accountaddonservice SET deactivated=now() WHERE account_id = %s and deactivated is Null;" % user.id)
             return {
                     'ok_message':u'Вы успешно сменили тариф',
                     }

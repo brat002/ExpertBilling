@@ -351,7 +351,7 @@ class MainWindow(QtGui.QMainWindow):
         self.saveAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
 
-        self.saveAsAct = QtGui.QAction(u'Администраторы', self)
+        self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы', self)
         self.saveAsAct.setStatusTip(u"Системные администраторы")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
 
@@ -373,7 +373,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
 
-        self.sqlDialogAct = QtGui.QAction(u'SQL Консоль', self)
+        self.sqlDialogAct = QtGui.QAction(QtGui.QIcon("images/sql.png"),u'SQL Консоль', self)
 
         self.sqlDialogAct.setShortcut(self.tr("Ctrl+Y"))
         self.connect(self.sqlDialogAct, QtCore.SIGNAL("triggered()"), self.sqlDialog)
@@ -406,16 +406,16 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
 
-        self.reloginAct = QtGui.QAction(self.tr("&Reconnect"), self)
+        self.reloginAct = QtGui.QAction(QtGui.QIcon("images/refresh_connection.png"),self.tr("&Reconnect"), self)
         self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.reloginAct, QtCore.SIGNAL("triggered()"), self.relogin)
 
-        self.templatesAct = QtGui.QAction(u"Шаблоны документов", self)
+        self.templatesAct = QtGui.QAction(QtGui.QIcon("images/templates.png"),u"Шаблоны документов", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.templatesAct, QtCore.SIGNAL("triggered()"), self.templates)
 
 
-        self.tpchangeAct = QtGui.QAction(u"Правила смены ТП", self)
+        self.tpchangeAct = QtGui.QAction(QtGui.QIcon("images/tarif_change.png"),u"Правила смены ТП", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.tpchangeAct, QtCore.SIGNAL("triggered()"), self.tpchangerules)
 
@@ -423,7 +423,7 @@ class MainWindow(QtGui.QMainWindow):
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.addonserviceAct, QtCore.SIGNAL("triggered()"), self.addonservice)
  
-        self.logViewAct = QtGui.QAction(u"Просмотр логов", self)
+        self.logViewAct = QtGui.QAction(QtGui.QIcon("images/logs.png"), u"Просмотр логов", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.logViewAct, QtCore.SIGNAL("triggered()"), self.logview)       
         

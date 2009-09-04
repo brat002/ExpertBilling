@@ -2166,3 +2166,7 @@ ALTER TABLE billservice_account ADD COLUMN passport_date character varying;
 ALTER TABLE billservice_account ALTER COLUMN passport_date SET STORAGE EXTENDED;
 ALTER TABLE billservice_account ALTER COLUMN passport_date SET DEFAULT ''::character varying;
 
+
+ALTER TABLE billservice_tpchangerule ADD COLUMN settlement_period_id integer;
+ALTER TABLE billservice_tpchangerule ALTER COLUMN settlement_period_id SET STORAGE PLAIN;
+ALTER TABLE billservice_tpchangerule ALTER COLUMN settlement_period_id SET DEFAULT 0;
