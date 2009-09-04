@@ -2413,4 +2413,90 @@ class ReportOptionsDialog(QtGui.QDialog):
         QtGui.QDialog.accept(self)
         
         
-    
+class LogViewWindow(QtGui.QMainWindow):
+    def __init__(self, connection):
+        super(LogViewWindow, self).__init__()
+        self.connection = connection
+        self.setObjectName("LogViewWindow")
+        self.resize(800, 600)
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.plainTextEdit = QtGui.QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit.setReadOnly(True)
+        self.plainTextEdit.setBackgroundVisible(False)
+        self.plainTextEdit.setObjectName("plainTextEdit")
+        self.gridLayout.addWidget(self.plainTextEdit, 1, 0, 1, 2)
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label = QtGui.QLabel(self.groupBox)
+        self.label.setObjectName("label")
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.comboBox = QtGui.QComboBox(self.groupBox)
+        self.comboBox.setObjectName("comboBox")
+        self.gridLayout_2.addWidget(self.comboBox, 0, 1, 1, 1)
+        self.label_2 = QtGui.QLabel(self.groupBox)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout_2.addWidget(self.label_2, 0, 2, 1, 1)
+        self.spinBox = QtGui.QSpinBox(self.groupBox)
+        self.spinBox.setMinimumSize(QtCore.QSize(100, 0))
+        self.spinBox.setObjectName("spinBox")
+        self.spinBox.setMaximum(10000000)
+        self.spinBox.setValue(100)
+        self.gridLayout_2.addWidget(self.spinBox, 0, 3, 1, 1)
+        self.checkBox = QtGui.QCheckBox(self.groupBox)
+        self.checkBox.setObjectName("checkBox")
+        self.gridLayout_2.addWidget(self.checkBox, 0, 4, 1, 1)
+        self.pushButton = QtGui.QPushButton(self.groupBox)
+        self.pushButton.setObjectName("pushButton")
+        self.gridLayout_2.addWidget(self.pushButton, 0, 6, 1, 1)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 2)
+        self.setCentralWidget(self.centralwidget)
+        
+        self.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.get_tail)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Просмотр лог-файлов", None, QtGui.QApplication.UnicodeUTF8))
+        #self.plainTextEdit.setPlainText(QtGui.QApplication.translate("MainWindow", "цукцукцук", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Имя лог-файла", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Количество последних строк", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox.setText(QtGui.QApplication.translate("MainWindow", "Всё", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Получить с сервера", None, QtGui.QApplication.UnicodeUTF8))
+
+
+
+    def fixtures(self):
+        #self.connection
+        
+        logs = self.connection.list_logfiles()
+        #print logs
+        i=0
+        for log in logs:
+           self.comboBox.addItem(unicode(log))
+           self.comboBox.setItemData(i, QtCore.QVariant(log))
+           i+=1
+
+    def get_tail(self):
+        
+        log_name = self.comboBox.itemData(self.comboBox.currentIndex()).toString()
+
+        log_count = self.spinBox.value()
+
+        if self.checkBox.isChecked()==True:
+            a = self.connection.get_tail_log(log_name, log_count, all_file = True)
+        else:
+            a = self.connection.get_tail_log(log_name, log_count)
+        #print a
+        u = a[1]
+        self.plainTextEdit.setPlainText(u)
+        #self.plainTextEdit.setPla
+        

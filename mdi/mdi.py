@@ -35,7 +35,7 @@ from PoolFrame import PoolEbs as PoolFrame
 #from SystemUser import SystemUserChild
 from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
-from Reports import NetFlowReportEbs as NetFlowReport, StatReport #, ReportSelectDialog
+from Reports import NetFlowReportEbs as NetFlowReport, StatReport , LogViewWindow
 from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
@@ -234,6 +234,17 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     @connlogin
+    def logview(self):
+        child = LogViewWindow(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+
+        
+    @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, u"О программе",
                                 u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
@@ -411,6 +422,12 @@ class MainWindow(QtGui.QMainWindow):
         self.addonserviceAct = QtGui.QAction(u"Подключаемые услуги", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.addonserviceAct, QtCore.SIGNAL("triggered()"), self.addonservice)
+ 
+        self.logViewAct = QtGui.QAction(u"Просмотр логов", self)
+        #self.reloginAct.setStatusTip(self.tr("Reconnect"))
+        self.connect(self.logViewAct, QtCore.SIGNAL("triggered()"), self.logview)       
+        
+        
         self.reportActs = []
         i = 0
         
@@ -508,6 +525,11 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.addonserviceAct)
         self.fileMenu.addSeparator()
+
+        self.fileMenu.addAction(self.logViewAct)
+        self.fileMenu.addSeparator()
+        
+
         self.fileMenu.addAction(self.exitAct)
 
         self.windowMenu = self.menuBar().addMenu(u"&Окна")
@@ -657,8 +679,6 @@ if __name__ == "__main__":
     connection.commit()
     try:
         global mainwindow
-        print connection.list_logfiles()
-        print connection.get_tail_log("core_log", 200)
         mainwindow = MainWindow()
         splash.finish(mainwindow) 
         mainwindow.show()
