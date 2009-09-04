@@ -298,7 +298,7 @@ class SystemEbs(ebsTableWindow):
         if value == None:
             value = ''
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            headerItem.setIcon(QtGui.QIcon("images/system_administrators.png"))
         headerItem.setText(unicode(value))
         self.tableWidget.setItem(x,y,headerItem)
 
