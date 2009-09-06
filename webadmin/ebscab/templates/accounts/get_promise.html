@@ -1,0 +1,78 @@
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{{error_message}}
+{% if not disable_promise %}
+<form method = "POST" action="">
+<table class="wide extra_table" cellpadding="0" cellspacing="0">
+    <tr>
+        <th class="white bold s-11 blue_caption a-left" colspan=2>Обещанынй платёж(пополнить баланс в долг)</th>
+    </tr>
+    <tr>
+        <td class="coll_bg coll_bg ">
+        Сумма
+        </td>
+        <td class="left_border ">
+        <input type = "input" name = "sum">(макс {{MAX_PROMISE_SUM}})
+        </td>
+    </tr>
+    <tr>
+    <td class="coll_bg  ">
+    Погасить до:
+    </td>
+    <td class="left_border ">
+    <strong>{{LEFT_PROMISE_DATE|date:"d.m.Y H:i"}}</strong> (в указанное время сумма обещанного платежа будет списана с вашего баланса)
+    </td>
+    </tr>
+    <tr>
+    <td class="coll_bg ">
+    </td>
+    <td class="left_border no_border">
+    <input value="Взять" type="submit" >
+    </td>
+    </tr>
+            </table>
+</table>
+
+</form>
+{% endif %}
+<div>&nbsp;</div>
+{% if last_promises %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">ИСТОРИЯ ОБЕЩАННЫХ ПЛАТЕЖЕЙ</th>
+	</tr>
+	<tr>
+		<td>
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>Дата</th>
+					<th>Сумма</th>
+                    <th>Взята до</th>
+					<th>Платёж закрыт</th>
+
+				</tr>
+				{% for promise in last_promises %}
+                
+					<tr>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.created|date:"d.m.Y H:i" }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.human_sum|floatformat:2 }}</td>
+                        <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.end_promise|date:"d.m.Y H:i" }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if promise.promise_expired %}Да{% else %} Нет{% endif %}&nbsp;</td>
+						
+					</tr>
+				{% endfor %}
+			</table>
+			
+		</td>
+	</tr>
+</table>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ
+{% endblock %}
