@@ -359,6 +359,7 @@ class periodical_service_bill(Thread):
                                         пока денег на счету не было
                                         """
                                         chk_date = last_checkout
+                                        period_end_ast= None
                                         if not first_time:
                                             period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                                             s_delta_ast = datetime.timedelta(seconds=delta_ast)
@@ -366,6 +367,8 @@ class periodical_service_bill(Thread):
                                             chk_date = period_start_ast + s_delta_ast
                                         #Смотрим на какую сумму должны были снять денег и снимаем её                                            
                                         while True:
+                                            if acc.end_date and acc.end_date == period_end_ast:
+                                                break
                                             cash_summ = ps.cost
                                             period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                                             s_delta_ast = datetime.timedelta(seconds=delta_ast)
