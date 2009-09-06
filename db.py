@@ -340,12 +340,12 @@ def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_i
 def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     if co_datetime:
         cursor.execute("""
-                   SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory
+                   SELECT date_trunc('second', datetime) FROM billservice_periodicalservicehistory
                     WHERE service_id=%s AND accounttarif_id=%s AND datetime <= %s ORDER BY datetime DESC LIMIT 1
                     """ , (ps_id, accounttarif, co_datetime))
     else:
         cursor.execute("""
-                   SELECT datetime::timestamp without time zone FROM billservice_periodicalservicehistory
+                   SELECT date_trunc('second', datetime) FROM billservice_periodicalservicehistory
                     WHERE service_id=%s AND accounttarif_id=%s ORDER BY datetime DESC LIMIT 1
                     """ , (ps_id, accounttarif,))
     try:
@@ -356,7 +356,7 @@ def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
 def get_last_addon_checkout(cursor, ps_id, accounttarif, co_datetime=None):
 
     cursor.execute("""
-                    SELECT created FROM billservice_addonservicetransaction
+                    SELECT date_trunc('second', created) FROM billservice_addonservicetransaction
                     WHERE accountaddonservice_id=%s AND accounttarif_id=%s ORDER BY created DESC LIMIT 1
                     """ , (ps_id, accounttarif))
 
