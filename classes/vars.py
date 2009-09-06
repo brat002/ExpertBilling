@@ -128,11 +128,11 @@ class NfVars(Vars):
         if config.has_option(name, 'host'): self.HOST = config.get(name, 'host')
         self.SOCK_TYPE = config.getint(net_name, "sock_type")
         if self.SOCK_TYPE == 0:
-            self.NFR_HOST = config.get(net_name + "_inet", "host")
-            self.NFR_PORT = config.getint(net_name + "_inet", "port")
+            if config.has_option(net_name + "_inet", "nfr_host"): self.NFR_HOST = config.get(net_name + "_inet", "nfr_host")
+            if config.has_option(net_name + "_inet", "nfr_port"): self.NFR_PORT = config.getint(net_name + "_inet", "nfr_port")
             self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
         elif self.SOCK_TYPE == 1:
-            self.NFR_HOST = config.get(net_name + "_unix", "host")
+            if config.has_option(net_name + "_unix", "nfr_host"): self.NFR_HOST = config.get(net_name + "_unix", "nfr_host")
             self.NFR_PORT = None
             self.NFR_ADDR = self.NFR_HOST
         if config.has_option(name, 'recover_dump'):
