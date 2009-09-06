@@ -122,7 +122,7 @@ class TPRulesAdd(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            print 'New sp'
+            #print 'New sp'
             model=Object()
 
         if unicode(self.lineEdit_cost.text())==u"":
@@ -140,7 +140,7 @@ class TPRulesAdd(QtGui.QDialog):
 
         model.disabled = self.checkBox_disable.checkState()==2
         model.settlement_period_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
-        print "model.settlement_period_id", model.settlement_period_id
+        #print "model.settlement_period_id", model.settlement_period_id
         from_id = self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]
         self.connection.commit()
         for i in xrange(self.listWidget_to.count()):
