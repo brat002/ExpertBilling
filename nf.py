@@ -224,6 +224,7 @@ class TCPSender(Protocol):
             
 class TCPSender_ClientFactory(ReconnectingClientFactory):
     protocol = TCPSender
+    factor = 1.6180339887498948
     def __init__(self, producer):
         #super(TCPSender_ClientFactory, self).__init__()
         self.Producer = producer
