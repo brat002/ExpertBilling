@@ -148,7 +148,7 @@ class TPRulesAdd(QtGui.QDialog):
             if x.checkState()==QtCore.Qt.Checked:
                 model.from_tariff_id = from_id
                 model.to_tariff_id = x.id
-                print "save"
+                #print "save"
                 try:
                     self.connection.save(model,"billservice_tpchangerule")
                 except:
