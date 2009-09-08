@@ -92,8 +92,12 @@ class TransactionsReportEbs(ebsTableWindow):
 
         self.label_transactions_type = QtGui.QLabel(self)
         self.label_transactions_type.setMargin(10)
-        
+
+        self.label_cashier = QtGui.QLabel(self)
+        self.label_cashier.setMargin(10)
+           
         self.comboBox_transactions_type = QtGui.QComboBox(self)
+        self.comboBox_cashier = QtGui.QComboBox(self)
         
         
         self.go_pushButton = QtGui.QPushButton(self)
@@ -109,6 +113,8 @@ class TransactionsReportEbs(ebsTableWindow):
         
         self.toolBar.addWidget(self.label_transactions_type)
         self.toolBar.addWidget(self.comboBox_transactions_type)
+        self.toolBar.addWidget(self.label_cashier)
+        self.toolBar.addWidget(self.comboBox_cashier)
         self.toolBar.addWidget(self.date_start_label)
         self.toolBar.addWidget(self.date_start)
         self.toolBar.addWidget(self.date_end_label)
@@ -151,8 +157,19 @@ class TransactionsReportEbs(ebsTableWindow):
         self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         #self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
         self.label_transactions_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
     
     def refresh(self):
+        systemusers = self.connection.get_models("billservice_systemuser")
+        self.connection.commit()
+        self.comboBox_cashier.addItem(unicode(u'--Все--'))
+        self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
+        i=1
+        for systemuser in systemusers:
+           self.comboBox_cashier.addItem(unicode(systemuser.username))
+           self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
+           i+=1
+           
         accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
         self.connection.commit()
         self.user_edit.addItem(u"-Все клиенты-")
@@ -209,10 +226,15 @@ class TransactionsReportEbs(ebsTableWindow):
                                             WHERE transaction.created between '%s' and '%s' %%s ORDER BY transaction.created DESC""" %  (start_date, end_date,)
             
             if account_id:
-                sql = sql % " and transaction.account_id=%s " % account_id
+                sql = sql % " and transaction.account_id=%s %%s" % account_id
             else:
                 sql = sql % " "
-            
+            systemuser_id = self.comboBox_cashier.itemData(self.comboBox_cashier.currentIndex()).toInt()[0]
+            if systemuser_id!=0:
+                sql = sql % " and transaction.systemuser_id=%s " % systemuser_id
+            else:
+                sql = sql % " "
+                
             items = self.connection.sql(sql)
             self.connection.commit()
             self.tableWidget.setRowCount(len(items)+1)
