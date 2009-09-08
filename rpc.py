@@ -812,6 +812,18 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
+        
+        sql = "SELECT id FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s and (deactivated>now() or deactivated is Null)" % (account_id, service_id, )
+        cur.execute(sql)
+        connection.commit()
+        result=[]
+        r=cur.fetchall()
+
+        if r!=[]:
+            return 'SERVICE_ARE_ALREADY_ACTIVATED'
+                
+
+                
         #Получаем нужные параметры услуги
         sql = "SELECT id, allow_activation,timeperiod_id, change_speed FROM billservice_addonservice WHERE id = %s" % service_id
         cur.execute(sql)
@@ -872,7 +884,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         tarif_service = Object(r[0]) 
 
-        if tarif_service.activation_count!=0 and innore_locks==False:
+        if tarif_service.activation_count!=0 and ignore_locks==False:
 
             if tarif_service.activation_count_period_id:
 
@@ -892,7 +904,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 if settlement_period.autostart:
                     settlement_period.time_start = account.accounttarif_date
                     
-                settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length, autostart = settlement_period.autostart)
+                settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
                 
                 sql = "SELECT count(*) as cnt FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s and activated>'%s' and activated<'%s'" % (account.id, service.id, settlement_period_start, settlement_period_end,)
             else:

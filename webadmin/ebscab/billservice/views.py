@@ -702,12 +702,15 @@ def service_action(request, action, id):
             return HttpResponseRedirect('/services/')
         
     if action == u'set':
+        print 123
+        
         try:
             account_addon_service = AddonService.objects.get(id=id)
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        result = connection_server.add_addonservice(user.id, id) 
+        result = connection_server.add_addonservice(user.id, id)
+        print result 
         if result == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')
@@ -731,7 +734,10 @@ def service_action(request, action, id):
             return HttpResponseRedirect('/services/')     
         elif result == 'TOO_MUCH_ACTIVATIONS':
             request.session['service_message'] = u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки'  
-            return HttpResponseRedirect('/services/')
+            return HttpResponseRedirect('/services/') 
+        elif result == 'SERVICE_ARE_ALREADY_ACTIVATED':
+            request.session['service_message'] = u'Указанная услуга уже подключена и не может быть активирована дважды.'  
+            return HttpResponseRedirect('/services/') 
         else:
             request.session['service_message'] = u'Услугу не возможно подключить'
             return HttpResponseRedirect('/services/')

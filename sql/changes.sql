@@ -2170,3 +2170,35 @@ ALTER TABLE billservice_account ALTER COLUMN passport_date SET DEFAULT ''::chara
 ALTER TABLE billservice_tpchangerule ADD COLUMN settlement_period_id integer;
 ALTER TABLE billservice_tpchangerule ALTER COLUMN settlement_period_id SET STORAGE PLAIN;
 ALTER TABLE billservice_tpchangerule ALTER COLUMN settlement_period_id SET DEFAULT 0;
+
+
+CREATE OR REPLACE FUNCTION suspended_period_check_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  IF (TG_OP = 'UPDATE') THEN
+    IF NEW.status IN (1,3) THEN
+        UPDATE billservice_suspendedperiod SET end_date = now() WHERE account_id=OLD.id AND end_date ISNULL;
+    ELSIF NEW.status=2 and OLD.status<>2 THEN
+        INSERT INTO billservice_suspendedperiod (account_id, start_date) VALUES (NEW.id, now());
+    END IF;
+    RETURN NEW;
+
+  ELSIF (TG_OP = 'INSERT') THEN
+    IF NEW.status = 2 THEN
+    INSERT INTO billservice_suspendedperiod (account_id, start_date) VALUES (NEW.id, now());
+    END IF; 
+    RETURN NEW;    
+  END IF;
+  RETURN NEW;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+
+
+CREATE TRIGGER suspended_period_check_trg
+  AFTER INSERT OR UPDATE ON billservice_account
+  FOR EACH ROW
+  EXECUTE PROCEDURE suspended_period_check_trg_fn();
+  

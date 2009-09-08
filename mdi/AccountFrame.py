@@ -3620,24 +3620,26 @@ class AccountWindow(QtGui.QMainWindow):
                 
             #Проверка статуса             
 
-            if not model.isnull("id"):
-                try:
-                    speriod = self.connection.sql("SELECT * FROM billservice_suspendedperiod WHERE end_date is Null and account_id=%s ORDER BY start_date ASC LIMIT 1" % self.model.id)[0]
-                except:
-                    speriod = None
-                    
-                if speriod:
-                    if model.status in [1, 3]:
-                        speriod.end_date="now()"
-                        self.connection.save(speriod, "billservice_suspendedperiod")
-                            
-                if not speriod and not model.isnull("status"):
-                    if model.status==2:
-                        speriod = Object()
-                        speriod.start_date = "now()"
-                        speriod.account_id = model.id
-                        
-                        self.connection.save(speriod, "billservice_suspendedperiod")
+#===============================================================================
+#            if not model.isnull("id"):
+#                try:
+#                    speriod = self.connection.sql("SELECT * FROM billservice_suspendedperiod WHERE end_date is Null and account_id=%s ORDER BY start_date ASC LIMIT 1" % self.model.id)[0]
+#                except:
+#                    speriod = None
+#                    
+#                if speriod:
+#                    if model.status in [1, 3]:
+#                        speriod.end_date="now()"
+#                        self.connection.save(speriod, "billservice_suspendedperiod")
+#                            
+#                if not speriod and not model.isnull("status"):
+#                    if model.status==2:
+#                        speriod = Object()
+#                        speriod.start_date = "now()"
+#                        speriod.account_id = model.id
+#                        
+#                        self.connection.save(speriod, "billservice_suspendedperiod")
+#===============================================================================
                     
             if not model.isnull("id"):
                 x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % model.id)
@@ -3994,7 +3996,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             try:
                 ids.append(int(i))
             except Exception, e:
-                print "can not convert transaction id to int"      
+                print "can not convert id to int"      
                 
         #print ids
         child=SuspendedPeriodForm()
@@ -4123,12 +4125,15 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         pass
     
     def delete(self):
-        id=self.getSelectedId()
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.accountActions(id, 'delete')
-            self.connection.iddelete(id, "billservice_account")
-            self.connection.commit()
-            self.refresh()
+        if QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
+            return
+ 
+        for id in ids:
+            if id>0:
+                self.connection.accountActions(id, 'delete')
+                self.connection.iddelete(id, "billservice_account")
+                self.connection.commit()
+                self.refresh()
 
 
     @connlogin
@@ -4248,7 +4253,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
-            self.addrow(float(a.ballance), i,2, color="red", enabled=a.status)
+            self.addrow("%.02f" % float(a.ballance), i,2, color="red", enabled=a.status)
             self.addrow(float(a.credit), i,3, enabled=a.status)
             self.addrow(a.fullname, i,4, enabled=a.status)
             self.addrow(a.email, i,5, enabled=a.status)

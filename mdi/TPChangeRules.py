@@ -139,7 +139,8 @@ class TPRulesAdd(QtGui.QDialog):
             
 
         model.disabled = self.checkBox_disable.checkState()==2
-        model.settlement_period_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
+        sp_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
+        model.settlement_period_id = None if sp_id==0 else sp_id 
         #print "model.settlement_period_id", model.settlement_period_id
         from_id = self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]
         self.connection.commit()
@@ -151,7 +152,8 @@ class TPRulesAdd(QtGui.QDialog):
                 #print "save"
                 try:
                     self.connection.save(model,"billservice_tpchangerule")
-                except:
+                except Exception, e:
+                    print e
                     self.connection.rollback()
                     
                 if self.checkBox_bidirectional.isChecked():

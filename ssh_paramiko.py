@@ -6,6 +6,7 @@ paramiko.common.logging.root.setLevel(logging.WARNING)
 
 
 def ssh_client(host, username, password, command):
+    print command
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     

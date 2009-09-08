@@ -379,7 +379,7 @@ class AddServiceFrame(QtGui.QDialog):
         self.comboBox_nas.addItem(unicode(u"-Сервер доступа абонента-"))
         self.comboBox_nas.setItemData(i, QtCore.QVariant(0))
         
-        i=0
+        i=1
         for nas in nasses:
            self.comboBox_nas.addItem(unicode(nas.name))
            self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
@@ -429,6 +429,7 @@ class AddServiceFrame(QtGui.QDialog):
             if self.model.action:
                 self.groupBox_action.setChecked(True)
                 for i in xrange(self.comboBox_nas.count()):
+                    print self.comboBox_nas.itemData(i).toInt()[0]==self.model.nas_id, self.comboBox_nas.itemData(i).toInt()[0], self.model.nas_id
                     if self.comboBox_nas.itemData(i).toInt()[0]==self.model.nas_id:
                         self.comboBox_nas.setCurrentIndex(i)                
                 self.lineEdit_service_activation_action.setText(unicode(self.model.service_activation_action))
@@ -559,6 +560,7 @@ class AddServiceFrame(QtGui.QDialog):
         model.action = self.groupBox_action.isChecked()==True
         
         if model.action == True:
+            #print "nas_id=", self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
             model.nas_id = None if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] == 0 else self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
             model.service_activation_action = unicode(self.lineEdit_service_activation_action.text())
             model.service_deactivation_action = unicode(self.lineEdit_service_deactivation_action.text())
