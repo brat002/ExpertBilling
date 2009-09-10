@@ -2201,4 +2201,54 @@ CREATE TRIGGER suspended_period_check_trg
   AFTER INSERT OR UPDATE ON billservice_account
   FOR EACH ROW
   EXECUTE PROCEDURE suspended_period_check_trg_fn();
-  
+ 
+CREATE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+
+
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION gpst_prev_ins (gpstr billservice_groupstat) RETURNS void AS ';
+
+    fn_bd_tx1_ text := 'BEGIN
+                         INSERT INTO gpst';
+
+    fn_bd_tx2_ text := '(group_id, account_id, bytes, datetime, classes, classbytes, max_class)
+                          VALUES
+                         (gpstr.group_id, gpstr.account_id, gpstr.bytes, gpstr.datetime, gpstr.classes, gpstr.classbytes, gpstr.max_class); RETURN; END;';
+
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION gpst_prev_datechk(gpst_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    gpst_date < d_s_ THEN RETURN -1; ELSIF gpst_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+    ch_fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+    qts_ text := 'CHK % % %';
+
+    onemonth_ text := '1 month';
+    query_ text;
+
+BEGIN
+
+        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+
+        EXECUTE query_;
+
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql;
+
+
+ALTER FUNCTION public.gpst_crt_prev_ins(datetx date) OWNER TO ebs;
+ 
