@@ -225,6 +225,7 @@ class TCPSender(Protocol):
 class TCPSender_ClientFactory(ReconnectingClientFactory):
     protocol = TCPSender
     factor = 1.6180339887498948
+    maxDelay = 600
     def __init__(self, producer):
         #super(TCPSender_ClientFactory, self).__init__()
         self.Producer = producer
@@ -800,14 +801,17 @@ class RecoveryThread(Thread):
     def __init__(self):
         Thread.__init__(self)
     def run(self):
-        global vars,queues
-        try:
-            fllist = glob.glob(''.join((vars.READ_DIR, '/', vars.PREFIX + '*.dmp')))
-            if fllist:
-                with queues.databaseQueue.file_lock:
-                    for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
-        except Exception, ex:
-            logger.error("%s: exception: %s", (self.getName(),repr(ex)))  
+        get_file_names()
+    
+def get_file_names():
+    global vars,queues
+    try:
+        fllist = glob.glob(''.join((vars.READ_DIR, '/', vars.PREFIX + '*.dmp')))
+        if fllist:
+            with queues.databaseQueue.file_lock:
+                for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
+    except Exception, ex:
+        logger.error("%s: exception: %s", (self.getName(),repr(ex)))
         
 def get_socket():
     global vars
@@ -865,7 +869,7 @@ def graceful_save():
     print vars.name + " stopping gracefully."
         
 def graceful_recover():
-    global vars
+    global vars, queues
     graceful_loader(['dcaches','nfFlowCache','flowQueue','databaseQueue' ,'nfQueue'],
                     queues, vars.PREFIX, vars.SAVE_DIR)
     queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
@@ -876,10 +880,12 @@ def main ():
         graceful_recover()
     #recover leftover dumps?
     if vars.RECOVER_DUMP:
+        get_file_names()
+        '''
         recThr = RecoveryThread()
         recThr.setName('Recovery thread')
         recThr.start()
-        time.sleep(0.5)
+        time.sleep(0.5)'''
         
     threads = []
     '''thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
