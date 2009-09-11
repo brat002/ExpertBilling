@@ -97,8 +97,8 @@ ALTER TABLE billservice_transaction
       REFERENCES billservice_tariff (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
       
-
-INSERT INTO billservice_transactiontype(id, "name", internal_name) VALUES (10, 'Операция проведена кассиром', 'CASSA_TRANSACTION');
+SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 21, true);
+INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Операция проведена кассиром', 'CASSA_TRANSACTION');
 INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
 
 
@@ -487,7 +487,10 @@ CREATE TRIGGER tmtrans_ins_trg
     FOR EACH ROW
     EXECUTE PROCEDURE tmtrans_ins_trg_fn();
     
-CREATE TRIGGER acc_tmtrans_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_timetransaction FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();
+CREATE TRIGGER acc_tmtrans_trg 
+  AFTER INSERT OR DELETE OR UPDATE ON billservice_timetransaction 
+  FOR EACH ROW 
+  EXECUTE PROCEDURE account_transaction_trg_fn();
 
 
 --13.04.2009
@@ -1025,7 +1028,7 @@ CREATE TABLE billservice_tpchangerule
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_tpchangerule OWNER TO mikrobill;
+ALTER TABLE billservice_tpchangerule OWNER TO ebs;
 
 -- Index: billservice_tpchangerule_from_tariff_id
 
@@ -1361,7 +1364,7 @@ CREATE TABLE billservice_radiusattrs
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_radiusattrs OWNER TO mikrobill;
+ALTER TABLE billservice_radiusattrs OWNER TO ebs;
 
 -- Index: billservice_radiusattrs_tarif_id
 
@@ -1940,7 +1943,7 @@ CREATE TABLE billservice_addonservicetransaction
       ON UPDATE NO ACTION ON DELETE SET NULL
 )
 WITH (OIDS=FALSE);
-ALTER TABLE billservice_addonservicetransaction OWNER TO mikrobill;
+ALTER TABLE billservice_addonservicetransaction OWNER TO ebs;
 
 -- Index: billservice_addonservicetransaction_account_id
 
@@ -2201,7 +2204,7 @@ CREATE TRIGGER suspended_period_check_trg
   AFTER INSERT OR UPDATE ON billservice_account
   FOR EACH ROW
   EXECUTE PROCEDURE suspended_period_check_trg_fn();
- 
+
 CREATE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
     AS $$
 DECLARE
@@ -2251,4 +2254,8 @@ $$
 
 
 ALTER FUNCTION public.gpst_crt_prev_ins(datetx date) OWNER TO ebs;
+ 
+-- 09.09.2009 14:40 
+
+ SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 21, true);
  
