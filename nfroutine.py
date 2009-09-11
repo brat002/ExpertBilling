@@ -175,7 +175,7 @@ class groupDequeThread(Thread):
                     if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
                         gkey, gkeyTime  = queues.groupDeque.popleft()
 
-                if not gkey: time.sleep(30); continue
+                if not gkey: time.sleep(10); continue
 
                 #get data
                 account_id, kgroup_id, gtime = gkey 
@@ -301,7 +301,7 @@ class statDequeThread(Thread):
                     if len(queues.statDeque) > 0 and (queues.statDeque[0][1] + vars.STAT_AGGR_TIME*2 < time.time()):
                         skey, skeyTime  = queues.statDeque.popleft()
 
-                if not skey: time.sleep(30); continue
+                if not skey: time.sleep(10); continue
                 
                 account_id, stime = skey 
                 dkey = (int(stime / 667) + account_id) % vars.STAT_DICTS
@@ -452,13 +452,22 @@ class NetFlowRoutine(Thread):
                         queues.depickerQueue.append(queues.picker.get_data())
                         queues.picker = Picker()
                         queues.pickerTime = time.time()                    
-                        
-                with queues.nfQueueLock:
-                    if len(queues.nfIncomingQueue) > 1:
-                        fpacket = queues.nfIncomingQueue.popleft()
+                if len(queues.nfIncomingQueue) > 0:        
+                    with queues.nfQueueLock:
+                        if len(queues.nfIncomingQueue) > 0:
+                            fpacket, addr = queues.nfIncomingQueue.popleft()
                 #flows = loads(fpacket)
-                if not fpacket: time.sleep(random.randint(5,17)); continue
-                
+                if not fpacket: time.sleep(random.randint(1,10) / 10.0); continue
+                recieved_len = len(fpacket)
+                declared_len = reduce(INT_ME_FN, fpacket[:TCP_PACKET_SIZE_HEADER][::-1], (0,1))[0]
+                if recieved_len != declared_len:
+                    logger.warning('Packet consumer: peer: %s declared %s and recieved %s packet lengths do not match! Packet dropped!', (addr, declared_len, recieved_len))
+                    continue
+                try:
+                    flows = loads(fpacket[TCP_PACKET_SIZE_HEADER:])
+                except Exception, ex:
+                    logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(addr, repr(ex)))
+                    continue
                 flows = fpacket
                 #iterate through them
                 for pflow in flows:
@@ -769,19 +778,10 @@ class TCP_LineReciever(LineReceiver):
         print 'conn', self, self.transport.getHost(), self.transport.getPeer(), self.transport.hostname
     '''    
     def lineReceived(self, line):
-        recieved_len = len(line)
-        declared_len = reduce(INT_ME_FN, line[:TCP_PACKET_SIZE_HEADER][::-1], (0,1))[0]
-        if recieved_len != declared_len:
-            logger.warning('Packet consumer: host: %s |peer: %s declared %s and recieved %s packet lengths do not match! Packet dropped!', (self.transport.getHost(), self.transport.getPeer(), declared_len, recieved_len))
-            return
-        try:
-            flows = loads(line[TCP_PACKET_SIZE_HEADER:])
-        except Exception, ex:
-            logger.info("Packet consumer: host: %s |peer: %s Bad packet (marshalling problems):%s ; ",(self.transport.getHost(), self.transport.getPeer(), repr(ex)))
-            return
-        
+        queues.nfIncomingQueue.append((flows, self.transport.getPeer()))
+        '''
         with queues.nfQueueLock:
-            queues.nfIncomingQueue.append(flows)
+            queues.nfIncomingQueue.append((flows, self.transport.getPeer()))'''
         '''    
         if vars.sendFlag:
             self.transport.write(vars.sendFlag)'''
@@ -842,7 +842,7 @@ def graceful_save():
 
 def graceful_recover():
     global queues, vars
-    graceful_loader(['depickerQueue','nfIncomingQueue','groupDeque', 'groupAggrDicts','statDeque', 'statAggrDicts'],
+    graceful_loader(['depickerQueue','nfIncomingQueue', ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
                     queues, 'nfroutine_', vars.SAVE_DIR)
     
 
