@@ -811,7 +811,7 @@ def get_file_names():
             with queues.databaseQueue.file_lock:
                 for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
     except Exception, ex:
-        logger.error("%s: exception: %s", (self.getName(),repr(ex)))
+        logger.error("get_files_names exception: %s", (repr(ex),))
         
 def get_socket():
     global vars
