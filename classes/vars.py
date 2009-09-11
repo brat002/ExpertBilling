@@ -112,7 +112,7 @@ class NfVars(Vars):
         self.CHECK_CLASSES = 0
         self.MAX_DATAGRAM_LEN = 8192
         self.NF_TIME_MOD = 20
-        self.MAX_SENDBUF_LEN = 5000 #10000!
+        self.MAX_SENDBUF_LEN = 20000 #10000!
         self.NFR_DELIMITER = '--NFRP--'
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
@@ -203,7 +203,7 @@ class NfrVars(Vars):
         self.STORE_NA_ACCOUNT = False
         self.MAX_DATAGRAM_LEN = 32687
         self.PICKER_AGGR_TIME = 300.0
-        self.ROUTINE_THREADS = 3
+        self.ROUTINE_THREADS = 4
         self.GROUPSTAT_THREADS  = 1
         self.GLOBALSTAT_THREADS = 1
         self.BILL_THREADS = 1
