@@ -778,7 +778,7 @@ class TCP_LineReciever(LineReceiver):
         print 'conn', self, self.transport.getHost(), self.transport.getPeer(), self.transport.hostname
     '''    
     def lineReceived(self, line):
-        queues.nfIncomingQueue.append((flows, self.transport.getPeer()))
+        queues.nfIncomingQueue.append((line, self.transport.getPeer()))
         '''
         with queues.nfQueueLock:
             queues.nfIncomingQueue.append((flows, self.transport.getPeer()))'''
