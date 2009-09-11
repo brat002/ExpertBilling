@@ -2204,6 +2204,11 @@ CREATE TRIGGER suspended_period_check_trg
   AFTER INSERT OR UPDATE ON billservice_account
   FOR EACH ROW
   EXECUTE PROCEDURE suspended_period_check_trg_fn();
+  
+  
+-- 09.09.2009
+
+SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 19, true);
 
 CREATE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
     AS $$
