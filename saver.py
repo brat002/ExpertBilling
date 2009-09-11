@@ -71,7 +71,7 @@ def graceful_loader(objnames, globals_, moduleName, saveDir):
         i = 0
         objname_ = objname if not isinstance(objname, list) else '_o_'.join(objname)
         for fname in fllist:
-            if fname.find(objname) != -1:
+            if fname.find(objname_) != -1:
                 f = open(fname, 'rb')
                 try:
                     pickled = cPickle.load(f)
