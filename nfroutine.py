@@ -468,7 +468,7 @@ class NetFlowRoutine(Thread):
                 except Exception, ex:
                     logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(addr, repr(ex)))
                     continue
-                flows = fpacket
+                #flows = fpacket
                 #iterate through them
                 for pflow in flows:
                     flow = Flow5Data(False, *pflow)
