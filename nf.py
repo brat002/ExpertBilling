@@ -184,14 +184,14 @@ class TCPSender(Protocol):
 
     def connectionMade(self):
         self.isConnected = True
-        self.transport.bufferSize = 8192
+        self.transport.bufferSize = 60000
         #self.producer_ = self.producer(queues.databaseQueue, queues.dbLock, self, vars.NFR_DELIMITER)
         self.producer.registerConsumer_(self)
         
     def connectionLost(self, reason):
         self.isConnected = False
     def dataReceived(self, data):
-        print 'datarecieved'
+        #print 'datarecieved'
         if data == '!SLP':
             time.sleep(30)
             
