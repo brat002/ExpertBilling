@@ -418,6 +418,7 @@ class NetFlowRoutine(Thread):
         oldAcct = defaultdict(list)
         self.cur = self.connection.cursor()
         icount, timecount = 0, 0
+        totaltime = time.clock()
         while True:
             try:   
                 if suicideCondition[self.tname]:
@@ -608,8 +609,9 @@ class NetFlowRoutine(Thread):
                     icount += 1
                     timecount += time.clock() - a
                     if icount == 100:                        
-                        logger.info("%s run time(100): %s", (self.getName(), timecount))
+                        logger.info("%s run time(100): %s, totaltime: %s", (self.getName(), timecount, time.clock() - totaltime))
                         icount = 0; timecount = 0
+                        totaltime = time.clock()
                         
             except IndexError, ierr:
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
