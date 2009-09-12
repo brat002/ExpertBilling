@@ -107,7 +107,7 @@ class NfVars(Vars):
         self.PORT = 9996
         self.HOST = '0.0.0.0'
         self.SOCK_TYPE = 0
-        self.FILE_PACK = 300 #300!
+        self.FILE_PACK = 2000 #300!
         self.PACKET_PACK = 32
         self.CHECK_CLASSES = 0
         self.MAX_DATAGRAM_LEN = 8192
