@@ -866,15 +866,17 @@ def graceful_save():
     queues.databaseQueue.LOCK = None
     queues.databaseQueue.file_lock = None
     time.sleep(2)
-    db_lock.acquire()
     file_lock.acquire()
+    queues.databaseQueue.file_queue = deque()
+    file_lock.release()
+    db_lock.acquire()
     queues.fqueueLock.acquire()
     queues.nfqLock.acquire()
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, vars.PREFIX, vars.SAVE_DIR)
     queues.nfqLock.release()
     queues.fqueueLock.release()
-    file_lock.release()
+
     db_lock.release()
     
     time.sleep(1)
