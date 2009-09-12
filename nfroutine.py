@@ -32,7 +32,7 @@ from db import transaction, transaction_noret, traffictransaction, get_last_chec
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol, Factory
-from twisted.protocols.basic import LineReceiver
+from twisted.protocols.basic import LineReceiver, Int32StringReceiver
 try:
     from twisted.internet import pollreactor
     pollreactor.install()
@@ -458,13 +458,15 @@ class NetFlowRoutine(Thread):
                             fpacket, addr = queues.nfIncomingQueue.popleft()
                 #flows = loads(fpacket)
                 if not fpacket: time.sleep(random.randint(1,10) / 10.0); continue
+                '''
                 recieved_len = len(fpacket)
                 declared_len = reduce(INT_ME_FN, fpacket[:TCP_PACKET_SIZE_HEADER][::-1], (0,1))[0]
                 if recieved_len != declared_len:
                     logger.warning('Packet consumer: peer: %s declared %s and recieved %s packet lengths do not match! Packet dropped!', (addr, declared_len, recieved_len))
                     continue
+                '''
                 try:
-                    flows = loads(fpacket[TCP_PACKET_SIZE_HEADER:])
+                    flows = loads(fpacket)
                 except Exception, ex:
                     logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(addr, repr(ex)))
                     continue
@@ -786,7 +788,15 @@ class TCP_LineReciever(LineReceiver):
         if vars.sendFlag:
             self.transport.write(vars.sendFlag)'''
         
-
+class TCP_IntStringReciever(Int32StringReceiver):    
+    peer__ = ''
+    def connectionMade(self):
+        logger.info("SERVER: connectionMade: host: %s | peer: %s", (self.transport.getHost(), self.transport.getPeer()))
+        self.peer__ = self.transport.getPeer()
+        
+    def stringReceived(self, msg):
+        queues.nfIncomingQueue.append((msg, self.peer__))
+        
 def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
 
@@ -923,13 +933,15 @@ def main():
     if   vars.SOCK_TYPE == 0:
         #reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
         fact = Factory()
-        fact.protocol = TCP_LineReciever
+        #fact.protocol = TCP_LineReciever
+        fact.protocol = TCP_IntStringReciever
         p = reactor.listenTCP(vars.PORT, fact)
         logger.info("Listening on: %s", p.getHost())
     elif vars.SOCK_TYPE == 1:
         #reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
         fact = Factory()
-        fact.protocol = TCP_LineReciever
+        #fact.protocol = TCP_LineReciever
+        fact.protocol = TCP_IntStringReciever
         try:
             os.unlink(vars.HOST)
         except Exception, ex:

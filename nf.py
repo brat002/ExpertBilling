@@ -124,7 +124,9 @@ class SendPacketProducer(object):
 class SendPacketStream(Thread):
 
     implements(interfaces.IProducer)
-
+    structFormat = "!I"
+    prefixLength = struct.calcsize(structFormat)
+    
     def __init__(self, packet_queue, packet_lock, delimeter):
         self.tname = self.__class__.__name__
         Thread.__init__(self)
@@ -135,6 +137,7 @@ class SendPacketStream(Thread):
         self.delimeter = delimeter
         self.delim_len = len(self.delimeter)
         self.PAUSED = True
+        self 
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -166,10 +169,10 @@ class SendPacketStream(Thread):
                 time.sleep(5)
                 continue
             #print len(send_packet)
-            packet_len = len(send_packet) + 5
-            str_len = str(packet_len)[:5]
-            formatted_packet = '0' * (5 - len(str_len)) + str_len + send_packet + self.delimeter
-            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
+            #packet_len = len(send_packet)
+            #str_len = str(packet_len)[:5]
+            #formatted_packet = '0' * (5 - len(str_len)) + str_len + send_packet + self.delimeter
+            if self.consumer.write(struct.pack(self.structFormat, len(send_packet)) + send_packet) == NOT_TRASMITTED:
                 with self.packet_lock:
                     self.packet_queue.appendleft(send_packet)
 
