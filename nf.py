@@ -187,7 +187,7 @@ class TCPSender(Protocol):
 
     def connectionMade(self):
         self.isConnected = True
-        self.transport.bufferSize = 256000
+        self.transport.bufferSize = 512000
         #self.producer_ = self.producer(queues.databaseQueue, queues.dbLock, self, vars.NFR_DELIMITER)
         self.producer.registerConsumer_(self)
         
