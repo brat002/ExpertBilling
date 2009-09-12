@@ -137,7 +137,7 @@ class SendPacketStream(Thread):
         self.delimeter = delimeter
         self.delim_len = len(self.delimeter)
         self.PAUSED = True
-        self 
+        #self 
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
