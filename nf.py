@@ -812,6 +812,7 @@ def get_file_names():
         fllist = glob.glob(''.join((vars.READ_DIR, '/', vars.PREFIX + '*.dmp')))
         if fllist:
             with queues.databaseQueue.file_lock:
+                queues.databaseQueue.file_queue.clear()
                 for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
     except Exception, ex:
         logger.error("get_files_names exception: %s", (repr(ex),))
