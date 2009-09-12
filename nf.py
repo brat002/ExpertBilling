@@ -158,7 +158,7 @@ class SendPacketStream(Thread):
         while True:
             if suicideCondition[self.tname]: break
             if self.PAUSED:
-                time.sleep(5); continue
+                time.sleep(0.3); continue
             send_packet = False
             packet_status = 0
             if len(self.packet_queue) > 0:
@@ -166,7 +166,7 @@ class SendPacketStream(Thread):
                     if len(self.packet_queue) > 0:
                         send_packet = self.packet_queue.popleft()
             if not send_packet: 
-                time.sleep(5)
+                time.sleep(1)
                 continue
             #print len(send_packet)
             #packet_len = len(send_packet)
