@@ -858,13 +858,24 @@ def graceful_save():
     for thr in threads:
         suicideCondition[thr.tname] = True
     logger.lprint("About to stop gracefully.")
-    time.sleep(10)
+    time.sleep(8)
     #pool.close()
     #time.sleep(1)
+    db_lock = queues.databaseQueue.LOCK
+    file_lock = queues.databaseQueue.file_lock
     queues.databaseQueue.LOCK = None
     queues.databaseQueue.file_lock = None
+    time.sleep(2)
+    db_lock.acquire()
+    file_lock.acquire()
+    queues.fqueueLock.acquire()
+    queues.nfqLock.acquire()
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, vars.PREFIX, vars.SAVE_DIR)
+    queues.nfqLock.release()
+    queues.fqueueLock.release()
+    file_lock.release()
+    db_lock.release()
     
     time.sleep(1)
     rempid(vars.piddir, vars.name)
