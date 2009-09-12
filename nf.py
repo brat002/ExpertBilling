@@ -982,6 +982,12 @@ if __name__=='__main__':
     config.read("ebs_config.ini")
     
     try:
+        import psyco
+        psyco.log()
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
+
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
         
         
