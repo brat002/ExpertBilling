@@ -481,7 +481,7 @@ class AuthHandler(Thread):
                     if len(self.server.auth_deque) > 0:
                         packetobject = self.server.auth_deque.popleft()
                 if not packetobject:
-                    time.sleep(0.5)
+                    time.sleep(0.2)
                     continue
                 if False: assert isinstance(packetobject, packet.Packet)
                 auth_time = clock()
@@ -582,11 +582,12 @@ class AcctHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                with self.server.acct_lock:
-                    if len(self.server.acct_deque) > 0:
-                        packetobject = self.server.acct_deque.popleft()
+                if len(self.server.acct_deque) > 0:
+                    with self.server.acct_lock:
+                        if len(self.server.acct_deque) > 0:
+                            packetobject = self.server.acct_deque.popleft()
                 if not packetobject:
-                    time.sleep(0.5)
+                    time.sleep(0.15)
                     continue
                 if False: assert isinstance(packetobject, packet.AcctPacket)
 
