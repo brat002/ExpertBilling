@@ -457,7 +457,7 @@ class AuthHandler(Thread):
 
 
     def run(self):
-        global cacheMaster, queues, vars, flags, fMem
+        global cacheMaster, queues, vars, flags, fMem, suicideCondition
         while True:
             if suicideCondition[self.__class__.__name__]: break
             try:     
@@ -563,7 +563,7 @@ class AcctHandler(Thread):
         assert isinstance(self.server, RadServer)
 
     def run(self):
-        global cacheMaster, vars, fMem
+        global cacheMaster, vars, fMem, suicideCondition
         while True:
             if suicideCondition[self.__class__.__name__]: break
             try:  
@@ -1280,9 +1280,11 @@ def SIGUSR1_handler(signum, frame):
 
 def graceful_save():
     global  cacheThr, suicideCondition, vars
-    asyncore.close_all()
+    #asyncore.close_all()
     suicideCondition[cacheThr.__class__.__name__] = True
     logger.lprint("About to stop gracefully.")
+    for key in suicideCondition.iterkeys():
+        suicideCondition[key] = True
     time.sleep(5)
     #pool.close()
     rempid(vars.piddir, vars.name)
@@ -1383,6 +1385,11 @@ if __name__ == "__main__":
     server_auth = None
     server_acct = None
     try:
+        import psyco
+        psyco.log()
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
         flags = RadFlags()
         vars  = RadVars()
         queues= RadQueues()
