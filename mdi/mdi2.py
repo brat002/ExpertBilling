@@ -1,6 +1,6 @@
 #-*-coding=utf-8*-
 #global connection
-import sys
+import sys, traceback
 from PyQt4 import QtCore, QtGui
 
 #import socket
@@ -15,6 +15,19 @@ import Pyro.errors
 import Pyro.configuration
 import threading
 import Pyro
+
+from rpc import rpc_protocol, client_networking
+DEFAULT_PORT = 7771
+
+class PrintLogger(object):
+    def __getattr__(self, name):
+        return self.lprint
+    
+    def lprint(self, *args):
+        if len(args) == 1:
+            print 'LOGGER: ', args[0]
+        elif len(args) == 2:
+            print 'LOGGER: ', args[0] % args[1]
 
 
 #Pyro.config.PYRO_BROKEN_MSGWAITALL = 1
@@ -645,20 +658,40 @@ def login():
             global app
             app.processEvents()
             try:
-                connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-                password = unicode(child.password.toHex())
-                connection._setNewConnectionValidator(antiMungeValidator())
+                logger  = PrintLogger()
+                rpc_protocol.install_logger(logger)
+                client_networking.install_logger(logger)
+                
+                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+                protocol = rpc_protocol.RPCProtocol(authenticator)
+                connection = rpc_protocol.BasicClientConnection(protocol)
+                if ':' in child.address:
+                    host, port = str(child.address).split(':')
+                else:
+                    host, port = str(child.address), DEFAULT_PORT
+                transport = client_networking.BlockingTcpClient(host, port)
+                transport.connect()
+                connection.registerConsumer_(transport)
+                auth_result = connection.authenticate(str(child.name), str('admin'))
+                print auth_result
+                #if not connection.authenticate(str(child.name), str('admin')):
+                if not auth_result:
+                    raise Exception('')
+                #connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
+                #password = unicode(child.password.toHex())
+                #connection._setNewConnectionValidator(antiMungeValidator())
                 username = str(child.name)
                 server_ip = unicode(child.address)
-                connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
-                connection.test()
+                #connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
+                #connection.test()
                 #waitchild.hide()
                 return connection
 
             except Exception, e:
+                print repr(e), traceback.format_exc()
                 #print "login connection error"
                 splash.hide()
-                if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                if not isinstance(e, client_networking.TCPException):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
@@ -676,7 +709,7 @@ if __name__ == "__main__":
        
     if connection is None:
         sys.exit()
-    connection.commit()
+    #connection.commit()
     try:
         global mainwindow
         mainwindow = MainWindow()
@@ -690,7 +723,8 @@ if __name__ == "__main__":
         connection.commit()
     except Exception, ex:
         print "main-----------"
-        print ex
+        print repr(ex)
+        print traceback.format_exc()
 
     #QtGui.QStyle.SH_Table_GridLineColor
 

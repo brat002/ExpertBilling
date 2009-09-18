@@ -207,7 +207,7 @@ class EAP_MD5(EAP_Packet):
         self.type = EAP.PW_EAP_MD5
         value = ''
         for i in xrange(MD5_CHALLENGE_LEN):
-            value += chr(i)
+            value += chr(random.randint(1,255))
         #MD5_CHALLENGE_LEN + 1
         self.type_data = struct.pack("!B", MD5_CHALLENGE_LEN) + value + self.name
     

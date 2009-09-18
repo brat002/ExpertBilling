@@ -230,8 +230,8 @@ class groupDequeThread(Thread):
                 if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
-                    if icount == 10:                        
-                        logger.info("%s run time(10): %s", (self.getName(), timecount))
+                    if icount == 100:                        
+                        logger.info("%s run time(100): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
             except IndexError, ierr:
                 if not gkey:
@@ -332,8 +332,8 @@ class statDequeThread(Thread):
                 if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
-                    if icount == 10:                        
-                        logger.info("%s run time(10): %s", (self.getName(), timecount))
+                    if icount == 100:                        
+                        logger.info("%s run time(100): %s", (self.getName(), timecount))
                         icount = 0; timecount = 0
                         
             except IndexError, ierr:
