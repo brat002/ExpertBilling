@@ -94,7 +94,7 @@ class Object(object):
                 return False
 
         return True
-        return self.id
+
     
 class dbRoutine(object):
 

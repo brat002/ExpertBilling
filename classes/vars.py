@@ -379,7 +379,7 @@ class CoreVars(Vars):
 
         
 class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock')
+    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock')
     
     def __init__(self):
         super(RpcVars, self).__init__()
@@ -387,6 +387,8 @@ class RpcVars(Vars):
         self.pids = []
         self.piddate = 0
         self.pidLock = Lock()
+        self.db_connection_lock = Lock()
+        self.db_connection = None
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RpcVars, self).__slots__ + self.__slots__))

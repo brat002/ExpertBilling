@@ -137,7 +137,7 @@ class SendPacketStream(Thread):
         self.delimeter = delimeter
         self.delim_len = len(self.delimeter)
         self.PAUSED = True
-        #self 
+        self.consumer = None
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -157,7 +157,7 @@ class SendPacketStream(Thread):
     def run(self):
         while True:
             if suicideCondition[self.tname]: break
-            if self.PAUSED:
+            if self.PAUSED or not self.consumer:
                 time.sleep(0.3); continue
             send_packet = False
             packet_status = 0
