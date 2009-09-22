@@ -1024,4 +1024,15 @@ class AddonServiceTransaction(models.Model):
     summ = models.IntegerField()
     created = models.DateTimeField()
     
+class AccountAttributes(models.Model):
+    name = models.CharField(max_length=100)
+    internal_name = models.SlugField(max_length=32 )
+    type = models.CharField(max_length=20)#date, text, int, bool
+    ordering = models.IntegerField()
+    user_created = models.BooleanField()
+    
+class AccountAttributesData(models.Model):
+    account = models.ForeignKey(Account)
+    attribute = models.ForeignKey(AccountAttributes)
+    value = models.CharField(max_length=1024)
     
