@@ -12,7 +12,7 @@ from helpers import humanable_bytes
 from helpers import Worker
 from helpers import prntime
 import time
-
+import datetime
 
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection):
@@ -45,7 +45,38 @@ class MonitorEbs(ebsTableWindow):
         
         self.pushbutton = QtGui.QPushButton()
         self.pushbutton.setText(u"Обновить")
+        
+        self.date_start_label = QtGui.QLabel(self)
+        self.date_start_label.setMargin(10)
+        self.date_start_label.setObjectName("date_start_label")
 
+        self.date_end_label = QtGui.QLabel(self)
+        self.date_end_label.setMargin(10)
+        self.date_end_label.setObjectName("date_end_label")
+        
+        dt_now = datetime.datetime.now()
+        
+        self.date_start = QtGui.QDateTimeEdit(self)
+        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        self.date_start.setCalendarPopup(True)
+        self.date_start.setObjectName("date_start")
+        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+
+        self.date_end = QtGui.QDateTimeEdit(self)
+        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
+        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.date_end.setCalendarPopup(True)
+        self.date_end.setObjectName("date_end")
+        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.date_start.setDateTime(settings.value("monitor_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("monitor_date_end", QtCore.QVariant(QtCore.QDateTime(2099,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Monitor settings error: ", ex
+            
         self.toolBar = QtGui.QToolBar()
         self.toolBar.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.toolBar.setMovable(False)
@@ -57,6 +88,11 @@ class MonitorEbs(ebsTableWindow):
         
         self.toolBar.addWidget(self.user_label)
         self.toolBar.addWidget(self.userCombobox)
+        self.toolBar.addWidget(self.date_start_label)
+        self.toolBar.addWidget(self.date_start)
+        self.toolBar.addWidget(self.date_end_label)
+        self.toolBar.addWidget(self.date_end)
+
         self.toolBar.addSeparator()
         self.toolBar.addWidget(self.allTimeCheckbox)
         self.toolBar.addWidget(self.checkBoxAutoRefresh)
@@ -70,6 +106,8 @@ class MonitorEbs(ebsTableWindow):
     def ebsPostInit(self, initargs):
         actList=[("actionResetSession", "Сбросить сессию", "images/del.png", self.reset_action)]
         objDict = {self.tableWidget:["actionResetSession"]}
+        self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
+        self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
@@ -90,6 +128,13 @@ class MonitorEbs(ebsTableWindow):
         Terminate thread
         """
         self.thread.terminate()
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("monitor_date_start", QtCore.QVariant(self.date_start.dateTime()))
+            settings.setValue("monitor_date_end", QtCore.QVariant(self.date_end.dateTime()))
+        except Exception, ex:
+            print "Monitor settings save error: ", ex
+            
         event.accept()
             
     def addrow(self, widget, value, x, y, color=False, id=None, sessionid=None):
@@ -140,21 +185,24 @@ class MonitorEbs(ebsTableWindow):
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
         self.tableWidget.setSortingEnabled(False)
+        date_start = self.date_start.dateTime().toPyDateTime()
+        date_end = self.date_end.dateTime().toPyDateTime()
+        self.statusBar().showMessage(u"Ожидание ответа")
         if self.allTimeCheckbox.checkState()==2:
             sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
             
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = session.nas_id 
-                  WHERE billservice_account.id>0 %s
+                  WHERE billservice_account.id>0 and date_start>='%s' and date_start<='%s' %%s
                   ORDER BY session.id DESC 
-                 """
+                 """ % (date_start, date_end)
         elif self.allTimeCheckbox.checkState()==0:
             sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.ipaddress = session.nas_id
-                  WHERE session.session_status='ACTIVE' %s
+                  WHERE session.session_status='ACTIVE' and date_start>='%s' and date_start<='%s' %%s
                   ORDER BY session.id DESC
-                  """
+                  """ % (date_start, date_end)
         
         if user==None:
             user=unicode(self.userCombobox.currentText())                                      
@@ -168,6 +216,7 @@ class MonitorEbs(ebsTableWindow):
         sessions = self.connection.sql(sql)  
         self.connection.commit()
         i=0        
+        sess_time = 0
         self.tableWidget.setRowCount(len(sessions))        
         for session in sessions:
             if session.date_end==None:
@@ -187,6 +236,7 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 9)
             self.addrow(self.tableWidget, prntime(session.session_time), i, 10)
             self.addrow(self.tableWidget, session.session_status, i, 11, color=True)
+            sess_time += session.session_time if session.session_time else 0
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()
@@ -194,7 +244,7 @@ class MonitorEbs(ebsTableWindow):
         else:
             if sessions:
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
-        
+        self.statusBar().showMessage(u'Сессий:%s. Среднее время сессии: %s минут' % (len(sessions), (sess_time/(1 if len(sessions)==0 else len(sessions))/60)))
         self.tableWidget.setColumnHidden(0, False)
         #self.tableWidget.setSortingEnabled(True)
 

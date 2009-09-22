@@ -38,7 +38,7 @@ def tableFormat(table, no_vsection_size=False):
     hh.setClickable(True)
     hh.setMovable(False)
     hh.ResizeMode(QtGui.QHeaderView.Stretch)
-    
+
     return table
 
 def createHeader(text):
@@ -316,12 +316,10 @@ class sqliteDbAccess(object):
     def __init__(self, dbname, dbtype=''):
         '''
     #self.filestat codes for 'system' type:
-    
     1: HOME
     2: HOME created
     3: dbname
     4: dbname created
-            
         '''
         #self.db = QtSql.QSqlDatabase.addDatabase('QSQLITE')
         if dbtype == 'system':
@@ -596,8 +594,8 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1):
     for accip in accounts_ip:
         accounts_used_ip.append(IPy.IP(accip.ipn_ip_address).int())
         accounts_used_ip.append(IPy.IP(accip.vpn_ip_address).int())
-        
-    
+
+
     start_pool_ip = IPy.IP(pool.start_ip).int()
     end_pool_ip = IPy.IP(pool.end_ip).int()
     

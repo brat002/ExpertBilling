@@ -845,7 +845,7 @@ class HandleHotSpotAuth(HandleSBase):
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
 
-    def create_speed(self, tarif_id, account_id, speed=''):
+    def create_speed(self, nas, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
             defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
@@ -877,11 +877,40 @@ class HandleHotSpotAuth(HandleSBase):
             #print "corrected", result
             if result==[]: 
                 result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"] 
-            result_params=create_speed_string(result)
-            self.speed=result_params
-            #print "speed", result_params
-        if self.nas_type[:8]==u'mikrotik' and result_params!='':
-            self.replypacket.AddAttribute((14988,8),result_params)
+            #result_params=create_speed_string(result)
+            command_dict={'max_limit_rx': result[0],
+            'max_limit_tx': result[1],
+            'burst_limit_rx': result[2],
+            'burst_limit_tx': result[3],
+            'burst_treshold_rx': result[4],
+            'burst_treshold_tx': result[5],
+            'burst_time_rx': result[6],
+            'burst_time_tx': result[7],
+            'priority': result[8],
+            'min_limit_rx': result[9],
+            'min_limit_tx': result[10]}
+            if nas.speed_value1:
+                result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
+                if result_params and nas.speed_vendor_1:
+                    self.replypacket.AddAttribute((nas.speed_vendor_1,speed_attr_id1),result_params)
+                elif result_params and not nas.speed_vendor_1:
+                    self.replypacket.AddAttribute(speed_attr_id1,result_params)
+
+
+            if nas.speed_value2:
+                result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
+                if result_params and nas.speed_vendor_2:
+                    self.replypacket.AddAttribute((nas.speed_vendor_2,speed_attr_id1),result_params)
+                elif result_params and not nas.speed_vendor_2:
+                    self.replypacket.AddAttribute(speed_attr_id2,result_params)
+                                
+            
+#===============================================================================
+#            self.speed=result_params
+#            #print "speed", result_params
+#        if self.nas_type[:8]==u'mikrotik' and result_params!='':
+#            self.replypacket.AddAttribute((14988,8),result_params)
+#===============================================================================
 
 
     def handle(self):
@@ -950,7 +979,7 @@ class HandleHotSpotAuth(HandleSBase):
         if self.packetobject['User-Name'][0]==user_name and allow_dial and acct_card.tariff_active:
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
-            self.create_speed(acct_card.tarif_id, acct_card.account_id, speed='')
+            self.create_speed(nas, acct_card.tarif_id, acct_card.account_id, speed='')
             self.add_values(acct_card.tarif_id)
             return authobject, self.replypacket
         else:

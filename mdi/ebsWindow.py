@@ -1,3 +1,5 @@
+#-*-coding=utf-8*-
+
 from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
@@ -58,6 +60,8 @@ class ebsTableWindow(QtGui.QMainWindow):
         self.createFindToolbar()
         #self.connect(self.lineEdit_search_text, QtCore.SIGNAL("textEdited (const QString&)"), self.tableFind)
         self.connect(self.pushButton_find, QtCore.SIGNAL("clicked()"), self.tableFind)
+        self.connect(self.pushButton_export, QtCore.SIGNAL("clicked()"), self.exportToCSV)
+
         
         self.ebsPostInit(initargs)
 
@@ -82,8 +86,18 @@ class ebsTableWindow(QtGui.QMainWindow):
         
         self.toolBar_find.addWidget(self.lineEdit_search_text)
         self.toolBar_find.addWidget(self.pushButton_find)
+
+        self.pushButton_export = QtGui.QToolButton(self)
+        self.pushButton_export.setIcon(QtGui.QIcon("images/fileexport.png"))
+        self.pushButton_export.setMaximumHeight(20)
+        
+        self.toolBar_find.addWidget(self.pushButton_export)
+        
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
         
+    def export_action(self):
+        pass
+    
     def tableFind(self):
         self.tableWidget.clearSelection()
         for y in xrange(self.tableWidget.rowCount()):
@@ -94,6 +108,45 @@ class ebsTableWindow(QtGui.QMainWindow):
                     self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                     #print "finded!"
                     #break
+            
+    def exportToCSV(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant('')).toString()
+
+        
+
+        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")
+        if fileName=="":
+            return
+        settings.setValue("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant(fileName))
+        
+        try:
+            
+            f = open(fileName, "w")
+            column_count = self.tableWidget.columnCount()
+
+            for x in xrange(column_count):
+                try:
+                    f.write(self.tableWidget.horizontalHeaderItem(x).text().toLocal8Bit())
+                    f.write(";")
+                except Exception, e:
+                    print e
+            f.write("\n")   
+            for x in xrange(self.tableWidget.rowCount()):
+                for i in xrange(column_count):
+                    try:
+                        f.write(self.tableWidget.item(x, i).text().toLocal8Bit())
+                        f.write(";")
+                    except Exception, e:
+                        print e
+                        f.write("")
+                        f.write(";")
+                f.write("\n")
+            f.close()
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
             
     def ebsRetranslateUi(self, initargs):
         pass
@@ -421,6 +474,8 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         self.createFindToolbar()
         #self.connect(self.lineEdit_search_text, QtCore.SIGNAL("textEdited (const QString&)"), self.tableFind)
         self.connect(self.pushButton_find, QtCore.SIGNAL("clicked()"), self.tableFind)
+        self.connect(self.pushButton_export, QtCore.SIGNAL("clicked()"), self.exportToCSV)
+
         self.ebsPostInit(initargs)
         
     def retranslateUI(self, initargs):
@@ -434,16 +489,27 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     def ebsRetranslateUi(self, initargs):
         pass
     
+
     def createFindToolbar(self):
         self.toolBar_find = QtGui.QToolBar(self)
         self.toolBar_find.setMovable(False)
         self.toolBar_find.setFloatable(False)
         self.lineEdit_search_text = QtGui.QLineEdit(self)
+        self.lineEdit_search_text.setMaximumHeight(20)
+        self.lineEdit_search_text.setContentsMargins(0,0,0,0)
         self.pushButton_find = QtGui.QToolButton(self)
         self.pushButton_find.setIcon(QtGui.QIcon("images/search.png"))
+        self.pushButton_find.setMaximumHeight(20)
         
         self.toolBar_find.addWidget(self.lineEdit_search_text)
         self.toolBar_find.addWidget(self.pushButton_find)
+
+        self.pushButton_export = QtGui.QToolButton(self)
+        self.pushButton_export.setIcon(QtGui.QIcon("images/fileexport.png"))
+        self.pushButton_export.setMaximumHeight(20)
+        
+        self.toolBar_find.addWidget(self.pushButton_export)
+        
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
         
     def tableFind(self):
@@ -459,7 +525,46 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
                     pass
                     #print "finded!"
                     #break
-                    
+
+    def exportToCSV(self):
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        val=settings.value("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant('')).toString()
+
+        
+
+        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")
+        if fileName=="":
+            return
+        settings.setValue("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant(fileName))
+        try:
+            
+            f = open(fileName, "w")
+            column_count = self.tableWidget.columnCount()
+
+            for x in xrange(column_count):
+                try:
+                    f.write(self.tableWidget.horizontalHeaderItem(x).text().toLocal8Bit())
+                    f.write(";")
+                except Exception, e:
+                    print e
+            f.write("\n")
+            for x in xrange(self.tableWidget.rowCount()):
+                for i in xrange(column_count):
+                    try:
+                        f.write(self.tableWidget.item(x, i).text().toLocal8Bit())
+                        f.write(";")
+                    except Exception, e:
+                        print e
+                        f.write("\n")
+                        f.write("")
+                        f.write(";")
+                f.write("\n")
+            f.close()
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
+            
     def ebsPreInit(self, initargs):
         pass
     

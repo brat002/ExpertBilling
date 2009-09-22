@@ -215,7 +215,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.tableWidget.clearContents()
         start_date = self.date_start.dateTime().toPyDateTime()
         end_date = self.date_end.dateTime().toPyDateTime()
-        
+
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
 
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
@@ -224,17 +224,19 @@ class TransactionsReportEbs(ebsTableWindow):
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
                                             WHERE transaction.created between '%s' and '%s' %%s ORDER BY transaction.created DESC""" %  (start_date, end_date,)
-            
+
             if account_id:
                 sql = sql % " and transaction.account_id=%s %%s" % account_id
             else:
-                sql = sql % " "
+                sql = sql % " %s"
+
             systemuser_id = self.comboBox_cashier.itemData(self.comboBox_cashier.currentIndex()).toInt()[0]
+            #print sql
             if systemuser_id!=0:
                 sql = sql % " and transaction.systemuser_id=%s " % systemuser_id
             else:
                 sql = sql % " "
-                
+
             items = self.connection.sql(sql)
             self.connection.commit()
             self.tableWidget.setRowCount(len(items)+1)
@@ -2514,9 +2516,9 @@ class LogViewWindow(QtGui.QMainWindow):
 
     def get_tail(self):
         
-        log_name = self.comboBox.itemData(self.comboBox.currentIndex()).toString()
+        log_name = unicode(self.comboBox.itemData(self.comboBox.currentIndex()).toString())
 
-        log_count = self.spinBox.value()
+        log_count = int(self.spinBox.value())
 
         if self.checkBox.isChecked()==True:
             a = self.connection.get_tail_log(log_name, log_count, all_file = True)

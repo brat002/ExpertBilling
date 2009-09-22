@@ -140,7 +140,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)
-        speed_string= create_speed_string(speed)
+        speed_string = create_speed_string(speed)
 
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -188,7 +188,7 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         command_dict.update(speed)
         #print 'command_dict=', command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
-        
+        if not command_string: return True
         log_debug_("Change Speedcommand_string= %s" % command_string)
         try:
             if ssh_exec:
@@ -214,7 +214,7 @@ def cred(account_id, account_name, account_password, access_type, account_vpn_ip
                       'account_mac_address':account_mac_address}
 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
-        #print command_string
+        if not command_string: return True
         try:
             if ssh_exec:
                 sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
@@ -255,25 +255,30 @@ def create_nulls(param):
     if param=="None":
         return 0
 
-def create_speed_string(params, coa=False):
+def reverse_speed(val):
+    v = val.split("/")
+    if len(v)==1: return v
+    return "%s/%s" % (v[1], v[0])
+
+def create_speed_string(params, ipn=True):
     #print params
     #params=map(lambda x: params[x]=='None' and 0 or x, params)
     result=''
 
-    if coa==True:
-        result+="%s" % params['max_limit']
+    if ipn == False:
+        result+="%s" % reverse_speed(params['max_limit'])
         #burst_limit
-        result+=" %s" % params['burst_limit']
+        result+=" %s" % reverse_speed(params['burst_limit'])
         #burst_treshold
-        result+=" %s" % params['burst_treshold']
+        result+=" %s" % reverse_speed(params['burst_treshold'])
         #burst_time
-        result+=" %s" % params['burst_time']
+        result+=" %s" % reverse_speed(params['burst_time'])
         #priority
-        result+=" %s" % params['priority']
+        result+=" %s" % reverse_speed(params['priority'])
         #min_limit        
-        result+=" %s" % params['min_limit']
+        result+=" %s" % reverse_speed(params['min_limit'])
         
-    else:
+    if ipn == True:
         result+="%s" % params[0]
         #burst_limit
         result+=" %s" % params[1]
