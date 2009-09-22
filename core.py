@@ -184,13 +184,14 @@ class check_vpn_access(Thread):
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
+
                         acstatus = (((not acc.allow_vpn_null and acc.ballance + acc.credit>0) or acc.allow_vpn_null) \
                                     and \
-                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1
+                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1 and acc.tarif_active==True
                         
                         #print "hotspot acstatus", acstatus
                         #print dir(caches.timeperiodaccess_cache)
-                        if acstatus and caches.timeperiodaccess_cache.in_period[acc.tarif_id]:
+                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
@@ -581,6 +582,9 @@ class TimeAccessBill(Thread):
     def __init__(self):
         Thread.__init__(self)
 
+    def get_actual_cost(self, date):
+        pass
+    
     def run(self):
         """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
@@ -1180,14 +1184,14 @@ class ipn_service(Thread):
                         #now = datetime.datetime.now()
                         now = dateAT
                         # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
-                        if not acc.ipn_added:
+                        if not acc.ipn_added and acc.tarif_active:
                             sended = cred(acc.account_id, acc.username,acc.password, access_type,
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
                                           nas.password, format_string=nas.user_add_action)
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
                                 
-                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked):
+                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active:
                             #шлём команду, на включение пользователя, account_ipn_status=True
                             #ipn_added = acc.ipn_added
                             """Делаем пользователя enabled"""
@@ -1199,7 +1203,7 @@ class ipn_service(Thread):
                             recreate_speed = True                        
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
                             
-                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1) and acc.ipn_status:
+                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status:
                             #шлём команду на отключение пользователя,account_ipn_status=False
                             sended = cred(acc.account_id, acc.username,acc.password, access_type,
                                               acc.vpn_ip_address, acc.ipn_ip_address, 

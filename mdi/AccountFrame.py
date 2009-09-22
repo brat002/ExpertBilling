@@ -745,7 +745,10 @@ class TarifFrame(QtGui.QDialog):
 
         
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        if self.model:
+            self.setWindowTitle(u"Настройки тарифного плана %s" % self.model.name)
+        else:
+            self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки нового тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_description_label.setText(QtGui.QApplication.translate("Dialog", "Описание тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
@@ -771,10 +774,10 @@ class TarifFrame(QtGui.QDialog):
         self.speed_access_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки скорости по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_burst_label.setText(QtGui.QApplication.translate("Dialog", "Burst", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_priority_label.setText(QtGui.QApplication.translate("Dialog", "Приоритет", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_burst_time_label.setText(QtGui.QApplication.translate("Dialog", "Burst Time", None, QtGui.QApplication.UnicodeUTF8))
+        self.speed_burst_time_label.setText(QtGui.QApplication.translate("Dialog", "Burst Time(c)", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_burst_treshold_label.setText(QtGui.QApplication.translate("Dialog", "Burst Treshold", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_out_label.setText(QtGui.QApplication.translate("Dialog", "OUT", None, QtGui.QApplication.UnicodeUTF8))
-        self.speed_in_label.setText(QtGui.QApplication.translate("Dialog", "IN", None, QtGui.QApplication.UnicodeUTF8))
+        self.speed_out_label.setText(QtGui.QApplication.translate("Dialog", "OUT(bytes/k/M)", None, QtGui.QApplication.UnicodeUTF8))
+        self.speed_in_label.setText(QtGui.QApplication.translate("Dialog", "IN(bytes/k/M)", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_max_label.setText(QtGui.QApplication.translate("Dialog", "MAX", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_min_label.setText(QtGui.QApplication.translate("Dialog", "MIN", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBoxAllowExpressPay.setText(QtGui.QApplication.translate("Dialog", "Разрешить активацию карт экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
@@ -1921,6 +1924,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetimeTabActivityActions()
         self.periodicalServicesTabActivityActions()
         self.limitTabActivityActions()
+        self.addonservicesTabActivityActions()
         self.trafficcost_tableWidget.resizeRowsToContents()
         self.trafficcost_tableWidget.resizeColumnsToContents()
         self.connection.commit()
@@ -1979,7 +1983,7 @@ class TarifFrame(QtGui.QDialog):
                 return              
 
             model.access_parameters_id=self.connection.save(access_parameters, "billservice_accessparameters")
-            
+            self.connection.commit()
             #Таблица скоростей
             
             for i in xrange(0, self.speed_table.rowCount()):
@@ -2456,11 +2460,17 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_agreement_date = QtGui.QLabel(self.groupBox_agreement)
         self.label_agreement_date.setObjectName("label_agreement_date")
         self.gridLayout_4.addWidget(self.label_agreement_date, 0, 0, 1, 1)
-        self.lineEdit_agreement_date = QtGui.QLineEdit(self.groupBox_agreement)
-        self.lineEdit_agreement_date.setEnabled(False)
-        self.lineEdit_agreement_date.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_agreement_date.setObjectName("lineEdit_agreement_date")
-        self.gridLayout_4.addWidget(self.lineEdit_agreement_date, 0, 1, 1, 1)
+        #
+        #self.lineEdit_agreement_date = QtGui.QLineEdit(self.groupBox_agreement)
+        #self.lineEdit_agreement_date.setEnabled(False)
+        #self.lineEdit_agreement_date.setMinimumSize(QtCore.QSize(0, 20))
+        #self.lineEdit_agreement_date.setObjectName("lineEdit_agreement_date")
+        #self.gridLayout_4.addWidget(self.lineEdit_agreement_date, 0, 1, 1, 1)
+        #
+        self.dateTimeEdit_agreement_date = QtGui.QDateTimeEdit(self.groupBox_agreement)
+        self.dateTimeEdit_agreement_date.setMinimumSize(QtCore.QSize(0, 20))
+        
+        self.gridLayout_4.addWidget(self.dateTimeEdit_agreement_date, 0, 1, 1, 1)
         self.label_agreement_num = QtGui.QLabel(self.groupBox_agreement)
         self.label_agreement_num.setObjectName("label_agreement_num")
         self.gridLayout_4.addWidget(self.label_agreement_num, 1, 0, 1, 1)
@@ -3168,10 +3178,12 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_balance.setText(u"0")
             self.lineEdit_credit.setText(u"0")
 
+        self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
         if self.model:
             self.lineEdit_agreement_num.setText("%s" % self.model.id)
-            self.lineEdit_agreement_date.setText(unicode(self.model.created.strftime(strftimeFormat)))
-            
+            #self.lineEdit_agreement_date.setText(unicode(self.model.created.strftime(strftimeFormat)))
+            self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
+            self.dateTimeEdit_agreement_date.setDisabled(True)
             #model.status = self.comboBox_status.itemData(self.comboBox.currentIndex()).toInt()[0]
             #print dir(self.model)
             self.comboBox_status.setCurrentIndex(self.model.status-1)
@@ -3323,13 +3335,14 @@ class AccountWindow(QtGui.QMainWindow):
                     return
 
                 model=Object()
-                model.created = datetime.datetime.now()
+                model.created = self.dateTimeEdit_agreement_date.dateTime().toPyDateTime()
                 #model.user_id=1
                 model.ipn_status = False
                 model.ipn_added = False
                 model.disabled_by_limit = False
                 model.vpn_ipinuse_id = None
                 model.ipn_ipinuse_id = None
+                
                 
             model.username = unicode(self.lineEdit_username.text())
             if model.username=='':
@@ -3932,6 +3945,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        #
+        self.treeWidget.setAcceptDrops(True)
+        self.treeWidget.setDragEnabled(True)
+        self.treeWidget.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
         
     def retranslateUI(self, initargs):
         super(AccountsMdiEbs, self).retranslateUI(initargs)
@@ -4125,9 +4142,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         pass
     
     def delete(self):
-        if QtGui.QMessageBox.question(self, u"Удалить аккаунт?" , u"Вы уверены, что хотите удалить пользователя из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
+        ids = self.get_selected_accounts()
+        if not ids:return
+        if QtGui.QMessageBox.question(self, u"Удалить аккаунты?" , u"Вы уверены, что хотите удалить пользователей из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
             return
- 
+
         for id in ids:
             if id>0:
                 self.connection.accountActions(id, 'delete')
@@ -4224,10 +4243,27 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
         
-            
+
+    #def dragEnterEvent(self, event):
+    #    print 123
+    #    event.accept()
+
+    def treeWidgetDropEvent(self, event):
+      item = self.treeWidget.currentItem()
+      self.treeWidget.addTopLevelItem(item)
+      event.accept()
+
+    #def dropMoveEvent(event):
+    #    print 321
+    #    event.accept()
+        
     def refresh(self, item=None, k=''):
         self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Ожидание ответа")
+        self.treeWidget.dropEvent=self.treeWidgetDropEvent
+
+
+        
         #print item
         if item:
             id=item.id

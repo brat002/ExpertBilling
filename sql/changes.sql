@@ -2264,3 +2264,25 @@ ALTER FUNCTION public.gpst_crt_prev_ins(datetx date) OWNER TO ebs;
 
  SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 21, true);
  
+
+ALTER TABLE nas_nas
+   ADD COLUMN speed_vendor_1 integer;
+
+ALTER TABLE nas_nas
+   ADD COLUMN speed_vendor_2 integer;
+
+ALTER TABLE nas_nas
+   ADD COLUMN speed_attr_id1 integer;
+
+ALTER TABLE nas_nas
+   ADD COLUMN speed_attr_id2 integer;
+
+ALTER TABLE nas_nas
+   ADD COLUMN speed_value1 character varying(4096);
+ALTER TABLE nas_nas
+   ALTER COLUMN speed_value1 SET DEFAULT '';
+ALTER TABLE nas_nas
+   ADD COLUMN speed_value2 character varying(4096);
+ALTER TABLE nas_nas
+   ALTER COLUMN speed_value2 SET DEFAULT '';
+

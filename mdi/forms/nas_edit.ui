@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>406</width>
-    <height>594</height>
+    <width>408</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,449 +17,414 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="maintabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="general_tab">
       <attribute name="title">
        <string>Общее</string>
       </attribute>
-      <widget class="QLabel" name="label_name">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>48</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Название</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_name">
-       <property name="geometry">
-        <rect>
-         <x>119</x>
-         <y>9</y>
-         <width>251</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QGroupBox" name="identify_groupBox">
-       <property name="geometry">
-        <rect>
-         <x>9</x>
-         <y>35</y>
-         <width>371</width>
-         <height>134</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Сетевая идентификация</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_6">
-        <item row="0" column="0">
-         <widget class="QLabel" name="type_label">
-          <property name="text">
-           <string>Тип</string>
-          </property>
-          <property name="buddy">
-           <cstring>nas_comboBox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="nas_comboBox">
-          <item>
-           <property name="text">
-            <string>Mikrotik 2.8</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Mikrotik 2.9</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Mikrotik 3.0</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>-other-</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="name_label">
-          <property name="text">
-           <string>Сетевое имя</string>
-          </property>
-          <property name="buddy">
-           <cstring>nas_name</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="nas_name"/>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="ip_label">
-          <property name="text">
-           <string>IP</string>
-          </property>
-          <property name="buddy">
-           <cstring>nas_ip</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="nas_ip">
-          <property name="inputMask">
-           <string>000.000.000.000; </string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="secret_label">
-          <property name="text">
-           <string>Секретная фраза</string>
-          </property>
-          <property name="buddy">
-           <cstring>nas_secret</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="nas_secret"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QGroupBox" name="services_groupBox">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>180</y>
-         <width>181</width>
-         <height>111</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Разрешённые сервисы</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="pptp_checkBox">
-          <property name="text">
-           <string>PPTP</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="pppoe_checkBox">
-          <property name="text">
-           <string>PPPOE</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="ipn_checkBox">
-          <property name="text">
-           <string>IPN</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QGroupBox" name="ssh_groupBox">
-       <property name="geometry">
-        <rect>
-         <x>200</x>
-         <y>180</y>
-         <width>175</width>
-         <height>114</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>SSH</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="ssh_name_label">
-          <property name="text">
-           <string>Имя</string>
-          </property>
-          <property name="buddy">
-           <cstring>ssh_name_lineEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="ssh_name_lineEdit"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="ssh_password_label">
-          <property name="text">
-           <string>Пароль</string>
-          </property>
-          <property name="buddy">
-           <cstring>ssh_password_lineEdit</cstring>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="ssh_password_lineEdit">
-          <property name="echoMode">
-           <enum>QLineEdit::Password</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QPushButton" name="pushButton">
-          <property name="text">
-           <string>Test</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QCheckBox" name="checkBox_multilink">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>300</y>
-         <width>192</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Разрешить Multilink подключения</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="commands_tab">
-      <attribute name="title">
-       <string>Команды</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_5">
+      <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
-        <widget class="QLabel" name="create_user_label">
+        <widget class="QLabel" name="label_name">
          <property name="text">
-          <string>Создать пользователя</string>
+          <string>Название</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLineEdit" name="create_user_textEdit"/>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_name"/>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="remove_user_label">
-         <property name="text">
-          <string>Удалить пользователя</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLineEdit" name="remove_user_textEdit"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="enable_user_label">
-         <property name="text">
-          <string>Активировать пользователя</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLineEdit" name="enable_user_textEdit"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="disable_user_label">
-         <property name="text">
-          <string>Деактивировать пользователя</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLineEdit" name="disable_user_textEdit"/>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="pod_label">
-         <property name="text">
-          <string>Сбросить сессию пользователя</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLineEdit" name="pod_textEdit"/>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="set_vpn_speed_label">
-         <property name="text">
-          <string>Установить скорость для VPN клиента</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLineEdit" name="set_vpn_speed_textEdit"/>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="set_ipn_speed_label">
-         <property name="text">
-          <string>Установить скорость для IPN клиента</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QLineEdit" name="set_ipn_speed_lineEdit"/>
-       </item>
-       <item row="15" column="0">
-        <widget class="QLineEdit" name="lineEdit"/>
-       </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Установить скорость на направление</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Сбросить скорост на направление</string>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="0">
-        <widget class="QLineEdit" name="lineEdit_2"/>
-       </item>
-       <item row="18" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Блокировать направление</string>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="0">
-        <widget class="QLineEdit" name="lineEdit_3"/>
-       </item>
-       <item row="20" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Разблокировать направление</string>
-         </property>
-        </widget>
-       </item>
-       <item row="21" column="0">
-        <widget class="QLineEdit" name="lineEdit_4"/>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>RADIUS Attributes</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_9">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox">
+       <item row="1" column="0" colspan="2">
+        <widget class="QGroupBox" name="identify_groupBox">
          <property name="title">
-          <string>Настройка RADIUS аттрибутов</string>
+          <string>Сетевая идентификация</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_8">
+         <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
-           <layout class="QGridLayout" name="gridLayout_7">
+           <widget class="QLabel" name="type_label">
+            <property name="text">
+             <string>Тип</string>
+            </property>
+            <property name="buddy">
+             <cstring>nas_comboBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="nas_comboBox">
+            <item>
+             <property name="text">
+              <string>Mikrotik 2.8</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mikrotik 2.9</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mikrotik 3.0</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>-other-</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="name_label">
+            <property name="text">
+             <string>Сетевое имя</string>
+            </property>
+            <property name="buddy">
+             <cstring>nas_name</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="nas_name"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="ip_label">
+            <property name="text">
+             <string>IP</string>
+            </property>
+            <property name="buddy">
+             <cstring>nas_ip</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="nas_ip">
+            <property name="inputMask">
+             <string>000.000.000.000; </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="secret_label">
+            <property name="text">
+             <string>Секретная фраза</string>
+            </property>
+            <property name="buddy">
+             <cstring>nas_secret</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="nas_secret"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QToolButton" name="toolButton_default_actions">
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string>Заполнить параметрами по-умолчанию</string>
+            </property>
+            <property name="text">
+             <string>x</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_radius_speed">
+         <property name="title">
+          <string>Установка скорости через RADIUS атрибуты</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="0">
-             <widget class="QLabel" name="label_vendor">
+             <widget class="QLabel" name="label_vendor1">
               <property name="text">
                <string>Vendor</string>
               </property>
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLabel" name="label_attr_id">
+             <widget class="QLabel" name="label_attr_id1">
               <property name="text">
                <string>Attr ID</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="label_value">
-              <property name="text">
-               <string>Value</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QLabel" name="label_type">
-              <property name="text">
-               <string>Type</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
-             <widget class="QLineEdit" name="lineEdit_vendor"/>
+             <widget class="QLineEdit" name="lineEdit_vendor1">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_attr_id"/>
+             <widget class="QLineEdit" name="lineEdit_attr_id1">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QLineEdit" name="lineEdit_value"/>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_vendor2">
+              <property name="text">
+               <string>Vendor</string>
+              </property>
+             </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QComboBox" name="comboBox_type"/>
+            <item row="2" column="1">
+             <widget class="QLabel" name="label_attr_id2">
+              <property name="text">
+               <string>Attr ID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLineEdit" name="lineEdit_vendor2">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="lineEdit_attr_id2">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout">
+          <item row="0" column="2">
+           <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QCommandLinkButton" name="commandLinkButton_add">
+             <widget class="QLabel" name="label_value1">
               <property name="text">
-               <string>Добавить</string>
+               <string>Значение</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCommandLinkButton" name="commandLinkButton_del">
+             <widget class="QLineEdit" name="lineEdit_value1"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_value2">
               <property name="text">
-               <string>Удалить</string>
+               <string>Значение</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_value2"/>
             </item>
            </layout>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="3" column="0" colspan="2">
+        <widget class="QGroupBox" name="ssh_groupBox">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="title">
+          <string>SSH</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="ssh_name_label">
+            <property name="text">
+             <string>Имя</string>
+            </property>
+            <property name="buddy">
+             <cstring>ssh_name_lineEdit</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ssh_name_lineEdit"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="ssh_password_label">
+            <property name="text">
+             <string>Пароль</string>
+            </property>
+            <property name="buddy">
+             <cstring>ssh_password_lineEdit</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ssh_password_lineEdit">
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>Test</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="commands_tab">
+      <attribute name="title">
+       <string>Команды</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0" rowspan="2">
         <widget class="QTableWidget" name="tableWidget">
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string/>
+          </property>
+         </row>
          <column>
           <property name="text">
-           <string>#</string>
+           <string>Параметр</string>
           </property>
          </column>
          <column>
           <property name="text">
-           <string>Vendor</string>
+           <string>Команда</string>
           </property>
          </column>
-         <column>
+         <item row="0" column="0">
           <property name="text">
-           <string>Attr ID</string>
+           <string>Создать пользователя</string>
           </property>
-         </column>
-         <column>
+         </item>
+         <item row="1" column="0">
           <property name="text">
-           <string>Value</string>
+           <string>Удалить пользователя</string>
           </property>
-         </column>
-         <column>
+         </item>
+         <item row="2" column="0">
           <property name="text">
-           <string>Type</string>
+           <string>Активировать пользователя</string>
           </property>
-         </column>
+         </item>
+         <item row="3" column="0">
+          <property name="text">
+           <string>Деактивировать пользователя</string>
+          </property>
+         </item>
+         <item row="4" column="0">
+          <property name="text">
+           <string>Сбросить сессию пользоателя</string>
+          </property>
+         </item>
+         <item row="5" column="0">
+          <property name="text">
+           <string>Установить скорость для VPN</string>
+          </property>
+         </item>
+         <item row="6" column="0">
+          <property name="text">
+           <string>Установить скорость для IPN</string>
+          </property>
+         </item>
+         <item row="7" column="0">
+          <property name="text">
+           <string>Установить скорость на направление</string>
+          </property>
+         </item>
+         <item row="8" column="0">
+          <property name="text">
+           <string>Сбросить скорость на направление</string>
+          </property>
+         </item>
+         <item row="9" column="0">
+          <property name="text">
+           <string>Блокировать направление</string>
+          </property>
+         </item>
+         <item row="10" column="0">
+          <property name="text">
+           <string>Разблокировать направление</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -485,20 +450,9 @@
   <tabstop>nas_name</tabstop>
   <tabstop>nas_ip</tabstop>
   <tabstop>nas_secret</tabstop>
-  <tabstop>pptp_checkBox</tabstop>
-  <tabstop>pppoe_checkBox</tabstop>
-  <tabstop>ipn_checkBox</tabstop>
   <tabstop>ssh_name_lineEdit</tabstop>
   <tabstop>ssh_password_lineEdit</tabstop>
   <tabstop>pushButton</tabstop>
-  <tabstop>checkBox_multilink</tabstop>
-  <tabstop>create_user_textEdit</tabstop>
-  <tabstop>remove_user_textEdit</tabstop>
-  <tabstop>enable_user_textEdit</tabstop>
-  <tabstop>disable_user_textEdit</tabstop>
-  <tabstop>pod_textEdit</tabstop>
-  <tabstop>set_vpn_speed_textEdit</tabstop>
-  <tabstop>set_ipn_speed_lineEdit</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>

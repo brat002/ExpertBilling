@@ -18,54 +18,58 @@ NAS_LIST=(
                 (u'common_ssh',u'common_ssh'),
                 )
 
+            
 actions = {
-'mikrotik2.8':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
-               'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
-               'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
-               'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
-               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
-               'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
-               'pod': '/interface $access_type-server remove [find user=$username]'
+'mikrotik2.8':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
+               'user_delete_action':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
+               'user_enable_action':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
+               'user_disable_action': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
+               'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'ipn_speed_action': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
+               'reset_action': '/interface $access_type-server remove [find user=$username]',
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_rx/$max_limit_tx $burst_limit_rx/$burst_limit_tx $burst_treshold_rx/$burst_treshold_tx $burst_time_rx/$burst_time_tx $priority $min_limit_rx/$min_limit_tx'},
                },
-'mikrotik2.9':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
-               'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
-               'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
-               'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
-               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
-               'ipn_speed': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
-               'pod': '/interface $access_type-server remove [find user=$username]'
+'mikrotik2.9':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
+               'user_delete_action':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
+               'user_enable_action':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
+               'user_disable_action': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
+               'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'ipn_speed_action': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit target-addresses=$account_ipn_ip/32',
+               'reset_action': '/interface $access_type-server remove [find user=$username]',
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_rx/$max_limit_tx $burst_limit_rx/$burst_limit_tx $burst_treshold_rx/$burst_treshold_tx $burst_time_rx/$burst_time_tx $priority $min_limit_rx/$min_limit_tx'},
                },
-'mikrotik3':{'create':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
-               'remove':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find comment=$username-$user_id]',
-               'enable':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
-               'disable': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
-               'vpn_speed': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
-               'ipn_speed': '/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit comment=$username-$user_id  target-addresses=$account_ipn_ip/32',
-               'pod': '/interface $access_type-server remove [find user=$username]'
+'mikrotik3':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
+               'user_delete_action':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find comment=$username-$user_id]',
+               'user_enable_action':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
+               'user_disable_action': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
+               'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit',
+               'ipn_speed_action': '/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username max-limit=$max_limit burst-limit=$burst_limit burst-threshold=$burst_treshold burst-time=$burst_time priority=$priority limit-at=$min_limit comment=$username-$user_id  target-addresses=$account_ipn_ip/32',
+               'reset_action': '/interface $access_type-server remove [find user=$username]',
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_rx/$max_limit_tx $burst_limit_rx/$burst_limit_tx $burst_treshold_rx/$burst_treshold_tx $burst_time_rx/$burst_time_tx $priority $min_limit_rx/$min_limit_tx'},
                },
-'common_ssh':{'create':'',
-               'remove':'',
-               'enable':'',
-               'disable':'',
-               'vpn_speed': '',
-               'ipn_speed': '',
-               'pod': ''
+'common_ssh':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': ''
                },
-'common_radius':{'create':'',
-               'remove':'',
-               'enable':'',
-               'disable':'',
-               'vpn_speed': '',
-               'ipn_speed': '',
-               'pod': ''
+'common_radius':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': ''
                },
-'---':{'create':'',
-               'remove':'',
-               'enable':'',
-               'disable':'',
-               'vpn_speed': '',
-               'ipn_speed': '',
-               'pod': ''
+'---':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': ''
                },
 }
 class ConfigureDialog(QtGui.QDialog):
@@ -186,24 +190,22 @@ class AddNasFrame(QtGui.QDialog):
         self.model = model
         self.connection = connection
         self.connection.commit()
-
-
         self.setObjectName("AddNasFrame")
-        self.resize(350, 410)
+        self.resize(408, 520)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.maintabWidget = QtGui.QTabWidget(self)
         self.maintabWidget.setObjectName("maintabWidget")
         self.general_tab = QtGui.QWidget()
         self.general_tab.setObjectName("general_tab")
-        self.gridLayout_2 = QtGui.QGridLayout(self.general_tab)
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayout_4 = QtGui.QGridLayout(self.general_tab)
+        self.gridLayout_4.setObjectName("gridLayout_4")
         self.label_name = QtGui.QLabel(self.general_tab)
         self.label_name.setObjectName("label_name")
-        self.gridLayout_2.addWidget(self.label_name, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.label_name, 0, 0, 1, 1)
         self.lineEdit_name = QtGui.QLineEdit(self.general_tab)
         self.lineEdit_name.setObjectName("lineEdit_name")
-        self.gridLayout_2.addWidget(self.lineEdit_name, 0, 1, 1, 2)
+        self.gridLayout_4.addWidget(self.lineEdit_name, 0, 1, 1, 1)
         self.identify_groupBox = QtGui.QGroupBox(self.general_tab)
         self.identify_groupBox.setObjectName("identify_groupBox")
         self.gridLayout_6 = QtGui.QGridLayout(self.identify_groupBox)
@@ -213,6 +215,7 @@ class AddNasFrame(QtGui.QDialog):
         self.gridLayout_6.addWidget(self.type_label, 0, 0, 1, 1)
         self.nas_comboBox = QtGui.QComboBox(self.identify_groupBox)
         self.nas_comboBox.setObjectName("nas_comboBox")
+
         self.gridLayout_6.addWidget(self.nas_comboBox, 0, 1, 1, 1)
         self.name_label = QtGui.QLabel(self.identify_groupBox)
         self.name_label.setObjectName("name_label")
@@ -232,22 +235,63 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_secret = QtGui.QLineEdit(self.identify_groupBox)
         self.nas_secret.setObjectName("nas_secret")
         self.gridLayout_6.addWidget(self.nas_secret, 3, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.identify_groupBox, 1, 0, 1, 3)
-        self.services_groupBox = QtGui.QGroupBox(self.general_tab)
-        self.services_groupBox.setObjectName("services_groupBox")
-        self.gridLayout_4 = QtGui.QGridLayout(self.services_groupBox)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.pptp_checkBox = QtGui.QCheckBox(self.services_groupBox)
-        self.pptp_checkBox.setObjectName("pptp_checkBox")
-        self.gridLayout_4.addWidget(self.pptp_checkBox, 0, 0, 1, 1)
-        self.pppoe_checkBox = QtGui.QCheckBox(self.services_groupBox)
-        self.pppoe_checkBox.setObjectName("pppoe_checkBox")
-        self.gridLayout_4.addWidget(self.pppoe_checkBox, 1, 0, 1, 1)
-        self.ipn_checkBox = QtGui.QCheckBox(self.services_groupBox)
-        self.ipn_checkBox.setObjectName("ipn_checkBox")
-        self.gridLayout_4.addWidget(self.ipn_checkBox, 2, 0, 1, 1)
-        self.gridLayout_2.addWidget(self.services_groupBox, 2, 0, 1, 2)
+        self.toolButton_default_actions = QtGui.QToolButton(self.identify_groupBox)
+        self.toolButton_default_actions.setObjectName("toolButton_default_actions")
+        self.gridLayout_6.addWidget(self.toolButton_default_actions, 0, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.identify_groupBox, 1, 0, 1, 2)
+        self.groupBox_radius_speed = QtGui.QGroupBox(self.general_tab)
+        self.groupBox_radius_speed.setObjectName("groupBox_radius_speed")
+        self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_radius_speed)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.gridLayout_2 = QtGui.QGridLayout()
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label_vendor1 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_vendor1.setObjectName("label_vendor1")
+        self.gridLayout_2.addWidget(self.label_vendor1, 0, 0, 1, 1)
+        self.label_attr_id1 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_attr_id1.setObjectName("label_attr_id1")
+        self.gridLayout_2.addWidget(self.label_attr_id1, 0, 1, 1, 1)
+        self.lineEdit_vendor1 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_vendor1.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.lineEdit_vendor1.setObjectName("lineEdit_vendor1")
+        self.gridLayout_2.addWidget(self.lineEdit_vendor1, 1, 0, 1, 1)
+        self.lineEdit_attr_id1 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_attr_id1.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.lineEdit_attr_id1.setObjectName("lineEdit_attr_id1")
+        self.gridLayout_2.addWidget(self.lineEdit_attr_id1, 1, 1, 1, 1)
+        self.label_vendor2 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_vendor2.setObjectName("label_vendor2")
+        self.gridLayout_2.addWidget(self.label_vendor2, 2, 0, 1, 1)
+        self.label_attr_id2 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_attr_id2.setObjectName("label_attr_id2")
+        self.gridLayout_2.addWidget(self.label_attr_id2, 2, 1, 1, 1)
+        self.lineEdit_vendor2 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_vendor2.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.lineEdit_vendor2.setObjectName("lineEdit_vendor2")
+        self.gridLayout_2.addWidget(self.lineEdit_vendor2, 3, 0, 1, 1)
+        self.lineEdit_attr_id2 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_attr_id2.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.lineEdit_attr_id2.setObjectName("lineEdit_attr_id2")
+        self.gridLayout_2.addWidget(self.lineEdit_attr_id2, 3, 1, 1, 1)
+        self.gridLayout_7.addLayout(self.gridLayout_2, 0, 0, 1, 1)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label_value1 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_value1.setObjectName("label_value1")
+        self.verticalLayout.addWidget(self.label_value1)
+        self.lineEdit_value1 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_value1.setObjectName("lineEdit_value1")
+        self.verticalLayout.addWidget(self.lineEdit_value1)
+        self.label_value2 = QtGui.QLabel(self.groupBox_radius_speed)
+        self.label_value2.setObjectName("label_value2")
+        self.verticalLayout.addWidget(self.label_value2)
+        self.lineEdit_value2 = QtGui.QLineEdit(self.groupBox_radius_speed)
+        self.lineEdit_value2.setObjectName("lineEdit_value2")
+        self.verticalLayout.addWidget(self.lineEdit_value2)
+        self.gridLayout_7.addLayout(self.verticalLayout, 0, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.groupBox_radius_speed, 2, 0, 1, 2)
         self.ssh_groupBox = QtGui.QGroupBox(self.general_tab)
+        self.ssh_groupBox.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.ssh_groupBox.setObjectName("ssh_groupBox")
         self.gridLayout_3 = QtGui.QGridLayout(self.ssh_groupBox)
         self.gridLayout_3.setObjectName("gridLayout_3")
@@ -265,59 +309,21 @@ class AddNasFrame(QtGui.QDialog):
         self.ssh_password_lineEdit.setObjectName("ssh_password_lineEdit")
         self.gridLayout_3.addWidget(self.ssh_password_lineEdit, 1, 1, 1, 1)
         self.pushButton = QtGui.QPushButton(self.ssh_groupBox)
+        self.pushButton.setMaximumSize(QtCore.QSize(120, 16777215))
+        self.pushButton.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.pushButton.setObjectName("pushButton")
         self.gridLayout_3.addWidget(self.pushButton, 2, 1, 1, 1)
-        self.gridLayout_2.addWidget(self.ssh_groupBox, 2, 2, 1, 1)
-        self.checkBox_multilink = QtGui.QCheckBox(self.general_tab)
-        self.checkBox_multilink.setObjectName("checkBox_multilink")
-        self.gridLayout_2.addWidget(self.checkBox_multilink, 3, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.ssh_groupBox, 3, 0, 1, 2)
         self.maintabWidget.addTab(self.general_tab, "")
         self.commands_tab = QtGui.QWidget()
         self.commands_tab.setObjectName("commands_tab")
         self.gridLayout_5 = QtGui.QGridLayout(self.commands_tab)
         self.gridLayout_5.setObjectName("gridLayout_5")
-        self.create_user_label = QtGui.QLabel(self.commands_tab)
-        self.create_user_label.setObjectName("create_user_label")
-        self.gridLayout_5.addWidget(self.create_user_label, 0, 0, 1, 1)
-        self.create_user_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.create_user_textEdit.setObjectName("create_user_textEdit")
-        self.gridLayout_5.addWidget(self.create_user_textEdit, 1, 0, 1, 1)
-        self.remove_user_label = QtGui.QLabel(self.commands_tab)
-        self.remove_user_label.setObjectName("remove_user_label")
-        self.gridLayout_5.addWidget(self.remove_user_label, 2, 0, 1, 1)
-        self.remove_user_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.remove_user_textEdit.setObjectName("remove_user_textEdit")
-        self.gridLayout_5.addWidget(self.remove_user_textEdit, 3, 0, 1, 1)
-        self.enable_user_label = QtGui.QLabel(self.commands_tab)
-        self.enable_user_label.setObjectName("enable_user_label")
-        self.gridLayout_5.addWidget(self.enable_user_label, 4, 0, 1, 1)
-        self.enable_user_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.enable_user_textEdit.setObjectName("enable_user_textEdit")
-        self.gridLayout_5.addWidget(self.enable_user_textEdit, 5, 0, 1, 1)
-        self.disable_user_label = QtGui.QLabel(self.commands_tab)
-        self.disable_user_label.setObjectName("disable_user_label")
-        self.gridLayout_5.addWidget(self.disable_user_label, 6, 0, 1, 1)
-        self.disable_user_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.disable_user_textEdit.setObjectName("disable_user_textEdit")
-        self.gridLayout_5.addWidget(self.disable_user_textEdit, 7, 0, 1, 1)
-        self.pod_label = QtGui.QLabel(self.commands_tab)
-        self.pod_label.setObjectName("pod_label")
-        self.gridLayout_5.addWidget(self.pod_label, 8, 0, 1, 1)
-        self.pod_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.pod_textEdit.setObjectName("pod_textEdit")
-        self.gridLayout_5.addWidget(self.pod_textEdit, 9, 0, 1, 1)
-        self.set_vpn_speed_label = QtGui.QLabel(self.commands_tab)
-        self.set_vpn_speed_label.setObjectName("set_vpn_speed_label")
-        self.gridLayout_5.addWidget(self.set_vpn_speed_label, 10, 0, 1, 1)
-        self.set_vpn_speed_textEdit = QtGui.QLineEdit(self.commands_tab)
-        self.set_vpn_speed_textEdit.setObjectName("set_vpn_speed_textEdit")
-        self.gridLayout_5.addWidget(self.set_vpn_speed_textEdit, 11, 0, 1, 1)
-        self.set_ipn_speed_label = QtGui.QLabel(self.commands_tab)
-        self.set_ipn_speed_label.setObjectName("set_ipn_speed_label")
-        self.gridLayout_5.addWidget(self.set_ipn_speed_label, 12, 0, 1, 1)
-        self.set_ipn_speed_lineEdit = QtGui.QLineEdit(self.commands_tab)
-        self.set_ipn_speed_lineEdit.setObjectName("set_ipn_speed_lineEdit")
-        self.gridLayout_5.addWidget(self.set_ipn_speed_lineEdit, 13, 0, 1, 1)
+        self.tableWidget = QtGui.QTableWidget(self.commands_tab)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+
+        self.gridLayout_5.addWidget(self.tableWidget, 0, 0, 2, 1)
         self.maintabWidget.addTab(self.commands_tab, "")
         self.gridLayout.addWidget(self.maintabWidget, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -333,84 +339,85 @@ class AddNasFrame(QtGui.QDialog):
         self.ssh_password_label.setBuddy(self.ssh_password_lineEdit)
 
         self.maintabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(self)
-        self.setTabOrder(self.maintabWidget, self.lineEdit_name)
-        self.setTabOrder(self.lineEdit_name, self.nas_comboBox)
-        self.setTabOrder(self.nas_comboBox, self.nas_name)
-        self.setTabOrder(self.nas_name, self.nas_ip)
-        self.setTabOrder(self.nas_ip, self.nas_secret)
-        self.setTabOrder(self.nas_secret, self.pptp_checkBox)
-        self.setTabOrder(self.pptp_checkBox, self.pppoe_checkBox)
-        self.setTabOrder(self.pppoe_checkBox, self.ipn_checkBox)
-        self.setTabOrder(self.ipn_checkBox, self.ssh_name_lineEdit)
-        self.setTabOrder(self.ssh_name_lineEdit, self.ssh_password_lineEdit)
-        self.setTabOrder(self.ssh_password_lineEdit, self.pushButton)
-        self.setTabOrder(self.pushButton, self.checkBox_multilink)
-        self.setTabOrder(self.checkBox_multilink, self.create_user_textEdit)
-        self.setTabOrder(self.create_user_textEdit, self.remove_user_textEdit)
-        self.setTabOrder(self.remove_user_textEdit, self.enable_user_textEdit)
-        self.setTabOrder(self.enable_user_textEdit, self.disable_user_textEdit)
-        self.setTabOrder(self.disable_user_textEdit, self.pod_textEdit)
-        self.setTabOrder(self.pod_textEdit, self.set_vpn_speed_textEdit)
-        self.setTabOrder(self.set_vpn_speed_textEdit, self.set_ipn_speed_lineEdit)
-        self.setTabOrder(self.set_ipn_speed_lineEdit, self.buttonBox)
         
-
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
-        QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        QtCore.QObject.connect(self.pushButton,QtCore.SIGNAL("clicked()"),self.testNAS)
-
-                
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.pushButton,QtCore.SIGNAL("clicked()"), self.testNAS)
+        self.connect(self.tableWidget, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.editNasInfo)
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.fixtures()
-        QtCore.QObject.connect(self.nas_comboBox,QtCore.SIGNAL("currentIndexChanged(int)"),self.refillActions)
+        
+        QtCore.QObject.connect(self.toolButton_default_actions,QtCore.SIGNAL("clicked()"), self.refillActions)
         self.retranslateUi()
-
+        self.fixtures()
 
     def retranslateUi(self):
-        self.label_name.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Имя сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_name.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.identify_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сетевая идентификация", None, QtGui.QApplication.UnicodeUTF8))
+        self.type_label.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Сетевое имя", None, QtGui.QApplication.UnicodeUTF8))
+        self.ip_label.setText(QtGui.QApplication.translate("Dialog", "IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.secret_label.setText(QtGui.QApplication.translate("Dialog", "Секретная фраза", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_default_actions.setWhatsThis(QtGui.QApplication.translate("Dialog", "Заполнить параметрами по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_default_actions.setText(QtGui.QApplication.translate("Dialog", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius_speed.setTitle(QtGui.QApplication.translate("Dialog", "Установка скорости через RADIUS атрибуты", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vendor1.setText(QtGui.QApplication.translate("Dialog", "Vendor", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_attr_id1.setText(QtGui.QApplication.translate("Dialog", "Attr ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vendor2.setText(QtGui.QApplication.translate("Dialog", "Vendor", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_attr_id2.setText(QtGui.QApplication.translate("Dialog", "Attr ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_value1.setText(QtGui.QApplication.translate("Dialog", "Значение", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_value2.setText(QtGui.QApplication.translate("Dialog", "Значение", None, QtGui.QApplication.UnicodeUTF8))
         self.ssh_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "SSH", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
         self.ssh_name_label.setText(QtGui.QApplication.translate("Dialog", "Имя", None, QtGui.QApplication.UnicodeUTF8))
         self.ssh_password_label.setText(QtGui.QApplication.translate("Dialog", "Пароль", None, QtGui.QApplication.UnicodeUTF8))
-        self.services_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Разрешённые сервисы", None, QtGui.QApplication.UnicodeUTF8))
-        self.pptp_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPTP", None, QtGui.QApplication.UnicodeUTF8))
-        self.pppoe_checkBox.setText(QtGui.QApplication.translate("Dialog", "PPPOE", None, QtGui.QApplication.UnicodeUTF8))
-        self.ipn_checkBox.setText(QtGui.QApplication.translate("Dialog", "IPN", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_multilink.setText(QtGui.QApplication.translate("Dialog", "Разрешить Multilink подключения", None, QtGui.QApplication.UnicodeUTF8))
-        self.identify_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сетевая идентификация", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_label.setText(QtGui.QApplication.translate("Dialog", "RADIUS Identify", None, QtGui.QApplication.UnicodeUTF8))
-        #self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_ip.setValidator(self.ipValidator)
-        self.ip_label.setText(QtGui.QApplication.translate("Dialog", "IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.secret_label.setText(QtGui.QApplication.translate("Dialog", "Секретная фраза", None, QtGui.QApplication.UnicodeUTF8))
-        self.type_label.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.general_tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
-        self.create_user_label.setText(QtGui.QApplication.translate("Dialog", "Создать пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.remove_user_label.setText(QtGui.QApplication.translate("Dialog", "Удалить пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.enable_user_label.setText(QtGui.QApplication.translate("Dialog", "Активировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.disable_user_label.setText(QtGui.QApplication.translate("Dialog", "Деактивировать пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.pod_label.setText(QtGui.QApplication.translate("Dialog", "Сбросить сессию пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.set_vpn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для VPN клиента", None, QtGui.QApplication.UnicodeUTF8))
-        self.set_ipn_speed_label.setText(QtGui.QApplication.translate("Dialog", "Установить скорость для IPN клиента", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.commands_tab), QtGui.QApplication.translate("Dialog", "Команды", None, QtGui.QApplication.UnicodeUTF8))
+        columns = [u"Действие",u"Значение"]
+        makeHeaders(columns, self.tableWidget)
+        self.tableInfo=[
+            #['ur', u'Юридическое лицо','checkbox'],
+            ['user_add_action', u'Добавить абонента',''],
+            ['user_delete_action', u'Удалить абонента',''],
+            ['user_enable_action', u'Включить абонента',''],
+            ['user_disable_action',u'Отключить абонента',''],
+            ['vpn_speed_action',u'Установить скорость для VPN',''],
+            ['ipn_speed_action',u'Установить скорость для IPN',''],
+            ['reset_action',u'Сбросить сессию',''],
+            ]
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(len(self.tableInfo))
+        i=0
+        for item in self.tableInfo:
+            self.addrow(self.tableWidget, item[1], i, 0, id=item[0])
+            if item[2]:
+                self.addrow(self.tableWidget, '', i, 1, widget_type = item[2])
+            i+=1
+
+    def editNasInfo(self, item):
+        if item.column()==1:
+            self.tableWidget.editItem(item)
+            
+    def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
+        headerItem = QtGui.QTableWidgetItem()
+        if widget_type == 'checkbox':
+            headerItem.setCheckState(QtCore.Qt.Unchecked)
+        if value==None or value=="None":
+            value=''
+        if y==0:
+            headerItem.id=value
+        headerItem.setText(unicode(value))
+        if id:
+            headerItem.id=id
+            
+           
+        widget.setItem(x,y,headerItem)
         
-        #Whats is
-        self.pushButton.setWhatsThis(QtGui.QApplication.translate("Dialog", "Нажмите на эту кнопку чтобы проверить правильность введённых вами данных.", None, QtGui.QApplication.UnicodeUTF8))
-        self.ssh_name_lineEdit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Имя пользователя для доступа по SSH к серверу доступа.", None, QtGui.QApplication.UnicodeUTF8))
-        self.ssh_password_lineEdit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Пароль для доступа по SSH к серверу доступа.", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_name.setWhatsThis(QtGui.QApplication.translate("Dialog", "Имя сервера доступа для RADIUS авторизации.", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_ip.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP адрес сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_secret.setWhatsThis(QtGui.QApplication.translate("Dialog", "Секретная фраза для идентификации сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_comboBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Тип сервера доступа.", None, QtGui.QApplication.UnicodeUTF8))
-        self.pptp_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPTP подключения.", None, QtGui.QApplication.UnicodeUTF8))
-        self.pppoe_checkBox.setWhatsThis(QtGui.QApplication.translate("Dialog", "Серверу доступа разрешено принимать PPPOE подключения.", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_multilink.setWhatsThis(QtGui.QApplication.translate("Dialog", "Разрешить подключаться по PPTP/PPPOE к серверу доступа нескольким пользователям с одним логином.\nПри активации данной функции логин пользователя становиться не привязанным к VPN IP при PPTP подключении и MAC адресу при PPPOE подключении. Внимание, функция может не поддериваться вашим сервером доступа.", None, QtGui.QApplication.UnicodeUTF8))
+        
     def testNAS(self):
         if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
@@ -421,21 +428,16 @@ class AddNasFrame(QtGui.QDialog):
         if (QtGui.QMessageBox.question(self, u"Внимание?" , u"Перезаписать действия сервера доступа на действия по умолчанию для этого типа серверов доступа?.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
             self.maintabWidget.setCurrentIndex(1)
             nas_type = unicode(self.nas_comboBox.currentText())
-    
+
+            for i in xrange(self.tableWidget.rowCount()):
+                self.addrow(self.tableWidget, unicode(actions[nas_type].get(self.tableInfo[i][0],'')), i,1)
             
-            self.create_user_textEdit.setText(actions[nas_type]['create'])
-            self.remove_user_textEdit.setText(actions[nas_type]['remove'])
+            self.tableWidget.resizeColumnsToContents()
+            self.lineEdit_vendor1.setText(unicode(actions[nas_type].get('radius_speed').get('vendor1')))
+            self.lineEdit_attr_id1.setText(unicode(actions[nas_type].get('radius_speed').get('attrid1')))
+            self.lineEdit_value1.setText(unicode(actions[nas_type].get('radius_speed').get('value1')))
             
-            self.enable_user_textEdit.setText(actions[nas_type]['enable'])
-            self.disable_user_textEdit.setText(actions[nas_type]['disable'])
-            
-            self.set_vpn_speed_textEdit.setText(actions[nas_type]['vpn_speed'])
-            self.set_ipn_speed_lineEdit.setText(actions[nas_type]['ipn_speed'])
-            self.pod_textEdit.setText(actions[nas_type]['pod'])
-            if nas_type=='---':
-                self.buttonBox.setDisabled(True)
-            else:
-                self.buttonBox.setDisabled(False)
+            #radius_speed
     
     def accept(self):
         """
@@ -485,19 +487,20 @@ class AddNasFrame(QtGui.QDialog):
         model.ipaddress = unicode(self.nas_ip.text())
         model.secret = unicode(self.nas_secret.text())
 
-        model.allow_pptp = self.pptp_checkBox.checkState()==2
-        model.allow_pppoe = self.pppoe_checkBox.checkState()==2
-        model.allow_ipn = self.ipn_checkBox.checkState()==2
-        model.multilink = self.checkBox_multilink.checkState()==2
-
-        model.user_add_action= unicode(self.create_user_textEdit.text() or "")
-        model.user_delete_action= unicode(self.remove_user_textEdit.text() or "")
-        model.user_enable_action= unicode(self.enable_user_textEdit.text() or "")
-        model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
-        model.user_disable_action= unicode(self.disable_user_textEdit.text() or "")
-        model.vpn_speed_action = unicode(self.set_vpn_speed_textEdit.text() or "")
-        model.ipn_speed_action = unicode(self.set_ipn_speed_lineEdit.text() or "")
-        model.reset_action = unicode(self.pod_textEdit.text() or "")
+        for i in xrange(self.tableWidget.rowCount()):
+            model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text())
+            
+        try:
+            model.speed_vendor_1 = int(unicode(self.lineEdit_vendor1.text() or 0))
+            model.speed_vendor_2 = int(unicode(self.lineEdit_vendor2.text() or 0))
+            model.speed_attr_id1 = int(unicode(self.lineEdit_attr_id1.text() or 0))
+            model.speed_attr_id2 = int(unicode(self.lineEdit_attr_id2.text() or 0))
+            model.speed_value1 = unicode(self.lineEdit_value1.text())
+            model.speed_value2 = unicode(self.lineEdit_value2.text())
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Параметры Vendor и Attr Id должны бытьцелыми положитеьными числами."))
+            return
         
 
         
@@ -527,25 +530,31 @@ class AddNasFrame(QtGui.QDialog):
             self.ssh_name_lineEdit.setText(unicode(self.model.login))
             self.ssh_password_lineEdit.setText(unicode(self.model.password))
 
-            self.create_user_textEdit.setText(unicode(self.model.user_add_action))
-            self.remove_user_textEdit.setText(unicode(self.model.user_delete_action))
-            self.enable_user_textEdit.setText(unicode(self.model.user_enable_action))
-            self.disable_user_textEdit.setText(unicode(self.model.user_disable_action))
+            #self.create_user_textEdit.setText(unicode(self.model.user_add_action))
+            #self.remove_user_textEdit.setText(unicode(self.model.user_delete_action))
+            #self.enable_user_textEdit.setText(unicode(self.model.user_enable_action))
+            #self.disable_user_textEdit.setText(unicode(self.model.user_disable_action))
             
             
-            self.set_vpn_speed_textEdit.setText(unicode(self.model.vpn_speed_action))
-            self.set_ipn_speed_lineEdit.setText(unicode(self.model.ipn_speed_action))
+            #self.set_vpn_speed_textEdit.setText(unicode(self.model.vpn_speed_action))
+            #self.set_ipn_speed_lineEdit.setText(unicode(self.model.ipn_speed_action))
             
             
-            self.pod_textEdit.setText(unicode(self.model.reset_action))
+            #self.pod_textEdit.setText(unicode(self.model.reset_action))
             
-
+            for i in xrange(self.tableWidget.rowCount()):
+                self.addrow(self.tableWidget, unicode(self.model.__dict__.get(self.tableInfo[i][0],'')), i,1)
+            
+            self.tableWidget.resizeColumnsToContents()
             self.nas_comboBox.setCurrentIndex(self.nas_comboBox.findText(self.model.type, QtCore.Qt.MatchCaseSensitive))
 
-            self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.pppoe_checkBox.setCheckState(self.model.allow_pppoe == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
-            self.checkBox_multilink.setChecked(self.model.multilink)
+            self.lineEdit_vendor1.setText(unicode(self.model.speed_vendor_1 or ''))
+            self.lineEdit_vendor2.setText(unicode(self.model.speed_vendor_2 or ''))
+            self.lineEdit_attr_id1.setText(unicode(self.model.speed_attr_id1 or ''))
+            self.lineEdit_attr_id2.setText(unicode(self.model.speed_attr_id2 or ''))
+            self.lineEdit_value1.setText(unicode(self.model.speed_value1))
+            self.lineEdit_value2.setText(unicode(self.model.speed_value2))
+            
         else:
             self.buttonBox.setDisabled(True)
 

@@ -687,18 +687,24 @@ class AddCards(QtGui.QDialog):
             self.spinBox_login.setDisabled(False)
             self.comboBox_ippool.setDisabled(False)
             self.comboBox_nas.setDisabled(False)
+            self.l_checkBox_login.setDisabled(False)
+            self.numbers_checkBox_login.setDisabled(False)
         
         if self.radioButton_prepaid.isChecked()==True:
             self.comboBox_tarif.setDisabled(True)
             self.spinBox_login.setDisabled(True)
             self.comboBox_ippool.setDisabled(True)
             self.comboBox_nas.setDisabled(True)
+            self.l_checkBox_login.setDisabled(True)
+            self.numbers_checkBox_login.setDisabled(True)
 
         if self.radioButton_hotspot.isChecked()==True:
             self.comboBox_tarif.setDisabled(False)
             #self.spinBox_login.setDisabled(True)
             self.comboBox_ippool.setDisabled(True)
             self.comboBox_nas.setDisabled(True)
+            self.l_checkBox_login.setDisabled(False)
+            self.numbers_checkBox_login.setDisabled(False)
 
 
             
@@ -750,8 +756,9 @@ class AddCards(QtGui.QDialog):
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
             ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
             
-        for x in xrange(0, self.count_spinBox.text().toInt()[0]):
+        for x in xrange(0, self.count_spinBox.value()):
             model = Object()
+            print x
             #model.card_group_id = self.group
             model.series = unicode(self.series_spinBox.text())
             model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
@@ -778,8 +785,8 @@ class AddCards(QtGui.QDialog):
             model.created = dnow
 
             self.connection.save(model,"billservice_card")
-        
-        self.connection.commit()
+            self.connection.commit()
+            
         #except Exception, ex:
         #    self.connection.rollback()
         #    print ex
