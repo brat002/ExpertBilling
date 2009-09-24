@@ -446,17 +446,13 @@ class RPCServer(object):
     def makeChart(self, *args, **kwargs):
         kwargs['cur']=None
         kwargs['connection']=None
-        listconnection = pool.connection()
-        listconnection._con._con.set_client_encoding('UTF8')
-        listcur = listconnection.cursor()
-        bpbl.bpplotAdapter.rCursor = listcur
-        #bpplotAdapter.rCursor = listcur
-        cddrawer = cdDrawer()
-        imgs = cddrawer.cddraw(*args, **kwargs)
-        listconnection.commit()
-        listcur.close()
-        listconnection.close()
-        gc.collect()
+        with vars.graph_connection_lock:
+            bpbl.bpplotAdapter.rCursor = vars.graph_connection
+            #bpplotAdapter.rCursor = listcur
+            cddrawer = cdDrawer()
+            imgs = cddrawer.cddraw(*args, **kwargs)
+            vars.graph_connection.commit()
+            gc.collect()
         return imgs
 
     
@@ -1064,6 +1060,9 @@ if __name__ == "__main__":
 
         vars.db_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
         vars.db_connection.connect()
+        vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
+        vars.graph_connection.connect()
+        vars.graph_connection.connection.set_isolation_level(0)
         logger = isdlogger.pyrologger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
