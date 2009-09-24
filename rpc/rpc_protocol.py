@@ -8,12 +8,107 @@ BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
 KEY_LEN = 16
 import random
+import os, datetime
+
+from types import InstanceType, StringType, UnicodeType
 
 logger = None
 
 def install_logger(lgr):
     global logger
     logger = lgr
+    
+    
+def format_update (x,y):
+    #print 'y', y, type(y)
+    if y!=u'Null' and y!=u'None':
+        if type(y)==StringType or type(y)==UnicodeType:
+            #print True
+            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            #print 'y', y
+        return "%s='%s'" % (x,y)
+    else:
+        return "%s=%s" % (x,'Null')
+
+def format_insert(y):
+    if y==u'Null' or y ==u'None':
+        return 'Null'
+    elif type(y)==StringType or type(y)==UnicodeType:
+        #print True
+        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+    else:
+        return y
+    
+class Object(object):
+    def __init__(self, result=[], *args, **kwargs):
+        for key in result:
+            setattr(self, key, result[key])
+        """
+        if result[key]!=None:
+            setattr(self, key, result[key])
+        else:
+            setattr(self, key, 'Null')
+        """
+
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])  
+
+        #print dir(self)          
+
+    def _toTuple(self):        
+        return tuple(self.__dict__.items().append(self.__class__.__name__))
+    
+    @staticmethod
+    def _fromTuple(tpl):
+        return Object(dict(tpl))
+
+    def save(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                if self.__dict__[field]=='now()':
+                    self.__dict__[field] = datetime.datetime.now()
+                fields.append(field)
+
+        try:
+            self.__dict__['id']
+            sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
+        except Exception, e:
+            #print e
+            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
+            sql = sql.replace("'None'", 'Null')
+            sql = sql.replace("'Null'", 'Null')
+        return sql
+    
+    def delete(self, table):
+        fields=[]
+        for field in self.__dict__:
+            if type(field)!=InstanceType:
+                # and self.__dict__[field]!=None
+                fields.append(field)
+        
+        sql = u"DELETE FROM %s WHERE %s" % (table, " AND ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]))
+        
+        return sql
+        
+    def get(self, fields, table):
+        return "SELECT %s FROM %s WHERE id=%d" % (",".join([fields]), table, int(self.id))
+
+    def __call__(self):
+        return self.id
+
+    def hasattr(self, attr):
+        if attr in self.__dict__:
+            return True
+        return False
+
+    def isnull(self, attr):
+        if self.hasattr(attr):
+            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
+                return False
+
+        return True
     
 class ProtocolException(Exception):
     pass
@@ -104,12 +199,14 @@ class RPCProtocol(object):
     _HEADER_LEN = 16
     _STATUS_CODE = '00'
     _FAIL_CODE   = '00'
+    _OBJECT_FLAG = False
     _FAIL_CODES  = {'DB_ERROR': '09', 'DB_DISCONNECT': '13', 'PROTOCOL_ERROR' : '17'}
     _compression = {'Z': {'compress': zlib.compress, 'decompress': zlib.decompress}}
     _serializer = {'P': {'dumps': lambda x: cPickle.dumps(x, cPickle.HIGHEST_PROTOCOL), 'loads': cPickle.loads},\
                   'M': {'dumps': marshal.dumps, 'loads': marshal.loads}}
     _object_name = {'Object': 'O'}
-    _object = {'O': {'tuplify': lambda x: x._toTuple, 'detuplify': lambda x: Object._fromTuple}}
+    _allowed_objects = (Object,)
+    _object = {'Object': {'tuplify': lambda x: x._toTuple, 'detuplify': lambda x: Object._fromTuple}}
     def __init__(self, authenticator):
         self.authenticator = authenticator
         self.identity = None
@@ -171,11 +268,21 @@ class RPCProtocol(object):
             data = serializer['loads'](data)
         print 'loaded data: ', repr(data) 
         if object_ != '0':
-            objectifier = self._object.get(object_)
+            '''objectifier = self._object.get(object_)
             if not objectifier:
-                raise ProtocolException("NO objectifier FOUND: %s" % header)
+                raise ProtocolException("NO objectifier FOUND: %s" % header)'''
+            n_data = []
+            for elt in data[1]:
+                if isinstance(elt, list):
+                    elt = map(self.objectifier_fn, elt)
+                elif isinstance(elt, tuple):
+                    elt = tuple(map(self.objectifier_fn, elt))
+                else:
+                    elt = self.objectifier_fn(elt)
+                n_data.append(elt)
+            data = (data[0], tuple(n_data))
             #data[1] = ((objectifier['detuplify'](data[1][0][0]) + data[1][0][1:]), data[1][1])
-            data = (data[0], (objectifier['detuplify'](data[1][0]),) + data[1][1:])
+            #data = (data[0], (objectifier['detuplify'](data[1][0]),) + data[1][1:])
         return data
     
     def send_process(self, idx, f_name, *args):
@@ -184,17 +291,36 @@ class RPCProtocol(object):
         else:
             raise ProtocolException('UNIMPLEMENTED IDX: %s' % idx)
         
+    def deobjectifier_fn(self, elt):
+        if isinstance(elt, self._allowed_objects):
+            self._OBJECT_FLAG = True
+            return self._object[elt.__class__.__name__]['tuplify'](elt)
+        else: 
+            return elt
+        
+    def objectifier_fn(self, elt):
+        if isinstance(elt, tuple) and isinstance(elt[-1], str) and self._object.has_key(elt[-1]):
+            return self._object[elt[-1]]['detuplify'](elt[:-1])
+        else:
+            return elt
+            
     def send_process_data(self, idx, f_name, *args):
         #f_name = args[0]
         #data = args[1]
         #data = (args, kwargs)
         encrypt, compress, serialize, object_ = '0000'
+        self._OBJECT_FLAG = False
         if args:
-            data = args[0]        
-            if hasattr(data, '__class__') and hasattr(data.__class__, '__name__') and data.__class__.__name__ in self._object_name:
-                data = self._object[self._object_name[data.__class__.__name__]]['tuplify'](data)
-                object_ = self._object_name[data.__class__.__name__]
-                args = (data,) + args[1:]
+            n_args = []
+            for elt in args:
+                if isinstance(elt, list):
+                    elt = map(self.deobjectifier_fn, elt)
+                elif isinstance(elt, tuple):
+                    elt = tuple(map(self.deobjectifier_fn, elt))
+                else:
+                    elt = self.deobjectifier_fn(elt)
+                n_args.append(elt)
+            n_args = tuple(n_args)
 
         packet = (f_name, args)
         print repr(packet)
@@ -413,74 +539,3 @@ class MD5_Authenticator(Authenticator):
             value += chr(random.randint(1,255))
         return value
     
-class Object(object):
-    def __init__(self, result=[], *args, **kwargs):
-        for key in result:
-            setattr(self, key, result[key])
-        """
-        if result[key]!=None:
-            setattr(self, key, result[key])
-        else:
-            setattr(self, key, 'Null')
-        """
-
-
-        for key in kwargs:
-            setattr(self, key, kwargs[key])  
-
-        #print dir(self)          
-
-    def _toTuple(self):
-        
-        return tuple(self.__dict__.values())
-    
-    @staticmethod
-    def _fromTuple(tpl):
-        return Object(dict(tpl))
-
-    def save(self, table):
-        fields=[]
-        for field in self.__dict__:
-            if type(field)!=InstanceType:
-                if self.__dict__[field]=='now()':
-                    self.__dict__[field] = datetime.datetime.now()
-                fields.append(field)
-
-        try:
-            self.__dict__['id']
-            sql=u"UPDATE %s SET %s WHERE id=%d RETURNING id;" % (table, " , ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]), self.__dict__['id'])
-        except Exception, e:
-            #print e
-            sql=u"INSERT INTO %s (%s) VALUES('%s') RETURNING id;" % (table, ",".join([x for x in fields]), ("%s" % "','".join([format_insert(unicode(self.__dict__[x])) for x in fields ])))
-            sql = sql.replace("'None'", 'Null')
-            sql = sql.replace("'Null'", 'Null')
-        return sql
-    
-    def delete(self, table):
-        fields=[]
-        for field in self.__dict__:
-            if type(field)!=InstanceType:
-                # and self.__dict__[field]!=None
-                fields.append(field)
-        
-        sql = u"DELETE FROM %s WHERE %s" % (table, " AND ".join([format_update(x, unicode(self.__dict__[x])) for x in fields ]))
-        
-        return sql
-        
-    def get(self, fields, table):
-        return "SELECT %s FROM %s WHERE id=%d" % (",".join([fields]), table, int(self.id))
-
-    def __call__(self):
-        return self.id
-
-    def hasattr(self, attr):
-        if attr in self.__dict__:
-            return True
-        return False
-
-    def isnull(self, attr):
-        if self.hasattr(attr):
-            if self.__dict__[attr]!=None and self.__dict__[attr]!='Null':
-                return False
-
-        return True
