@@ -426,7 +426,7 @@ class AddNasFrame(QtGui.QDialog):
          
     def refillActions(self):
         if (QtGui.QMessageBox.question(self, u"Внимание?" , u"Перезаписать действия сервера доступа на действия по умолчанию для этого типа серверов доступа?.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-            self.maintabWidget.setCurrentIndex(1)
+            #self.maintabWidget.setCurrentIndex(1)
             nas_type = unicode(self.nas_comboBox.currentText())
 
             for i in xrange(self.tableWidget.rowCount()):
@@ -555,8 +555,8 @@ class AddNasFrame(QtGui.QDialog):
             self.lineEdit_value1.setText(unicode(self.model.speed_value1))
             self.lineEdit_value2.setText(unicode(self.model.speed_value2))
             
-        else:
-            self.buttonBox.setDisabled(True)
+        #else:
+        #    self.buttonBox.setDisabled(True)
 
 
 

@@ -226,7 +226,7 @@ class check_vpn_access(Thread):
                                          nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
                                          nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
         
-                        if   result is True:
+                        if result is True:
                             disconnect_result='ACK'
                         elif result is False:
                             disconnect_result='NACK'

@@ -155,7 +155,7 @@ class TPRulesAdd(QtGui.QDialog):
                 except Exception, e:
                     print e
                     self.connection.rollback()
-                    
+
                 if self.checkBox_bidirectional.isChecked():
                     model.to_tariff_id=from_id
                     model.from_tariff_id = x.id
@@ -164,7 +164,6 @@ class TPRulesAdd(QtGui.QDialog):
                     except Exception, e:
                         print e
                         self.connection.rollback()                
-
         try:
             self.connection.commit()
         except Exception, e:
