@@ -3,13 +3,15 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
 
+#admin.autodiscover()
+
 urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
     #(r'^$','ebscab.billing.views.index'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
-     (r'^admin/', include('django.contrib.admin.urls')),
+    #('^admin/(.*)', admin.site.root),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
 )
