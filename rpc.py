@@ -307,7 +307,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                           nas_password=row['nas_password'], format_string=command)
  
             if action=='create' and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (True, True, row['account_id']))
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, True, row['account_id']))
                 cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
                 
             elif action=='create' and sended==False:
