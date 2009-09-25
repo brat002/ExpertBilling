@@ -2,7 +2,7 @@
 from django import template
 import datetime
 from django.db import connection
-from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News
 register = template.Library()
 
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
@@ -152,6 +152,10 @@ def service_cost(value):
         symm += transaction.summ 
     return symm 
     
-    
-    
+@register.inclusion_tag('accounts/tags/show_last_news.html')    
+def show_last_news(count=5):
+    news = News.objects.exclude(date_to__lt=datetime.datetime.now()).order_by('-date_from')[:5]
+    return {
+            'news':news,
+            }
     
