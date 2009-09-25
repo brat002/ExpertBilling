@@ -1036,3 +1036,9 @@ class AccountAttributesData(models.Model):
     attribute = models.ForeignKey(AccountAttributes)
     value = models.CharField(max_length=1024)
     
+class News(models.Model):
+    title = models.CharField(u'Заголовок новости', max_length=255)
+    body = models.TextField(u'Заголовок новости')
+    date_from = models.DateField(u'Начало публикации', blank=True, null=True, default=datetime.datetime.now())
+    date_to = models.DateField(u'Конец публикации', blank=True, null=True, default=datetime.datetime.now())
+    

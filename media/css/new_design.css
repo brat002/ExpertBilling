@@ -388,3 +388,21 @@ table.statistic_table {
 	padding-top:17px;
 	*padding-top:-10px;
 }
+
+.last_news_caption, .last-news .title {
+	color:#9faec0;
+}
+
+.last-news .title {
+	font-size:12px;
+}
+
+.last-news .date {
+	color:#a4a4a4;
+	font-size:8px;
+}
+
+.last-news .body {
+	font-size:10px;
+	color:\#6a6a6a;
+}
