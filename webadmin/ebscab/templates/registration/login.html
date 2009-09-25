@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load billservice_tags %}
 
 {% block logo_style %}margin-top:9px;{% endblock %}
 
@@ -85,6 +86,9 @@
 	</tr>
 </table>
 </form>
+
+{% show_last_news %}
+
 </div>
 {% endblock %}
 
