@@ -132,34 +132,73 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 log_error_('PoD SSH exception: %s' % repr(e))
                 return False
 
-def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_type, nas_name, nas_login, nas_password, nas_secret='',session_id='', access_type='', format_string='', speed=''):
+def change_speed(dict, account, nas, session_id='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
-
+    """
+    acc.account_id,acc.username,
+    acc.vpn_ip_address,acc.ipn_ip_address,
+    acc.ipn_mac_address
+    nas.ipaddress,
+    nas.type,
+    nas.name,
+    nas.login,
+    nas.password,
+    access_type=access_type,
+    format_string=nas.ipn_speed_action,
+    """
+    
     if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)
-        speed_string = create_speed_string(speed)
+        #speed_string = create_speed_string(speed)
 
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=43, secret=nas_secret, dict=dict)
-        doc.AddAttribute('NAS-IP-Address', nas_ip)
-        doc.AddAttribute('NAS-Identifier', nas_name)
-        doc.AddAttribute('User-Name', account_name)
+        doc = packet.AcctPacket(code=43, secret=nas.secret, dict=dict)
+        doc.AddAttribute('NAS-IP-Address', nas.ipaddress)
+        doc.AddAttribute('NAS-Identifier', nas.identify)
+        doc.AddAttribute('User-Name', account.username)
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
-            doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
+            doc.AddAttribute('Framed-IP-Address', str(account.ipn_ip_address))
         else:
-            doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
-        doc.AddAttribute((14988,8), speed_string)
-            
+            doc.AddAttribute('Framed-IP-Address', str(account.vpn_ip_address))
+        #doc.AddAttribute((14988,8), speed_string)
+        command_dict={
+                             'access_type':access_type,
+                             'username': account.username,
+                             'user_id':account.account_id,
+                             'account_ipn_ip': account.ipn_ip_address,
+                             'account_vpn_ip': account.vpn_ip_address,
+                             'account_mac_address':account.ipn_mac_address,
+                             'session': session_id,
+                             }
+        speed = get_decimals_speeds(speed)
+        #print speed
+        speed = speed_list_to_dict(speed)
+        command_dict.update(speed)
+        
+        if nas.speed_value1:
+            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=speed)
+            if result_params and nas.speed_vendor_1:
+                self.replypacket.AddAttribute((nas.speed_vendor_1,speed_attr_id1),result_params)
+            elif result_params and not nas.speed_vendor_1:
+                self.replypacket.AddAttribute(speed_attr_id1,result_params)
+
+        if nas.speed_value2:
+            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=speed)
+            if result_params and nas.speed_vendor_2:
+                self.replypacket.AddAttribute((nas.speed_vendor_2,speed_attr_id1),result_params)
+            elif result_params and not nas.speed_vendor_2:
+                self.replypacket.AddAttribute(speed_attr_id2,result_params)
+                    
         doc_data=doc.RequestPacket()
-        sock.sendto(doc_data,(nas_ip, 1700))
+        sock.sendto(doc_data,(nas.ipaddress, 1700))
         (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=nas.secret, dict=dict, packet=data)
 
         #for key,value in doc.items():
         #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
@@ -175,11 +214,11 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         log_debug_('SetSpeed Via SSH')
         command_dict={
                              'access_type':access_type,
-                             'username': account_name,
-                             'user_id':account_id,
-                             'account_ipn_ip': account_ipn_ip,
-                             'account_vpn_ip': account_vpn_ip,
-                             'account_mac_address':account_mac_address,
+                             'username': account.username,
+                             'user_id':account.account_id,
+                             'account_ipn_ip': account.ipn_ip_address,
+                             'account_vpn_ip': account.vpn_ip_address,
+                             'account_mac_address':account.ipn_mac_address,
                              'session': session_id,
                              }
         speed = get_decimals_speeds(speed)
@@ -192,10 +231,10 @@ def change_speed(dict, account_id, account_name, account_vpn_ip, account_ipn_ip,
         log_debug_("Change Speedcommand_string= %s" % command_string)
         try:
             if ssh_exec:
-                    sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                    sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
                     log_debug_('Change speed SSH reply: %s' % sshclient)
             else:
-                sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
+                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
                 log_debug_('ssh connected')
                 del sshclient
             return True
@@ -254,7 +293,19 @@ def create_nulls(param):
         return 0
     if param=="None":
         return 0
-
+def get_speed_dict(result):
+    command_dict={'max_limit_rx': result[0],
+                'max_limit_tx': result[1],
+                'burst_limit_rx': result[2],
+                'burst_limit_tx': result[3],
+                'burst_treshold_rx': result[4],
+                'burst_treshold_tx': result[5],
+                'burst_time_rx': result[6],
+                'burst_time_tx': result[7],
+                'priority': result[8],
+                'min_limit_rx': result[9],
+                'min_limit_tx': result[10]}
+    
 def reverse_speed(val):
     v = val.split("/")
     if len(v)==1: return v
@@ -563,14 +614,14 @@ def convert_values(value):
 def get_decimals_speeds(params):
     #print "before", params
     i = 0
+    res = []
     for param in params:
         #values = map(convert_values, str(params[param]).split('/'))
-        values = map(convert_values, str(param).split('/'))
-        #print values
-        params[i] ='/'.join(values)
+        for p in str(param).split('/'):
+            res.append(convert_values(p))
         i += 1
     #print 'after', params
-    return params
+    return res
 
 def formatator(x,y):
     if x!=-1 and y==-1:
@@ -610,7 +661,7 @@ def parse_custom_speed(speed_string):
     return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
 
 def speed_list_to_dict(spList):
-    dkeys = ['max_limit', "burst_limit", 'burst_treshold', 'burst_time', 'priority', 'min_limit']
+    dkeys = ['max_limit_rx', 'max_limit_tx', "burst_limit_rx", "burst_limit_tx", 'burst_treshold_rx', 'burst_treshold_tx', 'burst_time_rx', 'burst_time_tx', 'priority', 'min_limit_rx', 'min_limit_tx']
     return dict(zip(dkeys, spList))
 
 def parse_custom_speed_lst(speed_string):

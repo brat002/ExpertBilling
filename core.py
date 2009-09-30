@@ -209,12 +209,16 @@ class check_vpn_access(Thread):
                             #print newspeed
                             if rs.speed_string != newspeed:
                                 #print "set speed", newspeed
-                                coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
-                                                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
-                                                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
-                                                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
-                                                        speed=speed[:6])                           
+                                #coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
+                                #                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
+                                #                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
+                                #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
+                                #                        speed=speed[:6])                           
         
+                                coa_result = change_speed(vars.DICT, acc, nas,
+                                                    access_type=access_type,
+                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
+                                                    speed=speed[:6])
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
@@ -889,6 +893,7 @@ class addon_service(Thread):
                                 
                         if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
                             #выполняем service_activation_action
+                            cur.connection.commit()
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
@@ -897,13 +902,14 @@ class addon_service(Thread):
                         
                         if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
                             #выполняем service_deactivation_action
+                            cur.connection.commit()
                             sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
                                           acc.vpn_ip_address, acc.ipn_ip_address, 
                                           acc.ipn_mac_address, nas.ipaddress, nas.login, 
                                           nas.password, format_string=service.service_deactivation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
 
-
+                    cur.connection.commit()
                 cur.connection.commit()
                 cur.close()                
                 logger.info("Addon Service: %s: run time: %s", (self.getName(), time.clock() - a))
@@ -1237,13 +1243,11 @@ class ipn_service(Thread):
                         if newspeed != ipnsp.speed or recreate_speed:
                             #отправляем на сервер доступа новые настройки скорости, помечаем state=True
 
-                            sended_speed = change_speed(vars.DICT,acc.account_id,acc.username,
-                                                        acc.vpn_ip_address,acc.ipn_ip_address,
-                                                        acc.ipn_mac_address,nas.ipaddress,
-                                                        nas.type,nas.name,nas.login,nas.password,
+                            sended_speed = change_speed(vars.DICT, acc, nas,
                                                         access_type=access_type,
                                                         format_string=nas.ipn_speed_action,
                                                         speed=speed[:6])
+                            
                             cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
                             cur.connection.commit()
                     except Exception, ex:
