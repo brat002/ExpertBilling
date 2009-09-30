@@ -737,11 +737,18 @@ class RPCServer(Thread, Pyro.core.ObjBase):
     
     @authentconn 
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
-        cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
-        FROM billservice_account AS acc 
-        WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        if tarif_id!=-1000:
+            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            FROM billservice_account AS acc 
+            WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        else:
+            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            FROM billservice_account AS acc 
+            ORDER BY acc.username ASC;""")            
         result = map(Object, cur.fetchall())
         return result
+
+
 
     @authentconn 
     def get_tariffs(self, cur=None, connection=None):

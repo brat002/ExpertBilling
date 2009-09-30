@@ -4032,6 +4032,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
     def delTarif(self):
         tarif_id = self.getTarifId()
+        
         if tarif_id>0 and QtGui.QMessageBox.question(self, u"Удалить тарифный план?" , u"Вы уверены, что хотите удалить тарифный план?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             #print 1
             accounts=self.connection.sql("""SELECT account.id 
@@ -4098,6 +4099,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     
     def addframe(self):
+        if self.getTarifId()==-1000: return
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         self.connection.commit()
         #self.connection.flush()
@@ -4142,6 +4144,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         pass
     
     def delete(self):
+        
         ids = self.get_selected_accounts()
         if not ids:return
         if QtGui.QMessageBox.question(self, u"Удалить аккаунты?" , u"Вы уверены, что хотите удалить пользователей из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
@@ -4172,7 +4175,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
         JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
-        WHERE tarif.id=%s""" % self.getTarifId()).ipn_for_vpn
+        WHERE tarif.id=get_tarif(%s)""" % model.id).ipn_for_vpn
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
@@ -4228,6 +4231,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         tariffs = self.connection.get_tariffs()
         self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -1000
+        item.tarif_type = 'all'
+        item.setText(0, u"Все аккаунты")
+        item.setIcon(0,QtGui.QIcon("images/folder.png"))
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -4238,7 +4246,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setIcon(0, QtGui.QIcon("images/folder_disabled.png"))
-            
+           
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
@@ -4267,13 +4275,28 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print item
         if item:
             id=item.id
+            if id==-1000:
+                self.addAction.setDisabled(True)
+                self.delAction.setDisabled(True)
+                
+            else:
+                self.addAction.setDisabled(False)
+                self.delAction.setDisabled(False)
         else:
             try:
                 id=self.getTarifId()
+                if id==-1000:
+                    self.addAction.setDisabled(True)
+                    self.delAction.setDisabled(True)
+                    
+                else:
+                    self.addAction.setDisabled(False)
+                    self.delAction.setDisabled(False)
             except:
                 return
 
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+        #print accounts
         #print self.getTarifId()
         self.connection.commit()
         #self.connection.commit()

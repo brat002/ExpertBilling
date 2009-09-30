@@ -16,7 +16,7 @@ import Pyro.configuration
 import threading
 import Pyro
 
-from rpc import rpc_protocol, client_networking
+from rpc2 import rpc_protocol, client_networking
 DEFAULT_PORT = 7771
 
 class PrintLogger(object):

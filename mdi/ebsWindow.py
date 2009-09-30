@@ -115,7 +115,7 @@ class ebsTableWindow(QtGui.QMainWindow):
 
         
 
-        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")
+        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)").decode('mbcs')
         if fileName=="":
             return
         settings.setValue("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant(fileName))
@@ -145,8 +145,9 @@ class ebsTableWindow(QtGui.QMainWindow):
             f.close()
             QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
         except Exception, e:
-            print e
+            
             QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
+            raise e
             
     def ebsRetranslateUi(self, initargs):
         pass
@@ -664,6 +665,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         pass
     
     def connectTree(self):
+        
         self.connect(self.treeWidget, QtCore.SIGNAL("itemDoubleClicked (QTreeWidgetItem *,int)"), self.editTarif)
         
         self.connect(self.treeWidget, QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), self.refresh_)

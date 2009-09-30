@@ -489,7 +489,7 @@ def card_acvation(request):
                 connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
 
                 res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
-                print "res=", res
+                #print "res=", res
 
                 if res == 'CARD_NOT_FOUND':
                     error_message = u'Ошибка активации. Карта не найдена.'
@@ -645,23 +645,23 @@ def addon_service(request):
     for uservice in user_services:
         if uservice.service.wyte_period_id:
             delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
-            print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
+            #print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
             if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
                 uservice.wyte = True
-                print 11
+                #print 11
                 uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
             else:
-                print 33
+                #print 33
                 uservice.wyte = False
         elif uservice.service.wyte_cost:
             uservice.wyte = True
         else:
             uservice.wyte = False
-            print 22
+            #print 22
         accountservices.append(uservice)  
         
     user_services_id = [x.service.id for x in accountservices if not x.deactivated]
-    services = services.exclude(service__id__in=user_services_id) 
+    services = services.exclude(service__id__in=user_services_id).order_by("service__name")
     return_dict = {
                    'services':services,
                    'user_services':user_services,
