@@ -252,7 +252,6 @@ class RPCProtocol(object):
     def get_process_data(self, header, body, *args):
         data = body
         self.index = header[:4]
-        print body
         encrypt, compress, serialize, object_ = header[4:8]
         if encrypt != '0':
             data = self.authenticator._decrypt(self.authenticator.sess_crypter, data)
@@ -266,7 +265,7 @@ class RPCProtocol(object):
             if not serializer:
                 raise ProtocolException("NO serializer FOUND: %s" % header)
             data = serializer['loads'](data)
-        print 'loaded data: ', repr(data) 
+        logger.debug("RPC: loaded data: %s", (data,))
         if object_ != '0':
             '''objectifier = self._object.get(object_)
             if not objectifier:
@@ -323,7 +322,7 @@ class RPCProtocol(object):
             n_args = tuple(n_args)
 
         packet = (f_name, args)
-        print repr(packet)
+        #print repr(packet)
         try:
             packet = marshal.dumps(packet)
             serialize = 'M'
@@ -462,7 +461,7 @@ class MD5_Authenticator(Authenticator):
     def client_get_process(self, *args, **kwargs):
         if not self.status:
             raise Exception('empty status')
-        print repr(args)
+        #print repr(args)
         if self.status == 'init':
             header = args[0]
             if header[2] == '1':
@@ -481,7 +480,7 @@ class MD5_Authenticator(Authenticator):
             self.pass_crypter = Blowfish.new(self.password)
             self.session_key = self._decrypt(self.pass_crypter, args[1].split('-sk-')[1])
             self.sess_crypter = Blowfish.new(self.session_key)
-            print self.session_key
+            #print self.session_key
             self.status ='OK'
             return ("OK", True)
         else:
@@ -495,7 +494,7 @@ class MD5_Authenticator(Authenticator):
             return ('send', ''.join((self.code,'10', self.fail_code, '-ch-', self.challenge, '-ch-')))
         elif self.status == 'chr_got':
             self.session_key = self.issue_challenge(KEY_LEN)
-            print self.session_key
+            #print self.session_key
             self.sess_crypter = Blowfish.new(self.session_key)
             self.status = 'OK'
             return ('send', ''.join((self.code,'12', self.fail_code, '-sk-', self._encrypt(self.pass_crypter, self.session_key), '-sk-')))

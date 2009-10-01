@@ -1,6 +1,6 @@
 #-*-coding=utf-8*-
 #global connection
-import sys, traceback
+import sys, traceback, os
 from PyQt4 import QtCore, QtGui
 
 #import socket
@@ -16,8 +16,10 @@ import Pyro.configuration
 import threading
 import Pyro
 
-from rpc2 import rpc_protocol, client_networking
+from yrpc import rpc_protocol, client_networking
+
 DEFAULT_PORT = 7771
+LOG_LEVEL    = 1
 
 class PrintLogger(object):
     def __getattr__(self, name):
@@ -32,7 +34,7 @@ class PrintLogger(object):
 
 #Pyro.config.PYRO_BROKEN_MSGWAITALL = 1
 import isdlogger
-#logger = isdlogger.pyrologger('logging', loglevel=0, ident='mdi', filename='log/mdi_log')
+#
 #Pyro.util.Log = logger
 #Pyro.core.Log = logger
 #Pyro.protocol.Log = logger
@@ -63,11 +65,6 @@ _reportsdict = [['Статистика по группам',[['report3_users.xml
 #разделитель для дат по умолчанию
 dateDelim = "."
 
-
-outQueue = []
-inQueue  = []
-outQLock = threading.Lock()
-inQLock  = threading.Lock()
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -658,9 +655,16 @@ def login():
             global app
             app.processEvents()
             try:
-                logger  = PrintLogger()
+                
+                #logger  = PrintLogger()
+                try:
+                    os.mkdir('log')
+                except:
+                    pass
+                logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
                 rpc_protocol.install_logger(logger)
                 client_networking.install_logger(logger)
+                #print repr(str(child.password))
                 
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                 protocol = rpc_protocol.RPCProtocol(authenticator)
@@ -672,8 +676,9 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                auth_result = connection.authenticate(str(child.name), str('admin'))
-                print auth_result
+                #print child.password
+                auth_result = connection.authenticate(str(child.name), str(child.password))
+                #print auth_result
                 #if not connection.authenticate(str(child.name), str('admin')):
                 if not auth_result:
                     raise Exception('')

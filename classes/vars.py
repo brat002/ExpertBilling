@@ -379,7 +379,7 @@ class CoreVars(Vars):
 
         
 class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock')
+    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock', 'LISTEN_PORT')
     
     def __init__(self):
         super(RpcVars, self).__init__()
@@ -391,6 +391,13 @@ class RpcVars(Vars):
         self.db_connection = None
         self.graph_connection_lock = Lock()
         self.graph_connection = None
+        self.LISTEN_PORT = 7771
+       
+    def get_dynamic(self, **kwargs):
+        super(RpcVars, self).get_dynamic(**kwargs)
+        config = kwargs['config']
+        name = kwargs['name']
+        if config.has_option(name, 'listen_port'): self.LISTEN_PORT = config.getint(name, 'listen_port')
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RpcVars, self).__slots__ + self.__slots__))

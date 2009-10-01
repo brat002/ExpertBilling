@@ -557,7 +557,8 @@ class ConnectDialog(QtGui.QDialog):
 
             self._address = settings.value("ip", QtCore.QVariant("")).toString()
             self._name = settings.value("user", QtCore.QVariant("")).toString()
-            self._password = settings.value("password", QtCore.QVariant("")).toByteArray()
+            #self._password = settings.value("password", QtCore.QVariant("")).toByteArray()
+            self._password = settings.value("password", QtCore.QVariant("")).toString()
             self.address_edit.setText(self._address)
             self.name_edit.setText(self._name)
             self.password_edit.setText("*******")
@@ -590,7 +591,8 @@ class ConnectDialog(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите адрес и имя пользователя"))
                 return
             if (psd == QtGui.QValidator.Acceptable):
-                self.password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                #self.password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                self.password = self.password_edit.text()
             else:
                 if (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
                     self.password = self._password
@@ -600,7 +602,7 @@ class ConnectDialog(QtGui.QDialog):
                         if (model.record(i).value(2).toString() == self.name_edit.text()) and (model.record(i).value(1).toString() == self.address_edit.text()):
                             #print "zomg"
                             #print model.record(i).value(3).toUtf8()
-                            self.password = model.record(i).value(3).toByteArray()
+                            self.password = model.record(i).value(3)
                             break
                     if not self.password:
                         print self.password
@@ -639,7 +641,9 @@ class ConnectDialog(QtGui.QDialog):
                     else:
                         QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной минимум 3 символа и не содержать спецефических символов."))
                         return
-                else: password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                else:
+                    #password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                    password = self.password_edit.text()
             else:
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
                 return
