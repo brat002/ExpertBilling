@@ -93,7 +93,6 @@ class TCP_IntStringReciever(Int32StringReceiver):
         
     def stringReceived(self, packet):
         logger.debug("SERVER: incoming packet: host: %s | peer: %s | %s", (self.transport.getHost(), self.transport.getPeer(), packet[:self.protocol_._HEADER_LEN]))
-        print 'incoming: ', packet
         idx, header, body = self.protocol_._preprocess(packet)
         if idx in self.protocol_._qprocess:
             packet = self.protocol_.get_qprocess(idx, header, body)
@@ -120,7 +119,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
         self.transport.loseConnection()
 
     def write(self, formatted_packet):
-        print 'write packet: ', formatted_packet 
+        logger.debug('RPC Server producer: write packet: %s', formatted_packet)
         self.transport.write(formatted_packet)
 
 
@@ -220,7 +219,7 @@ class DBProcessingThread(Thread):
             print 'inpyt: ', repr(input_packet)
             try:
                 get_processed = self.protocol.get_process(*input_packet)
-                print 'processed', repr(get_processed)
+                logger.debug('RPC processing thread: processed: %s', (get_processed,))
             except Exception, ex:
                 logger.error('PROTOCOL ERROR: %s', repr(ex))
                 self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']

@@ -59,8 +59,8 @@ except:
 from classes.vars import RpcVars
 from constants import rules
 
-from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
-from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
+from yrpc.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
+from yrpc.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 NAME = 'rpc'
@@ -1040,7 +1040,7 @@ def main():
     fact = RPCFactory(TCP_IntStringReciever, get_producer)
     #fact.protocol = TCP_LineReciever
     #fact.protocol = TCP_IntStringReciever
-    p = reactor.listenTCP(DEFAULT_PORT, fact)
+    p = reactor.listenTCP(vars.LISTEN_PORT, fact)
     logger.info("Listening on: %s", p.getHost())
 
     
@@ -1066,7 +1066,7 @@ if __name__ == "__main__":
         vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
         vars.graph_connection.connect()
         vars.graph_connection.connection.set_isolation_level(0)
-        logger = isdlogger.pyrologger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         serv_install_logger(logger)
