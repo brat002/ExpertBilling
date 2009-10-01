@@ -2286,3 +2286,8 @@ ALTER TABLE nas_nas
 ALTER TABLE nas_nas
    ALTER COLUMN speed_value2 SET DEFAULT '';
 
+-- 23.09.09 10:00
+
+ALTER TABLE billservice_systemuser ADD COLUMN text_password character varying(255);
+ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET STORAGE EXTENDED;
+ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET DEFAULT ''::character varying;
