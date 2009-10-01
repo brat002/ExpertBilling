@@ -216,7 +216,7 @@ class check_vpn_access(Thread):
                                 #                        speed=speed[:6])                           
         
                                 coa_result = change_speed(vars.DICT, acc, nas,
-                                                    access_type=access_type,
+                                                    access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
                                                     speed=speed[:6])
                                 if coa_result==True:
