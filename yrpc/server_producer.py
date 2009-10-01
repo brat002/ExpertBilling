@@ -187,16 +187,16 @@ class DBProcessingThread(Thread):
             kwargs = {}
         kwargs['connection'] = self.connection
         kwargs['cur'] = self.connection
-        print repr(args), repr(kwargs)
+        #print repr(args), repr(kwargs)
         try:
             result = method(*args, **kwargs)
             '''
             if not isinstance(result, tuple):
                 result = (result,)'''
         except Exception, ex:
-            print repr(ex)
-            print traceback.format_exc()
-            logger.error('Execution exception: %s', repr(ex))
+            #print repr(ex)
+            #print traceback.format_exc()
+            logger.error('Execution exception: %s, %s', (repr(ex), traceback.format_exc()))
             self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
             return (fn_name, (Exception('Execution exception'),))
         else:
@@ -216,7 +216,7 @@ class DBProcessingThread(Thread):
             if not input_packet: 
                 time.sleep(1)
                 continue
-            print 'inpyt: ', repr(input_packet)
+            #print 'inpyt: ', repr(input_packet)
             try:
                 get_processed = self.protocol.get_process(*input_packet)
                 logger.debug('RPC processing thread: processed: %s', (get_processed,))
