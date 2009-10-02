@@ -646,11 +646,11 @@ def login():
             app.processEvents()
             try:
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-                password = unicode(child.password.toHex())
+                password = unicode(QtCore.QCryptographicHash.hash(child.password.toUtf8(), QtCore.QCryptographicHash.Md5).toHex())
                 connection._setNewConnectionValidator(antiMungeValidator())
                 username = str(child.name)
                 server_ip = unicode(child.address)
-                connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
+                connection._setIdentification("%s:%s:0" % (str(child.name), str(password)))
                 connection.test()
                 #waitchild.hide()
                 return connection

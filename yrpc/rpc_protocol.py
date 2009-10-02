@@ -167,6 +167,7 @@ class BasicClientConnection(object):
             if kwargs:
                 kwargs['kwargs'] = ''
                 args = args + (kwargs,)
+            logger.debug('RPC: basic client args: %s', (args,))
             packet = self.protocol.send_process(idx, *args)
         if packet[0] == 'send':
             return self.consumer.write(packet[1])
@@ -253,19 +254,26 @@ class RPCProtocol(object):
         data = body
         self.index = header[:4]
         encrypt, compress, serialize, object_ = header[4:8]
+        process_time = time.clock()
         if encrypt != '0':
             data = self.authenticator._decrypt(self.authenticator.sess_crypter, data)
+        logger.debug('RPC: get_process_data: encrypt time: %s', time.clock() - process_time)
+        process_time = time.clock()
         if compress != '0':
             compressor = self._compression.get(compress)
             if not compressor:
                 raise ProtocolException("NO COMPRESSOR FOUND: %s" % header)
             data = compressor['decompress'](data)
+        logger.debug('RPC: get_process_data: compress time: %s', time.clock() - process_time)
+        process_time = time.clock()
         if serialize != '0':
             serializer = self._serializer.get(serialize)
             if not serializer:
                 raise ProtocolException("NO serializer FOUND: %s" % header)
             data = serializer['loads'](data)
         logger.debug("RPC: loaded data: %s", (data,))
+        logger.debug('RPC: get_process_data: serialize time: %s', time.clock() - process_time)
+        process_time = time.clock()
         if object_ != '0':
             '''objectifier = self._object.get(object_)
             if not objectifier:
@@ -282,6 +290,7 @@ class RPCProtocol(object):
             data = (data[0], tuple(n_data))
             #data[1] = ((objectifier['detuplify'](data[1][0][0]) + data[1][0][1:]), data[1][1])
             #data = (data[0], (objectifier['detuplify'](data[1][0]),) + data[1][1:])
+        logger.debug('RPC: get_process_data: objectify time: %s', time.clock() - process_time)
         return data
     
     def send_process(self, idx, f_name, *args):
@@ -309,6 +318,7 @@ class RPCProtocol(object):
         #data = (args, kwargs)
         encrypt, compress, serialize, object_ = '0000'
         self._OBJECT_FLAG = False
+        process_time = time.clock()
         if args:
             n_args = []
             for elt in args:
@@ -320,21 +330,33 @@ class RPCProtocol(object):
                     elt = self.deobjectifier_fn(elt)
                 n_args.append(elt)
             n_args = tuple(n_args)
-
+           
         packet = (f_name, args)
         #print repr(packet)
+        logger.debug('RPC: send_process_data: objectify time: %s', time.clock() - process_time)
+        process_time = time.clock()
         try:
             packet = marshal.dumps(packet)
             serialize = 'M'
         except Exception, ex:
             packet = cPickle.dumps(packet, cPickle.HIGHEST_PROTOCOL)
             serialize = 'P'
+        '''
+        packet = cPickle.dumps(packet, cPickle.HIGHEST_PROTOCOL)
+        serialize = 'P'
+        '''
+        logger.debug('RPC: send_process_data: serialize time: %s', time.clock() - process_time)
+        process_time = time.clock()
         if self._compress:
             packet = self._compression[self._compress]['compress'](packet)
             compress = self._compress
+        logger.debug('RPC: send_process_data: compress time: %s', time.clock() - process_time)
+        process_time = time.clock()
         if self._encrypt:
             packet = self.authenticator._encrypt(self.authenticator.sess_crypter, packet)
             encrypt = 'E'
+        logger.debug('RPC: send_process_data: encrypt time: %s', time.clock() - process_time)
+        process_time = time.clock()
         index = str(int(self.index) + 1)
         if len(index) > self._INDEX_LENGTH:
             index = '0000'
@@ -344,6 +366,7 @@ class RPCProtocol(object):
         self._STATUS_CODE = '00'
         self._FAIL_CODE   = '00'
         length__ = struct.pack(self.structFormat, self._HEADER_LEN + len(packet))
+        logger.debug('RPC: send_process_data: pack time: %s', time.clock() - process_time)
         return ('send', ''.join((length__, header, packet))) 
     
     def log_packet(self, packet):
