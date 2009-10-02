@@ -28,6 +28,7 @@ class BlockingTcpClient(object):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(20)
         try:
             self.socket.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
         except:

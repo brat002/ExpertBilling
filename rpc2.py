@@ -188,15 +188,20 @@ class RPCServer(object):
                           nas_password=row['nas_password'], format_string=command)
  
             if action=='create' and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (True, True, row['account_id']))
+                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, True, row['account_id']))
+                cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
                 
             elif action=='create' and sended==False:
                 cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+                cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
             
             if action =='delete'  and sended==True:
                 cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+                cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
+                
             elif action =='delete'  and sended==False:
                 cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
+                cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
 
             if action=='disable' and sended==True:
                 cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, row['account_id'],))
@@ -600,9 +605,14 @@ class RPCServer(object):
     
      
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
-        cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
-        FROM billservice_account AS acc 
-        WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        if tarif_id!=-1000:
+            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            FROM billservice_account AS acc 
+            WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+        else:
+            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            FROM billservice_account AS acc 
+            ORDER BY acc.username ASC;""")            
         result = map(Object, cur.fetchall())
         return result
 

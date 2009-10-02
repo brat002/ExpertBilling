@@ -1152,7 +1152,7 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     #main thread should not exit!
-    #print "ebs: rpc: started"
+    print "ebs: rpc: started"
     savepid(vars.piddir, vars.name)
     while True:
         time.sleep(300)
