@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from twisted.protocols.basic import implements, interfaces, defer, Int32StringReceiver
 from twisted.internet.protocol import Factory
 from collections import deque
@@ -78,7 +78,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
     send_queue = None
     send_lock  = None
     producer_started = False
-    
+    SINGLE_USER = True
     def __init__(self, build_producer):
         #super(TCPSender, self).__init__()
         self.build_producer = build_producer
@@ -101,15 +101,37 @@ class TCP_IntStringReciever(Int32StringReceiver):
                 if s_packet[0] == 'send':
                     self.write(s_packet[1])
             if self.protocol_._check_status():
-                self.producer.start()
+                if not self.SINGLE_USER:
+                    self.producer.start()
                 self.producer_started = True
                 self.producer.registerConsumer_(self)
         else:
             if not self.producer_started:
                 self.transport.loseConnection()
                 return
+            '''
             with self.send_lock:
                 self.send_queue.append((idx, header, body, packet))
+            '''
+            if not self.SINGLE_USER:
+                if self.producer.EVENT.isSet():
+                    if self.producer.PAUSED:
+                        time.sleep(2)
+                        self.producer.resumeProducing()
+                        with self.producer.MAILBOX_LOCK:
+                            self.producer.MAILBOX = (idx, header, body, packet)
+                            self.producer.EVENT.set()
+                    else:
+                        time.sleep(0.5)
+                        with self.producer.MAILBOX_LOCK:
+                            self.producer.MAILBOX = (idx, header, body, packet)
+                            self.producer.EVENT.set()
+                self.producer.MAILBOX = (idx, header, body, packet)
+                self.producer.EVENT.set()
+            else:
+                self.producer.MAILBOX = (idx, header, body, packet)
+                self.producer.dummy_run()
+                    
         
     def registerProducer(self, producer, streaming):
         return self.transport.registerProducer(producer, streaming)
@@ -131,7 +153,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
 
     def stopProducing(self):
         self.transport.stopProducing()
-
+        
     
             
             
@@ -155,6 +177,9 @@ class DBProcessingThread(Thread):
         self.connection = db_conn
         self.RPC = RPC
         self.RUNNING = True
+        self.MAILBOX = None
+        self.MAILBOX_LOCK = Lock()
+        self.EVENT = Event()
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -162,6 +187,7 @@ class DBProcessingThread(Thread):
         self.resumeProducing()
         
     def pauseProducing(self):
+        pass
         self.PAUSED = True
 
     def stopProducing(self):
@@ -202,11 +228,10 @@ class DBProcessingThread(Thread):
         else:
             return (fn_name, result)
         
-    def run(self):
-        while self.RUNNING:
-            if self.suicideCondition: break
-            if self.PAUSED:
-                time.sleep(0.1); continue
+    def dummy_run(self):
+            input_packet = self.MAILBOX
+            self.MAILBOX = None
+            '''
             input_packet = False
             packet_status = 0
             if len(self.send_queue) > 0:
@@ -215,7 +240,51 @@ class DBProcessingThread(Thread):
                         input_packet = self.send_queue.popleft()
             if not input_packet: 
                 time.sleep(0.06)
-                continue
+                continue'''
+            #print 'inpyt: ', repr(input_packet)
+            total_time = time.clock()
+            try:
+                processed_time = time.clock()
+                get_processed = self.protocol.get_process(*input_packet)
+                logger.debug('RPC processing thread: get processing: time: %s processed: %s', (time.clock() - processed_time, get_processed,))
+            except Exception, ex:
+                logger.error('PROTOCOL ERROR: %s', repr(ex))
+                self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
+                rpc_processed = (input_packet[0], 'error', (Exception('Protocol error'),))
+            else:
+                processed_time = time.clock()
+                rpc_processed = (input_packet[0],) + self.process(*get_processed)
+                logger.debug('RPC processing thread: prc processed time: %s', time.clock() - processed_time)
+            processed_time = time.clock()
+            snd_processed = self.protocol.send_process(*rpc_processed)
+            logger.debug('RPC processing thread: snd processed time: %s', time.clock() - processed_time)
+            self.consumer.write(snd_processed[1])
+            logger.debug('RPC processing thread: total processed time: %s', time.clock() - total_time)
+        
+    def run(self):
+        ta1 = time.clock()
+        while self.RUNNING:
+            self.EVENT.wait()
+            if self.suicideCondition: break
+            if self.PAUSED:
+                time.sleep(0.1); continue
+            input_packet = self.MAILBOX
+            with self.MAILBOX_LOCK:
+                self.MAILBOX = None
+                self.EVENT.clear()
+                
+            print time.clock() - ta1
+            ta1 = time.clock()
+            '''
+            input_packet = False
+            packet_status = 0
+            if len(self.send_queue) > 0:
+                with self.send_lock:
+                    if len(self.send_queue) > 0:
+                        input_packet = self.send_queue.popleft()
+            if not input_packet: 
+                time.sleep(0.06)
+                continue'''
             #print 'inpyt: ', repr(input_packet)
             total_time = time.clock()
             try:

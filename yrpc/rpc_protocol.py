@@ -178,10 +178,6 @@ class BasicClientConnection(object):
             
     def process_outer(self, idx, *args):
         self.process_send(idx, *args)
-        while True:
-            if self.mailbox:
-                break
-            time.sleep(0.1)
         return self.mailbox
     
     def __getattr__(self, *args, **kwargs):
