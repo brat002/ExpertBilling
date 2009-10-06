@@ -1020,7 +1020,7 @@ def get_producer(addr):
     protocol = RPCProtocol(authenticator)
     db_conn = PersistentDBConnection(psycopg2, vars.db_dsn, cursor_factory = psycopg2.extras.RealDictCursor)
     rpc_ = RPCServer()
-    producer = DBProcessingThread(protocol, db_conn, rpc_)
+    producer = DBProcessingThread(protocol, db_conn, rpc_, reactor)
     return producer
 
 def main():

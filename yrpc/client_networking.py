@@ -28,7 +28,7 @@ class BlockingTcpClient(object):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(20)
+        self.socket.settimeout(60)
         try:
             self.socket.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
         except:
@@ -80,6 +80,7 @@ class BlockingTcpClient(object):
 
         read_buffer = ''
         while True:
+            tr1 = time.clock()
             recd = ''
             try:
                 recd = self.socket.recv(self.readBytes)
@@ -98,6 +99,7 @@ class BlockingTcpClient(object):
                 if not self.needed_length:
                     self.needed_length,= struct.unpack(
                         self.structFormat, self.recvd[:self.prefixLength])
+                logger.debug('CLIENT: needed length: %s', self.needed_length)
                 if len(self.recvd) > self.MAX_LENGTH:
                     logger.error('LINE LENGTH %s > MAX_LENGTH: %s', (len(self.recvd), self.MAX_LENGTH))
                     return
@@ -106,6 +108,7 @@ class BlockingTcpClient(object):
                 packet = self.recvd[self.prefixLength:self.needed_length + self.prefixLength]
                 self.recvd = self.recvd[self.needed_length + self.prefixLength:]
                 self.needed_length = 0
+                logger.debug('CLIENT: read time: %s', time.clock() - tr1)
                 return packet
 
 
