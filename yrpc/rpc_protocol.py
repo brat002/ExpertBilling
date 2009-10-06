@@ -509,6 +509,8 @@ class MD5_Authenticator(Authenticator):
             
     
     def server_send_process(self, *args, **kwargs):
+        if self.fail_code != '00':
+            self.reset()
         if self.status == 'user_ok':
             self.challenge = self.issue_challenge(CHALLENGE_LEN)
             self.status = 'ch_sent'
@@ -534,7 +536,7 @@ class MD5_Authenticator(Authenticator):
             except Exception, ex:
                 logger.error("AUTH SGP login exception: %s ; %s", (args, repr(ex)))
                 self.fail_code = '01'
-                raise ex
+                #raise ex
             self.password = str(login_status[0][1])
             self.pass_crypter = Blowfish.new(self.password)
             self.status = 'user_ok'
@@ -545,13 +547,16 @@ class MD5_Authenticator(Authenticator):
             ch_status = md5(self.password + self.challenge).digest() == args[1].split('-cr-')[1]
             if not ch_status:
                 self.fail_code = '02'
-                raise Exception("Challenge check failed!")
+                logger.error("AUTH SGP Challenge check failed!: %s", (args,))
+                #raise Exception("Challenge check failed!")
             self.status = 'chr_got'
             #sess_key = self.issue_challenge(KEY_LEN)
             #self.sess_crypter = Blowfish.new(sess_key)
             return ('to_send',)
         else:
-            raise Exception("Wrong AUTH get status: %s" % self.status)
+            self.fail_code = '03'
+            logger.error("AUTH SGP: Wrong AUTH get status %s:  %s", (self.status, args,))
+            #raise Exception("Wrong AUTH get status: %s" % self.status)
             
                 
                 
