@@ -375,7 +375,9 @@ class RPCProtocol(object):
     def process(self):
         pass
     
-    
+    def reset(self):
+        self.authenticator.reset()
+        
 class Authenticator(object):
     _state = {}
     
@@ -519,6 +521,8 @@ class MD5_Authenticator(Authenticator):
             return ('send', ''.join((self.code,'12', self.fail_code, '-sk-', self._encrypt(self.pass_crypter, self.session_key), '-sk-')))
     
     def server_get_process(self, *args, **kwargs):
+        if args[1][4:8] == '9000':
+            self.reset()
         if not self.status:
             try:
                 self.login = args[1].split('-ln-')[1]

@@ -65,6 +65,10 @@ class PersistentDBConnection(object):
         
     def cursor(self):
         return self.connection.cursor()
+       
+    def close_(self):
+        self.connected = False
+        self.connection.close()
         
     def close(self):
         pass
@@ -78,7 +82,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
     send_queue = None
     send_lock  = None
     producer_started = False
-    SINGLE_USER = True
+    SINGLE_USER = False
     def __init__(self, build_producer):
         #super(TCPSender, self).__init__()
         self.build_producer = build_producer
@@ -90,6 +94,15 @@ class TCP_IntStringReciever(Int32StringReceiver):
         self.protocol_ = self.producer.protocol
         self.send_queue = self.producer.send_queue
         self.send_lock = self.producer.send_lock
+        self.SINGLE_USER = self.producer.SINGLE_THREADED
+        
+    def connectionLost(self, reason):
+        logger.warning("SERVER: connection was lost: %s, reason: %s", (self.peer__, reason))
+        self.producer.suicideCondition = True
+        if self.SINGLE_USER:
+            self.producer.dummy_run()
+        else:
+            self.producer.EVENT.set()
         
     def stringReceived(self, packet):
         logger.debug("SERVER: incoming packet: host: %s | peer: %s | %s", (self.transport.getHost(), self.transport.getPeer(), packet[:self.protocol_._HEADER_LEN]))
@@ -164,7 +177,7 @@ class DBProcessingThread(Thread):
     '''when too long self.transport.unregisterProducer()
         self.transport.loseConnection()'''
     
-    def __init__(self, protocol, db_conn, RPC):
+    def __init__(self, protocol, db_conn, RPC, reactor_ = None, single_threaded = False):
         self.tname = self.__class__.__name__
         Thread.__init__(self)
         
@@ -180,6 +193,8 @@ class DBProcessingThread(Thread):
         self.MAILBOX = None
         self.MAILBOX_LOCK = Lock()
         self.EVENT = Event()
+        self.reactor_ = reactor_
+        self.SINGLE_THREADED = single_threaded
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -187,7 +202,6 @@ class DBProcessingThread(Thread):
         self.resumeProducing()
         
     def pauseProducing(self):
-        pass
         self.PAUSED = True
 
     def stopProducing(self):
@@ -224,24 +238,13 @@ class DBProcessingThread(Thread):
             #print traceback.format_exc()
             logger.error('Execution exception: %s, %s', (repr(ex), traceback.format_exc()))
             self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
-            return (fn_name, (Exception('Execution exception'),))
+            return (fn_name, (Exception('Execution exception: %s' % ex) ,))
         else:
             return (fn_name, result)
         
     def dummy_run(self):
             input_packet = self.MAILBOX
             self.MAILBOX = None
-            '''
-            input_packet = False
-            packet_status = 0
-            if len(self.send_queue) > 0:
-                with self.send_lock:
-                    if len(self.send_queue) > 0:
-                        input_packet = self.send_queue.popleft()
-            if not input_packet: 
-                time.sleep(0.06)
-                continue'''
-            #print 'inpyt: ', repr(input_packet)
             total_time = time.clock()
             try:
                 processed_time = time.clock()
@@ -265,7 +268,12 @@ class DBProcessingThread(Thread):
         ta1 = time.clock()
         while self.RUNNING:
             self.EVENT.wait()
-            if self.suicideCondition: break
+            if self.suicideCondition:
+                try:
+                    self.connection.close()
+                except:
+                    pass
+                break
             if self.PAUSED:
                 time.sleep(0.1); continue
             input_packet = self.MAILBOX
@@ -273,7 +281,7 @@ class DBProcessingThread(Thread):
                 self.MAILBOX = None
                 self.EVENT.clear()
                 
-            print time.clock() - ta1
+            logger.debug('RPC: packet processing time: %s', time.clock() - ta1)
             ta1 = time.clock()
             '''
             input_packet = False
@@ -302,7 +310,10 @@ class DBProcessingThread(Thread):
             processed_time = time.clock()
             snd_processed = self.protocol.send_process(*rpc_processed)
             logger.debug('RPC processing thread: snd processed time: %s', time.clock() - processed_time)
-            self.consumer.write(snd_processed[1])
+            if self.reactor_:
+                self.reactor_.callFromThread(self.consumer.write,snd_processed[1])                
+            else:
+                self.consumer.write(snd_processed[1])
             logger.debug('RPC processing thread: total processed time: %s', time.clock() - total_time)
             #print len(send_packet)
           
