@@ -665,8 +665,8 @@ class AddonServiceEbs(ebsTableWindow):
 
     def delete(self):
         id=self.getSelectedId()
-        if (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Внимание! Во избежание удаления пользовательских аккаунтов, удостоверьтесь, что пользователи не используют IP адреса из этого пула.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-            self.connection.iddelete(id, 'billservice_ippool')
+        if (QtGui.QMessageBox.question(self, u"Удалить подключаемую услугу?" , u'''Удалить подключаемую услугу?.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
+            self.connection.iddelete(id, 'billservice_addonservice')
             self.connection.commit()
             self.refresh()
     
