@@ -3031,7 +3031,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_suspended = tableFormat(self.tableWidget_suspended)
         makeHeaders(columns, self.tableWidget_suspended)
         
-        columns=[u'#', u'Тарифный план', u'Дата']
+        columns=[u'#', u'Тарифный план', u'Дата', u'Расчётный период закрыт']
         self.tableWidget_accounttarif = tableFormat(self.tableWidget_accounttarif)
         makeHeaders(columns, self.tableWidget_accounttarif)
 
@@ -3703,9 +3703,11 @@ class AccountWindow(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_accounttarif, a.id, i,0)
                 self.addrow(self.tableWidget_accounttarif, a.tarif_name, i,1)
                 self.addrow(self.tableWidget_accounttarif, a.datetime.strftime(strftimeFormat), i,2)
+                self.addrow(self.tableWidget_accounttarif, u"Да" if a.periodical_billed else u"Нет", i,3)
                 i+=1
 
             self.tableWidget_accounttarif.setColumnHidden(0, True)
+            self.tableWidget_accounttarif.resizeColumnsToContents()
             self.connection.commit()
     
     def editAccountInfo(self, item):
@@ -4294,7 +4296,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     self.delAction.setDisabled(False)
             except:
                 return
-
+        
+        if id==-1000:
+            columns=[u'#', u'Имя пользователя', u'Тарифный план', u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания"]
+            makeHeaders(columns, self.tableWidget)
+        else:
+            columns=[u'#', u'Имя пользователя',  u'Баланс', u'Кредит', u'Имя', u'E-mail', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания"]
+            makeHeaders(columns, self.tableWidget)
+            
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
         #print accounts
         #print self.getTarifId()
@@ -4311,21 +4320,39 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         for a in accounts:            
             self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
-            #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
-            self.addrow("%.02f" % float(a.ballance), i,2, color="red", enabled=a.status)
-            self.addrow(float(a.credit), i,3, enabled=a.status)
-            self.addrow(a.fullname, i,4, enabled=a.status)
-            self.addrow(a.email, i,5, enabled=a.status)
-            self.addrow(a.nas_name,i,6, enabled=a.status)
-            self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
-            self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
-            self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
-            #self.addrow(a.suspended, i,10, enabled=a.status)
-            #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-            self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
-            #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-            self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
-            #self.addrow(a.created, i,11, enabled=a.status)
+            if id==-1000:
+                self.addrow(a.tarif_name, i,2, enabled=a.status)
+                self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
+                self.addrow(float(a.credit), i,4, enabled=a.status)
+                self.addrow(a.fullname, i,5, enabled=a.status)
+                self.addrow(a.email, i,6, enabled=a.status)
+                self.addrow(a.nas_name,i,7, enabled=a.status)
+                self.addrow(a.vpn_ip_address, i,8, enabled=a.status)
+                self.addrow(a.ipn_ip_address, i,9, enabled=a.status)
+                self.addrow(a.ipn_mac_address, i,10, enabled=a.status)
+                #self.addrow(a.suspended, i,10, enabled=a.status)
+                #self.addrow(a.balance_blocked, i,11, enabled=a.status)
+                self.tableWidget.setCellWidget(i,11,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,12, enabled=a.status)
+                #self.addrow(a.created, i,11, enabled=a.status)
+            else:
+                #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
+                self.addrow("%.02f" % float(a.ballance), i,2, color="red", enabled=a.status)
+                self.addrow(float(a.credit), i,3, enabled=a.status)
+                self.addrow(a.fullname, i,4, enabled=a.status)
+                self.addrow(a.email, i,5, enabled=a.status)
+                self.addrow(a.nas_name,i,6, enabled=a.status)
+                self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
+                self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
+                self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
+                #self.addrow(a.suspended, i,10, enabled=a.status)
+                #self.addrow(a.balance_blocked, i,11, enabled=a.status)
+                self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
+                #self.addrow(a.created, i,11, enabled=a.status)
+                
             m_ballance += float(a.ballance)
             #self.tableWidget.setRowHeight(i, 17)
             

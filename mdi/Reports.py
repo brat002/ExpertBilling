@@ -189,7 +189,7 @@ class TransactionsReportEbs(ebsTableWindow):
             self.comboBox_transactions_type.addItem(tr_type)
             self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
             i+=1
-    def addrow(self, value, x, y, id=None, promise=False):
+    def addrow(self, value, x, y, id=None, promise=False, date = None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=""
@@ -201,6 +201,7 @@ class TransactionsReportEbs(ebsTableWindow):
         headerItem.setText(unicode(value))
         if id:
             headerItem.id = id
+            headerItem.date = date
         self.tableWidget.setItem(x,y,headerItem)
              
     def setTableColumns(self):
@@ -243,7 +244,7 @@ class TransactionsReportEbs(ebsTableWindow):
             i=0
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id=item.id, promise = item.promise)
+                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
                 self.addrow(item.username, i, 1, promise = item.promise)
                 self.addrow(item.created.strftime(self.strftimeFormat), i, 2, promise = item.promise)
                 self.addrow(item.bill, i, 3, promise = item.promise)
@@ -289,7 +290,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
                 self.addrow(t.get(item.tarif_id), i, 2)
                 self.addrow(s.get(item.service_id), i, 3)
@@ -330,7 +331,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
                 self.addrow(t.get(item.tarif_id), i, 2)
                 self.addrow(s.get(item.onetimeservice_id), i, 3)
@@ -365,7 +366,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
                 self.addrow(t.get(item.tarif_id), i, 2)
                 self.addrow(item.summ, i, 3)
@@ -400,7 +401,7 @@ class TransactionsReportEbs(ebsTableWindow):
             i=0
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
                 self.addrow(t.get(item.tarif_id), i, 2)
                 self.addrow(item.session, i, 3)
@@ -410,7 +411,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 sum +=item.summ
             self.addrow(u"Итого", i, 3)
             self.addrow(sum, i, 4)                                 
-        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(0, False)
         
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
             #print 111
@@ -438,7 +439,7 @@ class TransactionsReportEbs(ebsTableWindow):
             sum = 0
             ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
             for item in items:
-                self.addrow(i, i, 0, id = item.id)
+                self.addrow(i, i, 0, id = item.id, date = item.created)
                 self.addrow(item.username, i, 1)
                 self.addrow(item.service_name, i, 2)
                 self.addrow(t[item.type_id], i, 3)
@@ -448,7 +449,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 sum +=item.summ
             self.addrow(u"Итого", i, 3)
             self.addrow(sum, i, 4)                                 
-        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(0, False)
         
                 
         try:
@@ -459,26 +460,42 @@ class TransactionsReportEbs(ebsTableWindow):
             print "Transactions settings save error: ", ex
         #self.tableWidget.setSortingEnabled(True)
         
-    def delete_transaction(self):
-        
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]!="billservice_transaction":
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Удаление проводок не доступно для данного типа данных."))
-            return
+
+    def get_selected_ids(self):
         ids = []
-        #import Pyro
-        for index in self.tableWidget.selectedIndexes():
-            #print index.row(), index.column()
-            if index.column()>1:
-                continue
-            
-            i=unicode(self.tableWidget.item(index.row(), 0).id)
-            try:
-                ids.append(int(i))
-            except Exception, e:
-                print "can not convert transaction id to int"      
+        for r in self.tableWidget.selectedItems():
+            print r.column()
+            if r.column()==0:
+                ids.append((r.id, r.date))
+        return ids
+    
+    def delete_transaction(self):
+        ids = self.get_selected_ids()
+        #print ids
         
-        self.connection.transaction_delete(ids)     
-            
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
+            for id,date in ids:
+                self.connection.transaction_delete(id)      
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
+            for id,date in ids:
+                self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.commit()
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
+            for id,date in ids:
+                self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.commit()
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
+            for id,date in ids:
+                self.connection.command("DELETE FROM billservice_addonservicetransaction WHERE id=%s and created='%s'" % (id, date,))
+                self.connection.commit()
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
+            for id,date in ids:
+                self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.commit()
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
+            for id,date in ids:
+                self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.commit()            
         self.refresh_table()
      
 class TransactionsReport(QtGui.QMainWindow):

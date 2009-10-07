@@ -558,8 +558,8 @@ class AddDealerFrame(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_not_activated, d.series, i,1)
                 self.addrow(self.tableWidget_not_activated, get_type(d.nas_id, d.tarif_id), i,2)
                 try:
-                    self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id), i,3)
-                    self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id), i,4)
+                    self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id) if t.get("%s" % d.tarif_id) else "", i,3)
+                    self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id) if n.get("%s" % d.nas_id) else "", i,4)
                 except:
                     pass
                 
@@ -584,8 +584,8 @@ class AddDealerFrame(QtGui.QMainWindow):
                     self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id), i,3)
                 if d.tarif_id and d.nas_id:
                     self.addrow(self.tableWidget_activated, u"Карта доступа", i,2)
-                    self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id), i,3)
-                    self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id), i,4)
+                    self.addrow(self.tableWidget_not_activated, t.get("%s" % d.tarif_id) if t.get("%s" % d.tarif_id) else "", i,3)
+                    self.addrow(self.tableWidget_not_activated, n.get("%s" % d.nas_id) if n.get("%s" % d.nas_id) else "", i,4)
                 if not d.tarif_id and not d.nas_id:
                     self.addrow(self.tableWidget_activated, u"Карта предоплаты", i,2)
                 
