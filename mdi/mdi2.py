@@ -647,7 +647,8 @@ def login():
             #waitchild.show()
             global splash, username, server_ip
             pixmap = QtGui.QPixmap("splash.png")
-            splash = QtGui.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
+            #splash = QtGui.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
+            splash = QtGui.QSplashScreen(pixmap)
             splash.setMask(pixmap.mask()) # this is usefull if the splashscreen is not a regular ractangle...
             splash.show()
             splash.showMessage(u'Starting...', QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom,QtCore.Qt.yellow)
@@ -669,6 +670,7 @@ def login():
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                 protocol = rpc_protocol.RPCProtocol(authenticator)
                 connection = rpc_protocol.BasicClientConnection(protocol)
+                connection.notifier = lambda x: QtGui.QMessageBox.warning(None, unicode(u"Exception"), unicode(x))
                 if ':' in child.address:
                     host, port = str(child.address).split(':')
                 else:
@@ -680,8 +682,8 @@ def login():
                 auth_result = connection.authenticate(str(child.name), str(child.password))
                 #print auth_result
                 #if not connection.authenticate(str(child.name), str('admin')):
-                if not auth_result:
-                    raise Exception('')
+                if not auth_result or not connection.protocol._check_status():
+                    raise Exception('Status = False!')
                 #connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 #password = unicode(child.password.toHex())
                 #connection._setNewConnectionValidator(antiMungeValidator())
@@ -695,7 +697,7 @@ def login():
             except Exception, e:
                 print repr(e), traceback.format_exc()
                 #print "login connection error"
-                splash.hide()
+                #splash.hide()
                 if not isinstance(e, client_networking.TCPException):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
