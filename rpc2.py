@@ -240,8 +240,7 @@ class RPCServer(object):
         result=[]
         r=cur.fetchall()
         if len(r)>1:
-            raise Exception
-
+            raise Exception('Query returned more than 1 result!')
         if r==[]:
             return None
         return Object(r[0])

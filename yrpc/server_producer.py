@@ -217,7 +217,7 @@ class DBProcessingThread(Thread):
         if not callable(method):
             logger.error('METHOD %s IS NOT CALLABLE', fn_name)
             self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
-            return(fn_name, (Exception('Method not found')))
+            return(fn_name, Exception('Method not found: %s' % fn_name))
         
         if len(args) > 0 and isinstance(args[-1], dict) and args[-1].has_key('kwargs'):
             kwargs = args[-1]
@@ -238,7 +238,7 @@ class DBProcessingThread(Thread):
             #print traceback.format_exc()
             logger.error('Execution exception: %s, %s', (repr(ex), traceback.format_exc()))
             self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
-            return (fn_name, (Exception('Execution exception: %s' % ex) ,))
+            return (fn_name, Exception('Execution exception: %s' % str(ex)))
         else:
             return (fn_name, result)
         

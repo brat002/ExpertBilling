@@ -2,7 +2,7 @@ from hashlib import md5
 from Crypto.Cipher import Blowfish
 from functools import partial
 import time
-import marshal, cPickle, zlib, struct, random
+import marshal, cPickle, zlib, struct, random, traceback
 from twisted.protocols.basic import implements, interfaces
 BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
@@ -113,6 +113,9 @@ class Object(object):
 class ProtocolException(Exception):
     pass
 
+class AuthenticationException(Exception):
+    pass
+
 class BasicClientConnection(object):
     implements(interfaces.IProducer)
     
@@ -121,6 +124,7 @@ class BasicClientConnection(object):
         self.protocol = protocol
         self.consumer = None
         self.mailbox = None
+        self.notifier = None
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -161,20 +165,26 @@ class BasicClientConnection(object):
     
     #check_all + fails + fallbacks!
     def process_send(self, idx, *args, **kwargs):
-        if idx in self.protocol._qprocess:
-            packet = self.protocol.send_qprocess(idx, *args)
-        else:
-            if kwargs:
-                kwargs['kwargs'] = ''
-                args = args + (kwargs,)
-            logger.debug('RPC: basic client args: %s', (args,))
-            packet = self.protocol.send_process(idx, *args)
-        if packet[0] == 'send':
-            return self.consumer.write(packet[1])
-        else:
-            #print packet[0]
-            self.STATUS_ = ('OK', True)
-            return ('OK', True)
+        try:
+            if idx in self.protocol._qprocess:
+                packet = self.protocol.send_qprocess(idx, *args)
+            else:
+                if kwargs:
+                    kwargs['kwargs'] = ''
+                    args = args + (kwargs,)
+                logger.debug('RPC: basic client args: %s', (args,))
+                packet = self.protocol.send_process(idx, *args)
+            if packet[0] == 'send':
+                return self.consumer.write(packet[1])
+            else:
+                #print packet[0]
+                self.STATUS_ = ('OK', True)
+                return ('OK', True)
+        except Exception, ex:
+            logger.error('Exception detected: %s | %s', (repr(ex), traceback.format_exc()))
+            if self.notifier:
+                self.notifier(str(ex))
+            raise ex
             
     def process_outer(self, idx, *args):
         self.process_send(idx, *args)
@@ -223,8 +233,10 @@ class RPCProtocol(object):
         if not idx in self._qprocess:
             header = packet[4:16]
             packet = packet[16:]
+            '''
             if header[2:4] != '00':
                 raise ProtocolException("Fail code detected %s" % (header, ))
+            '''
         else:
             header = packet[4:8]
             packet = packet[8:]
@@ -287,6 +299,8 @@ class RPCProtocol(object):
             #data[1] = ((objectifier['detuplify'](data[1][0][0]) + data[1][0][1:]), data[1][1])
             #data = (data[0], (objectifier['detuplify'](data[1][0]),) + data[1][1:])
         logger.debug('RPC: get_process_data: objectify time: %s', time.clock() - process_time)
+        if isinstance(data[1][0], Exception):
+            raise data[1][0]
         return data
     
     def send_process(self, idx, f_name, *args):
@@ -404,6 +418,7 @@ class Authenticator(object):
     
 class MD5_Authenticator(Authenticator):
     _state = {}
+    _FAIL_CODES = {'01':'NO SUCH USER!', '02':'Challenge check failed!', '03':'Wrong AUTH get status!', '04':''}
     def __init__(self, identity, code, check_user = None, addr = None):
         self.identity = identity
         self.status = None
@@ -482,13 +497,18 @@ class MD5_Authenticator(Authenticator):
     def client_get_process(self, *args, **kwargs):
         if not self.status:
             raise Exception('empty status')
+        header = args[0]
+        if header[2:4] != '00':
+            raise Exception('Exception detected: %s!' % self._FAIL_CODES.get(header[2:4], 'Unknown error'))
         #print repr(args)
         if self.status == 'init':
+            '''
             header = args[0]
             if header[2] == '1':
                 raise Exception('No such user')
             elif header[2] != '0':
                 raise Exception('Unknown error')
+            '''
             self.challenge = args[1].split('-ch-')[1]
             if not self.challenge:
                 raise Exception('No challenge')
@@ -496,8 +516,10 @@ class MD5_Authenticator(Authenticator):
             return ('to_send',)
         elif self.status == 'ch_sent':
             header = args[0]
+            '''
             if header[2] == '1':
                 raise Exception('No such user')
+            '''
             self.pass_crypter = Blowfish.new(self.password)
             self.session_key = self._decrypt(self.pass_crypter, args[1].split('-sk-')[1])
             self.sess_crypter = Blowfish.new(self.session_key)
@@ -510,7 +532,9 @@ class MD5_Authenticator(Authenticator):
     
     def server_send_process(self, *args, **kwargs):
         if self.fail_code != '00':
+            return_packet = ('send', ''.join((self.code,'99', self.fail_code)))
             self.reset()
+            return return_packet
         if self.status == 'user_ok':
             self.challenge = self.issue_challenge(CHALLENGE_LEN)
             self.status = 'ch_sent'
