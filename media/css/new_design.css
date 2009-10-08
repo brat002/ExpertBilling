@@ -267,11 +267,19 @@ table.statistic_table {
 .statistics_link {
 	margin-bottom:3px;
 	margin-right:5px;
+	width:495px;
 }
 
 .statistics_link a {
 	text-decoration:none;
 	color:#fff;
+	float:right;
+	padding-top:3px;
+	padding-right:5px;
+}
+
+.statistics_title {
+	padding-top:3px;
 }
 
 #pagination {
@@ -404,5 +412,22 @@ table.statistic_table {
 
 .last-news .body {
 	font-size:10px;
-	color:\#6a6a6a;
+	color:#6a6a6a;
+}
+
+.range li{
+	display:block;
+	float:left;
+	padding-right:10px;
+	padding-top:1px;
+}
+
+.range li input {
+	width:70px;
+}
+
+.total {
+	margin-top:10px;
+	color:#6a6a6a;
+	font-weight:bold;
 }

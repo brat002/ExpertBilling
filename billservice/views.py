@@ -15,8 +15,8 @@ from django import template
 from lib.http import JsonResponse
 
 from django.conf import settings
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService 
-from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction 
+from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
 from billservice.utility import is_login_user, settlement_period_info
@@ -24,6 +24,35 @@ from nas.models import TrafficClass
 
 from lib.decorators import render_to, ajax_request
 
+
+def addon_queryset(request, id_begin, field='datetime'):
+    addon_query = {}
+    form = StatististicForm(request.GET)
+    if request.session.has_key('date_id_dict'):
+        date_id_dict = request.session['date_id_dict']
+    else:
+        date_id_dict = {} 
+    if form.is_valid():
+        if form.cleaned_data['date_from']:
+            addon_query[field+'__gte'] = form.cleaned_data['date_from']
+            date_id_dict[id_begin+'_date_from'] = request.GET.get('date_from','') 
+        else:
+            if date_id_dict.has_key(id_begin+'_date_from'):
+                del(date_id_dict[id_begin+'_date_from'])
+        if form.cleaned_data['date_to']:
+            from datetime import timedelta
+            addon_query[field+'__lte'] = form.cleaned_data['date_to'] + timedelta(hours = 23, minutes=59, seconds=59)
+            date_id_dict[id_begin+'_date_to'] = request.GET.get('date_to', '')
+        else:
+            if date_id_dict.has_key(id_begin+'_date_to'):
+                del(date_id_dict[id_begin+'_date_to'])
+        request.session['date_id_dict'] = date_id_dict 
+        request.session.modified = True
+    if request.GET.has_key('date_from') or request.GET.has_key('date_to'):
+        is_range = True
+    else:
+        is_range = False
+    return is_range, addon_query 
 
 
 @render_to('registration/login.html')
@@ -68,9 +97,7 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
-                print form.cleaned_data['username']
                 user = Account.objects.get(username=form.cleaned_data['username'])
-                print "user=", user, user.id, user.allow_webcab
                 if not user.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'
@@ -78,7 +105,6 @@ def login(request):
                             'error_message':error_message,
                             'form':form,
                             } 
-                print user.password, form.cleaned_data['password']
                 if user.password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
@@ -260,10 +286,18 @@ def transaction(request):
     if not request.session.has_key('user'):
         return is_login_user(request)
     from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, Transaction.objects.filter(account=request.session['user']).order_by('-created'), 100, 'page')
+    is_range, addon_query = addon_queryset(request, 'transactions', 'created')
+    qs = Transaction.objects.filter(account=request.session['user'], **addon_query).order_by('-created')
+    paginator = SimplePaginator(request, qs, 100, 'page')
+    summ = 0
+    if is_range:
+        for trnsaction in qs:
+            summ += trnsaction.summ 
     return {
             'transactions':paginator.get_page_items(),
             'paginator': paginator,
+            'is_range':is_range,
+            'summ':summ,
             }
     
 @render_to('accounts/vpn_session.html')
@@ -286,11 +320,22 @@ def services_info(request):
         return is_login_user(request)
     from lib.paginator import SimplePaginator
     user = request.session['user']  
-    paginator = SimplePaginator(request, AccountAddonService.objects.filter(account=user).order_by('-activated'), 50, 'page')
+    is_range, addon_query = addon_queryset(request, 'services', 'activated')
+    qs = AccountAddonService.objects.filter(account=user, **addon_query).order_by('-activated')
+    paginator = SimplePaginator(request, qs, 50, 'page')
+    summ = 0
+    if is_range:
+         for service in qs:
+             service_summ = 0
+             for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
+                 service_summ += transaction.summ 
+             summ += service_summ
     return {
             'services':paginator.get_page_items(),
             'paginator': paginator,
             'user': user,
+            'is_range':is_range,
+            'summ':summ,
             }
     
     
@@ -311,15 +356,10 @@ def change_password(request):
         if form.is_valid():
             try:
                 user = request.session['user']
-                print 1
                 user = Account.objects.get(username=user.username)
-                print 2
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
-                    print 3
                     user.password = form.cleaned_data['new_password']
-                    print 4
                     user.save()
-                    print 5
                     return {
                             'error_message': u'Пароль успешно изменен',
                             'ok':'ok',
@@ -329,7 +369,6 @@ def change_password(request):
                             'error_message': u'Проверьте пароль',
                             }
             except Exception, e:
-                print e
                 return {
                         'error_message': u'Возникла ошибка. Обратитесь к администратору.',
                         }
@@ -620,12 +659,26 @@ def statistics(request):
     net_flow_streams = NetFlowStream.objects.filter(account=user).order_by('-date_start')[:8]
     transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
     active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
-    services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]  
+    services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]
+    periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
+    addon_service_transaction = AddonServiceTransaction.objects.filter(account=user).order_by('-created')[:8]
+    one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
+    traffic_transaction = TrafficTransaction.objects.filter(account=user).order_by('-datetime')[:8]
+    if request.session.has_key('date_id_dict'):
+        date_id_dict = request.session['date_id_dict']
+    else:
+        date_id_dict = {}
     return {
             'net_flow_stream':net_flow_streams,
             'transactions':transaction,
             'active_session':active_session,
             'services':services,
+            'periodical_service_history':periodical_service_history,
+            'addon_service_transaction':addon_service_transaction,
+            'one_time_history':one_time_history,
+            'traffic_transaction':traffic_transaction,
+            'form':StatististicForm(),
+            'date_id_dict':date_id_dict,
             }
 
 
@@ -645,19 +698,20 @@ def addon_service(request):
     for uservice in user_services:
         if uservice.service.wyte_period_id:
             delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
+<<<<<<< .mine
+
+=======
             #print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
+>>>>>>> .theirs
             if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
                 uservice.wyte = True
-                #print 11
                 uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
             else:
-                #print 33
                 uservice.wyte = False
         elif uservice.service.wyte_cost:
             uservice.wyte = True
         else:
             uservice.wyte = False
-            #print 22
         accountservices.append(uservice)  
         
     user_services_id = [x.service.id for x in accountservices if not x.deactivated]
@@ -702,8 +756,6 @@ def service_action(request, action, id):
             return HttpResponseRedirect('/services/')
         
     if action == u'set':
-        print 123
-        
         try:
             account_addon_service = AddonService.objects.get(id=id)
         except:
@@ -765,7 +817,81 @@ def service_action(request, action, id):
         request.session['service_message'] = u'Невозможно совершить действие'
         return HttpResponseRedirect('/services/')
           
+@render_to('accounts/periodical_service_history.html')
+def periodical_service_history(request):
+    if not request.session.has_key('user'):
+        return is_login_user(request)
+    from lib.paginator import SimplePaginator
+    is_range, addon_query = addon_queryset(request, 'periodical_service_history')
+    qs = PeriodicalServiceHistory.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime')
+    paginator = SimplePaginator(request, qs, 100, 'page')
+    summ = 0
+    if is_range:
+        for periodical_service in qs:
+            summ += periodical_service.summ
+    return {
+            'periodical_service_history':paginator.get_page_items(),
+            'paginator': paginator,
+            'is_range':is_range,
+            'summ':summ,
+            }
+
+@render_to('accounts/addon_service_transaction.html')
+def addon_service_transaction(request):
+    if not request.session.has_key('user'):
+        return is_login_user(request)
+    from lib.paginator import SimplePaginator 
+    is_range, addon_query = addon_queryset(request, 'addon_service_transaction', 'created')
+    qs = AddonServiceTransaction.objects.filter(account=request.session['user'], **addon_query).order_by('-created')
+    paginator = SimplePaginator(request, qs, 100, 'page')
+    summ = 0
+    if is_range:
+        for addon_service in qs:
+            summ += addon_service.summ  
+    return {
+            'addon_service_transaction':paginator.get_page_items(),
+            'paginator': paginator,
+            'is_range':is_range,
+            'summ':summ,
+            }
     
+@render_to('accounts/traffic_transaction.html')
+def traffic_transaction(request):
+    if not request.session.has_key('user'):
+        return is_login_user(request)
+    from lib.paginator import SimplePaginator
+    is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
+    qs = TrafficTransaction.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime') 
+    paginator = SimplePaginator(request, qs, 100, 'page')
+    summ = 0
+    if is_range:
+        for traffic_transaction in qs:
+            summ += traffic_transaction.summ 
+    return {
+            'traffic_transaction':paginator.get_page_items(),
+            'paginator': paginator,
+            'is_range':is_range,
+            'summ':summ,
+            }
+    
+@render_to('accounts/one_time_history.html')
+def one_time_history(request):
+    if not request.session.has_key('user'):
+        return is_login_user(request)
+    from lib.paginator import SimplePaginator
+    is_range, addon_query = addon_queryset(request, 'one_time_history')
+    qs = OneTimeServiceHistory.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime')
+    paginator = SimplePaginator(request, qs, 100, 'page')
+    summ = 0
+    if is_range:
+        for one_time in qs:
+            summ += one_time.summ 
+    return {
+            'one_time_history':paginator.get_page_items(),
+            'paginator': paginator,
+            'is_range':is_range,
+            'summ':summ,
+            }    
 
 
 
