@@ -698,11 +698,6 @@ def addon_service(request):
     for uservice in user_services:
         if uservice.service.wyte_period_id:
             delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
-<<<<<<< .mine
-
-=======
-            #print "delta=", delta, uservice.activated + datetime.timedelta(seconds = delta), datetime.datetime.now()
->>>>>>> .theirs
             if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
                 uservice.wyte = True
                 uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
