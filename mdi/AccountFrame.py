@@ -3328,7 +3328,7 @@ class AccountWindow(QtGui.QMainWindow):
             if self.model:
                 model=self.model
             else:
-                print 'New account'
+                #print 'New account'
                 if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.lineEdit_username.text())).count > 0:
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                     self.connection.rollback()

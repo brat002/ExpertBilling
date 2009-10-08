@@ -182,8 +182,8 @@ class BasicClientConnection(object):
                 return ('OK', True)
         except Exception, ex:
             logger.error('Exception detected: %s | %s', (repr(ex), traceback.format_exc()))
-            if self.notifier:
-                self.notifier(str(ex))
+            #if self.notifier:
+            #    self.notifier(str(ex))
             raise ex
             
     def process_outer(self, idx, *args):
@@ -299,7 +299,7 @@ class RPCProtocol(object):
             #data[1] = ((objectifier['detuplify'](data[1][0][0]) + data[1][0][1:]), data[1][1])
             #data = (data[0], (objectifier['detuplify'](data[1][0]),) + data[1][1:])
         logger.debug('RPC: get_process_data: objectify time: %s', time.clock() - process_time)
-        if isinstance(data[1][0], Exception):
+        if data[1] and isinstance(data[1][0], Exception):
             raise data[1][0]
         return data
     

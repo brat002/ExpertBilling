@@ -609,7 +609,7 @@ class RPCServer(object):
             FROM billservice_account AS acc 
             WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
         else:
-            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
             FROM billservice_account AS acc 
             ORDER BY acc.username ASC;""")            
         result = map(Object, cur.fetchall())
