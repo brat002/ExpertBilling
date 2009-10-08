@@ -183,6 +183,9 @@ class PeriodicalServiceHistory(models.Model):
     transaction = models.ForeignKey(to='Transaction')
     accounttarif = models.ForeignKey(to='AccountTarif')
     datetime  = models.DateTimeField(auto_now_add=True)
+    summ = models.FloatField()
+    account = models.ForeignKey('Account')
+    type_id   = models.CharField(max_length=32, default='')
 
     def __unicode__(self):
         return u"%s" % (self.service)
@@ -216,6 +219,14 @@ class OneTimeService(models.Model):
     class Meta:
         verbose_name = u"Разовый платеж"
         verbose_name_plural = u"Разовые платежи"
+        
+class OneTimeServiceHistory(models.Model):
+    onetimeservice = models.ForeignKey(OneTimeService)
+    datetime  = models.DateTimeField(auto_now_add=True)
+    summ = models.IntegerField()
+    account=models.ForeignKey('Account')
+    accounttarif = models.ForeignKey('AccountTarif')
+    transaction = models.ForeignKey('Transaction')
 
 
 class TimeAccessService(models.Model):
@@ -941,8 +952,10 @@ class IPInUse(models.Model):
 class TrafficTransaction(models.Model):
     traffictransmitservice = models.ForeignKey(TrafficTransmitService) # ON DELETE SET NULL
     account = models.ForeignKey(Account)
-    sum = models.FloatField()
+    summ = models.FloatField()
     datetime = models.DateTimeField()
+    account = models.ForeignKey(Account)
+    accounttarif = models.ForeignKey(AccountTarif)
     
     
 class TPChangeRule(models.Model):

@@ -11,7 +11,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs_1.2'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs_ref_sql'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'mikrobill'             # Not used with sqlite3.
 DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
 DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.
@@ -70,6 +70,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
     'notification.context_processors.footer',
@@ -97,7 +98,9 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sitemaps',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
@@ -128,3 +131,8 @@ LOGIN_REDIRECT_URL = '/login/'
 ALLOW_PROMISE = True
 MAX_PROMISE_SUM = 100000
 LEFT_PROMISE_DAYS = 7
+
+try:
+    from settings_local import *
+except:
+    pass
