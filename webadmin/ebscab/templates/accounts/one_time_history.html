@@ -1,0 +1,43 @@
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if one_time_history %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">СПИСАНИЯ РАЗОВАХ УСЛУГ</th>
+	</tr>
+	<tr>
+		<td class="">
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>Услуга</th>
+					<th>Сумма</th>
+					<th>Дата</th>
+				</tr>
+				{% for one_time in one_time_history %}
+					<tr>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.onetimeservice.name }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.summ }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}</td>
+					</tr>
+				{% endfor %}
+			</table>
+			{% if is_range %}
+				<div class="total">Всего: <span>{{ summ }}</span></div>
+			{% endif %}
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
+</table>
+
+{% else %}
+ <h2 align="center">Данных нет</h2>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    Биллинговая информация
+{% endblock %}

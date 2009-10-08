@@ -32,6 +32,9 @@
        				</tr>
     			{% endfor%}
 			</table>
+			{% if is_range %}
+				<div class="total">Всего: <span>{{ summ }}</span></div>
+			{% endif %}
 			{% include 'paginator.html' %}
 		</td>
 	</tr>
