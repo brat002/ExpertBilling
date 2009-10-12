@@ -1,6 +1,7 @@
 #-*-coding=utf-8*-
 #global connection
 import sys, traceback, os
+sys.path.append(os.path.abspath('../'))
 from PyQt4 import QtCore, QtGui
 
 #import socket
