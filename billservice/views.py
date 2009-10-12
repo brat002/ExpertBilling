@@ -2,6 +2,11 @@
  
 #NEWRPC = True
 #if NEWRPC:
+ 
+import os, sys
+#print os.path.abspath('../../../')
+sys.path.append(os.path.abspath('../../'))
+
 from rpc2 import rpc_protocol, client_networking
     
 import datetime
@@ -11,7 +16,9 @@ import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
 '''
-import os, isdlogger
+
+
+import isdlogger
 try:
     os.mkdir('log')
 except:
