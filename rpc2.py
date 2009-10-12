@@ -59,8 +59,8 @@ except:
 from classes.vars import RpcVars
 from constants import rules
 
-from yrpc.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
-from yrpc.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
+from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
+from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 NAME = 'rpc'
@@ -381,15 +381,15 @@ class RPCServer(object):
     
     
     def change_tarif(self, accounts, tarif, date, cur=None, connection=None):
-        cur.connection.commit()
+        connection.commit()
         for account in accounts:
             try:
                 cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, date))
             except Exception, e:
-                cur.connection.rollback()
+                connection.rollback()
                 logger.error("Error change tarif for account %s, %s", (account, e))
                 return False
-        cur.connection.commit()
+        connection.commit()
         return True
                 
             
@@ -490,7 +490,7 @@ class RPCServer(object):
 
         cur.execute("SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY ID DESC LIMIT 1", (account_id,))
         accounttarif_date = cur.fetchone()["datetime"]
-        cur.connection.commit()
+        connection.commit()
         res = []
         for limit in limites:
             limit_name = limit["name"]
@@ -517,7 +517,7 @@ class RPCServer(object):
                 settlement_period_start=now-datetime.timedelta(seconds=delta)
                 settlement_period_end=now
             
-            cur.connection.commit()
+            connection.commit()
 
             #print 4
             cur.execute("""
@@ -527,7 +527,7 @@ class RPCServer(object):
             
             size=cur.fetchone()
             res.append({'settlement_period_start':settlement_period_start, 'settlement_period_end':settlement_period_end, 'limit_name': limit_name, 'limit_size':limit_size or 0, 'size':size["size"] or 0,})
-            cur.connection.commit()
+            connection.commit()
         
         return res
 
@@ -819,12 +819,12 @@ class RPCServer(object):
     def del_addonservice(self, account_id, account_service_id, cur=None, connection=None):
  
         #Получаем нужные параметры аккаунта
-        cur.connection.commit()
+        #connection.commit()
         cur.execute("SELECT acc.id, get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_id FROM billservice_account as acc WHERE id = %s;", (account_id,))
         
         result=[]
         r=cur.fetchall()
-        cur.connection.commit()
+        connection.commit()
         if len(r)>1:
             raise Exception
 

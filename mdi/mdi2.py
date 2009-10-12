@@ -16,7 +16,7 @@ import Pyro.configuration
 import threading
 import Pyro
 
-from yrpc import rpc_protocol, client_networking
+from rpc2 import rpc_protocol, client_networking
 
 DEFAULT_PORT = 7771
 LOG_LEVEL    = 0
