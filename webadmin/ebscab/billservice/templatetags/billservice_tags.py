@@ -158,4 +158,8 @@ def show_last_news(count=5):
     return {
             'news':news,
             }
-    
+
+@register.filter(name='multiply')    
+def multiply(value, multiply_value):
+    value = value*int(multiply_value)
+    return value

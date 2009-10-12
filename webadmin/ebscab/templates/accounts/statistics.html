@@ -104,7 +104,7 @@
 					{% for transaction in transactions %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|multiply:"-1" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.description }}&nbsp;</td>
