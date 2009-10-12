@@ -1,20 +1,29 @@
  #-*- coding=UTF-8 -*-
  
-NEWRPC = True
-if NEWRPC:
-    from yrpc import rpc_protocol, client_networking
+#NEWRPC = True
+#if NEWRPC:
+from yrpc import rpc_protocol, client_networking
     
 import datetime
+'''
 import Pyro.core
 import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
-
+'''
+import os, isdlogger
+try:
+    os.mkdir('log')
+except:
+    pass
+                    
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
 from django.conf import settings
 from django import template
+
+
 
 from lib.http import JsonResponse
 
@@ -28,6 +37,9 @@ from nas.models import TrafficClass
 
 from lib.decorators import render_to, ajax_request
 
+logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename='log/webcab_log')
+rpc_protocol.install_logger(logger)
+client_networking.install_logger(logger)
 
 def addon_queryset(request, id_begin, field='datetime'):
     addon_query = {}
@@ -68,28 +80,29 @@ def login(request):
         if pin!='':
             if user!='':
                 message=None
-                try:
-                    connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
-                    import hashlib
-                    md1 = hashlib.md5(settings.RPC_PASSWORD)
-                    md1.hexdigest()
-                   
-                    password = str(md1.hexdigest())
-                    connection_server._setNewConnectionValidator(antiMungeValidator())
-                    connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-                    #connection_server.test()
+                try:               
+                    authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+                    protocol = rpc_protocol.RPCProtocol(authenticator)
+                    connection_server = rpc_protocol.BasicClientConnection(protocol)
+                    transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
+                    transport.connect()
+                    connection_server.registerConsumer_(transport)
+                    auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+                    if not auth_result or not connection_server.protocol._check_status():
+                        raise Exception('Status = False!')
                 except Exception, e:
-                    if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                    if isinstance(e, client_networking.TCPException):
                         error_message = u"Отказано в авторизации."
                     else:
                         error_message  = u"Невозможно подключиться к серверу."
+                    
                 message_type = connection_server.activate_card(user, pin)
                 ok_message = False
                 if message_type == 1:
-                    message = u'Карточка успешно активирована. <br>  Выш логин %s <br> ваш пароль %s' % (user, pin)
+                    message = u'Карточка успешно активирована. <br>  Ваш логин %s <br> ваш пароль %s' % (user, pin)
                     ok_message = True
                 if message_type == 2:
-                    message = u'Не верно введен логин или пароль'
+                    message = u'Неверно введен логин или пароль'
                 if message_type == 3:
                     message = u'Карточка уже была активирована'
             form = LoginForm()
@@ -150,10 +163,10 @@ def login(request):
                     'form':form,
                     }
     else:
-         form = LoginForm()
-         return {
-                 'form':form,
-                }  
+        form = LoginForm()
+        return {
+                'form':form,
+               }  
                
 def login_out(request):
     if request.session.has_key('user'):
@@ -189,7 +202,7 @@ def index(request):
         ballance = user.ballance - user.credit
         ballance = u'%.2f' % user.ballance
     except:
-         ballance = 0
+        ballance = 0
     #find prepare trafick
     
     #cursor = connection.cursor()
@@ -329,11 +342,11 @@ def services_info(request):
     paginator = SimplePaginator(request, qs, 50, 'page')
     summ = 0
     if is_range:
-         for service in qs:
-             service_summ = 0
-             for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
-                 service_summ += transaction.summ 
-             summ += service_summ
+        for service in qs:
+            service_summ = 0
+            for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
+                service_summ += transaction.summ 
+            summ += service_summ
     return {
             'services':paginator.get_page_items(),
             'paginator': paginator,
@@ -506,22 +519,7 @@ def card_acvation(request):
         if form.is_valid():
             try:
                 print form.cleaned_data['series'], form.cleaned_data['pin'], form.cleaned_data['card_id']
-                #card = Card.objects.get(series=form.cleaned_data['series'], pin=form.cleaned_data['pin'], sold__isnull=False, start_date__lte=datetime.datetime.now(), end_date__gte=datetime.datetime.now(), activated__isnull=True)
-                
-                #card.activated=datetime.datetime.now()
-                #card.activated_by = user
-                #card.save()
-                #summ = -card.nominal
-                #type = TransactionType.objects.get(internal_name=u'ACTIVATION_CARD')
-                #user.ballance = user.ballance-summ
-                #user.save()
-                #request.session['user'] = user
-                #request.session.modified = True
-                #transaction = Transaction(tarif=None, bill='', description = "", account=user, type=type, approved=True, summ=summ, created=datetime.datetime.now(), promise=False)
-                #transaction.save()
-                #cache.delete(user.id)
-                #cache.add(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,})
-                #return HttpResponseRedirect('/index/')
+                '''
                 connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
                 import hashlib
                 md1 = hashlib.md5(settings.RPC_PASSWORD)
@@ -530,7 +528,16 @@ def card_acvation(request):
                 password = str(md1.hexdigest())
                 connection_server._setNewConnectionValidator(antiMungeValidator())
                 connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-
+                '''
+                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+                protocol = rpc_protocol.RPCProtocol(authenticator)
+                connection_server = rpc_protocol.BasicClientConnection(protocol)
+                transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
+                transport.connect()
+                connection_server.registerConsumer_(transport)
+                auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+                if not auth_result or not connection_server.protocol._check_status():
+                    raise Exception('Status = False!')
                 res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
                 #print "res=", res
 
@@ -591,7 +598,7 @@ def account_prepays_traffic(request):
             'account_tariff':account_tariff,
             }
     
-
+'''
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -599,7 +606,7 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
         return authid
     def mungeIdent(self, ident):
         return ident
-    
+'''    
     
 def client(request):
     if not request.session.has_key('user'):
@@ -607,6 +614,7 @@ def client(request):
     user = request.session['user']
     # CONNECTION TO RCP SERVER
     try:
+        '''
         connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
         import hashlib
         md1 = hashlib.md5(settings.RPC_PASSWORD)
@@ -615,9 +623,18 @@ def client(request):
         password = str(md1.hexdigest())
         connection._setNewConnectionValidator(antiMungeValidator())
         print connection._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-        connection.test()
+        connection.test()'''
+        authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+        protocol = rpc_protocol.RPCProtocol(authenticator)
+        connection_server = rpc_protocol.BasicClientConnection(protocol)
+        transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
+        transport.connect()
+        connection_server.registerConsumer_(transport)
+        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+        if not auth_result or not connection_server.protocol._check_status():
+            raise Exception('Status = False!')
     except Exception, e:
-        if isinstance(e, Pyro.errors.ConnectionDeniedError):
+        if isinstance(e, client_networking.TCPException):
             error_message = u"Отказано в авторизации."
         else:
             error_message  = u"Невозможно подключиться к серверу."
@@ -737,6 +754,7 @@ def service_action(request, action, id):
     user = request.session['user']
     
     try:
+        '''
         connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
         import hashlib
         md1 = hashlib.md5(settings.RPC_PASSWORD)
@@ -744,10 +762,19 @@ def service_action(request, action, id):
        
         password = str(md1.hexdigest())
         connection_server._setNewConnectionValidator(antiMungeValidator())
-        connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
+        connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))'''
+        authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+        protocol = rpc_protocol.RPCProtocol(authenticator)
+        connection_server = rpc_protocol.BasicClientConnection(protocol)
+        transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
+        transport.connect()
+        connection_server.registerConsumer_(transport)
+        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+        if not auth_result or not connection_server.protocol._check_status():
+            raise Exception('Status = False!')
         #connection_server.test()
     except Exception, e:
-        if isinstance(e, Pyro.errors.ConnectionDeniedError):
+        if isinstance(e, client_networking.TCPException):
             request.session['service_message'] = u"Ошибка при подключении к серверу"
             return HttpResponseRedirect('/services/')
         else:

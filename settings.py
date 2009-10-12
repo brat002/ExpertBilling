@@ -11,7 +11,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs_ref_sql'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs_1.2'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'mikrobill'             # Not used with sqlite3.
 DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
 DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.
@@ -115,8 +115,11 @@ AUTHENTICATION_BACKENDS = (
 )
 
 RPC_ADDRESS = '127.0.0.1'
+RPC_PORT = 7771
 RPC_USER = 'webadmin'
 RPC_PASSWORD = 'RPCwebadmin'
+
+LOG_LEVEL = 0
 
 CACHE_BACKEND = 'locmem:///'
 
