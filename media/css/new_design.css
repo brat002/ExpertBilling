@@ -267,7 +267,7 @@ table.statistic_table {
 .statistics_link {
 	margin-bottom:3px;
 	margin-right:5px;
-	width:495px;
+	width:520px;
 }
 
 .statistics_link a {
@@ -275,7 +275,7 @@ table.statistic_table {
 	color:#fff;
 	float:right;
 	padding-top:3px;
-	padding-right:5px;
+	padding-right:15px;
 }
 
 .statistics_title {
