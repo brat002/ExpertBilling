@@ -706,7 +706,7 @@ class HandleSAuth(HandleSBase):
                 result.append(res)
 
 
-            correction = self.caches.speedlimit_cache.by_id.get(account_id)
+            correction = self.caches.speedlimit_cache.by_account_id.get(account_id,[])
             #Проводим корректировку скорости в соответствии с лимитом
             #print self.caches.speedlimit_cache
             result = get_corrected_speed(result, correction)
@@ -870,7 +870,7 @@ class HandleHotSpotAuth(HandleSBase):
                     res=s
                 result.append(res)           
 
-            correction = self.caches.speedlimit_cache.by_id.get(account_id)
+            correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)

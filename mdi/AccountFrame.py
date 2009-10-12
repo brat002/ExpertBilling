@@ -4200,7 +4200,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 headerItem.setBackgroundColor(QtGui.QColor("#ffdc51"))
                 #headerItem.setTextColor(QtGui.QColor('#ffffff'))
                                 
-        if not enabled:
+        if enabled!=1:
             headerItem.setBackgroundColor(QtGui.QColor('#dadada'))
         
             
@@ -4313,6 +4313,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
         #print "after acc"
         self.tableWidget.setRowCount(len(accounts))
+        self.tableWidget.clearContents()
         
         m_ballance = 0
         
@@ -4320,6 +4321,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         for a in accounts:            
             self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
+            #print "status", a
             if id==-1000:
                 self.addrow(a.tarif_name, i,2, enabled=a.status)
                 self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)

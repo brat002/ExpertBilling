@@ -198,10 +198,10 @@ class AddSettlementPeriod(QtGui.QDialog):
             if self.model.autostart == True:
                 self.datetime_edit.setEnabled(False)
 
-            now = QtCore.QDateTime()
+            #now = QtCore.QDateTime()
 
-            now.setTime_t(calendar.timegm(self.model.time_start.timetuple()))
-
+            #now.setTime_t(calendar.timegm(self.model.time_start.timetuple()))
+            self.datetime_edit.setDateTime(self.model.time_start)
 
 
 
@@ -212,7 +212,7 @@ class AddSettlementPeriod(QtGui.QDialog):
                 self.length_edit.setCurrentIndex(self.length_edit.findText(self.model.length_in, QtCore.Qt.MatchCaseSensitive))
                 self.length_seconds_edit.setEnabled(False)
 
-        self.datetime_edit.setDateTime(now)
+        #self.datetime_edit.setDateTime(now)
 
     def save(self):
         print 'Saved'

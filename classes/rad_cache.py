@@ -64,11 +64,16 @@ class SpeedCache(SimpleDefDictCache):
 
 class SpeedlimitCache(SimpleDictCache):
     '''By account_id'''
-    __slots__ = ()
+    __slots__ = ('by_account_id')
     datatype = SpeedlimitData
     sql = rad_sql['limit']
-    num = 11
-   
+    num = 0
+    
+    def reindex(self):
+        self.by_account_id = {}
+        for speed_l in self.data:
+            self.by_account_id[speed_l[1]] = speed_l[2:]
+            
 class NasCache(CacheItem):
     __slots__ = ('by_ip','by_ip_n_identify')
     datatype = NasData

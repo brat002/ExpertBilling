@@ -93,7 +93,8 @@ class check_vpn_access(Thread):
                 else:                    
                     res=s                
                 result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
-            #print self.caches.speedlimit_cache            
+            #print self.caches.speedlimit_cache      
+   
             result = get_corrected_speed(result, correction)            
             if addonservicespeed:                
                 result = get_corrected_speed(result, addonservicespeed)                        
@@ -152,10 +153,10 @@ class check_vpn_access(Thread):
                 #close frozen sessions
                 #now = datetime.datetime.now()
                 now = dateAT
-                cur.execute("""UPDATE radius_activesession 
-                               SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                               WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
-                               UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
+                #cur.execute("""UPDATE radius_activesession 
+                #               SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
+                #               WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
+                #               UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
 #===============================================================================
 #                cur.execute("""UPDATE radius_activesession 
 #                               SET session_time=extract(epoch FROM date_end-date_start), date_end=now(), session_status='NACK' 
