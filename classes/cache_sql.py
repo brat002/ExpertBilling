@@ -91,7 +91,7 @@ core_sql = \
                         JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id""",
-          'speed_lmt':"""SELECT accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
+          'speed_lmt':"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                       speedlimit.burst_tx, speedlimit.burst_rx, 
                       speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                       speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
@@ -153,12 +153,12 @@ rad_sql = \
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
                         JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
                         JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id;""",
-         'limit'    :"""SELECT speedlimit.max_tx, speedlimit.max_rx, 
+         'limit'    :"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                         speedlimit.burst_tx, speedlimit.burst_rx, 
                         speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                         speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
                         speedlimit.priority,
-                        speedlimit.min_tx, speedlimit.min_rx, accountspeedlimit.account_id, speedlimit.speed_units, speedlimit.change_speed_type
+                        speedlimit.min_tx, speedlimit.min_rx, speedlimit.speed_units, speedlimit.change_speed_type
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;""",

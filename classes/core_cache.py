@@ -243,7 +243,7 @@ class SpeedLimitCache(CacheItem):
     def reindex(self):
         self.by_account_id = {}
         for speed_l in self.data:
-            self.by_account_id[speed_l[0]] = speed_l[1:]
+            self.by_account_id[speed_l[1]] = speed_l[2:]
             
 class UnderbilledAccountsCache(CacheItem):
     __slots__ = ('by_tarif', 'current_acctfs', 'underbilled_acctfs')

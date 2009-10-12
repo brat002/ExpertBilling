@@ -724,17 +724,17 @@ def correct_speed(speed, correction):
     """
     res = []
     #max
-    res.append("%s/%s" % (speedlimit_logic(speed[0], correction[0], correction[12], correction[13]), speedlimit_logic(speed[1], correction[1], correction[12], correction[13])))
+    res.append("%s/%s" % (speedlimit_logic(speed[0], correction[0], correction[11], correction[12]), speedlimit_logic(speed[1], correction[1], correction[11], correction[12])))
     #burst in
-    res.append("%s/%s" % (speedlimit_logic(speed[2], correction[2], correction[12], correction[13]), speedlimit_logic(speed[3], correction[3], correction[12], correction[13])))
+    res.append("%s/%s" % (speedlimit_logic(speed[2], correction[2], correction[11], correction[12]), speedlimit_logic(speed[3], correction[3], correction[11], correction[12])))
     #burst treshold
-    res.append("%s/%s" % (speedlimit_logic(speed[4], correction[4], correction[12], correction[13]), speedlimit_logic(speed[5], correction[5], correction[12], correction[13])))
+    res.append("%s/%s" % (speedlimit_logic(speed[4], correction[4], correction[11], correction[12]), speedlimit_logic(speed[5], correction[5], correction[11], correction[12])))
     #burst time
     res.append("%s/%s" % (correction[6], correction[7]))
     #priority
     res.append("%s" % correction[8])
     #min
-    res.append("%s/%s" % (speedlimit_logic(speed[9], correction[9], correction[12], correction[13]), speedlimit_logic(speed[10], correction[10], correction[12], correction[13])))
+    res.append("%s/%s" % (speedlimit_logic(speed[9], correction[9], correction[11], correction[12]), speedlimit_logic(speed[10], correction[10], correction[11], correction[12])))
     return res
 
 
