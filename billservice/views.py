@@ -1,5 +1,9 @@
  #-*- coding=UTF-8 -*-
  
+NEWRPC = True
+if NEWRPC:
+    from yrpc import rpc_protocol, client_networking
+    
 import datetime
 import Pyro.core
 import Pyro.protocol
