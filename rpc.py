@@ -3,7 +3,7 @@
 from __future__ import with_statement
 
 import IPy
-import hmac
+import hmac, time
 import zlib
 import signal
 import hashlib
@@ -18,8 +18,15 @@ import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
-import Pyro
-import Pyro.core, Pyro.protocol, Pyro.constants, Pyro.util
+import twisted.internet
+from twisted.internet.protocol import DatagramProtocol, Factory
+from twisted.protocols.basic import LineReceiver, Int32StringReceiver
+try:
+    from twisted.internet import pollreactor
+    pollreactor.install()
+except:
+    print 'No poll(). Using select() instead.'
+from twisted.internet import reactor
 
 #Pyro.config.PYRO_TRACELEVEL = 3
 #print dir(Pyro.config) 
@@ -31,7 +38,7 @@ from IPy import intToIp
 from hashlib import md5
 from utilites import PoD, cred, ssh_client
 from decimal import Decimal
-from db import Object as Object
+#from db import Object as Object
 from daemonize import daemonize
 from encodings import idna, ascii
 from threading import Thread, Lock
@@ -44,151 +51,25 @@ from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 import commands
-try:    import mx.DateTime
-except: print 'cannot import mx'
+try:    
+    import mx.DateTime
+except: 
+    print 'cannot import mx'
+    
 from classes.vars import RpcVars
 from constants import rules
 
+from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
+from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 NAME = 'rpc'
 DB_NAME = 'db'
+DEFAULT_PORT = 7771
 
-class hostCheckingValidator(Pyro.protocol.DefaultConnValidator):
-    def __init__(self):
-        Pyro.protocol.DefaultConnValidator.__init__(self)
+class RPCServer(object):
 
-    def acceptIdentification(self, tcpserver, conn, hash, challenge):
-        try:
-            for val in tcpserver.implementations.itervalues():
-                if val[1] == 'rpc':
-                    serv = val[0]
-                    break
-                
-            user, mdpass, role = hash.split(':')
-            
-            try:
-                db_connection = serv.connection
-                cur = db_connection.cursor()                
-                cur.execute("SELECT host, password FROM billservice_systemuser WHERE username='%s' and (role='%s' or role='0');" % (user, role))
-                host, password = cur.fetchone()
-                db_connection.commit()
-                cur.close()
-            except Exception, ex:
-                logger.error("acceptIdentification error: %s", repr(ex))
-                conn.utoken = ''
-                return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
-            
-            hostOk = self.checkIP(conn.addr[0], str(host))
-
-            if hostOk and (password == mdpass):
-                #print "accepted---------------------------------"
-                tmd5 = hashlib.md5(str(conn.addr[0]))
-                tmd5.update(str(conn.addr[1]))
-                tmd5.update(tcpserver.hostname)
-                conn.utoken = tmd5.digest()
-                try:
-                    conn.db_connection = pool.connection()
-                    conn.db_connection._con._con.set_client_encoding('UTF8')
-                    conn.cur = conn.db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) 
-                except Exception, ex:
-                    logger.error("acceptIdentification create connection error: %s", repr(ex))
-                    conn.utoken = ''
-                    return (0,Pyro.constants.DENIED_SERVERTOOBUSY)
-                return(1,0)
-            else:
-                conn.utoken = ''
-                return (0,Pyro.constants.DENIED_SECURITY)
-        except Exception, ex:
-            logger.info("acceptIdentification exception: %s", repr(ex))
-            conn.utoken = ''
-            return (0,Pyro.constants.DENIED_SECURITY)
-
-    def checkIP(self, ipstr, hostsstr):
-        userIP = IPy.IP(ipstr)
-        #allowed hosts
-        hosts = hostsstr.split(', ')
-        hostOk = False
-        for host in hosts:
-            iprange = host.split('-')
-            if len(iprange) == 1:
-                if iprange[0].find('/') != -1:
-                    hostOk = userIP in IPy.IP(iprange[0])
-                else:
-                    hostOk = hostOk or (userIP == IPy.IP(iprange[0]))
-            else:
-                hostOk = hostOk or ((userIP >= IPy.IP(iprange[0])) and (userIP <= IPy.IP(iprange[1])))
-            if hostOk:
-                break
-        return hostOk
-
-    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-        #print "createAuthToken_serv"
-        # authid is what mungeIdent returned, a tuple (login, hash-of-password)
-        # we return a secure auth token based on the server challenge string.
-        return authid
-
-    def mungeIdent(self, ident):
-        #print "mungeIdent_serv"
-        # ident is tuple (login, password), the client sets this.
-        # we don't like to store plaintext passwords so store the md5 hash instead.
-        return ident
     
-
-def authentconn(func):
-    def relogfunc(*args, **kwargs):
-        try:
-            if args[0].getLocalStorage().caller:
-                caller = args[0].getLocalStorage().caller
-                if args[0].getLocalStorage().caller.utoken:
-                    kwargs['connection'] = caller.db_connection
-                    kwargs['cur'] = caller.cur
-                    res =  func(*args, **kwargs)
-                    return res
-                else:
-                    return None
-            else:
-                return func(*args, **kwargs)
-        except Exception, ex:
-            if isinstance(ex, psycopg2.OperationalError):
-                logger.error("%s : (RPC Server) database connection is down: %s \n %s", (args[0].getName(),repr(ex), traceback.format_exc()))
-            else:
-                #print args[0].getName() + ": exception: " + str(ex)
-                logger.error("%s: (RPC server) remote execution exception: %s \n %s", (args[0].getName(),repr(ex), traceback.format_exc()))
-                raise ex
-
-    return relogfunc
-
-class RPCServer(Thread, Pyro.core.ObjBase):
-
-    def __init__ (self):
-        Thread.__init__(self)
-        Pyro.core.ObjBase.__init__(self)
-        self.connection = pool.connection()
-        self.connection._con._con.set_isolation_level(1)
-        self.connection._con._con.set_client_encoding('UTF8')
-        self.cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  
-        self.ticket = ''
-        #print Pyro.core.Log
-
-
-    def run(self):
-        #from Pyro.config import PYRO_COMPRESSION
-        #print "compr",Pyro.config.PYRO_COMPRESSION
-        Pyro.config.PYRO_COMPRESSION=True
-        
-        Pyro.config.PYRO_DETAILED_TRACEBACK = 1
-        Pyro.config.PYRO_PRINT_REMOTE_TRACEBACK = 1
-        Pyro.core.initServer()
-        daemon=Pyro.core.Daemon()
-        daemon.setTimeout(45)
-        #daemon.adapter.setIdentification = setIdentification
-        daemon.setNewConnectionValidator(hostCheckingValidator())
-        daemon.connect(self,"rpc")
-        daemon.requestLoop()
-
-
-    @authentconn
     def testCredentials(self, host, login, password, cur=None, connection=None):
         try:
             #print host, login, password
@@ -198,7 +79,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         return True
 
-    @authentconn
+    
     def configureNAS(self, id, pptp_enable,auth_types_pap, auth_types_chap, auth_types_mschap2, pptp_ip, radius_enable, radius_server_ip,interim_update, configure_smtp, configure_gateway,protect_malicious_trafic, cur=None, connection=None):
         cur.execute("SELECT ipaddress, login, password, secret FROM nas_nas WHERE id=%s" % id)
         row = cur.fetchone()
@@ -262,7 +143,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return True
 
 
-    @authentconn
+    
     def accountActions(self, account_id, action, cur=None, connection=None):
 
         if type(account_id) is not list:
@@ -337,16 +218,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         del account
         return sended
 
-        
-    '''@authentconn
-    def get_object(self, name, cur=None, connection=None):
-        try:
-            model = models.__getattribute__(name)()
-        except:
-            return None
-        return model'''
-
-    @authentconn
+    
     def transaction_delete(self, ids, cur=None, connection=None):
         for i in ids:
             #print "delete %s transaction" % i
@@ -354,11 +226,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         connection.commit()
 
         return
-    @authentconn
+    
     def flush(self, cur=None, connection=None):
         pass
     
-    @authentconn
+    
     def get(self, sql, cur=None, connection=None):
         #print sql
         if not cur:
@@ -368,13 +240,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result=[]
         r=cur.fetchall()
         if len(r)>1:
-            raise Exception
-
+            raise Exception('Query returned more than 1 result!')
         if r==[]:
             return None
         return Object(r[0])
 
-    @authentconn
+    
     def get_list(self, sql, cur=None, connection=None):
         #print sql
         listconnection = pool.connection()
@@ -387,7 +258,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         listconnection.close()
         return retres
 
-    @authentconn
+    
     def pay(self, account, summ, document, description, created, promise, end_promise, systemuser_id, cur=None, connection=None):
         
         transaction = Object()
@@ -416,7 +287,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             logger.error('pay exception: %s', repr(e))
             return False
     
-    @authentconn
+    
     def createAccountTarif(self, account, tarif, datetime, cur=None, connection=None):
         
         o = Object()
@@ -434,11 +305,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             logger.error('createAccountTarif exception: %s', repr(e))
             return False
 
-    @authentconn
+    
     def dbaction(self, fname, *args, **kwargs):
         return dbRoutine.execRoutine(fname, *args, **kwargs)
     
-    @authentconn
+    
     def delete(self, model, table, cur=None, connection=None):
         sql = model.delete(table)
         #print sql
@@ -447,7 +318,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         del sql
         return
 
-    @authentconn
+    
     def list_logfiles(self, cur=None, connection=None):
         return os.listdir('log/')
         #print sql
@@ -463,7 +334,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         
         return commands.getstatusoutput("tail -n %s log/%s" % (count, log_name))
     
-    @authentconn
+    
     def activate_card(self, login, pin, cur=None, connection=None):
         status_ok = 1
         status_bad_userpassword = 2
@@ -508,22 +379,22 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #del sql
         return
     
-    @authentconn
+    
     def change_tarif(self, accounts, tarif, date, cur=None, connection=None):
-        cur.connection.commit()
+        connection.commit()
         for account in accounts:
             try:
                 cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, date))
             except Exception, e:
-                cur.connection.rollback()
+                connection.rollback()
                 logger.error("Error change tarif for account %s, %s", (account, e))
                 return False
-        cur.connection.commit()
+        connection.commit()
         return True
                 
             
 
-    @authentconn
+    
     def activate_pay_card(self, account_id, serial, card_id, pin, cur=None, connection=None):
         status_ok = 1
         status_bad_userpassword = 2
@@ -556,7 +427,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return "CARD_ACTIVATION_ERROR"
                             
     
-    @authentconn
+    
     def iddelete(self, id, table, cur=None, connection=None):
         sql = u"DELETE FROM %s where id=%d" % (table, id)
         #print sql
@@ -566,7 +437,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #connection.commit()
         return
 
-    @authentconn
+    
     def command(self, sql, cur=None, connection=None):
 
         cur.execute(sql)
@@ -574,32 +445,28 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         del sql
         return         
 
-    @authentconn
+    
     def commit(self, cur=None, connection=None):
         connection.commit()
 
-    @authentconn
+    
     def makeChart(self, *args, **kwargs):
         kwargs['cur']=None
         kwargs['connection']=None
-        listconnection = pool.connection()
-        listconnection._con._con.set_client_encoding('UTF8')
-        listcur = listconnection.cursor()
-        bpbl.bpplotAdapter.rCursor = listcur
-        #bpplotAdapter.rCursor = listcur
-        cddrawer = cdDrawer()
-        imgs = cddrawer.cddraw(*args, **kwargs)
-        listconnection.commit()
-        listcur.close()
-        listconnection.close()
-        gc.collect()
+        with vars.graph_connection_lock:
+            bpbl.bpplotAdapter.rCursor = vars.graph_connection
+            #bpplotAdapter.rCursor = listcur
+            cddrawer = cdDrawer()
+            imgs = cddrawer.cddraw(*args, **kwargs)
+            vars.graph_connection.commit()
+            gc.collect()
         return imgs
 
-    @authentconn
+    
     def rollback(self, cur=None, connection=None):
         connection.rollback()
 
-    @authentconn
+    
     def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None):
         #print self.ticket
         #print sql
@@ -614,7 +481,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #print "Query length=", time.clock()-a
         return result
 
-    @authentconn
+    
     def get_limites(self, account_id, cur=None, connection=None):
         limites = cur.execute("""SELECT lim.name, lim.size, lim.group_id, lim.mode, sp.time_start, sp.length, sp.length_in, sp.autostart FROM billservice_trafficlimit as lim
         JOIN billservice_settlementperiod as sp ON sp.id=lim.settlement_period_id
@@ -623,7 +490,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
 
         cur.execute("SELECT datetime FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY ID DESC LIMIT 1", (account_id,))
         accounttarif_date = cur.fetchone()["datetime"]
-        cur.connection.commit()
+        connection.commit()
         res = []
         for limit in limites:
             limit_name = limit["name"]
@@ -650,7 +517,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
                 settlement_period_start=now-datetime.timedelta(seconds=delta)
                 settlement_period_end=now
             
-            cur.connection.commit()
+            connection.commit()
 
             #print 4
             cur.execute("""
@@ -660,12 +527,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             
             size=cur.fetchone()
             res.append({'settlement_period_start':settlement_period_start, 'settlement_period_end':settlement_period_end, 'limit_name': limit_name, 'limit_size':limit_size or 0, 'size':size["size"] or 0,})
-            cur.connection.commit()
+            connection.commit()
         
         return res
 
 
-    @authentconn
+    
     def get_prepaid_traffic(self, account_id, cur=None, connection=None):
         cur.execute("""SELECT   ppt.id, ppt.account_tarif_id, ppt.prepaid_traffic_id,  ppt.size, ppt.datetime, pp.size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
                             JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
@@ -674,7 +541,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result = map(Object, cur.fetchall())
         return result
     
-    @authentconn
+    
     def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
         cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))
         
@@ -683,7 +550,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
 
 
-    @authentconn
+    
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
         #print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
         sql = u"SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
@@ -693,7 +560,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result = map(Object, cur.fetchall())
         return result[0]
     
-    @authentconn    
+        
     def get_notsold_cards(self, cards, cur=None, connection=None):
         if len(cards)>0:
             crd = "(" + ",".join(cards) + ")"
@@ -704,38 +571,38 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result = map(Object, cur.fetchall())
         return result
     
-    @authentconn
+    
     def get_operator(self, cur=None, connection=None):
         cur.execute("SELECT * FROM billservice_operator LIMIT 1;")
         result = map(Object,cur.fetchall())
         return result
     
-    @authentconn
+    
     def get_operator_info(self, cur=None, connection=None):
         cur.execute("SELECT operator.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_operator as operator JOIN billservice_bankdata as bankdata ON bankdata.id=operator.bank_id LIMIT 1")
         result = Object(cur.fetchone())
         return result
 
-    @authentconn
+    
     def get_dealer_info(self, id, cur=None, connection=None):
         cur.execute("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s", (id, ))
         result = Object(cur.fetchone())
         return result
 
 
-    @authentconn      
+          
     def get_bank_for_operator(self, operator, cur=None, connection=None):
         cur.execute("SELECT * FROM billservice_bankdata WHERE id=(SELECT bank_id FROM billservice_operator WHERE id=%s)", (operator,))
         result = map(Object, cur.fetchall())
         return result[0]
     
-    @authentconn      
+          
     def get_cards_nominal(self, cur=None, connection=None):
         cur.execute("SELECT nominal FROM billservice_card GROUP BY nominal")
         result = map(Object, cur.fetchall())
         return result
     
-    @authentconn 
+     
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None):
         if tarif_id!=-1000:
             cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
@@ -748,9 +615,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         result = map(Object, cur.fetchall())
         return result
 
-
-
-    @authentconn 
+     
     def get_tariffs(self, cur=None, connection=None):
         cur.execute("""SELECT id, name, active, (SELECT bsap.access_type
                    FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff  WHERE tariff.deleted = False ORDER BY ttype, name;""")
@@ -758,12 +623,12 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
     
     
-    @authentconn  
+      
     def delete_card(self, id, cur=None, connection=None):
         cur.execute("DELETE FROM billservice_card WHERE id=%s", (id,))
         return
     
-    @authentconn  
+      
     def get_next_cardseries(self, cur=None, connection=None):
         cur.execute("SELECT MAX(series) as series FROM billservice_card")
         result = cur.fetchone()['series']
@@ -774,7 +639,7 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         #print result
         return result
     
-    @authentconn
+    
     def sql_as_dict(self, sql, return_response=True, cur=None, connection=None):
         #print sql
         cur.execute(sql)
@@ -787,13 +652,13 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return result
 
 
-    @authentconn
+    
     def transaction(self, sql, cur=None, connection=None):
         cur.execute(sql)
         id = cur.fetchone()['id']
         return id
 
-    @authentconn
+    
     def save(self, model, table, cur=None, connection=None):
         #print model
         sql = model.save(table)
@@ -805,11 +670,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         id = cur.fetchone()['id']
         return id
 
-    @authentconn
+    
     def test(self, cur=None, connection=None):
         pass
 
-    @authentconn
+    
     def add_addonservice(self, account_id, service_id, ignore_locks = False, activation_date = None, cur=None, connection=None):
         #Получаем параметры абонента
         sql = "SELECT id, ballance, balance_blocked, disabled_by_limit, status, get_tarif(id) as tarif_id,(SELECT datetime FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_date FROM billservice_account as acc WHERE id=%s" %account_id
@@ -950,16 +815,16 @@ class RPCServer(Thread, Pyro.core.ObjBase):
             return False
         
         
-    @authentconn
+    
     def del_addonservice(self, account_id, account_service_id, cur=None, connection=None):
  
         #Получаем нужные параметры аккаунта
-        cur.connection.commit()
+        #connection.commit()
         cur.execute("SELECT acc.id, get_tarif(id) as tarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_id FROM billservice_account as acc WHERE id = %s;", (account_id,))
         
         result=[]
         r=cur.fetchall()
-        cur.connection.commit()
+        connection.commit()
         if len(r)>1:
             raise Exception
 
@@ -1045,11 +910,11 @@ class RPCServer(Thread, Pyro.core.ObjBase):
         return False
 
         
-    @authentconn
+    
     def get_allowed_users(self, cur=None, connection=None):
         return allowedUsers()
     
-    @authentconn
+    
     def pod(self, session, cur=None, connection=None):
         #print "Start POD"
         cur.execute("""
@@ -1133,13 +998,38 @@ def graceful_save():
     logger.lprint("Stopping gracefully.")
     sys.exit()
     
+    
+def check_login(login):
+    global vars
+    result = None
+    with vars.db_connection_lock:
+        try:
+            vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s;''', (login,))
+            result = vars.db_connection.fetchall()
+        except Exception, ex:
+            result = ex
+    if isinstance(result, Exception):
+        raise result
+    else:
+        return result
+            
+def get_producer(addr):
+    global vars
+    authenticator = MD5_Authenticator('server', 'AUTH', check_login, addr)
+    protocol = RPCProtocol(authenticator)
+    db_conn = PersistentDBConnection(psycopg2, vars.db_dsn, cursor_factory = psycopg2.extras.RealDictCursor)
+    rpc_ = RPCServer()
+    producer = DBProcessingThread(protocol, db_conn, rpc_, reactor)
+    return producer
+
 def main():
     global threads, vars
     threads=[]
+    '''
     threads.append(RPCServer())
     for th in threads:	
         th.start()
-        time.sleep(0.1)
+        time.sleep(0.1)'''
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
@@ -1152,16 +1042,27 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     #main thread should not exit!
-    print "ebs: rpc: started"
+    #print "ebs: rpc: started"
+
+
+    #reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
+    fact = RPCFactory(TCP_IntStringReciever, get_producer)
+    #fact.protocol = TCP_LineReciever
+    #fact.protocol = TCP_IntStringReciever
+    p = reactor.listenTCP(vars.LISTEN_PORT, fact)
+    logger.info("Listening on: %s", p.getHost())
+
+    
+    print "ebs: nfroutine: started"
     savepid(vars.piddir, vars.name)
-    while True:
-        time.sleep(300)
+    reactor.run(installSignalHandlers=False)
         
 if __name__ == "__main__":
     if "-D" in sys.argv:
         pass
         #daemonize("/dev/null", "log.txt", "log.txt")
      
+    
     config = ConfigParser.ConfigParser()    
     config.read("ebs_config.ini")
     
@@ -1169,31 +1070,38 @@ if __name__ == "__main__":
         vars = RpcVars()        
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
-
-        logger = isdlogger.pyrologger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        vars.db_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
+        vars.db_connection.connect()
+        vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
+        vars.graph_connection.connect()
+        vars.graph_connection.connection.set_isolation_level(0)
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
+        serv_install_logger(logger)
+        proto_install_logger(logger)
         logger.lprint('Ebs RPC start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         maxUsers = int(config.get("rpc", "max_users"))
-    
-
+        '''
         pool = PooledDB(mincached=1, maxcached=10,
                         blocking=True, maxusage=20,
                         setsession=["SET statement_timeout = 180000000;"],
-                        creator=psycopg2, dsn=vars.db_dsn)
-        
+                        creator=psycopg2, dsn=vars.db_dsn)'''
+
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(_1i(), pool.connection())               
-        allowedUsers()        
+        allowedUsers = setAllowedUsers(_1i(), vars.db_connection)               
+        allowedUsers()
+        '''
         Pyro.util.Log = logger
         Pyro.core.Log = logger
         Pyro.protocol.Log = logger
+        '''
         #-------------------
         print "ebs: rpc: configs read, about to start"
         main()
     except Exception, ex:
-        print 'Exception in rpc, exiting: ', repr(ex)
+        print 'Exception in rpc, exiting: ', repr(ex), traceback.format_exc()
         logger.error('Exception in rpc , exiting: %s', repr(ex))
