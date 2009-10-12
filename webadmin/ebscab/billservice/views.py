@@ -2,7 +2,7 @@
  
 #NEWRPC = True
 #if NEWRPC:
-from yrpc import rpc_protocol, client_networking
+from rpc2 import rpc_protocol, client_networking
     
 import datetime
 '''
