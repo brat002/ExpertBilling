@@ -8,14 +8,16 @@ from PyQt4 import QtCore, QtGui
 #socket.setdefaulttimeout(None)
 from helpers import Object as Object
 from helpers import connlogin
-import Pyro.core
-import Pyro.util
-import Pyro.protocol
-import Pyro.constants
-import Pyro.errors
-import Pyro.configuration
+#===============================================================================
+# import Pyro.core
+# import Pyro.util
+# import Pyro.protocol
+# import Pyro.constants
+# import Pyro.errors
+# import Pyro.configuration
 import threading
-import Pyro
+# import Pyro
+#===============================================================================
 
 from rpc2 import rpc_protocol, client_networking
 
@@ -630,13 +632,15 @@ class rpcDispatcher(threading.Thread):
     def run(self):
         pass
 
-class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
-    def __init__(self):
-        Pyro.protocol.DefaultConnValidator.__init__(self)
-    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-        return authid
-    def mungeIdent(self, ident):
-        return ident
+#===============================================================================
+# class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
+#    def __init__(self):
+#        Pyro.protocol.DefaultConnValidator.__init__(self)
+#    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
+#        return authid
+#    def mungeIdent(self, ident):
+#        return ident
+#===============================================================================
       
 
 def login():

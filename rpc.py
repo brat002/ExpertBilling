@@ -1053,7 +1053,7 @@ def main():
     logger.info("Listening on: %s", p.getHost())
 
     
-    print "ebs: nfroutine: started"
+    print "ebs: rpc: started"
     savepid(vars.piddir, vars.name)
     reactor.run(installSignalHandlers=False)
         
