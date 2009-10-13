@@ -117,6 +117,10 @@ class ProtocolException(Exception):
 class AuthenticationException(Exception):
     pass
 
+
+#простой клиент
+#также реализует интерфейс продюсера твистед
+
 class BasicClientConnection(object):
     implements(interfaces.IProducer)
     
@@ -195,6 +199,8 @@ class BasicClientConnection(object):
     
     def __getattr__(self, *args, **kwargs):
         return partial(self.process_send,'DATA', args[0])
+
+#главный класс протокола
 
 class RPCProtocol(object):
     structFormat = "!I"
