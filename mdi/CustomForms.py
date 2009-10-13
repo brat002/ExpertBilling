@@ -2162,7 +2162,7 @@ class InfoDialog(QtGui.QDialog):
     def refresh(self):
         
         if self.type == "limit":
-            columns=["#", u"Название", u"Количество", u"Израсходовано", u"Начало", u"Окончание"]
+            columns=["#", u"Название", u"Количество", u"Остаток", u"Начало", u"Окончание"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.get_limites(self.account_id)
 
