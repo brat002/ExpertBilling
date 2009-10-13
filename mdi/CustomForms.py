@@ -563,7 +563,7 @@ class ConnectDialog(QtGui.QDialog):
             self.name_edit.setText(self._name)
             self.password_edit.setText("*******")
         except Exception, ex:
-            print >>sys.stderr, ex
+            print ex
         '''dbi = self.db.select("select * from exbill_users;")
         p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
         p2 = dbi[4].value(3).toByteArray()
@@ -619,7 +619,7 @@ class ConnectDialog(QtGui.QDialog):
             settings.setValue("save", QtCore.QVariant(self.save_checkBox.isChecked()))
             QtGui.QDialog.accept(self)
         except Exception, ex:
-            print "accept error"
+            #print "accept error"
             print ex
             
     def save(self):

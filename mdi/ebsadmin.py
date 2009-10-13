@@ -670,7 +670,6 @@ def login():
                 logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
                 rpc_protocol.install_logger(logger)
                 client_networking.install_logger(logger)
-                #print repr(str(child.password))
                 
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                 protocol = rpc_protocol.RPCProtocol(authenticator)
@@ -683,15 +682,9 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                #print child.password
                 auth_result = connection.authenticate(str(child.name), str(child.password))
-                #print auth_result
-                #if not connection.authenticate(str(child.name), str('admin')):
                 if not auth_result or not connection.protocol._check_status():
                     raise Exception('Status = False!')
-                #connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-                #password = unicode(child.password.toHex())
-                #connection._setNewConnectionValidator(antiMungeValidator())
                 username = str(child.name)
                 server_ip = unicode(child.address)
                 #connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
@@ -701,8 +694,6 @@ def login():
 
             except Exception, e:
                 print repr(e), traceback.format_exc()
-                #print "login connection error"
-                #splash.hide()
                 if not isinstance(e, client_networking.TCPException):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:

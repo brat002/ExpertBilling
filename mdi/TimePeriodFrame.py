@@ -322,7 +322,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             self.refresh()
     def addPeriod(self):        
         text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);
-        print text        
+        #print text        
         if text[0].isEmpty()==True and text[1]==True:
             QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return
@@ -453,8 +453,9 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             nodemodel = self.connection.get_model(unicode(self.getSelectedId()), "billservice_timeperiodnode")
             #nodemodel = self.connection.sql("SELECT * FROM billservice_timeperiodnode WHERE id=%d;" % int(id))[0]
         except Exception, e:
-            import Pyro.util
-            print ''.join(Pyro.util.getPyroTraceback(e))
+            pass
+            #import Pyro.util
+            #print ''.join(Pyro.util.getPyroTraceback(e))
 
         
         #name=unicode(self.getSelectedName())

@@ -387,7 +387,7 @@ class AddDealerFrame(QtGui.QMainWindow):
 
             
         except Exception, e:
-            print 1,e
+            print e
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка!",
                                 u"Невозможно сохранить данные!")

@@ -155,7 +155,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            print 'New sp'
+            #print 'New sp'
             model=Object()
 
         if unicode(self.name_edit.text())==u"":
