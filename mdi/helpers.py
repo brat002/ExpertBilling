@@ -2,9 +2,12 @@
 
 from PyQt4 import QtGui, QtCore, QtSql
 from types import InstanceType, StringType, UnicodeType
-import Pyro.errors
+#import Pyro.errors
+
 import datetime
-import os
+import os, sys
+sys.path.append(os.path.abspath('../'))
+from rpc2 import client_networking
 import time
 import string
 import traceback
@@ -62,12 +65,14 @@ def connlogin(func):
         try:
             res = func(*args, **kwargs)
             return res
-        except Pyro.errors.ConnectionClosedError, cce:
+        except client_networking.TCPException, cce:
             print repr(cce)
             QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Потеря связи."))
+        '''
         except Pyro.errors.ConnectionDeniedError, cde:
             print repr(cde)
             QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Действие не авторизовано."))
+        '''
     return relogfunc
 
 def setFirstActive(listWidget):

@@ -116,7 +116,7 @@ class ClassEdit(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            print 'New class'
+            #print 'New class'
             model=Object()
             try:
                 maxweight = self.connection.get("SELECT MAX(weight) as weight FROM nas_trafficclass;").weight+1

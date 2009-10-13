@@ -182,7 +182,7 @@ class SystemUserFrame(QtGui.QDialog):
             if self.password!='':
                 model.password=self.password
         else:
-            print 'New nas'
+            #print 'New nas'
             model=Object()
             model.password=self.password
             

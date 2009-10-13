@@ -1,12 +1,29 @@
 # -*- coding=utf-8 -*-
 
+LOG_LEVEL = 1
+DEFAULT_PORT = 7771
+
 from PyQt4 import QtCore, QtGui
+import os, sys
+
+sys.path.append(os.path.abspath('../'))
+
+from rpc2 import rpc_protocol, client_networking
+'''
 import sys
 import datetime
 import Pyro.core
 import Pyro.protocol
 import Pyro.constants
 import Pyro.errors
+'''
+
+import isdlogger
+try:
+    os.mkdir('log')
+except:
+    pass
+
 from db import Object as Object
 from helpers import makeHeaders
 from helpers import tableFormat
@@ -19,6 +36,10 @@ from mako.template import Template
 from ebsWindow import ebsTableWindow
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 tr_id=0
+
+logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='cassa', filename='log/webcab_log')
+rpc_protocol.install_logger(logger)
+client_networking.install_logger(logger)
 
 class CassaEbs(ebsTableWindow):
     def __init__(self, connection):
@@ -407,7 +428,7 @@ class CassaEbs(ebsTableWindow):
         self.printer = printer
     
 
-        
+'''        
 class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
     def __init__(self):
         Pyro.protocol.DefaultConnValidator.__init__(self)
@@ -418,7 +439,7 @@ class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
 
     def mungeIdent(self, ident):
         return ident
-      
+'''      
 
 def login():
     child = ConnectDialog()
@@ -428,6 +449,7 @@ def login():
             waitchild = ConnectionWaiting()
             waitchild.show()
             try:
+                '''
                 connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
                 password = unicode(child.password.toHex())
                 #f = open('tmp', 'wb')
@@ -436,12 +458,27 @@ def login():
                 connection._setIdentification("%s:%s:1" % (str(child.name), str(child.password.toHex())))
                 connection.test()
                 waitchild.hide()
+                return connection'''
+                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
+                protocol = rpc_protocol.RPCProtocol(authenticator)
+                connection = rpc_protocol.BasicClientConnection(protocol)
+                connection.notifier = lambda x: QtGui.QMessageBox.warning(None, unicode(u"Exception"), unicode(x))
+                if ':' in child.address:
+                    host, port = str(child.address).split(':')
+                else:
+                    host, port = str(child.address), DEFAULT_PORT
+                transport = client_networking.BlockingTcpClient(host, port)
+                transport.connect()
+                connection.registerConsumer_(transport)
+                auth_result = connection.authenticate(str(child.name), str(child.password))
+                if not auth_result or not connection.protocol._check_status():
+                    raise Exception('Status = False!')
+                waitchild.hide()
                 return connection
 
             except Exception, e:
-                #print "login connection error"
-                waitchild.hide()
-                if isinstance(e, Pyro.errors.ConnectionDeniedError):
+                print repr(e), traceback.format_exc()
+                if not isinstance(e, client_networking.TCPException):
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
                 else:
                     QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
@@ -460,7 +497,7 @@ if __name__ == "__main__":
     
     if connection is None:
         sys.exit()
-    connection.commit()
+    #connection.commit()
     #try:
     global mainwindow
     #mainwindow = MainWindow(connection=connection)

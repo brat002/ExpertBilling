@@ -481,7 +481,7 @@ class reportConstructor(Dispatcher, ContentHandler):
             for j in range(1, len(mergedata)):
                 #dummy.append(['  |  '])
                 dummy.append([])
-            print "##########################"
+            #print "##########################"
             #print dummy
             for i in range(len(self.curdata)):
                 j = 0

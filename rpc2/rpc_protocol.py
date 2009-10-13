@@ -4,6 +4,7 @@ from functools import partial
 import time
 import marshal, cPickle, zlib, struct, random, traceback
 from twisted.protocols.basic import implements, interfaces
+#from client_networking import TCPException
 BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
 KEY_LEN = 16
@@ -118,6 +119,8 @@ class AuthenticationException(Exception):
 
 class BasicClientConnection(object):
     implements(interfaces.IProducer)
+    
+    #NEWTORK_EXCEPTION = TCPException
     
     STATUS_ = ('none', False)
     def __init__(self, protocol):

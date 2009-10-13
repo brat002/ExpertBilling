@@ -1,5 +1,5 @@
 #-*-coding=utf-8-*-
-import Pyro
+#import Pyro
 from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
@@ -758,7 +758,7 @@ class AddCards(QtGui.QDialog):
             
         for x in xrange(0, self.count_spinBox.value()):
             model = Object()
-            print x
+            #print x
             #model.card_group_id = self.group
             model.series = unicode(self.series_spinBox.text())
             model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
@@ -895,7 +895,7 @@ class AddCards(QtGui.QDialog):
 
         
         template = self.connection.get_model(self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0], "billservice_template")
-        print template.body
+        #print template.body
         templ = Template(template.body, input_encoding='utf-8')
         data+=templ.render_unicode(card=card, operator=operator, bank=bank)
 

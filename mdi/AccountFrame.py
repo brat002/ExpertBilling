@@ -3,7 +3,6 @@
 
 from PyQt4 import QtCore, QtGui
 
-import Pyro.core
 import traceback
 import psycopg2
 from ebsWindow import ebsTable_n_TreeWindow
@@ -121,7 +120,7 @@ class AddAccountTarif(QtGui.QDialog):
                 self.connection.save(model,"billservice_accounttarif")
                 self.connection.commit()
             except Exception, e:
-                print e
+                #print e
                 self.conection.rollback()
         QtGui.QDialog.accept(self)
 
@@ -1453,7 +1452,7 @@ class TarifFrame(QtGui.QDialog):
             child = ComboBoxDialog(items=self.connection.get_models("billservice_settlementperiod"), selected_item = default_text )
             if child.exec_()==1:
                 #self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
-                print "selected_id", child.selected_id
+                #print "selected_id", child.selected_id
                 self.addrow(self.periodical_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
 
         if x==1:
@@ -2038,7 +2037,7 @@ class TarifFrame(QtGui.QDialog):
                 #try:
                 if check_speed([speed.max_limit, speed.burst_limit, speed.burst_treshold, speed.burst_time, speed.priority, speed.min_limit])==False:
                     QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка в настройках скорости")
-                    print 1
+                    #print 1
                     self.connection.rollback()
                     return    
                 #except:
@@ -2210,7 +2209,8 @@ class TarifFrame(QtGui.QDialog):
                         elif limit.action==0:
                             self.connection.iddelete(speedlimit_model, "billservice_speedlimit")
                     except Exception, e:
-                        print e
+                        pass
+                        #print e
 
 
 
