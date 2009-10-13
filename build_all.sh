@@ -67,7 +67,15 @@ for bldd in $total_build; do
 	cp $bldd builds/$1
 	cp init/ebs_$bldd builds/$1/init.d/ebs_$bldd
 	chmod +x builds/$1/init.d/ebs_$bldd
+	if [ -f $bldd ]; then
+	     rm $bldd;
+	fi
+	if [ -f $bldd.c ]; then
+	     rm $bldd.c;
+	fi
 done
+
+rm -rf modules
 
 find $1 -name '.svn' -type d | xargs rm -rf
 
