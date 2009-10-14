@@ -35,12 +35,8 @@ class PrintLogger(object):
             print 'LOGGER: ', args[0] % args[1]
 
 
-#Pyro.config.PYRO_BROKEN_MSGWAITALL = 1
 import isdlogger
-#
-#Pyro.util.Log = logger
-#Pyro.core.Log = logger
-#Pyro.protocol.Log = logger
+
 import mdi_rc
 
 from AccountFrame import AccountsMdiEbs as AccountsMdiChild
@@ -50,7 +46,6 @@ from TimePeriodFrame import TimePeriodChildEbs as TimePeriodChild
 from ClassFrame import ClassChildEbs as ClassChild
 from MonitorFrame import MonitorEbs as MonitorFrame
 from PoolFrame import PoolEbs as PoolFrame
-#from SystemUser import SystemUserChild
 from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
 from Reports import NetFlowReportEbs as NetFlowReport, StatReport , LogViewWindow
@@ -90,7 +85,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.readSettings()
 
-        self.setWindowTitle(u"Expert Billing Client 0.2")
+        #self.setWindowTitle(u"Expert Billing Client 1.2.1")
 
     def closeEvent(self, event):
         self.workspace.closeAllWindows()
@@ -718,7 +713,7 @@ if __name__ == "__main__":
         mainwindow = MainWindow()
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface #%s - %s" % (username, server_ip))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.2.1 #%s - %s" % (username, server_ip))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("./style.qss","r").read())

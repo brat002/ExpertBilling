@@ -62,6 +62,7 @@ class PasswordEditFrame(QtGui.QDialog):
                 return
             if self.password_lineEdit.text() == self.repeat_password_lineEdit.text():
                 self.password = QtCore.QCryptographicHash.hash(self.password_lineEdit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
+                self.text_password = unicode(self.password_lineEdit.text())
                 QtGui.QDialog.accept(self)
             else:
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введенные пароли не совпадают"))
@@ -159,6 +160,7 @@ class SystemUserFrame(QtGui.QDialog):
         if child.exec_()==1:
             if child.password:
                 self.password = unicode(child.password.toHex())
+                self.text_password = child.text_password
                 
     def check_ips(self, ipsstr):
         ips = ipsstr.split(', ')
@@ -181,11 +183,12 @@ class SystemUserFrame(QtGui.QDialog):
             model=self.model
             if self.password!='':
                 model.password=self.password
+                model.text_password = self.text_password
         else:
             #print 'New nas'
             model=Object()
             model.password=self.password
-            
+            model.text_password = self.text_password
             
         if self.username_edit.text():
             model.host = unicode(self.check_ips(str(self.hosts_lineEdit.text())))

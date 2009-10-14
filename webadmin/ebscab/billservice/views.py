@@ -684,10 +684,10 @@ def statistics(request):
     if not request.session.has_key('user'):
         return HttpResponseRedirect('/')
     user = request.session['user']
-    net_flow_streams = NetFlowStream.objects.filter(account=user).order_by('-date_start')[:8]
+    #net_flow_streams = NetFlowStream.objects.filter(account=user).order_by('-date_start')[:8]
     transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
     active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
-    services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]
+    #services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]
     periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
     addon_service_transaction = AddonServiceTransaction.objects.filter(account=user).order_by('-created')[:8]
     one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
@@ -697,10 +697,10 @@ def statistics(request):
     else:
         date_id_dict = {}
     return {
-            'net_flow_stream':net_flow_streams,
+            #'net_flow_stream':net_flow_streams,
             'transactions':transaction,
             'active_session':active_session,
-            'services':services,
+            #'services':services,
             'periodical_service_history':periodical_service_history,
             'addon_service_transaction':addon_service_transaction,
             'one_time_history':one_time_history,
