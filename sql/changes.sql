@@ -2294,3 +2294,15 @@ ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET DEFAULT ''::ch
 
 UPDATE billservice_systemuser SET text_password = 'RPCwebadmin' WHERE username='webadmin';
 UPDATE billservice_systemuser SET text_password = 'admin' WHERE username='admin';
+
+
+CREATE TABLE billservice_news
+(
+  id serial NOT NULL,
+  title character varying(255) NOT NULL,
+  body text NOT NULL,
+  date_from date,
+  date_to date,
+  CONSTRAINT billservice_news_pkey PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
