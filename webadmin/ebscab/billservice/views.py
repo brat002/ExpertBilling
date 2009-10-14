@@ -17,10 +17,10 @@ import Pyro.constants
 import Pyro.errors
 '''
 
-
+CUR_PATH = os.getcwd()
 import isdlogger
 try:
-    os.mkdir('log')
+    os.mkdir(CUR_PATH+'/log')
 except:
     pass
                     
@@ -44,7 +44,7 @@ from nas.models import TrafficClass
 
 from lib.decorators import render_to, ajax_request
 
-logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename='log/webcab_log')
+logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=CUR_PATH+'/log/webcab_log')
 rpc_protocol.install_logger(logger)
 client_networking.install_logger(logger)
 
