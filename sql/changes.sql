@@ -2291,3 +2291,6 @@ ALTER TABLE nas_nas
 ALTER TABLE billservice_systemuser ADD COLUMN text_password character varying(255);
 ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET STORAGE EXTENDED;
 ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET DEFAULT ''::character varying;
+
+UPDATE billservice_systemuser SET text_password = 'RPCwebadmin' WHERE username='webadmin';
+UPDATE billservice_systemuser SET text_password = 'admin' WHERE username='admin';

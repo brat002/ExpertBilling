@@ -65,7 +65,7 @@
 
 {% block content %}
 
-{% if net_flow_stream or transactions or active_session or services or one_time_history or addon_service_transaction or periodical_service_history or traffic_transaction%}
+{% if  transactions or active_session or one_time_history or addon_service_transaction or periodical_service_history or traffic_transaction%}
 	<table class="wide statistic_table" cellpadding="0" cellspacing="0">
 		{% if transactions %}
 		<tr>
@@ -116,45 +116,13 @@
 			</td>
 		</tr>
 		{% endif %}
-		{% if net_flow_stream %}
-		<tr>
-			<th class="white bold s-11 blue_caption">
-				<div class="f-right statistics_link white"><a href="/traffic/info/">Показать всю историю</a></div>
-				<div class="f-left statistics_title">СЕТЕВАЯ СТАТИСТИКА</div>
-			</th>
-		</tr>
-		<tr>
-			<td class="">
-				<table class="wide extra_table" cellpadding="0" cellspacing="0">
-					<tr>
-						<th>Дата</th>
-	   					<th>IP источника</th>
-	   					<th>Порт источника</th>
-	   					<th>IP получателя</th>
-	   					<th>Порт получателя</th>
-	   					<th>Протокол</th>
-	   					<th>Передано</th>
-					</tr>
-					{% for stream in net_flow_stream %}
-						<tr>
-							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.date_start|date:"d.m.Y  H:i" }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_addr }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.src_port }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_addr }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.dst_port }}</td>
-							<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ stream.get_protocol }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_format stream.octets %}</td>
-						</tr>
-					{% endfor %}
-				</table>
-			</td>
-		</tr>
-		{% endif %}
+        
 		{% if active_session %}
+        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white"><a href="/session/info/">Показать всю историю</a></div>
-				<div class="f-left statistics_title">ИНФОРМАЦИЯ О ПОДКЛЮЧЕНИЯХ</div>
+				<div class="f-left statistics_title">ИНФОРМАЦИЯ О СЕССИЯХ</div>
 			</th>
 		</tr>
 		<tr>
@@ -183,51 +151,10 @@
 		
 		
 		
-		{% if services %}
-		<tr>
-			<th class="white bold s-11 blue_caption">
-				<div class="f-right statistics_link white">
-					<form method="get" action="/services/info/" id="services">
-						<div class="range">
-							<ul>
-								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="services_date_from" />
-								</li>
-								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="services_date_to" />
-								</li>
-							</ul>
-						</div>
-					</form>
-					<a href="/services/info/">Показать всю историю</a>
-					<a href="#" onclick="document.getElementById('services').submit(); return false;">Фильтровать</a>
-				</div>
-				<div class="f-left statistics_title">ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ</div>
-			</th>
-		</tr>
-		<tr>
-			<td class="">
-				<table class="wide extra_table" cellpadding="0" cellspacing="0">
-					<tr>
-						<th>Название услуги</th>
-						<th>Дата подключения услуги</th>
-						<th>Дата отключения услуги</th>
-						<th>Списано средств за услугу</th>
-					</tr>
-					{% for service in services %}
-						<tr>
-							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}</td>
-						</tr>
-					{% endfor %}
-				</table>
-			</td>
-		</tr>
-		{% endif %}
+
 		
 		{% if periodical_service_history %}
+        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -273,6 +200,7 @@
 		
 
 		{% if one_time_history %}
+        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -315,6 +243,7 @@
 		{% endif %}
 		
 		{% if addon_service_transaction %}
+        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -361,6 +290,7 @@
 		{% endif %}
 		
 		{% if traffic_transaction %}
+        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
