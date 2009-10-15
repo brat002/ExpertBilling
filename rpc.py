@@ -1069,17 +1069,17 @@ if __name__ == "__main__":
     try:
         vars = RpcVars()        
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
-
-        vars.db_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
-        vars.db_connection.connect()
-        vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
-        vars.graph_connection.connect()
-        vars.graph_connection.connection.set_isolation_level(0)
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         serv_install_logger(logger)
         proto_install_logger(logger)
+        vars.db_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
+        vars.db_connection.connect()
+        vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
+        vars.graph_connection.connect()
+        vars.graph_connection.connection.set_isolation_level(0)
+        
         logger.lprint('Ebs RPC start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
