@@ -51,6 +51,7 @@ def log_in(request, user):
     """
     if user is None:
         user = request.user
+    
     # TODO: It would be nice to support different login methods, like signed cookies.
     if SESSION_KEY in request.session:
         if request.session[SESSION_KEY] != user.id:
