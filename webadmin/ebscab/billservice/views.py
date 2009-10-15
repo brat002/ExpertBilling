@@ -27,14 +27,13 @@ except:
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
-from django.conf import settings
 from django import template
 
+from django.conf import settings
 
 
 from lib.http import JsonResponse
 
-from django.conf import settings
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction 
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
@@ -187,18 +186,18 @@ def index(request):
     if not request.session.has_key('user'):
         return is_login_user(request)
     user = request.session['user']
-    if not cache.get(user.id):
-        del request.session['user']
-        return is_login_user(request)
+    #if not cache.get(user.id):
+    #    del request.session['user']
+    #    return is_login_user(request)
     cursor = connection.cursor()
     cursor.execute("""SELECT id, name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
     tariff_id, tariff_name = cursor.fetchone()
-    cache_user = cache.get(user.id)
-    if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
-        time = datetime.datetime.now() - cache_user['last_date']
-        if time.seconds > settings.BLOCKED_TIME:
-            cache.delete(user.id)
-            cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
+    #cache_user = cache.get(user.id)
+    #if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
+    #    time = datetime.datetime.now() - cache_user['last_date']
+    #    if time.seconds > settings.BLOCKED_TIME:
+    #        cache.delete(user.id)
+    #        cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
     if len(tariffs) == 0 or len(tariffs) == 1:
@@ -236,7 +235,7 @@ def index(request):
             'ballance':ballance,
             'tariff':tariff_name,
             'tariffs':tariffs,
-            'status': bool(cache_user['blocked']),
+            #'status': bool(user.blocked),
             'tariff_flag':tariff_flag,
             'trafficlimit':traffic,
             'prepaidtraffic':prepaidtraffic,
