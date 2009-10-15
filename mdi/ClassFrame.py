@@ -269,7 +269,7 @@ class ClassNodeFrame(QtGui.QDialog):
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры подкласса", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сеть источника", None, QtGui.QApplication.UnicodeUTF8))
         self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
         self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src net", None, QtGui.QApplication.UnicodeUTF8))
@@ -432,7 +432,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
                  ("editClassAction", "Edit class", "images/open.png", self.editClass), \
                  ("addClassNodeAction", "Добавить подкласс", "images/add.png", self.addNode), \
                  ("delClassNodeAction", "Удалить подкласс", "images/del.png", self.delNode), \
-                 ("editClassNodeAction", "Edit Node", "images/open.png", self.editNode), \
+                 ("editClassNodeAction", "Редактировать", "images/open.png", self.editNode), \
                  ("upClassAction", "Повысить", "images/up.png", self.upClass), \
                  ("downClassAction", "Понизить", "images/down.png", self.downClass)
                 ]

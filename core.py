@@ -892,23 +892,23 @@ class addon_service(Thread):
                             else:
                                 nas = caches.nas_cache.by_id.get(service.nas_id)
                                 
-                        if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
-                            #выполняем service_activation_action
-                            cur.connection.commit()
-                            sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
-                                          acc.vpn_ip_address, acc.ipn_ip_address, 
-                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                          nas.password, format_string=service.service_activation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accservice.id))
-                        
-                        if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
-                            #выполняем service_deactivation_action
-                            cur.connection.commit()
-                            sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
-                                          acc.vpn_ip_address, acc.ipn_ip_address, 
-                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                          nas.password, format_string=service.service_deactivation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
+                            if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
+                                #выполняем service_activation_action
+                                cur.connection.commit()
+                                sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
+                                              acc.vpn_ip_address, acc.ipn_ip_address, 
+                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=service.service_activation_action)
+                                if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accservice.id))
+                            
+                            if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
+                                #выполняем service_deactivation_action
+                                cur.connection.commit()
+                                sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
+                                              acc.vpn_ip_address, acc.ipn_ip_address, 
+                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=service.service_deactivation_action)
+                                if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
 
                     cur.connection.commit()
                 cur.connection.commit()
