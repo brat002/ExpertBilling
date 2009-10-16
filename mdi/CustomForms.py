@@ -1,4 +1,4 @@
-#-*-coding=utf-8*-
+#-*-coding=utf-8-*-
 
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
@@ -555,13 +555,13 @@ class ConnectDialog(QtGui.QDialog):
             else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
                 
 
-            self._address = settings.value("ip", QtCore.QVariant("")).toString()
-            self._name = settings.value("user", QtCore.QVariant("")).toString()
+            self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
+            self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
             #self._password = settings.value("password", QtCore.QVariant("")).toByteArray()
-            self._password = settings.value("password", QtCore.QVariant("")).toString()
-            self.address_edit.setText(self._address)
-            self.name_edit.setText(self._name)
-            self.password_edit.setText("*******")
+            self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
+            #self.address_edit.setText(self._address)
+            #self.name_edit.setText(self._name)
+            #self.password_edit.setText("*******")
         except Exception, ex:
             print ex
         '''dbi = self.db.select("select * from exbill_users;")
@@ -583,34 +583,26 @@ class ConnectDialog(QtGui.QDialog):
         return dbmodel
     
     def accept(self):
-        psd = self.passValidator.validate(self.password_edit.text(), 0)[0]
+        #psd = self.passValidator.validate(self.password_edit.text(), 0)[0]
         try:
-            self.password = ''
+            self.password = unicode(self.password_edit.text())
 
-            if not ((self.ipValidator.validate(self.address_edit.text(), 0)[0] == QtGui.QValidator.Acceptable) and (self.name_edit)):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите адрес и имя пользователя"))
-                return
-            if (psd == QtGui.QValidator.Acceptable):
-                #self.password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
-                self.password = self.password_edit.text()
-            else:
-                if (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
-                    self.password = self._password
-                else:
-                    model = self.tableWidget.model()
-                    for i in range(model.rowCount()):
-                        if (model.record(i).value(2).toString() == self.name_edit.text()) and (model.record(i).value(1).toString() == self.address_edit.text()):
-                            #print "zomg"
-                            #print model.record(i).value(3).toUtf8()
-                            self.password = model.record(i).value(3)
-                            break
-                    if not self.password:
-                        print self.password
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите пароль"))
-                        return
+            #self.password = self._password
+#===============================================================================
+#            else:
+#                model = self.tableWidget.model()
+#                for i in range(model.rowCount()):
+#                    if (model.record(i).value(2).toString() == self.name_edit.text()) and (model.record(i).value(1).toString() == self.address_edit.text()):
+#                        self.password = model.record(i).value(3)
+#                        break
+#                if not self.password:
+#                    self.password = unicode(self.password_edit.text())
+#===============================================================================
+
             
             self.address = self.address_edit.text()
             self.name    = self.name_edit.text()
+            #print self.name
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             if self.save_checkBox.isChecked() == True:
                 settings.setValue("ip", QtCore.QVariant(self.address))
@@ -624,35 +616,23 @@ class ConnectDialog(QtGui.QDialog):
             
     def save(self):
         try:
-            if self.address_edit.text() and (self.ipValidator.validate(self.address_edit.text(), 0)[0]  == QtGui.QValidator.Acceptable):
-                ip = self.address_edit.text()
-            else:
-                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите адрес."))
-                return
+            
             if self.name_edit.text():
                 name = self.name_edit.text()
             else:
                 QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите имя."))
                 return
-            if self.password_edit.text():
-                if self.passValidator.validate(self.password_edit.text(), 0)[0]  != QtGui.QValidator.Acceptable:
-                    if self._password and (self._name == self.name_edit.text()) and (self._address == self.address_edit.text()):
-                        password = self._password
-                    else:
-                        QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пароль должен быть длиной минимум 3 символа и не содержать спецефических символов."))
-                        return
-                else:
-                    #password = QtCore.QCryptographicHash.hash(self.password_edit.text().toUtf8(), QtCore.QCryptographicHash.Md5)
-                    password = self.password_edit.text()
-            else:
-                QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
-                return
+            if not self.password_edit.text(): QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите пароль."))
+
+            password = self.password_edit.text()
+            ip = unicode(self.address_edit.text())
             model = self.tableWidget.model()
             update = False
             row = -1
             try:
                 if self.tableWidget.selectedIndexes():
                     if model.record(self.tableWidget.selectedIndexes()[0].row()).value(1).toString() == ip:
+                        print "update"
                         update = True
                         row = self.tableWidget.selectedIndexes()[0].row()
             except Exception, ex: print ex
@@ -682,8 +662,8 @@ class ConnectDialog(QtGui.QDialog):
             selRec = self.tableWidget.model().record(args[0].row())
             self.address_edit.setText(selRec.value(1).toString())
             self.name_edit.setText(selRec.value(2).toString())
-            #self.password_edit.setText("*******")
-            
+            self.password_edit.setText(selRec.value(3).toString())
+            #print selRec.value(3).toString()
         except Exception, ex:
             print ex
 

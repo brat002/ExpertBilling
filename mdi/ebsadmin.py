@@ -1,4 +1,5 @@
-#-*-coding=utf-8*-
+#-*- coding=utf-8 -*-
+
 #global connection
 import sys, traceback, os
 sys.path.append(os.path.abspath('../'))

@@ -653,7 +653,7 @@ def client(request):
     #for traffic_class in TrafficClass.objects.all().order_by('weight'):
     #    min_weight = traffic_class
     ckwargs = {'return':{}, 'options':{'autoticks':False, 'antialias':True}, 'dcname': 'nfs_web', 'speed':True, 'by_col':'classes', 'users':[user.id], 'classes':[i.id for i in TrafficClass.objects.all()]}
-    imgs = connection.makeChart(*cargs, **ckwargs)
+    imgs = connection_server.makeChart(*cargs, **ckwargs)
     response = HttpResponse(imgs, content_type='image/png')
     return response
             

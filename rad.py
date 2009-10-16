@@ -889,6 +889,7 @@ class HandleHotSpotAuth(HandleSBase):
             'priority': result[8],
             'min_limit_rx': result[9],
             'min_limit_tx': result[10]}
+            
             if nas.speed_value1:
                 result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
                 if result_params and nas.speed_vendor_1:
@@ -1074,6 +1075,7 @@ class HandleSAcct(HandleSBase):
         if not nas:
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
+        
         if 0: assert isinstance(nas, NasData)
 
         self.replypacket.secret=str(nas.secret)        
