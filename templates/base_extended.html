@@ -19,7 +19,7 @@
 		<div class="f-right status">{% if status %}<div class="user_is_blocked bold s-11">Вы заблокированы</div>{% endif %}</div>
 		
             <div class="f-left user_name bold">
-                Ваш логин: {% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %}
+                Пользователь: {% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %}
             </div> 
 
         {% if not user.account_status %}
