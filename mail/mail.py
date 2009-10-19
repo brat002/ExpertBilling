@@ -18,6 +18,14 @@ DEFAULT_CHARSET = 'utf-8'
 #from django.conf import settings
 #from encoding import smart_str, force_unicode
 
+class Promise(object):
+    """
+    This is just a base class for the proxy class created in
+    the closure of the lazy function. It can be used to recognize
+    promises in code.
+    """
+    pass
+
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     Returns a bytestring version of 's', encoded as specified in 'encoding'.
