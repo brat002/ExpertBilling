@@ -645,12 +645,18 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setRowCount(len(nodes))        
         i=0        
         #['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
+        protocols={'0':'all',  '37':'ddp', '98':'encap', 
+                        '3':'ggp',    '47':'gre', '20':'hmp', 
+                        '1':'icmp',   '38':'idpr-cmtp', 
+                        '2':'igmp',   '94':'ipip','89':'ospf',
+                        '4':'ipencap','17':'udp', '27':'rdp',      
+                        '6':'tcp'}
         for node in nodes:
 
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
             self.addrow(node.direction, i,2)
-            self.addrow(node.protocol, i,3)
+            self.addrow(protocols.get("%s" % node.protocol,""), i,3)
             self.addrow(node.src_ip, i,4)
             self.addrow(node.src_port, i,5)
             
@@ -680,7 +686,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
     def delNodeLocalAction(self):
         super(ClassChildEbs, self).delNodeLocalAction([self.delClassNodeAction])
         
-class ClassChild(QtGui.QMainWindow):
+class Clas22sChild(QtGui.QMainWindow):
     sequenceNumber = 1
 
     def __init__(self, connection):
@@ -814,6 +820,22 @@ class ClassChild(QtGui.QMainWindow):
         except Exception, ex:
             print "Error in setting first element active: ",ex
         
+        self.protocols={0:u"Любой",
+           37:'ddp',
+           98:'encap', 
+           3:'ggp', 
+           47:'gre', 
+           20:'hmp', 
+           1:'icmp', 
+           38:'idpr-cmtp', 
+           2:'igmp', 
+           4:'ipencap', 
+           94:'ipip',  
+           89:'ospf', 
+           27:'rdp', 
+           6:'tcp', 
+           17:'udp'
+           }
         
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.delNodeLocalAction()
@@ -1029,11 +1051,11 @@ class ClassChild(QtGui.QMainWindow):
         i=0        
         #['Id', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src mask', 'Src Port', 'Dst IP', 'Dst Mask', 'Dst Port', 'Next Hop']
         for node in nodes:
-
+            print 123123
             self.addrow(node.id, i,0)
             self.addrow(node.name, i,1)
             self.addrow(node.direction, i,2)
-            self.addrow(node.protocol, i,3)
+            self.addrow(self.protocols.get(node.protocol,""), i,3)
             self.addrow(node.src_ip, i,4)
             self.addrow(node.src_port, i,5)
             

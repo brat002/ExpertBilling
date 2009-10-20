@@ -332,7 +332,7 @@ class RPCServer(object):
         if all_file:
             return commands.getstatusoutput("cat log/%s" % log_name)
         
-        return commands.getstatusoutput("tail -n %s log/%s" % (count, log_name))
+        return str(commands.getstatusoutput("tail -n %s log/%s" % (count, log_name)))
     
     
     def activate_card(self, login, pin, cur=None, connection=None):
