@@ -326,13 +326,13 @@ class RPCServer(object):
         #connection.commit()
         #del sql
         
-    def get_tail_log(self, log_name, count=10, all_file=False):
+    def get_tail_log(self, log_name, count=10, all_file=False, cur=None, connection=None):
         #a=file("log/%s", 'r')
         #strs = a.re
         if all_file:
             return commands.getstatusoutput("cat log/%s" % log_name)
         
-        return str(commands.getstatusoutput("tail -n %s log/%s" % (count, log_name)))
+        return commands.getstatusoutput("tail -n %s log/%s" % (count, log_name))
     
     
     def activate_card(self, login, pin, cur=None, connection=None):
