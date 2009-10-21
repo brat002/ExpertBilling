@@ -70,7 +70,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
+    'notification.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
     'notification.context_processors.footer',
@@ -134,6 +134,8 @@ LOGIN_REDIRECT_URL = '/login/'
 ALLOW_PROMISE = True
 MAX_PROMISE_SUM = 100000
 LEFT_PROMISE_DAYS = 7
+
+WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
 
 try:
     from settings_local import *
