@@ -4,7 +4,7 @@ from django.contrib.auth.backends import ModelBackend
 from billservice.models import Account
 
 
-class LoginUserBackend(ModelBackend):
+class LoginUserBackend(object):
     def authenticate(self, username=None, password=None):
         try:
             user = Account.objects.get(username=username, password=password)
@@ -12,3 +12,9 @@ class LoginUserBackend(ModelBackend):
         except:
             pass
         return None
+    
+    def get_user(self, user_id):
+        try:
+            return Account.objects.get(id=user_id)
+        except:
+            return None

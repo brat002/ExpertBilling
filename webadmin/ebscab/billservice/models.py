@@ -590,6 +590,23 @@ class Account(models.Model):
         """Always return True. This is a way to tell if the user has been authenticated in templates.
         """
         return True
+    
+    def get_account_tariff(self):
+        tariff = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
+        return tariff[0]
+    
+    def get_and_delete_messages(self):
+        messages = []
+        for m in self.message_set.all():
+            messages.append(m.message)
+            m.delete()
+        return messages
+    
+    def get_account_tariff_info(self):
+        tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
+        for tariff in tariff_info:
+            return [tariff.id, tariff.name,]
+        
 
 
 class Organization(models.Model):
