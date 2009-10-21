@@ -1,6 +1,8 @@
  #-*- coding=UTF-8 -*-
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.conf import settings
 
 from lib.http import JsonResponse, render_response
 
@@ -31,4 +33,12 @@ def ajax_request(func):
             return JsonResponse(response)
         else:
             return response
+    return wrapper
+
+def login_required(func):
+    def wrapper(request, *args, **kw):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(settings.LOGIN_URL)
+        else:
+            return None 
     return wrapper
