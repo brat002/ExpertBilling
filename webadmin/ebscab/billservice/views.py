@@ -18,9 +18,11 @@ import Pyro.errors
 '''
 
 CUR_PATH = os.getcwd()
+from django.conf import settings
+
 import isdlogger
 try:
-    os.mkdir('/opt/ebs/web/ebscab/log')
+    os.mkdir(settings.WEBCAB_LOG)
 except:
     pass
                     
@@ -28,22 +30,20 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
 from django import template
-
-from django.conf import settings
-
+from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
 
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction 
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic 
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
 from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
 
-from lib.decorators import render_to, ajax_request
+from lib.decorators import render_to, ajax_request#, login_required
 
-logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename='/opt/ebs/web/ebscab/log/webcab_log')
+logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
 rpc_protocol.install_logger(logger)
 client_networking.install_logger(logger)
 
@@ -131,7 +131,6 @@ def login(request):
                 if user.password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
-                    request.session['user'] = user
                     if not cache.get(user.id):
                         cache.set(user.id, {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
                     else:
@@ -140,10 +139,8 @@ def login(request):
                             cache.set(user.id, {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
                         else:
                             cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)    
-                    cursor = connection.cursor()
-                    cursor.execute("""SELECT allow_express_pay FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id))
-                    allow_express_pay = cursor.fetchone()[0]
-                    if allow_express_pay:
+                    tariff = user.get_account_tariff()
+                    if tariff.allow_express_pay:
                         request.session['express_pay']=True
                     request.session.modified = True
                     return HttpResponseRedirect('/')
@@ -175,29 +172,15 @@ def login(request):
                }  
                
 def login_out(request):
-    if request.session.has_key('user'):
-        del request.session['user']
     log_out(request)
-    return is_login_user(request)
+    return HttpResponseRedirect('/')
 
 
 @render_to('accounts/index.html')
+@login_required
 def index(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
-    user = request.session['user']
-    #if not cache.get(user.id):
-    #    del request.session['user']
-    #    return is_login_user(request)
-    cursor = connection.cursor()
-    cursor.execute("""SELECT id, name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
-    tariff_id, tariff_name = cursor.fetchone()
-    #cache_user = cache.get(user.id)
-    #if int(cache_user['count']) > settings.ACTIVATION_COUNT and bool(cache_user['blocked']):
-    #    time = datetime.datetime.now() - cache_user['last_date']
-    #    if time.seconds > settings.BLOCKED_TIME:
-    #        cache.delete(user.id)
-    #        cache.set(user.id, {'count':0,'last_date':cache_user['last_date'],'blocked':False,}, 86400*365)
+    user = request.user
+    tariff_id, tariff_name = user.get_account_tariff_info()
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
     if len(tariffs) == 0 or len(tariffs) == 1:
@@ -208,28 +191,17 @@ def index(request):
         ballance = user.ballance - user.credit
         ballance = u'%.2f' % user.ballance
     except:
-        ballance = 0
-    #find prepare trafick
-    
-    #cursor = connection.cursor()
-    cursor.execute("""SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
+        ballance = 0 
+    traffic = TrafficLimit.objects.filter(tarif=tariff_id)      
     try:
-        tariff = cursor.fetchone()[0]
-        traffic = TrafficLimit.objects.filter(tarif=tariff_id) 
-    except:
-        traffic = None
-        
-    from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
-    
-
-    cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
-    try:
-        account_tariff_id = cursor.fetchone()[0]
-        account_tariff = AccountTarif.objects.get(id=account_tariff_id)
-        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff_id)
+        account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
+        account_tariff_id = account_tariff_id[0]
+        account_tariff = AccountTarif.objects.get(id=account_tariff_id.id) 
+        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff_id.id)
         prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     except:
-        prepaidtraffic = None 
+        prepaidtraffic = None
+        account_tariff = None 
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
@@ -243,11 +215,10 @@ def index(request):
             }
     
 @render_to('accounts/netflowstream_info.html')
+@login_required
 def netflowstream_info(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start'), 500, 'page')
+    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.user).order_by('-date_start'), 500, 'page')
     return {
             'net_flow_streams':paginator.get_page_items(),
             'paginator': paginator,
@@ -255,62 +226,59 @@ def netflowstream_info(request):
     
 
 @render_to('accounts/get_promise.html')
+@login_required
 def get_promise(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     if settings.ALLOW_PROMISE==False:
         return HttpResponseRedirect('/')
-    user = request.session['user']
+    user = request.user
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = settings.LEFT_PROMISE_DAYS)
-    
-    cursor = connection.cursor()
-    cursor.execute("""SELECT True FROM billservice_transaction WHERE account_id=%s and promise=True and promise_expired=False""" % (user.id))
-    #print "cursor.fetchone()", cursor.fetchone()
-    if cursor.fetchone():
+    if Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
         return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, }        
-    #print 1
     if request.method == 'POST':
         rf = PromiseForm(request.POST)
         if not rf.is_valid():
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Проверьте введённые в поля данные"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        #print 2
         sum=rf.cleaned_data.get("sum", 0)
         if sum>settings.MAX_PROMISE_SUM:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Вы превысили максимальный размер обещанного платежа"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        #print 3
         if sum<=0:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Сумма обещанного платежа должна быть положительной"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired) 
-                          VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum*(-1), LEFT_PROMISE_DATE))
-        cursor.connection.commit()
+        transaction = Transaction.objects.create(
+                                                 account = user,
+                                                 bill = u'Обещанный платёж', 
+                                                 type = u'MANUAL_TRANSACTION',
+                                                 approved = True,
+                                                 tarif = user.get_account_tariff(),
+                                                 summ = sum*(-1), 
+                                                 created = datetime.datetime.now(),
+                                                 promise = True,
+                                                 end_promise = LEFT_PROMISE_DATE,
+                                                 promise_expired = False,
+                                                 )
+        
+        
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         
         return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises,}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE}     
-            
-        
-    #from lib.paginator import SimplePaginator
-    #paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.session['user']).order_by('-date_start'), 500, 'page')
-    
+        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE}        
 
     
 @render_to('accounts/transaction.html')
+@login_required
 def transaction(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'transactions', 'created')
-    qs = Transaction.objects.filter(account=request.session['user'], **addon_query).order_by('-created')
+    qs = Transaction.objects.filter(account=request.user, **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     if is_range:
@@ -324,11 +292,10 @@ def transaction(request):
             }
     
 @render_to('accounts/vpn_session.html')
+@login_required
 def vpn_session(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
-    user = request.session['user']
+    user = request.user
     paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user).order_by('-date_start'), 50, 'page')
     return {
             'sessions':paginator.get_page_items(),
@@ -337,12 +304,11 @@ def vpn_session(request):
             }
     
 
-@render_to('accounts/services_info.html')    
+@render_to('accounts/services_info.html')
+@login_required    
 def services_info(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
-    user = request.session['user']  
+    user = request.user  
     is_range, addon_query = addon_queryset(request, 'services', 'activated')
     qs = AccountAddonService.objects.filter(account=user, **addon_query).order_by('-activated')
     paginator = SimplePaginator(request, qs, 50, 'page')
@@ -363,23 +329,20 @@ def services_info(request):
     
     
 @render_to('accounts/change_password.html')
+@login_required
 def card_form(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
     return {
             'form':PasswordForm()
             }
 
 @ajax_request
+@login_required
 def change_password(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
     if request.method == 'POST':
         form = PasswordForm(request.POST)
         if form.is_valid():
             try:
-                user = request.session['user']
-                user = Account.objects.get(username=user.username)
+                user = request.user
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
                     user.password = form.cleaned_data['new_password']
                     user.save()
@@ -408,51 +371,43 @@ def change_password(request):
 
 @ajax_request
 @render_to('accounts/change_tariff.html')
+@login_required
 def change_tariff_form(request):
     from datetime import datetime, date 
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
-    cursor = connection.cursor()
-    cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
-    account_tariff_id = cursor.fetchone()[0]
-    account_tariff = AccountTarif.objects.get(id=account_tariff_id)
-    #time = (datetime.now() - account_tariff.datetime).seconds
+    user = request.user
+    account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
+    account_tariff_id = account_tariff_id[0]
+    account_tariff = AccountTarif.objects.get(id=account_tariff_id.id)
     tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance)
-    #form = ChangeTariffForm(user, account_tariff)
     form = ChangeTariffForm(user, account_tariff)
     return {
             'form': form,
             'tariff_objects':tariffs,
-            'user':request.session['user'],
+            'user':user,
             'tariff':account_tariff,
             #'time':time,
             }
 
 
 @ajax_request
+@login_required
 def change_tariff(request):
     """
         settlement_period_info
         1 - дата начала действия тарифа
         
     """
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
+    from datetime import datetime
     if request.method == 'POST':
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
-            user = request.session['user']
-            cursor = connection.cursor()
-            cursor.execute("""select id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id))
-            account_tariff_id = cursor.fetchone()[0]
-            
-            account_tariff = AccountTarif.objects.get(id=account_tariff_id)
+            user = request.user       
+            account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
+            account_tariff_id = account_tariff_id[0]
+            account_tariff = AccountTarif.objects.get(id=account_tariff_id.id)
             from datetime import datetime
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
             rule = TPChangeRule.objects.get(id=rule_id)
-            #cursor.execute("SELECT name FROM billservice_accountaddonservice WHERE account_id=%s and")
-            #settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False)
             if rule.settlement_period_id:
                 td = settlement_period_info(account_tariff.datetime, rule.settlement_period.length_in, rule.settlement_period.length)
                 delta = (datetime.now() - account_tariff.datetime).seconds+(datetime.now() - account_tariff.datetime).days*86400 - td[2]
@@ -465,11 +420,13 @@ def change_tariff(request):
                         'error_message':u'Вы не можете перейти на выбранный тариф',
                         }
             tariff = AccountTarif.objects.create(
-                                                    account = request.session['user'],
+                                                    account = user,
                                                     tarif = rule.to_tariff,
                                                     datetime = datetime.now(), 
                                                  )
-            cursor.execute("UPDATE billservice_accountaddonservice SET deactivated=now() WHERE account_id = %s and deactivated is Null;" % user.id)
+            for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
+                service.deactivated = datetime.now()
+                service.save()  
             return {
                     'ok_message':u'Вы успешно сменили тариф',
                     }
@@ -484,17 +441,13 @@ def change_tariff(request):
 
 
 @ajax_request
+@login_required
 def card_acvation(request):
-    if not request.session.has_key('user'):
-        return {
-                'redirect':'/login/',
-               }
-                #HttpResponseRedirect('/')
     if not request.session.has_key('express_pay'):
         return {
                 'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
                }
-    user = request.session['user']
+    user = request.user
     if not user.allow_expresscards:
         return {
                 'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
@@ -516,25 +469,12 @@ def card_acvation(request):
         else:
             return {
                     'redirect':'/',
-                   }
-            #HttpResponseRedirect('/index/')
-    
+                   }   
     if request.method == 'POST':
         form = CardForm(request.POST)
         
         if form.is_valid():
             try:
-                print form.cleaned_data['series'], form.cleaned_data['pin'], form.cleaned_data['card_id']
-                '''
-                connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
-                import hashlib
-                md1 = hashlib.md5(settings.RPC_PASSWORD)
-                md1.hexdigest()
-               
-                password = str(md1.hexdigest())
-                connection_server._setNewConnectionValidator(antiMungeValidator())
-                connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-                '''
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                 protocol = rpc_protocol.RPCProtocol(authenticator)
                 connection_server = rpc_protocol.BasicClientConnection(protocol)
@@ -587,10 +527,9 @@ def card_acvation(request):
                 }
 
 @render_to('accounts/account_prepays_traffic.html')
+@login_required
 def account_prepays_traffic(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
+    user = request.user
     try:
         from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
         account_tariff = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())[:1]
@@ -602,34 +541,12 @@ def account_prepays_traffic(request):
     return {
             'prepaidtraffic':prepaidtraffic,
             'account_tariff':account_tariff,
-            }
-    
-'''
-class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
-    def __init__(self):
-        Pyro.protocol.DefaultConnValidator.__init__(self)
-    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-        return authid
-    def mungeIdent(self, ident):
-        return ident
-'''    
+            }    
     
 def client(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
+    user = request.user
     # CONNECTION TO RCP SERVER
     try:
-        '''
-        connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
-        import hashlib
-        md1 = hashlib.md5(settings.RPC_PASSWORD)
-        md1.hexdigest()
-       
-        password = str(md1.hexdigest())
-        connection._setNewConnectionValidator(antiMungeValidator())
-        print connection._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))
-        connection.test()'''
         authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
         protocol = rpc_protocol.RPCProtocol(authenticator)
         connection_server = rpc_protocol.BasicClientConnection(protocol)
@@ -650,28 +567,18 @@ def client(request):
     a1 = datetime.datetime.now() - t1
     a2 = datetime.datetime.now()
     cargs = ('gstat_multi', a1, a2)
-    #for traffic_class in TrafficClass.objects.all().order_by('weight'):
-    #    min_weight = traffic_class
     ckwargs = {'return':{}, 'options':{'autoticks':False, 'antialias':True}, 'dcname': 'nfs_web', 'speed':True, 'by_col':'classes', 'users':[user.id], 'classes':[i.id for i in TrafficClass.objects.all()]}
     imgs = connection_server.makeChart(*cargs, **ckwargs)
     response = HttpResponse(imgs, content_type='image/png')
     return response
             
 
-@render_to('accounts/traffic_limit.html')        
+@render_to('accounts/traffic_limit.html') 
+@login_required       
 def traffic_limit(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
-    cursor = connection.cursor()
-    cursor.execute("""SELECT id FROM billservice_tariff WHERE id=get_tarif(%s)""" % (user.id)) 
-    
-    try:
-        tariff = cursor.fetchone()[0]
-        #tariff = Tariff.objects.get(id=tariff)
-        traffic = TrafficLimit.objects.filter(tarif=tariff) 
-    except:
-        traffic = None
+    user = request.user
+    tariff = user.get_account_tariff()
+    traffic = TrafficLimit.objects.filter(tarif=tariff) 
     return {
             'trafficlimit':traffic,
             'user':user,
@@ -679,14 +586,11 @@ def traffic_limit(request):
             
             
 @render_to('accounts/statistics.html')
+@login_required
 def statistics(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
-    #net_flow_streams = NetFlowStream.objects.filter(account=user).order_by('-date_start')[:8]
+    user = request.user
     transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
     active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
-    #services = AccountAddonService.objects.filter(account=user).order_by('-activated')[:8]
     periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
     addon_service_transaction = AddonServiceTransaction.objects.filter(account=user).order_by('-created')[:8]
     one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
@@ -710,16 +614,12 @@ def statistics(request):
 
 
 @render_to('accounts/addonservice.html')
+@login_required
 def addon_service(request):
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
-    
-    cursor = connection.cursor()
-    cursor.execute("""select tarif_id FROM billservice_accounttarif WHERE account_id=%s and datetime<now()  ORDER BY id DESC LIMIT 1""" % (user.id)) 
-    account_tariff_id = cursor.fetchone()[0]
-    
-    services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id)
+    user = request.user
+    account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
+    account_tariff_id = account_tariff_id[0]
+    services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id.id)
     user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
     accountservices = []
     for uservice in user_services:
@@ -748,27 +648,16 @@ def addon_service(request):
         del(request.session['service_message']) 
     return return_dict 
     
+@login_required
 def service_action(request, action, id):
     
     """
     в случее set id являеться идентификатором добавляемой услуги
     в случее del id являеться идентификатором accountaddon_service 
     """
-    
-    if not request.session.has_key('user'):
-        return HttpResponseRedirect('/')
-    user = request.session['user']
+    user = request.user
     
     try:
-        '''
-        connection_server = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(settings.RPC_ADDRESS))
-        import hashlib
-        md1 = hashlib.md5(settings.RPC_PASSWORD)
-        md1.hexdigest()
-       
-        password = str(md1.hexdigest())
-        connection_server._setNewConnectionValidator(antiMungeValidator())
-        connection_server._setIdentification("%s:%s:2" % (str(settings.RPC_USER), str(password)))'''
         authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
         protocol = rpc_protocol.RPCProtocol(authenticator)
         connection_server = rpc_protocol.BasicClientConnection(protocol)
@@ -850,12 +739,11 @@ def service_action(request, action, id):
         return HttpResponseRedirect('/services/')
           
 @render_to('accounts/periodical_service_history.html')
+@login_required
 def periodical_service_history(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'periodical_service_history')
-    qs = PeriodicalServiceHistory.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime')
+    qs = PeriodicalServiceHistory.objects.filter(account=request.user, **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     if is_range:
@@ -869,12 +757,11 @@ def periodical_service_history(request):
             }
 
 @render_to('accounts/addon_service_transaction.html')
+@login_required
 def addon_service_transaction(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator 
     is_range, addon_query = addon_queryset(request, 'addon_service_transaction', 'created')
-    qs = AddonServiceTransaction.objects.filter(account=request.session['user'], **addon_query).order_by('-created')
+    qs = AddonServiceTransaction.objects.filter(account=request.user, **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     if is_range:
@@ -888,12 +775,11 @@ def addon_service_transaction(request):
             }
     
 @render_to('accounts/traffic_transaction.html')
+@login_required
 def traffic_transaction(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
-    qs = TrafficTransaction.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime') 
+    qs = TrafficTransaction.objects.filter(account=request.user, **addon_query).order_by('-datetime') 
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     if is_range:
@@ -907,12 +793,11 @@ def traffic_transaction(request):
             }
     
 @render_to('accounts/one_time_history.html')
+@login_required
 def one_time_history(request):
-    if not request.session.has_key('user'):
-        return is_login_user(request)
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'one_time_history')
-    qs = OneTimeServiceHistory.objects.filter(account=request.session['user'], **addon_query).order_by('-datetime')
+    qs = OneTimeServiceHistory.objects.filter(account=request.user, **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     if is_range:
