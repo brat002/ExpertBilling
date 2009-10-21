@@ -37,6 +37,7 @@ ATTRIBUTE       Mikrotik-Advertise-URL       12   string
 ATTRIBUTE       Mikrotik-Advertise-Interval  13   integer
 ATTRIBUTE       Mikrotik-Recv-Limit-Gigawords 14  integer
 ATTRIBUTE       Mikrotik-Xmit-Limit-Gigawords 15  integer
-ATTRIBUTE       Mikrotik-Address-List        15  string
+ATTRIBUTE       Mikrotik-Address-List        18  string
+
 
 END-VENDOR      Mikrotik
