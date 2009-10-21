@@ -19,16 +19,19 @@
 				</tr>
 				{% for service in services %}
 					<tr>
-						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}</td>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.service.name }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}</td>
 					</tr>
 				{% endfor %}
+				{% if is_range %}
+					<tr>
+						<td align="right" colspan="3" class="bold {{ rec_count|coll_bg  }} no_border">Всего:</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ }}</td>
+					</tr>
+				{% endif %}
 			</table>
-			{% if is_range %}
-				<div class="total">Всего: <span>{{ summ }}</span></div>
-			{% endif %}
 			{% include 'paginator.html' %}
 		</td>
 	</tr>

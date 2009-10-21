@@ -47,7 +47,9 @@ logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webc
 rpc_protocol.install_logger(logger)
 client_networking.install_logger(logger)
 
-def addon_queryset(request, id_begin, field='datetime'):
+def addon_queryset(request, id_begin, field='datetime', field_to=None):
+    if field_to == None:
+        field_to = field
     addon_query = {}
     form = StatististicForm(request.GET)
     if request.session.has_key('date_id_dict'):
@@ -63,7 +65,7 @@ def addon_queryset(request, id_begin, field='datetime'):
                 del(date_id_dict[id_begin+'_date_from'])
         if form.cleaned_data['date_to']:
             from datetime import timedelta
-            addon_query[field+'__lte'] = form.cleaned_data['date_to'] + timedelta(hours = 23, minutes=59, seconds=59)
+            addon_query[field_to+'__lte'] = form.cleaned_data['date_to'] + timedelta(hours = 23, minutes=59, seconds=59)
             date_id_dict[id_begin+'_date_to'] = request.GET.get('date_to', '')
         else:
             if date_id_dict.has_key(id_begin+'_date_to'):
@@ -283,12 +285,16 @@ def transaction(request):
     summ = 0
     if is_range:
         for trnsaction in qs:
-            summ += trnsaction.summ 
+            summ += trnsaction.summ
+    summ = summ*-1
+    transactions = paginator.get_page_items()
+    rec_count = len(transactions)+1 
     return {
-            'transactions':paginator.get_page_items(),
+            'transactions':transactions,
             'paginator': paginator,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }
     
 @render_to('accounts/vpn_session.html')
@@ -296,11 +302,28 @@ def transaction(request):
 def vpn_session(request):
     from lib.paginator import SimplePaginator
     user = request.user
-    paginator = SimplePaginator(request, ActiveSession.objects.filter(account=user).order_by('-date_start'), 50, 'page')
+    is_range, addon_query = addon_queryset(request, 'active_session', 'date_start', 'date_end')
+    qs = ActiveSession.objects.filter(account=user, **addon_query).order_by('-date_start')
+    paginator = SimplePaginator(request, qs, 50, 'page')
+    bytes_in = 0
+    bytes_out = 0
+    bytes_all = 0
+    if is_range:
+        for session in qs:
+            bytes_in += session.bytes_in
+            bytes_out += session.bytes_out
+    bytes_all = bytes_in + bytes_out
+    sessions = paginator.get_page_items()
+    rec_count = len(sessions)+1  
     return {
             'sessions':paginator.get_page_items(),
             'paginator': paginator,
             'user': user,
+            'rec_count':rec_count,
+            'bytes_in':bytes_in,
+            'bytes_out':bytes_out,
+            'bytes_all':bytes_in,
+            'is_range':is_range,
             }
     
 
@@ -319,12 +342,15 @@ def services_info(request):
             for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
                 service_summ += transaction.summ 
             summ += service_summ
+    services = paginator.get_page_items()
+    rec_count = len(services)+1
     return {
-            'services':paginator.get_page_items(),
+            'services':services,
             'paginator': paginator,
             'user': user,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }
     
     
@@ -749,11 +775,14 @@ def periodical_service_history(request):
     if is_range:
         for periodical_service in qs:
             summ += periodical_service.summ
+    periodical_service_history = paginator.get_page_items()
+    rec_count = len(periodical_service_history) + 1
     return {
-            'periodical_service_history':paginator.get_page_items(),
+            'periodical_service_history':periodical_service_history,
             'paginator': paginator,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }
 
 @render_to('accounts/addon_service_transaction.html')
@@ -766,12 +795,15 @@ def addon_service_transaction(request):
     summ = 0
     if is_range:
         for addon_service in qs:
-            summ += addon_service.summ  
+            summ += addon_service.summ
+    addon_service_transaction = paginator.get_page_items()
+    rec_count = len(addon_service_transaction)+1    
     return {
-            'addon_service_transaction':paginator.get_page_items(),
+            'addon_service_transaction':addon_service_transaction,
             'paginator': paginator,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }
     
 @render_to('accounts/traffic_transaction.html')
@@ -785,11 +817,14 @@ def traffic_transaction(request):
     if is_range:
         for traffic_transaction in qs:
             summ += traffic_transaction.summ 
+    traffic_transaction = paginator.get_page_items()
+    rec_count = len(traffic_transaction)+1
     return {
-            'traffic_transaction':paginator.get_page_items(),
+            'traffic_transaction':traffic_transaction,
             'paginator': paginator,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }
     
 @render_to('accounts/one_time_history.html')
@@ -803,11 +838,14 @@ def one_time_history(request):
     if is_range:
         for one_time in qs:
             summ += one_time.summ 
+    one_time_history = paginator.get_page_items()
+    rec_count = len(one_time_history)+1
     return {
-            'one_time_history':paginator.get_page_items(),
+            'one_time_history':one_time_history,
             'paginator': paginator,
             'is_range':is_range,
             'summ':summ,
+            'rec_count':rec_count,
             }    
 
 
