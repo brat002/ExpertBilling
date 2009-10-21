@@ -59,6 +59,14 @@
 		jQuery(' #traffic_transaction_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_transaction_date_to }}');
+		
+		
+		jQuery(' #active_session_date_from').datepicker({
+	        dateFormat: dtFormat,
+	    }).attr('value', '{{ date_id_dict.active_session_date_from }}');
+		jQuery(' #active_session_date_to').datepicker({
+	        dateFormat: dtFormat,
+	    }).attr('value', '{{ date_id_dict.active_session_date_to }}');
 	})
 </script>
 {% endblock %}
@@ -107,7 +115,7 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|multiply:"-1" }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.description }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.bill }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.comment }}</td>
 						</tr>
@@ -121,7 +129,22 @@
         <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
-				<div class="f-right statistics_link white"><a href="/session/info/">Показать всю историю</a></div>
+				<div class="f-right statistics_link white">
+					<form method="get" action="/session/info/" id="active_session">
+						<div class="range">
+							<ul>
+								<li>
+									<label>с даты:</label> <input type="text" name="date_from" id="active_session_date_from" />
+								</li>
+								<li>
+									<label>по дату:</label> <input type="text" name="date_to" id="active_session_date_to" />
+								</li>
+							</ul>
+						</div>
+					</form>
+					<a href="/session/info/">Показать всю историю</a>
+					<a href="#" onclick="document.getElementById('active_session').submit(); return false;">Фильтровать</a>
+				</div>
 				<div class="f-left statistics_title">ИНФОРМАЦИЯ О СЕССИЯХ</div>
 			</th>
 		</tr>

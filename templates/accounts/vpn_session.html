@@ -15,18 +15,24 @@
        				<th class="first_row">Начало</th>
        				<th>Окончание</th>
        				<th>IP Адрес</th>
-       				<th>Передано / Принято</th>
+       				<th>Передано / Принято / Всего</th>
 	   				<th>Время</th>
     			</tr>
     			{% for session in sessions %}
        				<tr>
-	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y  H:i" }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y  H:i"}}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% if session.bytes_out or session.bytes_in%}  {% traffic_format session.bytes_out %}&nbsp; / {% traffic_format session.bytes_in %}{% endif %}&nbsp;</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}</td>
+	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y  H:i" }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y  H:i"}}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.nas_id }}</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in%}  {% traffic_format session.bytes_out %}&nbsp; / {% traffic_format session.bytes_in %} / {% traffic_format session.bytes_in session.bytes_out %}{% endif %}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% time_format session.session_time %}</td>
 	   				</tr>
     			{% endfor%}
+				{% if is_range %}
+					<tr>
+						<td colspan="3" align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего:</td>
+						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{% traffic_format bytes_out %} / {% traffic_format bytes_in %} / {% traffic_format bytes_all %}</td>
+					</tr>
+				{% endif %}
 			</table>
 			{% include 'paginator.html' %}
 		</td>
