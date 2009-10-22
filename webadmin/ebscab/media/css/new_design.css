@@ -228,6 +228,10 @@ h2 {
 .enter_table {
 }
 
+.enter_table td input {
+	width:150px;
+}
+
 .enter_table th {
 	color:#1c4364;
 	font-size:11px;
@@ -265,7 +269,6 @@ table.statistic_table {
 }
 
 .statistics_link {
-	margin-bottom:3px;
 	margin-right:5px;
 	width:520px;
 }
@@ -430,4 +433,16 @@ table.statistic_table {
 	margin-top:10px;
 	color:#6a6a6a;
 	font-weight:bold;
+}
+
+body:nth-of-type(1) .statistics_link {
+	margin-top:-2px;
+}
+
+body:nth-of-type(1) .statistics_link a {
+	margin-top:2px;
+}
+
+body:nth-of-type(1) .chrome_header {
+	margin:0px;
 }

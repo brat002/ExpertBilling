@@ -18,9 +18,9 @@
 				</tr>
 				{% for one_time in one_time_history %}
 					<tr>
-						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.onetimeservice.name }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.summ }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}</td>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.onetimeservice.name }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.summ }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}

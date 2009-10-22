@@ -58,10 +58,10 @@
 				{% for promise in last_promises %}
                 
 					<tr>
-						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.created|date:"d.m.Y H:i" }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.human_sum|floatformat:2 }}</td>
-                        <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.end_promise|date:"d.m.Y H:i" }}</td>
-                        <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.description }}</td>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.created|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.human_sum|floatformat:2 }}&nbsp;</td>
+                        <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.end_promise|date:"d.m.Y H:i" }}&nbsp;</td>
+                        <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.description }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if promise.promise_expired %}Да{% else %} Нет{% endif %}&nbsp;</td>
 						
 					</tr>

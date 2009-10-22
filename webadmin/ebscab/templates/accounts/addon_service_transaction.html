@@ -20,11 +20,11 @@
 				</tr>
 				{% for transaction in addon_service_transaction %}
 					<tr>
-						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service.name }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service_type }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.summ }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.type_id }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}</td>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service.name }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service_type }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.summ }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}

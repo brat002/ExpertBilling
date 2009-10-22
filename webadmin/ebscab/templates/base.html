@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/thickbox.css" />
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/thickbox-compressed.js"></script>
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera/css" media="screen" />
 
 {% block extra_head %}
 {% endblock %}
@@ -19,7 +20,7 @@
 <body>
 
 <div class="content_align">
-    <div class="header">
+    <div class="header {% block addon_classes %}{% endblock %}">
 	   <div class="logo_ie" style="float: right">
 	   	{% block account_control %}
 		{% endblock %}

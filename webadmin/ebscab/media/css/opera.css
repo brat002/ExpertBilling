@@ -1,0 +1,17 @@
+.header {
+	margin:9px 0 20px 0;
+	height:28px;
+}
+
+.main_menu_bg {
+	margin-top:-10px;
+}
+
+.statistics_link {
+	width:600px;
+	margin-top:-12px;
+}
+
+.statistics_link a {
+	margin-top:-10px;
+}
