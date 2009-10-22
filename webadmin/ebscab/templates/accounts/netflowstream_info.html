@@ -22,13 +22,13 @@
 				</tr>
 				{% for net_flow_stream in net_flow_streams%}
 	   				<tr>
-	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.date_start|date:"d.m.Y  H:i" }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.src_addr }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.src_port }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.dst_addr }}</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.dst_port }}</td>
-		   				<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.get_protocol }}</td>
-		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% traffic_format net_flow_stream.octets %}</td>
+	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.date_start|date:"d.m.Y  H:i" }}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.src_addr }}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.src_port }}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ net_flow_stream.dst_addr }}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.dst_port }}&nbsp;</td>
+		   				<td align="center" class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ net_flow_stream.get_protocol }}&nbsp;</td>
+		   				<td  class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="right">{% traffic_format net_flow_stream.octets %}&nbsp;</td>
 	   				</tr>
 				{% endfor%}
 			</table>
