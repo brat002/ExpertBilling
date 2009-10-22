@@ -22,11 +22,11 @@
     			</tr>
     			{% for transaction in transactions %}
        				<tr>
-           				<td width="100px" class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y  H:i"}}</td>
-           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="right">{{ transaction.summ|multiply:"-1" }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}</td>
-           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}</td>
+           				<td width="100px" class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y  H:i"}}&nbsp;</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="right">{{ transaction.summ|multiply:"-1" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}&nbsp;</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}&nbsp;</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.bill }}&nbsp;</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.comment }}&nbsp;</td>
        				</tr>

@@ -19,10 +19,10 @@
 				</tr>
 				{% for service in services %}
 					<tr>
-						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.service.name }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}</td>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}
