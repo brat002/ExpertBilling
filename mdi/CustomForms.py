@@ -1613,8 +1613,10 @@ class GroupEditDialog(QtGui.QDialog):
         
         
     def fixtures(self):
+        
         selected_classes = []
         if self.model:
+            self.setWindowTitle(u"Редактирование группы %s" % unicode(self.model.name))
             self.lineEdit_name.setText(unicode(self.model.name))
             selected_classes = self.connection.sql("SELECT trafficclass_id as id FROM billservice_group_trafficclass WHERE group_id=%s" % self.model.id)
             selected_classes = [x.id for x in selected_classes]
