@@ -40,7 +40,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, flatten, command_string_parser
 from pkgutil import simplegeneric
 
 #from utilities import Session, data_utilities, utilities_sql
@@ -678,7 +678,7 @@ class HandleSAuth(HandleSBase):
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
 
-    def create_speed(self, tarif_id, account_id, speed=''):
+    def create_speed(self, nas, tarif_id, account_id, speed=''):
         result_params=speed
         if speed=='':
             defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
@@ -689,35 +689,58 @@ class HandleSAuth(HandleSBase):
             now=datetime.datetime.now()
             for speed in speeds:
                 #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-
                 tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
-                #print "res=",res
                 if res==True and (delta<min_delta or min_delta==-1):
                     minimal_period=speed
                     min_delta=delta
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
 
+            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
             for k in xrange(0, 6):
                 s=minimal_period[k]
                 if s=='0/0' or s=='/' or s=='':
                     res=defaults[k]
                 else:
                     res=s
-                result.append(res)
-
-
-            correction = self.caches.speedlimit_cache.by_account_id.get(account_id,[])
+                result.append(res)           
+                
+            correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
             #Проводим корректировку скорости в соответствии с лимитом
-            #print self.caches.speedlimit_cache
+
             result = get_corrected_speed(result, correction)
             #print "corrected", result
             if result==[]: 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                
+                result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
+            else:
+                result = flatten(map(split_speed,result))
+            print result
+            #result_params=create_speed_string(result)
+            #print result
+            command_dict={'max_limit_rx': result[0],
+            'max_limit_tx': result[1],
+            'burst_limit_rx': result[2],
+            'burst_limit_tx': result[3],
+            'burst_treshold_rx': result[4],
+            'burst_treshold_tx': result[5],
+            'burst_time_rx': result[6],
+            'burst_time_tx': result[7],
+            'priority': result[8],
+            'min_limit_rx': result[9],
+            'min_limit_tx': result[10]}
+            
+            if nas.speed_value1:
+                result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
+                if result_params and nas.speed_vendor_1:
+                    self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
+                elif result_params and not nas.speed_vendor_1:
+                    self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
 
-            result_params=create_speed_string(result)
-            self.speed=result_params
-        if self.nas_type[:8]==u'mikrotik' and result_params!='':
-            self.replypacket.AddAttribute((14988,8),result_params)
+
+            if nas.speed_value2:
+                result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
+                if result_params and nas.speed_vendor_2:
+                    self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
+                elif result_params and not nas.speed_vendor_2:
+                    self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
 
 
     def handle(self):
@@ -808,7 +831,7 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.vpn_ip_address)
             #account_speed_limit_cache
-            self.create_speed(acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
+            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
             self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
