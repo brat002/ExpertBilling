@@ -892,15 +892,19 @@ class HandleHotSpotAuth(HandleSBase):
                 else:
                     res=s
                 result.append(res)           
-
+                
             correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
             #print "corrected", result
             if result==[]: 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"] 
+                result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
+            else:
+                result = flatten(map(split_speed,result))
+            print result
             #result_params=create_speed_string(result)
+            #print result
             command_dict={'max_limit_rx': result[0],
             'max_limit_tx': result[1],
             'burst_limit_rx': result[2],
@@ -916,26 +920,17 @@ class HandleHotSpotAuth(HandleSBase):
             if nas.speed_value1:
                 result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
                 if result_params and nas.speed_vendor_1:
-                    self.replypacket.AddAttribute((nas.speed_vendor_1,speed_attr_id1),result_params)
+                    self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
                 elif result_params and not nas.speed_vendor_1:
-                    self.replypacket.AddAttribute(speed_attr_id1,result_params)
+                    self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
 
 
             if nas.speed_value2:
                 result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
                 if result_params and nas.speed_vendor_2:
-                    self.replypacket.AddAttribute((nas.speed_vendor_2,speed_attr_id1),result_params)
+                    self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
                 elif result_params and not nas.speed_vendor_2:
-                    self.replypacket.AddAttribute(speed_attr_id2,result_params)
-                                
-            
-#===============================================================================
-#            self.speed=result_params
-#            #print "speed", result_params
-#        if self.nas_type[:8]==u'mikrotik' and result_params!='':
-#            self.replypacket.AddAttribute((14988,8),result_params)
-#===============================================================================
-
+                    self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
 
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 

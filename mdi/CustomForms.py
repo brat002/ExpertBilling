@@ -2798,3 +2798,48 @@ class TransactionForm(QtGui.QDialog):
             return
         self.printer = printer
         
+        
+class TemplateSelect(QtGui.QDialog):
+    def __init__(self, connection):
+        super(TemplateSelect, self).__init__()
+        self.connection = connection
+        self.id = None
+        self.setObjectName("TemplateSelect")
+        self.resize(504, 243)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setMargin(0)
+        self.gridLayout.setSpacing(0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.listWidget = QtGui.QListWidget(self)
+        self.listWidget.setObjectName("listWidget")
+        self.gridLayout.addWidget(self.listWidget, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.accept)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Выбор шаблона", None, QtGui.QApplication.UnicodeUTF8))
+
+
+    def fixtures(self):
+        templates = self.connection.get_models("billservice_template")
+        
+        self.listWidget.clear()
+        for templ in templates:
+            item = QtGui.QListWidgetItem()
+            item.setText(unicode(templ.name))
+            item.id = templ.id
+            self.listWidget.addItem(item)
+            
+    def accept(self):
+        self.id = self.listWidget.currentItem().id
+        QtGui.QDialog.accept(self)
