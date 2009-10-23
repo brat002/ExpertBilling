@@ -2210,7 +2210,7 @@ CREATE TRIGGER suspended_period_check_trg
 
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 19, true);
 
-CREATE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
+CREATE OR REPLACE FUNCTION gpst_crt_prev_ins(datetx date) RETURNS void
     AS $$
 DECLARE
 
