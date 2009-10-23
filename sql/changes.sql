@@ -2377,3 +2377,16 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO ebs;
+
+--23.010.2010 14:14
+ALTER TABLE billservice_organization
+   ADD COLUMN kpp text;
+ALTER TABLE billservice_organization
+   ALTER COLUMN kpp SET DEFAULT '';
+
+
+ALTER TABLE billservice_organization
+   ADD COLUMN kor_s text;
+ALTER TABLE billservice_organization
+   ALTER COLUMN kor_s SET DEFAULT '';
+
