@@ -195,15 +195,10 @@ def index(request):
     except:
         ballance = 0 
     traffic = TrafficLimit.objects.filter(tarif=tariff_id)      
-    try:
-        account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
-        account_tariff_id = account_tariff_id[0]
-        account_tariff = AccountTarif.objects.get(id=account_tariff_id.id) 
-        account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif__id=account_tariff_id.id)
-        prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
-    except:
-        prepaidtraffic = None
-        account_tariff = None 
+    #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
+    account_tariff = user.get_account_tariff()
+    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
+    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
@@ -253,18 +248,10 @@ def get_promise(request):
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Сумма обещанного платежа должна быть положительной"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
-        transaction = Transaction.objects.create(
-                                                 account = user,
-                                                 bill = u'Обещанный платёж', 
-                                                 type = u'MANUAL_TRANSACTION',
-                                                 approved = True,
-                                                 tarif = user.get_account_tariff(),
-                                                 summ = sum*(-1), 
-                                                 created = datetime.datetime.now(),
-                                                 promise = True,
-                                                 end_promise = LEFT_PROMISE_DATE,
-                                                 promise_expired = False,
-                                                 )
+        cursor = connection.cursor()
+        cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired) 
+                          VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum*(-1), LEFT_PROMISE_DATE))
+        cursor.connection.commit()
         
         
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
@@ -402,8 +389,7 @@ def change_tariff_form(request):
     from datetime import datetime, date 
     user = request.user
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
-    account_tariff_id = account_tariff_id[0]
-    account_tariff = AccountTarif.objects.get(id=account_tariff_id.id)
+    account_tariff = account_tariff_id[0]
     tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance)
     form = ChangeTariffForm(user, account_tariff)
     return {
@@ -429,8 +415,7 @@ def change_tariff(request):
         if rule_id != None:
             user = request.user       
             account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
-            account_tariff_id = account_tariff_id[0]
-            account_tariff = AccountTarif.objects.get(id=account_tariff_id.id)
+            account_tariff = account_tariff_id[0]
             from datetime import datetime
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
             rule = TPChangeRule.objects.get(id=rule_id)
@@ -643,9 +628,9 @@ def statistics(request):
 @login_required
 def addon_service(request):
     user = request.user
-    account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
-    account_tariff_id = account_tariff_id[0]
-    services = AddonServiceTarif.objects.filter(tarif__id=account_tariff_id.id)
+    #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
+    #account_tariff = account_tariff_id[0] 
+    services = AddonServiceTarif.objects.filter(tarif=user.get_account_tariff())
     user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
     accountservices = []
     for uservice in user_services:
@@ -676,7 +661,6 @@ def addon_service(request):
     
 @login_required
 def service_action(request, action, id):
-    
     """
     в случее set id являеться идентификатором добавляемой услуги
     в случее del id являеться идентификатором accountaddon_service 
@@ -708,8 +692,7 @@ def service_action(request, action, id):
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        result = connection_server.add_addonservice(user.id, id)
-        print result 
+        result = connection_server.add_addonservice(user.id, id) 
         if result == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')
