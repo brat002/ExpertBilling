@@ -105,7 +105,7 @@ class check_vpn_access(Thread):
             return result
         else:
             try:
-                return parse_custom_speed_lst(acc.ipn_speed)
+                return parse_custom_speed_lst(speed)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
                 return ["0/0","0/0","0/0","0/0","8","0/0"] 
@@ -203,7 +203,7 @@ class check_vpn_access(Thread):
                                 if not accservice.deactivated  and service.change_speed:                                                                        
                                     addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                                     break                            
-                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
+                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT)                            
 
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
