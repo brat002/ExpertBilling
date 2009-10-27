@@ -40,9 +40,9 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, flatten, command_string_parser
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
 from pkgutil import simplegeneric
-
+from itertools import chain
 #from utilities import Session, data_utilities, utilities_sql
 from utilities.Session import DictSession as util_DictSession
 from utilities.data_utilities import get_db_data as u_get_db_data, simple_list_index as u_simple_list_index
@@ -712,36 +712,42 @@ class HandleSAuth(HandleSBase):
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
                 result = flatten(map(split_speed,result))
-            print result
+            #print result
             #result_params=create_speed_string(result)
             #print result
-            command_dict={'max_limit_rx': result[0],
-            'max_limit_tx': result[1],
-            'burst_limit_rx': result[2],
-            'burst_limit_tx': result[3],
-            'burst_treshold_rx': result[4],
-            'burst_treshold_tx': result[5],
-            'burst_time_rx': result[6],
-            'burst_time_tx': result[7],
-            'priority': result[8],
-            'min_limit_rx': result[9],
-            'min_limit_tx': result[10]}
-            
-            if nas.speed_value1:
-                result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
-                if result_params and nas.speed_vendor_1:
-                    self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
-                elif result_params and not nas.speed_vendor_1:
-                    self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
+        else:
+            #a = 
+            #print a, type(a)
+            #flatted = flatten(map(split_speed, a))
+            result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
+            #print flatted
+
+        command_dict={'max_limit_rx': result[0],
+        'max_limit_tx': result[1],
+        'burst_limit_rx': result[2],
+        'burst_limit_tx': result[3],
+        'burst_treshold_rx': result[4],
+        'burst_treshold_tx': result[5],
+        'burst_time_rx': result[6],
+        'burst_time_tx': result[7],
+        'priority': result[8],
+        'min_limit_rx': result[9],
+        'min_limit_tx': result[10]}
+        
+        if nas.speed_value1:
+            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
+            if result_params and nas.speed_vendor_1:
+                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
+            elif result_params and not nas.speed_vendor_1:
+                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
 
 
-            if nas.speed_value2:
-                result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
-                if result_params and nas.speed_vendor_2:
-                    self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
-                elif result_params and not nas.speed_vendor_2:
-                    self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
-
+        if nas.speed_value2:
+            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
+            if result_params and nas.speed_vendor_2:
+                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
+            elif result_params and not nas.speed_vendor_2:
+                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
 
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
@@ -902,36 +908,43 @@ class HandleHotSpotAuth(HandleSBase):
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
                 result = flatten(map(split_speed,result))
-            print result
+            #print result
             #result_params=create_speed_string(result)
             #print result
-            command_dict={'max_limit_rx': result[0],
-            'max_limit_tx': result[1],
-            'burst_limit_rx': result[2],
-            'burst_limit_tx': result[3],
-            'burst_treshold_rx': result[4],
-            'burst_treshold_tx': result[5],
-            'burst_time_rx': result[6],
-            'burst_time_tx': result[7],
-            'priority': result[8],
-            'min_limit_rx': result[9],
-            'min_limit_tx': result[10]}
-            
-            if nas.speed_value1:
-                result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
-                if result_params and nas.speed_vendor_1:
-                    self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
-                elif result_params and not nas.speed_vendor_1:
-                    self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
+        else:
+            #a = 
+            #print a, type(a)
+            #flatted = flatten(map(split_speed, a))
+            result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
+            #print flatted
+
+        command_dict={'max_limit_rx': result[0],
+        'max_limit_tx': result[1],
+        'burst_limit_rx': result[2],
+        'burst_limit_tx': result[3],
+        'burst_treshold_rx': result[4],
+        'burst_treshold_tx': result[5],
+        'burst_time_rx': result[6],
+        'burst_time_tx': result[7],
+        'priority': result[8],
+        'min_limit_rx': result[9],
+        'min_limit_tx': result[10]}
+        
+        if nas.speed_value1:
+            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
+            if result_params and nas.speed_vendor_1:
+                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
+            elif result_params and not nas.speed_vendor_1:
+                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
 
 
-            if nas.speed_value2:
-                result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
-                if result_params and nas.speed_vendor_2:
-                    self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
-                elif result_params and not nas.speed_vendor_2:
-                    self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
-
+        if nas.speed_value2:
+            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
+            if result_params and nas.speed_vendor_2:
+                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
+            elif result_params and not nas.speed_vendor_2:
+                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+        
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
         if not nas: return '',None

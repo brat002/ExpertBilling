@@ -689,6 +689,7 @@ class RPCServer(object):
             return 'ACCOUNT_DOES_NOT_EXIST'
                 
         account = Object(r[0]) 
+        #print account_id
         
         sql = "SELECT id FROM billservice_accountaddonservice WHERE account_id=%s and service_id=%s and (deactivated>now() or deactivated is Null)" % (account_id, service_id, )
         cur.execute(sql)
@@ -749,6 +750,7 @@ class RPCServer(object):
 
         #Получаем нужные параметры услуги из тарифного плана
         sql = "SELECT id, activation_count, activation_count_period_id FROM billservice_addonservicetarif WHERE tarif_id=%s and service_id = %s" % (account.tarif_id, service_id)
+        #print account.tarif_id, service_id
         cur.execute(sql)
         connection.commit()
         result=[]
