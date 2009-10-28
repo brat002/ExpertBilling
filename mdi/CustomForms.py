@@ -2453,7 +2453,7 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры подключаемой услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры подключаемой услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.label_service.setText(QtGui.QApplication.translate("Dialog", "Услуга", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_activation.setText(QtGui.QApplication.translate("Dialog", "Дата активаци", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_activation.setText(QtGui.QApplication.translate("Dialog", "Дата активации", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_activation_now.setText(QtGui.QApplication.translate("Dialog", "N", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Закончить действие услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.label_deactivation.setText(QtGui.QApplication.translate("Dialog", "Дата деактивации", None, QtGui.QApplication.UnicodeUTF8))
