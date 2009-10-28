@@ -95,7 +95,7 @@ class AddSettlementPeriod(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование расчётного периода", None, QtGui.QApplication.UnicodeUTF8))
         self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало в", None, QtGui.QApplication.UnicodeUTF8))
-        self.autostart_checkbox.setText(QtGui.QApplication.translate("Dialog", "Период начинается при назначении пользователю тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        self.autostart_checkbox.setText(QtGui.QApplication.translate("Dialog", "Период начинается при активации", None, QtGui.QApplication.UnicodeUTF8))
         self.length_label.setText(QtGui.QApplication.translate("Dialog", "Длительность", None, QtGui.QApplication.UnicodeUTF8))
         self.length_edit.addItem(QtGui.QApplication.translate("Dialog", "DAY", None, QtGui.QApplication.UnicodeUTF8))
         self.length_edit.addItem(QtGui.QApplication.translate("Dialog", "WEEK", None, QtGui.QApplication.UnicodeUTF8))
