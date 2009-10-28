@@ -1001,12 +1001,12 @@ def graceful_save():
     sys.exit()
     
     
-def check_login(login):
+def check_login(login, asserted_role):
     global vars
     result = None
     with vars.db_connection_lock:
         try:
-            vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s;''', (login,))
+            vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s AND (role = %s OR role = '0');''', (login, asserted_role))
             result = vars.db_connection.fetchall()
         except Exception, ex:
             result = ex

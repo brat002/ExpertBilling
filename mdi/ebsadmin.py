@@ -24,6 +24,7 @@ from rpc2 import rpc_protocol, client_networking
 
 DEFAULT_PORT = 7771
 LOG_LEVEL    = 0
+ROLE = 0
 
 class PrintLogger(object):
     def __getattr__(self, name):
@@ -678,7 +679,7 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                auth_result = connection.authenticate(str(child.name), str(child.password))
+                auth_result = connectione.authenticate(str(child.name), str(child.password), ROLE)
                 if not auth_result or not connection.protocol._check_status():
                     raise Exception('Status = False!')
                 username = str(child.name)
