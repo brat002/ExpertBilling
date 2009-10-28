@@ -10,14 +10,10 @@ sys.path.append(os.path.abspath('../../'))
 from rpc2 import rpc_protocol, client_networking
     
 import datetime
-'''
-import Pyro.core
-import Pyro.protocol
-import Pyro.constants
-import Pyro.errors
-'''
 
 CUR_PATH = os.getcwd()
+ROLE = 2
+
 from django.conf import settings
 
 import isdlogger
@@ -95,7 +91,7 @@ def login(request):
                     transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
                     transport.connect()
                     connection_server.registerConsumer_(transport)
-                    auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+                    auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
                     if not auth_result or not connection_server.protocol._check_status():
                         raise Exception('Status = False!')
                 except Exception, e:
@@ -492,7 +488,7 @@ def card_acvation(request):
                 transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
                 transport.connect()
                 connection_server.registerConsumer_(transport)
-                auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+                auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
                 if not auth_result or not connection_server.protocol._check_status():
                     raise Exception('Status = False!')
                 res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
@@ -564,7 +560,7 @@ def client(request):
         transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
         transport.connect()
         connection_server.registerConsumer_(transport)
-        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
         if not auth_result or not connection_server.protocol._check_status():
             raise Exception('Status = False!')
     except Exception, e:
@@ -674,7 +670,7 @@ def service_action(request, action, id):
         transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
         transport.connect()
         connection_server.registerConsumer_(transport)
-        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD))
+        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
         if not auth_result or not connection_server.protocol._check_status():
             raise Exception('Status = False!')
         #connection_server.test()

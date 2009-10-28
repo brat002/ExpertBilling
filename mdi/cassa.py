@@ -2,6 +2,7 @@
 
 LOG_LEVEL = 1
 DEFAULT_PORT = 7771
+ROLE = 1
 
 from PyQt4 import QtCore, QtGui
 import os, sys
@@ -449,16 +450,6 @@ def login():
             waitchild = ConnectionWaiting()
             waitchild.show()
             try:
-                '''
-                connection = Pyro.core.getProxyForURI("PYROLOC://%s:7766/rpc" % unicode(child.address))
-                password = unicode(child.password.toHex())
-                #f = open('tmp', 'wb')
-                #f.write(child.password.toHex())
-                connection._setNewConnectionValidator(antiMungeValidator())
-                connection._setIdentification("%s:%s:1" % (str(child.name), str(child.password.toHex())))
-                connection.test()
-                waitchild.hide()
-                return connection'''
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                 protocol = rpc_protocol.RPCProtocol(authenticator)
                 connection = rpc_protocol.BasicClientConnection(protocol)
@@ -470,7 +461,7 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                auth_result = connection.authenticate(str(child.name), str(child.password))
+                auth_result = connectione.authenticate(str(child.name), str(child.password), ROLE)
                 if not auth_result or not connection.protocol._check_status():
                     raise Exception('Status = False!')
                 waitchild.hide()
