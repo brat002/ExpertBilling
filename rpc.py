@@ -1006,7 +1006,7 @@ def check_login(login, asserted_role):
     result = None
     with vars.db_connection_lock:
         try:
-            vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s AND (role = %s OR role = '0');''', (login, asserted_role))
+            vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s AND (role = %s OR role = '0');''', (login, int(asserted_role.strip())))
             result = vars.db_connection.fetchall()
         except Exception, ex:
             result = ex
