@@ -28,7 +28,7 @@ class BlockingTcpClient(object):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(60)
+        self.socket.settimeout(20)
         try:
             self.socket.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
         except:
@@ -54,7 +54,7 @@ class BlockingTcpClient(object):
         try:
             self.socket.connect((self.host, self.port))
         except Exception, ex:
-            logger.error('TCP CLIENT CONNECTING FAILED: %s', (self.host, self.port))
+            logger.error('TCP CLIENT CONNECTING FAILED: %s', ((self.host, self.port),))
             time.sleep(self.retryTime)
             self.retries += 1
             self.retryTime **= self.factor
