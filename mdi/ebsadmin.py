@@ -5,6 +5,7 @@ import sys, traceback, os
 sys.path.append(os.path.abspath('../'))
 from PyQt4 import QtCore, QtGui
 
+#sys.stdout=sys.stderr=None
 #import socket
 #socket.setdefaulttimeout(None)
 from helpers import Object as Object
@@ -23,7 +24,7 @@ import threading
 from rpc2 import rpc_protocol, client_networking
 
 DEFAULT_PORT = 7771
-LOG_LEVEL    = 0
+LOG_LEVEL    = 1
 ROLE = 0
 
 class PrintLogger(object):
@@ -679,7 +680,7 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                auth_result = connectione.authenticate(str(child.name), str(child.password), ROLE)
+                auth_result = connection.authenticate(str(child.name), str(child.password), ROLE)
                 if not auth_result or not connection.protocol._check_status():
                     raise Exception('Status = False!')
                 username = str(child.name)
