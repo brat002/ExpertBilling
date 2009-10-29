@@ -155,8 +155,8 @@ class check_vpn_access(Thread):
                 now = dateAT
                 cur.execute("""UPDATE radius_activesession 
                                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                               WHERE ((now()-interrim_update>=interval '00:06:00') or (now()-date_start>=interval '00:03:00' and interrim_update IS Null)) AND date_end IS Null;
-                               UPDATE radius_activesession SET session_status='ACK' WHERE (date_end IS NOT NULL) AND (session_status='ACTIVE');""")
+                               WHERE ((now()-interrim_update>=interval '00:16:00') or (now()-date_start>=interval '00:10:00' and interrim_update IS Null)) AND date_end IS Null;
+                               """)
 #===============================================================================
 #                cur.execute("""UPDATE radius_activesession 
 #                               SET session_time=extract(epoch FROM date_end-date_start), date_end=now(), session_status='NACK' 

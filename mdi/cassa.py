@@ -24,6 +24,7 @@ try:
     os.mkdir('log')
 except:
     pass
+import traceback
 
 from db import Object as Object
 from helpers import makeHeaders
@@ -461,7 +462,7 @@ def login():
                 transport = client_networking.BlockingTcpClient(host, port)
                 transport.connect()
                 connection.registerConsumer_(transport)
-                auth_result = connectione.authenticate(str(child.name), str(child.password), ROLE)
+                auth_result = connection.authenticate(str(child.name), str(child.password), ROLE)
                 if not auth_result or not connection.protocol._check_status():
                     raise Exception('Status = False!')
                 waitchild.hide()

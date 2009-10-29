@@ -40,7 +40,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from classes.rad_class.CardActivateData import CardActivateData
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, get_decimals_speeds, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
 from pkgutil import simplegeneric
 from itertools import chain
 #from utilities import Session, data_utilities, utilities_sql
@@ -711,7 +711,7 @@ class HandleSAuth(HandleSBase):
             if result==[]: 
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
-                result = flatten(map(split_speed,result))
+                result = get_decimals_speeds(result)
             #print result
             #result_params=create_speed_string(result)
             #print result
@@ -907,7 +907,7 @@ class HandleHotSpotAuth(HandleSBase):
             if result==[]: 
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
-                result = flatten(map(split_speed,result))
+                result = get_decimals_speeds(result)
             #print result
             #result_params=create_speed_string(result)
             #print result
@@ -944,6 +944,7 @@ class HandleHotSpotAuth(HandleSBase):
                 self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
             elif result_params and not nas.speed_vendor_2:
                 self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+
         
     def handle(self):
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
