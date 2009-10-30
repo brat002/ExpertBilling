@@ -55,7 +55,6 @@ def auth(request):
         user = AnonymousUser()
     return {
         'user': user,
-        #'messages': user.get_and_delete_messages(),
         'perms': PermWrapper(user),
     }
     
